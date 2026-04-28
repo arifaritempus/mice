@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "rules": {
+    "no-restricted-properties": [
+      "error",
+      {
+        "object": "localStorage",
+        "property": "getItem",
+        "message": "localStorage yasak. Supabase kullan."
+      },
+      {
+        "object": "localStorage",
+        "property": "setItem",
+        "message": "localStorage yasak. Supabase kullan."
+      },
+      {
+        "object": "localStorage",
+        "property": "removeItem",
+        "message": "localStorage yasak. Supabase kullan."
+      },
+      {
+        "object": "window.localStorage",
+        "message": "localStorage yasak. Supabase kullan."
+      }
+    ]
+  }
+}

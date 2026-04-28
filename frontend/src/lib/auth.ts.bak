@@ -1,0 +1,143 @@
+import { supabase } from './supabase';
+
+export interface User {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  role?: string;
+}
+
+export interface UpdateProfileData {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
+
+// Kimlik doğrulama servisleri
+export const authService = {
+  // Supabase client'ı export et
+  supabase,
+
+  // Giriş yap
+  async login(credentials: LoginCredentials) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Çıkış yap
+  async logout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
+
+  // Mevcut kullanıcıyı al
+  async getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return user;
+  },
+
+  // Kullanıcı profilini al
+  async getUserProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Profil güncelle
+  async updateProfile(userId: string, profileData: UpdateProfileData) {
+    const { data, error } = await supabase
+      .from('users')
+      .update(profileData)
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Şifre değiştir
+  async changePassword(newPassword: string) {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) throw error;
+  },
+
+  // Şifre sıfırlama e-postası gönder
+  async resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) throw error;
+  },
+
+  // Kullanıcı kaydı (sadece admin)
+  async registerUser(userData: RegisterData) {
+    // Önce Supabase Auth'da kullanıcı oluştur
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: userData.email,
+      password: userData.password,
+      email_confirm: true,
+      user_metadata: {
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        role: userData.role || 'user'
+      }
+    });
+
+    if (error) throw error;
+
+    // Kullanıcı profilini oluştur
+    const { error: profileError } = await supabase
+      .from('users')
+      .insert({
+        id: data.user.id,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        role: userData.role || 'user',
+        is_active: true
+      });
+
+    if (profileError) throw profileError;
+    return data;
+  }
+};
+
+// Oturum dinleyicisi
+export const authListener = (callback: (user: any) => void) => {
+  return supabase.auth.onAuthStateChange((event, session) => {
+    callback(session?.user || null);
+  });
+}; 

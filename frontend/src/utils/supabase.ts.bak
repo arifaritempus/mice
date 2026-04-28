@@ -1,0 +1,21 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://pnwpypiwuyyofpzlzmli.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBud3B5cGl3dXl5b2Zwemx6bWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk5ODk2MDAsImV4cCI6MjAyNTU2NTYwMH0.0e09UF3HYwuKUXj0B_2YoGxZ_HXvqDrXEJ5O4oKQOKI';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export type Event = {
+  id: string;
+  created_at: string;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  image_url?: string;
+  price?: number;
+  category: string;
+  organizer_id: string;
+  status: 'draft' | 'published' | 'cancelled';
+}; 

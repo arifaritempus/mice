@@ -1,0 +1,17377 @@
+'use client';
+
+import React from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { projectsService, projectSalesItemsService, projectPurchaseItemsService, suppliersService, categoriesService, projectAccommodationItemsService, quoteItemsService, projectHotelExtrasService, agenciesService, hotelsService, projectTransfersService, projectEventsActivitiesService, projectHumanResourcesService, projectOtherServicesService, projectFinancialServicesService, projectCollectionPlansService, projectCollectionsService, projectPaymentPlansService, projectPaymentsService, usersService, projectUsersService, publicLinksService } from '@/lib/supabaseService';
+import { supabase } from '@/lib/supabase';
+import { lsGet, lsSet } from '@/utils/safeStorage';
+import AccommodationTabOptimized from './AccommodationTabOptimized';
+import OtherServicesTab from './OtherServicesTab';
+import FinancialTab from './FinancialTab';
+import SalesTab from './SalesTab';
+import PurchaseTab from './PurchaseTab';
+import KarZararTab from './KarZararTab';
+import UcakBiletiTab from './UcakBiletiTab';
+import OtelEkstraTab from './OtelEkstraTab';
+import TransferTurTab from './TransferTurTab';
+import EtkinlikAktiviteTab from './EtkinlikAktiviteTab';
+import InsanKaynaklariTab from './InsanKaynaklariTab';
+import TahsilatTab from './TahsilatTab';
+import OdemeTab from './OdemeTab';
+import { usePermissions, Module } from '@/lib/permissions';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import * as projectUtils from './projectUtils';
+import { useProjectState } from './hooks/useProjectState';
+import { useAccommodationState } from './hooks/useAccommodationState';
+import { useFlightTicketState, FlightTicket } from './hooks/useFlightTicketState';
+import { useTransferState } from './hooks/useTransferState';
+import { useHotelExtraState } from './hooks/useHotelExtraState';
+import { useEventActivityState } from './hooks/useEventActivityState';
+import { getLogosForExcel } from '@/utils/logoUtils';
+import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
+
+interface TabDef {
+  key: string;
+  label: string;
+}
+
+const TABS: TabDef[] = [
+  { key: 'satis', label: 'Satış' },
+  { key: 'alis', label: 'Alış' },
+  { key: 'konaklama', label: 'Konaklama' },
+  { key: 'otel-ekstra', label: 'Otel Ekstra' },
+  { key: 'ucak-bileti', label: 'Uçak Bileti' },
+  { key: 'transfer-tur', label: 'Transfer & Tur' },
+  { key: 'etkinlik-aktivite', label: 'Etkinlik & Aktivite' },
+  { key: 'insan-kaynaklari', label: 'İnsan Kaynakları' },
+  { key: 'diger-servisler', label: 'Diğer Servisler' },
+  { key: 'finansal', label: 'Finansal' },
+  { key: 'tahsilat', label: 'Tahsilat' },
+  { key: 'odeme', label: 'Ödeme' },
+  { key: 'kar-zarar', label: 'Kar/Zarar' },
+];
+
+// Sabit başlık listesi - Excel'den başlık okumuyoruz
+const FIXED_HEADERS = [
+  'ODA #',
+  'ODA TİPİ',
+  'YATAK TİPİ',
+  'İSİM',
+  'SOYİSİM',
+  'ODA NO',
+  'ODA NOTU',
+  'GİRİŞ TARİHİ',
+  'GELİŞ UÇUŞ KODU',
+  'GELİŞ UÇAK KALKIŞ',
+  'GELİŞ UÇAK İNİŞ',
+  'ÇIKIŞ TARİHİ',
+  'DÖNÜŞ UÇUŞ KODU',
+  'DÖNÜŞ UÇAK KALKIŞ',
+  'DÖNÜŞ UÇAK İNİŞ',
+  '1. TARİH',
+  '2. TARİH',
+  '3. TARİH',
+  '4. TARİH',
+  '5. TARİH',
+  '6. TARİH',
+  '7. TARİH',
+  'GECELEME',
+  'PAKET',
+  'OTEL',
+  'UÇAK',
+  'TOPLAM',
+  'DÖVİZ'
+];
+
+export default function ProjectDetailPage() {
+  const { canView, canCreate, canEdit, canDelete, userRole, loading: permissionsLoading } = usePermissions();
+
+  const {
+    projectId,
+    activeTab,
+    setActiveTab,
+    loading,
+    setLoading,
+    loadedTabs,
+    setLoadedTabs,
+    project,
+    setProject,
+    isEditingProject,
+    setIsEditingProject,
+    projectFormData,
+    setProjectFormData,
+    agencySearch,
+    setAgencySearch,
+    hotelSearch,
+    setHotelSearch,
+    showAgencyDropdown,
+    setShowAgencyDropdown,
+    showHotelDropdown,
+    setShowHotelDropdown,
+    selectedAgencyIndex,
+    setSelectedAgencyIndex,
+    selectedHotelIndex,
+    setSelectedHotelIndex,
+    userSearch,
+    setUserSearch,
+    showUserDropdown,
+    setShowUserDropdown,
+    selectedUserIndex,
+    setSelectedUserIndex,
+    selectedUsers,
+    setSelectedUsers,
+    isAddHotelModalOpen,
+    setIsAddHotelModalOpen,
+    handleTabChange,
+    activeHotelId,
+    setActiveHotelId,
+    handleHotelChange,
+  } = useProjectState();
+
+  const [editingHotelTab, setEditingHotelTab] = useState<any>(null);
+  const [activeHotelMenuId, setActiveHotelMenuId] = useState<string | null>(null);
+  const [activeHotelMenuPos, setActiveHotelMenuPos] = useState<{ top: number, left: number } | null>(null);
+
+
+
+  const handleOpenHotelMenu = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (activeHotelMenuId === id) {
+      setActiveHotelMenuId(null);
+    } else {
+      setActiveHotelMenuId(id);
+      setActiveHotelMenuPos({ top: rect.bottom, left: rect.right });
+    }
+  };
+
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void | Promise<void>;
+    onCancel?: () => void;
+  }>({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    onCancel: undefined,
+  });
+
+  const handleOpenEditHotelModal = (h: any) => {
+    setEditingHotelTab(h);
+    setIsAddHotelModalOpen(true);
+    // Modal açıldığında değerleri yerleştir (mevcut pattern'e uygun olarak delay ile)
+    setTimeout(() => {
+      (window as any).__tempAddHotelId = h.hotel_id;
+      if ((window as any).__tempConceptInput) (window as any).__tempConceptInput.value = h.hotel_concept || h.concept || '';
+      if ((window as any).__tempOptionInput) (window as any).__tempOptionInput.value = h.option || '';
+      if ((window as any).__tempCheckInInput) (window as any).__tempCheckInInput.value = h.check_in_date || '';
+      if ((window as any).__tempCheckOutInput) (window as any).__tempCheckOutInput.value = h.check_out_date || '';
+      if ((window as any).__tempRoomsInput) (window as any).__tempRoomsInput.value = h.room_count || 1;
+      if ((window as any).__tempPaxInput) (window as any).__tempPaxInput.value = h.pax_count || 1;
+    }, 100);
+  };
+
+  // Header kartlarında gösterilecek verileri aktif sekmeye göre belirle
+  const headerDisplayData = useMemo(() => {
+    const base = {
+      start_date: project?.start_date || '',
+      end_date: project?.end_date || '',
+      hotel_id: project?.hotel_id || '',
+      room_pax: project?.room_pax || project?.room_info || '-'
+    };
+
+    // Eğer "TÜMÜ" veya "GENEL HİZMETLER" seçiliyse ana proje verilerini göster
+    if (!project?.hotels_data || activeHotelId === 'all' || activeHotelId === 'general') {
+      return base;
+    }
+
+    // Aktif otel sekmesinin verilerini bul
+    const activeHotelTab = (project.hotels_data as any[]).find((h) => h.id === activeHotelId);
+    if (!activeHotelTab) return base;
+
+    return {
+      start_date: activeHotelTab.check_in_date || base.start_date,
+      end_date: activeHotelTab.check_out_date || base.end_date,
+      hotel_id: activeHotelTab.hotel_id || base.hotel_id,
+      room_pax: activeHotelTab.room_count !== undefined && activeHotelTab.pax_count !== undefined
+        ? `${activeHotelTab.room_count} | ${activeHotelTab.pax_count}`
+        : base.room_pax
+    };
+  }, [project, activeHotelId]);
+
+  interface InvoiceItem {
+    id?: string | number;
+    main_category: string;
+    sub_category: string;
+    description: string;
+    qty: number;
+    repeat: number;
+    unit_price: number;
+    currency: string;
+    vat: number;
+    fx: number;
+    supplier: string;
+    [key: string]: any;
+  }
+
+  const [itemsSales, setItemsSales] = useState<InvoiceItem[]>([]); // satış kalemleri
+  const [itemsPurchase, setItemsPurchase] = useState<InvoiceItem[]>([]); // alış kalemleri
+
+  // Konaklama state'leri custom hook'tan alınıyor
+  const {
+    accommodationItems,
+    setAccommodationItems,
+    editingAccommodationIndex,
+    setEditingAccommodationIndex,
+    tempAccommodationItem,
+    setTempAccommodationItem,
+    isNewAccommodationItem,
+    setIsNewAccommodationItem,
+    accommodationSearch,
+    setAccommodationSearch,
+  } = useAccommodationState();
+
+  // Uçak Bileti state'leri custom hook'tan alınıyor
+  const {
+    flightTickets,
+    setFlightTickets,
+    editingFlightIndex,
+    setEditingFlightIndex,
+    tempFlightItem,
+    setTempFlightItem,
+    isNewFlightItem,
+    setIsNewFlightItem,
+    flightSearch,
+    setFlightSearch,
+    flightSortField,
+    setFlightSortField,
+    flightSortDirection,
+    setFlightSortDirection,
+    expandedFlightTickets,
+    setExpandedFlightTickets,
+    flightTicketSearch,
+    setFlightTicketSearch,
+  } = useFlightTicketState();
+
+  // Transfer editing state'leri
+  const [editingTransferIndex, setEditingTransferIndex] = useState<number | null>(null);
+  const [tempTransferItem, setTempTransferItem] = useState<any>(null);
+
+  // Helper fonksiyonları projectUtils.ts'den import ediliyor
+  const formatDateForInput = projectUtils.formatDateForInput;
+  const formatNumberForDisplay = projectUtils.formatNumberForDisplay;
+  const formatExchangeRateForDisplay = projectUtils.formatExchangeRateForDisplay;
+  const formatNumberForInput = projectUtils.formatNumberForInput;
+  const cleanInputValue = projectUtils.cleanInputValue;
+  const parseTurkishNumber = projectUtils.parseTurkishNumber;
+  const formatInputValue = projectUtils.formatInputValue;
+  const parseDateFromDisplay = projectUtils.parseDateFromDisplay;
+  const formatIntegerForDisplay = projectUtils.formatIntegerForDisplay;
+  const formatIntegerForInput = projectUtils.formatIntegerForInput;
+  const formatDateForDisplay = projectUtils.formatDateForDisplay;
+  const formatDateAccommodation = projectUtils.formatDateAccommodation;
+  const formatTimeForDisplay = projectUtils.formatTimeForDisplay;
+
+  // Sıralama fonksiyonu
+  const handleFlightSort = (field: string) => {
+    if (flightSortField === field) {
+      setFlightSortDirection(flightSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setFlightSortField(field);
+      setFlightSortDirection('asc');
+    }
+  };
+
+  // Sıralanmış uçak biletleri
+  const getSortedFlightTickets = (tickets: FlightTicket[]) => {
+    if (!flightSortField) return tickets;
+
+    return [...tickets].sort((a, b) => {
+      let aValue: any = a[flightSortField as keyof FlightTicket];
+      let bValue: any = b[flightSortField as keyof FlightTicket];
+
+      // Sayısal alanlar için
+      if (['kisiSayisi', 'ppMaliyet', 'toplamMaliyet'].includes(flightSortField)) {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      }
+
+      // Tarih alanları için
+      if (['biletlemeTarihi', 'gidisTarihi', 'donusTarihi'].includes(flightSortField)) {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      }
+
+      // String alanlar için
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return flightSortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return flightSortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  // Flight ticket migration function
+  const migrateFlightTicket = (ticket: any): FlightTicket => {
+    // Uçuş tipi mapping: eski değerleri yeni değerlere çevir
+    let ucusTipi = ticket.ucus_tipi || ticket.ucusTipi || '';
+    if (ucusTipi === 'gidis-donus' || ucusTipi === 'Gidiş-Dönüş') {
+      ucusTipi = 'GRUP';
+    } else if (ucusTipi === 'tek-yon' || ucusTipi === 'Tek Yön') {
+      ucusTipi = 'MÜNFERİT';
+    }
+
+    return {
+      id: ticket.id || Date.now() + Math.random().toString(),
+      biletlemeTarihi: ticket.biletleme_tarihi || ticket.biletlemeTarihi || '',
+      tedarikci: ticket.tedarikci || '',
+      havayolu: ticket.havayolu || '',
+      pnr: ticket.pnr || '',
+      ucusTipi: ucusTipi,
+      gidisTarihi: ticket.gidis_tarihi || ticket.gidisTarihi || '',
+      gidisSaati: ticket.gidis_saati || ticket.gidisSaati || '',
+      gidisUcusKodu: ticket.gidis_ucus_kodu || ticket.gidisUcusKodu || '',
+      donusTarihi: ticket.donus_tarihi || ticket.donusTarihi || '',
+      donusSaati: ticket.donus_saati || ticket.donusSaati || '',
+      donusUcusKodu: ticket.donus_ucus_kodu || ticket.donusUcusKodu || '',
+      guzergah: ticket.guzergah || '',
+      kisiSayisi: ticket.kisi_sayisi || ticket.kisiSayisi || 1,
+      ppMaliyet: ticket.pp_maliyet || ticket.ppMaliyet || 0,
+      toplamMaliyet: ticket.toplam_maliyet || ticket.toplamMaliyet || 0,
+      doviz: ticket.doviz || 'EUR',
+      kur: ticket.kur || ticket.kur || 1.0000,
+      toplamTl: ticket.toplam_tl || ticket.toplamTl || 0,
+      misafirler: ticket.misafirler || '',
+      durum: ticket.durum || 'aktif',
+      islemler: ticket.islemler || ''
+    };
+  };
+
+  // Tedarikçi arama state'leri
+  const [supplierSearch, setSupplierSearch] = useState<string>('');
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState<boolean>(false);
+  const supplierInputRef = useRef<HTMLInputElement>(null);
+  const otherServiceSupplierInputRef = useRef<HTMLInputElement>(null);
+  const financialSupplierInputRef = useRef<HTMLInputElement>(null);
+  const paymentPlanSupplierInputRef = useRef<HTMLInputElement>(null);
+  const paymentSupplierInputRef = useRef<HTMLInputElement>(null);
+
+  const setOtherServiceSupplierInputRef = useCallback((el: HTMLInputElement | null) => {
+    otherServiceSupplierInputRef.current = el;
+  }, []);
+
+  const setFinancialSupplierInputRef = useCallback((el: HTMLInputElement | null) => {
+    financialSupplierInputRef.current = el;
+  }, []);
+
+  const setPaymentPlanSupplierInputRef = useCallback((el: HTMLInputElement | null) => {
+    paymentPlanSupplierInputRef.current = el;
+  }, []);
+
+  const setPaymentSupplierInputRef = useCallback((el: HTMLInputElement | null) => {
+    paymentSupplierInputRef.current = el;
+  }, []);
+
+  // expandedFlightTickets ve flightTicketSearch useFlightTicketState hook'undan geliyor
+  // FlightTicket interface useFlightTicketState hook'undan import ediliyor
+
+  // Transfer state'leri custom hook'tan alınıyor
+  const {
+    transfers,
+    setTransfers,
+    selectedTransfers,
+    setSelectedTransfers,
+    showVehicleAssignmentModal,
+    setShowVehicleAssignmentModal,
+    transferCostInput,
+    setTransferCostInput,
+    showAddTransferMenu,
+    setShowAddTransferMenu,
+    showTransferTimingModal,
+    setShowTransferTimingModal,
+    departureHours,
+    setDepartureHours,
+    departureMinutes,
+    setDepartureMinutes,
+    currentTransferIndex,
+    setCurrentTransferIndex,
+    transferSearch,
+    setTransferSearch,
+    transferTotals,
+    setTransferTotals,
+  } = useTransferState();
+
+  // Etkinlik & Aktivite state'leri custom hook'tan alınıyor
+  const {
+    eventsActivities,
+    setEventsActivities,
+    editingEventIndex,
+    setEditingEventIndex,
+    tempEventItem,
+    setTempEventItem,
+    isNewEventItem,
+    setIsNewEventItem,
+    eventSearch,
+    setEventSearch,
+    eventSortField,
+    setEventSortField,
+    eventSortDirection,
+    setEventSortDirection,
+    eventSubCategories,
+    setEventSubCategories,
+    selectedEventMainCategory,
+    setSelectedEventMainCategory,
+    eventSupplierSearch,
+    setEventSupplierSearch,
+    showEventSupplierDropdown,
+    setShowEventSupplierDropdown,
+    selectedEventSupplierIndex,
+    setSelectedEventSupplierIndex,
+  } = useEventActivityState();
+
+  // Tarih ve saat format fonksiyonları projectUtils.ts'den import ediliyor
+  const formatDateFromSupabase = projectUtils.formatDateFromSupabase;
+  const formatTimeFromSupabase = projectUtils.formatTimeFromSupabase;
+  const formatDateToSupabase = projectUtils.formatDateToSupabase;
+  const formatTimeToSupabase = projectUtils.formatTimeToSupabase;
+  // Transfer state'leri useTransferState hook'undan geliyor
+
+  // Transferleri sıralama: önce Giriş, sonra Ara, en sonda Çıkış (tarih+saat'e göre)
+  const sortTransfers = (items: any[]) => {
+    const keyOf = (t: any) => t.sortKey || `${t.date || '9999-12-31'} ${t.time || '23:59'}`;
+    const arrivals = items.filter(t => t.typeLabel !== 'Ara Transfer' && t.direction === 'arrival');
+    const departures = items.filter(t => t.typeLabel !== 'Ara Transfer' && t.direction === 'departure');
+    const intermediates = items.filter(t => t.typeLabel === 'Ara Transfer');
+    arrivals.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
+    intermediates.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
+    departures.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
+    return [...arrivals, ...intermediates, ...departures];
+  };
+
+  // Otel Ekstra state'leri custom hook'tan alınıyor
+  const {
+    hotelExtras,
+    setHotelExtras,
+    editingHotelExtraIndex,
+    setEditingHotelExtraIndex,
+    tempHotelExtraItem,
+    setTempHotelExtraItem,
+    isNewHotelExtraItem,
+    setIsNewHotelExtraItem,
+    hotelExtraAmountInput,
+    setHotelExtraAmountInput,
+    hotelExtraTotalTRYInput,
+    setHotelExtraTotalTRYInput,
+    hotelExtraSearch,
+    setHotelExtraSearch,
+    hotelExtraCategories,
+    setHotelExtraCategories,
+    selectedCategory,
+    setSelectedCategory,
+    selectedSubCategory,
+    setSelectedSubCategory,
+    hotelSupplierSearch,
+    setHotelSupplierSearch,
+    showHotelSupplierDropdown,
+    setShowHotelSupplierDropdown,
+    hotelExtraSubCategories,
+    setHotelExtraSubCategories,
+    hotelExtraMainCategories,
+    setHotelExtraMainCategories,
+    selectedMainCategory,
+    setSelectedMainCategory,
+    hotelExtraSortField,
+    setHotelExtraSortField,
+    hotelExtraSortDirection,
+    setHotelExtraSortDirection,
+  } = useHotelExtraState();
+
+  // Diğer Servisler state'leri
+  const [otherServices, setOtherServices] = useState<any[]>([]);
+  const [editingOtherServiceIndex, setEditingOtherServiceIndex] = useState<number | null>(null);
+  const [tempOtherServiceItem, setTempOtherServiceItem] = useState<any>(null);
+  const [isNewOtherServiceItem, setIsNewOtherServiceItem] = useState<boolean>(false);
+  const [otherServiceAmountInput, setOtherServiceAmountInput] = useState<string>('');
+  const [otherServiceTotalTRYInput, setOtherServiceTotalTRYInput] = useState<string>('');
+  const [otherServiceFxInput, setOtherServiceFxInput] = useState<string>('');
+  const [otherServiceSupplierSearch, setOtherServiceSupplierSearch] = useState<string>('');
+  const [showOtherServiceSupplierDropdown, setShowOtherServiceSupplierDropdown] = useState<boolean>(false);
+  const [selectedOtherServiceSupplierIndex, setSelectedOtherServiceSupplierIndex] = useState<number>(-1);
+  const [otherServiceSearch, setOtherServiceSearch] = useState<string>('');
+  const [otherServiceSortField, setOtherServiceSortField] = useState<string>('');
+  const [otherServiceSortDirection, setOtherServiceSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [otherSubCategories, setOtherSubCategories] = useState<any[]>([]);
+  const [selectedOtherMainCategory, setSelectedOtherMainCategory] = useState<string>('CAT_007'); // Varsayılan: DİĞER SERVİSLER
+
+  // Finansal state'leri
+  const [financialServices, setFinancialServices] = useState<any[]>([]);
+  const [editingFinancialServiceIndex, setEditingFinancialServiceIndex] = useState<number | null>(null);
+  const [tempFinancialServiceItem, setTempFinancialServiceItem] = useState<any>(null);
+  const [financialAmountInput, setFinancialAmountInput] = useState<string>('');
+  const [financialTotalTRYInput, setFinancialTotalTRYInput] = useState<string>('');
+  const [financialSearch, setFinancialSearch] = useState<string>('');
+  const [financialSubCategories, setFinancialSubCategories] = useState<any[]>([]);
+
+  // Tahsilat (Cari hesap) state'leri
+  const [collectionPlans, setCollectionPlans] = useState<any[]>([]); // sözleşme ödeme planı
+  const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null);
+  const [tempPlanItem, setTempPlanItem] = useState<any>(null);
+  const [planAmountInput, setPlanAmountInput] = useState<string>('');
+  const [planTotalTRYInput, setPlanTotalTRYInput] = useState<string>('');
+
+  const [collections, setCollections] = useState<any[]>([]); // alınan tahsilatlar
+  const [editingCollectionIndex, setEditingCollectionIndex] = useState<number | null>(null);
+  const [tempCollectionItem, setTempCollectionItem] = useState<any>(null);
+  const [collectionAmountInput, setCollectionAmountInput] = useState<string>('');
+  const [collectionTotalTRYInput, setCollectionTotalTRYInput] = useState<string>('');
+
+  // Ödeme (Alış ödemeleri) state'leri
+  const [paymentPlans, setPaymentPlans] = useState<any[]>([]); // alış ödeme planı
+  const [editingPaymentPlanIndex, setEditingPaymentPlanIndex] = useState<number | null>(null);
+  const [tempPaymentPlanItem, setTempPaymentPlanItem] = useState<any>(null);
+  const [paymentPlanAmountInput, setPaymentPlanAmountInput] = useState<string>('');
+  const [paymentPlanTotalTRYInput, setPaymentPlanTotalTRYInput] = useState<string>('');
+  const [paymentPlanHotelSupplierSearch, setPaymentPlanHotelSupplierSearch] = useState<string>('');
+  const [showPaymentPlanHotelSupplierDropdown, setShowPaymentPlanHotelSupplierDropdown] = useState<boolean>(false);
+  const [selectedPaymentPlanSupplierIndex, setSelectedPaymentPlanSupplierIndex] = useState<number>(-1);
+
+  const [payments, setPayments] = useState<any[]>([]); // yapılan ödemeler
+  const [editingPaymentIndex, setEditingPaymentIndex] = useState<number | null>(null);
+  const [tempPaymentItem, setTempPaymentItem] = useState<any>(null);
+  const [paymentAmountInput, setPaymentAmountInput] = useState<string>('');
+  const [paymentTotalTRYInput, setPaymentTotalTRYInput] = useState<string>('');
+  const [paymentHotelSupplierSearch, setPaymentHotelSupplierSearch] = useState<string>('');
+  const [showPaymentHotelSupplierDropdown, setShowPaymentHotelSupplierDropdown] = useState<boolean>(false);
+  const [selectedPaymentSupplierIndex, setSelectedPaymentSupplierIndex] = useState<number>(-1);
+
+  // Formül hesaplama fonksiyonları projectUtils.ts'den import ediliyor
+  const calculateTotalTRY = projectUtils.calculateTotalTRY;
+  const calculateAmount = projectUtils.calculateAmount;
+
+  // Otel Ekstra state'leri useHotelExtraState hook'undan geliyor
+  // allSuppliers, suppliers, hotels genel state'ler - birden fazla tab tarafından kullanılıyor
+  const [allSuppliers, setAllSuppliers] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
+
+  // İnsan Kaynakları input state'leri
+  const [hrAmountInput, setHrAmountInput] = useState<string>('');
+  const [hrTotalTRYInput, setHrTotalTRYInput] = useState<string>('');
+  const [hrFxInput, setHrFxInput] = useState<string>('');
+
+  // Link oluşturma state'leri
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkPassword, setLinkPassword] = useState('');
+  const [linkExpiryDate, setLinkExpiryDate] = useState('');
+  const [linkIsActive, setLinkIsActive] = useState(true);
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [linkToken, setLinkToken] = useState('');
+  const [projectLinks, setProjectLinks] = useState<any[]>([]);
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+
+  // İnsan Kaynakları state'leri
+  const [humanResources, setHumanResources] = useState<any[]>([]);
+  const [hrExtras, setHrExtras] = useState<any[]>([]);
+  const [editingHrIndex, setEditingHrIndex] = useState<number | null>(null);
+  const [tempHrItem, setTempHrItem] = useState<any>(null);
+  const [isNewHrItem, setIsNewHrItem] = useState<boolean>(false);
+  const [hrSearch, setHrSearch] = useState<string>('');
+  const [hrSortField, setHrSortField] = useState<string>('');
+  const [hrSortDirection, setHrSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [hrSubCategories, setHrSubCategories] = useState<any[]>([]);
+  const [selectedHrMainCategory, setSelectedHrMainCategory] = useState<string>('CAT_006'); // İnsan Kaynakları ana kategorisi
+  const [hrSupplierSearch, setHrSupplierSearch] = useState<string>('');
+  const [showHrSupplierDropdown, setShowHrSupplierDropdown] = useState<boolean>(false);
+  const [selectedHrSupplierIndex, setSelectedHrSupplierIndex] = useState<number>(-1);
+
+
+  // currentTransferIndex useTransferState hook'undan geliyor
+  const hotelSupplierInputRef = useRef<HTMLInputElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [selectedSupplierIndex, setSelectedSupplierIndex] = useState<number>(-1);
+
+  // Otel Ekstra kategorileri - API'den yükleniyor
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+
+  // Tedarikçi dropdown state'leri
+  const [supplierDropdowns, setSupplierDropdowns] = useState<{ [key: string]: { isOpen: boolean; searchTerm: string; selectedIndex: number } }>({});
+  const [newItem, setNewItem] = useState<any>({ main_category: '', sub_category: '', description: '', qty: 1, repeat: 1, unit_price: 0, currency: 'EUR', vat: 0, fx: 1, supplier: '' });
+  const [showAddRowSales, setShowAddRowSales] = useState<boolean>(false);
+  const [showAddRowPurchase, setShowAddRowPurchase] = useState<boolean>(false);
+  const [isImportingPurchaseFromSales, setIsImportingPurchaseFromSales] = useState<boolean>(false);
+  // Modal state'leri
+  const [showCategoryModalSales, setShowCategoryModalSales] = useState<boolean>(false);
+  const [showCategoryModalPurchase, setShowCategoryModalPurchase] = useState<boolean>(false);
+  const [selectedCategoriesSales, setSelectedCategoriesSales] = useState<Set<string>>(new Set());
+  const [selectedCategoriesPurchase, setSelectedCategoriesPurchase] = useState<Set<string>>(new Set());
+  const [expandedCategoriesSales, setExpandedCategoriesSales] = useState<Set<string>>(new Set());
+  const [expandedCategoriesPurchase, setExpandedCategoriesPurchase] = useState<Set<string>>(new Set());
+  const categoryModalRefSales = useRef<HTMLDivElement>(null);
+  const categoryModalRefPurchase = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [agencies, setAgencies] = useState<any[]>([]);
+  const [projectUsersMap, setProjectUsersMap] = useState<Record<string, string[]>>({});
+  const [users, setUsers] = useState<any[]>([]);
+  // accommodationSearch useAccommodationState hook'undan geliyor
+  // transferSearch useTransferState hook'undan geliyor
+
+  // ALIŞ tabı için search state'leri
+  const [purchaseSupplierSearch, setPurchaseSupplierSearch] = useState<string>('');
+  const [showPurchaseSupplierDropdown, setShowPurchaseSupplierDropdown] = useState<boolean>(false);
+  const [selectedPurchaseSupplierIndex, setSelectedPurchaseSupplierIndex] = useState<number>(-1);
+
+  // Tab değiştirme fonksiyonu useProjectState hook'undan geliyor
+
+  // Proje düzenleme fonksiyonları
+  const handleEditProject = useCallback(() => {
+    setIsEditingProject(true);
+    setProjectFormData({
+      reference: project?.reference || '',
+      start_date: project?.start_date || '',
+      end_date: project?.end_date || '',
+      company_name: project?.company_name || '',
+      agency_id: project?.agency_id || '',
+      hotel_id: project?.hotel_id || '',
+      room_pax: project?.room_pax || '',
+      quote_type: project?.quote_type || '',
+      status: project?.status || 'active'
+    });
+    // Acente ve otel arama alanlarını mevcut değerlerle doldur
+    setAgencySearch(getAgencyName(project?.agency_id) || '');
+    setHotelSearch(getHotelName(project?.hotel_id) || '');
+    // Mevcut proje sorumlularını yükle
+    const currentManagers = projectUsersMap[projectId] || [];
+    setSelectedUsers(currentManagers);
+  }, [project]);
+
+  const handleSaveProject = useCallback(async () => {
+    try {
+      await projectsService.update(projectId, projectFormData);
+      setProject({ ...project, ...projectFormData });
+
+      // Proje sorumlularını güncelle
+      const updatedProjectUsers = { ...projectUsersMap };
+      updatedProjectUsers[projectId] = selectedUsers;
+      setProjectUsersMap(updatedProjectUsers);
+      // Proje kullanıcıları artık Supabase'de saklanacak
+
+      setIsEditingProject(false);
+      alert('Proje başarıyla güncellendi!');
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.details ||
+        (typeof error === 'string' ? error : '') ||
+        'Proje güncellenirken bir hata oluştu.';
+      console.error('Proje güncellenirken hata:', errorMessage, error);
+      alert(`Proje güncellenirken hata: ${errorMessage}`);
+    }
+  }, [projectId, projectFormData, project, projectUsersMap, selectedUsers]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditingProject(false);
+    setProjectFormData({});
+  }, []);
+
+  const handleProjectFormChange = useCallback((field: string, value: any) => {
+    setProjectFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  // Filtrelenmiş acente listesi
+  const filteredAgencies = useMemo(() => {
+    if (!agencies || agencies.length === 0) return [];
+    return agencies.filter((agency: any) =>
+      agency.name?.toLowerCase().includes(agencySearch?.toLowerCase() || '')
+    );
+  }, [agencies, agencySearch]);
+
+  // Filtrelenmiş otel listesi
+  const filteredHotels = useMemo(() => {
+    if (!hotels || hotels.length === 0) return [];
+    return hotels.filter((hotel: any) =>
+      hotel.name?.toLowerCase().includes(hotelSearch?.toLowerCase() || '')
+    );
+  }, [hotels, hotelSearch]);
+
+  // Filtrelenmiş kullanıcı listesi
+  const filteredUsers = useMemo(() => {
+    if (!users || users.length === 0) return [];
+    return users.filter((user: any) =>
+      `${user.first_name} ${user.last_name}`.toLowerCase().includes(userSearch?.toLowerCase() || '')
+    );
+  }, [users, userSearch]);
+
+  // Acente seçimi
+  const handleAgencySelect = useCallback((agency: any) => {
+    setProjectFormData(prev => ({
+      ...prev,
+      agency_id: agency.id
+    }));
+    setAgencySearch(agency.name);
+    setShowAgencyDropdown(false);
+    setSelectedAgencyIndex(-1);
+  }, []);
+
+  // Otel seçimi
+  const handleHotelSelect = useCallback((hotel: any) => {
+    setProjectFormData(prev => ({
+      ...prev,
+      hotel_id: hotel.id
+    }));
+    setHotelSearch(hotel.name);
+    setShowHotelDropdown(false);
+    setSelectedHotelIndex(-1);
+  }, []);
+
+  // Kullanıcı seçimi (checkbox benzeri - birden fazla seçim)
+  const handleUserToggle = useCallback((userId: string) => {
+    setSelectedUsers(prev => {
+      const isSelected = prev.includes(userId);
+      if (isSelected) {
+        return prev.filter(id => id !== userId);
+      } else {
+        return [...prev, userId];
+      }
+    });
+  }, []);
+
+  // Kullanıcı kaldırma
+  const handleUserRemove = useCallback((userId: string) => {
+    setSelectedUsers(prev => prev.filter(id => id !== userId));
+  }, []);
+
+  // Acente klavye navigasyonu
+  const handleAgencyKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showAgencyDropdown) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+        setShowAgencyDropdown(true);
+        setSelectedAgencyIndex(0);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedAgencyIndex(prev =>
+          prev < filteredAgencies.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedAgencyIndex(prev =>
+          prev > 0 ? prev - 1 : filteredAgencies.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedAgencyIndex >= 0 && selectedAgencyIndex < filteredAgencies.length) {
+          handleAgencySelect(filteredAgencies[selectedAgencyIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowAgencyDropdown(false);
+        setSelectedAgencyIndex(-1);
+        break;
+    }
+  }, [showAgencyDropdown, selectedAgencyIndex, filteredAgencies, handleAgencySelect]);
+
+  // Otel klavye navigasyonu
+  const handleHotelKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showHotelDropdown) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+        setShowHotelDropdown(true);
+        setSelectedHotelIndex(0);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedHotelIndex(prev =>
+          prev < filteredHotels.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedHotelIndex(prev =>
+          prev > 0 ? prev - 1 : filteredHotels.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedHotelIndex >= 0 && selectedHotelIndex < filteredHotels.length) {
+          handleHotelSelect(filteredHotels[selectedHotelIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowHotelDropdown(false);
+        setSelectedHotelIndex(-1);
+        break;
+    }
+  }, [showHotelDropdown, selectedHotelIndex, filteredHotels, handleHotelSelect]);
+
+  // Kullanıcı klavye navigasyonu
+  const handleUserKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showUserDropdown) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+        setShowUserDropdown(true);
+        setSelectedUserIndex(0);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedUserIndex(prev =>
+          prev < filteredUsers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedUserIndex(prev =>
+          prev > 0 ? prev - 1 : filteredUsers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedUserIndex >= 0 && selectedUserIndex < filteredUsers.length) {
+          handleUserToggle(filteredUsers[selectedUserIndex].id);
+        }
+        break;
+      case 'Escape':
+        setShowUserDropdown(false);
+        setSelectedUserIndex(-1);
+        break;
+    }
+  }, [showUserDropdown, selectedUserIndex, filteredUsers, handleUserToggle]);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.agency-dropdown') && !target.closest('.hotel-dropdown') && !target.closest('.user-dropdown') && !target.closest('.purchase-supplier-dropdown') && !target.closest('.hotel-action-menu')) {
+        setShowAgencyDropdown(false);
+        setShowHotelDropdown(false);
+        setShowUserDropdown(false);
+        setShowPurchaseSupplierDropdown(false);
+        setActiveHotelMenuId(null);
+        setSelectedAgencyIndex(-1);
+        setSelectedHotelIndex(-1);
+        setSelectedUserIndex(-1);
+        setSelectedPurchaseSupplierIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+
+
+  // Loading durumu - sadece ilk yüklemede göster, sonra sayfayı göster
+  // Loading'i kaldırdık çünkü sayfayı bloke ediyordu
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-200">
+  //       <div className="flex flex-col items-center justify-center">
+  //         {/* Spinner */}
+  //         <div className="relative">
+  //           <div className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+  //           <div className="absolute top-0 left-0 w-8 h-8 rounded-full border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 animate-spin"></div>
+  //           <div className="absolute top-0 left-0 w-8 h-8 rounded-full border-4 border-transparent border-r-blue-500 dark:border-r-blue-300 animate-spin" style={{animationDelay: '0.1s', animationDuration: '1.5s'}}></div>
+  //         </div>
+  //         <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm transition-colors duration-200">
+  //           Yükleniyor...
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // Tedarikçi + Otel birleşik liste (id'ler prefix ile ayrıştırılır: sup:, hotel:)
+  const vendors = useMemo(() => {
+    const supplierOptions = (suppliers || []).map((s: any) => ({ id: `sup:${s.id}`, name: s.name, subtitle: s.title || '', type: 'supplier' }));
+    const hotelOptions = (hotels || []).map((h: any) => ({ id: `hotel:${h.id}`, name: h.name, subtitle: h.city || h.district || '', type: 'hotel' }));
+    return [...supplierOptions, ...hotelOptions];
+  }, [suppliers, hotels]);
+
+
+  // Scroll olayında dropdown pozisyonunu güncelle
+
+  // --- VERİ YÜKLEME MANTIĞI ---
+  const loadProjectData = useCallback(async () => {
+    if (!projectId) {
+      setLoading(false);
+      return;
+    }
+
+
+    // Timeout ile güvenlik - 5 saniye sonra loading'i kapat
+    const timeoutId = setTimeout(() => {
+      console.error('[PROJECT DETAIL] Veri yükleme timeout (5 saniye)');
+      setLoading(false);
+    }, 5000);
+
+    try {
+      const results = await Promise.allSettled([
+        projectsService.getById(projectId),
+        categoriesService.getAll(),
+        suppliersService.getAll(),
+        agenciesService.getAll(),
+        hotelsService.getAll(),
+        Promise.resolve([]),
+        projectUsersService.getByProjectId(projectId)
+      ]);
+
+      clearTimeout(timeoutId);
+
+      const [
+        projectData,
+        categoriesData,
+        suppliersData,
+        agenciesData,
+        hotelsData,
+        usersData,
+        projectUsersData
+      ] = results;
+
+      if (projectData.status === 'rejected') {
+        console.error('[PROJECT DETAIL] Proje yüklenemedi:', projectData.reason);
+        alert('Proje yüklenemedi. Lütfen sayfayı yenileyin.');
+        setLoading(false);
+        return;
+      }
+
+      // Proje verilerini set et
+      setProject(projectData.value);
+
+      // Satış ve alış kalemlerini Supabase'den yükle
+      try {
+        const [salesItems, purchaseItems] = await Promise.all([
+          projectSalesItemsService.getByProjectId(projectId),
+          projectPurchaseItemsService.getByProjectId(projectId)
+        ]);
+
+        const deduplicateSupabaseItems = (items: any[]) => {
+          const seen = new Set();
+          return items.filter(it => {
+            const cat = (it.category || it.main_category || '').trim().toLowerCase();
+            const name = (it.description || '').trim().toLowerCase();
+            const qty = Number(it.unit_quantity || 0);
+            const repeat = Number(it.sefer || it.repeat || 1);
+            const price = Math.round(Number(it.unit_price || 0) * 100) / 100;
+            const hId = it.hotel_id || '';
+            const contentKey = `${cat}|${name}|${qty}|${repeat}|${price}|${hId}`;
+            if (seen.has(contentKey)) return false;
+            seen.add(contentKey);
+            return true;
+          });
+        };
+
+        const parseDescriptionTags = (desc: string) => {
+          if (!desc) return { cleanDesc: '', tabTag: null, supplierTag: null, repeatTag: null, orderTag: null };
+          const tabMatch = desc.match(/ \[T:(.*?)\]/);
+          const supplierMatch = desc.match(/ \[S:(.*?)\]/);
+          const repeatMatch = desc.match(/ \[R:(.*?)\]/);
+          const orderMatch = desc.match(/ \[O:(.*?)\]/);
+          let cleanDesc = desc
+            .replace(/ \[T:.*?\]/g, '')
+            .replace(/ \[S:.*?\]/g, '')
+            .replace(/ \[R:.*?\]/g, '')
+            .replace(/ \[O:.*?\]/g, '')
+            .trim();
+          return { 
+            cleanDesc, 
+            tabTag: tabMatch ? tabMatch[1] : null, 
+            supplierTag: supplierMatch ? supplierMatch[1] : null,
+            repeatTag: repeatMatch ? repeatMatch[1] : null,
+            orderTag: orderMatch ? orderMatch[1] : null
+          };
+        };
+
+        const uniqueSales = deduplicateSupabaseItems(salesItems);
+        const uniquePurchase = deduplicateSupabaseItems(purchaseItems);
+
+        // Farkli donemlerde hotel_id alani hem tab id hem de master hotel id olarak kaydedildi.
+        // UI filtresi tab id ile calistigi icin, yukleme aninda id'leri tab id formatina normalize ediyoruz.
+        const resolveHotelTabId = (rawHotelId: any, tabTag: string | null) => {
+          const candidate = String(tabTag || rawHotelId || '').trim();
+          if (!candidate) return rawHotelId || null;
+          if (candidate === 'general' || candidate === 'all') return candidate;
+          const hotelTabs = (projectData.value as any)?.hotels_data || [];
+          const matchedTab = hotelTabs.find((h: any) => h?.id === candidate || h?.hotel_id === candidate);
+          return matchedTab?.id || candidate;
+        };
+
+        setItemsSales(uniqueSales.map(it => {
+          const { cleanDesc, tabTag, repeatTag, orderTag } = parseDescriptionTags(it.description || '');
+          return { 
+            ...it, 
+            main_category: it.category, 
+            qty: it.unit_quantity, 
+            repeat: Number(repeatTag || it.sefer || it.repeat || 1), 
+            total: it.total_price, 
+            total_try: (it.total_price || 0) * (it.fx || 1),
+            description: cleanDesc,
+            hotel_id: resolveHotelTabId(it.hotel_id, tabTag),
+            source_order: orderTag !== null ? Number(orderTag) : null
+          };
+        }));
+        
+        setItemsPurchase(uniquePurchase.map(it => {
+          const { cleanDesc, tabTag, supplierTag, repeatTag, orderTag } = parseDescriptionTags(it.description || '');
+          return { 
+            ...it, 
+            main_category: it.category, 
+            qty: it.unit_quantity, 
+            repeat: Number(repeatTag || it.sefer || it.repeat || 1), 
+            total: it.total_price, 
+            total_try: (it.total_price || 0) * (it.fx || 1),
+            description: cleanDesc,
+            hotel_id: resolveHotelTabId(it.hotel_id, tabTag),
+            vendorId: supplierTag || null,
+            source_order: orderTag !== null ? Number(orderTag) : null
+          };
+        }));
+      } catch (error) {
+        console.error('Satış/Alış kalemleri Supabase\'den yüklenemedi:', error);
+      }
+
+      setCategories(categoriesData.status === 'fulfilled' ? categoriesData.value : []);
+      setSuppliers(suppliersData.status === 'fulfilled' ? suppliersData.value : []);
+      setAgencies(agenciesData.status === 'fulfilled' ? agenciesData.value : []);
+      setHotels(hotelsData.status === 'fulfilled' ? hotelsData.value : []);
+      if (usersData.status === 'fulfilled' && Array.isArray(usersData.value)) {
+        setUsers(usersData.value);
+      } else {
+        setUsers([]);
+      }
+
+      const projectUsers = projectUsersData.status === 'fulfilled' ? projectUsersData.value : [];
+      const updatedProjectUsers: Record<string, string[]> = {};
+      updatedProjectUsers[projectId] = projectUsers;
+      setProjectUsersMap(updatedProjectUsers);
+
+      setLoading(false);
+    } catch (e) {
+      console.error('[PROJECT DETAIL] Proje yüklenemedi (catch):', e);
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    loadProjectData();
+  }, [loadProjectData]);
+
+  const refetchAccommodation = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const accommodationData = await projectAccommodationItemsService.getByProjectId(projectId);
+      const mappedAccommodationData = accommodationData.map((item: any) => ({
+        ...item,
+        gelis_tarihi: item.check_in_date ? formatDateAccommodation(item.check_in_date) : '',
+        cikis_tarihi: item.check_out_date ? formatDateAccommodation(item.check_out_date) : '',
+        oda_no: item.room_number,
+        oda_tipi: item.room_type,
+        yatak_tipi: item.bed_type,
+        isim: item.first_name,
+        soyisim: item.last_name,
+        ucus_gelis: item.flight_arrival,
+        ucus_gidis: item.flight_departure,
+        gece_sayisi: item.nights,
+        paket: item.package,
+        otel: item.hotel,
+        ucus: item.flight,
+        toplam: item.total,
+        doviz: item.currency,
+        oda_notu: item.room_note || '',
+        gelis_ucus_kodu: item.arrival_flight_code || '',
+        gelis_ucak_kalkis: item.arrival_flight_departure || '',
+        gelis_ucak_inis: item.arrival_flight_arrival || '',
+        donus_ucus_kodu: item.return_flight_code || '',
+        donus_ucak_kalkis: item.return_flight_departure || '',
+        donus_ucak_inis: item.return_flight_arrival || '',
+        geceleme: item.nights || 1
+      }));
+      setAccommodationItems(mappedAccommodationData);
+    } catch (error) {
+      console.error('Konaklama verileri yenilenemedi:', error);
+    }
+  }, [projectId, formatDateAccommodation, setAccommodationItems]);
+
+  // Tab bazlı lazy loading - sadece aktif tab için veri yükle
+  useEffect(() => {
+    if (!projectId || !loadedTabs.has(activeTab)) return;
+
+    const loadTabData = async () => {
+      try {
+        switch (activeTab) {
+          case 'konaklama':
+            if (accommodationItems.length === 0) {
+              await refetchAccommodation();
+            }
+            break;
+          case 'ucak-bileti':
+            if (flightTickets.length === 0) {
+              try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch(`/api/flight-tickets/${projectId}`, {
+                  headers: { 'Authorization': `Bearer ${session?.access_token || ''}` }
+                });
+                if (response.ok) {
+                  const data = await response.json();
+                  if (Array.isArray(data) && data.length > 0) {
+                    const mappedData = data.map((ticket: any) => migrateFlightTicket(ticket));
+                    setFlightTickets(mappedData);
+                  }
+                }
+              } catch (error) {
+                console.error('Uçak biletleri yüklenemedi:', error);
+              }
+            }
+            break;
+          case 'etkinlik-aktivite':
+            if (eventsActivities.length === 0) {
+              console.log('Fetching events activities for project:', projectId);
+              const eventsData = await projectEventsActivitiesService.getByProjectId(projectId);
+              setEventsActivities(eventsData);
+            }
+            // Etkinlik alt kategorilerini yükle
+            const allCategories = await categoriesService.getAll();
+            
+            const mainCategory = allCategories.find((cat: any) => 
+              cat.code === 'CAT_005' || 
+              cat.code === 'CAT_008' || 
+              cat.name?.toLowerCase().includes('etkinlik') || 
+              cat.name?.toLowerCase().includes('aktivite') ||
+              cat.name === 'Etkinlik & Aktivite'
+            );
+            
+            if (mainCategory) {
+              const subCats = allCategories.filter((cat: any) => cat.parent_id === mainCategory.id);
+              setEventSubCategories(subCats);
+            }
+            break;
+        }
+      } catch (error: any) {
+      }
+    };
+
+    loadTabData();
+  }, [activeTab, loadedTabs, projectId, accommodationItems.length, flightTickets.length, eventsActivities.length, refetchAccommodation]);
+
+  // Tahsilat verilerini Supabase'den yükle
+  const mapPlan = useCallback((item: any) => ({
+    ...item,
+    collectionType: item.collection_type ?? item.collectionType ?? '',
+    exchangeRate: item.exchange_rate ?? item.exchangeRate ?? 1,
+    totalTRY: item.total_try ?? item.totalTRY ?? 0,
+    currency: item.currency ?? 'TRY'
+  }), []);
+
+  const mapCollection = useCallback((item: any) => ({
+    ...item,
+    collectionType: item.collection_type ?? item.collectionType ?? '',
+    exchangeRate: item.exchange_rate ?? item.exchangeRate ?? 1,
+    totalTRY: item.total_try ?? item.totalTRY ?? 0,
+    currency: item.currency ?? 'TRY'
+  }), []);
+
+  const mapPaymentPlan = useCallback((item: any) => ({
+    ...item,
+    paymentType: item.payment_type ?? item.paymentType ?? '',
+    exchangeRate: item.exchange_rate ?? item.exchangeRate ?? 1,
+    totalTRY: item.total_try ?? item.totalTRY ?? 0,
+    currency: item.currency ?? 'TRY',
+    hotel: item.hotel ?? '',
+    supplier_id: item.supplier_id ?? null,
+    hotel_id: item.hotel_id ?? null
+  }), []);
+
+  const mapPayment = useCallback((item: any) => ({
+    ...item,
+    paymentType: item.payment_type ?? item.paymentType ?? '',
+    exchangeRate: item.exchange_rate ?? item.exchangeRate ?? 1,
+    totalTRY: item.total_try ?? item.totalTRY ?? 0,
+    currency: item.currency ?? 'TRY',
+    hotel: item.hotel ?? '',
+    supplier_id: item.supplier_id ?? null,
+    hotel_id: item.hotel_id ?? null
+  }), []);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const loadCollections = async () => {
+      try {
+        const [plans, cols] = await Promise.all([
+          projectCollectionPlansService.getByProjectId(projectId),
+          projectCollectionsService.getByProjectId(projectId)
+        ]);
+        setCollectionPlans(plans.map(mapPlan));
+        setCollections(cols.map(mapCollection));
+      } catch (error) {
+        setCollectionPlans([]);
+        setCollections([]);
+      }
+    };
+    loadCollections();
+  }, [projectId, mapPlan, mapCollection]);
+
+  // Ödeme verilerini yükle
+  useEffect(() => {
+    if (!projectId) return;
+    const loadPayments = async () => {
+      try {
+        const [plans, pays] = await Promise.all([
+          projectPaymentPlansService.getByProjectId(projectId),
+          projectPaymentsService.getByProjectId(projectId)
+        ]);
+        setPaymentPlans(plans.map(mapPaymentPlan));
+        setPayments(pays.map(mapPayment));
+      } catch (error) {
+        setPaymentPlans([]);
+        setPayments([]);
+      }
+    };
+    loadPayments();
+  }, [projectId, mapPaymentPlan, mapPayment]);
+
+
+
+  // Tarih sütunlarını otomatik hesapla - en erken tarihten baz al
+  const calculateDateColumns = useCallback((item: any, allItems: any[] = []) => {
+    if (!item.gelis_tarihi || !item.cikis_tarihi) {
+      return {
+        tarih1: '', tarih2: '', tarih3: '', tarih4: '', tarih5: '', tarih6: '', tarih7: ''
+      };
+    }
+
+    // DD.MM.YYYY formatındaki tarihi parse et
+    const parseDate = (dateStr: string) => {
+      if (!dateStr) return null;
+
+      // DD.MM.YYYY formatını kontrol et
+      if (dateStr.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+        const [day, month, year] = dateStr.split('.');
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+
+      // Diğer formatları dene
+      return new Date(dateStr);
+    };
+
+    const checkInDate = parseDate(item.gelis_tarihi);
+    const checkOutDate = parseDate(item.cikis_tarihi);
+
+    // Geçersiz tarih kontrolü
+    if (!checkInDate || !checkOutDate || isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+      return {
+        tarih1: '', tarih2: '', tarih3: '', tarih4: '', tarih5: '', tarih6: '', tarih7: ''
+      };
+    }
+
+    // En erken giriş tarihini bul
+    let earliestDate = checkInDate;
+    if (allItems && allItems.length > 0) {
+      allItems.forEach(otherItem => {
+        if (otherItem.gelis_tarihi) {
+          const otherCheckIn = parseDate(otherItem.gelis_tarihi);
+          if (otherCheckIn && otherCheckIn < earliestDate) {
+            earliestDate = otherCheckIn;
+          }
+        }
+      });
+    }
+
+    // En geç çıkış tarihini bul
+    let latestDate = checkOutDate;
+    if (allItems && allItems.length > 0) {
+      allItems.forEach(otherItem => {
+        if (otherItem.cikis_tarihi) {
+          const otherCheckOut = parseDate(otherItem.cikis_tarihi);
+          if (otherCheckOut && otherCheckOut > latestDate) {
+            latestDate = otherCheckOut;
+          }
+        }
+      });
+    }
+
+    // En erken tarihten en geç çıkış tarihine kadar tarih listesi oluştur
+    const allDates = [];
+    const currentDate = new Date(earliestDate);
+
+    while (currentDate < latestDate) {
+      allDates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Bu item'ın hangi tarihlerde aktif olduğunu belirle
+    const itemDates = [];
+    const itemCurrentDate = new Date(checkInDate);
+
+    while (itemCurrentDate < checkOutDate) {
+      itemDates.push(new Date(itemCurrentDate));
+      itemCurrentDate.setDate(itemCurrentDate.getDate() + 1);
+    }
+
+    // 7 tarih sütunu doldur - DD.MM.YYYY formatında
+    const formatDate = (date: Date) => {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}.${month}.${year}`;
+    };
+
+    // Her tarih sütunu için kontrol et - eğer bu item o tarihte aktifse oda tipini göster
+    const result: { [key: string]: string } = {};
+
+    // Maksimum 20 tarih sütunu destekle (yeterli olmalı)
+    for (let i = 0; i < Math.min(allDates.length, 20); i++) {
+      const dateKey = `tarih${i + 1}`;
+      result[dateKey] = allDates[i] && itemDates.some(d => d.getTime() === allDates[i].getTime()) ? (item.oda_tipi || '') : '';
+    }
+
+    return result;
+  }, []);
+
+
+
+
+
+  // Konaklama verileri yüklendiğinde tarih sütunlarını güncelle
+  useEffect(() => {
+    if (accommodationItems.length > 0) {
+      const updatedItems = accommodationItems.map(item => {
+        const dateColumns = calculateDateColumns(item, accommodationItems);
+        return { ...item, ...dateColumns };
+      });
+
+      // Sadece değişiklik varsa güncelle
+      const hasChanges = updatedItems.some((item, index) => {
+        const original = accommodationItems[index];
+        // Tüm tarih sütunlarını kontrol et (tarih1'den tarih20'ye kadar)
+        for (let i = 1; i <= 20; i++) {
+          const dateKey = `tarih${i}`;
+          if (item[dateKey] !== original[dateKey]) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+      if (hasChanges) {
+        setAccommodationItems(updatedItems);
+        // Accommodation verileri artık Supabase'de saklanacak
+      }
+    }
+  }, [accommodationItems, projectId, calculateDateColumns]);
+
+  const saveAccommodationItems = useCallback(async (items: any[]) => {
+    try {
+      setLoading(true);
+      // Gelen items listesini kullanarak DB'deki öğeleri senkronize et
+      const existingItems = await projectAccommodationItemsService.getByProjectId(projectId);
+      
+      // Gelen listede OLMAYAN öğeleri DB'den SİL (Gerçek UUID olanları kontrol et)
+      const incomingUuids = items
+        .filter(it => it.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(it.id)))
+        .map(it => String(it.id));
+        
+      for (const existing of existingItems) {
+        if (!incomingUuids.includes(String(existing.id))) {
+          await projectAccommodationItemsService.delete(existing.id);
+        }
+      }
+
+      // Yeni kalemleri ekle veya güncelle
+      for (const item of items) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id));
+        const payload = {
+          project_id: projectId,
+          hotel_id: item.hotel_id || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
+          room_number: item.oda_no || '',
+          room_type: item.oda_tipi || '',
+          bed_type: item.yatak_tipi || '',
+          first_name: item.isim || '',
+          last_name: item.soyisim || '',
+          check_in_date: formatDateToSupabase(item.gelis_tarihi || item.giris_tarihi),
+          check_out_date: formatDateToSupabase(item.cikis_tarihi),
+          flight_arrival: item.ucus_gelis || '',
+          flight_departure: item.ucus_gidis || '',
+          nights: Number(item.geceleme || item.gece_sayisi || 1),
+          package: item.paket || '',
+          hotel: item.otel || '',
+          flight: item.ucus || '',
+          total: Number(item.toplam || 0) || 0,
+          currency: item.doviz || 'EUR',
+          room_note: item.oda_notu || '',
+          arrival_flight_code: item.gelis_ucus_kodu || '',
+          arrival_flight_departure: item.gelis_ucak_kalkis || '',
+          arrival_flight_arrival: item.gelis_ucak_inis || '',
+          return_flight_code: item.donus_ucus_kodu || '',
+          return_flight_departure: item.donus_ucak_kalkis || '',
+          return_flight_arrival: item.donus_ucak_inis || ''
+        };
+
+        if (isUUID) {
+          await projectAccommodationItemsService.update(item.id, payload);
+        } else {
+          await projectAccommodationItemsService.create(payload as any);
+        }
+      }
+      
+      // CRITICAL: DB ile yerel state'i senkronize et (ID'leri UUID yap)
+      await refetchAccommodation();
+      toast.success('Değişiklikler kaydedildi.');
+    } catch (error: any) {
+      console.error('Konaklama kaydetme hatası:', error);
+      toast.error('Kaydetme sırasında bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId, activeHotelId, refetchAccommodation, formatDateToSupabase]);
+
+  const saveItems = useCallback(async (side: 'sales' | 'purchase', nextItems: any[]) => {
+    const prevItems = side === 'sales' ? itemsSales : itemsPurchase;
+    const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
+
+    // Önce state'i güncelle (UI hızı için)
+    if (side === 'sales') setItemsSales(nextItems);
+    else setItemsPurchase(nextItems);
+
+    // new_xxx → gerçek DB ID eşlemesi (tüm create'ler bitmeden state güncelleme yapma)
+    const idMap = new Map<string, string>(); // old tempId → new realId
+
+    for (const next of nextItems) {
+      const prev = prevItems.find(it => it.id === next.id);
+
+      const isNew = String(next.id).startsWith('new_');
+      const hasContent = next.sub_category || next.description;
+      const editingFinished = prev?.isEditing && !next.isEditing;
+
+      if (editingFinished || (isNew && hasContent)) {
+        // hotel_id mapping
+        const tabId = next.hotel_id;
+        const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+        let masterHotelId: string | null = null;
+
+        if (next._masterHotelId !== undefined) {
+          masterHotelId = next._masterHotelId;
+        } else if (tabId && isUUID(tabId)) {
+          const hTabEntry = project?.hotels_data?.find((h: any) => h.id === tabId);
+          masterHotelId = hTabEntry ? hTabEntry.hotel_id : null;
+        }
+
+        let finalDescription = (next.description || '')
+          .replace(/ \[T:.*?\]/g, '')
+          .replace(/ \[S:.*?\]/g, '')
+          .replace(/ \[R:.*?\]/g, '')
+          .trim();
+
+        if (side === 'purchase' && next.vendorId) finalDescription += ` [S:${next.vendorId}]`;
+        if (tabId && isUUID(tabId)) finalDescription += ` [T:${tabId}]`;
+        if (next.repeat && next.repeat > 1) finalDescription += ` [R:${next.repeat}]`;
+
+        const dataToSave: any = {
+          project_id: projectId,
+          category: next.main_category,
+          sub_category: next.sub_category,
+          description: finalDescription,
+          unit_quantity: next.qty,
+          unit_price: next.unit_price,
+          total_price: next.total,
+          currency: next.currency,
+          vat: next.vat,
+          fx: next.fx,
+          hotel_id: masterHotelId
+          // supplier kolonu DB'de yok; vendor bilgisi description içinde [S:vendorId] olarak saklanıyor
+        };
+
+        try {
+          if (isNew) {
+            const created = await service.create(dataToSave);
+            // Geçici ID → gerçek ID eşlemesini kaydet; state'i döngü içinde güncelleme
+            idMap.set(next.id, created.id);
+          } else {
+            await service.update(next.id as string, dataToSave);
+          }
+        } catch (error: any) {
+          console.error('=== KAYIT HATASI ===');
+          console.error('Kaydedilmeye çalışılan veri:', JSON.stringify(dataToSave, null, 2));
+          console.error('next.id:', next.id, '| isNew:', isNew, '| side:', side);
+          console.error('tabId (hotel_id):', tabId, '| masterHotelId:', masterHotelId);
+          console.error('Hata mesajı:', error?.message);
+          console.error('Hata kodu:', error?.code);
+          console.error('Hata detayı:', error?.details);
+          console.error('Hata ipucu:', error?.hint);
+          console.error('Tam hata:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        }
+      }
+    }
+
+    // Tüm create'ler bitti — tek seferde ID'leri gerçek değerleriyle değiştir
+    if (idMap.size > 0) {
+      const finalList = nextItems.map(item =>
+        idMap.has(item.id) ? { ...item, id: idMap.get(item.id)!, isEditing: false } : item
+      );
+      if (side === 'sales') setItemsSales(finalList);
+      else setItemsPurchase(finalList);
+    }
+
+    // localStorage kullanimi kaldirildi
+  }, [projectId, itemsSales, itemsPurchase, project?.hotels_data]);
+
+  const addItem = useCallback(async (side: 'sales' | 'purchase') => {
+    if (!newItem.main_category) return;
+    
+    // Aktif otel ID'sini belirle (Eğer 'all' ise null, değilse seçili otel)
+    const effectiveHotelId = activeHotelId === 'all' ? null : (activeHotelId === 'general' ? 'general' : activeHotelId);
+
+    const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
+    
+    try {
+      // UUID validation for effectiveHotelId
+      const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+      
+      const tabId = effectiveHotelId;
+      let masterHotelId: string | null = null;
+
+      if (tabId && isUUID(tabId)) {
+        const hTabEntry = project?.hotels_data?.find((h: any) => h.id === tabId);
+        // hTabEntry bulunamazsa tabId'yi (tab UUID) degil null gonder — FK hatasi önle
+        masterHotelId = hTabEntry ? hTabEntry.hotel_id : null;
+      }
+
+      const createdItem = await service.create({
+        project_id: projectId,
+        category: newItem.main_category || '',
+        sub_category: '',
+        description: tabId && isUUID(tabId) ? ` [T:${tabId}]` : '',
+        unit_quantity: 1,
+        unit_price: 0,
+        total_price: 0,
+        currency: 'EUR',
+        vat: 0,
+        fx: 1,
+        hotel_id: masterHotelId // DB'ye GERÇEK OTEL ID'si gidiyor
+        // supplier kolonu DB'de yok
+      });
+
+      const item = {
+        ...createdItem,
+        main_category: createdItem.category, qty: createdItem.unit_quantity, repeat: createdItem.sefer || createdItem.repeat || 1,
+        total: createdItem.total_price,
+        isEditing: true
+      };
+
+      const currentItems = side === 'sales' ? itemsSales : itemsPurchase;
+      const next = [...currentItems, item];
+      
+      if (side === 'sales') setItemsSales(next);
+      else setItemsPurchase(next);
+
+      setNewItem({ main_category: '', sub_category: '', description: '', qty: 1, repeat: 1, unit_price: 0, currency: 'EUR', vat: 0, fx: 1, supplier: '' });
+    } catch (error: any) {
+      console.error('addItem hatası:', error?.message, error?.code, error?.details);
+    }
+  }, [newItem, itemsSales, itemsPurchase, projectId, activeHotelId, project?.hotels_data]);
+
+  const removeItem = useCallback((side: 'sales' | 'purchase', id: string) => {
+    setConfirmModal({
+      open: true,
+      title: 'Kalemi Sil',
+      message: 'Bu kalemi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+      onConfirm: async () => {
+        const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
+        try {
+          await service.delete(id);
+          // Functional updater kullan — stale closure itemsSales/itemsPurchase sorunundan kaçın
+          if (side === 'sales') setItemsSales(prev => prev.filter(i => i.id !== id));
+          else setItemsPurchase(prev => prev.filter(i => i.id !== id));
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          toast.success('Kalem silindi.');
+        } catch (error: any) {
+          console.error('Silme hatası:', error?.message, error?.code, error?.details);
+          toast.error('Silinirken bir hata oluştu.');
+        }
+      }
+    });
+  }, []);
+
+  const totalsByCurrency = (items: any[]) => {
+    const map: Record<string, number> = {};
+    for (const it of items) {
+      map[it.currency] = (map[it.currency] || 0) + (it.total || 0);
+    }
+    return map;
+  };
+  // Eski ID formatını yeni ID formatına çevir
+  const convertOldIdToNew = (oldId: string) => {
+    if (!oldId) return oldId;
+
+    // Eğer zaten yeni format ise (CAT_ ile başlıyorsa) direkt döndür
+    if (oldId.startsWith('CAT_')) {
+      return oldId;
+    }
+
+    // Eski formatı yeni formata çevir
+    if (oldId === '1') return 'CAT_001';
+    if (oldId === '2') return 'CAT_002';
+    if (oldId === '3') return 'CAT_003';
+    if (oldId === '4') return 'CAT_004';
+    if (oldId === '5') return 'CAT_005';
+
+    // Alt kategoriler için
+    if (oldId === '1-1') return 'CAT_020';
+    if (oldId === '1-2') return 'CAT_009';
+    if (oldId === '2-1') return 'CAT_010';
+    if (oldId === '2-2') return 'CAT_011';
+    if (oldId === '3-1') return 'CAT_012';
+    if (oldId === '3-2') return 'CAT_013';
+
+    return oldId;
+  };
+  // Kategori isimlerini Map ile cache'le (performans optimizasyonu)
+  const categoryNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((c: any) => {
+      map.set(c.id, c.name);
+    });
+    return map;
+  }, [categories]);
+
+  const getCategoryName = useCallback((id: string) => {
+    if (!id) return '';
+    return categoryNameMap.get(id) || id;
+  }, [categoryNameMap]);
+
+  // Modal için yardımcı fonksiyonlar
+  const mainCategories = useMemo(() => {
+    return categories.filter((c: any) => !c.parent_id).sort((a: any, b: any) => {
+      // Kategoriler sayfasındaki sıralama mantığı: Ana kategoriler için code veya name'e göre
+      const aKey = (a.code || a.name || '').toString();
+      const bKey = (b.code || b.name || '').toString();
+      return aKey.localeCompare(bKey, 'tr', { numeric: true, sensitivity: 'base' });
+    });
+  }, [categories]);
+
+  const subCategoriesByMain = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    mainCategories.forEach((mainCat: any) => {
+      map[mainCat.id] = categories
+        .filter((c: any) => c.parent_id === mainCat.id)
+        .sort((a: any, b: any) => {
+          // Kategoriler sayfasındaki sıralama mantığı: Alt kategoriler için sort_order'a göre, yoksa name'e göre
+          const aOrder = a.sort_order ?? 999;
+          const bOrder = b.sort_order ?? 999;
+          if (aOrder !== bOrder) {
+            return aOrder - bOrder;
+          }
+          return (a.name || '').localeCompare(b.name || '', 'tr', { numeric: true, sensitivity: 'base' });
+        });
+    });
+    return map;
+  }, [categories, mainCategories]);
+
+  // Modal dışına tıklanınca kapat
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryModalRefSales.current && !categoryModalRefSales.current.contains(event.target as Node)) {
+        setShowCategoryModalSales(false);
+        setSelectedCategoriesSales(new Set());
+      }
+      if (categoryModalRefPurchase.current && !categoryModalRefPurchase.current.contains(event.target as Node)) {
+        setShowCategoryModalPurchase(false);
+        setSelectedCategoriesPurchase(new Set());
+      }
+    };
+
+    if (showCategoryModalSales || showCategoryModalPurchase) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showCategoryModalSales, showCategoryModalPurchase]);
+
+  // Modal açıldığında tüm ana kategorileri aç
+  useEffect(() => {
+    if (showCategoryModalSales) {
+      const allMainCategoryIds = new Set(mainCategories.map((c: any) => c.id));
+      setExpandedCategoriesSales(allMainCategoryIds);
+    } else {
+      setExpandedCategoriesSales(new Set());
+    }
+  }, [showCategoryModalSales, mainCategories]);
+
+  useEffect(() => {
+    if (showCategoryModalPurchase) {
+      const allMainCategoryIds = new Set(mainCategories.map((c: any) => c.id));
+      setExpandedCategoriesPurchase(allMainCategoryIds);
+    } else {
+      setExpandedCategoriesPurchase(new Set());
+    }
+  }, [showCategoryModalPurchase, mainCategories]);
+
+  // Kategoriler yüklendikten sonra item'ları sırala (sadece kategoriler değiştiğinde)
+  useEffect(() => {
+    if (mainCategories.length === 0 || Object.keys(subCategoriesByMain).length === 0) return;
+
+    // Sıralama fonksiyonu
+    const sortItems = (items: any[]) => {
+      return [...items].sort((a, b) => {
+        const aOrder = Number(a?.source_order);
+        const bOrder = Number(b?.source_order);
+        const aHasOrder = Number.isFinite(aOrder);
+        const bHasOrder = Number.isFinite(bOrder);
+        if (aHasOrder && bHasOrder && aOrder !== bOrder) return aOrder - bOrder;
+        if (aHasOrder && !bHasOrder) return -1;
+        if (!aHasOrder && bHasOrder) return 1;
+
+        const aMainIndex = mainCategories.findIndex((c: any) => c.id === a.main_category);
+        const bMainIndex = mainCategories.findIndex((c: any) => c.id === b.main_category);
+
+        if (aMainIndex === -1 && bMainIndex === -1) {
+          return a.id.localeCompare(b.id);
+        }
+        if (aMainIndex === -1) return 1;
+        if (bMainIndex === -1) return -1;
+
+        if (aMainIndex !== bMainIndex) {
+          return aMainIndex - bMainIndex;
+        }
+
+        const aSubCats = subCategoriesByMain[a.main_category] || [];
+        const bSubCats = subCategoriesByMain[b.main_category] || [];
+        const aSubIndex = aSubCats.findIndex((c: any) => c.id === a.sub_category);
+        const bSubIndex = bSubCats.findIndex((c: any) => c.id === b.sub_category);
+
+        if (aSubIndex === -1 && bSubIndex === -1) {
+          return a.id.localeCompare(b.id);
+        }
+        if (aSubIndex === -1) return 1;
+        if (bSubIndex === -1) return -1;
+
+        if (aSubIndex !== bSubIndex) {
+          return aSubIndex - bSubIndex;
+        }
+
+        return a.id.localeCompare(b.id);
+      });
+    };
+
+    // Satış item'larını sırala
+    if (itemsSales.length > 0) {
+      const sortedSales = sortItems(itemsSales);
+      // Sadece sıralama değiştiyse güncelle
+      const salesChanged = sortedSales.some((item, index) => item.id !== itemsSales[index]?.id);
+      if (salesChanged) {
+        setItemsSales(sortedSales);
+      }
+    }
+
+    // Alış item'larını sırala
+    if (itemsPurchase.length > 0) {
+      const sortedPurchase = sortItems(itemsPurchase);
+      // Sadece sıralama değiştiyse güncelle
+      const purchaseChanged = sortedPurchase.some((item, index) => item.id !== itemsPurchase[index]?.id);
+      if (purchaseChanged) {
+        setItemsPurchase(sortedPurchase);
+      }
+    }
+  }, [mainCategories, subCategoriesByMain, itemsSales, itemsPurchase]);
+
+  // Ana kategori için tüm alt kategoriler seçili mi?
+  const isAllSubCategoriesSelected = (mainCategoryId: string, side: 'sales' | 'purchase') => {
+    const subCats = subCategoriesByMain[mainCategoryId] || [];
+    if (subCats.length === 0) return false;
+    const selected = side === 'sales' ? selectedCategoriesSales : selectedCategoriesPurchase;
+    return subCats.every((sub: any) => selected.has(sub.id));
+  };
+
+  // Ana kategori için bazı alt kategoriler seçili mi?
+  const isSomeSubCategoriesSelected = (mainCategoryId: string, side: 'sales' | 'purchase') => {
+    const subCats = subCategoriesByMain[mainCategoryId] || [];
+    if (subCats.length === 0) return false;
+    const selected = side === 'sales' ? selectedCategoriesSales : selectedCategoriesPurchase;
+    const selectedCount = subCats.filter((sub: any) => selected.has(sub.id)).length;
+    return selectedCount > 0 && selectedCount < subCats.length;
+  };
+
+  // Ana kategoriyi aç/kapa
+  const toggleCategoryExpansion = (mainCategoryId: string, side: 'sales' | 'purchase') => {
+    if (side === 'sales') {
+      setExpandedCategoriesSales(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(mainCategoryId)) {
+          newSet.delete(mainCategoryId);
+        } else {
+          newSet.add(mainCategoryId);
+        }
+        return newSet;
+      });
+    } else {
+      setExpandedCategoriesPurchase(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(mainCategoryId)) {
+          newSet.delete(mainCategoryId);
+        } else {
+          newSet.add(mainCategoryId);
+        }
+        return newSet;
+      });
+    }
+  };
+
+  // Ana kategori açık mı?
+  const isCategoryExpanded = (mainCategoryId: string, side: 'sales' | 'purchase') => {
+    const expanded = side === 'sales' ? expandedCategoriesSales : expandedCategoriesPurchase;
+    return expanded.has(mainCategoryId);
+  };
+
+  // Tüm alt kategorileri seç/kaldır
+  const toggleAllSubCategories = (mainCategoryId: string, checked: boolean, side: 'sales' | 'purchase') => {
+    const subCats = subCategoriesByMain[mainCategoryId] || [];
+    if (side === 'sales') {
+      setSelectedCategoriesSales(prev => {
+        const newSet = new Set(prev);
+        subCats.forEach((sub: any) => {
+          if (checked) {
+            newSet.add(sub.id);
+          } else {
+            newSet.delete(sub.id);
+          }
+        });
+        return newSet;
+      });
+    } else {
+      setSelectedCategoriesPurchase(prev => {
+        const newSet = new Set(prev);
+        subCats.forEach((sub: any) => {
+          if (checked) {
+            newSet.add(sub.id);
+          } else {
+            newSet.delete(sub.id);
+          }
+        });
+        return newSet;
+      });
+    }
+  };
+
+  // Tüm kategorileri seç/kaldır
+  const toggleAllCategories = (checked: boolean, side: 'sales' | 'purchase') => {
+    const allSubCats = Object.values(subCategoriesByMain).flat();
+    if (side === 'sales') {
+      setSelectedCategoriesSales(checked ? new Set(allSubCats.map((c: any) => c.id)) : new Set());
+    } else {
+      setSelectedCategoriesPurchase(checked ? new Set(allSubCats.map((c: any) => c.id)) : new Set());
+    }
+  };
+
+  // Seçili kategorileri ekle
+  const handleAddSelectedCategories = useCallback(async (side: 'sales' | 'purchase') => {
+    const selected = side === 'sales' ? selectedCategoriesSales : selectedCategoriesPurchase;
+    const selectedSubCategories = Array.from(selected)
+      .map(id => categories.find((c: any) => c.id === id))
+      .filter((c: any): c is any => c !== undefined && !!c.parent_id);
+
+    if (selectedSubCategories.length === 0) return;
+
+    // Otel tab ID belirle (UI'daki aktif sekme)
+    const targetHotelId = activeHotelId !== 'all' ? activeHotelId : 'general';
+
+    // Tab ID'den gerçek hotel_id'ye çevir (DB FK için)
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    let masterHotelId: string | null = null;
+    if (targetHotelId && isUUID(targetHotelId)) {
+      const hTabEntry = project?.hotels_data?.find((h: any) => h.id === targetHotelId);
+      masterHotelId = hTabEntry?.hotel_id || null;
+    }
+
+    // Sıralama için yardımcı fonksiyon
+    const getSortOrder = (item: any) => {
+      const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
+      const subList = subCategoriesByMain[item.main_category] || [];
+      const subIdx = subList.findIndex(c => c.id === item.sub_category);
+      return (mainIdx + 1) * 1000 + (subIdx + 1);
+    };
+
+    const now = Date.now();
+
+    // Satış için temp item'lar (optimistik UI — anında göster)
+    const tempSalesItems = selectedSubCategories.map((subCat, idx) => ({
+      id: `new_${now}_${idx}_${subCat.id}`,
+      hotel_id: targetHotelId,
+      _masterHotelId: masterHotelId,
+      main_category: subCat.parent_id || '',
+      sub_category: subCat.id,
+      description: subCat.description || '',
+      qty: 1, repeat: 1, unit_price: 0, currency: 'EUR',
+      vat: subCat.revenue_vat_rate || 0,
+      fx: 1, supplier: '', total: 0, total_try: 0, isEditing: true
+    }));
+
+    // Alış için temp item'lar
+    const tempPurchaseItems = selectedSubCategories.map((subCat, idx) => ({
+      id: `new_p_${now}_${idx}_${subCat.id}`,
+      hotel_id: targetHotelId,
+      _masterHotelId: masterHotelId,
+      main_category: subCat.parent_id || '',
+      sub_category: subCat.id,
+      description: subCat.description || '',
+      qty: 1, repeat: 1, unit_price: 0, currency: 'EUR',
+      vat: subCat.expense_vat_rate || 0,
+      fx: 1, supplier: '', total: 0, total_try: 0, isEditing: true
+    }));
+
+    // Optimistik UI — functional updater ile mevcut listeye ekle (stale closure yok)
+    if (side === 'sales') {
+      setItemsSales(prev => [...prev, ...tempSalesItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
+      setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
+    } else {
+      setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
+    }
+
+    // DB'ye yaz ve gerçek ID'leri al
+    const descriptionTag = targetHotelId && isUUID(targetHotelId) ? ` [T:${targetHotelId}]` : '';
+
+    const saveToDb = async (items: typeof tempSalesItems, dbSide: 'sales' | 'purchase') => {
+      const service = dbSide === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
+      const idMap = new Map<string, string>(); // tempId → realId
+
+      for (const item of items) {
+        try {
+          const created = await service.create({
+            project_id: projectId,
+            category: item.main_category,
+            sub_category: item.sub_category,
+            description: (item.description || '').trim() + descriptionTag,
+            unit_quantity: 1,
+            unit_price: 0,
+            total_price: 0,
+            currency: 'EUR',
+            vat: item.vat,
+            fx: 1,
+            hotel_id: masterHotelId
+          });
+          idMap.set(item.id, created.id);
+        } catch (err: any) {
+          console.error(`[handleAddSelectedCategories] DB kayıt hatası (${dbSide}):`, err?.message, err?.code, err?.details);
+        }
+      }
+
+      // Temp ID'leri gerçek ID'lerle swap et — functional updater
+      if (idMap.size > 0) {
+        const setter = dbSide === 'sales' ? setItemsSales : setItemsPurchase;
+        setter(prev => prev.map(it => idMap.has(it.id) ? { ...it, id: idMap.get(it.id)!, isEditing: false } : it));
+      }
+    };
+
+    if (side === 'sales') {
+      await Promise.all([
+        saveToDb(tempSalesItems, 'sales'),
+        saveToDb(tempPurchaseItems, 'purchase')
+      ]);
+      setShowCategoryModalSales(false);
+      setSelectedCategoriesSales(new Set());
+      toast.success('Kategoriler Satış ve Alış tablolarına sıralı şekilde eklendi.');
+    } else {
+      await saveToDb(tempPurchaseItems, 'purchase');
+      setShowCategoryModalPurchase(false);
+      setSelectedCategoriesPurchase(new Set());
+    }
+  }, [selectedCategoriesSales, selectedCategoriesPurchase, categories, mainCategories, subCategoriesByMain, activeHotelId, project?.hotels_data, projectId]);
+
+  // Checkbox component with indeterminate support
+  const CheckboxWithIndeterminate = ({ checked, indeterminate, onChange }: { checked: boolean; indeterminate: boolean; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
+    const checkboxRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (checkboxRef.current) {
+        checkboxRef.current.indeterminate = indeterminate;
+      }
+    }, [indeterminate]);
+
+    return (
+      <input
+        type="checkbox"
+        ref={checkboxRef}
+        checked={checked}
+        onChange={onChange}
+        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+    );
+  };
+
+  const getSupplierName = (id?: string) => {
+    if (!id) return '';
+    const s = suppliers.find((x: any) => x.id === id);
+    return s?.name || id;
+  };
+  // Birleşik isim çözücü: önce prefix'e bakar, yoksa geriye dönük uyum için tedarikçi varsayar
+  const getVendorName = (id?: string) => {
+    if (!id) return '';
+
+    if (id.startsWith('sup:')) {
+      const realId = id.slice(4);
+      const s = suppliers.find((x: any) => x.id === realId);
+      return s?.name || realId;
+    }
+    if (id.startsWith('hotel:')) {
+      const realId = id.slice(6);
+      const h = hotels.find((x: any) => x.id === realId);
+      return h?.name || realId;
+    }
+    // Eski kayıtlar için: doğrudan tedarikçi id'si gelebilir
+    const s = suppliers.find((x: any) => x.id === id);
+    if (s) return s.name;
+    // Son çare: otellerde ara
+    const h = hotels.find((x: any) => x.id === id);
+    return h?.name || id;
+  };
+
+  const getAgencyName = (id?: string) => {
+    if (!id) return '';
+    if (!agencies || agencies.length === 0) return ''; // DÖNÜŞ: UUID yerine boş string
+    const a = agencies.find((x: any) => x.id === id);
+    if (a?.name) return a.name;
+    // Eğer ID bir UUID ise ve isim bulunamadıysa UUID'yi döndürme
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    return isUUID ? '' : id;
+  };
+
+  const getHotelName = (id?: string) => {
+    if (!id) return '';
+    if (id === 'all') return 'TÜMÜ';
+    if (id === 'general') return 'GENEL HİZMETLER';
+    
+    // 1. Önce hotels_data içindeki tab ID'si mi diye bak
+    const hData = project?.hotels_data?.find((h: any) => h.id === id);
+    if (hData) {
+      if (hData.hotel_name) return hData.hotel_name;
+      // hotel_id master id ise ona bak
+      const masterHotel = hotels.find((h: any) => h.id === hData.hotel_id);
+      if (masterHotel?.name) return masterHotel.name;
+      if (hData.hotel_name) return hData.hotel_name;
+      return ''; // UUID döndürme
+    }
+
+    // 2. Doğrudan master hotel id olabilir
+    const hDirect = hotels.find((h: any) => h.id === id);
+    if (hDirect?.name) return hDirect.name;
+
+    // Eğer ID bir UUID ise ve isim bulunamadıysa UUID'yi döndürme
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    return isUUID ? '' : id;
+  };
+
+  const getHotelConcept = (hotelId: string) => {
+    const hotel = hotels.find(h => h.id === hotelId) as any;
+    if (!hotel) return '';
+    // Olası alan adları için sıralı deneme
+    return (
+      hotel.concept ||
+      hotel.board ||
+      hotel.board_name ||
+      hotel.meal_plan ||
+      hotel.pension ||
+      ''
+    );
+  };
+
+  const getProjectManagers = useMemo(() => {
+    return (projectId?: string) => {
+      if (!projectId) return '-';
+      const managers = projectUsersMap[projectId];
+      if (!managers || managers.length === 0) return '-';
+
+      // Kullanıcı kodlarını isimlere çevir
+      const managerNames = managers.map(managerId => {
+        const user = users.find(u => u.id === managerId);
+        return user ? `${user.first_name} ${user.last_name}` : managerId; // İsim bulunamazsa kodu göster
+      });
+
+      return managerNames.join(', ');
+    };
+  }, [projectUsersMap, users]);
+
+
+  const formatDateForSupabase = projectUtils.formatDateForSupabase;
+
+
+  // Konaklama fonksiyonları
+  const handleAccommodationSave = useCallback(async () => {
+    if (tempAccommodationItem?.id) {
+      // Bulunan item'ın global listedeki gerçek indeksini bul (ID bazlı)
+      const realIndex = accommodationItems.findIndex(it => it.id === tempAccommodationItem.id);
+      
+      if (realIndex !== -1) {
+        // Tarih sütunlarını otomatik hesapla - en erken tarihten baz al
+        const dateColumns = calculateDateColumns(tempAccommodationItem, accommodationItems);
+        const updatedItem = { ...tempAccommodationItem, ...dateColumns };
+
+        const updatedItems = [...accommodationItems];
+        updatedItems[realIndex] = updatedItem;
+        setAccommodationItems(updatedItems);
+
+        // Supabase'e kaydet
+        await saveAccommodationItems(updatedItems);
+      }
+
+      setEditingAccommodationIndex(null);
+      setTempAccommodationItem({});
+      setIsNewAccommodationItem(false); // Kaydetme tamamlandı
+    }
+  }, [tempAccommodationItem, accommodationItems, calculateDateColumns, saveAccommodationItems]);
+
+  const handleAccommodationCancel = useCallback(() => {
+    // Eğer yeni eklenen bir satır ise, o satırı sil
+    if (isNewAccommodationItem && editingAccommodationIndex !== null) {
+      const updatedItems = accommodationItems.filter((_, i) => i !== editingAccommodationIndex);
+      setAccommodationItems(updatedItems);
+      // localStorage kullanimi kaldirildi
+    }
+
+    setEditingAccommodationIndex(null);
+    setTempAccommodationItem({});
+    setIsNewAccommodationItem(false);
+  }, [isNewAccommodationItem, editingAccommodationIndex, accommodationItems, projectId]);
+
+  const handleAccommodationEdit = useCallback((id: string) => {
+    const realIndex = accommodationItems.findIndex(it => it.id === id);
+    if (realIndex !== -1) {
+      setEditingAccommodationIndex(realIndex);
+      setTempAccommodationItem({ ...accommodationItems[realIndex] });
+      setIsNewAccommodationItem(false); // Mevcut satır düzenleniyor
+    }
+  }, [accommodationItems]);
+
+  const handleAccommodationDelete = useCallback(async (id: string) => {
+    const realIndex = accommodationItems.findIndex(it => it.id === id);
+    if (realIndex === -1) return;
+
+    const item = accommodationItems[realIndex];
+    const itemName = item?.isim && item?.soyisim
+      ? `${item.isim} ${item.soyisim}`
+      : item?.oda_no
+        ? `Oda ${item.oda_no}`
+        : 'Bu kayıt';
+
+    setConfirmModal({
+      open: true,
+      title: 'Kaydı Sil',
+      message: `${itemName} kaydını silmek istediğinizden emin misiniz?`,
+      onConfirm: async () => {
+        try {
+          // DB'den sil (gerçek UUID kontrolü ile)
+          if (item.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id))) {
+            await projectAccommodationItemsService.delete(item.id);
+          }
+          
+          const nextItems = accommodationItems.filter(it => it.id !== id);
+          setAccommodationItems(nextItems);
+          
+          // Supabase'e kaydet (diğer kalanları senkronize et)
+          await saveAccommodationItems(nextItems);
+
+          if (editingAccommodationIndex === realIndex) {
+            setEditingAccommodationIndex(null);
+            setTempAccommodationItem({});
+          }
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          toast.success('Kayıt silindi.');
+        } catch (error) {
+          console.error('Konaklama silme hatası:', error);
+          toast.error('Silme işlemi başarısız oldu.');
+        }
+      }
+    });
+  }, [accommodationItems, editingAccommodationIndex, saveAccommodationItems, setConfirmModal]);
+
+  const handleAccommodationAdd = useCallback(async (id: string) => {
+    const realIndex = accommodationItems.findIndex(it => it.id === id);
+    
+    const newItem = {
+      id: Date.now() + Math.random(),
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      oda_no: '',
+      oda_tipi: '',
+      yatak_tipi: '',
+      isim: '',
+      soyisim: '',
+      oda_no_2: '',
+      oda_notu: '',
+      gelis_tarihi: '',
+      gelis_ucus_kodu: '',
+      gelis_ucak_kalkis: '',
+      gelis_ucak_inis: '',
+      cikis_tarihi: '',
+      donus_ucus_kodu: '',
+      donus_ucak_kalkis: '',
+      donus_ucak_inis: '',
+      tarih1: '',
+      tarih2: '',
+      tarih3: '',
+      tarih4: '',
+      tarih5: '',
+      tarih6: '',
+      tarih7: '',
+      geceleme: '',
+      paket: '',
+      otel: '',
+      ucak: '',
+      toplam: '',
+      doviz: ''
+    };
+
+    const updatedItems = [...accommodationItems];
+    if (realIndex !== -1) {
+      updatedItems.splice(realIndex + 1, 0, newItem);
+    } else {
+      updatedItems.push(newItem);
+    }
+    
+    setAccommodationItems(updatedItems);
+
+    // Supabase'e kaydet
+    await saveAccommodationItems(updatedItems);
+
+    // Yeni eklenen satırı düzenleme moduna al
+    const newRealIndex = updatedItems.findIndex(it => it.id === newItem.id);
+    setEditingAccommodationIndex(newRealIndex);
+    setTempAccommodationItem(newItem);
+    setIsNewAccommodationItem(true); // Yeni satır eklendi
+  }, [accommodationItems, activeHotelId, saveAccommodationItems]);
+
+  const handleAccommodationCopy = useCallback(async (id: string) => {
+    const realIndex = accommodationItems.findIndex(it => it.id === id);
+    if (realIndex === -1) return;
+
+    const originalItem = accommodationItems[realIndex];
+    const copiedItem = {
+      ...originalItem,
+      id: Date.now() + Math.random(), // Yeni ID oluştur
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : originalItem.hotel_id
+    };
+
+    const updatedItems = [...accommodationItems];
+    updatedItems.splice(realIndex + 1, 0, copiedItem);
+    setAccommodationItems(updatedItems);
+
+    // Supabase'e kaydet
+    await saveAccommodationItems(updatedItems);
+
+    // Kopyalanan satırı düzenleme moduna al
+    const newRealIndex = updatedItems.findIndex(it => it.id === copiedItem.id);
+    setEditingAccommodationIndex(newRealIndex);
+    setTempAccommodationItem(copiedItem);
+    setIsNewAccommodationItem(true); // Kopyalanan satır eklendi
+  }, [accommodationItems, activeHotelId, saveAccommodationItems]);
+
+  // Konaklama verilerini optimize et - sadece temel hesaplamalar
+  const accommodationStats = useMemo(() => {
+    if (!accommodationItems || accommodationItems.length === 0) {
+      return { dateStats: {}, allDates: [], allRoomTypes: [], grandTotals: {}, grandTotalRooms: 0, grandTotalPax: 0 };
+    }
+
+    // Sadece oda tiplerini al
+    const allRoomTypes = [...new Set(accommodationItems.map(item => item.oda_tipi).filter(Boolean))].sort();
+    const idxDBL2 = allRoomTypes.indexOf('DBL');
+    const idxSNG2 = allRoomTypes.indexOf('SNG');
+    if (idxDBL2 !== -1 && idxSNG2 !== -1) {
+      const tmp2 = allRoomTypes[idxDBL2];
+      allRoomTypes[idxDBL2] = allRoomTypes[idxSNG2];
+      allRoomTypes[idxSNG2] = tmp2;
+    }
+
+    // Basit tarih hesaplaması
+    const dateStats: any = {};
+    const allDates: string[] = [];
+
+    // Sadece mevcut verileri işle
+    accommodationItems.forEach(item => {
+      const checkIn = formatDateAccommodation(item.gelis_tarihi);
+      const checkOut = formatDateAccommodation(item.cikis_tarihi);
+      const roomType = item.oda_tipi || 'Belirsiz';
+
+      if (checkIn && checkOut && checkIn !== '-' && checkOut !== '-') {
+        try {
+          const checkInParts = checkIn.split('.');
+          const checkOutParts = checkOut.split('.');
+
+          if (checkInParts.length === 3 && checkOutParts.length === 3) {
+            const startDate = new Date(`${checkInParts[2]}-${checkInParts[1]}-${checkInParts[0]}`);
+            const endDate = new Date(`${checkOutParts[2]}-${checkOutParts[1]}-${checkOutParts[0]}`);
+
+            if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+              for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                const dateKey = d.toISOString().split('T')[0];
+                const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+
+                if (!dateStats[dateKey]) {
+                  dateStats[dateKey] = {
+                    date: formattedDate,
+                    roomTypes: {}
+                  };
+                  allDates.push(dateKey);
+                }
+
+                if (!dateStats[dateKey].roomTypes[roomType]) {
+                  dateStats[dateKey].roomTypes[roomType] = 0;
+                }
+                dateStats[dateKey].roomTypes[roomType]++;
+              }
+            }
+          }
+        } catch (error) {
+          // Hata durumunda sessizce devam et
+        }
+      }
+    });
+
+    // Tarihleri sırala
+    const sortedDates = allDates.sort();
+
+    // Genel toplamları hesapla
+    const grandTotals: any = {};
+    let grandTotalRooms = 0;
+    let grandTotalPax = 0;
+
+    Object.values(dateStats).forEach((stats: any) => {
+      Object.entries(stats.roomTypes).forEach(([roomType, count]: [string, any]) => {
+        if (!grandTotals[roomType]) {
+          grandTotals[roomType] = 0;
+        }
+        grandTotals[roomType] += count as number;
+      });
+
+      const dailyTotalRooms = Object.values(stats.roomTypes).reduce((sum: number, count: any) => sum + (count as number), 0);
+      grandTotalRooms += dailyTotalRooms as number;
+
+      const dailyTotalPax = Object.entries(stats.roomTypes).reduce((sum: number, [roomType, count]: [string, any]) => {
+        const roomTypeUpper = roomType.toUpperCase();
+        let paxPerRoom = 1;
+        if (roomTypeUpper === 'SNG') paxPerRoom = 1;
+        else if (roomTypeUpper === 'DBL') paxPerRoom = 2;
+        else if (roomTypeUpper === 'TRP' || roomTypeUpper === 'TRPL') paxPerRoom = 3;
+        return sum + ((count as number) * paxPerRoom);
+      }, 0);
+      grandTotalPax += dailyTotalPax as number;
+    });
+
+    return { dateStats, allDates: sortedDates, allRoomTypes, grandTotals, grandTotalRooms, grandTotalPax };
+  }, [accommodationItems]);
+
+  const importQuoteItemsToSales = useCallback(async (forceReplace: boolean) => {
+    try {
+      if (!project?.quote_id) return;
+
+      // Supabase'ten teklif kalemlerini çek
+      const allQuoteItems = await quoteItemsService.getByQuoteId(project.quote_id);
+      if (!allQuoteItems || allQuoteItems.length === 0) return;
+
+      if (itemsSales.length > 0 && !forceReplace) return; // mevcut veriyi bozma
+
+      // Sadece bu otele ait kalemleri filtrele
+      const hotelId = project.hotel_id;
+      const quoteItems = allQuoteItems.filter(it => 
+        !it.hotel_id || it.hotel_id === hotelId || (it as any).hotel_data_id === hotelId
+      );
+
+      if (quoteItems.length === 0) {
+        return;
+      }
+
+      // Mevcut kalemleri DB'den sil (Temizle ve Değiştir mantığı)
+      if (forceReplace) {
+        await projectSalesItemsService.deleteByProjectId(projectId);
+      }
+
+      const mapped = quoteItems.map((it: any) => {
+        const qtyOnly = Number(it.unit_quantity || 0);
+        const repeatOnly = Number(it.sefer || 1);
+        const unitPrice = Number(it.unit_price || 0);
+        const currency = it.currency || 'EUR';
+        const vat = it.vat || 0;
+        const fx = it.fx || 1;
+        const desc = it.description || it.sub_category || it.main_category || '-';
+        return {
+          project_id: projectId,
+          category: it.main_category || '',
+          sub_category: it.sub_category || '',
+          description: desc,
+          unit_quantity: qtyOnly || 1,
+          sefer: repeatOnly || 1,
+          unit_price: unitPrice,
+          total_price: (qtyOnly || 1) * (repeatOnly || 1) * unitPrice,
+          currency,
+          vat,
+          fx,
+          hotel_id: it.hotel_id || null
+        };
+      });
+
+      // Yeni kalemleri DB'de oluştur
+      const createdItems = [];
+      for (const payload of mapped) {
+        const created = await projectSalesItemsService.create(payload as any);
+        createdItems.push({
+          ...created,
+          main_category: created.category,
+          qty: created.unit_quantity,
+          repeat: created.sefer || payload.sefer,
+          total: created.total_price,
+          total_try: created.total_price * (created.fx || 1),
+          isEditing: false
+        });
+      }
+
+      setItemsSales(createdItems);
+    } catch (e) {
+    }
+  }, [project?.quote_id, itemsSales.length, projectId]);
+
+  const importQuoteItemsToPurchase = useCallback(async (forceReplace: boolean) => {
+    try {
+      if (!project?.quote_id) return;
+
+      // Supabase'ten teklif kalemlerini çek
+      const allQuoteItems = await quoteItemsService.getByQuoteId(project.quote_id);
+      if (!allQuoteItems || allQuoteItems.length === 0) return;
+
+      if (itemsPurchase.length > 0 && !forceReplace) return; // mevcut veriyi bozma
+
+      // Sadece bu otele ait kalemleri filtrele
+      const hotelId = project.hotel_id;
+      const quoteItems = allQuoteItems.filter(it => 
+        !it.hotel_id || it.hotel_id === hotelId || (it as any).hotel_data_id === hotelId
+      );
+
+      // Mevcut kalemleri DB'den sil
+      if (forceReplace) {
+        await projectPurchaseItemsService.deleteByProjectId(projectId);
+      }
+
+      const mapped = quoteItems.map((it: any) => {
+        const qtyOnly = Number(it.unit_quantity || 0);
+        const repeatOnly = Number(it.repeat || it.sefer || 1);
+        const currency = it.currency || 'EUR';
+        const vat = it.vat || 0;
+        const fx = it.fx || 1;
+        let desc = (it.description || it.sub_category || it.main_category || '-').trim();
+        
+        if (repeatOnly > 1) {
+          desc += (desc ? ' ' : '') + `[R:${repeatOnly}]`;
+        }
+
+        return {
+          project_id: projectId,
+          category: it.main_category || '',
+          sub_category: it.sub_category || '',
+          description: desc,
+          unit_quantity: qtyOnly || 1,
+          // sefer: repeatOnly || 1, // Removing to fix 400 error
+          unit_price: 0, // Alış fiyatı boş olarak başlar
+          total_price: 0,
+          currency,
+          vat,
+          fx,
+          hotel_id: it.hotel_id || null
+        };
+      });
+
+      // Yeni kalemleri DB'de oluştur
+      const createdItems = [];
+      for (const payload of mapped) {
+        const created = await projectPurchaseItemsService.create(payload as any);
+        createdItems.push({
+          ...created,
+          main_category: created.category,
+          qty: created.unit_quantity,
+          repeat: created.sefer || payload.sefer,
+          total: created.total_price,
+          total_try: 0,
+          isEditing: false
+        });
+      }
+
+      setItemsPurchase(createdItems);
+    } catch (e) {
+    }
+  }, [project?.quote_id, itemsPurchase.length, projectId]);
+
+  // Satış kalemlerini alış tabına aktar
+  const importSalesItemsToPurchase = useCallback(async (forceReplace: boolean) => {
+    if (isImportingPurchaseFromSales) return;
+
+    const formatError = (error: any) => {
+      if (!error) return '';
+      if (typeof error === 'string') return error;
+      return [
+        error?.message,
+        error?.details,
+        error?.hint,
+        error?.code
+      ].filter(Boolean).join(' | ');
+    };
+
+    try {
+      if (!itemsSales || itemsSales.length === 0) {
+        toast('Aktarılacak satış kalemi bulunamadı.');
+        return;
+      }
+
+      // Modern modal ile onay al
+      const shouldContinue = await new Promise<boolean>((resolve) => {
+        setConfirmModal({
+          open: true,
+          title: 'Satış Kalemlerini Alışa Aktar',
+          message: 'Mevcut alış kalemleri temizlenecek ve satış kalemlerinden yeniden oluşturulacaktır. Devam etmek istiyor musunuz?',
+          onConfirm: () => {
+            setConfirmModal(prev => ({ ...prev, open: false }));
+            resolve(true);
+          },
+          onCancel: () => {
+            setConfirmModal(prev => ({ ...prev, open: false }));
+            resolve(false);
+          },
+        });
+      });
+
+      if (!shouldContinue) return;
+      setIsImportingPurchaseFromSales(true);
+
+      // Mevcut kalemleri DB'den sil
+      if (forceReplace) {
+        await projectPurchaseItemsService.deleteByProjectId(projectId);
+      } else if (itemsPurchase.length > 0) {
+        toast('Mevcut alış kayıtları olduğu için aktarım yapılmadı.');
+        return; // mevcut veriyi bozma
+      }
+
+      // UUID formatını kontrol et (36 karakter, tire ile ayrılmış)
+      const isUUID = (str: string): boolean => {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(str);
+      };
+
+      // Satis kayitlarinda hotel_id bazen master hotel id, bazen tab id olarak gelebiliyor.
+      // DB'deki hotel_id alani master hotel id bekledigi icin importta master id'ye normalize ediyoruz.
+      const hotelTabs = (project?.hotels_data || []) as any[];
+      const resolveHotelRefsForImport = (rawHotelId: any, desc: string) => {
+        const tabMatch = String(desc || '').match(/\[T:(.*?)\]/);
+        const fromTag = tabMatch?.[1] || '';
+        const candidate = String(fromTag || rawHotelId || '').trim();
+        if (!candidate) return { tabId: null as string | null, masterHotelId: null as string | null };
+        if (candidate === 'general' || candidate === 'all') {
+          return { tabId: candidate, masterHotelId: null as string | null };
+        }
+        const tab = hotelTabs.find((h: any) => h?.id === candidate || h?.hotel_id === candidate);
+        return {
+          tabId: tab?.id || (fromTag ? candidate : null),
+          masterHotelId: tab?.hotel_id || candidate
+        };
+      };
+
+      // Satış kalemlerini alış kalemlerine (DB payload) dönüştür
+      const mapped = itemsSales.map((it: any, index: number) => {
+        const qtyOnly = Number(it.qty || it.unit_quantity || 0);
+        const repeatOnly = Number(it.repeat || it.sefer || 1);
+        const currency = it.currency || 'EUR';
+        const vat = it.vat || 0;
+        const fx = it.fx || 1;
+
+        // Açıklama alanını belirle: UUID ise kullanma, yoksa description, yoksa sub_category, yoksa main_category, yoksa boş
+        let desc = '';
+        if (it.description && !isUUID(it.description)) {
+          desc = it.description;
+        } else if (it.sub_category && !isUUID(it.sub_category)) {
+          desc = it.sub_category;
+        } else if (it.main_category && !isUUID(it.main_category)) {
+          desc = it.main_category;
+        }
+
+        const { tabId, masterHotelId } = resolveHotelRefsForImport(it.hotel_id, it.description || '');
+        const baseDesc = desc || '';
+        const hasTabTag = /\[T:.*?\]/.test(baseDesc);
+        const withTabTag = !hasTabTag && tabId ? `${baseDesc}${baseDesc ? ' ' : ''}[T:${tabId}]` : baseDesc;
+        const baseWithOrder = `${withTabTag}${withTabTag ? ' ' : ''}[O:${index}]`;
+        const finalDescription = baseWithOrder + (repeatOnly > 1 ? ` [R:${repeatOnly}]` : '');
+
+        return {
+          project_id: projectId,
+          category: it.main_category || '',
+          sub_category: it.sub_category || '',
+          description: finalDescription,
+          unit_quantity: qtyOnly || 1,
+          // sefer: repeatOnly || 1, // Removing to fix 400 error
+          unit_price: 0, // Alış fiyatı boş olarak başlar
+          total_price: 0,
+          currency,
+          vat,
+          fx,
+          hotel_id: masterHotelId
+        };
+      });
+
+      const makeImportOrderKey = (row: any) => {
+        const normalize = (v: any) => String(v ?? '').trim().toLowerCase();
+        return [
+          normalize(row.category),
+          normalize(row.sub_category),
+          normalize(row.description),
+          normalize(row.hotel_id),
+          normalize(row.currency),
+          normalize(row.vat),
+          normalize(row.fx)
+        ].join('|');
+      };
+
+      // Duplicate satirlari birlestir (miktari toplayarak) ve tek seferde insert et
+      const mergedMap = new Map<string, any>();
+      for (const row of mapped) {
+        const key = makeImportOrderKey(row);
+        if (!mergedMap.has(key)) {
+          mergedMap.set(key, { ...row, unit_quantity: Number(row.unit_quantity || 0) || 1 });
+          continue;
+        }
+        const prev = mergedMap.get(key);
+        prev.unit_quantity = (Number(prev.unit_quantity || 0) || 0) + (Number(row.unit_quantity || 0) || 0);
+        mergedMap.set(key, prev);
+      }
+      const mergedMapped = Array.from(mergedMap.values());
+      const importOrderByKey = new Map<string, number>();
+      mergedMapped.forEach((row: any, index: number) => {
+        importOrderByKey.set(makeImportOrderKey(row), index);
+      });
+
+      // Yeni kalemleri DB'de oluştur
+      const failures: Array<{ payload: any; error: string }> = [];
+      for (const payload of mergedMapped) {
+        try {
+          await projectPurchaseItemsService.create(payload as any);
+        } catch (error: any) {
+          failures.push({ payload, error: formatError(error) || 'Bilinmeyen hata' });
+        }
+      }
+
+      const parseDescriptionTags = (desc: string) => {
+        if (!desc) return { cleanDesc: '', tabTag: null, supplierTag: null, repeatTag: null, orderTag: null };
+        const tabMatch = desc.match(/ \[T:(.*?)\]/);
+        const supplierMatch = desc.match(/ \[S:(.*?)\]/);
+        const repeatMatch = desc.match(/ \[R:(.*?)\]/);
+        const orderMatch = desc.match(/ \[O:(.*?)\]/);
+        const cleanDesc = desc
+          .replace(/ \[T:.*?\]/g, '')
+          .replace(/ \[S:.*?\]/g, '')
+          .replace(/ \[R:.*?\]/g, '')
+          .replace(/ \[O:.*?\]/g, '')
+          .trim();
+        return {
+          cleanDesc,
+          tabTag: tabMatch ? tabMatch[1] : null,
+          supplierTag: supplierMatch ? supplierMatch[1] : null,
+          repeatTag: repeatMatch ? repeatMatch[1] : null,
+          orderTag: orderMatch ? orderMatch[1] : null
+        };
+      };
+
+      // Listeyi backend'den tekrar alarak UI'da gercek sonucu goster
+      const freshPurchaseItems = await projectPurchaseItemsService.getByProjectId(projectId);
+      const normalizedFreshPurchaseItems = (freshPurchaseItems || []).map((it: any) => ({
+          ...it,
+          ...(() => {
+            const { cleanDesc, tabTag, supplierTag, repeatTag, orderTag } = parseDescriptionTags(it.description || '');
+            return {
+              description: cleanDesc,
+              hotel_id: tabTag || it.hotel_id,
+              vendorId: supplierTag || null,
+              repeat: Number(repeatTag || it.sefer || it.repeat || 1),
+              source_order: orderTag !== null ? Number(orderTag) : null
+            };
+          })(),
+          main_category: it.category,
+          qty: it.unit_quantity,
+          total: it.total_price,
+          total_try: (it.total_price || 0) * (it.fx || 1),
+          isEditing: false
+        }));
+
+      const sortedFreshPurchaseItems = normalizedFreshPurchaseItems.sort((a: any, b: any) => {
+        const keyA = makeImportOrderKey(a);
+        const keyB = makeImportOrderKey(b);
+        const ordA = importOrderByKey.get(keyA);
+        const ordB = importOrderByKey.get(keyB);
+        if (ordA !== undefined && ordB !== undefined) return ordA - ordB;
+        if (ordA !== undefined) return -1;
+        if (ordB !== undefined) return 1;
+        return String(a.id || '').localeCompare(String(b.id || ''));
+      });
+
+      setItemsPurchase(sortedFreshPurchaseItems);
+
+      if (failures.length > 0) {
+        console.warn('Satıştan alışa aktarımında başarısız kayıtlar:', failures);
+        toast.error(`Aktarım kısmen tamamlandı. ${failures.length} kayıt eklenemedi.`);
+      } else {
+        toast.success(`Satış kalemleri alış tabına aktarıldı (${mergedMapped.length} kayıt).`);
+      }
+    } catch (e) {
+      const errorText = formatError(e);
+      console.error('Satıştan alışa aktarım hatası:', errorText || e);
+      toast.error(errorText ? `Aktarım hatası: ${errorText}` : 'Satış kalemleri alış tabına aktarılırken hata oluştu.');
+    } finally {
+      setIsImportingPurchaseFromSales(false);
+    }
+  }, [itemsSales, itemsPurchase.length, projectId, setConfirmModal, isImportingPurchaseFromSales, project?.hotels_data]);
+
+  // Proje durumunu isim olarak döndüren fonksiyon
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Aktif';
+      case 'completed':
+        return 'Tamamlandı';
+      case 'on_hold':
+      case 'on-hold':
+        return 'Beklemede';
+      case 'cancelled':
+        return 'İptal';
+      case 'approved':
+        return 'Onaylandı';
+      case 'rejected':
+        return 'Reddedildi';
+      case 'pending':
+        return 'Beklemede';
+      case 'draft':
+        return 'Taslak';
+      default:
+        return status || 'Aktif';
+    }
+  };
+
+  // TR sayı format yardımcıları projectUtils.ts'den import ediliyor
+  const formatNumberTR = projectUtils.formatNumberTR;
+  const formatEUR = projectUtils.formatEUR;
+  const formatTRY = projectUtils.formatTRY;
+  const formatNumber = projectUtils.formatNumber;
+  const formatDate = projectUtils.formatDate;
+  const formatCurrency = projectUtils.formatCurrency;
+
+  const addBelow = useCallback(async (side: 'sales' | 'purchase', itemId: string) => {
+    const list = side === 'sales' ? itemsSales : itemsPurchase;
+    const originalItem = list.find(item => item.id === itemId);
+
+    if (!originalItem) return;
+
+    const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
+
+    try {
+      const isUUID = (str: string) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+      // UI'da satırlarda hotel_id bazen "tab id" tutuluyor olabilir.
+      // DB kaydı için gerçek otel id (master hotel id) gönderilmeli.
+      const sourceHotelId = originalItem.hotel_id || '';
+      let dbHotelId: string | null = null;
+      if (sourceHotelId) {
+        if (isUUID(sourceHotelId)) {
+          const hTabEntry = project?.hotels_data?.find((h: any) => h.id === sourceHotelId);
+          dbHotelId = hTabEntry?.hotel_id || sourceHotelId;
+        } else if (sourceHotelId !== 'general') {
+          dbHotelId = sourceHotelId;
+        }
+      }
+
+      // Orijinal açıklamadaki sekme etiketini ([T:...]) bul ve yeni satıra ekle
+      const tabTagMatch = (originalItem.description || '').match(/\[T:.*?\]/);
+      const tabTag = tabTagMatch ? ` ${tabTagMatch[0]}` : '';
+
+      const createdItem = await service.create({
+        project_id: projectId,
+        category: originalItem.main_category,
+        sub_category: '',
+        description: tabTag.trim(),
+        unit_quantity: 1,
+        unit_price: 0,
+        total_price: 0,
+        currency: originalItem.currency,
+        vat: 0,
+        fx: 1,
+        hotel_id: dbHotelId
+      });
+
+      const item = {
+        ...createdItem,
+        main_category: createdItem.category, 
+        qty: createdItem.unit_quantity, 
+        repeat: createdItem.sefer || createdItem.repeat || 1,
+        total: createdItem.total_price,
+        // UI tarafında satırı aynı sekmede göstermek için mevcut tab kimliğini koru
+        hotel_id: originalItem.hotel_id,
+        isEditing: true
+      };
+
+      const next = [...list, item];
+      if (side === 'sales') setItemsSales(next);
+      else setItemsPurchase(next);
+      toast.success('Yeni satır eklendi.');
+    } catch (error: any) {
+      console.error('addBelow hatası:', error?.message, error?.code, error?.details);
+      toast.error('Satır eklenirken bir hata oluştu.');
+    }
+  }, [itemsSales, itemsPurchase, projectId, project?.hotels_data]);
+
+  const editRow = useCallback(async (side: 'sales' | 'purchase', id: string) => {
+    const list = side === 'sales' ? itemsSales : itemsPurchase;
+    const updatedList = list.map((item: any) =>
+      item.id === id ? { ...item, isEditing: true } : item
+    );
+    if (side === 'sales') setItemsSales(updatedList);
+    else setItemsPurchase(updatedList);
+  }, [itemsSales, itemsPurchase]);
+
+  // Konaklama Excel Import
+  const handleAccommodationImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const buffer = await file.arrayBuffer();
+      await workbook.xlsx.load(buffer);
+
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        alert('Excel dosyasında çalışma sayfası bulunamadı');
+        return;
+      }
+
+      const newItems: any[] = [];
+
+      // SADECE GÜNCEL OTELİN VERİLERİNİ TEMİZLE
+      // Diğer otellerdeki veya tümündeki verileri koru
+      const otherHotelItems = accommodationItems.filter(item => {
+        if (activeHotelId === 'all') return false; // Eğer tümünde import yapılıyorsa her şeyin üzerine yazar
+        return item.hotel_id !== activeHotelId;
+      });
+
+      // Veri satırlarını oku (3. satırdan başla - 2 başlık satırını atla)
+      for (let rowNumber = 3; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+
+        // Satırın tamamen boş olup olmadığını kontrol et
+        let hasData = false;
+        for (let col = 1; col <= 28; col++) {
+          const cellValue = getCellValue(row.getCell(col));
+          if (cellValue && cellValue.trim() !== '') {
+            hasData = true;
+            break;
+          }
+        }
+
+        if (!hasData) continue;
+
+        // Forecast bölümünü algıla - eğer sadece oda tipi var ve isim-soyisim yoksa forecast bölümü
+        const firstCellValue = getCellValue(row.getCell(1));
+        const secondCellValue = getCellValue(row.getCell(2)); // ODA TİPİ
+        const fourthCellValue = getCellValue(row.getCell(4)); // İSİM
+        const fifthCellValue = getCellValue(row.getCell(5));  // SOYİSİM
+
+        // Eğer ilk sütun oda tipi ise ve isim-soyisim sütunları boşsa forecast bölümü
+        if (firstCellValue && (
+          firstCellValue.toString().toUpperCase().includes('FORECAST') ||
+          firstCellValue.toString().toUpperCase().includes('ÖZET') ||
+          firstCellValue.toString().toUpperCase().includes('TOPLAM') ||
+          firstCellValue.toString().toUpperCase().includes('SUMMARY') ||
+          firstCellValue.toString().toUpperCase().includes('TOTAL') ||
+          // Oda tipi var ama isim-soyisim yoksa forecast bölümü
+          (['SNG', 'DBL', 'TRP', 'TRPL', 'DBL + INF', 'DBL + CHD', 'DBL + FREE CHD'].includes(firstCellValue.toString().toUpperCase()) &&
+            (!fourthCellValue || fourthCellValue === '') &&
+            (!fifthCellValue || fifthCellValue === ''))
+        )) {
+          break; // Forecast bölümüne geldik, döngüyü durdur
+        }
+
+        const rowData: any = {
+          id: Date.now() + Math.random(),
+          hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+          // Yeni sütun sırasına göre düzenlendi
+          oda_no: getCellValue(row.getCell(1)),                    // ODA #
+          oda_tipi: getCellValue(row.getCell(2)),                  // ODA TİPİ
+          yatak_tipi: getCellValue(row.getCell(3)),                // YATAK TİPİ
+          isim: getCellValue(row.getCell(4)),                      // İSİM
+          soyisim: getCellValue(row.getCell(5)),                   // SOYİSİM
+          oda_no_2: getCellValue(row.getCell(6)),                  // ODA NO (tekrar)
+          oda_notu: getCellValue(row.getCell(7)),                  // ODA NOTU
+          gelis_tarihi: formatDateAccommodation(getCellValue(row.getCell(8))), // GİRİŞ TARİHİ
+          gelis_ucus_kodu: getCellValue(row.getCell(9)),           // GELİŞ UÇUŞ KODU
+          gelis_ucak_kalkis: formatTimeAccommodation(getCellValueForTime(row.getCell(10))), // GELİŞ UÇAK KALKIŞ
+          gelis_ucak_inis: formatTimeAccommodation(getCellValueForTime(row.getCell(11))), // GELİŞ UÇAK İNİŞ
+          cikis_tarihi: formatDateAccommodation(getCellValue(row.getCell(12))), // ÇIKIŞ TARİHİ
+          donus_ucus_kodu: getCellValue(row.getCell(13)),          // DÖNÜŞ UÇUŞ KODU
+          donus_ucak_kalkis: formatTimeAccommodation(getCellValueForTime(row.getCell(14))), // DÖNÜŞ UÇUŞ KALKIŞ
+          donus_ucak_inis: formatTimeAccommodation(getCellValueForTime(row.getCell(15))), // DÖNÜŞ UÇUŞ İNİŞ
+          tarih1: formatDateAccommodation(getCellValue(row.getCell(16))), // 1. TARİH
+          tarih2: formatDateAccommodation(getCellValue(row.getCell(17))), // 2. TARİH
+          tarih3: formatDateAccommodation(getCellValue(row.getCell(18))), // 3. TARİH
+          tarih4: formatDateAccommodation(getCellValue(row.getCell(19))), // 4. TARİH
+          tarih5: formatDateAccommodation(getCellValue(row.getCell(20))), // 5. TARİH
+          tarih6: formatDateAccommodation(getCellValue(row.getCell(21))), // 6. TARİH
+          tarih7: formatDateAccommodation(getCellValue(row.getCell(22))), // 7. TARİH
+          geceleme: getCellValue(row.getCell(23)),                  // GECELEME
+          paket: getCellValue(row.getCell(24)),                    // PAKET
+          otel: getCellValue(row.getCell(25)),                     // OTEL
+          ucak: getCellValue(row.getCell(26)),                     // UÇAK
+          toplam: getCellValue(row.getCell(27)),                   // TOPLAM
+          doviz: getCellValue(row.getCell(28))                     // DÖVİZ
+        };
+
+
+        // Tarih sütunlarını hesapla
+        const dateColumns = calculateDateColumns(rowData);
+        const finalRowData = { ...rowData, ...dateColumns };
+
+        newItems.push(finalRowData);
+      }
+
+      // Tüm listeyi global en erken giriş tarihine göre re-bazla
+      const newItemsRebased = rebaseAccommodationByEarliest(newItems);
+      
+      // Diğer otelleri koru ve üzerine yeni öğeleri ekle
+      const rebased = [...otherHotelItems, ...newItemsRebased];
+      setAccommodationItems(rebased);
+
+      // Supabase'e kaydet
+      await saveAccommodationItems(rebased);
+
+      alert(`${newItems.length} konaklama kaydı başarıyla import edildi`);
+
+    } catch (error: any) {
+      alert('Excel dosyası import edilirken hata oluştu: ' + error.message);
+    }
+  };
+  // Excel hücre değerini güvenli şekilde al (formül sonuçlarını dahil)
+  const getCellValue = (cell: any) => {
+    if (!cell) return '';
+
+    // Formül varsa, hesaplanmış sonucu al
+    if (cell.formula) {
+      return cell.result?.toString() || '';
+    }
+
+    // Değer varsa (null ve undefined dahil)
+    if (cell.value !== undefined) {
+      // null ise boş string döndür
+      if (cell.value === null) {
+        return '';
+      }
+
+      // Date objesi ise - string'e çevir
+      if (cell.value instanceof Date) {
+        return cell.value.toString();
+      }
+
+      // Rich text ise
+      if (cell.value.richText && Array.isArray(cell.value.richText)) {
+        return cell.value.richText.map((rt: any) => rt.text).join('');
+      }
+
+      // Normal değer - her zaman string'e çevir
+      return cell.value.toString();
+    }
+
+    // Hücre yoksa boş string döndür
+    return '';
+  };
+  // Excel hücre değerini saat için özel olarak al (serial number olarak)
+  const getCellValueForTime = (cell: any) => {
+    if (!cell) return '';
+
+    // Formül varsa, hesaplanmış sonucu al
+    if (cell.formula) {
+      return cell.result;
+    }
+
+    // Değer varsa
+    if (cell.value !== undefined) {
+      // null ise boş string döndür
+      if (cell.value === null) {
+        return '';
+      }
+
+      // Date objesi ise - sadece saat kısmını al
+      if (cell.value instanceof Date) {
+        // Excel Date objesinden sadece saat kısmını al (gün kısmını atla)
+        const hours = cell.value.getUTCHours();
+        const minutes = cell.value.getUTCMinutes();
+        // Saat kısmını 0-1 arası değere çevir
+        const timeFraction = (hours * 60 + minutes) / (24 * 60);
+        return timeFraction;
+      }
+
+      // Number ise (zaten serial number)
+      if (typeof cell.value === 'number') {
+        return cell.value;
+      }
+
+      // String ise - parse et
+      if (typeof cell.value === 'string') {
+        const parsed = parseFloat(cell.value);
+        return isNaN(parsed) ? '' : parsed;
+      }
+
+      // Rich text ise
+      if (cell.value.richText && Array.isArray(cell.value.richText)) {
+        const text = cell.value.richText.map((rt: any) => rt.text).join('');
+        const parsed = parseFloat(text);
+        return isNaN(parsed) ? '' : parsed;
+      }
+
+      return '';
+    }
+
+    return '';
+  };
+
+  // Saat formatını HH:MM'ye çevir - Excel serial değerlerini doğru parse eder
+  const formatTimeAccommodation = (timeValue: any) => {
+    if (!timeValue && timeValue !== 0) return '';
+
+    // String olarak geliyorsa
+    if (typeof timeValue === 'string') {
+      const trimmed = timeValue.trim();
+
+      // Eğer zaten HH:MM formatındaysa
+      if (trimmed.match(/^\d{1,2}:\d{2}$/)) {
+        const [hours, minutes] = trimmed.split(':');
+        return `${hours.padStart(2, '0')}:${minutes}`;
+      }
+
+      // Eğer HH:MM:SS formatındaysa
+      if (trimmed.match(/^\d{1,2}:\d{2}:\d{2}$/)) {
+        const [hours, minutes] = trimmed.split(':');
+        return `${hours.padStart(2, '0')}:${minutes}`;
+      }
+
+      // Eğer sadece saat var (örn: "14" veya "14.5")
+      if (trimmed.match(/^\d+(\.\d+)?$/)) {
+        const numValue = parseFloat(trimmed);
+        if (numValue >= 0 && numValue < 24) {
+          const hours = Math.floor(numValue);
+          const minutes = Math.round((numValue - hours) * 60);
+          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+      }
+
+      // Eğer "10:45" gibi bir format varsa ama tek haneli saat
+      if (trimmed.includes(':')) {
+        const parts = trimmed.split(':');
+        if (parts.length >= 2) {
+          const hours = parts[0].padStart(2, '0');
+          const minutes = parts[1].padStart(2, '0');
+          return `${hours}:${minutes}`;
+        }
+      }
+
+      return trimmed;
+    }
+
+    // Date objesi ise (Excel'den gelen Date objesi - UTC kullan)
+    if (timeValue instanceof Date) {
+      try {
+        // UTC saatlerini kullan (saat kaymasını önlemek için)
+        const hours = timeValue.getUTCHours().toString().padStart(2, '0');
+        const minutes = timeValue.getUTCMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      } catch (e) {
+        return String(timeValue);
+      }
+    }
+
+    // Number ise (Excel'den gelen serial değer: 0.3958333333 gibi)
+    if (typeof timeValue === 'number') {
+      try {
+        // Excel serial değerini doğru şekilde parse et
+        const serial = timeValue; // float
+        const totalMinutes = Math.round(serial * 24 * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+        return formattedTime;
+      } catch (e) {
+        return String(timeValue);
+      }
+    }
+
+    return String(timeValue);
+  };
+
+  // Uçak biletlerini backend'den yükle
+  const loadFlightTickets = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(`/api/flight-tickets/${projectId}`, {
+        headers: { 'Authorization': `Bearer ${session?.access_token || ''}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Uçak biletleri yüklenemedi');
+      }
+
+      const data = await response.json();
+
+      // Backend'den gelen veriyi frontend formatına çevir
+      const mappedData = data.map((ticket: any) => migrateFlightTicket(ticket));
+
+      setFlightTickets(mappedData); // ✅ Veriyi state'e kaydet
+      return mappedData;
+    } catch (error) {
+      setFlightTickets([]); // ✅ Hata durumunda boş array
+      return [];
+    }
+  }, [projectId]);
+
+  // Sayfa yüklendiğinde uçak biletlerini yükle
+  useEffect(() => {
+    if (projectId) {
+      loadFlightTickets();
+    }
+  }, [projectId, loadFlightTickets]);
+
+  // Uçak Bileti fonksiyonları
+  const handleFlightAdd = useCallback(() => {
+    const today = new Date().toISOString().split('T')[0]; // Bugünün tarihi
+    const newItem: FlightTicket = {
+      id: Date.now() + Math.random().toString(),
+      biletlemeTarihi: today, // Bugünün tarihi ile başla
+      tedarikci: '',
+      havayolu: '',
+      pnr: '',
+      ucusTipi: '',
+      gidisTarihi: '',
+      gidisSaati: '',
+      gidisUcusKodu: '',
+      donusTarihi: '',
+      donusSaati: '',
+      donusUcusKodu: '',
+      guzergah: '',
+      kisiSayisi: 1,
+      ppMaliyet: 0,
+      toplamMaliyet: 0,
+      doviz: 'EUR',
+      kur: 1.0000,
+      toplamTl: 0,
+      misafirler: '',
+      durum: 'aktif'
+    };
+    setEditingFlightIndex(flightTickets.length);
+    setTempFlightItem(newItem);
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
+    setIsNewFlightItem(true);
+
+    // Biletleme tarihi input'ına odaklan
+    setTimeout(() => {
+      const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+      if (dateInput) {
+        dateInput.focus();
+      }
+    }, 100);
+  }, [flightTickets, setEditingFlightIndex, setTempFlightItem, setSupplierSearch, setShowSupplierDropdown, setIsNewFlightItem]);
+
+  const handleFlightEdit = useCallback((index: number) => {
+    setEditingFlightIndex(index);
+    setTempFlightItem({ ...flightTickets[index] });
+    setSupplierSearch(flightTickets[index].tedarikci || '');
+    setIsNewFlightItem(false);
+  }, [flightTickets]);
+
+  const handleFlightSave = useCallback(async () => {
+    if (editingFlightIndex !== null && tempFlightItem) {
+      try {
+        const payload = {
+          hotel_id: tempFlightItem.hotel_id || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
+          biletleme_tarihi: tempFlightItem.biletlemeTarihi,
+          tedarikci: tempFlightItem.tedarikci,
+          havayolu: tempFlightItem.havayolu,
+          pnr: tempFlightItem.pnr,
+          ucus_tipi: tempFlightItem.ucusTipi || '',
+          gidis_tarihi: tempFlightItem.gidisTarihi,
+          gidis_saati: tempFlightItem.gidisSaati,
+          gidis_ucus_kodu: tempFlightItem.gidisUcusKodu,
+          donus_tarihi: tempFlightItem.donusTarihi,
+          donus_saati: tempFlightItem.donusSaati,
+          donus_ucus_kodu: tempFlightItem.donusUcusKodu,
+          guzergah: tempFlightItem.guzergah,
+          kisi_sayisi: tempFlightItem.kisiSayisi,
+          pp_maliyet: tempFlightItem.ppMaliyet,
+          toplam_maliyet: tempFlightItem.toplamMaliyet,
+          doviz: tempFlightItem.doviz,
+          kur: tempFlightItem.kur || 1.0000,
+          toplam_tl: tempFlightItem.toplamTl || 0,
+          misafirler: tempFlightItem.misafirler,
+          durum: tempFlightItem.durum,
+          islemler: tempFlightItem.islemler
+        };
+
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        if (session?.access_token) {
+          headers.Authorization = `Bearer ${session.access_token}`;
+        }
+
+        let response;
+        if (isNewFlightItem) {
+          response = await fetch(`/api/flight-tickets/${projectId}`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Güncelleme işlemi
+          response = await fetch(`/api/flight-tickets/${projectId}/${tempFlightItem.id}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`Uçak bileti kaydedilemedi: ${errorData.details || errorData.error || 'Bilinmeyen hata'}`);
+        }
+
+        const savedFlight = await response.json();
+
+        // Backend'den gelen veriyi frontend formatına çevir
+        const mappedSavedFlight = migrateFlightTicket(savedFlight);
+
+        // State'i güncelle ve sırala
+        if (isNewFlightItem) {
+          setFlightTickets(prev => {
+            const newTickets = [...prev, mappedSavedFlight];
+            // Biletleme tarihi, gidiş tarihi, gidiş saati sıralaması (artan)
+            return newTickets.sort((a, b) => {
+              // Önce biletleme tarihi (artan)
+              const aBiletleme = new Date(a.biletlemeTarihi).getTime();
+              const bBiletleme = new Date(b.biletlemeTarihi).getTime();
+              if (aBiletleme !== bBiletleme) return aBiletleme - bBiletleme;
+
+              // Sonra gidiş tarihi (artan)
+              const aGidis = new Date(a.gidisTarihi).getTime();
+              const bGidis = new Date(b.gidisTarihi).getTime();
+              if (aGidis !== bGidis) return aGidis - bGidis;
+
+              // Son olarak gidiş saati (artan)
+              const aSaat = a.gidisSaati || '00:00';
+              const bSaat = b.gidisSaati || '00:00';
+              return aSaat.localeCompare(bSaat);
+            });
+          });
+        } else {
+          setFlightTickets(prev => prev.map(ticket =>
+            ticket.id === tempFlightItem.id ? mappedSavedFlight : ticket
+          ));
+        }
+
+        // Başarı mesajı
+        alert('Uçak bileti başarıyla kaydedildi!');
+
+        setEditingFlightIndex(null);
+        setTempFlightItem(null);
+        setIsNewFlightItem(false);
+      } catch (error) {
+        alert('Uçak bileti kaydedilemedi. Lütfen tekrar deneyin.');
+      }
+    }
+  }, [editingFlightIndex, tempFlightItem, flightTickets, projectId, isNewFlightItem]);
+
+  const handleFlightCancel = useCallback(() => {
+    setEditingFlightIndex(null);
+    setTempFlightItem(null);
+    setIsNewFlightItem(false);
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
+  }, []);
+
+  // Keyboard event handler for flight ticket editing
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (editingFlightIndex !== null) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleFlightSave();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          handleFlightCancel();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editingFlightIndex, handleFlightSave, handleFlightCancel]);
+
+  // Global keyboard shortcuts for HR, Other Services and Financial (Enter=Save, Esc=Cancel)
+  useEffect(() => {
+    const handleGlobalEditKeys = (event: KeyboardEvent) => {
+      // İnsan Kaynakları
+      if (activeTab === 'insan-kaynaklari' && editingHrIndex !== null) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleHrSave();
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          handleHrCancel();
+          return;
+        }
+      }
+
+      // Diğer Servisler
+      if (activeTab === 'diger-servisler' && editingOtherServiceIndex !== null) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleOtherServiceSave();
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          handleOtherServiceCancel();
+          return;
+        }
+      }
+
+      // Finansal
+      if (activeTab === 'finansal' && editingFinancialServiceIndex !== null) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleFinancialSave();
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          handleFinancialCancel();
+          return;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalEditKeys);
+    return () => document.removeEventListener('keydown', handleGlobalEditKeys);
+  }, [activeTab, editingHrIndex, editingOtherServiceIndex, editingFinancialServiceIndex]);
+
+  // Otel Ekstra verilerini yükle
+  useEffect(() => {
+    const loadHotelExtras = async () => {
+      try {
+        const data = await projectHotelExtrasService.getByProjectId(projectId);
+
+        // Veri formatını düzelt - Supabase'den gelen veriyi frontend formatına çevir
+        const formattedData = data.map((item: any) => ({
+          ...item,
+          // Supabase'deki snake_case alanları camelCase'e çevir
+          subCategory: item.sub_category || item.subCategory || '',
+          roomNumber: item.room_number || item.roomNumber || '',
+          guestName: item.guest_name || item.guestName || '',
+          mainCategory: item.main_category || item.mainCategory || '',
+          totalTRY: item.total_try || item.totalTRY || 0,
+          exchangeRate: item.exchange_rate || item.exchangeRate || 1
+        }));
+
+        setHotelExtras(formattedData);
+      } catch (error) {
+        setHotelExtras([]);
+      }
+    };
+
+    if (projectId) {
+      loadHotelExtras();
+    }
+  }, [projectId]);
+
+  // Transfer verilerini yükle
+  useEffect(() => {
+    const loadTransfers = async () => {
+      try {
+        const data = await projectTransfersService.getByProjectId(projectId);
+
+        if (data && data.length > 0) {
+          // Veri formatını düzelt - Supabase'den gelen veriyi frontend formatına çevir
+          const formattedData = data.map((item: any) => {
+            return {
+              ...item,
+              // Supabase'deki snake_case alanları camelCase'e çevir
+              direction: item.direction,
+              typeLabel: item.type_label,
+              date: item.date ? formatDateFromSupabase(item.date) : item.date,
+              time: item.time ? formatTimeFromSupabase(item.time) : item.time,
+              flightCode: item.flight_code,
+              route: item.route,
+              passengerCount: item.passenger_count,
+              passengers: item.passengers || [],
+              transferType: item.transfer_type,
+              vehicleType: item.vehicle_type,
+              supplierId: item.supplier_id,
+              supplierName: item.supplier_name,
+              vehicleAssigned: item.vehicle_assigned,
+              costAmount: item.cost_amount,
+              currency: item.currency,
+              isGroup: item.is_group,
+              groupTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+              originalTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+              isEditing: false,
+              isNew: false
+            };
+          });
+
+          setTransfers(formattedData);
+        } else {
+          setTransfers([]);
+        }
+      } catch (error) {
+        // Hata durumunda boş array
+        setTransfers([]);
+      }
+    };
+
+    if (projectId) {
+      loadTransfers();
+    }
+  }, [projectId]);
+
+  // Transfer tabı aktif olduğunda verileri yeniden yükle
+  useEffect(() => {
+    if (activeTab === 'transfer-tur' && projectId) {
+      const loadTransfers = async () => {
+        try {
+          const data = await projectTransfersService.getByProjectId(projectId);
+
+          if (data && data.length > 0) {
+            const formattedData = data.map((item: any) => {
+              return {
+                ...item,
+                direction: item.direction,
+                typeLabel: item.type_label,
+                date: item.date ? formatDateFromSupabase(item.date) : item.date,
+                time: item.time ? formatTimeFromSupabase(item.time) : item.time,
+                flightCode: item.flight_code,
+                route: item.route,
+                passengerCount: item.passenger_count,
+                passengers: item.passengers || [],
+                transferType: item.transfer_type,
+                vehicleType: item.vehicle_type,
+                supplierId: item.supplier_id,
+                supplierName: item.supplier_name,
+                vehicleAssigned: item.vehicle_assigned,
+                costAmount: item.cost_amount,
+                currency: item.currency,
+                isGroup: item.is_group,
+                groupTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+                originalTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+                isEditing: false,
+                isNew: false
+              };
+            });
+
+            setTransfers(formattedData);
+          } else {
+            setTransfers([]);
+          }
+        } catch (error) {
+          setTransfers([]);
+        }
+      };
+
+      loadTransfers();
+    }
+  }, [activeTab, projectId]);
+
+  // Diğer Servisler verilerini yükle
+  useEffect(() => {
+    const loadOtherServices = async () => {
+      try {
+        const otherServicesData = await projectOtherServicesService.getByProjectId(projectId);
+
+        // Verileri formatla ve total_try'ı doğru hesapla: Toplam TL = Tutar * Kur
+        const formattedOtherServices = otherServicesData.map((item: any) => {
+          // Amount ve exchange_rate değerlerini güvenli şekilde parse et
+          const rawAmount = item.amount || item.amount === 0 ? item.amount : 0;
+          const rawExchangeRate = item.exchange_rate || item.exchange_rate === 0 ? item.exchange_rate : 1;
+
+          // Supabase'den gelen değerler zaten sayısal olmalı, ama string olabilir
+          const amount = typeof rawAmount === 'string' ? parseTurkishNumber(rawAmount) : parseFloat(rawAmount) || 0;
+          const exchangeRate = typeof rawExchangeRate === 'string' ? parseTurkishNumber(rawExchangeRate) : parseFloat(rawExchangeRate) || 1;
+
+          // Toplam TL = Tutar * Kur
+          const calculatedTotalTRY = amount * exchangeRate;
+
+          return {
+            ...item,
+            amount: amount,
+            exchange_rate: exchangeRate,
+            total_try: calculatedTotalTRY, // Doğru hesaplanmış değeri kullan
+            totalTRY: calculatedTotalTRY, // camelCase versiyonu da ekle
+            fx: exchangeRate, // fx alanı da ekle
+            // Supabase'deki snake_case alanları camelCase'e çevir
+            subCategory: item.sub_category || item.subCategory || '',
+            mainCategory: item.main_category || item.mainCategory || 'CAT_007',
+            supplier: item.hotel || '', // hotel alanı supplier olarak kullanılıyor
+          };
+        });
+
+        setOtherServices(formattedOtherServices);
+      } catch (error) {
+        setOtherServices([]);
+      }
+    };
+
+    if (projectId) {
+      loadOtherServices();
+    }
+  }, [projectId]);
+
+  // Finansal verilerini yükle
+  useEffect(() => {
+    const loadFinancialServices = async () => {
+      try {
+        const financialData = await projectFinancialServicesService.getByProjectId(projectId);
+
+        // Veri formatını düzelt - Supabase'den gelen veriyi frontend formatına çevir
+        const formattedFinancialServices = financialData.map((item: any) => ({
+          ...item,
+          // Supabase'deki snake_case alanları camelCase'e çevir
+          subCategory: item.sub_category || item.subCategory || '',
+          supplier: item.supplier || item.hotel || '',
+          hotel: item.hotel || item.supplier || '',
+          totalTRY: item.total_try || item.totalTRY || 0,
+          exchangeRate: item.exchange_rate || item.exchangeRate || 1,
+          mainCategory: item.main_category || item.mainCategory || 'CAT_009'
+        }));
+
+        setFinancialServices(formattedFinancialServices);
+      } catch (error: any) {
+        // 404 veya tablo yoksa sessizce handle et
+        if (error?.code === 'PGRST116' || error?.message?.includes('relation') || error?.message?.includes('does not exist')) {
+          // Tablo yoksa boş array set et
+          setFinancialServices([]);
+        } else {
+          setFinancialServices([]);
+        }
+      }
+    };
+
+    if (projectId) {
+      loadFinancialServices();
+    }
+  }, [projectId]);
+
+  // İnsan Kaynakları verilerini yükle
+  useEffect(() => {
+    const loadHrExtras = async () => {
+      try {
+        const hrExtras = await projectHumanResourcesService.getByProjectId(projectId);
+
+        // Verileri formatla ve total_try'ı doğru hesapla: Toplam TL = Tutar * Kur
+        const formattedHrExtras = hrExtras.map((item: any) => {
+          // Amount ve exchange_rate değerlerini güvenli şekilde parse et
+          const rawAmount = item.amount || item.amount === 0 ? item.amount : 0;
+          const rawExchangeRate = item.exchange_rate || item.exchange_rate === 0 ? item.exchange_rate : 1;
+
+          // Supabase'den gelen değerler zaten sayısal olmalı, ama string olabilir
+          const amount = typeof rawAmount === 'string' ? parseTurkishNumber(rawAmount) : parseFloat(rawAmount) || 0;
+          const exchangeRate = typeof rawExchangeRate === 'string' ? parseTurkishNumber(rawExchangeRate) : parseFloat(rawExchangeRate) || 1;
+
+          // Toplam TL = Tutar * Kur
+          const calculatedTotalTRY = amount * exchangeRate;
+
+          return {
+            ...item,
+            amount: amount,
+            exchange_rate: exchangeRate,
+            total_try: calculatedTotalTRY, // Doğru hesaplanmış değeri kullan
+            totalTRY: calculatedTotalTRY, // camelCase versiyonu da ekle
+            fx: exchangeRate, // fx alanı da ekle
+            // Supabase'deki snake_case alanları camelCase'e çevir
+            subCategory: item.sub_category || item.subCategory || '',
+            mainCategory: item.main_category || item.mainCategory || '',
+          };
+        });
+
+        setHrExtras(formattedHrExtras);
+      } catch (error) {
+      }
+    };
+    loadHrExtras();
+  }, [projectId]);
+
+  // İnsan Kaynakları alt kategorilerini yükle
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const loadHrSubCategories = () => {
+      try {
+        // İnsan Kaynakları ana kategorisini bul - önce code ile ara, sonra isim ile
+        let hrMainCategory = categories.find(cat => {
+          if (cat.parent_id !== null) return false;
+          // Önce code alanı ile ara
+          if ((cat as any).code === 'CAT_006' || cat.id === 'CAT_006') return true;
+          // Sonra isim ile ara (normalleştirilmiş)
+          const name = (cat.name || '').toLocaleUpperCase('tr-TR');
+          return name.includes('İNSAN KAYNAKLARI') || 
+            name.includes('INSAN KAYNAKLARI') ||
+            name.includes('PERSONEL') ||
+            name.includes('HR') ||
+            name.includes('HUMAN RESOURCES');
+        });
+
+        if (hrMainCategory) {
+          // Bu ana kategorinin alt kategorilerini bul - isim ile
+          const hrSubCategories = categories.filter(cat => {
+            // Alt kategorilerin parent_id'si ana kategorinin ID'si olmalı
+            return cat.parent_id === hrMainCategory.id;
+          });
+          setHrSubCategories(hrSubCategories);
+        } else {
+          setHrSubCategories([]);
+        }
+      } catch (error) {
+        setHrSubCategories([]);
+      }
+    };
+    loadHrSubCategories();
+  }, [categories]);
+
+  // Oteller ve tedarikçiler verilerini birleştir
+  useEffect(() => {
+    const combinedSuppliers = [
+      ...suppliers.map(supplier => ({
+        ...supplier,
+        type: 'supplier',
+        displayName: supplier.name
+      })),
+      ...hotels.map(hotel => ({
+        ...hotel,
+        type: 'hotel',
+        displayName: hotel.name || hotel.title
+      }))
+    ];
+    setAllSuppliers(combinedSuppliers);
+  }, [suppliers, hotels]);
+
+  // Ana kategorileri yükle ve varsayılan alt kategorileri yükle
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const loadMainCategories = () => {
+      try {
+        // Ana kategorileri filtrele (parent_id null olanlar)
+        const mainCategories = categories.filter(cat =>
+          cat.parent_id === null &&
+          (cat.name.includes('OTEL') || cat.name.includes('DIGER HIZMETLER') || cat.name.includes('DİĞER OPERASYONEL'))
+        );
+        setHotelExtraMainCategories(mainCategories);
+
+        // İnsan Kaynakları ana kategorilerini filtrele
+        const hrMainCategories = categories.filter(cat =>
+          cat.parent_id === null &&
+          cat.name.includes('İNSAN KAYNAKLARI')
+        );
+
+        // Varsayılan ana kategori (OTEL EKSTRA) için alt kategorileri yükle
+        const defaultSubCategories = categories.filter(cat =>
+          cat.parent_id === '00000000-0000-0000-0000-000000000002'
+        );
+        setHotelExtraSubCategories(defaultSubCategories);
+
+      } catch (error) {
+        setHotelExtraMainCategories([]);
+        setHotelExtraSubCategories([]);
+      }
+    };
+    loadMainCategories();
+  }, [categories]);
+
+  // Ana kategori seçildiğinde alt kategorileri yükle
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const loadSubCategories = () => {
+      
+      if (!selectedMainCategory) {
+        setHotelExtraSubCategories([]);
+        return;
+      }
+
+      try {
+        // CAT_008 için özel kontrol - önce code ile bul
+        let subCategories: any[] = [];
+
+        if (selectedMainCategory === 'CAT_008') {
+          // CAT_008 code'una sahip ana kategoriyi bul
+          const cat008MainCategory = categories.find(cat =>
+            cat.parent_id === null &&
+            ((cat as any).code === 'CAT_008' || cat.id === 'CAT_008')
+          );
+
+          if (cat008MainCategory) {
+            // CAT_008 ana kategorisinin alt kategorilerini filtrele
+            subCategories = categories.filter(cat => cat.parent_id === cat008MainCategory.id);
+          } else {
+            // CAT_008 code'u ile bulunamazsa, direkt parent_id ile dene (CAT_008 ID olabilir)
+            subCategories = categories.filter(cat => cat.parent_id === 'CAT_008');
+
+            // Hala bulunamazsa, code alanına göre ara
+            if (subCategories.length === 0) {
+              const cat008ByCode = categories.find(cat => (cat as any).code === 'CAT_008');
+              if (cat008ByCode) {
+                subCategories = categories.filter(cat => cat.parent_id === cat008ByCode.id);
+              }
+            }
+          }
+        } else {
+          // Diğer kategoriler için normal filtreleme
+          subCategories = categories.filter(cat =>
+            cat.parent_id === selectedMainCategory
+          );
+
+          // Eğer ID ile bulunamazsa, isim ile dene
+          if (subCategories.length === 0) {
+            subCategories = categories.filter(cat =>
+              cat.parent_id === 'OTEL | DIGER HIZMETLER' ||
+              cat.parent_id === 'OTEL | DİĞER HİZMETLER'
+            );
+          }
+
+          // OTEL | DIGER HIZMETLER ana kategorisinin gerçek UUID'sini bul
+          if (subCategories.length === 0) {
+            const otelDigerHizmetlerCategory = categories.find(cat =>
+              cat.parent_id === null &&
+              (cat.name.includes('OTEL') && cat.name.includes('DIGER HIZMETLER'))
+            );
+
+            if (otelDigerHizmetlerCategory) {
+              // Bu ana kategorinin alt kategorilerini filtrele
+              const otelSubCategories = categories.filter(cat =>
+                cat.parent_id === otelDigerHizmetlerCategory.id
+              );
+
+              if (otelSubCategories.length > 0) {
+                subCategories = otelSubCategories;
+              }
+            }
+          }
+        }
+
+        // OTEL | DIGER HIZMETLER ana kategorisinin gerçek UUID'sini bul
+        const otelDigerHizmetlerCategory = categories.find(cat =>
+          cat.parent_id === null &&
+          (cat.name.includes('OTEL') && cat.name.includes('DIGER HIZMETLER'))
+        );
+
+        if (otelDigerHizmetlerCategory) {
+          // Bu ana kategorinin alt kategorilerini filtrele
+          const otelSubCategories = categories.filter(cat =>
+            cat.parent_id === otelDigerHizmetlerCategory.id
+          );
+
+          if (otelSubCategories.length > 0) {
+            subCategories = otelSubCategories;
+          }
+        }
+
+        setHotelExtraSubCategories(subCategories);
+
+      } catch (error) {
+        setHotelExtraSubCategories([]);
+      }
+    };
+    loadSubCategories();
+  }, [selectedMainCategory, categories]);
+
+  // Diğer Servisler alt kategorilerini yükle (CAT_007)
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const loadOtherSubCategories = () => {
+      try {
+        // İnsan Kaynakları ana kategorisini bul - önce code ile ara, sonra isim ile
+        let otherMainCategory = categories.find(cat => {
+          if (cat.parent_id !== null) return false;
+          // Önce code alanı ile ara
+          if ((cat as any).code === 'CAT_007' || cat.id === 'CAT_007') return true;
+          // Sonra isim ile ara
+          const name = (cat.name || '').toLocaleUpperCase('tr-TR');
+          return name.includes('DİĞER SERVİSLER') ||
+            name.includes('DIGER SERVISLER') ||
+            name.includes('DİĞER HİZMETLER') ||
+            name.includes('DIGER HIZMETLER') ||
+            name.includes('OTHER SERVICES');
+        });
+
+        if (otherMainCategory) {
+          // Bu ana kategorinin alt kategorilerini bul
+          const otherSubCategories = categories.filter(cat => {
+            return cat.parent_id === otherMainCategory.id;
+          });
+          setOtherSubCategories(otherSubCategories);
+        } else {
+          setOtherSubCategories([]);
+        }
+      } catch (error) {
+        setOtherSubCategories([]);
+      }
+    };
+    loadOtherSubCategories();
+  }, [categories]);
+
+  // Finansal alt kategorilerini yükle (CAT_009)
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const loadFinancialSubCategories = () => {
+      try {
+        // Ana finansal kategoriyi code veya isimden bul
+        const financialMainCategory =
+          categories.find(cat => (cat as any).code === 'CAT_009') ||
+          categories.find(cat =>
+            cat.parent_id === null &&
+            (cat.name?.toUpperCase()?.includes('FINANS') ||
+              cat.name?.toUpperCase()?.includes('FINANC'))
+          );
+
+        const subs = categories.filter(cat =>
+          cat.parent_id === 'CAT_009' || (financialMainCategory && cat.parent_id === financialMainCategory.id)
+        );
+        setFinancialSubCategories(subs);
+      } catch (error) {
+      }
+    };
+    loadFinancialSubCategories();
+  }, [categories]);
+
+
+
+  // Tedarikçileri ve otelleri yükle (zaten yukarıda yükleniyor, bu useEffect'leri kaldırıyoruz)
+
+
+  // Otel/Tedarikçi arama fonksiyonu
+  const filteredHotelSuppliers = useMemo(() => {
+    // allSuppliers boşsa, suppliers ve hotels'den oluştur
+    const suppliersList = allSuppliers.length > 0 ? allSuppliers : [
+      ...(suppliers || []).map(supplier => ({
+        ...supplier,
+        type: 'supplier',
+        displayName: supplier.name || supplier.title || ''
+      })),
+      ...(hotels || []).map(hotel => ({
+        ...hotel,
+        type: 'hotel',
+        displayName: hotel.name || hotel.title || ''
+      }))
+    ];
+
+    if (!hotelSupplierSearch || !hotelSupplierSearch.trim()) return suppliersList;
+    return suppliersList.filter(supplier =>
+      supplier.displayName?.toLowerCase().includes(hotelSupplierSearch?.toLowerCase() || '') ||
+      supplier.title?.toLowerCase().includes(hotelSupplierSearch?.toLowerCase() || '') ||
+      supplier.name?.toLowerCase().includes(hotelSupplierSearch?.toLowerCase() || '')
+    );
+  }, [allSuppliers, hotelSupplierSearch, suppliers, hotels]);
+
+
+  const updateDropdownPosition = useCallback(() => {
+    const inputRef = supplierInputRef.current || hotelSupplierInputRef.current || otherServiceSupplierInputRef.current || financialSupplierInputRef.current || paymentPlanSupplierInputRef.current || paymentSupplierInputRef.current;
+    if (inputRef) {
+      const rect = inputRef.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, []);
+
+
+  // Otel/Tedarikçi dropdown'ını kapat ve pozisyonu güncelle
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showHotelSupplierDropdown) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.hotel-supplier-dropdown') && !target.closest('input[placeholder="Otel/Tedarikçi ara..."]')) {
+          setShowHotelSupplierDropdown(false);
+          setSelectedSupplierIndex(-1);
+        }
+      }
+      if (showOtherServiceSupplierDropdown) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.other-service-supplier-dropdown') && !target.closest('input[placeholder="Otel/Tedarikçi ara..."]')) {
+          setShowOtherServiceSupplierDropdown(false);
+          setSelectedOtherServiceSupplierIndex(-1);
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (showHotelSupplierDropdown || showOtherServiceSupplierDropdown) {
+        updateDropdownPosition();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [showHotelSupplierDropdown, showOtherServiceSupplierDropdown, updateDropdownPosition]);
+
+  const handleFlightDelete = useCallback(async (index: number) => {
+    const ticketToDelete = flightTickets[index];
+    if (!ticketToDelete) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(`/api/flight-tickets/${projectId}/${ticketToDelete.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session?.access_token || ''}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Uçak bileti silinemedi');
+      }
+
+      // State'den sil
+      const updatedTickets = flightTickets.filter((_, i) => i !== index);
+      setFlightTickets(updatedTickets);
+
+      if (editingFlightIndex === index) {
+        setEditingFlightIndex(null);
+        setTempFlightItem(null);
+        setIsNewFlightItem(false);
+      }
+
+      alert('Uçak bileti başarıyla silindi!');
+    } catch (error) {
+      alert('Uçak bileti silinirken bir hata oluştu. Lütfen tekrar deneyin.');
+    }
+  }, [editingFlightIndex, flightTickets, projectId]);
+
+  const handleFlightImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const arrayBuffer = await file.arrayBuffer();
+      await workbook.xlsx.load(arrayBuffer);
+
+      const worksheet = workbook.getWorksheet(1);
+      if (!worksheet) {
+        alert('Excel dosyasında veri bulunamadı.');
+        return;
+      }
+
+      const importedTickets: FlightTicket[] = [];
+      let isDataRow = false;
+
+      worksheet.eachRow((row, rowNumber) => {
+        // İlk birkaç satır header bilgileri, tablo başlıkları ve boş satırlar
+        if (rowNumber <= 5) {
+          return;
+        }
+
+        const values = row.values as any[];
+        if (!values || values.length < 20) {
+          return;
+        }
+
+        // Tablo başlık satırını atla
+        if (values[1] === 'BİLETLEME TARİHİ' || values[1] === 'TEDARİKÇİ') {
+          return;
+        }
+
+        // Boş satırları atla
+        if (!values[1] && !values[2] && !values[3]) {
+          return;
+        }
+
+        // "TOPLAM" satırını atla
+        if (values[12] === 'TOPLAM') {
+          return;
+        }
+
+        // Tarih formatlarını düzelt (DD.MM.YYYY -> YYYY-MM-DD)
+        const formatDateForImport = (dateStr: string) => {
+          if (!dateStr) return '';
+          // DD.MM.YYYY formatından YYYY-MM-DD'ye çevir
+          if (dateStr.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+            const [day, month, year] = dateStr.split('.');
+            return `${year}-${month}-${day}`;
+          }
+          return dateStr;
+        };
+
+        // Saat formatını düzelt (HH:mm -> HH:mm:ss)
+        const formatTimeForImport = (timeStr: string) => {
+          if (!timeStr) return '';
+          // HH:mm formatından HH:mm:ss'ye çevir
+          if (timeStr.match(/^\d{2}:\d{2}$/)) {
+            return `${timeStr}:00`;
+          }
+          return timeStr;
+        };
+
+        // Veri satırı
+        const ticket: FlightTicket = {
+          id: Date.now() + Math.random().toString(),
+          biletlemeTarihi: formatDateForImport(values[1] || ''),
+          tedarikci: values[2] || '',
+          havayolu: values[3] || '',
+          pnr: values[4] || '',
+          ucusTipi: values[5] || '',
+          gidisTarihi: formatDateForImport(values[6] || ''),
+          gidisSaati: formatTimeForImport(values[7] || ''),
+          gidisUcusKodu: values[8] || '',
+          donusTarihi: formatDateForImport(values[9] || ''),
+          donusSaati: formatTimeForImport(values[10] || ''),
+          donusUcusKodu: values[11] || '',
+          guzergah: values[12] || '',
+          kisiSayisi: Number(values[13]) || 1,
+          ppMaliyet: Number(values[14]) || 0,
+          toplamMaliyet: Number(values[15]) || 0,
+          doviz: values[16] || 'EUR',
+          kur: Number(values[17]) || 1.0000,
+          toplamTl: Number(values[18]) || 0,
+          misafirler: values[19] || '',
+          durum: (values[20] as 'aktif' | 'iptal' | 'iade' | 'degistirildi') || 'aktif',
+          islemler: ''
+        };
+
+        importedTickets.push(ticket);
+        isDataRow = true;
+      });
+
+      if (!isDataRow || importedTickets.length === 0) {
+        alert('Excel dosyasında geçerli uçak bileti verisi bulunamadı.');
+        return;
+      }
+
+      // Her bilet için Supabase'e kaydet
+      const savedTickets: FlightTicket[] = [];
+
+      for (const ticket of importedTickets) {
+        try {
+          const payload = {
+            biletleme_tarihi: ticket.biletlemeTarihi,
+            tedarikci: ticket.tedarikci,
+            havayolu: ticket.havayolu,
+            pnr: ticket.pnr,
+            ucus_tipi: ticket.ucusTipi,
+            gidis_tarihi: ticket.gidisTarihi,
+            gidis_saati: ticket.gidisSaati,
+            gidis_ucus_kodu: ticket.gidisUcusKodu,
+            donus_tarihi: ticket.donusTarihi,
+            donus_saati: ticket.donusSaati,
+            donus_ucus_kodu: ticket.donusUcusKodu,
+            guzergah: ticket.guzergah,
+            kisi_sayisi: ticket.kisiSayisi,
+            pp_maliyet: ticket.ppMaliyet,
+            toplam_maliyet: ticket.toplamMaliyet,
+            doviz: ticket.doviz,
+            kur: ticket.kur,
+            toplam_tl: ticket.toplamTl,
+            misafirler: ticket.misafirler,
+            durum: ticket.durum,
+            islemler: ticket.islemler
+          };
+
+          const { data: { session } } = await supabase.auth.getSession();
+          const response = await fetch(`/api/flight-tickets/${projectId}`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token || ''}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            continue;
+          }
+
+          const savedTicket = await response.json();
+          const mappedTicket = migrateFlightTicket(savedTicket);
+          savedTickets.push(mappedTicket);
+
+        } catch (error) {
+        }
+      }
+
+      if (savedTickets.length === 0) {
+        alert('Hiçbir bilet kaydedilemedi. Lütfen verileri kontrol edin.');
+        return;
+      }
+
+      // Frontend state'ini güncelle
+      setFlightTickets(prev => [...prev, ...savedTickets]);
+
+      if (savedTickets.length === importedTickets.length) {
+        alert(`${savedTickets.length} adet uçak bileti başarıyla içe aktarıldı ve kaydedildi.`);
+      } else {
+        alert(`${savedTickets.length} adet uçak bileti kaydedildi. ${importedTickets.length - savedTickets.length} adet bilet kaydedilemedi.`);
+      }
+
+      // Input'u temizle
+      event.target.value = '';
+
+    } catch (error) {
+      alert('Excel dosyası okunurken hata oluştu. Lütfen dosya formatını kontrol edin.');
+    }
+  }, []);
+
+
+  // Uçak Bileti temizleme fonksiyonu
+  const handleFlightClear = useCallback(async () => {
+    if (!projectId) return;
+
+    setConfirmModal({
+      open: true,
+      title: 'Uçak Biletlerini Temizle',
+      message: 'Tüm Uçak Bileti verileri silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Backend API üzerinden tüm uçak biletlerini sil
+          const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_BASE}/api/flight-tickets/${projectId}`, {
+            method: 'DELETE'
+          });
+
+          if (!response.ok) {
+            throw new Error('Uçak biletleri silinemedi');
+          }
+
+          // State'i temizle
+          setFlightTickets([]);
+          setEditingFlightIndex(null);
+          setTempFlightItem(null);
+          setIsNewFlightItem(false);
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Tüm Uçak Bileti verileri başarıyla silindi.');
+        } catch (error: any) {
+          alert('Uçak biletleri silinirken bir hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, setConfirmModal, setLoading, setFlightTickets, setEditingFlightIndex, setTempFlightItem, setIsNewFlightItem]);
+
+  // Expandable fonksiyonları
+  const toggleFlightTicketExpansion = useCallback((ticketId: string) => {
+    setExpandedFlightTickets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(ticketId)) {
+        newSet.delete(ticketId);
+      } else {
+        newSet.add(ticketId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Filtrelenmiş ve sıralanmış uçak biletleri
+  const filteredFlightTickets = useMemo(() => {
+    let filtered = flightTickets;
+
+    // Arama filtresi
+    if (flightTicketSearch) {
+      filtered = flightTickets.filter(ticket =>
+        (ticket.tedarikci || '').toLowerCase().includes(flightTicketSearch?.toLowerCase() || '') ||
+        (ticket.havayolu || '').toLowerCase().includes(flightTicketSearch?.toLowerCase() || '') ||
+        (ticket.guzergah || '').toLowerCase().includes(flightTicketSearch?.toLowerCase() || '') ||
+        (ticket.pnr || '').toLowerCase().includes(flightTicketSearch?.toLowerCase() || '') ||
+        (ticket.misafirler || '').toLowerCase().includes(flightTicketSearch?.toLowerCase() || '')
+      );
+    }
+
+    // Sıralama
+    return getSortedFlightTickets(filtered);
+  }, [flightTickets, flightTicketSearch, flightSortField, flightSortDirection]);
+
+
+  // Döviz cinsine göre toplam hesaplamaları
+  const flightTotals = useMemo(() => {
+    const totalsByCurrency: { [key: string]: { kisiSayisi: number; ppMaliyet: number; toplamMaliyet: number; toplamTl: number } } = {};
+
+    filteredFlightTickets.forEach(ticket => {
+      const doviz = ticket.doviz || 'EUR';
+      if (!totalsByCurrency[doviz]) {
+        totalsByCurrency[doviz] = { kisiSayisi: 0, ppMaliyet: 0, toplamMaliyet: 0, toplamTl: 0 };
+      }
+
+      totalsByCurrency[doviz].kisiSayisi += ticket.kisiSayisi || 0;
+      totalsByCurrency[doviz].ppMaliyet += ticket.ppMaliyet || 0;
+      totalsByCurrency[doviz].toplamMaliyet += ticket.toplamMaliyet || 0;
+      totalsByCurrency[doviz].toplamTl += ticket.toplamTl || 0;
+    });
+
+    return totalsByCurrency;
+  }, [filteredFlightTickets]);
+
+  // Excel export fonksiyonu
+  const handleFlightExport = useCallback(async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Uçak Bileti Raporu');
+
+      // Sayfa ayarları
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      // Üst Bant (A1:T1) - zemin rengi ve logolar
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:T1');
+
+      // A1:T1 zemin rengi #232f38
+      for (let c = 1; c <= 20; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      // Koyu tema logolarını al (Supabase'ten)
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true); // Koyu tema için true
+
+      // Logoları ekle
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 17.5, row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      // Başlık bilgileri
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(20);
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[18] = item.right;
+        rowValues[19] = rightValue;
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        // Sol etiket (A)
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Sol değer (B)
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Sağ etiket (S)
+        headerRow.getCell(19).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(19).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Sağ değer (T)
+        headerRow.getCell(20).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(20).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      // Boş satır
+      sheet.addRow([]);
+      rowIndex++;
+
+      // Tablo başlıkları
+      const tableHeaderRow = sheet.addRow([
+        'BİLETLEME TARİHİ', 'TEDARİKÇİ', 'HAVAYOLU', 'PNR', 'UÇUŞ TİPİ',
+        'GİDİŞ TARİHİ', 'GİDİŞ SAATİ', 'GİDİŞ UÇUŞ KODU', 'DÖNÜŞ TARİHİ', 'DÖNÜŞ SAATİ',
+        'DÖNÜŞ UÇUŞ KODU', 'GÜZERGAH', 'KİŞİ SAYISI', 'PP MALİYET', 'TOPLAM MALİYET',
+        'DÖVİZ', 'KUR', 'TOPLAM TL', 'MİSAFİRLER', 'DURUM'
+      ]);
+
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FF000000' } };
+      tableHeaderRow.height = 25;
+
+      // Başlık hücrelerini biçimlendir
+      for (let col = 1; col <= 20; col++) {
+        const cell = tableHeaderRow.getCell(col);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE6E6E6' }
+        };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
+        };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      }
+
+      // Veri satırları
+      filteredFlightTickets.forEach((ticket) => {
+        // Tarih formatlarını düzelt
+        const formatDateForExport = (dateStr: string) => {
+          if (!dateStr) return '';
+          // YYYY-MM-DD formatından DD.MM.YYYY'ye çevir
+          if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}.${month}.${year}`;
+          }
+          return dateStr;
+        };
+
+        // Saat formatını düzelt
+        const formatTimeForExport = (timeStr: string) => {
+          if (!timeStr) return '';
+          // HH:mm:ss formatından HH:mm'ye çevir
+          if (timeStr.match(/^\d{2}:\d{2}:\d{2}$/)) {
+            return timeStr.substring(0, 5);
+          }
+          return timeStr;
+        };
+
+        const dataRow = sheet.addRow([
+          formatDateForExport(ticket.biletlemeTarihi || ''),
+          ticket.tedarikci || '',
+          ticket.havayolu || '',
+          ticket.pnr || '',
+          ticket.ucusTipi || '',
+          formatDateForExport(ticket.gidisTarihi || ''),
+          formatTimeForExport(ticket.gidisSaati || ''),
+          ticket.gidisUcusKodu || '',
+          formatDateForExport(ticket.donusTarihi || ''),
+          formatTimeForExport(ticket.donusSaati || ''),
+          ticket.donusUcusKodu || '',
+          ticket.guzergah || '',
+          ticket.kisiSayisi || 0,
+          ticket.ppMaliyet || 0,
+          ticket.toplamMaliyet || 0,
+          ticket.doviz || '',
+          ticket.kur || 0,
+          ticket.toplamTl || 0,
+          ticket.misafirler || '',
+          ticket.durum || ''
+        ]);
+
+        dataRow.height = 20;
+
+        // Veri hücrelerini biçimlendir
+        for (let col = 1; col <= 20; col++) {
+          const cell = dataRow.getCell(col);
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+            left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+            bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+            right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+          };
+
+          // Sayısal sütunları sağa hizala
+          if ([13, 14, 15, 17, 18].includes(col)) {
+            cell.alignment = { horizontal: 'right', vertical: 'middle' };
+            cell.numFmt = col === 18 ? '₺#,##0.00' : '#,##0.00';
+          } else {
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          }
+        }
+      });
+
+      // Sütun genişlikleri
+      sheet.columns = [
+        { width: 15 }, // BİLETLEME TARİHİ
+        { width: 15 }, // TEDARİKÇİ
+        { width: 10 }, // HAVAYOLU
+        { width: 12 }, // PNR
+        { width: 10 }, // UÇUŞ TİPİ
+        { width: 12 }, // GİDİŞ TARİHİ
+        { width: 10 }, // GİDİŞ SAATİ
+        { width: 15 }, // GİDİŞ UÇUŞ KODU
+        { width: 12 }, // DÖNÜŞ TARİHİ
+        { width: 10 }, // DÖNÜŞ SAATİ
+        { width: 15 }, // DÖNÜŞ UÇUŞ KODU
+        { width: 15 }, // GÜZERGAH
+        { width: 10 }, // KİŞİ SAYISI
+        { width: 12 }, // PP MALİYET
+        { width: 15 }, // TOPLAM MALİYET
+        { width: 8 },  // DÖVİZ
+        { width: 10 }, // KUR
+        { width: 15 }, // TOPLAM TL
+        { width: 20 }, // MİSAFİRLER
+        { width: 10 }  // DURUM
+      ];
+
+      // Toplam satırı
+      if (filteredFlightTickets.length > 0) {
+        const totalRow = sheet.addRow([
+          '', '', '', '', '', '', '', '', '', '', '', 'TOPLAM',
+          Object.values(flightTotals).reduce((sum, total) => sum + total.kisiSayisi, 0),
+          Object.values(flightTotals).reduce((sum, total) => sum + total.ppMaliyet, 0),
+          Object.values(flightTotals).reduce((sum, total) => sum + total.toplamMaliyet, 0),
+          '', '', Object.values(flightTotals).reduce((sum, total) => sum + total.toplamTl, 0),
+          '', ''
+        ]);
+
+        totalRow.font = { bold: true, size: 11, color: { argb: 'FF000000' } };
+        totalRow.height = 25;
+
+        // Toplam satırını biçimlendir
+        for (let col = 1; col <= 20; col++) {
+          const cell = totalRow.getCell(col);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF0F0F0' }
+          };
+          cell.border = {
+            top: { style: 'medium', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'medium', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+
+          if ([13, 14, 15, 18].includes(col)) {
+            cell.alignment = { horizontal: 'right', vertical: 'middle' };
+            cell.numFmt = col === 18 ? '₺#,##0.00' : '#,##0.00';
+          } else {
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          }
+        }
+      }
+
+      // Dosyayı indir
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Ucak_Bileti_Raporu_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      alert('Excel dışa aktarma sırasında hata oluştu.');
+    }
+  }, [filteredFlightTickets, flightTotals, project]);
+
+  // Transfer & Tur döviz cinsine göre toplam hesaplamaları
+  // transferTotals useTransferState hook'undan geliyor
+
+  // Transfer istatistiklerini yükle
+  useEffect(() => {
+    const loadTransferStats = async () => {
+      try {
+        const stats = await projectTransfersService.getStats(projectId);
+        setTransferTotals(stats.totalsByCurrency);
+      } catch (error) {
+        // Fallback olarak mevcut transferlerden hesapla
+        const totalsByCurrency: { [key: string]: { kisiSayisi: number; toplamMaliyet: number } } = {};
+        transfers.forEach(transfer => {
+          const doviz = transfer.currency || 'TRY';
+          if (!totalsByCurrency[doviz]) {
+            totalsByCurrency[doviz] = { kisiSayisi: 0, toplamMaliyet: 0 };
+          }
+          totalsByCurrency[doviz].kisiSayisi += transfer.passengerCount || 0;
+          totalsByCurrency[doviz].toplamMaliyet += parseFloat(transfer.costAmount) || 0;
+        });
+        setTransferTotals(totalsByCurrency);
+      }
+    };
+
+    if (projectId) {
+      loadTransferStats();
+    }
+  }, [projectId, transfers]);
+
+  // Otel Ekstra döviz cinsine göre toplam hesaplamaları
+  const hotelExtraTotals = useMemo(() => {
+    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
+
+    hotelExtras.forEach(extra => {
+      const doviz = extra.currency || 'TRY';
+      if (!totalsByCurrency[doviz]) {
+        totalsByCurrency[doviz] = { toplamMaliyet: 0 };
+      }
+
+      // Döviz cinsine göre tutarı hesapla
+      let amount = 0;
+      if (doviz === 'TRY') {
+        // TRY ise total_try kullan
+        amount = parseFloat(extra.total_try || extra.totalTRY || 0) || 0;
+      } else {
+        // Diğer dövizler için amount kullan
+        amount = parseFloat(extra.amount || 0) || 0;
+      }
+
+      totalsByCurrency[doviz].toplamMaliyet += amount;
+    });
+
+    return totalsByCurrency;
+  }, [hotelExtras]);
+
+  // Diğer Servisler döviz cinsine göre toplam hesaplamaları
+  const otherServicesTotals = useMemo(() => {
+    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
+    otherServices.forEach(item => {
+      const cur = item.currency || 'TRY';
+      if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
+      totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount) || 0;
+    });
+    return totalsByCurrency;
+  }, [otherServices]);
+
+  // Finansal döviz cinsine göre toplam hesaplamaları
+  const financialTotals = useMemo(() => {
+    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
+    financialServices.forEach(item => {
+      const cur = item.currency || 'TRY';
+      if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
+      totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount) || 0;
+    });
+    return totalsByCurrency;
+  }, [financialServices]);
+
+  // Etkinlik & Aktivite döviz cinsine göre toplam hesaplamaları
+  const eventTotals = useMemo(() => {
+    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
+    eventsActivities.forEach(item => {
+      const cur = item.currency || 'EUR';
+      if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
+      totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount || 0) || 0;
+    });
+    return totalsByCurrency;
+  }, [eventsActivities]);
+
+
+  // Filtrelenmiş ham listeler (Toplamlar ve diğer sekmeler için)
+  const filteredSalesItems = useMemo(() => {
+    let items = itemsSales;
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      items = items.filter(item => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id || item.hotel_id === 'general';
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+    
+    return items.sort((a, b) => {
+      const getSortOrder = (item: any) => {
+        const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
+        const subList = subCategoriesByMain[item.main_category] || [];
+        const subIdx = subList.findIndex(c => c.id === item.sub_category);
+        return (mainIdx + 1) * 1000 + (subIdx + 1);
+      };
+      return getSortOrder(a) - getSortOrder(b);
+    });
+  }, [itemsSales, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
+
+  const filteredPurchaseItems = useMemo(() => {
+    let items = itemsPurchase;
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      items = items.filter(item => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id || item.hotel_id === 'general';
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+    
+    return items.sort((a, b) => {
+      const getSortOrder = (item: any) => {
+        const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
+        const subList = subCategoriesByMain[item.main_category] || [];
+        const subIdx = subList.findIndex(c => c.id === item.sub_category);
+        return (mainIdx + 1) * 1000 + (subIdx + 1);
+      };
+      return getSortOrder(a) - getSortOrder(b);
+    });
+  }, [itemsPurchase, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
+
+  // Satış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
+  const salesTotals = useMemo(() => {
+    const totalTRY = filteredSalesItems.reduce((sum: number, it: any) => sum + (Number(it.total_try) || 0), 0);
+    const totalByCurrency: Record<string, number> = {};
+    filteredSalesItems.forEach((it: any) => {
+      const cur = it.currency || 'EUR';
+      totalByCurrency[cur] = (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
+    });
+    return { totalTRY, totalByCurrency };
+  }, [filteredSalesItems]);
+
+  // Alış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
+  const purchaseTotals = useMemo(() => {
+    const totalTRY = filteredPurchaseItems.reduce((sum: number, it: any) => sum + (Number(it.total_try) || 0), 0);
+    const totalByCurrency: Record<string, number> = {};
+    filteredPurchaseItems.forEach((it: any) => {
+      const cur = it.currency || 'EUR';
+      totalByCurrency[cur] = (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
+    });
+    return { totalTRY, totalByCurrency };
+  }, [filteredPurchaseItems]);
+
+
+  // Satış kalemlerini kategorilere göre grupla (cache'lenmiş)
+  const groupedSalesItems = useMemo(() => {
+    const grouped = filteredSalesItems.reduce((acc: any, item: any) => {
+      const mainCat = getCategoryName(item.main_category) || 'Diğer';
+      if (!acc[mainCat]) {
+        acc[mainCat] = [];
+      }
+      acc[mainCat].push(item);
+      return acc;
+    }, {});
+
+    const result: any[] = [];
+    Object.entries(grouped).forEach(([mainCategory, categoryItems]: [string, any]) => {
+      result.push({
+        type: 'header',
+        category: mainCategory,
+        items: categoryItems
+      });
+      categoryItems.forEach((item: any, idx: number) => {
+        result.push({
+          type: 'item',
+          item,
+          idx
+        });
+      });
+      const categoryTotal = categoryItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+      const categoryTotalTRY = categoryItems.reduce((sum: number, item: any) => sum + (item.total_try || 0), 0);
+      result.push({
+        type: 'subtotal',
+        category: mainCategory,
+        total: categoryTotal,
+        totalTRY: categoryTotalTRY,
+        items: categoryItems
+      });
+    });
+    return result;
+  }, [filteredSalesItems, getCategoryName]);
+
+  // Alış kalemlerini kategorilere göre grupla (cache'lenmiş)
+  const groupedPurchaseItems = useMemo(() => {
+    const grouped = filteredPurchaseItems.reduce((acc: any, item: any) => {
+      const mainCat = getCategoryName(item.main_category) || 'Diğer';
+      if (!acc[mainCat]) {
+        acc[mainCat] = [];
+      }
+      acc[mainCat].push(item);
+      return acc;
+    }, {});
+
+    const result: any[] = [];
+    Object.entries(grouped).forEach(([mainCategory, categoryItems]: [string, any]) => {
+      result.push({
+        type: 'header',
+        category: mainCategory,
+        items: categoryItems
+      });
+      categoryItems.forEach((item: any, idx: number) => {
+        result.push({
+          type: 'item',
+          item,
+          idx
+        });
+      });
+      const categoryTotal = categoryItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+      const categoryTotalTRY = categoryItems.reduce((sum: number, item: any) => sum + (item.total_try || 0), 0);
+      result.push({
+        type: 'subtotal',
+        category: mainCategory,
+        total: categoryTotal,
+        totalTRY: categoryTotalTRY,
+        items: categoryItems
+      });
+    });
+    return result;
+  }, [filteredPurchaseItems, getCategoryName]);
+
+
+  // Konaklama kalemlerini filtrele
+  const filteredAccommodationItems = useMemo(() => {
+    // 1. Önce ID bazlı tekilleştir (State'de kopyalar kalsa bile gösterme)
+    const uniqueItemsMap = new Map();
+    accommodationItems.forEach(item => {
+      if (item.id) {
+        uniqueItemsMap.set(String(item.id), item);
+      }
+    });
+    const uniqueItems = Array.from(uniqueItemsMap.values());
+
+    if (activeHotelId === 'all') return uniqueItems;
+    
+    const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+    const realHotelId = currentTab?.hotel_id;
+
+    return uniqueItems.filter(item => {
+      const hObj = hotels.find(ht => ht.id === activeHotelId);
+      const isHotelNameMatch = hObj?.name && (item.hotel === hObj.name || item.otel === hObj.name);
+      
+      const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+      return item.hotel_id === activeHotelId || 
+             (realHotelId && item.hotel_id === realHotelId) ||
+             isHotelNameMatch ||
+             (activeHotelId === 'general' && !item.hotel_id && !item.hotel && !item.otel);
+    });
+  }, [accommodationItems, activeHotelId, hotels, project?.hotels_data]);
+
+  // Kar/Zarar hesapları (ana/alt kategori bazında, döviz ve TL)
+  const profitLossData = useMemo(() => {
+    type CurrencyMap = Record<string, number>;
+    type Row = {
+      mainCategoryId: string;
+      mainCategoryName: string;
+      subCategoryId: string;
+      subCategoryName: string;
+      salesByCurrency: CurrencyMap;
+      salesTRY: number;
+      purchaseByCurrency: CurrencyMap;
+      purchaseTRY: number;
+      profitByCurrency: CurrencyMap;
+      profitTRY: number;
+      marginPercent: number;
+    };
+
+    const ensure = (map: Record<string, Row>, key: string, mainId: string, subId: string) => {
+      if (!map[key]) {
+        map[key] = {
+          mainCategoryId: mainId,
+          mainCategoryName: getCategoryName(mainId) || 'Diğer',
+          subCategoryId: subId,
+          subCategoryName: getCategoryName(subId) || '—',
+          salesByCurrency: {},
+          salesTRY: 0,
+          purchaseByCurrency: {},
+          purchaseTRY: 0,
+          profitByCurrency: {},
+          profitTRY: 0,
+          marginPercent: 0,
+        };
+      }
+      return map[key];
+    };
+
+    const rowsByKey: Record<string, Row> = {};
+
+    // Satışlar
+    filteredSalesItems.forEach((it: any) => {
+      const mainId = it.main_category || '';
+      const subId = it.sub_category || '';
+      const key = `${mainId}|${subId}`;
+      const row = ensure(rowsByKey, key, mainId, subId);
+      const cur = it.currency || 'EUR';
+      const total = Number(it.total) || 0;
+      const totalTRY = Number(it.total_try) || 0;
+      row.salesByCurrency[cur] = (row.salesByCurrency[cur] || 0) + total;
+      row.salesTRY += totalTRY;
+    });
+
+    // Alışlar
+    filteredPurchaseItems.forEach((it: any) => {
+      const mainId = it.main_category || '';
+      const subId = it.sub_category || '';
+      const key = `${mainId}|${subId}`;
+      const row = ensure(rowsByKey, key, mainId, subId);
+      const cur = it.currency || 'EUR';
+      const total = Number(it.total) || 0;
+      const totalTRY = Number(it.total_try) || 0;
+      row.purchaseByCurrency[cur] = (row.purchaseByCurrency[cur] || 0) + total;
+      row.purchaseTRY += totalTRY;
+    });
+
+    // Kar/Zarar ve marj
+    Object.values(rowsByKey).forEach((row) => {
+      const currencies = new Set<string>([
+        ...Object.keys(row.salesByCurrency),
+        ...Object.keys(row.purchaseByCurrency),
+      ]);
+      currencies.forEach((c) => {
+        const s = row.salesByCurrency[c] || 0;
+        const p = row.purchaseByCurrency[c] || 0;
+        row.profitByCurrency[c] = s - p;
+      });
+      row.profitTRY = row.salesTRY - row.purchaseTRY;
+      row.marginPercent = row.salesTRY > 0 ? (row.profitTRY / row.salesTRY) * 100 : 0;
+    });
+
+    // Sıralama: Kategoriler sayfasındaki sıralama mantığına göre
+    // Ana kategori sırası (mainCategories'deki index - zaten sıralanmış)
+    const mainOrder: Record<string, number> = {};
+    mainCategories.forEach((c: any, idx: number) => {
+      mainOrder[c.id] = idx;
+    });
+
+    const rows: Row[] = Object.values(rowsByKey).sort((a, b) => {
+      const aMainIdx = mainOrder[a.mainCategoryId] ?? Number.MAX_SAFE_INTEGER;
+      const bMainIdx = mainOrder[b.mainCategoryId] ?? Number.MAX_SAFE_INTEGER;
+      if (aMainIdx !== bMainIdx) return aMainIdx - bMainIdx;
+
+      // Alt kategori sırası: subCategoriesByMain'deki sıraya göre (zaten sıralanmış)
+      const subList = subCategoriesByMain[a.mainCategoryId] || [];
+      const subOrder: Record<string, number> = {};
+      subList.forEach((c: any, idx: number) => { subOrder[c.id] = idx; });
+      const aSubIdx = subOrder[a.subCategoryId] ?? Number.MAX_SAFE_INTEGER;
+      const bSubIdx = subOrder[b.subCategoryId] ?? Number.MAX_SAFE_INTEGER;
+      if (aSubIdx !== bSubIdx) return aSubIdx - bSubIdx;
+
+      // Yedek: Türkçe ad karşılaştırması
+      const trCompare = (x: string, y: string) => x.localeCompare(y, 'tr', { sensitivity: 'base' });
+      if (a.mainCategoryName !== b.mainCategoryName) return trCompare(a.mainCategoryName, b.mainCategoryName);
+      return trCompare(a.subCategoryName, b.subCategoryName);
+    });
+
+    // Genel toplamlar
+    const totals = rows.reduce(
+      (acc, r) => {
+        // döviz toplamları
+        Object.entries(r.salesByCurrency).forEach(([c, v]) => {
+          acc.salesByCurrency[c] = (acc.salesByCurrency[c] || 0) + (v || 0);
+        });
+        Object.entries(r.purchaseByCurrency).forEach(([c, v]) => {
+          acc.purchaseByCurrency[c] = (acc.purchaseByCurrency[c] || 0) + (v || 0);
+        });
+        Object.entries(r.profitByCurrency).forEach(([c, v]) => {
+          acc.profitByCurrency[c] = (acc.profitByCurrency[c] || 0) + (v || 0);
+        });
+        // TL toplamları
+        acc.salesTRY += r.salesTRY;
+        acc.purchaseTRY += r.purchaseTRY;
+        acc.profitTRY += r.profitTRY;
+        return acc;
+      },
+      {
+        salesByCurrency: {} as CurrencyMap,
+        salesTRY: 0,
+        purchaseByCurrency: {} as CurrencyMap,
+        purchaseTRY: 0,
+        profitByCurrency: {} as CurrencyMap,
+        profitTRY: 0,
+      }
+    );
+
+    return { rows, totals };
+  }, [filteredSalesItems, filteredPurchaseItems, getCategoryName, mainCategories, subCategoriesByMain]);
+
+  // Kar/Zarar tabı için gruplanmış veriler (cache'lenmiş)
+  const groupedProfitLossData = useMemo(() => {
+    const groups: Record<string, typeof profitLossData.rows> = {};
+    profitLossData.rows.forEach((r) => {
+      groups[r.mainCategoryName] = groups[r.mainCategoryName] || [];
+      groups[r.mainCategoryName].push(r);
+    });
+    const mainNames = Object.keys(groups);
+    return { groups, mainNames };
+  }, [profitLossData.rows]);
+
+  const formatByCurrencySummary = (byCur: Record<string, number>) => {
+    const keys = Object.keys(byCur).sort();
+    if (keys.length === 0) return '0';
+    return keys
+      .map((k) => `${formatNumber(Number(byCur[k] || 0))} ${k}`)
+      .join(' + ');
+  };
+  // Döviz toplamını iki hücreye böl: tek dövizse tutar ve kodu ayır, çokluysa tutarı birleştir, kodu "MIX"
+  const splitCurrencySummary = (byCur: Record<string, number>) => {
+    const entries = Object.entries(byCur).filter(([, v]) => (Number(v) || 0) !== 0);
+    if (entries.length === 0) return { amountText: '0', currencyText: '' };
+    if (entries.length === 1) {
+      const [cur, val] = entries[0];
+      return { amountText: formatNumber(Number(val || 0)), currencyText: cur };
+    }
+    // Çoklu döviz: tümünü tek hücrede göster, yan hücreye kısa kod
+    return {
+      amountText: entries.map(([cur, val]) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + '),
+      currencyText: 'MIX',
+    };
+  };
+
+  // Tahsilat bakiyesi = Plan toplam TL - Tahsil edilen toplam TL
+  const collectionSummary = useMemo(() => {
+    const planTRY = Number(salesTotals.totalTRY || 0);
+    const collectedTRY = collections.reduce((sum: number, c: any) => sum + (c.totalTRY || (Number(c.amount) || 0) * (Number(c.exchangeRate || 1))), 0);
+    const balanceTRY = planTRY - collectedTRY;
+    return { planTRY, collectedTRY, balanceTRY };
+  }, [collections, salesTotals.totalTRY]);
+
+  // Ödeme bakiyesi = Plan toplam TL - Yapılan ödemeler toplam TL
+  const paymentSummary = useMemo(() => {
+    const planTRY = paymentPlans.reduce((sum: number, p: any) => sum + (p.totalTRY || p.amount || 0), 0);
+    const paidTRY = payments.reduce((sum: number, p: any) => sum + (p.totalTRY || p.amount || 0), 0);
+    const balanceTRY = planTRY - paidTRY;
+    return { planTRY, paidTRY, balanceTRY };
+  }, [paymentPlans, payments]);
+
+  // Döviz bazında plan/tahsil/bakiye
+  const planByCurrency = useMemo(() => {
+    const byCur: Record<string, number> = {};
+    collectionPlans.forEach((p: any) => {
+      const cur = p.currency || 'TRY';
+      byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
+    });
+    return byCur;
+  }, [collectionPlans]);
+
+  const collectedByCurrency = useMemo(() => {
+    const byCur: Record<string, number> = {};
+    collections.forEach((c: any) => {
+      const cur = c.currency || 'TRY';
+      byCur[cur] = (byCur[cur] || 0) + (Number(c.amount) || 0);
+    });
+    return byCur;
+  }, [collections]);
+
+  // Ödeme döviz bazında plan/ödeme/bakiye
+  const paymentPlanByCurrency = useMemo(() => {
+    const byCur: Record<string, number> = {};
+    paymentPlans.forEach((p: any) => {
+      const cur = p.currency || 'TRY';
+      byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
+    });
+    return byCur;
+  }, [paymentPlans]);
+
+  const paidByCurrency = useMemo(() => {
+    const byCur: Record<string, number> = {};
+    payments.forEach((p: any) => {
+      const cur = p.currency || 'TRY';
+      byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
+    });
+    return byCur;
+  }, [payments]);
+
+  const balanceByCurrency = useMemo(() => {
+    const salesByCurrency = salesTotals.totalByCurrency || {};
+    const keys = new Set<string>([...Object.keys(salesByCurrency), ...Object.keys(collectedByCurrency)]);
+    const res: Record<string, number> = {};
+    keys.forEach((k) => {
+      res[k] = (Number(salesByCurrency[k] || 0)) - (collectedByCurrency[k] || 0);
+    });
+    return res;
+  }, [salesTotals.totalByCurrency, collectedByCurrency]);
+
+  // İnsan Kaynakları filtreleme ve sıralama
+  // Diğer Servisler için filtreleme ve sıralama
+  const filteredOtherServices = useMemo(() => {
+    let filtered = otherServices;
+
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      filtered = filtered.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id && !item.hotel;
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    if (otherServiceSearch.trim()) {
+      const searchLower = otherServiceSearch.toLowerCase();
+      filtered = filtered.filter(item =>
+        (item.supplier || item.hotel || '').toLowerCase().includes(searchLower) ||
+        (item.subCategory || item.sub_category || '').toLowerCase().includes(searchLower) ||
+        (item.description || '').toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (otherServiceSortField) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue = a[otherServiceSortField];
+        let bValue = b[otherServiceSortField];
+
+        if (otherServiceSortField === 'date') {
+          aValue = new Date(aValue || 0).getTime();
+          bValue = new Date(bValue || 0).getTime();
+        } else if (['amount', 'totalTRY', 'total_try', 'exchangeRate', 'exchange_rate', 'fx'].includes(otherServiceSortField)) {
+          aValue = parseFloat(aValue) || 0;
+          bValue = parseFloat(bValue) || 0;
+        } else {
+          aValue = String(aValue || '').toLowerCase();
+          bValue = String(bValue || '').toLowerCase();
+        }
+
+        if (otherServiceSortDirection === 'asc') {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+        } else {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [otherServices, otherServiceSearch, otherServiceSortField, otherServiceSortDirection, activeHotelId, project?.hotels_data]);
+
+  const filteredHrExtras = useMemo(() => {
+    let filtered = hrExtras;
+
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      filtered = filtered.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id && !item.hotel;
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    if (hrSearch.trim()) {
+      filtered = filtered.filter(extra =>
+        (extra.hotel && extra.hotel.toLowerCase().includes(hrSearch?.toLowerCase() || '')) ||
+        (extra.description && extra.description.toLowerCase().includes(hrSearch?.toLowerCase() || '')) ||
+        (extra.subCategoryName && extra.subCategoryName.toLowerCase().includes(hrSearch?.toLowerCase() || ''))
+      );
+    }
+
+    if (hrSortField) {
+      filtered = [...filtered].sort((a, b) => {
+        let aVal = a[hrSortField] || '';
+        let bVal = b[hrSortField] || '';
+
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+        if (hrSortDirection === 'asc') {
+          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        } else {
+          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [hrExtras, hrSearch, hrSortField, hrSortDirection, activeHotelId, project?.hotels_data]);
+
+  // Human Resources computed değerleri
+  const filteredHr = useMemo(() => {
+    let filtered = humanResources;
+
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      filtered = filtered.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id && !item.hotel;
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    if (hrSearch.trim()) {
+      filtered = filtered.filter(hr =>
+        (hr.description && hr.description.toLowerCase().includes(hrSearch?.toLowerCase() || '')) ||
+        (hr.subCategoryName && hr.subCategoryName.toLowerCase().includes(hrSearch?.toLowerCase() || '')) ||
+        (hr.supplierName && hr.supplierName.toLowerCase().includes(hrSearch?.toLowerCase() || ''))
+      );
+    }
+    return filtered;
+  }, [humanResources, hrSearch, activeHotelId, project?.hotels_data]);
+
+  const sortedHr = useMemo(() => {
+    if (!hrSortField) return filteredHr;
+    return [...filteredHr].sort((a, b) => {
+      let aVal = a[hrSortField] || '';
+      let bVal = b[hrSortField] || '';
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      if (hrSortDirection === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  }, [filteredHr, hrSortField, hrSortDirection]);
+
+  // İnsan Kaynakları toplam hesaplaması
+  const hrTotals = useMemo(() => {
+    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
+
+    hrExtras.forEach(extra => {
+      const doviz = extra.currency || 'TRY';
+      if (!totalsByCurrency[doviz]) {
+        totalsByCurrency[doviz] = { toplamMaliyet: 0 };
+      }
+
+      totalsByCurrency[doviz].toplamMaliyet += parseFloat(extra.amount) || 0;
+    });
+
+    return totalsByCurrency;
+  }, [hrExtras]);
+
+  // Tedarikçi arama ve filtreleme
+  // Filtrelenmiş tedarikçiler (hem suppliers hem de hotels)
+  const filteredSuppliers = useMemo(() => {
+    const allSuppliers = [
+      ...suppliers.map(s => ({ ...s, type: 'supplier' })),
+      ...hotels.map(h => ({
+        id: h.id,
+        name: h.name,
+        title: h.location || h.category || 'Otel',
+        type: 'hotel'
+      }))
+    ];
+
+    if (!supplierSearch) return allSuppliers;
+    return allSuppliers.filter(item =>
+      item.name?.toLowerCase().includes(supplierSearch?.toLowerCase() || '') ||
+      item.title?.toLowerCase().includes(supplierSearch?.toLowerCase() || '')
+    );
+  }, [suppliers, hotels, supplierSearch]);
+
+  // ALIŞ tabı için filtered suppliers
+  const filteredPurchaseSuppliers = useMemo(() => {
+    const allSuppliers = [
+      ...suppliers.map(s => ({ ...s, type: 'supplier' })),
+      ...hotels.map(h => ({
+        id: h.id,
+        name: h.name,
+        title: h.location || h.category || 'Otel',
+        type: 'hotel'
+      }))
+    ];
+
+    if (!purchaseSupplierSearch) return allSuppliers;
+    return allSuppliers.filter(item =>
+      item.name?.toLowerCase().includes(purchaseSupplierSearch?.toLowerCase() || '') ||
+      item.title?.toLowerCase().includes(purchaseSupplierSearch?.toLowerCase() || '')
+    );
+  }, [suppliers, hotels, purchaseSupplierSearch]);
+
+  // İnsan Kaynakları için otel/tedarikçi filtreleme
+  // Diğer Servisler için tedarikçi filtreleme
+  const filteredOtherServiceSuppliers = useMemo(() => {
+    if (!otherServiceSupplierSearch || !otherServiceSupplierSearch.trim()) return allSuppliers;
+    return allSuppliers.filter(item =>
+      item.name?.toLowerCase().includes(otherServiceSupplierSearch.toLowerCase()) ||
+      item.title?.toLowerCase().includes(otherServiceSupplierSearch.toLowerCase())
+    );
+  }, [allSuppliers, otherServiceSupplierSearch]);
+
+  // Event & Activity computed değerleri
+  const filteredEventSuppliers = useMemo(() => {
+    if (!eventSupplierSearch) return allSuppliers;
+    return allSuppliers.filter(supplier =>
+      supplier.displayName?.toLowerCase().includes(eventSupplierSearch?.toLowerCase() || '') ||
+      supplier.title?.toLowerCase().includes(eventSupplierSearch?.toLowerCase() || '')
+    );
+  }, [allSuppliers, eventSupplierSearch]);
+
+  const filteredEvents = useMemo(() => {
+    let filtered = eventsActivities;
+
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      filtered = filtered.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id && !item.hotel;
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    if (eventSearch.trim()) {
+      filtered = filtered.filter(event =>
+        (event.description && event.description.toLowerCase().includes(eventSearch?.toLowerCase() || '')) ||
+        (event.subCategoryName && event.subCategoryName.toLowerCase().includes(eventSearch?.toLowerCase() || '')) ||
+        (event.supplierName && event.supplierName.toLowerCase().includes(eventSearch?.toLowerCase() || ''))
+      );
+    }
+    return filtered;
+  }, [eventsActivities, eventSearch, activeHotelId, project?.hotels_data]);
+
+  const sortedEvents = useMemo(() => {
+    if (!eventSortField) return filteredEvents;
+    return [...filteredEvents].sort((a, b) => {
+      let aVal = a[eventSortField] || '';
+      let bVal = b[eventSortField] || '';
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      if (eventSortDirection === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  }, [filteredEvents, eventSortField, eventSortDirection]);
+
+  // Event handler'ları
+  const handleEventAdd = useCallback(() => {
+    const newEvent = {
+      id: `temp-${Date.now()}`,
+      project_id: projectId,
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      event_date: new Date().toISOString().split('T')[0],
+      supplier_id: null,
+      supplier_name: null,
+      sub_category_id: null,
+      sub_category_name: null,
+      description: '',
+      amount: 0,
+      currency: 'EUR',
+      exchange_rate: 1,
+      total_try: 0,
+      isEditing: true,
+      isNew: true
+    };
+    setEventsActivities([newEvent, ...eventsActivities]);
+    setEditingEventIndex(0);
+    setTempEventItem(newEvent);
+    setIsNewEventItem(true);
+  }, [projectId, eventsActivities, activeHotelId]);
+
+  const handleEventEdit = useCallback((index: number) => {
+    const event = eventsActivities[index];
+    setEditingEventIndex(index);
+    setTempEventItem({ ...event });
+    setIsNewEventItem(false);
+  }, [eventsActivities]);
+
+  const handleEventSave = useCallback(async () => {
+    if (editingEventIndex === null || !tempEventItem) return;
+    try {
+      const itemToSave = {
+        project_id: projectId,
+        event_date: tempEventItem.event_date ? formatDateToSupabase(tempEventItem.event_date) : null,
+        supplier_id: tempEventItem.supplier_id || null,
+        hotel_id: tempEventItem.hotel_id || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
+        supplier_type: tempEventItem.supplier_type || null,
+        sub_category_id: tempEventItem.sub_category_id || null,
+        description: tempEventItem.description || '',
+        amount: parseFloat(tempEventItem.amount) || 0,
+        currency: tempEventItem.currency || 'EUR',
+        exchange_rate: parseFloat(tempEventItem.exchange_rate) || 1
+      };
+
+      if (isNewEventItem) {
+        const created = await projectEventsActivitiesService.create(itemToSave);
+        setEventsActivities([...eventsActivities, created]);
+      } else {
+        const updatedItem = await projectEventsActivitiesService.update(tempEventItem.id, itemToSave);
+        const newItems = [...eventsActivities];
+        newItems[editingEventIndex] = updatedItem;
+        setEventsActivities(newItems);
+      }
+
+      setEditingEventIndex(null);
+      setTempEventItem(null);
+      setIsNewEventItem(false);
+    } catch (error: any) {
+      console.error('Event kaydetme hatası:', error);
+      alert('Event kaydedilirken hata oluştu.');
+    }
+  }, [editingEventIndex, tempEventItem, isNewEventItem, projectId, eventsActivities, activeHotelId]);
+
+  const handleEventCancel = useCallback(() => {
+    if (editingEventIndex === null) return;
+    const newEvents = [...eventsActivities];
+    if (isNewEventItem) {
+      newEvents.splice(editingEventIndex, 1);
+      setEventsActivities(newEvents);
+    } else {
+      newEvents[editingEventIndex] = { ...newEvents[editingEventIndex], isEditing: false };
+      setEventsActivities(newEvents);
+    }
+    setEditingEventIndex(null);
+    setTempEventItem(null);
+    setIsNewEventItem(false);
+  }, [editingEventIndex, isNewEventItem, eventsActivities]);
+
+  const handleEventDelete = useCallback(async (index: number) => {
+    const item = eventsActivities[index];
+    const itemName = item?.description || 'Bu etkinlik kaydı';
+
+    setConfirmModal({
+      open: true,
+      title: 'Etkinliği Sil',
+      message: `${itemName} bilgisini silmek istediğinizden emin misiniz?`,
+      onConfirm: async () => {
+        try {
+          await projectEventsActivitiesService.delete(item.id);
+          setEventsActivities(eventsActivities.filter((_, i) => i !== index));
+          if (editingEventIndex === index) {
+            setEditingEventIndex(null);
+            setTempEventItem(null);
+          }
+          setConfirmModal(prev => ({ ...prev, open: false }));
+        } catch (error) {
+          console.error('Event silme hatası:', error);
+          alert('Event silinirken hata oluştu.');
+        }
+      }
+    });
+  }, [eventsActivities, editingEventIndex, setConfirmModal]);
+
+  const handleEventSort = useCallback((field: string) => {
+    if (eventSortField === field) {
+      setEventSortDirection(eventSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setEventSortField(field);
+      setEventSortDirection('asc');
+    }
+  }, [eventSortField, eventSortDirection]);
+
+  const handleEventSupplierKeyDown = useCallback((e: React.KeyboardEvent, itemId: string) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedEventSupplierIndex(prev =>
+        prev < filteredEventSuppliers.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedEventSupplierIndex(prev => prev > 0 ? prev - 1 : -1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedEventSupplierIndex >= 0 && filteredEventSuppliers[selectedEventSupplierIndex]) {
+        handleEventSupplierSelect(filteredEventSuppliers[selectedEventSupplierIndex], itemId);
+      }
+    } else if (e.key === 'Escape') {
+      setShowEventSupplierDropdown(false);
+      setSelectedEventSupplierIndex(-1);
+    }
+  }, [filteredEventSuppliers, selectedEventSupplierIndex]);
+
+  const handleEventSupplierSelect = useCallback((supplier: any, itemId: string) => {
+    if (editingEventIndex === null) return;
+    const newEvents = [...eventsActivities];
+    newEvents[editingEventIndex] = {
+      ...newEvents[editingEventIndex],
+      supplier_id: supplier.id,
+      supplier_name: supplier.displayName || supplier.name || supplier.title
+    };
+    setEventsActivities(newEvents);
+    setTempEventItem(newEvents[editingEventIndex]);
+    setShowEventSupplierDropdown(false);
+    setEventSupplierSearch('');
+    setSelectedEventSupplierIndex(-1);
+  }, [editingEventIndex, eventsActivities]);
+
+  const filteredHrSuppliers = useMemo(() => {
+    // Sadece allSuppliers'ı kullan (zaten oteller ve tedarikçiler birleştirilmiş)
+    if (!hrSupplierSearch || !hrSupplierSearch.trim()) return allSuppliers;
+
+    return allSuppliers.filter(item =>
+      (item.name && item.name.toLowerCase().includes(hrSupplierSearch?.toLowerCase() || '')) ||
+      (item.title && item.title.toLowerCase().includes(hrSupplierSearch?.toLowerCase() || '')) ||
+      (item.displayName && item.displayName.toLowerCase().includes(hrSupplierSearch?.toLowerCase() || ''))
+    );
+  }, [hrSupplierSearch, allSuppliers]);
+
+
+  // Otel Ekstra CRUD fonksiyonları
+  const handleHotelExtraAdd = () => {
+    console.log('handleHotelExtraAdd çağrıldı');
+    console.log('Mevcut hotelExtras uzunluğu:', hotelExtras.length);
+    const newExtra = {
+      id: Date.now() + Math.random().toString(),
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      date: new Date().toISOString().split('T')[0],
+      hotel: '',
+      subCategory: '',
+      sub_category: '',
+      roomNumber: '',
+      room_number: '',
+      guestName: '',
+      guest_name: '',
+      description: '',
+      amount: 0,
+      currency: 'TRY',
+      main_category: 'CAT_002',
+      project_id: projectId,
+      total_try: 0,
+      exchange_rate: 1
+    };
+    console.log('Yeni extra oluşturuldu:', newExtra);
+    setTempHotelExtraItem(newExtra);
+    setIsNewHotelExtraItem(true);
+    setEditingHotelExtraIndex(hotelExtras.length);
+    setHotelSupplierSearch('');
+    setSelectedMainCategory('CAT_002'); // Otel Ekstra ana kategorisi
+    setHotelExtraAmountInput(''); // Tutar input'unu sıfırla
+    setHotelExtraTotalTRYInput(''); // TOPLAM TL input'unu sıfırla
+    console.log('editingHotelExtraIndex ayarlandı:', hotelExtras.length);
+  };
+  const handleHotelExtraEdit = (id: string) => {
+    const realIndex = hotelExtras.findIndex(it => it.id === id);
+    if (realIndex !== -1) {
+      const extra = hotelExtras[realIndex];
+      setTempHotelExtraItem({ ...extra });
+      setEditingHotelExtraIndex(realIndex);
+      setIsNewHotelExtraItem(false);
+      setHotelSupplierSearch(extra.hotel || '');
+      setSelectedMainCategory(extra.main_category || 'CAT_002'); // Otel Ekstra ana kategorisi
+      setHotelExtraAmountInput((extra.amount || 0).toString()); // Tutar input'unu formatla
+      setHotelExtraTotalTRYInput(formatNumberForDisplay(extra.total_try || 0)); // TOPLAM TL input'unu formatla
+    }
+  };
+
+  const handleHotelExtraSave = async () => {
+    if (!tempHotelExtraItem) return;
+
+    try {
+      // Veritabanı şemasına uygun veri hazırla
+      const extraData = {
+        project_id: projectId,
+        hotel_id: tempHotelExtraItem.hotel_id || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
+        date: tempHotelExtraItem.date || new Date().toISOString().split('T')[0],
+        hotel: tempHotelExtraItem.hotel || '',
+        main_category: selectedMainCategory || 'CAT_002',
+        sub_category: tempHotelExtraItem.subCategory || tempHotelExtraItem.sub_category || '',
+        room_number: tempHotelExtraItem.roomNumber || tempHotelExtraItem.room_number || '',
+        guest_name: tempHotelExtraItem.guestName || tempHotelExtraItem.guest_name || '',
+        description: tempHotelExtraItem.description || '',
+        amount: parseFloat(tempHotelExtraItem.amount || 0),
+        currency: tempHotelExtraItem.currency || 'TRY',
+        exchange_rate: parseFloat(tempHotelExtraItem.exchangeRate || tempHotelExtraItem.exchange_rate || 1),
+        total_try: parseFloat(tempHotelExtraItem.totalTRY || tempHotelExtraItem.total_try || 0)
+      };
+
+      console.log('🔍 Debug - Kaydetme öncesi extraData:', extraData);
+      console.log('🔍 Debug - tempHotelExtraItem:', tempHotelExtraItem);
+      console.log('🔍 Debug - Alt kategori:', tempHotelExtraItem.subCategory, tempHotelExtraItem.sub_category);
+      console.log('🔍 Debug - Oda no:', tempHotelExtraItem.roomNumber, tempHotelExtraItem.room_number);
+      console.log('🔍 Debug - Misafir adı:', tempHotelExtraItem.guestName, tempHotelExtraItem.guest_name);
+
+      if (isNewHotelExtraItem) {
+        // Yeni ekleme
+        console.log('🔍 Yeni ekleme başlıyor...');
+        const newExtra = await projectHotelExtrasService.create(extraData);
+        
+        setHotelExtras(prev => [newExtra, ...prev]);
+        console.log('✅ Yeni otel ekstra başarıyla eklendi:', newExtra);
+      } else {
+        // Güncelleme
+        console.log('🔍 Güncelleme başlıyor...');
+        const updatedExtra = await projectHotelExtrasService.update(tempHotelExtraItem.id, extraData);
+
+        setHotelExtras(prev => prev.map(extra =>
+          extra.id === tempHotelExtraItem.id ? { ...updatedExtra, 
+            subCategory: updatedExtra.sub_category || updatedExtra.subCategory || '',
+            roomNumber: updatedExtra.room_number || updatedExtra.roomNumber || '',
+            guestName: updatedExtra.guest_name || updatedExtra.guestName || '',
+            totalTRY: updatedExtra.total_try || updatedExtra.totalTRY || 0,
+            exchangeRate: updatedExtra.exchange_rate || updatedExtra.exchangeRate || 1
+          } : extra
+        ));
+        console.log('✅ Otel ekstra başarıyla güncellendi:', updatedExtra);
+      }
+
+      setEditingHotelExtraIndex(null);
+      setTempHotelExtraItem(null);
+      setIsNewHotelExtraItem(false);
+      setHotelExtraAmountInput('');
+      setHotelExtraTotalTRYInput('');
+
+      // Verileri yeniden yükle (güvenlik için)
+      console.log('🔍 Veriler yeniden yükleniyor...');
+      try {
+        const refreshedData = await projectHotelExtrasService.getByProjectId(projectId);
+        console.log('🔍 Yeniden yüklenen veriler:', refreshedData);
+
+        // Veri formatını düzelt
+        const formattedRefreshedData = refreshedData.map((item: any) => ({
+          ...item,
+          subCategory: item.sub_category || item.subCategory || '',
+          roomNumber: item.room_number || item.roomNumber || '',
+          guestName: item.guest_name || item.guestName || '',
+          mainCategory: item.main_category || item.mainCategory || '',
+          totalTRY: item.total_try || item.totalTRY || 0,
+          exchangeRate: item.exchange_rate || item.exchangeRate || 1
+        }));
+
+        console.log('🔍 Formatlanmış yeniden yüklenen veriler:', formattedRefreshedData);
+        setHotelExtras(formattedRefreshedData);
+      } catch (refreshError) {
+        console.error('Veriler yeniden yüklenirken hata:', refreshError);
+      }
+
+    } catch (error) {
+      console.error('Otel ekstra kaydedilirken hata:', error);
+      console.error('Hata detayları:', JSON.stringify(error, null, 2));
+      console.error('tempHotelExtraItem:', tempHotelExtraItem);
+      alert(`Otel ekstra kaydedilirken bir hata oluştu: ${error.message || error}`);
+    }
+  };
+
+  const handleHotelExtraCancel = () => {
+    setEditingHotelExtraIndex(null);
+    setTempHotelExtraItem(null);
+    setIsNewHotelExtraItem(false);
+    setHotelExtraAmountInput(''); // Tutar input'unu sıfırla
+    setHotelExtraTotalTRYInput(''); // TOPLAM TL input'unu sıfırla
+  };
+  const handleHotelExtraDelete = async (id: string) => {
+    const realIndex = hotelExtras.findIndex(it => it.id === id);
+    if (realIndex === -1) return;
+    const extraToDelete = hotelExtras[realIndex];
+
+    try {
+      if (extraToDelete.id) {
+        await projectHotelExtrasService.delete(extraToDelete.id);
+      }
+
+      setHotelExtras(prev => prev.filter(it => it.id !== id));
+      // Hotel extras artık Supabase'de saklanacak
+    } catch (error) {
+      console.error('Otel ekstra silinirken hata:', error);
+      alert('Otel ekstra silinirken bir hata oluştu. Lütfen tekrar deneyin.');
+    }
+  };
+
+  const handleHotelExtraCopy = (id: string) => {
+    const realIndex = hotelExtras.findIndex(it => it.id === id);
+    if (realIndex === -1) return;
+    const originalExtra = hotelExtras[realIndex];
+    const copiedExtra = {
+      ...originalExtra,
+      id: Date.now() + Math.random().toString(),
+      main_category: 'CAT_002',
+      project_id: projectId,
+      date: new Date().toISOString().split('T')[0], // Bugünün tarihi
+      roomNumber: originalExtra.room_number || originalExtra.roomNumber || '',
+      room_number: originalExtra.room_number || originalExtra.roomNumber || '',
+      guestName: originalExtra.guest_name || originalExtra.guestName || '',
+      guest_name: originalExtra.guest_name || originalExtra.guestName || '',
+      subCategory: originalExtra.sub_category || originalExtra.subCategory || '',
+      sub_category: originalExtra.sub_category || originalExtra.subCategory || '',
+      total_try: originalExtra.total_try || 0,
+      exchange_rate: originalExtra.exchange_rate || 1
+    };
+    setTempHotelExtraItem(copiedExtra);
+    setIsNewHotelExtraItem(true);
+    setEditingHotelExtraIndex(hotelExtras.length); // Bu index yeni eklenecek olanın (temsili)
+    setSelectedMainCategory('CAT_002'); // Otel Ekstra ana kategorisi
+    setHotelExtraAmountInput(formatNumberForDisplay(copiedExtra.amount || 0));
+    setHotelExtraTotalTRYInput(formatNumberForDisplay(copiedExtra.total_try || 0));
+  };
+
+  const clearHotelExtraSearch = () => {
+    setHotelExtraSearch('');
+  };
+
+  // Tüm Otel Ekstra verilerini temizle
+  const handleHotelExtraClear = useCallback(async () => {
+    if (!projectId) return;
+
+    setConfirmModal({
+      open: true,
+      title: 'Otel Ekstraları Temizle',
+      message: 'Tüm Otel Ekstra verileri silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Supabase'ten tüm otel ekstra verilerini sil
+          await projectHotelExtrasService.deleteByProjectId(projectId);
+
+          // State'i temizle
+          setHotelExtras([]);
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Tüm Otel Ekstra verileri başarıyla silindi.');
+        } catch (error: any) {
+          console.error('Hata:', error);
+          alert('Otel ekstra verileri silinirken hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, setHotelExtras, setLoading, setConfirmModal]);
+
+  // Otel Ekstra Excel Export
+  const handleHotelExtraExport = useCallback(async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Otel Ekstra Raporu');
+
+      // Sayfa ayarları
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      // Üst Bant
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:J1');
+
+      for (let c = 1; c <= 10; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      // Logolar
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 7.5, row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      // Başlık bilgileri
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(10);
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[8] = item.right;
+        rowValues[9] = rightValue;
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(7).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(8).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(8).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      sheet.addRow([]);
+      rowIndex++;
+
+      // Tablo başlıkları
+      const tableHeaderRow = sheet.addRow([
+        'TARİH',
+        'OTEL/TEDARİKÇİ',
+        'ALT KATEGORİ',
+        'ODA NO',
+        'MİSAFİR',
+        'AÇIKLAMA',
+        'TUTAR',
+        'DÖVİZ',
+        'KUR',
+        'TOPLAM TL'
+      ]);
+      tableHeaderRow.height = 30;
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      // Sadece header genişliğine kadar (10 sütun) zemin rengi uygula
+      for (let c = 1; c <= 10; c++) {
+        tableHeaderRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+      tableHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // Sütun genişlikleri
+      sheet.getColumn(1).width = 12; // Tarih
+      sheet.getColumn(2).width = 20; // Otel/Tedarikçi
+      sheet.getColumn(3).width = 20; // Alt Kategori
+      sheet.getColumn(4).width = 10; // Oda No
+      sheet.getColumn(5).width = 20; // Misafir
+      sheet.getColumn(6).width = 30; // Açıklama
+      sheet.getColumn(7).width = 15; // Tutar
+      sheet.getColumn(8).width = 10; // Döviz
+      sheet.getColumn(9).width = 12; // Kur
+      sheet.getColumn(10).width = 15; // Toplam TL
+
+      // Veri satırları
+      hotelExtras.forEach((extra: any) => {
+        const row = sheet.addRow([
+          formatDateForDisplay(extra.date || extra.Date),
+          extra.hotel || extra.supplier || '',
+          extra.sub_category || extra.subCategory || '',
+          extra.room_number || extra.roomNumber || '',
+          extra.guest_name || extra.guestName || '',
+          extra.description || '',
+          formatNumberForDisplay(extra.amount || 0),
+          extra.currency || 'TRY',
+          formatNumberForDisplay(extra.exchange_rate || extra.exchangeRate || 1),
+          formatNumberForDisplay(extra.total_try || extra.totalTRY || 0)
+        ]);
+
+        row.height = 20;
+        row.alignment = { vertical: 'middle' };
+        // Sadece header genişliğine kadar (10 sütun) zemin rengi uygula
+        for (let c = 1; c <= 10; c++) {
+          const cell = row.getCell(c);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+        }
+        row.getCell(1).alignment = { horizontal: 'center' };
+        row.getCell(7).alignment = { horizontal: 'right' };
+        row.getCell(8).alignment = { horizontal: 'center' };
+        row.getCell(9).alignment = { horizontal: 'right' };
+        row.getCell(10).alignment = { horizontal: 'right' };
+      });
+
+      // Toplam satırı
+      const totalRow = sheet.addRow([
+        'TOPLAM',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatNumberForDisplay(Object.values(hotelExtraTotals).reduce((sum: number, curr: any) => sum + (curr.toplamMaliyet || 0), 0))
+      ]);
+      totalRow.height = 25;
+      totalRow.font = { bold: true, size: 11 };
+      // Sadece header genişliğine kadar (10 sütun) zemin rengi uygula
+      for (let c = 1; c <= 10; c++) {
+        const cell = totalRow.getCell(c);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF0F0F0' }
+        };
+      }
+      totalRow.getCell(1).alignment = { horizontal: 'center' };
+      totalRow.getCell(10).alignment = { horizontal: 'right' };
+
+      // Sütun sayısını sınırla - sadece kullanılan sütunlar (10 sütun)
+      // ExcelJS'de kullanılmayan sütunlara boş değer atayarak zemin renginin yayılmasını engelle
+      const lastRow = sheet.lastRow;
+      if (lastRow) {
+        for (let c = 11; c <= 100; c++) {
+          const cell = lastRow.getCell(c);
+          if (cell && cell.value === undefined) {
+            cell.value = null;
+          }
+        }
+      }
+
+      // Excel dosyasını indir
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Otel_Ekstra_Raporu_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Otel Ekstra Excel export hatası:', error);
+      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+    }
+  }, [hotelExtras, hotelExtraTotals, project, formatDateForDisplay, formatNumberForDisplay]);
+
+  // Diğer Servisler CRUD fonksiyonları
+  const handleOtherServiceAdd = () => {
+    const newItem = {
+      id: Date.now() + Math.random().toString(),
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      date: new Date().toISOString().split('T')[0],
+      supplier: '', // Otel/Tedarikçi ismi
+      hotel: '', // Supabase'de hotel alanı kullanılıyor
+      mainCategory: 'CAT_007',
+      subCategory: '',
+      description: '',
+      amount: 0,
+      currency: 'TRY',
+      exchangeRate: 1,
+      fx: 1,
+      totalTRY: 0
+    };
+    setTempOtherServiceItem(newItem);
+    setEditingOtherServiceIndex(otherServices.length);
+    setIsNewOtherServiceItem(true);
+    setOtherServiceSupplierSearch('');
+    setOtherServiceAmountInput('');
+    setOtherServiceTotalTRYInput('');
+    setOtherServiceFxInput('1');
+  };
+
+  const handleOtherServiceEdit = (index: number) => {
+    const item = otherServices[index];
+    setTempOtherServiceItem({ ...item });
+    setEditingOtherServiceIndex(index);
+    setIsNewOtherServiceItem(false);
+
+    // hotel/supplier değerini ayarla
+    const supplierValue = item.supplier || item.hotel || '';
+    setOtherServiceSupplierSearch(supplierValue);
+
+    // Input state'lerini düzenleme için ayarla
+    const amount = item.amount || 0;
+    const totalTRY = item.totalTRY || item.total_try || 0;
+    const fx = item.fx || item.exchange_rate || item.exchangeRate || 1;
+
+    setOtherServiceAmountInput(amount > 0 ? formatNumberForDisplay(amount) : '');
+    setOtherServiceTotalTRYInput(totalTRY > 0 ? formatNumberForDisplay(totalTRY) : '');
+    setOtherServiceFxInput(fx > 0 ? formatExchangeRateForDisplay(fx) : '1,0000');
+
+    // tempOtherServiceItem'ı güncelle
+    setTempOtherServiceItem(prev => ({
+      ...prev,
+      supplier: supplierValue,
+      hotel: supplierValue,
+      subCategory: item.subCategory || item.sub_category || '',
+    }));
+  };
+
+  const handleOtherServiceSave = async (overrideSupplierSearch?: string) => {
+    if (!tempOtherServiceItem) {
+      console.error('❌ tempOtherServiceItem boş!');
+      return;
+    }
+
+    try {
+      // Validasyon kontrolleri kaldırıldı - kullanıcı input'a yazdığında değerler zaten tempOtherServiceItem'a kaydedilmiş olmalı
+      // Eğer gerçekten boşsa, boş kayıt oluşturulur ama bu nadir bir durum
+      // ÖNEMLİ: overrideSupplierSearch parametresini öncelikli olarak kullan, sonra otherServiceSupplierSearch state'ini, sonra tempOtherServiceItem'ı
+      const supplierValue = (overrideSupplierSearch || otherServiceSupplierSearch || tempOtherServiceItem?.supplier || tempOtherServiceItem?.hotel || '').trim();
+
+      // ŞİMDİ HESAPLAMA YAP
+      // Doğrudan input değerlerini kullan - tempOtherServiceItem'a güvenme
+      const amountInput = parseTurkishNumber(otherServiceAmountInput || '0');
+      const exchangeRate = parseTurkishNumber(otherServiceFxInput || '1');
+      const totalTRYInput = parseTurkishNumber(otherServiceTotalTRYInput || '0');
+
+      console.log('🔍 Parse edilmiş değerler:');
+      console.log('  - amountInput:', amountInput);
+      console.log('  - exchangeRate:', exchangeRate);
+      console.log('  - totalTRYInput:', totalTRYInput);
+      console.log('  - otherServiceAmountInput (raw):', otherServiceAmountInput);
+      console.log('  - otherServiceTotalTRYInput (raw):', otherServiceTotalTRYInput);
+      console.log('  - otherServiceFxInput (raw):', otherServiceFxInput);
+
+      // Hesaplama mantığı:
+      let amount = 0;
+      let totalTRY = 0;
+
+      // Hesaplama mantığı:
+      // 1. Eğer Toplam TL girilmişse (ve Tutar'dan büyükse veya Tutar 0 ise): Tutar = Toplam TL / Kur
+      // 2. Eğer Tutar girilmişse (ve Toplam TL 0 veya küçükse): Toplam TL = Tutar * Kur
+      // Öncelik: Toplam TL > Tutar (çünkü kullanıcı genelde önce tutarı sonra toplam TL'yi girer)
+      if (totalTRYInput > 0 && exchangeRate > 0) {
+        // Toplam TL girilmişse, Tutar'ı hesapla: Tutar = Toplam TL / Kur
+        totalTRY = totalTRYInput;
+        amount = totalTRY / exchangeRate;
+        console.log('🔍 Toplam TL girilmiş, Tutar hesaplanıyor:', amount, '= ', totalTRY, '/', exchangeRate);
+      } else if (amountInput > 0 && exchangeRate > 0) {
+        // Tutar girilmişse, Toplam TL'yi hesapla: Toplam TL = Tutar * Kur
+        amount = amountInput;
+        totalTRY = amount * exchangeRate;
+        console.log('🔍 Tutar girilmiş, Toplam TL hesaplanıyor:', totalTRY, '= ', amount, '*', exchangeRate);
+      } else {
+        alert('Lütfen geçerli bir tutar veya toplam TL giriniz.');
+        return;
+      }
+
+      if (amount <= 0 || totalTRY <= 0) {
+        alert('Lütfen geçerli bir tutar giriniz.');
+        return;
+      }
+
+      console.log('🔍 Final hesaplama sonuçları:');
+      console.log('  - amount:', amount);
+      console.log('  - exchangeRate:', exchangeRate);
+      console.log('  - totalTRY:', totalTRY);
+      console.log('  - Doğrulama (amount * exchangeRate):', amount * exchangeRate);
+
+      // Alt kategori ID'sini bul
+      const selectedSubCategory = otherSubCategories.find(sub => sub.name === tempOtherServiceItem.subCategory);
+
+      // Seçilen otel/tedarikçi'nin ID'sini bul
+      let supplierId = null;
+      let hotelId = null;
+
+      const foundSupplier = allSuppliers.find(supplier =>
+        supplier.name && supplier.name.toLowerCase() === supplierValue.toLowerCase()
+      );
+
+      if (foundSupplier) {
+        if (foundSupplier.type === 'supplier') {
+          supplierId = foundSupplier.id;
+        } else if (foundSupplier.type === 'hotel') {
+          hotelId = foundSupplier.id;
+        }
+      }
+
+      const otherServiceData = {
+        project_id: projectId,
+        date: tempOtherServiceItem.date || new Date().toISOString().split('T')[0],
+        hotel: supplierValue,
+        main_category: 'CAT_007',
+        sub_category: tempOtherServiceItem.subCategory || '',
+        sub_category_id: selectedSubCategory?.id || null,
+        supplier_id: supplierId,
+        hotel_id: hotelId || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
+        description: tempOtherServiceItem.description || '',
+        amount: amount,
+        currency: tempOtherServiceItem.currency || 'TRY',
+        exchange_rate: exchangeRate,
+        total_try: totalTRY,
+        created_by: tempOtherServiceItem.created_by || null
+      };
+
+      console.log('🔍 Diğer Servis verisi kaydediliyor:', otherServiceData);
+
+      if (!projectId || projectId === 'undefined' || projectId === 'null') {
+        alert('Proje ID geçersiz. Sayfayı yenileyin.');
+        return;
+      }
+
+      const isNewOtherServiceItem = editingOtherServiceIndex === otherServices.length;
+      let savedOtherServiceItem;
+
+      if (isNewOtherServiceItem) {
+        savedOtherServiceItem = await projectOtherServicesService.create(otherServiceData);
+      } else {
+        savedOtherServiceItem = await projectOtherServicesService.update(tempOtherServiceItem.id, otherServiceData);
+      }
+
+      // State'i güncelle - İnsan Kaynakları'ndaki gibi
+      const updatedOtherServices = [...otherServices];
+      if (isNewOtherServiceItem) {
+        updatedOtherServices.push(savedOtherServiceItem);
+        console.log('✅ Yeni Diğer Servis kaydı eklendi:', savedOtherServiceItem);
+      } else {
+        updatedOtherServices[editingOtherServiceIndex!] = savedOtherServiceItem;
+        console.log('✅ Diğer Servis kaydı güncellendi:', savedOtherServiceItem);
+      }
+
+      // Formatla - Supabase'den gelen veriyi formatla
+      const formattedOtherServices = updatedOtherServices.map((item: any) => {
+        const rawAmount = item.amount || item.amount === 0 ? item.amount : 0;
+        const rawExchangeRate = item.exchange_rate || item.exchange_rate === 0 ? item.exchange_rate : 1;
+
+        const amount = typeof rawAmount === 'string' ? parseTurkishNumber(rawAmount) : parseFloat(rawAmount) || 0;
+        const exchangeRate = typeof rawExchangeRate === 'string' ? parseTurkishNumber(rawExchangeRate) : parseFloat(rawExchangeRate) || 1;
+
+        const calculatedTotalTRY = amount * exchangeRate;
+
+        return {
+          ...item,
+          amount: amount,
+          exchange_rate: exchangeRate,
+          total_try: calculatedTotalTRY,
+          totalTRY: calculatedTotalTRY,
+          fx: exchangeRate,
+          subCategory: item.sub_category || item.subCategory || '',
+          mainCategory: item.main_category || item.mainCategory || 'CAT_007',
+          supplier: item.hotel || '',
+        };
+      });
+
+      setOtherServices(formattedOtherServices);
+      console.log('🔍 Güncellenmiş otherServices:', formattedOtherServices);
+      setEditingOtherServiceIndex(null);
+      setTempOtherServiceItem(null);
+      setIsNewOtherServiceItem(false);
+      setOtherServiceSupplierSearch('');
+      setOtherServiceAmountInput('');
+      setOtherServiceTotalTRYInput('');
+      setOtherServiceFxInput('');
+
+    } catch (error) {
+      console.error('❌ Diğer Servisler kaydedilirken hata:', error);
+      alert('Diğer Servisler kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'));
+    }
+  };
+
+  const handleOtherServiceCancel = () => {
+    setEditingOtherServiceIndex(null);
+    setTempOtherServiceItem(null);
+    setIsNewOtherServiceItem(false);
+    setOtherServiceSupplierSearch('');
+    setOtherServiceAmountInput('');
+    setOtherServiceTotalTRYInput('');
+    setOtherServiceFxInput('');
+  };
+
+  const handleOtherServiceDelete = async (index: number) => {
+    const item = otherServices[index];
+
+    if (!item.id) {
+      // Eğer ID yoksa, sadece state'den sil (localStorage'dan gelen eski veriler)
+      const updated = otherServices.filter((_, i) => i !== index);
+      setOtherServices(updated);
+      return;
+    }
+
+    try {
+      await projectOtherServicesService.delete(item.id);
+      const updated = otherServices.filter((_, i) => i !== index);
+      setOtherServices(updated);
+    } catch (error) {
+      console.error('Diğer Servisler silinirken hata:', error);
+      alert('Diğer Servisler silinirken hata oluştu.');
+    }
+  };
+
+  const clearOtherServiceSearch = () => setOtherServiceSearch('');
+
+  // Diğer Servisler temizleme fonksiyonu
+  const handleOtherServiceClear = useCallback(async () => {
+    if (!projectId) return;
+
+    setConfirmModal({
+      open: true,
+      title: 'Diğer Servisleri Temizle',
+      message: 'Tüm Diğer Servisler verileri silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Supabase'ten tüm diğer servisler verilerini sil
+          await projectOtherServicesService.deleteByProjectId(projectId);
+
+          // State'i temizle
+          setOtherServices([]);
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Tüm Diğer Servisler verileri başarıyla silindi.');
+        } catch (error: any) {
+          console.error('Hata:', error);
+          alert('Diğer servisler silinirken hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, setOtherServices, setLoading, setConfirmModal]);
+
+  // Diğer Servisler Excel Export
+  const handleOtherServiceExport = useCallback(async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Diğer Servisler Raporu');
+
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:H1');
+
+      for (let c = 1; c <= 8; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 5.5, row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(8);
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[6] = item.right;
+        rowValues[7] = rightValue;
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(7).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(8).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(8).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      sheet.addRow([]);
+      rowIndex++;
+
+      const tableHeaderRow = sheet.addRow([
+        'TARİH',
+        'OTEL/TEDARİKÇİ',
+        'ALT KATEGORİ',
+        'AÇIKLAMA',
+        'TUTAR',
+        'DÖVİZ',
+        'KUR',
+        'TOPLAM TL'
+      ]);
+      tableHeaderRow.height = 30;
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        tableHeaderRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+      tableHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      sheet.getColumn(1).width = 12;
+      sheet.getColumn(2).width = 20;
+      sheet.getColumn(3).width = 20;
+      sheet.getColumn(4).width = 30;
+      sheet.getColumn(5).width = 15;
+      sheet.getColumn(6).width = 10;
+      sheet.getColumn(7).width = 12;
+      sheet.getColumn(8).width = 15;
+
+      filteredOtherServices.forEach((service: any) => {
+        const row = sheet.addRow([
+          formatDateForDisplay(service.date || service.Date),
+          service.hotel || service.supplier || '',
+          service.sub_category || service.subCategory || '',
+          service.description || '',
+          formatNumberForDisplay(service.amount || 0),
+          service.currency || 'TRY',
+          formatNumberForDisplay(service.exchange_rate || service.exchangeRate || 1),
+          formatNumberForDisplay(service.total_try || service.totalTRY || 0)
+        ]);
+
+        row.height = 20;
+        row.alignment = { vertical: 'middle' };
+        // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+        for (let c = 1; c <= 8; c++) {
+          const cell = row.getCell(c);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+        }
+        row.getCell(1).alignment = { horizontal: 'center' };
+        row.getCell(5).alignment = { horizontal: 'right' };
+        row.getCell(6).alignment = { horizontal: 'center' };
+        row.getCell(7).alignment = { horizontal: 'right' };
+        row.getCell(8).alignment = { horizontal: 'right' };
+      });
+
+      const totalRow = sheet.addRow([
+        'TOPLAM',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatNumberForDisplay(Object.values(otherServicesTotals).reduce((sum: number, curr: any) => sum + (curr.toplamMaliyet || 0), 0))
+      ]);
+      totalRow.height = 25;
+      totalRow.font = { bold: true, size: 11 };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        const cell = totalRow.getCell(c);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF0F0F0' }
+        };
+      }
+      totalRow.getCell(1).alignment = { horizontal: 'center' };
+      totalRow.getCell(8).alignment = { horizontal: 'right' };
+
+      // Sütun sayısını sınırla - sadece kullanılan sütunlar (8 sütun)
+      // ExcelJS'de kullanılmayan sütunlara boş değer atayarak zemin renginin yayılmasını engelle
+      const lastRow = sheet.lastRow;
+      if (lastRow) {
+        for (let c = 9; c <= 100; c++) {
+          const cell = lastRow.getCell(c);
+          if (cell && cell.value === undefined) {
+            cell.value = null;
+          }
+        }
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Diger_Servisler_Raporu_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Diğer Servisler Excel export hatası:', error);
+      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+    }
+  }, [filteredOtherServices, otherServicesTotals, project, formatDateForDisplay, formatNumberForDisplay]);
+
+  // Finansal Excel Export
+  const handleFinancialExport = useCallback(async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Finansal Raporu');
+
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:H1');
+
+      for (let c = 1; c <= 8; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 5.5, row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(8);
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[6] = item.right;
+        rowValues[7] = rightValue;
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(7).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(8).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(8).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      sheet.addRow([]);
+      rowIndex++;
+
+      const tableHeaderRow = sheet.addRow([
+        'TARİH',
+        'OTEL/TEDARİKÇİ',
+        'ALT KATEGORİ',
+        'AÇIKLAMA',
+        'TUTAR',
+        'DÖVİZ',
+        'KUR',
+        'TOPLAM TL'
+      ]);
+      tableHeaderRow.height = 30;
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        tableHeaderRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+      tableHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      sheet.getColumn(1).width = 12;
+      sheet.getColumn(2).width = 20;
+      sheet.getColumn(3).width = 20;
+      sheet.getColumn(4).width = 30;
+      sheet.getColumn(5).width = 15;
+      sheet.getColumn(6).width = 10;
+      sheet.getColumn(7).width = 12;
+      sheet.getColumn(8).width = 15;
+
+      financialServices.forEach((service: any) => {
+        const row = sheet.addRow([
+          formatDateForDisplay(service.date || service.Date),
+          service.hotel || service.supplier || '',
+          service.sub_category || service.subCategory || '',
+          service.description || '',
+          formatNumberForDisplay(service.amount || 0),
+          service.currency || 'TRY',
+          formatNumberForDisplay(service.exchange_rate || service.exchangeRate || 1),
+          formatNumberForDisplay(service.total_try || service.totalTRY || 0)
+        ]);
+
+        row.height = 20;
+        row.alignment = { vertical: 'middle' };
+        // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+        for (let c = 1; c <= 8; c++) {
+          const cell = row.getCell(c);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+        }
+        row.getCell(1).alignment = { horizontal: 'center' };
+        row.getCell(5).alignment = { horizontal: 'right' };
+        row.getCell(6).alignment = { horizontal: 'center' };
+        row.getCell(7).alignment = { horizontal: 'right' };
+        row.getCell(8).alignment = { horizontal: 'right' };
+      });
+
+      const totalRow = sheet.addRow([
+        'TOPLAM',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatNumberForDisplay(Object.values(financialTotals || {}).reduce((sum: number, curr: any) => sum + (curr.toplamMaliyet || 0), 0))
+      ]);
+      totalRow.height = 25;
+      totalRow.font = { bold: true, size: 11 };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        const cell = totalRow.getCell(c);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF0F0F0' }
+        };
+      }
+      totalRow.getCell(1).alignment = { horizontal: 'center' };
+      totalRow.getCell(8).alignment = { horizontal: 'right' };
+
+      // Sütun sayısını sınırla - sadece kullanılan sütunlar (8 sütun)
+      // ExcelJS'de kullanılmayan sütunlara boş değer atayarak zemin renginin yayılmasını engelle
+      const lastRow = sheet.lastRow;
+      if (lastRow) {
+        for (let c = 9; c <= 100; c++) {
+          const cell = lastRow.getCell(c);
+          if (cell && cell.value === undefined) {
+            cell.value = null;
+          }
+        }
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Finansal_Raporu_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Finansal Excel export hatası:', error);
+      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+    }
+  }, [financialServices, financialTotals, project, formatDateForDisplay, formatNumberForDisplay]);
+
+  // Finansal temizleme fonksiyonu
+  const handleFinancialClear = useCallback(async () => {
+    if (!projectId) return;
+
+    setConfirmModal({
+      open: true,
+      title: 'Finansal Verileri Temizle',
+      message: 'Tüm Finansal verileri silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Supabase'ten tüm finansal verileri sil
+          await projectFinancialServicesService.deleteByProjectId(projectId);
+
+          // State'i temizle
+          setFinancialServices([]);
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Tüm Finansal verileri başarıyla silindi.');
+        } catch (error: any) {
+          console.error('Hata:', error);
+          alert('Finansal veriler silinirken hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, setFinancialServices, setLoading, setConfirmModal]);
+
+  // Etkinlik & Aktivite Excel Export
+  const handleEventActivityExport = useCallback(async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Etkinlik & Aktivite Raporu');
+
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:H1');
+
+      for (let c = 1; c <= 8; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 5.5, row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(8);
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[6] = item.right;
+        rowValues[7] = rightValue;
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(7).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(8).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(8).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      sheet.addRow([]);
+      rowIndex++;
+
+      const tableHeaderRow = sheet.addRow([
+        'TARİH',
+        'OTEL/TEDARİKÇİ',
+        'ALT KATEGORİ',
+        'AÇIKLAMA',
+        'TUTAR',
+        'DÖVİZ',
+        'KUR',
+        'TOPLAM TL'
+      ]);
+      tableHeaderRow.height = 30;
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        tableHeaderRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+      tableHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      sheet.getColumn(1).width = 12;
+      sheet.getColumn(2).width = 20;
+      sheet.getColumn(3).width = 20;
+      sheet.getColumn(4).width = 30;
+      sheet.getColumn(5).width = 15;
+      sheet.getColumn(6).width = 10;
+      sheet.getColumn(7).width = 12;
+      sheet.getColumn(8).width = 15;
+
+      sortedEvents.forEach((event: any) => {
+        const row = sheet.addRow([
+          formatDateForDisplay(event.event_date || event.date || event.Date),
+          (event.supplier?.name || event.hotel?.name || event.supplier_name || event.hotel_name || ''),
+          (event.sub_category?.name || event.sub_category || ''),
+          event.description || '',
+          formatNumberForDisplay(event.amount || 0),
+          event.currency || 'EUR',
+          formatNumberForDisplay(event.exchange_rate || 1),
+          formatNumberForDisplay(event.total_tl || event.total_try || 0)
+        ]);
+
+        row.height = 20;
+        row.alignment = { vertical: 'middle' };
+        // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+        for (let c = 1; c <= 8; c++) {
+          const cell = row.getCell(c);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+        }
+        row.getCell(1).alignment = { horizontal: 'center' };
+        row.getCell(5).alignment = { horizontal: 'right' };
+        row.getCell(6).alignment = { horizontal: 'center' };
+        row.getCell(7).alignment = { horizontal: 'right' };
+        row.getCell(8).alignment = { horizontal: 'right' };
+      });
+
+      const totalRow = sheet.addRow([
+        'TOPLAM',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatNumberForDisplay(Object.values(eventTotals || {}).reduce((sum: number, curr: any) => sum + (curr.toplamMaliyet || 0), 0))
+      ]);
+      totalRow.height = 25;
+      totalRow.font = { bold: true, size: 11 };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        const cell = totalRow.getCell(c);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF0F0F0' }
+        };
+      }
+      totalRow.getCell(1).alignment = { horizontal: 'center' };
+      totalRow.getCell(8).alignment = { horizontal: 'right' };
+
+      // Sütun sayısını sınırla - sadece kullanılan sütunlar (8 sütun)
+      // ExcelJS'de kullanılmayan sütunlara boş değer atayarak zemin renginin yayılmasını engelle
+      const lastRow = sheet.lastRow;
+      if (lastRow) {
+        for (let c = 9; c <= 100; c++) {
+          const cell = lastRow.getCell(c);
+          if (cell && cell.value === undefined) {
+            cell.value = null;
+          }
+        }
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Etkinlik_Aktivite_Raporu_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Etkinlik & Aktivite Excel export hatası:', error);
+      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+    }
+  }, [sortedEvents, eventTotals, project, formatDateForDisplay, formatNumberForDisplay]);
+
+  // Etkinlik & Aktivite temizleme fonksiyonu
+  const handleEventActivityClear = useCallback(async () => {
+    if (!projectId) return;
+
+    setConfirmModal({
+      open: true,
+      title: 'Etkinlik & Aktiviteleri Temizle',
+      message: 'Tüm Etkinlik & Aktivite verileri silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Supabase'ten tüm etkinlik & aktivite verilerini sil
+          await projectEventsActivitiesService.deleteByProjectId(projectId);
+
+          // State'i temizle
+          setEventsActivities([]);
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Tüm Etkinlik & Aktivite verileri başarıyla silindi!');
+        } catch (error: any) {
+          console.error('Hata:', error);
+          alert('Etkinlik & aktivite verileri silinirken hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, setEventsActivities, setLoading, setConfirmModal]);
+
+  // İnsan Kaynakları Excel Export
+  const handleHrExport = useCallback(async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - İnsan Kaynakları Raporu');
+
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:H1');
+
+      for (let c = 1; c <= 8; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 5.5, row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(8);
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[6] = item.right;
+        rowValues[7] = rightValue;
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(7).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(8).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(8).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      sheet.addRow([]);
+      rowIndex++;
+
+      const tableHeaderRow = sheet.addRow([
+        'TARİH',
+        'OTEL/TEDARİKÇİ',
+        'ALT KATEGORİ',
+        'AÇIKLAMA',
+        'TUTAR',
+        'DÖVİZ',
+        'KUR',
+        'TOPLAM TL'
+      ]);
+      tableHeaderRow.height = 30;
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        tableHeaderRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+      tableHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      sheet.getColumn(1).width = 12;
+      sheet.getColumn(2).width = 20;
+      sheet.getColumn(3).width = 20;
+      sheet.getColumn(4).width = 30;
+      sheet.getColumn(5).width = 15;
+      sheet.getColumn(6).width = 10;
+      sheet.getColumn(7).width = 12;
+      sheet.getColumn(8).width = 15;
+
+      sortedHr.forEach((hr: any) => {
+        const row = sheet.addRow([
+          formatDateForDisplay(hr.date || hr.Date),
+          hr.hotel || hr.supplier || '',
+          hr.sub_category || hr.subCategory || '',
+          hr.description || '',
+          formatNumberForDisplay(hr.amount || 0),
+          hr.currency || 'TRY',
+          formatNumberForDisplay(hr.exchange_rate || hr.exchangeRate || 1),
+          formatNumberForDisplay(hr.total_try || hr.totalTRY || 0)
+        ]);
+
+        row.height = 20;
+        row.alignment = { vertical: 'middle' };
+        // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+        for (let c = 1; c <= 8; c++) {
+          const cell = row.getCell(c);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+        }
+        row.getCell(1).alignment = { horizontal: 'center' };
+        row.getCell(5).alignment = { horizontal: 'right' };
+        row.getCell(6).alignment = { horizontal: 'center' };
+        row.getCell(7).alignment = { horizontal: 'right' };
+        row.getCell(8).alignment = { horizontal: 'right' };
+      });
+
+      const totalRow = sheet.addRow([
+        'TOPLAM',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatNumberForDisplay(Object.values(hrTotals || {}).reduce((sum: number, curr: any) => sum + (curr.toplamMaliyet || 0), 0))
+      ]);
+      totalRow.height = 25;
+      totalRow.font = { bold: true, size: 11 };
+      // Sadece header genişliğine kadar (8 sütun) zemin rengi uygula
+      for (let c = 1; c <= 8; c++) {
+        const cell = totalRow.getCell(c);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF0F0F0' }
+        };
+      }
+      totalRow.getCell(1).alignment = { horizontal: 'center' };
+      totalRow.getCell(8).alignment = { horizontal: 'right' };
+
+      // Sütun sayısını sınırla - sadece kullanılan sütunlar (8 sütun)
+      // ExcelJS'de kullanılmayan sütunlara boş değer atayarak zemin renginin yayılmasını engelle
+      const lastRow = sheet.lastRow;
+      if (lastRow) {
+        for (let c = 9; c <= 100; c++) {
+          const cell = lastRow.getCell(c);
+          if (cell && cell.value === undefined) {
+            cell.value = null;
+          }
+        }
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Insan_Kaynaklari_Raporu_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('İnsan Kaynakları Excel export hatası:', error);
+      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+    }
+  }, [sortedHr, hrTotals, project, formatDateForDisplay, formatNumberForDisplay]);
+
+  // İnsan Kaynakları temizleme fonksiyonu
+  const handleHrClear = useCallback(async () => {
+    if (!projectId) return;
+
+    setConfirmModal({
+      open: true,
+      title: 'İnsan Kaynaklarını Temizle',
+      message: 'Tüm İnsan Kaynakları verileri silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Supabase'ten tüm insan kaynakları verilerini sil
+          await projectHumanResourcesService.deleteByProjectId(projectId);
+
+          // State'i temizle
+          setHrExtras([]);
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Tüm İnsan Kaynakları verileri başarıyla silindi!');
+        } catch (error: any) {
+          console.error('Hata:', error);
+          alert('İnsan kaynakları verileri silinirken hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, setHrExtras, setLoading, setConfirmModal]);
+
+  // Diğer Servisler tedarikçi seçimi
+  const handleOtherServiceSupplierSelect = useCallback((supplier: any) => {
+    const updatedItem = {
+      supplier: supplier.name,
+      hotel: supplier.name,
+      supplier_id: supplier.type === 'supplier' ? supplier.id : null,
+      hotel_id: supplier.type === 'hotel' ? supplier.id : null,
+      supplier_type: supplier.type,
+    };
+    setTempOtherServiceItem(prev => {
+      const newItem = {
+        ...prev,
+        ...updatedItem
+      };
+      return newItem;
+    });
+    setOtherServiceSupplierSearch(supplier.name);
+    setShowOtherServiceSupplierDropdown(false);
+    setSelectedOtherServiceSupplierIndex(-1);
+  }, []);
+
+  // Diğer Servisler klavye navigasyonu
+  const handleOtherServiceKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showOtherServiceSupplierDropdown) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedOtherServiceSupplierIndex(prev =>
+          prev < filteredOtherServiceSuppliers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedOtherServiceSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filteredOtherServiceSuppliers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedOtherServiceSupplierIndex >= 0 && selectedOtherServiceSupplierIndex < filteredOtherServiceSuppliers.length) {
+          const supplier = filteredOtherServiceSuppliers[selectedOtherServiceSupplierIndex];
+          handleOtherServiceSupplierSelect(supplier);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowOtherServiceSupplierDropdown(false);
+        setSelectedOtherServiceSupplierIndex(-1);
+        break;
+    }
+  }, [showOtherServiceSupplierDropdown, selectedOtherServiceSupplierIndex, filteredOtherServiceSuppliers, handleOtherServiceSupplierSelect]);
+
+  // Finansal tedarikçi seçimi
+  const handleFinancialSupplierSelect = useCallback((supplier: any) => {
+    const supplierName = supplier.displayName || supplier.name || supplier.title || '';
+    const updatedItem = {
+      supplier: supplierName,
+      hotel: supplierName,
+      supplier_id: supplier.type === 'supplier' ? supplier.id : null,
+      hotel_id: supplier.type === 'hotel' ? supplier.id : null,
+      supplier_type: supplier.type,
+    };
+    setTempFinancialServiceItem(prev => {
+      const newItem = {
+        ...prev,
+        ...updatedItem
+      };
+      return newItem;
+    });
+    setHotelSupplierSearch(supplierName);
+    setShowHotelSupplierDropdown(false);
+    setSelectedSupplierIndex(-1);
+  }, []);
+
+  // Finansal klavye navigasyonu
+  const handleFinancialKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showHotelSupplierDropdown) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSupplierIndex(prev =>
+          prev < filteredHotelSuppliers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filteredHotelSuppliers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSupplierIndex >= 0 && selectedSupplierIndex < filteredHotelSuppliers.length) {
+          const supplier = filteredHotelSuppliers[selectedSupplierIndex];
+          handleFinancialSupplierSelect(supplier);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowHotelSupplierDropdown(false);
+        setSelectedSupplierIndex(-1);
+        break;
+    }
+  }, [showHotelSupplierDropdown, selectedSupplierIndex, filteredHotelSuppliers, handleFinancialSupplierSelect]);
+
+  // Finansal CRUD fonksiyonları
+  const handleFinancialAdd = () => {
+    const newItem = {
+      id: Date.now() + Math.random().toString(),
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      date: new Date().toISOString().split('T')[0],
+      supplier: '',
+      mainCategory: 'CAT_009',
+      subCategory: '',
+      description: '',
+      amount: 0,
+      currency: 'TRY',
+      exchangeRate: 1,
+      totalTRY: 0
+    };
+    setTempFinancialServiceItem(newItem);
+    setEditingFinancialServiceIndex(financialServices.length);
+    setFinancialAmountInput('');
+    setFinancialTotalTRYInput('');
+  };
+
+  const handleFinancialEdit = (index: number) => {
+    const item = financialServices[index];
+    setTempFinancialServiceItem({ ...item });
+    setEditingFinancialServiceIndex(index);
+    setFinancialAmountInput(formatNumberForDisplay(item.amount || 0));
+    setFinancialTotalTRYInput(formatNumberForDisplay(item.totalTRY || 0));
+  };
+
+  const handleFinancialSave = async () => {
+    if (!tempFinancialServiceItem) return;
+
+    try {
+      const supplierValue = (tempFinancialServiceItem?.supplier || tempFinancialServiceItem?.hotel || hotelSupplierSearch || '').trim();
+
+      if (!supplierValue || supplierValue === '') {
+        alert('Lütfen otel/tedarikçi alanını doldurunuz.');
+        return;
+      }
+
+      if (!tempFinancialServiceItem?.subCategory || tempFinancialServiceItem.subCategory.trim() === '') {
+        alert('Lütfen alt kategori seçiniz.');
+        return;
+      }
+
+      const amount = tempFinancialServiceItem?.amount || 0;
+      const exchangeRate = tempFinancialServiceItem?.exchangeRate || 1;
+      const currency = tempFinancialServiceItem?.currency || 'TRY';
+      const totalTRY = currency === 'TRY' ? amount : amount * exchangeRate;
+
+      // Alt kategori ID'sini bul
+      const selectedSubCategory = financialSubCategories.find(sub =>
+        sub.name === tempFinancialServiceItem.subCategory || sub.id === tempFinancialServiceItem.subCategory
+      );
+
+      // Seçilen otel/tedarikçi'nin ID'sini bul
+      let supplierId = null;
+      let hotelId = null;
+
+      const foundSupplier = filteredHotelSuppliers.find(supplier => {
+        const nameCandidates = [
+          supplier.displayName,
+          supplier.name,
+          supplier.title
+        ].filter(Boolean).map((val: string) => val.toLowerCase());
+        return nameCandidates.includes(supplierValue.toLowerCase());
+      });
+
+      if (foundSupplier) {
+        if (foundSupplier.type === 'supplier') {
+          supplierId = foundSupplier.id;
+        } else if (foundSupplier.type === 'hotel') {
+          hotelId = foundSupplier.id;
+        }
+      }
+
+      const financialData = {
+        project_id: projectId,
+        date: tempFinancialServiceItem.date || new Date().toISOString().split('T')[0],
+        hotel: supplierValue,
+        main_category: 'CAT_009',
+        sub_category: tempFinancialServiceItem.subCategory || '',
+        sub_category_id: selectedSubCategory?.id || null,
+        supplier_id: supplierId,
+        hotel_id: hotelId,
+        description: tempFinancialServiceItem.description || '',
+        amount: amount,
+        currency: currency,
+        exchange_rate: exchangeRate,
+        total_try: totalTRY,
+        created_by: tempFinancialServiceItem.created_by || null
+      };
+
+      const isNewFinancialService = editingFinancialServiceIndex === financialServices.length;
+      let savedFinancialService;
+
+      if (isNewFinancialService) {
+        savedFinancialService = await projectFinancialServicesService.create(financialData);
+      } else {
+        savedFinancialService = await projectFinancialServicesService.update(tempFinancialServiceItem.id, financialData);
+      }
+
+      // State'i güncelle
+      const updatedFinancialServices = [...financialServices];
+      if (isNewFinancialService) {
+        updatedFinancialServices.push(savedFinancialService);
+      } else if (editingFinancialServiceIndex !== null) {
+        updatedFinancialServices[editingFinancialServiceIndex] = savedFinancialService;
+      }
+
+      // Formatla
+      const formattedFinancialServices = updatedFinancialServices.map((item: any) => ({
+        ...item,
+        amount: item.amount || 0,
+        exchange_rate: item.exchange_rate || 1,
+        total_try: item.total_try || 0,
+        totalTRY: item.total_try || 0,
+        subCategory: item.sub_category || item.subCategory || '',
+        mainCategory: item.main_category || item.mainCategory || 'CAT_008',
+        supplier: item.hotel || '',
+      }));
+
+      setFinancialServices(formattedFinancialServices);
+      setEditingFinancialServiceIndex(null);
+      setTempFinancialServiceItem(null);
+      setFinancialAmountInput('');
+      setFinancialTotalTRYInput('');
+      setHotelSupplierSearch('');
+    } catch (error) {
+      console.error('Finansal servis kaydedilirken hata:', error);
+      alert('Finansal servis kaydedilirken hata oluştu: ' + (error as any).message || 'Bilinmeyen hata');
+    }
+  };
+
+  const handleFinancialCancel = () => {
+    setEditingFinancialServiceIndex(null);
+    setTempFinancialServiceItem(null);
+    setFinancialAmountInput('');
+    setFinancialTotalTRYInput('');
+    setHotelSupplierSearch('');
+  };
+
+  const handleFinancialDelete = async (index: number) => {
+    const item = financialServices[index];
+
+    if (!item.id) {
+      // Eğer ID yoksa, sadece state'den sil
+      const updated = financialServices.filter((_, i) => i !== index);
+      setFinancialServices(updated);
+      return;
+    }
+
+    try {
+      await projectFinancialServicesService.delete(item.id);
+      const updated = financialServices.filter((_, i) => i !== index);
+      setFinancialServices(updated);
+    } catch (error) {
+      console.error('Finansal servis silinirken hata:', error);
+      alert('Finansal servis silinirken hata oluştu.');
+    }
+  };
+
+  // tempHrItem değişikliklerini takip et
+  useEffect(() => {
+    // Debug mesajları kaldırıldı
+  }, [tempHrItem]);
+
+  // İnsan Kaynakları CRUD fonksiyonları
+  const handleHrAdd = () => {
+
+    // Yeni satır ekleme modunu başlat - doğrudan yeni değerleri set et
+    const newHrItem = {
+      id: Date.now() + Math.random().toString(),
+      date: new Date().toISOString().split('T')[0], // Bugünün tarihi
+      hotel: '',
+      subCategory: '',
+      subCategoryName: '',
+      subCategoryId: null,
+      supplier_id: null,
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      supplierId: null, // Eski format için
+      hotelId: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null, // Eski format için
+      description: '',
+      amount: 0,
+      currency: 'TRY',
+      fx: 1,
+      totalTRY: 0,
+      mainCategory: 'CAT_006', // İnsan Kaynakları ana kategorisi
+      main_category: 'CAT_006', // Yeni format için
+      created_by: null // Bu alan Supabase'de otomatik olarak doldurulacak
+    };
+
+    console.log('🔍 Yeni HR item oluşturuldu:', newHrItem);
+    console.log('🔍 newHrItem JSON:', JSON.stringify(newHrItem, null, 2));
+
+    // Tüm state'leri aynı anda güncelle - React batch'ler bu güncellemeleri
+    // ÖNEMLİ: Önce temizleme yapmadan doğrudan yeni değerleri set et
+    setTempHrItem(newHrItem);
+    setIsNewHrItem(true);
+    setEditingHrIndex(hrExtras.length); // Yeni satır için doğru index
+    setSelectedHrMainCategory('CAT_006'); // Doğru ID
+    setHrSupplierSearch('');
+    setHrAmountInput('');
+    setHrTotalTRYInput('');
+    setHrFxInput('');
+  };
+
+  const handleHrEdit = (index: number) => {
+    const hrItem = hrExtras[index];
+
+    setTempHrItem({ ...hrItem });
+    setEditingHrIndex(index);
+    setIsNewHrItem(false);
+
+    // hotel object veya string olabilir
+    const hotelValue = (() => {
+      if (typeof hrItem.hotel === 'object' && hrItem.hotel !== null) {
+        return hrItem.hotel.name || hrItem.hotel.title || '';
+      }
+      return hrItem.hotel || '';
+    })();
+    setHrSupplierSearch(hotelValue);
+
+    // tempHrItem'ı da güncelle - tüm alanları set et
+    const subCategoryValue = hrItem.subCategory || hrItem.sub_category || '';
+    setTempHrItem(prev => ({
+      ...prev,
+      hotel: hotelValue,
+      subCategory: subCategoryValue,
+      subCategoryId: hrItem.sub_category_id || hrItem.subCategoryId || null,
+      supplier_id: hrItem.supplier_id || null,
+      hotel_id: hrItem.hotel_id || null,
+      supplier_type: hrItem.supplier_type || null,
+      description: hrItem.description || '',
+      currency: hrItem.currency || 'TRY',
+      date: hrItem.date || new Date().toISOString().split('T')[0],
+      amount: hrItem.amount || 0,
+      fx: hrItem.fx || hrItem.exchange_rate || 1,
+      totalTRY: hrItem.totalTRY || hrItem.total_try || 0
+    }));
+    setSelectedHrMainCategory(hrItem.mainCategory || hrItem.main_category || '9c4fb676-1ff6-42da-8b9f-f6207e76bd70');
+
+    // Input state'lerini düzenleme için ayarla - hem camelCase hem snake_case kontrol et
+    const amount = hrItem.amount || 0;
+    const totalTRY = hrItem.totalTRY || hrItem.total_try || 0;
+    const fx = hrItem.fx || hrItem.exchange_rate || 1;
+
+    // Sayısal değerleri Türkçe formatta göster
+    setHrAmountInput(amount > 0 ? formatNumberForDisplay(amount) : '');
+    setHrTotalTRYInput(totalTRY > 0 ? formatNumberForDisplay(totalTRY) : '');
+    setHrFxInput(fx > 0 ? formatNumberForDisplay(fx) : '1');
+  };
+
+  const handleHrSave = async (overrideTempHrItem?: any) => {
+    // ÖNEMLİ: Önce state'ten al, çünkü state her zaman güncel olmalı
+    // overrideTempHrItem sadece bir fallback olarak kullan
+    let currentTempHrItem = tempHrItem;
+
+    // State'ten alınan değeri kontrol et
+    const stateItemValid = currentTempHrItem && typeof currentTempHrItem === 'object' && Object.keys(currentTempHrItem).length > 0;
+
+    // Eğer state'ten alınan değer geçersizse ve parametre geçerliyse, parametreyi kullan
+    if (!stateItemValid && overrideTempHrItem && typeof overrideTempHrItem === 'object' && Object.keys(overrideTempHrItem).length > 0) {
+      currentTempHrItem = overrideTempHrItem;
+    }
+
+    if (editingHrIndex === null) {
+      alert('Düzenleme modu aktif değil. Lütfen önce bir satır ekleyin veya düzenleyin.');
+      return;
+    }
+
+    if (!currentTempHrItem || (typeof currentTempHrItem === 'object' && Object.keys(currentTempHrItem).length === 0)) {
+      alert('Kayıt verisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+      return;
+    }
+    try {
+
+      // Input değerlerini parse et
+      const amountInput = parseTurkishNumber(hrAmountInput || '0');
+      const exchangeRate = parseTurkishNumber(hrFxInput || '1');
+      const totalTRYInput = parseTurkishNumber(hrTotalTRYInput || '0');
+
+      // Hesaplama: Etkinlik & Aktivite tabındaki gibi basit mantık
+      let amount = amountInput || 0;
+      let totalTRY = totalTRYInput || 0;
+
+      // Eğer amount varsa ama totalTRY yoksa, totalTRY'yi hesapla
+      if (amount > 0 && totalTRY === 0 && exchangeRate > 0) {
+        totalTRY = amount * exchangeRate;
+      }
+      // Eğer totalTRY varsa ama amount yoksa, amount'u hesapla
+      else if (totalTRY > 0 && amount === 0 && exchangeRate > 0) {
+        amount = totalTRY / exchangeRate;
+      }
+
+      // currentTempHrItem'ı güncel input değerleriyle güncelle
+      // ÖNEMLİ: currentTempHrItem zaten güncel olmalı, sadece sayısal değerleri ve hotel'i güncelle
+      // hrSupplierSearch boş değilse onu kullan, yoksa currentTempHrItem.hotel'i kullan
+      // Eğer hrSupplierSearch boşsa ve currentTempHrItem.hotel de boşsa, overrideTempHrItem.hotel'i kontrol et
+      let hotelValueFromSearch = hrSupplierSearch && hrSupplierSearch.trim() ? hrSupplierSearch.trim() : '';
+
+      // Eğer hala boşsa, currentTempHrItem.hotel'i kullan
+      if (!hotelValueFromSearch) {
+        hotelValueFromSearch = currentTempHrItem?.hotel || overrideTempHrItem?.hotel || '';
+      }
+
+      // ÖNEMLİ: Eğer currentTempHrItem boş veya geçersizse, state'ten tekrar al
+      let finalTempHrItem = currentTempHrItem;
+      if (!finalTempHrItem || (typeof finalTempHrItem === 'object' && Object.keys(finalTempHrItem).length === 0)) {
+        finalTempHrItem = tempHrItem;
+      }
+
+      // Eğer hala geçersizse, hata ver
+      if (!finalTempHrItem || (typeof finalTempHrItem === 'object' && Object.keys(finalTempHrItem).length === 0)) {
+        alert('Kayıt verisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+        return;
+      }
+
+      const updatedTempHrItem = {
+        ...finalTempHrItem,
+        amount: amount,
+        totalTRY: totalTRY,
+        fx: exchangeRate,
+        exchange_rate: exchangeRate,
+        hotel: hotelValueFromSearch,
+        // description, subCategory, currency, date gibi değerler finalTempHrItem'dan geliyor
+        // Bu değerler zaten güncel olmalı çünkü input onChange'lerde setTempHrItem çağrılıyor
+      };
+
+      // Alt kategori ID'sini bul
+      const selectedSubCategory = hrSubCategories.find(sub =>
+        sub.id === updatedTempHrItem?.subCategoryId || sub.name === updatedTempHrItem?.subCategory
+      );
+
+      // Hotel değerini belirle - updatedTempHrItem'da zaten güncellenmiş
+      const hotelValue = updatedTempHrItem?.hotel || hrSupplierSearch || '';
+
+      // Eğer supplier_id veya hotel_id yoksa, filteredHotelSuppliers içinde ara
+      // Hem yeni format (supplier_id, hotel_id) hem eski format (supplierId, hotelId) kontrol et
+      let finalSupplierId = updatedTempHrItem?.supplier_id || updatedTempHrItem?.supplierId || null;
+      let finalHotelId = updatedTempHrItem?.hotel_id || updatedTempHrItem?.hotelId || null;
+
+      if (!finalSupplierId && !finalHotelId && hotelValue) {
+        const foundSupplier = filteredHotelSuppliers.find(s =>
+          s.name === hotelValue || s.name === hrSupplierSearch
+        );
+        if (foundSupplier) {
+          if (foundSupplier.type === 'hotel') {
+            finalHotelId = foundSupplier.id;
+          } else if (foundSupplier.type === 'supplier') {
+            finalSupplierId = foundSupplier.id;
+          }
+        }
+      }
+
+      // Değerleri güncellenmiş tempHrItem'dan al
+      // ÖNEMLİ: Eğer updatedTempHrItem boşsa, currentTempHrItem'dan al
+      const sourceItem = updatedTempHrItem && Object.keys(updatedTempHrItem).length > 0 ? updatedTempHrItem : currentTempHrItem;
+      console.error('  - sourceItem.subCategory:', sourceItem?.subCategory);
+      console.error('  - sourceItem.hotel:', sourceItem?.hotel);
+
+      const finalDate = sourceItem?.date ? formatDateToSupabase(sourceItem.date) : new Date().toISOString().split('T')[0];
+      const finalSubCategoryId = sourceItem?.subCategoryId || selectedSubCategory?.id || null;
+      const finalSubCategory = sourceItem?.subCategory || sourceItem?.subCategoryName || selectedSubCategory?.name || '';
+      const finalDescription = sourceItem?.description || '';
+      const finalCurrency = sourceItem?.currency || 'TRY';
+
+      // NOT: Uyarı mesajını kaldırdık - kullanıcı input'a yazdığında değerler zaten tempHrItem'a kaydedilmiş olmalı
+      // Eğer gerçekten boşsa, boş kayıt oluşturulur ama bu nadir bir durum
+
+      const hrData: any = {
+        project_id: projectId,
+        date: finalDate,
+        hotel: hotelValue,
+        main_category: selectedHrMainCategory || 'CAT_006',
+        supplier_id: finalSupplierId,
+        hotel_id: finalHotelId || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
+        sub_category_id: finalSubCategoryId,
+        sub_category: finalSubCategory,
+        description: finalDescription,
+        amount: amount,
+        currency: finalCurrency,
+        exchange_rate: exchangeRate,
+        total_try: totalTRY
+      };
+
+      if (isNewHrItem) {
+        const created = await projectHumanResourcesService.create(hrData);
+        // Supabase'den dönen veriyi doğrudan kullan, camelCase'e çevir
+        const formattedCreated = {
+          ...created,
+          amount: created.amount || amount || 0,
+          totalTRY: created.total_try || created.totalTRY || totalTRY || 0,
+          total_try: created.total_try || totalTRY || 0,
+          exchange_rate: created.exchange_rate || exchangeRate || 1,
+          fx: created.exchange_rate || exchangeRate || 1
+        };
+        setHrExtras([...hrExtras, formattedCreated]);
+      } else {
+        const updated = await projectHumanResourcesService.update(updatedTempHrItem.id, hrData);
+        // Supabase'den dönen veriyi doğrudan kullan, camelCase'e çevir
+        const formattedUpdated = {
+          ...updated,
+          amount: updated.amount || amount || 0,
+          totalTRY: updated.total_try || updated.totalTRY || totalTRY || 0,
+          total_try: updated.total_try || totalTRY || 0,
+          exchange_rate: updated.exchange_rate || exchangeRate || 1,
+          fx: updated.exchange_rate || exchangeRate || 1
+        };
+        const newHrExtras = [...hrExtras];
+        const hrIndex = hrExtras.findIndex(e => e.id === updatedTempHrItem.id);
+        if (hrIndex !== -1) {
+          newHrExtras[hrIndex] = formattedUpdated;
+          setHrExtras(newHrExtras);
+        }
+      }
+      setEditingHrIndex(null);
+      setTempHrItem(null);
+      setIsNewHrItem(false);
+      setHrSupplierSearch('');
+      setHrAmountInput('');
+      setHrTotalTRYInput('');
+      setHrFxInput('');
+    } catch (error: any) {
+      console.error('HR kaydetme hatası:', error);
+      console.error('HR kaydetme hata detayları:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      alert('HR kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'));
+    }
+  };
+
+  const handleHrCancel = useCallback(() => {
+    if (editingHrIndex === null) return;
+    const newHrExtras = [...hrExtras];
+    if (isNewHrItem) {
+      newHrExtras.splice(editingHrIndex, 1);
+      setHrExtras(newHrExtras);
+    }
+    setEditingHrIndex(null);
+    setTempHrItem(null);
+    setIsNewHrItem(false);
+    setHrSupplierSearch('');
+    setHrAmountInput('');
+    setHrTotalTRYInput('');
+    setHrFxInput('');
+  }, [editingHrIndex, isNewHrItem, hrExtras, setHrExtras]);
+
+  const handleHrDelete = async (index: number) => {
+    try {
+      const hrItem = hrExtras[index];
+      if (hrItem.id) {
+        await projectHumanResourcesService.delete(hrItem.id);
+      }
+
+      const updatedHrExtras = hrExtras.filter((_, i) => i !== index);
+      setHrExtras(updatedHrExtras);
+
+      // Eğer silinen satır düzenleniyorsa, düzenleme modunu iptal et
+      if (editingHrIndex === index) {
+        setEditingHrIndex(null);
+        setTempHrItem(null);
+        setIsNewHrItem(false);
+        setHrSupplierSearch('');
+        setHrAmountInput('');
+        setHrTotalTRYInput('');
+        setHrFxInput('');
+      } else if (editingHrIndex !== null && editingHrIndex > index) {
+        // Eğer silinen satırdan sonraki bir satır düzenleniyorsa, index'i güncelle
+        setEditingHrIndex(editingHrIndex - 1);
+      }
+
+      // Custom event ile diğer sayfaları haberdar et
+      window.dispatchEvent(new CustomEvent('projectUpdated', {
+        detail: {
+          projectId,
+          type: 'hr_extras_deleted',
+          updatedData: updatedHrExtras
+        }
+      }));
+    } catch (error) {
+      console.error('İnsan Kaynakları silinirken hata:', error);
+    }
+  };
+
+  const clearHrSearch = () => {
+    setHrSearch('');
+  };
+
+  // İnsan Kaynakları için klavye navigasyonu
+  const handleHrKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showHrSupplierDropdown) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedHrSupplierIndex(prev =>
+          prev < filteredHrSuppliers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedHrSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filteredHrSuppliers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedHrSupplierIndex >= 0 && selectedHrSupplierIndex < filteredHrSuppliers.length) {
+          const supplier = filteredHrSuppliers[selectedHrSupplierIndex];
+          handleHrSupplierSelect(supplier);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowHrSupplierDropdown(false);
+        setSelectedHrSupplierIndex(-1);
+        break;
+    }
+  }, [showHrSupplierDropdown, selectedHrSupplierIndex, filteredHrSuppliers]);
+
+  const handleHrSupplierSelect = useCallback((supplier: any) => {
+    console.log('🔍🔍🔍 İnsan Kaynakları tedarikçi seçildi:', supplier);
+    console.log('🔍🔍🔍 supplier.type:', supplier.type);
+    console.log('🔍🔍🔍 supplier.id:', supplier.id);
+    console.log('🔍🔍🔍 supplier.name:', supplier.name);
+    const updatedItem = {
+      hotel: supplier.name,
+      hotel_id: supplier.type === 'hotel' ? supplier.id : null,
+      supplier_id: supplier.type === 'supplier' ? supplier.id : null,
+      supplier_type: supplier.type,
+      subCategoryName: supplier.name
+    };
+    setTempHrItem(prev => {
+      const newItem = {
+        ...prev,
+        ...updatedItem
+      };
+      return newItem;
+    });
+    setHrSupplierSearch(supplier.name);
+    setShowHrSupplierDropdown(false);
+    setSelectedHrSupplierIndex(-1);
+  }, []);
+
+  // handleHrSupplierKeyDown'ı handleHrSupplierSelect'ten sonra güncelle
+  const handleHrSupplierKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showHrSupplierDropdown) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedHrSupplierIndex(prev =>
+          prev < filteredHrSuppliers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedHrSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filteredHrSuppliers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedHrSupplierIndex >= 0 && selectedHrSupplierIndex < filteredHrSuppliers.length) {
+          const supplier = filteredHrSuppliers[selectedHrSupplierIndex];
+          handleHrSupplierSelect(supplier);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowHrSupplierDropdown(false);
+        setSelectedHrSupplierIndex(-1);
+        break;
+    }
+  }, [showHrSupplierDropdown, selectedHrSupplierIndex, filteredHrSuppliers, handleHrSupplierSelect]);
+
+  // ALIŞ tabı tedarikçi seçimi
+  const handlePurchaseSupplierSelect = useCallback((supplier: any, itemId: string) => {
+    console.log('ALIŞ tedarikçi seçildi:', supplier, 'itemId:', itemId);
+    const updated = itemsPurchase.map((item: any) =>
+      item.id === itemId
+        ? { ...item, vendorId: supplier.id, isEditing: true } // isEditing set to true so saveItems will trigger
+        : item
+    );
+    setItemsPurchase(updated); // Update local state immediately
+    
+    // We then trigger saveItems manually since the selection happened outside the normal cell flow
+    const selectedItem = updated.find(it => it.id === itemId);
+    if (selectedItem) {
+       saveItems('purchase', updated);
+    }
+
+    setPurchaseSupplierSearch('');
+    setShowPurchaseSupplierDropdown(false);
+    setSelectedPurchaseSupplierIndex(-1);
+  }, [itemsPurchase, saveItems]);
+
+  // ALIŞ tabı tedarikçi klavye navigasyonu
+  const handlePurchaseSupplierKeyDown = useCallback((e: React.KeyboardEvent, itemId: string) => {
+    if (!showPurchaseSupplierDropdown) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedPurchaseSupplierIndex(prev =>
+          prev < filteredPurchaseSuppliers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedPurchaseSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filteredPurchaseSuppliers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedPurchaseSupplierIndex >= 0 && selectedPurchaseSupplierIndex < filteredPurchaseSuppliers.length) {
+          handlePurchaseSupplierSelect(filteredPurchaseSuppliers[selectedPurchaseSupplierIndex], itemId);
+        }
+        break;
+      case 'Escape':
+        setShowPurchaseSupplierDropdown(false);
+        setSelectedPurchaseSupplierIndex(-1);
+        break;
+    }
+  }, [showPurchaseSupplierDropdown, selectedPurchaseSupplierIndex, filteredPurchaseSuppliers, handlePurchaseSupplierSelect]);
+
+
+
+  // Otel Ekstra filtreleme ve sıralama
+  const filteredHotelExtras = useMemo(() => {
+    let filtered = hotelExtras;
+
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      filtered = filtered.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id && !item.hotel;
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    if (hotelExtraSearch.trim()) {
+      filtered = filtered.filter(extra =>
+        (extra.hotel && extra.hotel.toLowerCase().includes(hotelExtraSearch?.toLowerCase() || '')) ||
+        (extra.description && extra.description.toLowerCase().includes(hotelExtraSearch?.toLowerCase() || '')) ||
+        (extra.sub_category && extra.sub_category.toLowerCase().includes(hotelExtraSearch?.toLowerCase() || '')) ||
+        (extra.subCategoryName && extra.subCategoryName.toLowerCase().includes(hotelExtraSearch?.toLowerCase() || ''))
+      );
+    }
+
+    if (hotelExtraSortField) {
+      filtered = [...filtered].sort((a, b) => {
+        let aVal = a[hotelExtraSortField] || '';
+        let bVal = b[hotelExtraSortField] || '';
+
+        // Supabase alan adlarını kontrol et
+        if (hotelExtraSortField === 'subCategoryName' && !aVal) {
+          aVal = a.sub_category || '';
+        }
+        if (hotelExtraSortField === 'subCategoryName' && !bVal) {
+          bVal = b.sub_category || '';
+        }
+
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+        if (aVal < bVal) return hotelExtraSortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return hotelExtraSortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [hotelExtras, hotelExtraSearch, hotelExtraSortField, hotelExtraSortDirection, activeHotelId, project?.hotels_data]);
+
+  // Sıralama fonksiyonları
+  const handleSort = (field: string) => {
+    if (hotelExtraSortField === field) {
+      setHotelExtraSortDirection(hotelExtraSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setHotelExtraSortField(field);
+      setHotelExtraSortDirection('asc');
+    }
+  };
+
+  // İnsan Kaynakları sıralama fonksiyonu
+  const handleHrSort = (field: string) => {
+    if (hrSortField === field) {
+      setHrSortDirection(hrSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setHrSortField(field);
+      setHrSortDirection('asc');
+    }
+  };
+
+  // Transfer arama filtreleme
+  const filteredTransfers = useMemo(() => {
+    let baseTransfers = transfers;
+
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      baseTransfers = baseTransfers.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id && !item.hotel;
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    const hasEditing = baseTransfers.some((t: any) => t.isEditing);
+    if (!transferSearch.trim()) return hasEditing ? baseTransfers : sortTransfers(baseTransfers);
+
+    const searchTerm = transferSearch?.toLowerCase() || '';
+    const filtered = baseTransfers.filter((transfer: any) => {
+      // Tüm sütunlarda arama yap
+      const searchableFields = [
+        transfer.date,
+        transfer.time,
+        transfer.flightCode || '',
+        transfer.route,
+        transfer.passengerCount?.toString() || '',
+        transfer.transferType,
+        transfer.vehicleType,
+        transfer.supplierName || '',
+        transfer.costAmount?.toString() || '',
+        transfer.currency,
+        transfer.passengers?.join(' ') || '',
+        transfer.direction === 'arrival' ? 'giriş' : 'çıkış',
+        transfer.typeLabel || ''
+      ];
+
+      return searchableFields.some(field =>
+        field && field.toString().toLowerCase().includes(searchTerm)
+      );
+    });
+    return hasEditing ? filtered : sortTransfers(filtered);
+  }, [transfers, transferSearch, activeHotelId, project?.hotels_data]);
+
+  // Transfer istatistikleri
+  const stats = useMemo(() => {
+    const result: any = {
+      arrival: { count: 0, passengers: 0, byVehicle: {} as Record<string, { transfers: number; passengers: number }> },
+      departure: { count: 0, passengers: 0, byVehicle: {} as Record<string, { transfers: number; passengers: number }> },
+      intermediate: { count: 0, passengers: 0, byVehicle: {} as Record<string, { transfers: number; passengers: number }> },
+      totals: { count: 0, passengers: 0, byVehicle: {} as Record<string, { transfers: number; passengers: number }> }
+    };
+
+    // Transfer verilerini işle
+    filteredTransfers.forEach(transfer => {
+      const vehicleType = transfer.vehicleType || 'Belirsiz';
+      const passengerCount = transfer.passengerCount || 1;
+
+      // Araç tipi istatistiklerini güncelle
+      if (!result.totals.byVehicle[vehicleType]) {
+        result.totals.byVehicle[vehicleType] = { transfers: 0, passengers: 0 };
+      }
+      result.totals.byVehicle[vehicleType].transfers++;
+      result.totals.byVehicle[vehicleType].passengers += passengerCount;
+
+      // Yön bazında istatistikler
+      if (transfer.direction === 'arrival') {
+        result.arrival.count++;
+        result.arrival.passengers += passengerCount;
+
+        if (!result.arrival.byVehicle[vehicleType]) {
+          result.arrival.byVehicle[vehicleType] = { transfers: 0, passengers: 0 };
+        }
+        result.arrival.byVehicle[vehicleType].transfers++;
+        result.arrival.byVehicle[vehicleType].passengers += passengerCount;
+      } else if (transfer.direction === 'departure') {
+        result.departure.count++;
+        result.departure.passengers += passengerCount;
+
+        if (!result.departure.byVehicle[vehicleType]) {
+          result.departure.byVehicle[vehicleType] = { transfers: 0, passengers: 0 };
+        }
+        result.departure.byVehicle[vehicleType].transfers++;
+        result.departure.byVehicle[vehicleType].passengers += passengerCount;
+      } else if (transfer.typeLabel === 'Ara Transfer' || transfer.typeLabel === 'Grup Ara') {
+        result.intermediate.count++;
+        result.intermediate.passengers += passengerCount;
+
+        if (!result.intermediate.byVehicle[vehicleType]) {
+          result.intermediate.byVehicle[vehicleType] = { transfers: 0, passengers: 0 };
+        }
+        result.intermediate.byVehicle[vehicleType].transfers++;
+        result.intermediate.byVehicle[vehicleType].passengers += passengerCount;
+      }
+    });
+
+    // Toplam hesapla
+    result.totals.count = result.arrival.count + result.departure.count + result.intermediate.count;
+    result.totals.passengers = result.arrival.passengers + result.departure.passengers + result.intermediate.passengers;
+
+    return result;
+  }, [filteredTransfers]);
+
+  // Ara Transfer ekle: Otel → Otel, tip: Ara Transfer, edit modunda aç
+  const addIntermediateTransfer = () => {
+    const newTransfer = {
+      id: `intermediate-${Date.now()}`,
+      hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+      direction: 'arrival',
+      date: '',
+      time: '',
+      route: 'Otel → Otel',
+      passengerCount: 1,
+      transferType: 'private',
+      vehicleType: '',
+      supplierId: '',
+      passengers: [''],
+      flightCode: '',
+      currency: 'TRY',
+      isGroup: false,
+      vehicleAssigned: false,
+      isEditing: true,
+      isNew: true,
+      typeLabel: 'Ara Transfer'
+    } as any;
+    const updated = [newTransfer, ...transfers];
+    const sorted = sortTransfers(updated);
+    setTransfers(sorted);
+    // Transfers artık Supabase'de saklanacak
+    // tarih inputuna odak
+    setTimeout(() => {
+      const dateEl = document.getElementById(`transfer-date-0`) as HTMLInputElement | null;
+      dateEl?.focus?.();
+    }, 0);
+  };
+  // Manuel transfer ekle (Giriş/Çıkış/Ara seçilebilir)
+  const addManualTransfer = async (kind: 'arrival' | 'departure' | 'intermediate') => {
+    try {
+      console.log('🔍 Manuel transfer ekleniyor, kind:', kind, 'projectId:', projectId);
+
+      const newTransfer = {
+        project_id: projectId,
+        hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+        direction: kind === 'intermediate' ? 'intermediate' : kind,
+        type_label: kind === 'arrival' ? 'Giriş' : kind === 'departure' ? 'Çıkış' : 'Ara Transfer',
+        date: null, // Boş tarih için null
+        time: null, // Boş saat için null
+        route:
+          kind === 'arrival'
+            ? 'Havalimanı → Otel'
+            : kind === 'departure'
+              ? 'Otel → Havalimanı'
+              : 'Otel → Otel',
+        passenger_count: 1,
+        transfer_type: 'private',
+        vehicle_type: null, // Boş araç tipi için null
+        supplier_id: null, // Boş tedarikçi ID için null
+        supplier_name: null, // Boş tedarikçi adı için null
+        passengers: [''],
+        flight_code: null, // Boş uçuş kodu için null
+        currency: 'TRY',
+        cost_amount: 0,
+        vehicle_assigned: false,
+        is_group: false,
+        sort_key: `9999-12-31 23:59`
+      };
+
+      console.log('🔍 Supabase\'e gönderilecek transfer verisi:', newTransfer);
+      const createdTransfer = await projectTransfersService.create(newTransfer);
+      console.log('🔍 Supabase\'den dönen transfer verisi:', createdTransfer);
+
+      // Frontend formatına çevir
+      const formattedTransfer = {
+        ...createdTransfer,
+        direction: createdTransfer.direction,
+        typeLabel: createdTransfer.type_label,
+        date: createdTransfer.date ? formatDateFromSupabase(createdTransfer.date) : createdTransfer.date,
+        time: createdTransfer.time ? formatTimeFromSupabase(createdTransfer.time) : createdTransfer.time,
+        flightCode: createdTransfer.flight_code,
+        route: createdTransfer.route,
+        passengerCount: createdTransfer.passenger_count,
+        passengers: createdTransfer.passengers || [],
+        transferType: createdTransfer.transfer_type,
+        vehicleType: createdTransfer.vehicle_type,
+        supplierId: createdTransfer.supplier_id,
+        supplierName: createdTransfer.supplier_name,
+        vehicleAssigned: createdTransfer.vehicle_assigned,
+        costAmount: createdTransfer.cost_amount,
+        currency: createdTransfer.currency,
+        isGroup: createdTransfer.is_group,
+        groupTransfers: createdTransfer.group_transfers,
+        isEditing: true,
+        isNew: true
+      };
+
+      console.log('🔍 Formatlanmış transfer:', formattedTransfer);
+
+      const updated = [formattedTransfer, ...transfers];
+      setTransfers(updated);
+      setShowAddTransferMenu(false);
+
+      // Tarih inputuna odak
+      setTimeout(() => {
+        const dateEl = document.getElementById(`transfer-date-0`) as HTMLInputElement | null;
+        dateEl?.focus?.();
+      }, 0);
+    } catch (error) {
+      console.error('🔍 Transfer ekleme hatası:', error);
+      console.error('🔍 Hata detayları:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      alert(`Transfer eklenirken hata oluştu: ${error.message}`);
+    }
+  };
+
+  // Tedarikçi dropdown fonksiyonları (hem transfer hem uçak bileti için)
+  const toggleSupplierDropdown = (itemId: string) => {
+    const isOpening = !supplierDropdowns[itemId]?.isOpen;
+
+    setSupplierDropdowns(prev => ({
+      ...prev,
+      [itemId]: {
+        isOpen: isOpening,
+        searchTerm: prev[itemId]?.searchTerm || '',
+        selectedIndex: prev[itemId]?.selectedIndex || 0
+      }
+    }));
+
+    // Dropdown açıldığında arama inputuna odaklan
+    if (isOpening) {
+      // Daha uzun timeout kullan ve retry mekanizması ekle
+      setTimeout(() => {
+        const searchInput = document.querySelector(`[data-supplier-search="${itemId}"]`) as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        } else {
+          // Retry after another 100ms
+          setTimeout(() => {
+            const retryInput = document.querySelector(`[data-supplier-search="${itemId}"]`) as HTMLInputElement;
+            retryInput?.focus();
+          }, 100);
+        }
+      }, 200);
+    }
+  };
+
+  const updateSupplierSearch = (itemId: string, searchTerm: string) => {
+    setSupplierDropdowns(prev => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        searchTerm,
+        selectedIndex: 0
+      }
+    }));
+  };
+
+  const selectSupplier = (transferId: string, supplierId: string, supplierName: string) => {
+    const transferIndex = transfers.findIndex(t => t.id === transferId);
+    if (transferIndex !== -1) {
+      updateTransfer(transferId, 'supplierId', supplierId);
+      updateTransfer(transferId, 'supplierName', supplierName);
+      updateTransfer(transferId, 'vehicleAssigned', true);
+    }
+  
+    setSupplierDropdowns(prev => ({
+      ...prev,
+      [transferId]: {
+        ...prev[transferId],
+        isOpen: false,
+        searchTerm: ''
+      }
+    }));
+  };
+
+  // Uçak bileti için supplier seçim fonksiyonu
+  const selectFlightSupplier = (flightTicketId: string, supplierId: string, supplierName: string) => {
+    if (tempFlightItem && tempFlightItem.id === flightTicketId) {
+      setTempFlightItem({ ...tempFlightItem, tedarikci: supplierName });
+    }
+
+    setSupplierDropdowns(prev => ({
+      ...prev,
+      [flightTicketId]: {
+        ...prev[flightTicketId],
+        isOpen: false,
+        searchTerm: ''
+      }
+    }));
+  };
+
+  const handleSupplierKeyDown = (e: React.KeyboardEvent, itemId: string) => {
+    const dropdown = supplierDropdowns[itemId];
+
+    // Dropdown kapalıysa hiçbir şey yapma (sadece onFocus ile açılacak)
+    if (!dropdown?.isOpen) {
+      return;
+    }
+
+    // Uçak bileti için oteller ve tedarikçileri birleştir
+    const combinedList = allSuppliers.length > 0 ? allSuppliers : [
+      ...(suppliers || []).map((s: any) => ({
+        ...s,
+        type: 'supplier',
+        displayName: s.name || s.title || ''
+      })),
+      ...(hotels || []).map((h: any) => ({
+        ...h,
+        type: 'hotel',
+        displayName: h.name || h.title || ''
+      }))
+    ];
+
+    const filteredSuppliers = combinedList.filter((s: any) =>
+      (s.displayName || s.name || s.title || '').toLowerCase().includes(dropdown.searchTerm?.toLowerCase() || '')
+    );
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSupplierDropdowns(prev => ({
+          ...prev,
+          [itemId]: {
+            ...prev[itemId],
+            selectedIndex: Math.min(dropdown.selectedIndex + 1, filteredSuppliers.length - 1)
+          }
+        }));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSupplierDropdowns(prev => ({
+          ...prev,
+          [itemId]: {
+            ...prev[itemId],
+            selectedIndex: Math.max(dropdown.selectedIndex - 1, 0)
+          }
+        }));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredSuppliers[dropdown.selectedIndex]) {
+          const supplier = filteredSuppliers[dropdown.selectedIndex];
+          // Transfer veya uçak bileti kontrolü
+          if (transfers.find(t => t.id === itemId)) {
+            selectSupplier(itemId, supplier.id, supplier.name);
+          } else if (tempFlightItem && tempFlightItem.id === itemId) {
+            selectFlightSupplier(itemId, supplier.id, supplier.name);
+          }
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setSupplierDropdowns(prev => ({
+          ...prev,
+          [itemId]: {
+            ...prev[itemId],
+            isOpen: false
+          }
+        }));
+        break;
+    }
+  };
+
+  const handleTransferSelect = (transferId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTransfers([...selectedTransfers, transferId]);
+    } else {
+      setSelectedTransfers(selectedTransfers.filter(id => id !== transferId));
+    }
+  };
+
+  const selectAllTransfers = () => {
+    const allTransferIds = transfers.map(t => t.id);
+    setSelectedTransfers(allTransferIds);
+  };
+
+  const updateTransfer = async (id: string, field: string, value: any) => {
+    console.log('🔍 updateTransfer çağrıldı:', { id, field, value });
+    const realIndex = transfers.findIndex(t => t.id === id);
+    if (realIndex === -1) return;
+
+    const newTransfers = [...transfers];
+    newTransfers[realIndex] = { ...newTransfers[realIndex], [field]: value };
+
+    // Araç kapasitesi kontrolü
+    if (field === 'vehicleType' || field === 'passengerCount') {
+      const transfer = newTransfers[realIndex];
+      const passengerCount = field === 'passengerCount' ? value : transfer.passengerCount;
+      const vehicleType = field === 'vehicleType' ? value : transfer.vehicleType;
+
+      if (vehicleType && passengerCount) {
+        let maxCapacity = 0;
+        let vehicleName = '';
+
+        switch (vehicleType) {
+          case 'vito':
+            maxCapacity = 5;
+            vehicleName = 'Vito';
+            break;
+          case 'sprinter':
+            maxCapacity = 16;
+            vehicleName = 'Sprinter';
+            break;
+          case 'otobus':
+            maxCapacity = 48;
+            vehicleName = 'Otobüs';
+            break;
+          case 'binek':
+            maxCapacity = 3;
+            vehicleName = 'Binek';
+            break;
+          case 's-class':
+            maxCapacity = 3;
+            vehicleName = 'S Class';
+            break;
+        }
+
+        if (maxCapacity > 0 && passengerCount > maxCapacity) {
+          alert(`${vehicleName} araç tipi maksimum ${maxCapacity} kişi alabilir! Seçilen yolcu sayısı: ${passengerCount}`);
+        }
+      }
+    }
+
+    setTransfers(newTransfers);
+
+    // Supabase'e kaydet (sadece düzenleme modunda değilse ve transfer ID'si geçerliyse)
+    console.log('🔍 Transfer düzenleme modu:', newTransfers[realIndex].isEditing);
+    console.log('🔍 Transfer ID:', newTransfers[realIndex].id);
+
+    // Sadece gerçek UUID'li transferler için Supabase'e kaydet
+    const isValidUUIDLocal = (tid: string) => {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(tid);
+    };
+
+    if (!newTransfers[realIndex].isEditing && newTransfers[realIndex].id && isValidUUIDLocal(newTransfers[realIndex].id)) {
+      console.log('🔍 Supabase\'e kaydetme yapılıyor');
+      try {
+        const transfer = newTransfers[realIndex];
+        const updateData: any = {};
+
+        // Frontend alanlarını Supabase alanlarına çevir
+        if (field === 'passengerCount') updateData.passenger_count = value;
+        else if (field === 'vehicleType') updateData.vehicle_type = value;
+        else if (field === 'supplierId') updateData.supplier_id = value;
+        else if (field === 'supplierName') updateData.supplier_name = value;
+        else if (field === 'costAmount') updateData.cost_amount = value;
+        else if (field === 'currency') updateData.currency = value;
+        else if (field === 'transferType') updateData.transfer_type = value;
+        else if (field === 'date') updateData.date = value;
+        else if (field === 'time') updateData.time = value;
+        else if (field === 'flightCode') updateData.flight_code = value;
+        else if (field === 'route') updateData.route = value;
+        else if (field === 'passengers') updateData.passengers = value;
+        else if (field === 'vehicleAssigned') updateData.vehicle_assigned = value;
+        else updateData[field] = value;
+
+        await projectTransfersService.update(transfer.id, updateData);
+      } catch (error) {
+        console.error('Transfer güncelleme hatası:', error);
+      }
+    }
+  };
+
+  const addTransferBelow = async (id: string) => {
+    try {
+      console.log('🔍 Satır altına transfer ekleniyor, id:', id);
+      const realIndex = transfers.findIndex(t => t.id === id);
+      if (realIndex === -1) return;
+
+      const newTransfer = {
+        project_id: projectId,
+        hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
+        direction: 'arrival',
+        type_label: 'Giriş',
+        date: null, // Boş tarih için null
+        time: null, // Boş saat için null
+        route: 'Havaalanı → Otel',
+        passenger_count: 1,
+        transfer_type: 'private',
+        vehicle_type: null, // Boş araç tipi için null
+        supplier_id: null, // Boş tedarikçi ID için null
+        supplier_name: null, // Boş tedarikçi adı için null
+        passengers: [''],
+        flight_code: null, // Boş uçuş kodu için null
+        currency: 'TRY',
+        cost_amount: 0,
+        is_group: false,
+        vehicle_assigned: false,
+        sort_key: `9999-12-31 23:59`
+      };
+
+      console.log('🔍 Supabase\'e gönderilecek transfer verisi:', newTransfer);
+      const createdTransfer = await projectTransfersService.create(newTransfer);
+      console.log('🔍 Supabase\'den dönen transfer verisi:', createdTransfer);
+
+      // Frontend formatına çevir
+      const formattedTransfer = {
+        ...createdTransfer,
+        direction: createdTransfer.direction,
+        typeLabel: createdTransfer.type_label,
+        date: createdTransfer.date ? formatDateFromSupabase(createdTransfer.date) : createdTransfer.date,
+        time: createdTransfer.time ? formatTimeFromSupabase(createdTransfer.time) : createdTransfer.time,
+        flightCode: createdTransfer.flight_code,
+        route: createdTransfer.route,
+        passengerCount: createdTransfer.passenger_count,
+        passengers: createdTransfer.passengers || [],
+        transferType: createdTransfer.transfer_type,
+        vehicleType: createdTransfer.vehicle_type,
+        supplierId: createdTransfer.supplier_id,
+        supplierName: createdTransfer.supplier_name,
+        vehicleAssigned: createdTransfer.vehicle_assigned,
+        costAmount: createdTransfer.cost_amount,
+        currency: createdTransfer.currency,
+        isGroup: createdTransfer.is_group,
+        groupTransfers: createdTransfer.group_transfers,
+        isEditing: true,
+        isNew: true
+      };
+
+      const newTransfers = [...transfers];
+      newTransfers.splice(index + 1, 0, formattedTransfer);
+      setTransfers(newTransfers);
+
+      // yeni satırın tarih inputuna odaklan
+      setTimeout(() => {
+        const dateEl = document.getElementById(`transfer-date-${index + 1}`) as HTMLInputElement | null;
+        dateEl?.focus?.();
+      }, 0);
+    } catch (error) {
+      console.error('🔍 Satır altına transfer ekleme hatası:', error);
+      alert(`Transfer eklenirken hata oluştu: ${error.message}`);
+    }
+  };
+
+  const copyTransfer = (index: number) => {
+    const originalTransfer = transfers[index];
+    const copiedTransfer = {
+      ...originalTransfer,
+      id: `transfer-${Date.now()}`,
+      passengers: [...originalTransfer.passengers],
+      vehicleAssigned: false
+    };
+
+    const newTransfers = [...transfers];
+    newTransfers.splice(index + 1, 0, copiedTransfer);
+    setTransfers(newTransfers);
+    // localStorage kaldırıldı - sadece Supabase kullanılıyor
+  };
+
+  const deleteTransfer = useCallback(async (id: string) => {
+    try {
+      const realIndex = transfers.findIndex(t => t.id === id);
+      if (realIndex === -1) {
+        console.error('Transfer bulunamadı:', id);
+        return;
+      }
+      const transfer = transfers[realIndex];
+
+      // Eğer transfer'in id'si varsa (Supabase'de kayıtlı), Supabase'den sil
+      if (transfer.id) {
+        try {
+          await projectTransfersService.delete(transfer.id);
+        } catch (deleteError: any) {
+          if (deleteError?.status !== 404 && deleteError?.code !== 'PGRST116') {
+            console.error('Transfer silme hatası:', deleteError);
+            throw deleteError;
+          }
+        }
+      }
+
+      // Frontend state'inden sil
+      setTransfers(prev => prev.filter(t => t.id !== id));
+      setSelectedTransfers(prev => prev.filter(tid => tid !== id));
+    } catch (error) {
+      console.error('Transfer silme hatası:', error);
+      alert('Transfer silinirken hata oluştu.');
+    }
+  }, [transfers]);
+
+  const openVehicleAssignmentModal = async (index: number) => {
+    const transfer = transfers[index];
+
+    // Araç tipi ve tedarikçi kontrolü
+    if (!transfer.vehicleType || !transfer.supplierName) {
+      alert('Araç tipi ve tedarikçi seçimi zorunludur!');
+      return;
+    }
+
+    try {
+      // Supabase'e araç atamasını kaydet
+      const updateData = {
+        vehicle_assigned: true,
+        vehicle_type: transfer.vehicleType,
+        supplier_id: transfer.supplierId,
+        supplier_name: transfer.supplierName
+      };
+
+      await projectTransfersService.update(transfer.id, updateData);
+
+      // Frontend state'ini güncelle
+      const newTransfers = [...transfers];
+      newTransfers[index] = {
+        ...newTransfers[index],
+        isEditing: false,
+        vehicleAssigned: true
+      };
+      setTransfers(newTransfers);
+
+      // Checkbox seçimini kapat
+      setSelectedTransfers(selectedTransfers.filter(id => id !== transfer.id));
+
+      alert('Araç ataması tamamlandı!');
+    } catch (error) {
+      console.error('Araç ataması kaydetme hatası:', error);
+      alert('Araç ataması kaydedilirken hata oluştu.');
+    }
+  };
+  const openBulkVehicleAssignmentModal = () => {
+    setCurrentTransferIndex(null);
+    setShowVehicleAssignmentModal(true);
+  };
+  // Konaklamadan transfer oluştur
+  const createTransfersFromAccommodation = async () => {
+    console.log('🔍 Konaklama transfer oluşturma başlatılıyor');
+    console.log('🔍 accommodationItems:', accommodationItems);
+    console.log('🔍 accommodationItems length:', accommodationItems?.length);
+    console.log('🔍 accommodationItems isArray:', Array.isArray(accommodationItems));
+
+    if (!Array.isArray(accommodationItems) || accommodationItems.length === 0) {
+      console.log('🔍 Konaklama verisi bulunamadı');
+      alert('Konaklama verisi bulunamadı.');
+      return;
+    }
+
+    // Modal'ı aç
+    setShowTransferTimingModal(true);
+  };
+
+  const handleCreateTransfersWithTiming = async () => {
+    try {
+      console.log('🔍 Supabase service çağrılıyor');
+      
+      // Aktif otele göre konaklamaları filtrele
+      const itemsToProcess = activeHotelId === 'all' 
+        ? accommodationItems 
+        : accommodationItems.filter(item => {
+            if (activeHotelId === 'general') {
+              return !item.hotel_id;
+            }
+            return item.hotel_id === activeHotelId;
+          });
+
+      if (itemsToProcess.length === 0) {
+        alert('Bu otel için konaklama verisi bulunamadı.');
+        return;
+      }
+
+      const createdTransfers = await projectTransfersService.createFromAccommodation(projectId, itemsToProcess, {
+        departureHours,
+        departureMinutes
+      });
+      console.log('🔍 Supabase service döndü, createdTransfers:', createdTransfers);
+
+      // Frontend formatına çevir
+      const formattedTransfers = createdTransfers.map((transfer: any) => ({
+        ...transfer,
+        direction: transfer.direction,
+        typeLabel: transfer.type_label,
+        date: transfer.date ? formatDateFromSupabase(transfer.date) : transfer.date,
+        time: transfer.time ? formatTimeFromSupabase(transfer.time) : transfer.time,
+        flightCode: transfer.flight_code,
+        route: transfer.route,
+        passengerCount: transfer.passenger_count,
+        passengers: transfer.passengers || [],
+        transferType: transfer.transfer_type,
+        vehicleType: transfer.vehicle_type,
+        supplierId: transfer.supplier_id,
+        supplierName: transfer.supplier_name,
+        vehicleAssigned: transfer.vehicle_assigned,
+        costAmount: transfer.cost_amount,
+        currency: transfer.currency,
+        isGroup: transfer.is_group,
+        groupTransfers: transfer.group_transfers,
+        isEditing: false,
+        isNew: false
+      }));
+
+      const merged = sortTransfers([...transfers, ...formattedTransfers]);
+      setTransfers(merged);
+      setShowTransferTimingModal(false);
+      alert(`${createdTransfers.length} transfer oluşturuldu.`);
+      setActiveTab('transfer-tur');
+    } catch (error) {
+      console.error('Konaklama transfer oluşturma hatası:', error);
+      alert('Transferler oluşturulurken hata oluştu.');
+    }
+  };
+  // Tüm transferlere flightCode alanı ekle
+  const addFlightCodeToAllTransfers = () => {
+    const updatedTransfers = transfers.map(transfer => {
+      if (!transfer.flightCode) {
+        return {
+          ...transfer,
+          flightCode: ''
+        };
+      }
+      return transfer;
+    });
+
+    setTransfers(updatedTransfers);
+    // localStorage kullanimi kaldirildi
+    alert('Tüm transferlere uçuş kodu alanı eklendi!');
+  };
+
+  // Grup detaylarını aç/kapat
+  const toggleGroupDetails = (index: number) => {
+    const newExpandedGroups = new Set(expandedGroups);
+    if (newExpandedGroups.has(index)) {
+      newExpandedGroups.delete(index);
+    } else {
+      newExpandedGroups.add(index);
+    }
+    setExpandedGroups(newExpandedGroups);
+  };
+  const groupSelectedTransfers = async () => {
+    if (selectedTransfers.length < 2) {
+      alert('En az 2 transfer seçmelisiniz!');
+      return;
+    }
+
+    try {
+      console.log('🔍 Grup oluşturma başlatılıyor');
+
+      // Seçili transferleri al
+      const selectedTransferObjects = transfers.filter(t => selectedTransfers.includes(t.id));
+
+      // Araç ataması yapılmış transferleri hariç tut
+      const unassignedTransfers = selectedTransferObjects.filter(t => !t.vehicleAssigned);
+      if (unassignedTransfers.length !== selectedTransferObjects.length) {
+        alert('Araç ataması yapılmış transferler gruplamaya dahil edilemez!');
+        return;
+      }
+
+      // Gruplama kurallarını kontrol et
+      const dates = [...new Set(selectedTransferObjects.map(t => t.date))];
+      const directions = [...new Set(selectedTransferObjects.map(t => t.direction))];
+
+      // Farklı tarihlerdeki transferleri gruplamaya izin verme
+      if (dates.length > 1) {
+        alert('Farklı tarihlerdeki transferleri gruplayamazsınız!');
+        return;
+      }
+
+      // Gidiş ve dönüş transferlerini gruplamaya izin verme
+      if (directions.length > 1) {
+        alert('Gidiş ve dönüş transferlerini gruplayamazsınız!');
+        return;
+      }
+
+      // Uçuş saatleri arasında yarım saatten fazla fark varsa uyarı
+      const times = selectedTransferObjects.map(t => t.time).filter(t => t);
+      if (times.length > 1) {
+        const timeValues = times.map(time => {
+          const [hours, minutes] = time.split(':').map(Number);
+          return hours * 60 + minutes;
+        });
+        const minTime = Math.min(...timeValues);
+        const maxTime = Math.max(...timeValues);
+        const timeDifference = maxTime - minTime;
+
+        if (timeDifference > 30) {
+          const hours = Math.floor(timeDifference / 60);
+          const minutes = timeDifference % 60;
+          const timeDiffText = hours > 0 ? `${hours} saat ${minutes} dakika` : `${minutes} dakika`;
+
+          const shouldGroup = confirm(
+            `Uyarı: Seçili transferler arasında ${timeDiffText} saat farkı var.\n\n` +
+            `Bu transferleri gruplamak istiyor musunuz?\n\n` +
+            `İptal: Gruplamayı iptal et\n` +
+            `Tamam: Yine de grupla`
+          );
+
+          if (!shouldGroup) {
+            return;
+          }
+        }
+      }
+
+      // İlk transferi referans al
+      const firstTransfer = selectedTransferObjects[0];
+      const allPassengers = selectedTransferObjects.flatMap(t => t.passengers);
+
+      // Uçuş kodlarını topla ve en geç saatteki uçuş kodunu seç
+      const transfersWithFlightCode = selectedTransferObjects.filter(t => t.flightCode && t.flightCode.trim() !== '');
+      let groupFlightCode = '';
+      let groupTime = firstTransfer.time;
+
+      if (transfersWithFlightCode.length === 1) {
+        // 1 uçuş kodu varsa onu kullan
+        groupFlightCode = transfersWithFlightCode[0].flightCode;
+        groupTime = transfersWithFlightCode[0].time;
+      } else if (transfersWithFlightCode.length > 1) {
+        // Birden çok uçuş kodu varsa en geç saatteki uçuş kodunu seç
+        const sortedByTime = transfersWithFlightCode.sort((a, b) => b.time.localeCompare(a.time));
+        groupFlightCode = sortedByTime[0].flightCode;
+        groupTime = sortedByTime[0].time;
+      } else {
+        // Hiç uçuş kodu yoksa en geç saatteki transferin saatini kullan
+        const sortedByTime = selectedTransferObjects.sort((a, b) => b.time.localeCompare(b.time));
+        groupTime = sortedByTime[0].time;
+      }
+
+      // Ara transfer kontrolü ve grup etiketi belirleme
+      const isIntermediateGroup = selectedTransferObjects.some(t => t.typeLabel === 'Ara Transfer');
+      const groupTypeLabel = isIntermediateGroup ? 'Grup Ara' :
+        (firstTransfer.direction === 'arrival' ? 'Grup Giriş' : 'Grup Çıkış');
+
+      // Seçili transferleri Supabase'den sil
+      for (const transfer of selectedTransferObjects) {
+        if (transfer.id && !transfer.id.startsWith('transfer-')) {
+          await projectTransfersService.delete(transfer.id);
+          console.log('🔍 Transfer Supabase\'den silindi:', transfer.id);
+        }
+      }
+
+      // Grup transferi oluştur
+      const groupTransferData = {
+        project_id: projectId,
+        direction: firstTransfer.direction,
+        type_label: groupTypeLabel,
+        date: firstTransfer.date ? formatDateToSupabase(firstTransfer.date) : null,
+        time: groupTime || null,
+        flight_code: groupFlightCode || null,
+        route: firstTransfer.route || null,
+        passenger_count: allPassengers.length,
+        passengers: allPassengers,
+        transfer_type: 'private',
+        vehicle_type: null,
+        supplier_id: null,
+        supplier_name: null,
+        cost_amount: 0,
+        currency: 'TRY',
+        vehicle_assigned: false,
+        is_group: true,
+        group_transfers: JSON.stringify(selectedTransferObjects),
+        sort_key: `${firstTransfer.date ? formatDateToSupabase(firstTransfer.date) : '9999-12-31'} ${groupTime || '23:59'}`
+      };
+
+      console.log('🔍 Grup transferi Supabase\'e kaydediliyor:', groupTransferData);
+      console.log('🔍 Seçili transferler:', selectedTransferObjects);
+      console.log('🔍 JSON.stringify sonucu:', JSON.stringify(selectedTransferObjects));
+      const createdGroupTransfer = await projectTransfersService.create(groupTransferData);
+
+      // Frontend formatına çevir
+      const groupTransfer = {
+        ...createdGroupTransfer,
+        direction: createdGroupTransfer.direction,
+        typeLabel: createdGroupTransfer.type_label,
+        date: createdGroupTransfer.date ? formatDateFromSupabase(createdGroupTransfer.date) : createdGroupTransfer.date,
+        time: createdGroupTransfer.time ? formatTimeFromSupabase(createdGroupTransfer.time) : createdGroupTransfer.time,
+        flightCode: createdGroupTransfer.flight_code,
+        route: createdGroupTransfer.route,
+        passengerCount: createdGroupTransfer.passenger_count,
+        passengers: createdGroupTransfer.passengers || [],
+        transferType: createdGroupTransfer.transfer_type,
+        vehicleType: createdGroupTransfer.vehicle_type,
+        supplierId: createdGroupTransfer.supplier_id,
+        supplierName: createdGroupTransfer.supplier_name,
+        costAmount: createdGroupTransfer.cost_amount,
+        currency: createdGroupTransfer.currency,
+        vehicleAssigned: createdGroupTransfer.vehicle_assigned,
+        isGroup: true,
+        groupTransfers: createdGroupTransfer.group_transfers ? JSON.parse(createdGroupTransfer.group_transfers) : [],
+        originalTransfers: createdGroupTransfer.group_transfers ? JSON.parse(createdGroupTransfer.group_transfers) : [],
+        isEditing: false,
+        isNew: false
+      };
+
+      // Seçili transferleri listeden kaldır ve grup transferini ekle
+      const newTransfers = transfers.filter(t => !selectedTransfers.includes(t.id));
+      const finalTransfers = sortTransfers([...newTransfers, groupTransfer]);
+      setTransfers(finalTransfers);
+
+      // Gruplama sonrası checkbox'ları kapat
+      setSelectedTransfers([]);
+
+      console.log('🔍 Grup oluşturma tamamlandı');
+      alert('Transferler başarıyla gruplandı!');
+    } catch (error) {
+      console.error('🔍 Grup oluşturma hatası:', error);
+      alert('Transferler gruplanırken hata oluştu.');
+    }
+  };
+
+  const ungroupTransfer = async (index: number) => {
+    const groupTransfer = transfers[index];
+    if (!groupTransfer.isGroup) return;
+
+    try {
+      console.log('🔍 Grup çözme başlatılıyor:', groupTransfer);
+
+      // Grup transferini Supabase'den sil
+      if (groupTransfer.id && !groupTransfer.id.startsWith('group-')) {
+        await projectTransfersService.delete(groupTransfer.id);
+        console.log('🔍 Grup transferi Supabase\'den silindi');
+      }
+
+      // Orijinal transferleri geri yuklemeyi tercih et; yoksa fallback olarak yolculardan olustur
+      const newTransfers = [...transfers];
+      newTransfers.splice(index, 1); // Grup transferini kaldır
+
+      if (groupTransfer.originalTransfers && Array.isArray(groupTransfer.originalTransfers) && groupTransfer.originalTransfers.length > 0) {
+        // Orijinal transferleri Supabase'e kaydet
+        for (const original of groupTransfer.originalTransfers) {
+          const transferData = {
+            project_id: projectId,
+            direction: original.direction,
+            type_label: original.typeLabel || (original.direction === 'arrival' ? 'Giriş' : 'Çıkış'),
+            date: original.date ? formatDateToSupabase(original.date) : null,
+            time: original.time || null,
+            flight_code: original.flightCode || null,
+            route: original.route || null,
+            passenger_count: original.passengerCount || 1,
+            passengers: original.passengers || [],
+            transfer_type: original.transferType || 'private',
+            vehicle_type: original.vehicleType || null,
+            supplier_id: original.supplierId || null,
+            supplier_name: original.supplierName || null,
+            cost_amount: original.costAmount || 0,
+            currency: original.currency || 'TRY',
+            vehicle_assigned: original.vehicleAssigned || false,
+            is_group: false,
+            group_transfers: null,
+            sort_key: `${original.date ? formatDateToSupabase(original.date) : '9999-12-31'} ${original.time || '23:59'}`
+          };
+
+          console.log('🔍 Orijinal transfer Supabase\'e kaydediliyor:', transferData);
+          const createdTransfer = await projectTransfersService.create(transferData);
+
+          // Frontend formatına çevir
+          const formattedTransfer = {
+            ...createdTransfer,
+            direction: createdTransfer.direction,
+            typeLabel: createdTransfer.type_label,
+            date: createdTransfer.date ? formatDateFromSupabase(createdTransfer.date) : createdTransfer.date,
+            time: createdTransfer.time ? formatTimeFromSupabase(createdTransfer.time) : createdTransfer.time,
+            flightCode: createdTransfer.flight_code,
+            route: createdTransfer.route,
+            passengerCount: createdTransfer.passenger_count,
+            passengers: createdTransfer.passengers || [],
+            transferType: createdTransfer.transfer_type,
+            vehicleType: createdTransfer.vehicle_type,
+            supplierId: createdTransfer.supplier_id,
+            supplierName: createdTransfer.supplier_name,
+            costAmount: createdTransfer.cost_amount,
+            currency: createdTransfer.currency,
+            vehicleAssigned: createdTransfer.vehicle_assigned,
+            isGroup: false,
+            groupTransfers: null,
+            isEditing: false,
+            isNew: false
+          };
+
+          newTransfers.push(formattedTransfer);
+        }
+      } else {
+        // Fallback: yolcu listesinden tekil transferler olustur ve grup ucus kodunu devral
+        for (let passengerIndex = 0; passengerIndex < groupTransfer.passengers.length; passengerIndex++) {
+          const passenger = groupTransfer.passengers[passengerIndex];
+
+          const transferData = {
+            project_id: projectId,
+            direction: groupTransfer.direction,
+            type_label: groupTransfer.direction === 'arrival' ? 'Giriş' : 'Çıkış',
+            date: groupTransfer.date ? formatDateToSupabase(groupTransfer.date) : null,
+            time: groupTransfer.time || null,
+            flight_code: groupTransfer.flightCode || null,
+            route: groupTransfer.route || null,
+            passenger_count: 1,
+            passengers: [passenger],
+            transfer_type: groupTransfer.transferType || 'private',
+            vehicle_type: null,
+            supplier_id: null,
+            supplier_name: null,
+            cost_amount: 0,
+            currency: 'TRY',
+            vehicle_assigned: false,
+            is_group: false,
+            group_transfers: null,
+            sort_key: `${groupTransfer.date ? formatDateToSupabase(groupTransfer.date) : '9999-12-31'} ${groupTransfer.time || '23:59'}`
+          };
+
+          console.log('🔍 Fallback transfer Supabase\'e kaydediliyor:', transferData);
+          const createdTransfer = await projectTransfersService.create(transferData);
+
+          // Frontend formatına çevir
+          const formattedTransfer = {
+            ...createdTransfer,
+            direction: createdTransfer.direction,
+            typeLabel: createdTransfer.type_label,
+            date: createdTransfer.date ? formatDateFromSupabase(createdTransfer.date) : createdTransfer.date,
+            time: createdTransfer.time ? formatTimeFromSupabase(createdTransfer.time) : createdTransfer.time,
+            flightCode: createdTransfer.flight_code,
+            route: createdTransfer.route,
+            passengerCount: createdTransfer.passenger_count,
+            passengers: createdTransfer.passengers || [],
+            transferType: createdTransfer.transfer_type,
+            vehicleType: createdTransfer.vehicle_type,
+            supplierId: createdTransfer.supplier_id,
+            supplierName: createdTransfer.supplier_name,
+            costAmount: createdTransfer.cost_amount,
+            currency: createdTransfer.currency,
+            vehicleAssigned: createdTransfer.vehicle_assigned,
+            isGroup: false,
+            groupTransfers: null,
+            isEditing: false,
+            isNew: false
+          };
+
+          newTransfers.push(formattedTransfer);
+        }
+      }
+
+      // Transferleri sırala: giriş önce, çıkış sonra, sonra tarih, saat, uçuş kodu
+      const sortedTransfers = sortTransfers(newTransfers);
+      setTransfers(sortedTransfers);
+
+      console.log('🔍 Grup çözme tamamlandı');
+      alert('Grup başarıyla çözüldü!');
+    } catch (error) {
+      console.error('🔍 Grup çözme hatası:', error);
+      alert('Grup çözülürken hata oluştu.');
+    }
+  };
+
+  const editTransfer = (id: string) => {
+    const realIndex = transfers.findIndex(t => t.id === id);
+    if (realIndex === -1) return;
+
+    const transfer = transfers[realIndex];
+
+    // Araç atanan gruplanan transferlerde düzenleme moduna geçme
+    if (transfer.isGroup && transfer.vehicleAssigned) {
+      alert('Araç atanan gruplanan transferlerde düzenleme yapılamaz!');
+      return;
+    }
+
+    const newTransfers = [...transfers];
+    const vt = newTransfers[realIndex].vehicleType;
+    newTransfers[realIndex] = {
+      ...newTransfers[realIndex],
+      isEditing: true,
+      // Araç tipi boşsa atama yapılmamış say ve checkbox geri gelsin
+      vehicleAssigned: vt ? newTransfers[realIndex].vehicleAssigned : false,
+      passengersInput: (newTransfers[realIndex].passengers || []).join(', ')
+    } as any;
+    setTransfers(newTransfers);
+    // localStorage kaldırıldı - sadece Supabase kullanılıyor
+    // Tarih inputuna odakla
+    setTimeout(() => {
+      const dateEl = document.getElementById(`transfer-date-${id}`) as HTMLInputElement | null;
+      dateEl?.focus?.();
+    }, 0);
+  };
+
+  // Transfer satırı için klavye kısayolları: Enter kaydet, Esc iptal
+  const handleTransferRowKeyDown = (e: React.KeyboardEvent, id: string) => {
+    const key = e.key;
+    const realIndex = transfers.findIndex(t => t.id === id);
+    if (realIndex === -1) return;
+    const row = transfers[realIndex];
+    if (!row?.isEditing) return;
+    if (key === 'Enter') {
+      e.preventDefault();
+      saveTransfer(id);
+    } else if (key === 'Escape') {
+      e.preventDefault();
+      cancelTransferEdit(id);
+    }
+  };
+
+  const saveTransfer = async (id: string) => {
+    try {
+      const realIndex = transfers.findIndex(t => t.id === id);
+      if (realIndex === -1) return;
+
+      const newTransfers = [...transfers];
+      const transfer = newTransfers[realIndex];
+
+      // passengersInput varsa passengers dizisine dönüştür
+      if ((transfer as any).passengersInput !== undefined) {
+        const raw = (transfer as any).passengersInput || '';
+        const parsed = raw.split(',').map((p: string) => p.trim()).filter((p: string) => p);
+        transfer.passengers = parsed;
+        delete (transfer as any).passengersInput; // Geçici alanı temizle
+      }
+
+      // Araç tipi boşsa araç atamasını kaldır
+      const vehicleType = transfer.vehicleType;
+      const shouldRemoveVehicleAssignment = !vehicleType || vehicleType === '';
+
+      newTransfers[realIndex] = {
+        ...transfer,
+        isEditing: false,
+        isNew: false,
+        vehicleAssigned: shouldRemoveVehicleAssignment ? false : transfer.vehicleAssigned
+      };
+
+      // sortKey üretimi: tarih+saat varsa güncelle
+      const t = newTransfers[realIndex];
+      const datePart = t.date || '';
+      const timePart = t.time || '';
+      if (datePart && timePart) {
+        newTransfers[realIndex] = { ...t, sortKey: `${datePart} ${timePart}` };
+      }
+
+      // Supabase'e kaydet - tarih ve saat formatlarını dönüştür
+      const updateData: any = {
+        direction: t.direction,
+        type_label: t.typeLabel,
+        date: t.date ? formatDateToSupabase(t.date) : null,
+        time: t.time ? formatTimeToSupabase(t.time) : null,
+        flight_code: t.flightCode || null,
+        route: t.route,
+        passenger_count: t.passengerCount,
+        passengers: t.passengers,
+        transfer_type: t.transferType,
+        vehicle_type: t.vehicleType || null,
+        supplier_id: t.supplierId || null,
+        supplier_name: t.supplierName || null,
+        vehicle_assigned: t.vehicleAssigned,
+        cost_amount: t.costAmount,
+        currency: t.currency,
+        is_group: t.isGroup,
+        group_transfers: t.groupTransfers,
+        sort_key: `${datePart} ${timePart}`
+      };
+
+      await projectTransfersService.update(t.id, updateData);
+
+      // Kaydetme anında sıralama yap
+      const sorted = sortTransfers(newTransfers);
+      setTransfers(sorted);
+    } catch (error) {
+      console.error('Transfer kaydetme hatası:', error);
+      alert('Transfer kaydedilirken hata oluştu.');
+    }
+  };
+
+  const cancelTransferEdit = (id: string) => {
+    const realIndex = transfers.findIndex(t => t.id === id);
+    if (realIndex === -1) return;
+
+    const newTransfers = [...transfers];
+    const t = newTransfers[realIndex];
+    if (t && t.isNew) {
+      // Kaydedilmemiş yeni satır ise tamamen sil
+      newTransfers.splice(realIndex, 1);
+    } else if (t) {
+      // Aksi halde sadece edit modundan çık
+      newTransfers[realIndex] = { ...t, isEditing: false };
+    }
+
+    // Tedarikçi dropdown'larını kapat
+    const transferId = t?.id;
+    if (transferId) {
+      setSupplierDropdowns(prev => ({
+        ...prev,
+        [transferId]: {
+          ...prev[transferId],
+          isOpen: false,
+          searchTerm: ''
+        }
+      }));
+    }
+
+    setTransfers(newTransfers);
+    // localStorage kaldırıldı - sadece Supabase kullanılıyor
+  };
+
+  // Transfer handler'ları - TransferTurTab için
+  const handleTransferSave = useCallback((id: string) => {
+    saveTransfer(id);
+    setEditingTransferIndex(null);
+    setTempTransferItem(null);
+  }, [editingTransferIndex, transfers, saveTransfer]);
+
+  const handleTransferCancel = useCallback((id: string) => {
+    cancelTransferEdit(id);
+    setEditingTransferIndex(null);
+    setTempTransferItem(null);
+  }, [editingTransferIndex, cancelTransferEdit]);
+
+  const handleTransferEdit = useCallback((id: string) => {
+    const t = transfers.find(it => it.id === id);
+    if (t) {
+      setEditingTransferIndex(transfers.findIndex(it => it.id === id));
+      setTempTransferItem(t);
+      editTransfer(id);
+    }
+  }, [transfers, editTransfer]);
+
+  const handleTransferDelete = useCallback(async (id: string) => {
+    await deleteTransfer(id);
+    if (tempTransferItem?.id === id) {
+      setEditingTransferIndex(null);
+      setTempTransferItem(null);
+    }
+  }, [editingTransferIndex, deleteTransfer, tempTransferItem]);
+
+  // Geçici satır ID'lerini (plan-*, col-*) kalıcı kayıtlardan ayır
+  const isPersistedRecordId = (value: unknown): boolean => {
+    if (value === null || value === undefined) return false;
+    const id = String(value).trim();
+    if (!id) return false;
+    if (id.startsWith('plan-') || id.startsWith('col-')) return false;
+    return true;
+  };
+
+  // Plan/Collection handler'ları - Supabase
+  const handlePlanSave = useCallback(async (item: any) => {
+    if (!projectId) throw new Error('projectId bulunamadı');
+    const payload = {
+      project_id: projectId,
+      date: item.date || new Date().toISOString().split('T')[0],
+      collection_type: item.collectionType || item.collection_type || '',
+      description: item.description || '',
+      amount: Number(item.amount) || 0,
+      currency: item.currency || 'TRY',
+      exchange_rate: Number(item.exchangeRate ?? item.exchange_rate ?? 1) || 1,
+      total_try: Number(item.totalTRY ?? item.total_try ?? 0) || (Number(item.amount) || 0) * (Number(item.exchangeRate ?? 1) || 1)
+    };
+    // Geçici ID'ler (plan-xxx formatında) UUID değilse yeni kayıt olarak işle
+    const isUpdate = isPersistedRecordId(item.id);
+    const saved = isUpdate
+      ? await projectCollectionPlansService.update(item.id, payload)
+      : await projectCollectionPlansService.create(payload);
+    return mapPlan(saved);
+  }, [projectId, mapPlan]);
+
+  const handlePlanCancel = useCallback(() => {
+    setEditingPlanIndex(null);
+    setTempPlanItem(null);
+  }, []);
+
+  const handlePlanDelete = useCallback(async (item: any) => {
+    if (!isPersistedRecordId(item?.id)) return;
+    await projectCollectionPlansService.delete(item.id);
+  }, []);
+
+  const handleCollectionSave = useCallback(async (item: any) => {
+    if (!projectId) throw new Error('projectId bulunamadı');
+    const payload = {
+      project_id: projectId,
+      date: item.date || new Date().toISOString().split('T')[0],
+      collection_type: item.collectionType || item.collection_type || '',
+      description: item.description || '',
+      payer: item.payer || null,
+      amount: Number(item.amount) || 0,
+      currency: item.currency || 'TRY',
+      exchange_rate: Number(item.exchangeRate ?? item.exchange_rate ?? 1) || 1,
+      total_try: Number(item.totalTRY ?? item.total_try ?? 0) || (Number(item.amount) || 0) * (Number(item.exchangeRate ?? 1) || 1)
+    };
+    // Geçici ID'ler (col-xxx formatında) UUID değilse yeni kayıt olarak işle
+    const isUpdate = isPersistedRecordId(item.id);
+    const saved = isUpdate
+      ? await projectCollectionsService.update(item.id, payload)
+      : await projectCollectionsService.create(payload);
+    return mapCollection(saved);
+  }, [projectId, mapCollection]);
+
+  const handleCollectionCancel = useCallback(() => {
+    setEditingCollectionIndex(null);
+    setTempCollectionItem(null);
+  }, []);
+
+  const handleCollectionDelete = useCallback(async (item: any) => {
+    if (!isPersistedRecordId(item?.id)) return;
+    await projectCollectionsService.delete(item.id);
+  }, []);
+
+  // Ödeme handler'ları - Supabase
+  const handlePaymentPlanSave = useCallback(async (item: any) => {
+    if (!projectId) throw new Error('projectId bulunamadı');
+
+    // Otel/Tedarikçi bilgilerini hazırla
+    const supplierValue = (item?.hotel || item?.supplier || '').trim();
+    let supplierId = item?.supplier_id || null;
+    let hotelId = item?.hotel_id || null;
+
+    // Eğer supplierValue varsa ama ID'ler yoksa, filteredHotelSuppliers'dan bul
+    if (supplierValue && (!supplierId && !hotelId)) {
+      const suppliersList = allSuppliers.length > 0 ? allSuppliers : [
+        ...(suppliers || []).map((s: any) => ({
+          ...s,
+          type: 'supplier',
+          displayName: s.name || s.title || ''
+        })),
+        ...(hotels || []).map((h: any) => ({
+          ...h,
+          type: 'hotel',
+          displayName: h.name || h.title || ''
+        }))
+      ];
+
+      const foundSupplier = suppliersList.find((supplier: any) => {
+        const nameCandidates = [
+          supplier.displayName,
+          supplier.name,
+          supplier.title
+        ].filter(Boolean).map((val: string) => val.toLowerCase());
+        return nameCandidates.includes(supplierValue.toLowerCase());
+      });
+
+      if (foundSupplier) {
+        if (foundSupplier.type === 'supplier') {
+          supplierId = foundSupplier.id;
+        } else if (foundSupplier.type === 'hotel') {
+          hotelId = foundSupplier.id;
+        }
+      }
+    }
+
+    const payload = {
+      project_id: projectId,
+      date: item.date || new Date().toISOString().split('T')[0],
+      payment_type: item.paymentType || item.payment_type || '',
+      description: item.description || '',
+      hotel: supplierValue || null,
+      supplier_id: supplierId,
+      hotel_id: hotelId,
+      amount: Number(item.amount) || 0,
+      currency: item.currency || 'TRY',
+      exchange_rate: Number(item.exchangeRate ?? item.exchange_rate ?? 1) || 1,
+      total_try: Number(item.totalTRY ?? item.total_try ?? 0) || (Number(item.amount) || 0) * (Number(item.exchangeRate ?? 1) || 1)
+    };
+    // Geçici ID'ler (plan-xxx formatında) UUID değilse yeni kayıt olarak işle
+    const isUpdate = isPersistedRecordId(item.id);
+    const saved = isUpdate
+      ? await projectPaymentPlansService.update(item.id, payload)
+      : await projectPaymentPlansService.create(payload);
+    return mapPaymentPlan(saved);
+  }, [projectId, mapPaymentPlan, allSuppliers, suppliers, hotels]);
+
+  const handlePaymentPlanCancel = useCallback(() => {
+    setEditingPaymentPlanIndex(null);
+    setTempPaymentPlanItem(null);
+  }, []);
+
+  const handlePaymentPlanDelete = useCallback(async (item: any) => {
+    if (!isPersistedRecordId(item?.id)) return;
+    await projectPaymentPlansService.delete(item.id);
+  }, []);
+
+  const handlePaymentSave = useCallback(async (item: any) => {
+    if (!projectId) throw new Error('projectId bulunamadı');
+
+    // Otel/Tedarikçi bilgilerini hazırla
+    const supplierValue = (item?.hotel || item?.supplier || '').trim();
+    let supplierId = item?.supplier_id || null;
+    let hotelId = item?.hotel_id || null;
+
+    // Eğer supplierValue varsa ama ID'ler yoksa, filteredHotelSuppliers'dan bul
+    if (supplierValue && (!supplierId && !hotelId)) {
+      const suppliersList = allSuppliers.length > 0 ? allSuppliers : [
+        ...(suppliers || []).map((s: any) => ({
+          ...s,
+          type: 'supplier',
+          displayName: s.name || s.title || ''
+        })),
+        ...(hotels || []).map((h: any) => ({
+          ...h,
+          type: 'hotel',
+          displayName: h.name || h.title || ''
+        }))
+      ];
+
+      const foundSupplier = suppliersList.find((supplier: any) => {
+        const nameCandidates = [
+          supplier.displayName,
+          supplier.name,
+          supplier.title
+        ].filter(Boolean).map((val: string) => val.toLowerCase());
+        return nameCandidates.includes(supplierValue.toLowerCase());
+      });
+
+      if (foundSupplier) {
+        if (foundSupplier.type === 'supplier') {
+          supplierId = foundSupplier.id;
+        } else if (foundSupplier.type === 'hotel') {
+          hotelId = foundSupplier.id;
+        }
+      }
+    }
+
+    const payload = {
+      project_id: projectId,
+      date: item.date || new Date().toISOString().split('T')[0],
+      payment_type: item.paymentType || item.payment_type || '',
+      description: item.description || '',
+      payee: item.payee || null,
+      hotel: supplierValue || null,
+      supplier_id: supplierId,
+      hotel_id: hotelId,
+      amount: Number(item.amount) || 0,
+      currency: item.currency || 'TRY',
+      exchange_rate: Number(item.exchangeRate ?? item.exchange_rate ?? 1) || 1,
+      total_try: Number(item.totalTRY ?? item.total_try ?? 0) || (Number(item.amount) || 0) * (Number(item.exchangeRate ?? 1) || 1)
+    };
+    // Geçici ID'ler (pay-xxx formatında) UUID değilse yeni kayıt olarak işle
+    const isUpdate = isPersistedRecordId(item.id);
+    const saved = isUpdate
+      ? await projectPaymentsService.update(item.id, payload)
+      : await projectPaymentsService.create(payload);
+    return mapPayment(saved);
+  }, [projectId, mapPayment, allSuppliers, suppliers, hotels]);
+
+  const handlePaymentCancel = useCallback(() => {
+    setEditingPaymentIndex(null);
+    setTempPaymentItem(null);
+  }, []);
+
+  const handlePaymentDelete = useCallback(async (item: any) => {
+    if (!isPersistedRecordId(item?.id)) return;
+    await projectPaymentsService.delete(item.id);
+  }, []);
+
+  // Ödeme Planı Otel/Tedarikçi seçimi
+  const handlePaymentPlanSupplierSelect = useCallback((supplier: any) => {
+    const supplierName = supplier.displayName || supplier.name || supplier.title || '';
+    setTempPaymentPlanItem((prev: any) => ({
+      ...prev,
+      hotel: supplierName,
+      supplier_id: supplier.type === 'supplier' ? supplier.id : null,
+      hotel_id: supplier.type === 'hotel' ? supplier.id : null
+    }));
+    setPaymentPlanHotelSupplierSearch(supplierName);
+    setShowPaymentPlanHotelSupplierDropdown(false);
+    setSelectedPaymentPlanSupplierIndex(-1);
+  }, []);
+
+  // Ödeme Planı klavye navigasyonu
+  const handlePaymentPlanKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showPaymentPlanHotelSupplierDropdown) return;
+
+    const filtered = filteredHotelSuppliers;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedPaymentPlanSupplierIndex(prev =>
+          prev < filtered.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedPaymentPlanSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filtered.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedPaymentPlanSupplierIndex >= 0 && selectedPaymentPlanSupplierIndex < filtered.length) {
+          const supplier = filtered[selectedPaymentPlanSupplierIndex];
+          handlePaymentPlanSupplierSelect(supplier);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowPaymentPlanHotelSupplierDropdown(false);
+        setSelectedPaymentPlanSupplierIndex(-1);
+        break;
+    }
+  }, [showPaymentPlanHotelSupplierDropdown, selectedPaymentPlanSupplierIndex, filteredHotelSuppliers, handlePaymentPlanSupplierSelect]);
+
+  // Ödeme Otel/Tedarikçi seçimi
+  const handlePaymentSupplierSelect = useCallback((supplier: any) => {
+    const supplierName = supplier.displayName || supplier.name || supplier.title || '';
+    setTempPaymentItem((prev: any) => ({
+      ...prev,
+      hotel: supplierName,
+      supplier_id: supplier.type === 'supplier' ? supplier.id : null,
+      hotel_id: supplier.type === 'hotel' ? supplier.id : null
+    }));
+    setPaymentHotelSupplierSearch(supplierName);
+    setShowPaymentHotelSupplierDropdown(false);
+    setSelectedPaymentSupplierIndex(-1);
+  }, []);
+
+  // Ödeme klavye navigasyonu
+  const handlePaymentKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showPaymentHotelSupplierDropdown) return;
+
+    const filtered = filteredHotelSuppliers;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedPaymentSupplierIndex(prev =>
+          prev < filtered.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedPaymentSupplierIndex(prev =>
+          prev > 0 ? prev - 1 : filtered.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedPaymentSupplierIndex >= 0 && selectedPaymentSupplierIndex < filtered.length) {
+          const supplier = filtered[selectedPaymentSupplierIndex];
+          handlePaymentSupplierSelect(supplier);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowPaymentHotelSupplierDropdown(false);
+        setSelectedPaymentSupplierIndex(-1);
+        break;
+    }
+  }, [showPaymentHotelSupplierDropdown, selectedPaymentSupplierIndex, filteredHotelSuppliers, handlePaymentSupplierSelect]);
+
+  // hrSaveInProgress window property
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).hrSaveInProgress = false;
+    }
+  }, []);
+
+  // Araç tipi kodlarını isimlere çeviren fonksiyon
+  const getVehicleTypeName = (vehicleTypeCode: string) => {
+    const vehicleTypeMap: { [key: string]: string } = {
+      'vito': 'Vito',
+      'sprinter': 'Sprinter',
+      'otobus': 'Otobüs',
+      'binek': 'Binek',
+      's-class': 'S Class'
+    };
+    return vehicleTypeMap[vehicleTypeCode] || vehicleTypeCode || '-';
+  };
+  const exportTransfersToExcel = async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Transfer Listesi');
+
+      // Sayfa ayarları
+      worksheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      // Header band (A1:K1) - koyu zemin
+      const topBandRow = worksheet.addRow([]);
+      topBandRow.height = 70;
+      worksheet.mergeCells('A1:K1');
+      for (let c = 1; c <= 11; c++) {
+        worksheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      // Koyu tema logolarını al (Supabase'ten)
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true); // Koyu tema için true
+
+      // Logoları ekle (varsa)
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        worksheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any
+        } as any);
+      }
+
+      if (wordmarkLogoBase64) {
+        const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        worksheet.addImage(markId, {
+          tl: { col: 9.5, row: 0.23 },
+          ext: { width: inchToPx(2.0), height: inchToPx(0.50) } as any
+        } as any);
+      }
+
+      // Ana başlık - TRANSFER & TUR LİSTESİ
+      const titleRow = worksheet.addRow(['TRANSFER & TUR LİSTESİ']);
+      titleRow.height = 30;
+      worksheet.mergeCells('A2:K2');
+      titleRow.getCell(1).font = { size: 18, bold: true, color: { argb: 'FFFFFFFF' } };
+      titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+      titleRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // Alt başlık - tarih ve proje
+      const formatDateForSubtitle = (dateString: string) => {
+        if (!dateString) return '';
+        // YYYY-MM-DD formatından DD.MM.YYYY formatına çevir
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          const [year, month, day] = parts;
+          return `${day}.${month}.${year}`;
+        }
+        return dateString;
+      };
+
+      const startDate = formatDateForSubtitle(project?.start_date || '');
+      const endDate = formatDateForSubtitle(project?.end_date || '');
+      const companyName = project?.company_name || project?.name || '';
+      const hotelName = getHotelName(project?.hotel_id) || '';
+
+      const subtitleRow = worksheet.addRow([`${startDate} - ${endDate} | ${companyName} | ${hotelName}`]);
+      subtitleRow.height = 20;
+      worksheet.mergeCells('A3:K3');
+      subtitleRow.getCell(1).font = { size: 12, color: { argb: 'FFFFFFFF' } };
+      subtitleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+      subtitleRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // Boş satır
+      worksheet.addRow(['']);
+      let currentRow = 5;
+
+      // Transferleri kategorilere ayır - grup transferleri dahil
+      const arrivalTransfers = transfers.filter(t => t.direction === 'arrival');
+      const intermediateTransfers = transfers.filter(t => t.direction === 'intermediate');
+      const departureTransfers = transfers.filter(t => t.direction === 'departure');
+
+      // GİRİŞ TRANSFERLERİ
+      if (arrivalTransfers.length > 0) {
+        // GİRİŞ başlığı - mavi zemin
+        const sectionHeader = worksheet.addRow(['GİRİŞ']);
+        sectionHeader.height = 25;
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        sectionHeader.getCell(1).font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        sectionHeader.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+        sectionHeader.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        currentRow++;
+
+        // Giriş başlık satırı
+        const headersRow = worksheet.addRow([
+          'Transfer Tipi', 'Tarih', 'Saat', 'Uçuş Kodu', 'Güzergah', 'Yolcu Sayısı',
+          'Transfer Tipi', 'Araç Tipi', 'Tedarikçi', 'Misafirler', 'Durum'
+        ]);
+        // Başlık satırı hücrelerini tek tek düzenle
+        for (let i = 1; i <= 11; i++) {
+          headersRow.getCell(i).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          headersRow.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+          headersRow.getCell(i).alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+        headersRow.height = 20;
+        currentRow++;
+
+        // Giriş verileri - grup transferleri önce
+        const groupArrivals = arrivalTransfers.filter(t => t.isGroup);
+        const individualArrivals = arrivalTransfers.filter(t => !t.isGroup);
+
+        // Grup transferleri
+        groupArrivals.forEach(transfer => {
+          // Grup başlığı
+          const groupRow = worksheet.addRow([
+            'Grup Giriş',
+            transfer.date || '-',
+            transfer.time || '-',
+            transfer.flightCode || '-',
+            transfer.route || '-',
+            `${transfer.passengerCount || 1} ${transfer.transferType === 'private' ? 'Özel' : 'Ekonomik'}`,
+            transfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+            getVehicleTypeName(transfer.vehicleType),
+            transfer.supplierName || '-',
+            transfer.passengers.join(', '),
+            `GRUP (${transfer.originalTransfers?.length || transfer.passengerCount || 1} transfer)`
+          ]);
+
+          // Grup satırını tamamen bold yap
+          for (let i = 1; i <= 11; i++) {
+            groupRow.getCell(i).font = { bold: true };
+          }
+          currentRow++;
+
+          // Grup detayları
+          if (transfer.originalTransfers && transfer.originalTransfers.length > 0) {
+            transfer.originalTransfers.forEach((originalTransfer: any, index: number) => {
+              const detailRow = worksheet.addRow([
+                'Giriş',
+                originalTransfer.date || '-',
+                originalTransfer.time || '-',
+                originalTransfer.flightCode || '-',
+                originalTransfer.route || '-',
+                originalTransfer.passengerCount || 1,
+                originalTransfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+                getVehicleTypeName(originalTransfer.vehicleType),
+                transfer.supplierName || '-',
+                (originalTransfer.passengers || []).join(', '),
+                `Detay ${index + 1}`
+              ]);
+
+              // Grup detay satırları tamamen gri renk
+              for (let i = 1; i <= 11; i++) {
+                detailRow.getCell(i).font = { italic: true, color: { argb: 'FF6B7280' }, bold: false };
+              }
+              currentRow++;
+            });
+          }
+        });
+
+        // Bireysel transferler
+        individualArrivals.forEach(transfer => {
+          const dataRow = worksheet.addRow([
+            transfer.typeLabel || 'Giriş',
+            transfer.date || '-',
+            transfer.time || '-',
+            transfer.flightCode || '-',
+            transfer.route || '-',
+            transfer.passengerCount || 1,
+            transfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+            getVehicleTypeName(transfer.vehicleType),
+            transfer.supplierName || '-',
+            transfer.passengers.join(', '),
+            transfer.vehicleAssigned ? 'Araç Atandı' : 'Araç Atanmadı'
+          ]);
+
+          // Bireysel transferler bold
+          for (let i = 1; i <= 11; i++) {
+            dataRow.getCell(i).font = { bold: true };
+          }
+          currentRow++;
+        });
+
+        // Boş satır
+        worksheet.addRow(['']);
+        currentRow++;
+      }
+
+      // ARA TRANSFERLER
+      if (intermediateTransfers.length > 0) {
+        // ARA başlığı - mavi zemin
+        const sectionHeader = worksheet.addRow(['ARA']);
+        sectionHeader.height = 25;
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        sectionHeader.getCell(1).font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        sectionHeader.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+        sectionHeader.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        currentRow++;
+
+        // Ara başlık satırı
+        const headersRow = worksheet.addRow([
+          'Transfer Tipi', 'Tarih', 'Saat', 'Uçuş Kodu', 'Güzergah', 'Yolcu Sayısı',
+          'Transfer Tipi', 'Araç Tipi', 'Tedarikçi', 'Misafirler', 'Durum'
+        ]);
+        // Başlık satırı hücrelerini tek tek düzenle
+        for (let i = 1; i <= 11; i++) {
+          headersRow.getCell(i).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          headersRow.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+          headersRow.getCell(i).alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+        headersRow.height = 20;
+        currentRow++;
+
+        // Ara verileri
+        intermediateTransfers.forEach(transfer => {
+          const dataRow = worksheet.addRow([
+            transfer.typeLabel || 'Ara Transfer',
+            transfer.date || '-',
+            transfer.time || '-',
+            transfer.flightCode || '-',
+            transfer.route || '-',
+            transfer.passengerCount || 1,
+            transfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+            getVehicleTypeName(transfer.vehicleType),
+            transfer.supplierName || '-',
+            transfer.passengers.join(', '),
+            transfer.vehicleAssigned ? 'Araç Atandı' : 'Araç Atanmadı'
+          ]);
+
+          // Ara transferler bold
+          for (let i = 1; i <= 11; i++) {
+            dataRow.getCell(i).font = { bold: true };
+          }
+          currentRow++;
+        });
+
+        // Boş satır
+        worksheet.addRow(['']);
+        currentRow++;
+      }
+
+      // ÇIKIŞ TRANSFERLERİ
+      if (departureTransfers.length > 0) {
+        // ÇIKIŞ başlığı - mavi zemin
+        const sectionHeader = worksheet.addRow(['ÇIKIŞ']);
+        sectionHeader.height = 25;
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        sectionHeader.getCell(1).font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        sectionHeader.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+        sectionHeader.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        currentRow++;
+
+        // Çıkış başlık satırı
+        const headersRow = worksheet.addRow([
+          'Transfer Tipi', 'Tarih', 'Saat', 'Uçuş Kodu', 'Güzergah', 'Yolcu Sayısı',
+          'Transfer Tipi', 'Araç Tipi', 'Tedarikçi', 'Misafirler', 'Durum'
+        ]);
+        // Başlık satırı hücrelerini tek tek düzenle
+        for (let i = 1; i <= 11; i++) {
+          headersRow.getCell(i).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          headersRow.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } };
+          headersRow.getCell(i).alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+        headersRow.height = 20;
+        currentRow++;
+
+        // Çıkış verileri - grup transferleri önce
+        const groupDepartures = departureTransfers.filter(t => t.isGroup);
+        const individualDepartures = departureTransfers.filter(t => !t.isGroup);
+
+        // Grup transferleri
+        groupDepartures.forEach(transfer => {
+          // Grup başlığı
+          const groupRow = worksheet.addRow([
+            'Grup Çıkış',
+            transfer.date || '-',
+            transfer.time || '-',
+            transfer.flightCode || '-',
+            transfer.route || '-',
+            `${transfer.passengerCount || 1} ${transfer.transferType === 'private' ? 'Özel' : 'Ekonomik'}`,
+            transfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+            getVehicleTypeName(transfer.vehicleType),
+            transfer.supplierName || '-',
+            transfer.passengers.join(', '),
+            `GRUP (${transfer.originalTransfers?.length || transfer.passengerCount || 1} transfer)`
+          ]);
+
+          // Grup satırını tamamen bold yap
+          for (let i = 1; i <= 11; i++) {
+            groupRow.getCell(i).font = { bold: true };
+          }
+          currentRow++;
+
+          // Grup detayları
+          if (transfer.originalTransfers && transfer.originalTransfers.length > 0) {
+            transfer.originalTransfers.forEach((originalTransfer: any, index: number) => {
+              const detailRow = worksheet.addRow([
+                'Çıkış',
+                originalTransfer.date || '-',
+                originalTransfer.time || '-',
+                originalTransfer.flightCode || '-',
+                originalTransfer.route || '-',
+                originalTransfer.passengerCount || 1,
+                originalTransfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+                getVehicleTypeName(originalTransfer.vehicleType),
+                transfer.supplierName || '-',
+                (originalTransfer.passengers || []).join(', '),
+                `Detay ${index + 1}`
+              ]);
+
+              // Grup detay satırları tamamen gri renk
+              for (let i = 1; i <= 11; i++) {
+                detailRow.getCell(i).font = { italic: true, color: { argb: 'FF6B7280' }, bold: false };
+              }
+              currentRow++;
+            });
+          }
+        });
+
+        // Bireysel transferler
+        individualDepartures.forEach(transfer => {
+          const dataRow = worksheet.addRow([
+            transfer.typeLabel || 'Çıkış',
+            transfer.date || '-',
+            transfer.time || '-',
+            transfer.flightCode || '-',
+            transfer.route || '-',
+            transfer.passengerCount || 1,
+            transfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+            getVehicleTypeName(transfer.vehicleType),
+            transfer.supplierName || '-',
+            transfer.passengers.join(', '),
+            transfer.vehicleAssigned ? 'Araç Atandı' : 'Araç Atanmadı'
+          ]);
+
+          // Bireysel transferler bold
+          for (let i = 1; i <= 11; i++) {
+            dataRow.getCell(i).font = { bold: true };
+          }
+          currentRow++;
+        });
+
+        // Boş satır
+        worksheet.addRow(['']);
+        currentRow++;
+      }
+
+      // ÖZET BİLGİLER
+      worksheet.addRow(['']);
+      const summaryRow = worksheet.addRow(['ÖZET BİLGİLER']);
+      summaryRow.getCell(1).font = { size: 12, bold: true };
+      summaryRow.height = 20;
+      currentRow += 2;
+
+      // Araç tipine göre sayım
+      const vehicleCounts = {
+        vito: { giris: 0, ara: 0, cikis: 0 },
+        sprinter: { giris: 0, ara: 0, cikis: 0 },
+        otobus: { giris: 0, ara: 0, cikis: 0 },
+        binek: { giris: 0, ara: 0, cikis: 0 },
+        sClass: { giris: 0, ara: 0, cikis: 0 }
+      };
+
+      // Giriş transferlerini say
+      arrivalTransfers.forEach(transfer => {
+        const vehicleType = transfer.vehicleType?.toLowerCase();
+        if (vehicleType === 'vito') vehicleCounts.vito.giris++;
+        else if (vehicleType === 'sprinter') vehicleCounts.sprinter.giris++;
+        else if (vehicleType === 'otobus') vehicleCounts.otobus.giris++;
+        else if (vehicleType === 'binek') vehicleCounts.binek.giris++;
+        else if (vehicleType === 's-class') vehicleCounts.sClass.giris++;
+      });
+
+      // Ara transferlerini say
+      intermediateTransfers.forEach(transfer => {
+        const vehicleType = transfer.vehicleType?.toLowerCase();
+        if (vehicleType === 'vito') vehicleCounts.vito.ara++;
+        else if (vehicleType === 'sprinter') vehicleCounts.sprinter.ara++;
+        else if (vehicleType === 'otobus') vehicleCounts.otobus.ara++;
+        else if (vehicleType === 'binek') vehicleCounts.binek.ara++;
+        else if (vehicleType === 's-class') vehicleCounts.sClass.ara++;
+      });
+
+      // Çıkış transferlerini say
+      departureTransfers.forEach(transfer => {
+        const vehicleType = transfer.vehicleType?.toLowerCase();
+        if (vehicleType === 'vito') vehicleCounts.vito.cikis++;
+        else if (vehicleType === 'sprinter') vehicleCounts.sprinter.cikis++;
+        else if (vehicleType === 'otobus') vehicleCounts.otobus.cikis++;
+        else if (vehicleType === 'binek') vehicleCounts.binek.cikis++;
+        else if (vehicleType === 's-class') vehicleCounts.sClass.cikis++;
+      });
+
+      // Toplam araç sayıları
+      const totalVito = vehicleCounts.vito.giris + vehicleCounts.vito.ara + vehicleCounts.vito.cikis;
+      const totalSprinter = vehicleCounts.sprinter.giris + vehicleCounts.sprinter.ara + vehicleCounts.sprinter.cikis;
+      const totalOtobus = vehicleCounts.otobus.giris + vehicleCounts.otobus.ara + vehicleCounts.otobus.cikis;
+      const totalBinek = vehicleCounts.binek.giris + vehicleCounts.binek.ara + vehicleCounts.binek.cikis;
+      const totalSClass = vehicleCounts.sClass.giris + vehicleCounts.sClass.ara + vehicleCounts.sClass.cikis;
+
+      // Özet tablosu
+      const summaryData = [
+        ['Toplam Vito Giriş:', vehicleCounts.vito.giris],
+        ['Toplam Sprinter Giriş:', vehicleCounts.sprinter.giris],
+        ['Toplam Otobüs Giriş:', vehicleCounts.otobus.giris],
+        ['Toplam Binek Giriş:', vehicleCounts.binek.giris],
+        ['Toplam S-Class Giriş:', vehicleCounts.sClass.giris],
+        ['Toplam Giriş:', arrivalTransfers.length],
+        ['Toplam Vito Ara:', vehicleCounts.vito.ara],
+        ['Toplam Sprinter Ara:', vehicleCounts.sprinter.ara],
+        ['Toplam Otobüs Ara:', vehicleCounts.otobus.ara],
+        ['Toplam Binek Ara:', vehicleCounts.binek.ara],
+        ['Toplam S-Class Ara:', vehicleCounts.sClass.ara],
+        ['Toplam Ara:', intermediateTransfers.length],
+        ['Toplam Vito Çıkış:', vehicleCounts.vito.cikis],
+        ['Toplam Sprinter Çıkış:', vehicleCounts.sprinter.cikis],
+        ['Toplam Otobüs Çıkış:', vehicleCounts.otobus.cikis],
+        ['Toplam Binek Çıkış:', vehicleCounts.binek.cikis],
+        ['Toplam S-Class Çıkış:', vehicleCounts.sClass.cikis],
+        ['Toplam Çıkış:', departureTransfers.length],
+        ['Toplam Vito:', totalVito],
+        ['Toplam Sprinter:', totalSprinter],
+        ['Toplam Otobüs:', totalOtobus],
+        ['Toplam Binek:', totalBinek],
+        ['Toplam S-Class:', totalSClass],
+        ['TOPLAM:', arrivalTransfers.length + intermediateTransfers.length + departureTransfers.length]
+      ];
+
+      summaryData.forEach(([label, value]) => {
+        const row = worksheet.addRow([label, value]);
+        row.getCell(1).font = { size: 10 };
+        row.getCell(2).font = { size: 10 };
+        currentRow++;
+      });
+
+      // Sütun genişliklerini ayarla
+      worksheet.columns = [
+        { width: 20 }, // Transfer Tipi
+        { width: 12 }, // Tarih
+        { width: 10 }, // Saat
+        { width: 15 }, // Uçuş Kodu
+        { width: 25 }, // Güzergah
+        { width: 12 }, // Yolcu Sayısı
+        { width: 15 }, // Transfer Tipi
+        { width: 15 }, // Araç Tipi
+        { width: 20 }, // Tedarikçi
+        { width: 35 }, // Misafirler
+        { width: 20 }  // Durum/Grup Detayı
+      ];
+
+      // Excel dosyasını indir
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Transfer_Listesi_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Excel export hatası:', error);
+    }
+  };
+  // GÜNCELLENMİŞ EXCEL EXPORT FONKSİYONU - TAM TASARIM UYUMLU
+  // Kapsamlı (Tüm Oteller) Excel Export
+  const exportProjectFullToExcel = async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (d: string): 'png' | 'jpeg' => (d || '').includes('image/png') ? 'png' : 'jpeg';
+
+      const hotelsData = (project as any)?.hotels_data || [];
+      const allSales = itemsSales;
+      const allPurchase = itemsPurchase;
+
+      // Helper to add a sheet for a specific hotel/set of items
+      const addSheetForHotel = (sheetName: string, h: any, sItems: any[], pItems: any[]) => {
+        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
+        sheet.pageSetup = { 
+          orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, 
+          horizontalCentered: true, paperSize: 9, 
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } 
+        } as any;
+
+        // Top Band
+        const topBandRow = sheet.addRow([]);
+        topBandRow.height = 70;
+        sheet.mergeCells('A1:H1');
+        for (let c = 1; c <= 8; c++) {
+          sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
+        }
+        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
+        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 7.90, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
+
+        const isGeneral = sheetName.includes('GENEL');
+        const headerInfo = [
+          ['REFERANS', project.reference || '', 'ODA | PAX', isGeneral ? '-' : `${h.room_count || 0} | ${h.pax_count || 0}`],
+          ['ACENTE | FİRMA', `${getAgencyName(project.agency_id)} | ${project.company_name || ''}`, 'KONSEPT', isGeneral ? '-' : (h.hotel_concept || '')],
+          ['C/IN - C/OUT', !isGeneral && h.check_in_date ? `${new Date(h.check_in_date).toLocaleDateString('tr-TR')} - ${new Date(h.check_out_date).toLocaleDateString('tr-TR')}` : '-', 'OPSİYON', isGeneral ? '-' : (h.option || '')],
+          ['OTEL', isGeneral ? 'GENEL HİZMETLER' : (hotels.find(ht => ht.id === h.hotel_id)?.name || ''), 'DURUM', project.status || ''],
+          ['TARİH', new Date().toLocaleDateString('tr-TR'), 'BÜTÇE', formatCurrency(project.budget || 0, 'USD')]
+        ];
+
+        let rowIndex = 2;
+        headerInfo.forEach(([lLabel, lVal, rLabel, rVal]) => {
+          const rowValues: any[] = new Array(8);
+          rowValues[0] = lLabel; rowValues[1] = lVal; rowValues[5] = rLabel; rowValues[6] = rVal;
+          const row = sheet.addRow(rowValues);
+          row.height = 24;
+          row.getCell(1).font = { bold: true, size: 12 }; row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.getCell(2).font = { size: 12 }; row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.getCell(6).font = { bold: true, size: 12 }; row.getCell(6).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.getCell(7).font = { size: 12 }; row.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+          sheet.mergeCells(`G${rowIndex}:H${rowIndex}`);
+          for (let c = 1; c <= 8; c++) row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3CBBE' } };
+          rowIndex++;
+        });
+
+        const addItemsSection = (title: string, items: any[]) => {
+          sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+          const titleCell = sheet.getCell(`A${rowIndex}`);
+          titleCell.value = title;
+          titleCell.font = { size: 20, bold: true };
+          titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+          sheet.getRow(rowIndex).height = 35;
+          for (let c = 1; c <= 8; c++) sheet.getRow(rowIndex).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+          rowIndex++;
+
+          const grouped: Record<string, any[]> = {};
+          items.forEach(it => {
+            const key = getCategoryName(it.main_category || '') || 'Diğer';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(it);
+          });
+
+          const sectionSubtotalsE: number[] = [];
+          const sectionSubtotalsG: number[] = [];
+
+          Object.entries(grouped).forEach(([mainCat, catItems], i) => {
+            const catRow = sheet.addRow([`${i + 1}. ${mainCat}`]);
+            catRow.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+            for (let c = 1; c <= 8; c++) catRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
+            catRow.height = 25;
+            sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+            rowIndex++;
+
+            const hRow = sheet.addRow(['DETAY/AÇIKLAMA', 'BİRİM/ADET', 'SEFER/TEKRAR', 'BİRİM/FİYAT', 'TOPLAM EUR', 'KUR', 'TOPLAM TL', 'AÇIKLAMA']);
+            hRow.font = { bold: true, size: 11 };
+            hRow.height = 22;
+            for (let c = 1; c <= 8; c++) hRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+            rowIndex++;
+
+            let firstItemRow: number | null = null;
+            catItems.forEach(it => {
+              const itemQty = it.qty || it.unit_quantity || 0;
+              const itemRepeat = it.repeat || it.sefer || 1;
+              const sRow = sheet.addRow([getCategoryName(it.sub_category || ''), itemQty, itemRepeat, it.unit_price || 0, 0, it.fx || 0, 0, it.description || '']);
+              if (!firstItemRow) firstItemRow = sRow.number;
+              const r = sRow.number;
+              sRow.getCell(4).numFmt = '€ #,##0.00'; sRow.getCell(5).numFmt = '€ #,##0.00';
+              sRow.getCell(6).numFmt = '₺#,##0.00'; sRow.getCell(7).numFmt = '₺#,##0.00';
+              // Calculate totals
+              const tEur = itemQty * itemRepeat * (it.unit_price || 0);
+              const tTry = tEur * (it.fx || 1);
+              sRow.getCell(5).value = { formula: `B${r}*C${r}*D${r}`, result: tEur } as any;
+              sRow.getCell(7).value = { formula: `E${r}*F${r}`, result: tTry } as any;
+              sRow.height = 18;
+              rowIndex++;
+            });
+
+            const lastItemRow = rowIndex - 1;
+            const araRow = sheet.addRow(['ARA TOPLAM', '', '', '', 0, '', 0, '']);
+            araRow.font = { bold: true, size: 12 };
+            for (let c = 1; c <= 8; c++) araRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD0D0D0' } };
+            if (firstItemRow) {
+              araRow.getCell(5).value = { formula: `SUM(E${firstItemRow}:E${lastItemRow})`, result: catItems.reduce((s, it) => s + ((it.qty || it.unit_quantity || 0) * (it.repeat || it.sefer || 1) * (it.unit_price || 0)), 0) } as any;
+              araRow.getCell(7).value = { formula: `SUM(G${firstItemRow}:G${lastItemRow})`, result: catItems.reduce((s, it) => s + ((it.qty || it.unit_quantity || 0) * (it.repeat || it.sefer || 1) * (it.unit_price || 0) * (it.fx || 1)), 0) } as any;
+            }
+            araRow.getCell(5).numFmt = '€ #,##0.00'; araRow.getCell(7).numFmt = '₺#,##0.00';
+            araRow.height = 22;
+            sectionSubtotalsE.push(araRow.number); sectionSubtotalsG.push(araRow.number);
+            rowIndex++;
+            sheet.addRow([]); rowIndex++;
+          });
+
+          const totalRow = sheet.addRow([`${title} GENEL TOPLAMLAR`, '', '', '', 0, '', 0, '']);
+          totalRow.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+          for (let c = 1; c <= 8; c++) totalRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF333333' } };
+          if (sectionSubtotalsE.length > 0) {
+            totalRow.getCell(5).value = { formula: `SUM(${sectionSubtotalsE.map(rw => `E${rw}`).join(',')})` } as any;
+            totalRow.getCell(7).value = { formula: `SUM(${sectionSubtotalsG.map(rw => `G${rw}`).join(',')})` } as any;
+          }
+          totalRow.getCell(5).numFmt = '€ #,##0.00'; totalRow.getCell(7).numFmt = '₺#,##0.00';
+          totalRow.height = 30;
+          rowIndex++;
+          sheet.addRow([]); rowIndex++;
+        };
+
+        addItemsSection('SATIŞLAR', sItems);
+        addItemsSection('ALIŞLAR', pItems);
+
+        sheet.columns = [
+          { width: 45 }, { width: 12 }, { width: 12 }, { width: 15 }, 
+          { width: 18 }, { width: 10 }, { width: 18 }, { width: 45 }
+        ];
+        sheet.views = [{ state: 'normal', showGridLines: false }];
+      };
+
+      // Hotels
+      hotelsData.forEach((h: any, idx: number) => {
+        const hSales = allSales.filter(it => it.hotel_id === h.id);
+        const hPurchase = allPurchase.filter(it => it.hotel_id === h.id);
+        const hName = hotels.find(ht => ht.id === h.hotel_id)?.name || 'OTEL';
+        addSheetForHotel(`${idx + 1}. ${hName}`, h, hSales, hPurchase);
+      });
+
+      // General
+      const gSales = allSales.filter(it => !it.hotel_id || it.hotel_id === 'general');
+      const gPurchase = allPurchase.filter(it => !it.hotel_id || it.hotel_id === 'general');
+      if (gSales.length > 0 || gPurchase.length > 0) {
+        addSheetForHotel('GENEL HİZMETLER', {}, gSales, gPurchase);
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Proje_${project.reference || projectId}_Genel_Rapor.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Excel export hatası:', error);
+      alert('Excel export sırasında bir hata oluştu.');
+    }
+  };
+
+
+  // Proje linklerini yükle
+  const loadProjectLinks = async () => {
+    if (!projectId) return;
+    try {
+      const links = await publicLinksService.getByProjectId(projectId);
+      setProjectLinks(links);
+    } catch (error) {
+      console.error('Link yükleme hatası:', error);
+      setProjectLinks([]);
+    }
+  };
+
+  // Link modal açıldığında linkleri yükle
+  useEffect(() => {
+    if (showLinkModal && projectId) {
+      loadProjectLinks();
+    }
+  }, [showLinkModal, projectId]);
+
+  // Güvenli token oluştur
+  const generateSecureToken = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let token = '';
+    for (let i = 0; i < 32; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return token;
+  };
+
+  // Şifre oluştur
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setLinkPassword(password);
+    return password;
+  };
+
+  // Link oluştur fonksiyonu
+  const handleCreateLink = async () => {
+    if (!projectId) return;
+
+    try {
+      // Token oluştur
+      const token = generateSecureToken();
+      setLinkToken(token);
+
+      // Şifre yoksa oluştur
+      if (!linkPassword) {
+        generatePassword();
+      }
+
+      // Geçerlilik tarihi yoksa varsayılan olarak 30 gün sonra
+      if (!linkExpiryDate) {
+        const defaultExpiry = new Date();
+        defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+        setLinkExpiryDate(defaultExpiry.toISOString().split('T')[0]);
+      }
+
+      // Link oluştur
+      const baseUrl = window.location.origin;
+      const link = `${baseUrl}/projects/view/${projectId}?token=${token}&tab=satis`;
+      setGeneratedLink(link);
+
+      // Supabase'e kaydet
+      await publicLinksService.create({
+        link_type: 'project',
+        project_id: projectId,
+        token,
+        password: linkPassword || generatePassword(),
+        expiry_date: linkExpiryDate ? new Date(linkExpiryDate).toISOString() : undefined,
+        is_active: linkIsActive
+      });
+
+      // Link listesini yenile
+      await loadProjectLinks();
+
+      alert('Link başarıyla oluşturuldu!');
+    } catch (error) {
+      console.error('Link oluşturma hatası:', error);
+      alert('Link oluşturulurken bir hata oluştu.');
+    }
+  };
+
+  // Linki kopyala
+  const handleCopyLink = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!generatedLink) return;
+
+    navigator.clipboard.writeText(generatedLink).then(() => {
+      toast.success('Link panoya kopyalandı!');
+    }).catch(() => {
+      toast.error('Link kopyalanırken bir hata oluştu.');
+    });
+  };
+
+  // Şifreyi kopyala
+  const handleCopyPassword = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!linkPassword) return;
+
+    navigator.clipboard.writeText(linkPassword).then(() => {
+      toast.success('Şifre panoya kopyalandı!');
+    }).catch(() => {
+      toast.error('Şifre kopyalanırken bir hata oluştu.');
+    });
+  };
+
+  // Link durumunu değiştir (aktif/pasif)
+  const handleToggleLinkStatus = async (linkId: string) => {
+    try {
+      const link = projectLinks.find(l => l.id === linkId || l.token === linkId);
+      if (!link) return;
+
+      await publicLinksService.toggleActive(link.id, !link.is_active);
+      await loadProjectLinks();
+      alert('Link durumu güncellendi!');
+    } catch (error) {
+      console.error('Link durumu güncelleme hatası:', error);
+      alert('Link durumu güncellenirken bir hata oluştu.');
+    }
+  };
+
+  // Linki sil
+  const handleDeleteLink = async (linkId: string) => {
+    setConfirmModal({
+      open: true,
+      title: 'Linki Sil',
+      message: 'Bu linki silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+      onConfirm: async () => {
+        try {
+          const link = projectLinks.find(l => l.id === linkId || l.token === linkId);
+          if (!link) return;
+
+          await publicLinksService.delete(link.id);
+          await loadProjectLinks();
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          toast.success('Link başarıyla silindi!');
+        } catch (error) {
+          console.error('Link silme hatası:', error);
+          toast.error('Link silinirken bir hata oluştu.');
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, open: false }))
+    });
+  };
+
+  // Linki kopyala (liste için)
+  const handleCopyLinkFromList = (link: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const baseUrl = window.location.origin;
+    const fullLink = `${baseUrl}/projects/view/${link.project_id}?token=${link.token}&tab=satis`;
+
+    navigator.clipboard.writeText(fullLink).then(() => {
+      toast.success('Link panoya kopyalandı!');
+    }).catch(() => {
+      toast.error('Link kopyalanırken bir hata oluştu.');
+    });
+  };
+
+  // Şifreyi kopyala (liste için)
+  const handleCopyPasswordFromList = (password: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    navigator.clipboard.writeText(password).then(() => {
+      toast.success('Şifre panoya kopyalandı!');
+    }).catch(() => {
+      toast.error('Şifre kopyalanırken bir hata oluştu.');
+    });
+  };
+
+  // Şifre görünürlüğünü değiştir
+  const togglePasswordVisibility = (linkId: string) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [linkId]: !prev[linkId]
+    }));
+  };
+
+  // Link modal açma fonksiyonu
+  const handleCreateSalesLink = () => {
+    setShowLinkModal(true);
+  };
+
+  const handleCreatePurchaseLink = () => {
+    setShowLinkModal(true);
+  };
+
+  // Alış veri formatını dönüştürme fonksiyonu - SATIŞ ile aynı yapı
+  const formatPurchaseData = () => {
+    console.log('🔍 Project verisi:', project);
+    console.log('🔍 Project alanları:', project ? Object.keys(project) : 'Project yok');
+    console.log('🔍 Otel ID:', project?.hotel_id);
+    console.log('🔍 Hotels verisi:', hotels);
+    console.log('🔍 Agencies verisi:', agencies);
+
+    // Eğer itemsPurchase boşsa, boş veri döndür
+    if (!itemsPurchase || itemsPurchase.length === 0) {
+      return {
+        referans: project?.name || 'Bilinmeyen',
+        odaPax: '18 SINGLE + 11 DOUBLE 44 PAX',
+        acenteFirma: 'LA TOUR | LUBRATECH',
+        konsept: 'TAM PANSIYON PLUS | LOBBY BAR DAHIL (10:00 - 23:30)',
+        tarih: '20 - 23 SUBAT 2025',
+        opsiyon: 'SOR - SAT',
+        otelAdi: 'LORD\'S PALACE RESORT & CASINO & SPA HOTEL',
+        teklifTuru: 'PAKET',
+        durum: '',
+        not: '',
+        bolumler: [],
+        genelToplamEUR: formatEUR(0),
+        genelToplamTL: formatTRY(0),
+        notlar: [
+          'FİYATLAR, NET & KOMİSYONSUZDUR.',
+          'ALINMASI HENÜZ KESİNLEŞMEYEN SERVİSLER İÇİN BİRİM/ ADET veya SEFER/TEKRAR ÇARPANI "0" (SIFIR) OLARAK GÜNCELLENMİŞTİR.',
+          'OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ GÜNÜ KONAKLAMA SABAH KAHVALTISI İLE SON BULUR.',
+          'OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ EKSTRA OLARAK ÜCRETLENDİRİLİR.'
+        ]
+      };
+    }
+
+    // Ana kategorilere göre grupla - SATIŞ ile aynı yapı
+    const grouped = itemsPurchase.reduce((acc: any, item: any) => {
+      const mainCat = getCategoryName(item.main_category) || 'Diğer';
+      if (!acc[mainCat]) {
+        acc[mainCat] = [];
+      }
+      acc[mainCat].push(item);
+      return acc;
+    }, {});
+
+    const bolumler = Object.entries(grouped).map(([mainCategory, categoryItems]: [string, any]) => {
+      const categoryTotal = categoryItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+      const categoryTotalTRY = categoryItems.reduce((sum: number, item: any) => sum + (item.total_try || 0), 0);
+
+      return {
+        baslik: mainCategory,
+        hizmetler: categoryItems.map((item: any) => ({
+          hizmet: getCategoryName(item.sub_category) || '',
+          birim: item.qty || 0,
+          tekrar: item.repeat || 0,
+          birimFiyat: formatEUR(item.unit_price || 0),
+          birimFiyatNum: Number(item.unit_price || 0),
+          toplamEur: formatEUR(item.total || 0),
+          toplamEurNum: Number(item.total || 0),
+          kur: formatTRY(item.fx || 0),
+          kurNum: Number(item.fx || 0),
+          toplamTl: formatTRY(item.total_try || 0),
+          toplamTlNum: Number(item.total_try || 0),
+          aciklama: item.description || ''
+        })),
+        araToplamEUR: formatEUR(categoryTotal),
+        araToplamEurNum: Number(categoryTotal),
+        araToplamTL: formatTRY(categoryTotalTRY),
+        araToplamTlNum: Number(categoryTotalTRY)
+      };
+    });
+
+    const totalSales = itemsPurchase.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+    const totalSalesTRY = itemsPurchase.reduce((sum: number, item: any) => sum + (item.total_try || 0), 0);
+
+    // Tarih formatını düzenle (2025-09-12 -> 12.09.2025)
+    const formatDate = (dateStr: string) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    // Hotel ve Agency isimlerini bul
+    const getHotelName = (hotelId: string) => {
+      if (!hotels || hotels.length === 0) return hotelId; // Veriler henüz yüklenmemişse ID'yi döndür
+      const hotel = hotels.find(h => h.id === hotelId);
+      return hotel?.name || hotelId;
+    };
+
+    const getAgencyName = (agencyId: string) => {
+      if (!agencies || agencies.length === 0) return agencyId; // Veriler henüz yüklenmemişse ID'yi döndür
+      const agency = agencies.find(a => a.id === agencyId);
+      return agency?.name || agencyId;
+    };
+
+    const getHotelConcept = (hotelId: string) => {
+      const hotel = hotels.find(h => h.id === hotelId) as any;
+      if (!hotel) return '';
+      // Olası alan adları için sıralı deneme
+      return (
+        hotel.concept ||
+        hotel.board ||
+        hotel.board_name ||
+        hotel.meal_plan ||
+        hotel.pension ||
+        ''
+      );
+    };
+
+    return {
+      referans: project?.reference || 'Bilinmeyen',
+      odaPax: `${project?.room_count || 0} | ${project?.pax_count || 0}`,
+      acenteFirma: `${project?.company_name || ''} | ${getAgencyName(project?.agency_id || '')}`,
+      konsept: getHotelConcept(project?.hotel_id || ''),
+      tarih: `${formatDate(project?.start_date || '')} - ${formatDate(project?.end_date || '')}`,
+      opsiyon: 'SOR - SAT',
+      otelAdi: getHotelName(project?.hotel_id || ''),
+      teklifTuru: project?.quote_type || 'PAKET',
+      durum: project?.status === 'active' ? 'Aktif' : project?.status || '',
+      not: '',
+      bolumler,
+      genelToplamEUR: formatEUR(totalSales),
+      genelToplamEurNum: Number(totalSales),
+      genelToplamTL: formatTRY(totalSalesTRY),
+      genelToplamTlNum: Number(totalSalesTRY),
+      notlar: [
+        'FİYATLAR, NET & KOMİSYONSUZDUR.',
+        'ALINMASI HENÜZ KESİNLEŞMEYEN SERVİSLER İÇİN BİRİM/ ADET veya SEFER/TEKRAR ÇARPANI "0" (SIFIR) OLARAK GÜNCELLENMİŞTİR.',
+        'OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ GÜNÜ KONAKLAMA SABAH KAHVALTISI İLE SON BULUR.',
+        'OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ EKSTRA OLARAK ÜCRETLENDİRİLİR.'
+      ]
+    };
+  };
+
+
+  // Konaklama Excel Export
+  const handleAccommodationExport = async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Konaklama Listesi');
+
+      sheet.pageSetup = {
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        verticalCentered: false,
+        paperSize: 9,
+        margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+      } as any;
+
+      // Üst Bant (A1:AB1) - zemin rengi ve logolar (28 sütun)
+      const topBandRow = sheet.addRow([]);
+      topBandRow.height = 70;
+      sheet.mergeCells('A1:AB1'); // 28 sütun
+
+      for (let c = 1; c <= 28; c++) {
+        sheet.getRow(1).getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        sheet.addImage(wordmarkId, {
+          tl: { col: 20.5, row: 0.23 }, // 28 sütun için sağa hizalama
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      const headerData = [
+        { left: 'PROJE ADI', right: 'TARİH' },
+        { left: 'REFERANS', right: 'DURUM' }
+      ];
+
+      let rowIndex = 2;
+      headerData.forEach((item, index) => {
+        const leftValue = index === 0 ? project?.name || '' : project?.reference || '';
+        const rightValue = index === 0 ? new Date().toLocaleDateString('tr-TR') : 'Aktif';
+
+        const rowValues: any[] = new Array(28); // 28 sütun
+        rowValues[0] = item.left;
+        rowValues[1] = leftValue;
+        rowValues[26] = item.right; // 27. sütun
+        rowValues[27] = rightValue; // 28. sütun
+
+        const headerRow = sheet.addRow(rowValues);
+        headerRow.height = 24;
+
+        headerRow.getCell(1).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(2).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(27).font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(27).alignment = { horizontal: 'left', vertical: 'middle' };
+        headerRow.getCell(28).font = { size: 12, color: { argb: 'FF000000' } };
+        headerRow.getCell(28).alignment = { horizontal: 'left', vertical: 'middle' };
+
+        rowIndex++;
+      });
+
+      sheet.addRow([]);
+      rowIndex++;
+
+      // Tablo başlıkları
+      const tableHeaderRow = sheet.addRow(FIXED_HEADERS);
+      tableHeaderRow.height = 30;
+      tableHeaderRow.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      // Sadece header genişliğine kadar (28 sütun) zemin rengi uygula
+      for (let c = 1; c <= 28; c++) {
+        tableHeaderRow.getCell(c).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF232F38' }
+        };
+      }
+      tableHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // Sütun genişlikleri
+      sheet.getColumn(1).width = 10; // ODA #
+      sheet.getColumn(2).width = 15; // ODA TİPİ
+      sheet.getColumn(3).width = 12; // YATAK TİPİ
+      sheet.getColumn(4).width = 15; // İSİM
+      sheet.getColumn(5).width = 15; // SOYİSİM
+      sheet.getColumn(6).width = 10; // ODA NO
+      sheet.getColumn(7).width = 20; // ODA NOTU
+      sheet.getColumn(8).width = 12; // GİRİŞ TARİHİ
+      sheet.getColumn(9).width = 12; // GELİŞ UÇUŞ KODU
+      sheet.getColumn(10).width = 12; // GELİŞ UÇAK KALKIŞ
+      sheet.getColumn(11).width = 12; // GELİŞ UÇAK İNİŞ
+      sheet.getColumn(12).width = 12; // ÇIKIŞ TARİHİ
+      sheet.getColumn(13).width = 12; // DÖNÜŞ UÇUŞ KODU
+      sheet.getColumn(14).width = 12; // DÖNÜŞ UÇAK KALKIŞ
+      sheet.getColumn(15).width = 12; // DÖNÜŞ UÇAK İNİŞ
+      sheet.getColumn(16).width = 10; // 1. TARİH
+      sheet.getColumn(17).width = 10; // 2. TARİH
+      sheet.getColumn(18).width = 10; // 3. TARİH
+      sheet.getColumn(19).width = 10; // 4. TARİH
+      sheet.getColumn(20).width = 10; // 5. TARİH
+      sheet.getColumn(21).width = 10; // 6. TARİH
+      sheet.getColumn(22).width = 10; // 7. TARİH
+      sheet.getColumn(23).width = 12; // GECELEME
+      sheet.getColumn(24).width = 12; // PAKET
+      sheet.getColumn(25).width = 15; // OTEL
+      sheet.getColumn(26).width = 12; // UÇAK
+      sheet.getColumn(27).width = 12; // TOPLAM
+      sheet.getColumn(28).width = 8; // DÖVİZ
+
+      // Veri satırlarını ekle
+      accommodationItems.forEach((item, index) => {
+        const rowNumber = index + rowIndex + 1; // Başlık satırından sonra başla
+
+        // Tarih sütunları için formül oluştur
+        const getDateFormula = (dateIndex: number) => {
+          const checkInCol = 'H'; // Giriş Tarihi sütunu (8. sütun)
+          const checkOutCol = 'L'; // Çıkış Tarihi sütunu (12. sütun)
+          const odaTipiCol = 'B'; // Oda Tipi sütunu (2. sütun)
+
+          // Eğer giriş ve çıkış tarihi varsa formül oluştur
+          if (item.gelis_tarihi && item.cikis_tarihi) {
+            return `=IF(AND(${checkInCol}${rowNumber}<>"",${checkOutCol}${rowNumber}<>""),IF(AND(${checkInCol}${rowNumber}+${dateIndex}>=${checkInCol}${rowNumber},${checkInCol}${rowNumber}+${dateIndex}<${checkOutCol}${rowNumber}),${odaTipiCol}${rowNumber},""),"")`;
+          }
+          return '';
+        };
+
+        const row = sheet.addRow([
+          item.oda_no || '',                    // ODA #
+          item.oda_tipi || '',                  // ODA TİPİ
+          item.yatak_tipi || '',                // YATAK TİPİ
+          item.isim || '',                      // İSİM
+          item.soyisim || '',                   // SOYİSİM
+          item.oda_no_2 || '',                  // ODA NO (tekrar)
+          item.oda_notu || '',                  // ODA NOTU
+          item.gelis_tarihi || '',              // GİRİŞ TARİHİ
+          item.gelis_ucus_kodu || '',           // GELİŞ UÇUŞ KODU
+          item.gelis_ucak_kalkis || '',         // GELİŞ UÇAK KALKIŞ
+          item.gelis_ucak_inis || '',           // GELİŞ UÇAK İNİŞ
+          item.cikis_tarihi || '',              // ÇIKIŞ TARİHİ
+          item.donus_ucus_kodu || '',           // DÖNÜŞ UÇUŞ KODU
+          item.donus_ucak_kalkis || '',         // DÖNÜŞ UÇAK KALKIŞ
+          item.donus_ucak_inis || '',           // DÖNÜŞ UÇAK İNİŞ
+          item.tarih1 || '',                    // 1. TARİH
+          item.tarih2 || '',                    // 2. TARİH
+          item.tarih3 || '',                    // 3. TARİH
+          item.tarih4 || '',                    // 4. TARİH
+          item.tarih5 || '',                    // 5. TARİH
+          item.tarih6 || '',                    // 6. TARİH
+          item.tarih7 || '',                    // 7. TARİH
+          item.geceleme || '',                  // GECELEME
+          item.paket || '',                     // PAKET
+          item.otel || '',                      // OTEL
+          item.ucak || '',                      // UÇAK
+          item.toplam || '',                    // TOPLAM
+          item.doviz || ''                      // DÖVİZ
+        ]);
+
+        row.height = 20;
+        row.alignment = { vertical: 'middle' };
+        // Sadece header genişliğine kadar (28 sütun) zemin rengi uygula
+        for (let c = 1; c <= 28; c++) {
+          const cell = row.getCell(c);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+        }
+
+        // Tarih sütunlarına formül ekle
+        for (let i = 0; i < 7; i++) {
+          const cell = row.getCell(16 + i); // 16. sütundan başla (1. Tarih)
+          const formula = getDateFormula(i);
+          if (formula) {
+            cell.value = { formula: formula };
+          }
+        }
+
+        // H sütunu (Giriş Tarihi) - 8. sütun
+        if (item.gelis_tarihi) {
+          const checkInCell = row.getCell(8);
+          const checkInDate = parseDate(item.gelis_tarihi);
+          if (checkInDate) {
+            checkInCell.value = checkInDate;
+            checkInCell.numFmt = 'dd.mm.yyyy';
+          }
+        }
+
+        // L sütunu (Çıkış Tarihi) - 12. sütun
+        if (item.cikis_tarihi) {
+          const checkOutCell = row.getCell(12);
+          const checkOutDate = parseDate(item.cikis_tarihi);
+          if (checkOutDate) {
+            checkOutCell.value = checkOutDate;
+            checkOutCell.numFmt = 'dd.mm.yyyy';
+          }
+        }
+      });
+
+      // Sütun sayısını sınırla - sadece kullanılan sütunlar (28 sütun)
+      // ExcelJS'de kullanılmayan sütunlara boş değer atayarak zemin renginin yayılmasını engelle
+      const lastRow = sheet.lastRow;
+      if (lastRow) {
+        for (let c = 29; c <= 100; c++) {
+          const cell = lastRow.getCell(c);
+          if (cell && cell.value === undefined) {
+            cell.value = null;
+          }
+        }
+      }
+
+
+
+      // Excel dosyasını indir
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `konaklama_listesi_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error('Export hatası:', error);
+      alert('Excel dosyası oluşturulurken hata oluştu: ' + error.message);
+    }
+  };
+
+
+
+  // Konaklama listesini temizle
+  // Konaklama listesini temizle
+  const handleAccommodationClear = useCallback(async () => {
+    if (accommodationItems.length === 0) {
+      alert('Temizlenecek konaklama verisi yok.');
+      return;
+    }
+
+    setConfirmModal({
+      open: true,
+      title: 'Listeyi Temizle',
+      message: `Konaklama listesindeki ${accommodationItems.length} kaydı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`,
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          // Supabase'ten mevcut konaklama kayıtlarını sil
+          const existingItems = await projectAccommodationItemsService.getByProjectId(projectId);
+          for (const item of existingItems) {
+            await projectAccommodationItemsService.delete(item.id);
+          }
+
+          // Frontend'den de temizle
+          setAccommodationItems([]);
+          // localStorage kullanimi kaldirildi
+
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          alert('Konaklama listesi başarıyla temizlendi!');
+        } catch (error: any) {
+          console.error('Konaklama temizleme hatası:', error);
+          alert('Konaklama listesi temizlenirken hata oluştu: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  }, [projectId, accommodationItems.length, setAccommodationItems, setLoading, setConfirmModal]);
+
+  // Konaklama satırını düzenle
+  const handleEditAccommodation = (index: number) => {
+    setEditingAccommodationIndex(index);
+    setTempAccommodationItem({ ...accommodationItems[index] });
+  };
+
+  // Konaklama satırını kopyala
+  const handleCopyAccommodation = (index: number) => {
+    const itemToCopy = accommodationItems[index];
+    const newItem = { ...itemToCopy };
+    // Yeni ID oluştur
+    newItem.id = Date.now() + Math.random();
+    // Oda numarasını temizle (yeni atanacak)
+    newItem.oda_no = '';
+
+    // Listeyi global baza göre re-bazla
+    const newItems = [...accommodationItems];
+    newItems.splice(index + 1, 0, newItem);
+    const rebased = rebaseAccommodationByEarliest(newItems);
+    setAccommodationItems(rebased);
+
+    // localStorage kullanimi kaldirildi
+  };
+
+  // Konaklama satırını sil
+  const handleDeleteAccommodation = (index: number) => {
+    const item = accommodationItems[index];
+    const confirmMessage = `${item.isim} ${item.soyisim} - ${item.oda_tipi} odası silinecek. Emin misiniz?`;
+
+    if (confirm(confirmMessage)) {
+      const newItems = accommodationItems.filter((_, i) => i !== index);
+      setAccommodationItems(newItems);
+
+      // localStorage kullanimi kaldirildi
+    }
+  };
+
+  // Konaklama satırı arasına ekle
+  const handleAddBetweenAccommodation = (index: number) => {
+    const currentItem = accommodationItems[index];
+
+    // Yeni satır oluştur
+    const newItem = {
+      id: Date.now() + Math.random(),
+      oda_no: '',
+      oda_tipi: currentItem.oda_tipi,
+      yatak_tipi: currentItem.yatak_tipi,
+      isim: '',
+      soyisim: '',
+      oda_kategori: currentItem.oda_kategori,
+      oda_notu: '',
+      gelis_tarihi: currentItem.gelis_tarihi,
+      gelis_kodu: '',
+      gelis_saat: '',
+      gelis_ucak_inis: '',
+      cikis_tarihi: currentItem.cikis_tarihi,
+      donus_kodu: '',
+      donus_ucak_kalkis: '',
+      donus_ucak_inis: '',
+      tarih_1: '',
+      tarih_2: '',
+      tarih_3: '',
+      tarih_4: '',
+      tarih_5: '',
+      tarih_6: '',
+      tarih_7: '',
+      geceli: '',
+      paket: currentItem.paket,
+      otel: currentItem.otel,
+      ucak: currentItem.ucak,
+      toplam: '',
+      doviz: currentItem.doviz,
+      isEditing: true
+    };
+
+    // Listeyi global baza göre re-bazla
+    const newItems = [...accommodationItems];
+    newItems.splice(index + 1, 0, newItem);
+    const rebased = rebaseAccommodationByEarliest(newItems);
+    setAccommodationItems(rebased);
+    setEditingAccommodationIndex(index + 1);
+    setTempAccommodationItem({ ...rebased[index + 1] });
+
+    // localStorage kullanimi kaldirildi
+  };
+
+  // Tarih hesaplama fonksiyonları
+  const parseDate = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+
+    // DD.MM.YYYY formatını parse et
+    if (dateStr.includes('.')) {
+      const parts = dateStr.split('.');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // JavaScript months are 0-based
+        const year = parseInt(parts[2]);
+        return new Date(year, month, day);
+      }
+    }
+
+    // ISO format veya diğer formatları dene
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+
+  const getDateRange = (startDate: Date, endDate: Date): string[] => {
+    const dates: string[] = [];
+    const current = new Date(startDate);
+
+    while (current < endDate) {
+      dates.push(current.toLocaleDateString('tr-TR'));
+      current.setDate(current.getDate() + 1);
+    }
+
+    return dates;
+  };
+
+  // En erken giriş tarihini bul
+  const getEarliestCheckIn = (): Date | null => {
+    let earliest: Date | null = null;
+
+    accommodationItems.forEach(item => {
+      const checkIn = parseDate(item.gelis_tarihi);
+      if (checkIn && (!earliest || checkIn < earliest)) {
+        earliest = checkIn;
+      }
+    });
+
+    return earliest;
+  };
+  // Belirlenen global başlangıç tarihine göre 7 sütunu doldur
+  const fillItemByGlobalBase = (item: any, baseDate: Date): any => {
+    const checkIn = parseDate(item.gelis_tarihi);
+    const checkOut = parseDate(item.cikis_tarihi);
+    const result = { ...item };
+    for (let i = 1; i <= 7; i++) {
+      const cur = new Date(baseDate);
+      cur.setDate(cur.getDate() + (i - 1));
+      if (checkIn && checkOut && cur >= checkIn && cur < checkOut) {
+        result[`tarih_${i}`] = item.oda_tipi || '';
+      } else {
+        result[`tarih_${i}`] = '';
+      }
+    }
+    return result;
+  };
+
+  // Tüm listeyi global en erken giriş tarihine göre re-bazla
+  const rebaseAccommodationByEarliest = (items: any[]): any[] => {
+    const base = (() => {
+      let e: Date | null = null;
+      items.forEach((it) => {
+        const d = parseDate(it.gelis_tarihi);
+        if (d && (!e || d < e)) e = d;
+      });
+      return e;
+    })();
+    if (!base) return items.map((it) => fillItemByGlobalBase(it, new Date()));
+    return items.map((it) => fillItemByGlobalBase(it, base));
+  };
+
+  // Otomatik tarih doldurma fonksiyonu
+  const autoFillDates = (item: any): any => {
+    const checkIn = parseDate(item.gelis_tarihi);
+    const checkOut = parseDate(item.cikis_tarihi);
+
+    if (!checkIn || !checkOut) {
+      // Tarihler eksikse boş bırak
+      return {
+        ...item,
+        tarih_1: '', tarih_2: '', tarih_3: '', tarih_4: '', tarih_5: '', tarih_6: '', tarih_7: ''
+      };
+    }
+
+    const earliestCheckIn = getEarliestCheckIn();
+    if (!earliestCheckIn) {
+      return {
+        ...item,
+        tarih_1: '', tarih_2: '', tarih_3: '', tarih_4: '', tarih_5: '', tarih_6: '', tarih_7: ''
+      };
+    }
+
+    // Tarih aralığını hesapla
+    const dateRange = getDateRange(checkIn, checkOut);
+
+    // Eski tekil doldurma yerine global baza göre doldur (geriye uyumluluk için)
+    const base = getEarliestCheckIn();
+    return base ? fillItemByGlobalBase(item, base) : item;
+  };
+
+  // Konaklama satırı keyboard handler
+  const handleAccommodationKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (editingAccommodationIndex !== index) return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Değişiklikleri kaydet
+      if (tempAccommodationItem) {
+        const newItems = [...accommodationItems];
+        newItems[index] = { ...tempAccommodationItem, isEditing: false };
+        const rebased = rebaseAccommodationByEarliest(newItems);
+        setAccommodationItems(rebased);
+        // localStorage kullanimi kaldirildi
+      }
+
+      setEditingAccommodationIndex(null);
+      setTempAccommodationItem(null);
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      // Değişiklikleri iptal et - orijinal veriyi koru
+      setEditingAccommodationIndex(null);
+      setTempAccommodationItem(null);
+    }
+  };
+
+  // OTEL YÖNETİM FONKSİYONLARI
+
+  // Otel Ekleme
+  const handleAddNewHotelToProject = async (hotelData: any) => {
+    try {
+      setLoading(true); // Yükleme ekranı göster
+      
+      // 1. Veritabanından EN GÜNCEL hotels_data'yı çek (Stale state veri kaybını önlemek için)
+      const latestProject = await projectsService.getById(projectId);
+      const currentHotels = latestProject?.hotels_data || [];
+      
+      const newTabId = crypto.randomUUID();
+      const newHotelEntry = {
+        ...hotelData,
+        id: newTabId,
+        hotel_status: 'BEKLEMEDE'
+      };
+
+      const updatedHotels = [...currentHotels, newHotelEntry];
+
+      // 2. Veritabanını güncelle
+      await projectsService.update(projectId, { hotels_data: updatedHotels });
+      
+      // 3. TÜM VERİLERİ YENİDEN YÜKLE (Garantili senkronizasyon)
+      await loadProjectData();
+      
+      setActiveHotelId(newTabId);
+      setIsAddHotelModalOpen(false);
+      toast.success('Yeni otel başarıyla eklendi.');
+    } catch (error) {
+      console.error('Otel ekleme hatası:', error);
+      toast.error('Otel eklenirken bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Otel Bilgilerini Güncelleme
+  const handleUpdateHotelInProject = async (updatedData: any) => {
+    try {
+      setLoading(true);
+      
+      // 1. Veritabanından EN GÜNCEL hotels_data'yı çek
+      const latestProject = await projectsService.getById(projectId);
+      const currentHotels = latestProject?.hotels_data || [];
+      
+      // 2. hotels_data içindeki ilgili kaydı bul ve güncelle
+      const updatedHotels = currentHotels.map((h: any) => 
+        h.id === updatedData.id ? { ...h, ...updatedData } : h
+      );
+
+      // 3. Veritabanını güncelle
+      await projectsService.update(projectId, { hotels_data: updatedHotels });
+      
+      // 4. Verileri yenile
+      await loadProjectData();
+      
+      setIsAddHotelModalOpen(false);
+      setEditingHotelTab(null);
+      toast.success('Otel bilgileri başarıyla güncellendi.');
+    } catch (error) {
+      console.error('Otel güncelleme hatası:', error);
+      toast.error('Otel güncellenirken bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Otel Silme
+  const handleDeleteHotelTab = async (tabId: string) => {
+    setConfirmModal({
+      open: true,
+      title: 'Oteli Sil',
+      message: 'Bu otel sekmesini ve bu otele bağlı TÜM kalemleri (Sales, Purchase, Accommodation vs.) silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          
+          // 1. Veritabanından EN GÜNCEL hotels_data'yı çek
+          const latestProject = await projectsService.getById(projectId);
+          const currentHotels = latestProject?.hotels_data || [];
+          
+          // 2. hotels_data'dan çıkar
+          const updatedHotels = currentHotels.filter((h: any) => h.id !== tabId);
+          await projectsService.update(projectId, { hotels_data: updatedHotels });
+
+          // 3. Bağlı kalemleri temizle (CASCADING DELETE)
+          const servicesToCleanup = [
+            projectAccommodationItemsService,
+            projectHotelExtrasService,
+            projectTransfersService,
+            projectEventsActivitiesService,
+            projectHumanResourcesService,
+            projectOtherServicesService
+          ];
+          
+          // hotel_id bazlı silme (Accommodation, Extras, vs.)
+          for (const service of servicesToCleanup) {
+            const items = await service.getByProjectId(projectId);
+            const toDelete = items.filter((it: any) => it.hotel_id === tabId);
+            for (const item of toDelete) {
+              await service.delete(item.id);
+            }
+          }
+
+          // [T:ID] tag bazlı silme (Sales & Purchase)
+          const [salesAll, purchaseAll] = await Promise.all([
+            projectSalesItemsService.getByProjectId(projectId),
+            projectPurchaseItemsService.getByProjectId(projectId)
+          ]);
+          
+          const salesToDelete = salesAll.filter((it: any) => it.description?.includes(`[T:${tabId}]`));
+          for (const item of salesToDelete) {
+            await projectSalesItemsService.delete(item.id);
+          }
+          
+          const purchaseToDelete = purchaseAll.filter((it: any) => it.description?.includes(`[T:${tabId}]`));
+          for (const item of purchaseToDelete) {
+            await projectPurchaseItemsService.delete(item.id);
+          }
+
+          // 4. TÜM VERİLERİ YENİDEN YÜKLE
+          await loadProjectData();
+          
+          if (activeHotelId === tabId) setActiveHotelId('all');
+          setConfirmModal(prev => ({ ...prev, open: false }));
+          toast.success('Otel sekmesi ve tüm bağlı kalemleri silindi.');
+        } catch (error) {
+          console.error('Otel silme hatası:', error);
+          toast.error('Otel silinirken hata oluştu.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  };
+
+  // Otel Kopyalama
+  const handleCopyHotelTab = async (sourceHotel: any) => {
+    try {
+      setLoading(true);
+      
+      // 1. Veritabanından EN GÜNCEL hotels_data'yı çek
+      const latestProject = await projectsService.getById(projectId);
+      const currentHotels = latestProject?.hotels_data || [];
+      
+      const sourceTabId = sourceHotel.id;
+      const newTabId = crypto.randomUUID();
+      const newHotelEntry = {
+        ...sourceHotel,
+        id: newTabId,
+        option: `${sourceHotel.option || '1.'} (Kopya)`
+      };
+
+      const updatedHotels = [...currentHotels, newHotelEntry];
+      
+      // 2. hotels_data Güncelle
+      await projectsService.update(projectId, { hotels_data: updatedHotels });
+
+      // 3. Kalemleri Kopyala helper'ı
+      const sanitizeCloneData = (item: any) => {
+        const { id, created_at, updated_at, supplier, sub_category, category_obj, created_by_user, ...cleanData } = item;
+        return cleanData;
+      };
+      
+      // ACCOMMODATION
+      const accItems = await projectAccommodationItemsService.getByProjectId(projectId);
+      const sourceAcc = accItems.filter(it => it.hotel_id === sourceTabId);
+      for (const item of sourceAcc) {
+        await projectAccommodationItemsService.create({ ...sanitizeCloneData(item), hotel_id: newTabId });
+      }
+
+      // SALES & PURCHASE
+      const [salesAll, purchaseAll] = await Promise.all([
+        projectSalesItemsService.getByProjectId(projectId),
+        projectPurchaseItemsService.getByProjectId(projectId)
+      ]);
+
+      const sourceSales = salesAll.filter(it => it.description?.includes(`[T:${sourceTabId}]`));
+      for (const item of sourceSales) {
+        const cloneData = sanitizeCloneData(item);
+        const newDesc = (cloneData.description || '').replace(`[T:${sourceTabId}]`, `[T:${newTabId}]`);
+        await projectSalesItemsService.create({ ...cloneData, description: newDesc });
+      }
+
+      const sourcePurchase = purchaseAll.filter(it => it.description?.includes(`[T:${sourceTabId}]`));
+      for (const item of sourcePurchase) {
+        const cloneData = sanitizeCloneData(item);
+        const newDesc = (cloneData.description || '').replace(`[T:${sourceTabId}]`, `[T:${newTabId}]`);
+        await projectPurchaseItemsService.create({ ...cloneData, description: newDesc });
+      }
+
+      // EXTRAS, TRANSFERS, EVENTS vs.
+      const [extras, transfers, events, hr, other] = await Promise.all([
+        projectHotelExtrasService.getByProjectId(projectId),
+        projectTransfersService.getByProjectId(projectId),
+        projectEventsActivitiesService.getByProjectId(projectId),
+        projectHumanResourcesService.getByProjectId(projectId),
+        projectOtherServicesService.getByProjectId(projectId)
+      ]);
+
+      const cloneRecords = async (list: any[], service: any) => {
+        const sourceItems = list.filter(it => it.hotel_id === sourceTabId);
+        for (const item of sourceItems) {
+          await service.create({ ...sanitizeCloneData(item), hotel_id: newTabId });
+        }
+      };
+
+      await Promise.all([
+        cloneRecords(extras, projectHotelExtrasService),
+        cloneRecords(transfers, projectTransfersService),
+        cloneRecords(events, projectEventsActivitiesService),
+        cloneRecords(hr, projectHumanResourcesService),
+        cloneRecords(other, projectOtherServicesService)
+      ]);
+
+      // 4. TÜM VERİLERİ YENİDEN YÜKLE
+      await loadProjectData();
+      
+      setActiveHotelId(newTabId);
+      toast.success('Otel ve tüm kalemleri başarıyla kopyalandı.');
+    } catch (error) {
+      console.error('Kopyalama hatası:', error);
+      toast.error('Kopyalama işlemi sırasında bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (permissionsLoading) {
+    return <LoadingSpinner message="Yükleniyor..." />;
+  }
+
+  if (!canView(Module.PROJECTS)) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center transition-colors duration-200">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yetki Gerekli</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Proje detaylarını görmek için yetkiniz bulunmuyor.</p>
+          <Link href="/projects" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
+            Proje Listesine Dön
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const hotelsData = (project as any)?.hotels_data || [];
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 transition-colors duration-200">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200">Proje Detayı</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Excel Export Butonu - kilitli projelerde de aktif kalmalı */}
+          <button
+            onClick={exportProjectFullToExcel}
+            className="bg-green-600 dark:bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs flex items-center gap-1 font-bold"
+            title="Tüm Otelleri Excel'e Aktar"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel (Tam Rapor)
+          </button>
+          {isEditingProject ? (
+            <>
+              {canEdit(Module.PROJECTS) && !project?.locked && (
+                <button
+                  onClick={handleSaveProject}
+                  className="bg-green-600 dark:bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs flex items-center gap-1"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Kaydet
+                </button>
+              )}
+              {canEdit(Module.PROJECTS) && !project?.locked && (
+                <button
+                  onClick={handleCancelEdit}
+                  className="bg-gray-600 dark:bg-gray-500 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 text-xs flex items-center gap-1"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  İptal
+                </button>
+              )}
+            </>
+          ) : (
+            canEdit(Module.PROJECTS) && !project?.locked && (
+              <button
+                onClick={handleEditProject}
+                className="bg-blue-600 dark:bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs flex items-center gap-1"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Düzenle
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
+      {/* Stats (özet) */}
+      <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-10 gap-1 mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Referans</p>
+          {isEditingProject ? (
+            <input
+              type="text"
+              value={projectFormData.reference || ''}
+              onChange={(e) => handleProjectFormChange('reference', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            />
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{project?.reference || projectId}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Başlangıç</p>
+          {isEditingProject ? (
+            <input
+              type="date"
+              value={projectFormData.start_date || ''}
+              onChange={(e) => handleProjectFormChange('start_date', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            />
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{formatDate(headerDisplayData.start_date)}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Bitiş</p>
+          {isEditingProject ? (
+            <input
+              type="date"
+              value={projectFormData.end_date || ''}
+              onChange={(e) => handleProjectFormChange('end_date', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            />
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{formatDate(headerDisplayData.end_date)}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Firma Adı</p>
+          {isEditingProject ? (
+            <input
+              type="text"
+              value={projectFormData.company_name || ''}
+              onChange={(e) => handleProjectFormChange('company_name', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            />
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{project?.company_name || project?.company?.name || '-'}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200 relative agency-dropdown">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Acente Adı</p>
+          {isEditingProject ? (
+            <div className="relative">
+              <input
+                type="text"
+                value={agencySearch}
+                onChange={(e) => {
+                  setAgencySearch(e.target.value);
+                  setShowAgencyDropdown(true);
+                  setSelectedAgencyIndex(-1);
+                }}
+                onFocus={() => setShowAgencyDropdown(true)}
+                onKeyDown={handleAgencyKeyDown}
+                className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                placeholder="Acente ara..."
+                autoComplete="off"
+              />
+              {showAgencyDropdown && filteredAgencies.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-50 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {filteredAgencies.map((agency: any, index: number) => (
+                    <div
+                      key={agency.id}
+                      onClick={() => handleAgencySelect(agency)}
+                      className={`px-2 py-1.5 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ${
+                        index === selectedAgencyIndex ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'
+                        }`}
+                    >
+                      {agency.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getAgencyName(project?.agency_id) || '-'}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200 relative hotel-dropdown">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Otel Adı</p>
+          {isEditingProject ? (
+            <div className="relative">
+              <input
+                type="text"
+                value={hotelSearch}
+                onChange={(e) => {
+                  setHotelSearch(e.target.value);
+                  setShowHotelDropdown(true);
+                  setSelectedHotelIndex(-1);
+                }}
+                onFocus={() => setShowHotelDropdown(true)}
+                onKeyDown={handleHotelKeyDown}
+                className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                placeholder="Otel ara..."
+                autoComplete="off"
+              />
+              {showHotelDropdown && filteredHotels.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-50 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {filteredHotels.map((hotel: any, index: number) => (
+                    <div
+                      key={hotel.id}
+                      onClick={() => handleHotelSelect(hotel)}
+                      className={`px-2 py-1.5 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ${
+                        index === selectedHotelIndex ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'
+                        }`}
+                    >
+                      {hotel.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getHotelName(headerDisplayData.hotel_id) || '-'}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Oda | Pax</p>
+          {isEditingProject ? (
+            <input
+              type="text"
+              value={projectFormData.room_pax || ''}
+              onChange={(e) => handleProjectFormChange('room_pax', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              placeholder="Oda | Pax"
+            />
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{headerDisplayData.room_pax}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Teklif Türü</p>
+          {isEditingProject ? (
+            <select
+              value={projectFormData.quote_type || ''}
+              onChange={(e) => handleProjectFormChange('quote_type', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            >
+              <option value="">Teklif Türü Seçin</option>
+              <option value="BİRİM">BİRİM</option>
+              <option value="PAKET">PAKET</option>
+            </select>
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{project?.quote_type || '-'}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200 relative user-dropdown">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Proje Sorumlusu</p>
+          {isEditingProject ? (
+            <div className="relative">
+              {/* Seçili kullanıcıları göster */}
+              <div className="flex flex-wrap gap-1 mb-1">
+                {selectedUsers.map(userId => {
+                  const user = users.find(u => u.id === userId);
+                  return user ? (
+                    <span
+                      key={userId}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full"
+                    >
+                      {user.first_name} {user.last_name}
+                      <button
+                        type="button"
+                        onClick={() => handleUserRemove(userId)}
+                        className="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ) : null;
+                })}
+              </div>
+
+              {/* Arama input'u */}
+              <input
+                type="text"
+                value={userSearch}
+                onChange={(e) => {
+                  setUserSearch(e.target.value);
+                  setShowUserDropdown(true);
+                  setSelectedUserIndex(-1);
+                }}
+                onFocus={() => setShowUserDropdown(true)}
+                onKeyDown={handleUserKeyDown}
+                className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                placeholder="Kullanıcı ara..."
+                autoComplete="off"
+              />
+
+              {/* Dropdown */}
+              {showUserDropdown && filteredUsers.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-50 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {filteredUsers.map((user: any, index: number) => {
+                    const isSelected = selectedUsers.includes(user.id);
+                    return (
+                      <div
+                        key={user.id}
+                        onClick={() => handleUserToggle(user.id)}
+                        className={`px-2 py-1.5 text-xs cursor-pointer transition-colors duration-150 flex items-center gap-2 ${
+                          index === selectedUserIndex 
+                            ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100' 
+                            : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => { }} // Controlled by parent onClick
+                          className="w-3 h-3"
+                        />
+                        <span>{user.first_name} {user.last_name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getProjectManagers(projectId)}</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Proje Durum</p>
+          {isEditingProject ? (
+            <select
+              value={projectFormData.status || ''}
+              onChange={(e) => handleProjectFormChange('status', e.target.value)}
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            >
+              <option value="active">Aktif</option>
+              <option value="completed">Tamamlandı</option>
+              <option value="on_hold">Beklemede</option>
+              <option value="cancelled">İptal</option>
+            </select>
+          ) : (
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getStatusText(project?.status || 'active')}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Otel Sekmeleri (Çoklu Otel Desteği) - Premium Quote Style */}
+      {project?.hotels_data && project.hotels_data.length > 0 && (
+        <div className="mb-4">
+          <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto shadow-sm">
+            <button
+              onClick={() => handleHotelChange('all')}
+              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[10px] ${activeHotelId === 'all'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+            >
+              TÜMÜ
+            </button>
+            {project.hotels_data.map((h: any, idx: number) => {
+              const hObj = hotels.find(ht => ht.id === h.hotel_id);
+              return (
+                <div key={h.id || h.hotel_id || idx} className="flex items-center group relative">
+                  <button
+                    onClick={() => handleHotelChange(h.id)}
+                    className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm group ${activeHotelId === h.id
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                  >
+                    <span className="text-[10px] font-black mr-2 uppercase tracking-tight">{idx + 1}. OTEL:</span>
+                    <span className="text-[10px] opacity-80 max-w-[100px] truncate uppercase font-bold tracking-tight">
+                      {hObj?.name || h.hotel_name || ''}
+                    </span>
+                  </button>
+                  
+                  {/* Action Dropdown for Hotel Tab */}
+                  {canEdit('projects') && (
+                    <div className="relative hotel-action-menu ml-1">
+                      <button
+                        onClick={(e) => handleOpenHotelMenu(e, h.id)}
+                        className={`p-1.5 rounded-lg transition-all duration-200 ${activeHotelMenuId === h.id
+                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400'
+                          }`}
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            
+            {/* Add Hotel Button */}
+            {canEdit('projects') && (
+              <button
+                onClick={() => setIsAddHotelModalOpen(true)}
+                title="Yeni Otel Ekle"
+                className="flex items-center px-3 py-2 bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500 hover:text-white transition-all rounded-lg border border-dashed border-green-500/30 group ml-2"
+              >
+                <svg className="w-4 h-4 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            )}
+
+            <button
+              onClick={() => handleHotelChange('general')}
+              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[10px] ${activeHotelId === 'general'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+            >
+              GENEL HİZMETLER
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tabs - Premium Style */}
+      <div className="mb-4">
+        <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto shadow-sm">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => handleTabChange(t.key)}
+              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[10px] font-black uppercase tracking-widest ${activeTab === t.key
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-3">
+          {loading ? (
+            <div className="text-xs text-gray-500 dark:text-gray-400">Yükleniyor...</div>
+          ) : (
+            <>
+              {activeTab === 'satis' && (
+                <SalesTab
+                  itemsSales={filteredSalesItems}
+                  setItemsSales={setItemsSales}
+                  showAddRowSales={showAddRowSales}
+                  setShowAddRowSales={setShowAddRowSales}
+                  showCategoryModalSales={showCategoryModalSales}
+                  setShowCategoryModalSales={setShowCategoryModalSales}
+                  selectedCategoriesSales={selectedCategoriesSales}
+                  setSelectedCategoriesSales={setSelectedCategoriesSales}
+                  expandedCategoriesSales={expandedCategoriesSales}
+                  setExpandedCategoriesSales={setExpandedCategoriesSales}
+                  newItem={newItem}
+                  setNewItem={setNewItem}
+                  categories={categories}
+                  mainCategories={mainCategories}
+                  subCategoriesByMain={subCategoriesByMain}
+                  groupedSalesItems={groupedSalesItems}
+                  exportSalesToExcel={exportProjectFullToExcel}
+                  exportSalesToPDF={() => alert('PDF export çoklu otel desteği için yakında güncellenecektir. Lütfen Excel raporunu kullanın.')}
+                  handleCreateLink={handleCreateSalesLink}
+                  saveItems={saveItems}
+                  addItem={addItem}
+                  removeItem={removeItem}
+                  editRow={editRow}
+                  addBelow={addBelow}
+                  totalsByCurrency={totalsByCurrency}
+                  formatNumber={formatNumber}
+                  formatTRY={formatTRY}
+                  getCategoryName={getCategoryName}
+                  toggleAllCategories={toggleAllCategories}
+                  toggleCategoryExpansion={toggleCategoryExpansion}
+                  isAllSubCategoriesSelected={isAllSubCategoriesSelected}
+                  isSomeSubCategoriesSelected={isSomeSubCategoriesSelected}
+                  handleAddSelectedCategories={handleAddSelectedCategories}
+                  toggleAllSubCategories={toggleAllSubCategories}
+                  CheckboxWithIndeterminate={CheckboxWithIndeterminate}
+                  hotelsData={hotelsData}
+                  hotels={hotels}
+                />
+              )}
+              {activeTab === 'alis' && (
+                <PurchaseTab
+                  itemsPurchase={filteredPurchaseItems}
+                  setItemsPurchase={setItemsPurchase}
+                  showAddRowPurchase={showAddRowPurchase}
+                  setShowAddRowPurchase={setShowAddRowPurchase}
+                  showCategoryModalPurchase={showCategoryModalPurchase}
+                  setShowCategoryModalPurchase={setShowCategoryModalPurchase}
+                  selectedCategoriesPurchase={selectedCategoriesPurchase}
+                  setSelectedCategoriesPurchase={setSelectedCategoriesPurchase}
+                  expandedCategoriesPurchase={expandedCategoriesPurchase}
+                  setExpandedCategoriesPurchase={setExpandedCategoriesPurchase}
+                  newItem={newItem}
+                  setNewItem={setNewItem}
+                  categories={categories}
+                  mainCategories={mainCategories}
+                  subCategoriesByMain={subCategoriesByMain}
+                  groupedPurchaseItems={groupedPurchaseItems}
+                  exportPurchaseToExcel={exportProjectFullToExcel}
+                  exportPurchaseToPDF={() => alert('PDF export çoklu otel desteği için yakında güncellenecektir. Lütfen Excel raporunu kullanın.')}
+                  importQuoteItemsToPurchase={importQuoteItemsToPurchase}
+                  importSalesItemsToPurchase={importSalesItemsToPurchase}
+                  isImportingSalesToPurchase={isImportingPurchaseFromSales}
+                  handleCreateLink={handleCreatePurchaseLink}
+                  saveItems={saveItems}
+                  addItem={addItem}
+                  removeItem={removeItem}
+                  editRow={editRow}
+                  addBelow={addBelow}
+                  totalsByCurrency={totalsByCurrency}
+                  formatNumber={formatNumber}
+                  formatTRY={formatTRY}
+                  getCategoryName={getCategoryName}
+                  getVendorName={getVendorName}
+                  toggleAllCategories={toggleAllCategories}
+                  toggleCategoryExpansion={toggleCategoryExpansion}
+                  isCategoryExpanded={isCategoryExpanded}
+                  isAllSubCategoriesSelected={isAllSubCategoriesSelected}
+                  isSomeSubCategoriesSelected={isSomeSubCategoriesSelected}
+                  handleAddSelectedCategories={handleAddSelectedCategories}
+                  toggleAllSubCategories={toggleAllSubCategories}
+                  CheckboxWithIndeterminate={CheckboxWithIndeterminate}
+                  purchaseSupplierSearch={purchaseSupplierSearch}
+                  setPurchaseSupplierSearch={setPurchaseSupplierSearch}
+                  showPurchaseSupplierDropdown={showPurchaseSupplierDropdown}
+                  setShowPurchaseSupplierDropdown={setShowPurchaseSupplierDropdown}
+                  selectedPurchaseSupplierIndex={selectedPurchaseSupplierIndex}
+                  setSelectedPurchaseSupplierIndex={setSelectedPurchaseSupplierIndex}
+                  filteredPurchaseSuppliers={filteredPurchaseSuppliers}
+                  handlePurchaseSupplierKeyDown={handlePurchaseSupplierKeyDown}
+                  handlePurchaseSupplierSelect={handlePurchaseSupplierSelect}
+                  hotelsData={hotelsData}
+                  hotels={hotels}
+                />
+              )}
+              {activeTab === 'konaklama' && (
+                <AccommodationTabOptimized
+                  accommodationItems={filteredAccommodationItems}
+                  setAccommodationItems={setAccommodationItems}
+                  projectId={projectId}
+                  accommodationSearch={accommodationSearch}
+                  setAccommodationSearch={setAccommodationSearch}
+                  handleAccommodationImport={handleAccommodationImport}
+                  handleAccommodationExport={handleAccommodationExport}
+                  handleAccommodationClear={handleAccommodationClear}
+                  editingAccommodationIndex={editingAccommodationIndex}
+                  setEditingAccommodationIndex={setEditingAccommodationIndex}
+                  tempAccommodationItem={tempAccommodationItem}
+                  setTempAccommodationItem={setTempAccommodationItem}
+                  handleAccommodationSave={handleAccommodationSave}
+                  handleAccommodationCancel={handleAccommodationCancel}
+                  handleAccommodationEdit={handleAccommodationEdit}
+                  handleAccommodationDelete={handleAccommodationDelete}
+                  handleAccommodationAdd={handleAccommodationAdd}
+                  handleAccommodationCopy={handleAccommodationCopy}
+                  formatDateAccommodation={formatDateAccommodation}
+                  calculateDateColumns={calculateDateColumns}
+                />
+              )}
+              {activeTab === 'ucak-bileti' && (
+                <UcakBiletiTab
+                  flightTickets={flightTickets}
+                  setFlightTickets={setFlightTickets}
+                  flightTicketSearch={flightTicketSearch}
+                  setFlightTicketSearch={setFlightTicketSearch}
+                  flightSortField={flightSortField}
+                  flightSortDirection={flightSortDirection}
+                  handleFlightSort={handleFlightSort}
+                  editingFlightIndex={editingFlightIndex}
+                  setEditingFlightIndex={setEditingFlightIndex}
+                  tempFlightItem={tempFlightItem}
+                  setTempFlightItem={setTempFlightItem}
+                  isNewFlightItem={isNewFlightItem}
+                  setIsNewFlightItem={setIsNewFlightItem}
+                  handleFlightAdd={handleFlightAdd}
+                  handleFlightEdit={handleFlightEdit}
+                  handleFlightSave={handleFlightSave}
+                  handleFlightCancel={handleFlightCancel}
+                  handleFlightDelete={handleFlightDelete}
+                  handleFlightImport={handleFlightImport}
+                  handleFlightExport={handleFlightExport}
+                  handleFlightClear={handleFlightClear}
+                  filteredFlightTickets={filteredFlightTickets}
+                  sortedFlightTickets={filteredFlightTickets}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatDateForDisplay={formatDateForDisplay}
+                  flightTotals={flightTotals}
+                  suppliers={suppliers}
+                  hotels={hotels}
+                  allSuppliers={allSuppliers}
+                  filteredHotelSuppliers={filteredHotelSuppliers}
+                  supplierDropdowns={supplierDropdowns}
+                  setSupplierDropdowns={setSupplierDropdowns}
+                  toggleSupplierDropdown={toggleSupplierDropdown}
+                  updateSupplierSearch={updateSupplierSearch}
+                  selectFlightSupplier={selectFlightSupplier}
+                  handleSupplierKeyDown={handleSupplierKeyDown}
+                />
+              )}
+              {activeTab === 'ucak-bileti_old' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 mr-4">
+                      <input
+                        type="text"
+                        placeholder="Uçak bileti ara (tedarikçi, havayolu, güzergah, PNR, misafirler)..."
+                        value={flightTicketSearch}
+                        onChange={(e) => setFlightTicketSearch(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={handleFlightImport}
+                        className="hidden"
+                        id="flight-import"
+                      />
+                      <label
+                        htmlFor="flight-import"
+                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 cursor-pointer transition-colors"
+                      >
+                        Excel İçe Aktar
+                      </label>
+                      <button
+                        onClick={handleFlightExport}
+                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Excel Dışa Aktar
+                      </button>
+                      {flightTickets.length > 0 && (
+                        <button
+                          onClick={handleFlightClear}
+                          className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                        >
+                          Listeyi Temizle
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          console.log('Yeni Bilet Ekle butonu tıklandı');
+                          handleFlightAdd();
+                        }}
+                        className="px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors cursor-pointer"
+                        style={{ pointerEvents: 'auto' }}
+                        disabled={false}
+                      >
+                        Yeni Bilet Ekle
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Arama (taşındı: başlık satırına) */}
+
+                  {/* Uçak Bileti Tablosu */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+                    <div className="overflow-x-auto">
+                      <table className="w-max min-w-full text-xs">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
+                          <tr>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('biletlemeTarihi')}
+                            >
+                              <div className="flex items-center">
+                                BİLETLEME<br />TARİHİ
+                                {flightSortField === 'biletlemeTarihi' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-32 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('tedarikci')}
+                            >
+                              <div className="flex items-center">
+                                OTEL/TEDARİKÇİ
+                                {flightSortField === 'tedarikci' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('havayolu')}
+                            >
+                              <div className="flex items-center">
+                                HAVAYOLU
+                                {flightSortField === 'havayolu' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('pnr')}
+                            >
+                              <div className="flex items-center">
+                                PNR
+                                {flightSortField === 'pnr' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('ucusTipi')}
+                            >
+                              <div className="flex items-center">
+                                UÇUŞ<br />TİPİ
+                                {flightSortField === 'ucusTipi' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('gidisTarihi')}
+                            >
+                              <div className="flex items-center">
+                                GİDİŞ<br />TARİHİ
+                                {flightSortField === 'gidisTarihi' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">GİDİŞ<br />SAATİ</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">GİDİŞ UÇUŞ<br />KODU</th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('donusTarihi')}
+                            >
+                              <div className="flex items-center">
+                                DÖNÜŞ<br />TARİHİ
+                                {flightSortField === 'donusTarihi' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">DÖNÜŞ<br />SAATİ</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">DÖNÜŞ UÇUŞ<br />KODU</th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('guzergah')}
+                            >
+                              <div className="flex items-center">
+                                GÜZERGAH
+                                {flightSortField === 'guzergah' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('kisiSayisi')}
+                            >
+                              <div className="flex items-center">
+                                KİŞİ<br />SAYISI
+                                {flightSortField === 'kisiSayisi' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('ppMaliyet')}
+                            >
+                              <div className="flex items-center">
+                                PP<br />MALİYET
+                                {flightSortField === 'ppMaliyet' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleFlightSort('toplamMaliyet')}
+                            >
+                              <div className="flex items-center">
+                                TOPLAM<br />MALİYET
+                                {flightSortField === 'toplamMaliyet' && (
+                                  <span className="ml-1">
+                                    {flightSortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-16">DÖVİZ</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">KUR</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-32">TOPLAM TL</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-32">MİSAFİRLER</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-16">DURUM</th>
+                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {filteredFlightTickets.length === 0 && !isNewFlightItem ? (
+                            <tr>
+                              <td colSpan={19} className="px-2 py-8 text-center text-gray-500 dark:text-gray-400">
+                                Henüz uçak bileti eklenmemiş
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredFlightTickets.flatMap((ticket, index) => {
+                              const mainRow = (
+                                <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  {editingFlightIndex === index ? (
+                                    <>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="date"
+                                          value={tempFlightItem?.biletlemeTarihi || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, biletlemeTarihi: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                      </td>
+                                      <td className="px-2 py-1 relative">
+                                        <input
+                                          ref={supplierInputRef}
+                                          type="text"
+                                          value={supplierSearch}
+                                          onChange={(e) => {
+                                            setSupplierSearch(e.target.value);
+                                            setSelectedSupplierIndex(-1);
+                                          }}
+                                          onFocus={() => {
+                                            if (filteredSuppliers.length > 0) {
+                                              setShowSupplierDropdown(true);
+                                              updateDropdownPosition();
+                                            }
+                                          }}
+                                          onBlur={() => setTimeout(() => setShowSupplierDropdown(false), 200)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault();
+                                              if (selectedSupplierIndex >= 0 && filteredSuppliers[selectedSupplierIndex]) {
+                                                const selectedItem = filteredSuppliers[selectedSupplierIndex];
+                                                setTempFlightItem(prev => ({ ...prev, tedarikci: selectedItem.name }));
+                                                setSupplierSearch(selectedItem.name);
+                                                setShowSupplierDropdown(false);
+                                                setSelectedSupplierIndex(-1);
+                                              }
+                                            } else if (e.key === 'ArrowDown') {
+                                              e.preventDefault();
+                                              setSelectedSupplierIndex(prev =>
+                                                prev < filteredSuppliers.length - 1 ? prev + 1 : 0
+                                              );
+                                            } else if (e.key === 'ArrowUp') {
+                                              e.preventDefault();
+                                              setSelectedSupplierIndex(prev =>
+                                                prev > 0 ? prev - 1 : filteredSuppliers.length - 1
+                                              );
+                                            } else if (e.key === 'Escape') {
+                                              setShowSupplierDropdown(false);
+                                              setSelectedSupplierIndex(-1);
+                                            }
+                                          }}
+                                          placeholder="Tedarikçi ara..."
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                        {showSupplierDropdown && filteredSuppliers.length > 0 && dropdownPosition && (
+                                          <div
+                                            className="fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-40 overflow-y-auto"
+                                            style={{
+                                              top: `${dropdownPosition.top}px`,
+                                              left: `${dropdownPosition.left}px`,
+                                              width: `${dropdownPosition.width}px`
+                                            }}
+                                          >
+                                            {filteredSuppliers.map((item, index) => (
+                                              <div
+                                                key={`${item.type}-${item.id}`}
+                                                onClick={() => {
+                                                  setTempFlightItem(prev => ({ ...prev, tedarikci: item.name }));
+                                                  setSupplierSearch(item.name);
+                                                  setShowSupplierDropdown(false);
+                                                  setSelectedSupplierIndex(-1);
+                                                }}
+                                                className={`px-3 py-2 cursor-pointer text-xs border-b border-gray-100 dark:border-gray-600 last:border-b-0 flex items-center justify-between ${index === selectedSupplierIndex
+                                                    ? 'bg-blue-100 dark:bg-blue-900'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                                                  }`}
+                                              >
+                                                <div>
+                                                  <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
+                                                  {item.title && (
+                                                    <div className="text-gray-500 dark:text-gray-400 text-xs">{item.title}</div>
+                                                  )}
+                                                </div>
+                                                <div className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                                                  {item.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={tempFlightItem?.havayolu || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, havayolu: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="TK"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={tempFlightItem?.pnr || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, pnr: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="ABC123"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <select
+                                          value={tempFlightItem?.ucusTipi || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, ucusTipi: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"                                      >
+                                          <option value="">Seçiniz</option>
+                                          <option value="GRUP">GRUP</option>
+                                          <option value="MÜNFERİT">MÜNFERİT</option>
+                                        </select>
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="date"
+                                          value={tempFlightItem?.gidisTarihi || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, gidisTarihi: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="time"
+                                          value={tempFlightItem?.gidisSaati || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, gidisSaati: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={tempFlightItem?.gidisUcusKodu || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, gidisUcusKodu: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="TK123"
+                                          maxLength={6}
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="date"
+                                          value={tempFlightItem?.donusTarihi || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, donusTarihi: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="time"
+                                          value={tempFlightItem?.donusSaati || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, donusSaati: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={tempFlightItem?.donusUcusKodu || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, donusUcusKodu: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="TK124"
+                                          maxLength={6}
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={tempFlightItem?.guzergah || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, guzergah: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="IST-AMS"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={formatIntegerForDisplay(tempFlightItem?.kisiSayisi || 1)}
+                                          onChange={(e) => {
+                                            const kisiSayisi = parseInt(formatIntegerForInput(e.target.value)) || 1;
+                                            const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
+                                            const kur = tempFlightItem?.kur || 1.0000;
+                                            const toplamMaliyet = kisiSayisi * ppMaliyet;
+                                            setTempFlightItem(prev => ({
+                                              ...prev,
+                                              kisiSayisi,
+                                              toplamMaliyet,
+                                              toplamTl: toplamMaliyet * kur
+                                            }));
+                                          }}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="1"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={formatNumberForDisplay(tempFlightItem?.ppMaliyet || 0)}
+                                          onChange={(e) => {
+                                            const ppMaliyet = cleanInputValue(e.target.value) || 0;
+                                            const kisiSayisi = tempFlightItem?.kisiSayisi || 1;
+                                            const kur = tempFlightItem?.kur || 1.0000;
+                                            const toplamMaliyet = kisiSayisi * ppMaliyet;
+                                            setTempFlightItem(prev => ({
+                                              ...prev,
+                                              ppMaliyet,
+                                              toplamMaliyet,
+                                              toplamTl: toplamMaliyet * kur
+                                            }));
+                                          }}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="0,00"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={formatNumberForDisplay(tempFlightItem?.toplamMaliyet || 0)}
+                                          onChange={(e) => {
+                                            const toplamMaliyet = cleanInputValue(e.target.value) || 0;
+                                            const kisiSayisi = tempFlightItem?.kisiSayisi || 1;
+                                            const kur = tempFlightItem?.kur || 1.0000;
+                                            setTempFlightItem(prev => ({
+                                              ...prev,
+                                              toplamMaliyet,
+                                              ppMaliyet: kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0,
+                                              toplamTl: toplamMaliyet * kur
+                                            }));
+                                          }}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="0,00"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <select
+                                          value={tempFlightItem?.doviz || 'EUR'}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, doviz: e.target.value }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"                                      >
+                                          <option value="EUR">EUR</option>
+                                          <option value="USD">USD</option>
+                                          <option value="TRY">TRY</option>
+                                        </select>
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="number"
+                                          step="0.0001"
+                                          value={tempFlightItem?.kur || 1.0000}
+                                          onChange={(e) => {
+                                            const kur = parseFloat(e.target.value) || 1.0000;
+                                            const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                                            setTempFlightItem(prev => ({
+                                              ...prev,
+                                              kur,
+                                              toplamTl: toplamMaliyet * kur
+                                            }));
+                                          }}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          placeholder="1.0000"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={formatNumberForDisplay(tempFlightItem?.toplamTl || 0)}
+                                          readOnly
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white bg-gray-100 dark:bg-gray-600"
+                                          placeholder="0,00"
+                                        />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <input
+                                          type="text"
+                                          value={tempFlightItem?.misafirler || ''}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, misafirler: e.target.value }))}
+                                          placeholder="Misafirler (virgülle ayırın)"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <select
+                                          value={tempFlightItem?.durum || 'aktif'}
+                                          onChange={(e) => setTempFlightItem(prev => ({ ...prev, durum: e.target.value as 'aktif' | 'iptal' | 'iade' | 'degistirildi' }))}
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"                                      >
+                                          <option value="aktif">Aktif</option>
+                                          <option value="iptal">İptal</option>
+                                          <option value="iade">İade</option>
+                                          <option value="degistirildi">Değiştirildi</option>
+                                        </select>
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={handleFlightSave}
+                                            className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900 rounded"
+                                            title="Kaydet"
+                                          >
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={handleFlightCancel}
+                                            className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded"
+                                            title="İptal"
+                                          >
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatDateForDisplay(ticket.biletlemeTarihi)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.tedarikci}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.havayolu}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.pnr}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.ucusTipi}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatDateForDisplay(ticket.gidisTarihi)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.gidisSaati}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.gidisUcusKodu}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatDateForDisplay(ticket.donusTarihi)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.donusSaati}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.donusUcusKodu}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.guzergah}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatIntegerForDisplay(ticket.kisiSayisi)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatNumberForDisplay(ticket.ppMaliyet)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatNumberForDisplay(ticket.toplamMaliyet)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{ticket.doviz}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatNumberForDisplay(ticket.kur)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">{formatNumberForDisplay(ticket.toplamTl)}</td>
+                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                        <div className="flex items-center justify-between">
+                                          <span className="truncate max-w-[150px]" title={ticket.misafirler}>
+                                            {ticket.misafirler || '-'}
+                                          </span>
+                                          {ticket.misafirler && (
+                                            <button
+                                              onClick={() => toggleFlightTicketExpansion(ticket.id)}
+                                              className="ml-2 p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded"
+                                              title="Misafirleri göster/gizle"
+                                            >
+                                              <svg
+                                                className={`w-3 h-3 transition-transform ${expandedFlightTickets.has(ticket.id) ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                              </svg>
+                                            </button>
+                                          )}
+                                        </div>
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <span className={`px-2 py-1 rounded text-xs ${ticket.durum === 'aktif' ? 'bg-green-100 text-green-800' :
+                                            ticket.durum === 'iptal' ? 'bg-red-100 text-red-800' :
+                                              ticket.durum === 'iade' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-blue-100 text-blue-800'
+                                          }`}>
+                                          {ticket.durum}
+                                        </span>
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={() => handleFlightEdit(index)}
+                                            className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded"
+                                            title="Düzenle"
+                                          >
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => handleFlightDelete(index)}
+                                            className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded"
+                                            title="Sil"
+                                          >
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </>
+                                  )}
+                                </tr>
+                              );
+
+                              const expandableRow = expandedFlightTickets.has(ticket.id) && ticket.misafirler ? (
+                                <tr key={`${ticket.id}-expand`} className="bg-gray-50 dark:bg-gray-700">
+                                  <td colSpan={19} className="px-4 py-3">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                      <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Misafirler:</h4>
+                                      <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                                        {ticket.misafirler}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : null;
+
+                              return [mainRow, expandableRow].filter(Boolean);
+                            })
+                          )}
+
+                          {/* Yeni Bilet Ekleme Satırı */}
+                          {editingFlightIndex !== null && isNewFlightItem && (
+                            <tr className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700">
+                              <td className="px-2 py-1">
+                                <input
+                                  type="date"
+                                  value={tempFlightItem?.biletlemeTarihi || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, biletlemeTarihi: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1 relative">
+                                <input
+                                  ref={supplierInputRef}
+                                  type="text"
+                                  value={supplierSearch}
+                                  onChange={(e) => {
+                                    setSupplierSearch(e.target.value);
+                                    setSelectedSupplierIndex(-1);
+                                  }}
+                                  onFocus={() => {
+                                    if (filteredSuppliers.length > 0) {
+                                      setShowSupplierDropdown(true);
+                                      updateDropdownPosition();
+                                    }
+                                  }}
+                                  onBlur={() => setTimeout(() => setShowSupplierDropdown(false), 200)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      if (selectedSupplierIndex >= 0 && filteredSuppliers[selectedSupplierIndex]) {
+                                        const selectedItem = filteredSuppliers[selectedSupplierIndex];
+                                        setTempFlightItem(prev => ({ ...prev, tedarikci: selectedItem.name }));
+                                        setSupplierSearch(selectedItem.name);
+                                        setShowSupplierDropdown(false);
+                                        setSelectedSupplierIndex(-1);
+                                      }
+                                    } else if (e.key === 'ArrowDown') {
+                                      e.preventDefault();
+                                      setSelectedSupplierIndex(prev =>
+                                        prev < filteredSuppliers.length - 1 ? prev + 1 : 0
+                                      );
+                                    } else if (e.key === 'ArrowUp') {
+                                      e.preventDefault();
+                                      setSelectedSupplierIndex(prev =>
+                                        prev > 0 ? prev - 1 : filteredSuppliers.length - 1
+                                      );
+                                    } else if (e.key === 'Escape') {
+                                      setShowSupplierDropdown(false);
+                                      setSelectedSupplierIndex(-1);
+                                    }
+                                  }}
+                                  placeholder="Tedarikçi ara..."
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                                {showSupplierDropdown && filteredSuppliers.length > 0 && dropdownPosition && (
+                                  <div
+                                    className="fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-40 overflow-y-auto"
+                                    style={{
+                                      top: `${dropdownPosition.top}px`,
+                                      left: `${dropdownPosition.left}px`,
+                                      width: `${dropdownPosition.width}px`
+                                    }}
+                                  >
+                                    {filteredSuppliers.map((item, index) => (
+                                      <div
+                                        key={`${item.type}-${item.id}`}
+                                        onClick={() => {
+                                          setTempFlightItem(prev => ({ ...prev, tedarikci: item.name }));
+                                          setSupplierSearch(item.name);
+                                          setShowSupplierDropdown(false);
+                                          setSelectedSupplierIndex(-1);
+                                        }}
+                                        className={`px-3 py-2 cursor-pointer text-xs border-b border-gray-100 dark:border-gray-600 last:border-b-0 flex items-center justify-between ${index === selectedSupplierIndex
+                                            ? 'bg-blue-100 dark:bg-blue-900'
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                                          }`}
+                                      >
+                                        <div>
+                                          <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
+                                          {item.title && (
+                                            <div className="text-gray-500 dark:text-gray-400 text-xs">{item.title}</div>
+                                          )}
+                                        </div>
+                                        <div className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                                          {item.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={tempFlightItem?.havayolu || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, havayolu: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="TK"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={tempFlightItem?.pnr || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, pnr: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="ABC123"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <select
+                                  value={tempFlightItem?.ucusTipi || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, ucusTipi: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                >
+                                  <option value="">Seçiniz</option>
+                                  <option value="GRUP">GRUP</option>
+                                  <option value="MÜNFERİT">MÜNFERİT</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="date"
+                                  value={tempFlightItem?.gidisTarihi || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, gidisTarihi: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="time"
+                                  value={tempFlightItem?.gidisSaati || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, gidisSaati: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={tempFlightItem?.gidisUcusKodu || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, gidisUcusKodu: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="TK123"
+                                  maxLength={6}
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="date"
+                                  value={tempFlightItem?.donusTarihi || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, donusTarihi: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="time"
+                                  value={tempFlightItem?.donusSaati || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, donusSaati: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={tempFlightItem?.donusUcusKodu || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, donusUcusKodu: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="TK124"
+                                  maxLength={6}
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={tempFlightItem?.guzergah || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, guzergah: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="İstanbul - Antalya"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="number"
+                                  value={tempFlightItem?.kisiSayisi || 1}
+                                  onChange={(e) => {
+                                    const kisiSayisi = parseInt(e.target.value) || 1;
+                                    const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
+                                    const kur = tempFlightItem?.kur || 1.0000;
+                                    const toplamMaliyet = kisiSayisi * ppMaliyet;
+                                    setTempFlightItem(prev => ({
+                                      ...prev,
+                                      kisiSayisi,
+                                      toplamMaliyet,
+                                      toplamTl: toplamMaliyet * kur
+                                    }));
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  min="1"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={tempFlightItem?.ppMaliyet || 0}
+                                  onChange={(e) => {
+                                    const ppMaliyet = parseFloat(e.target.value) || 0;
+                                    const kisiSayisi = tempFlightItem?.kisiSayisi || 1;
+                                    const kur = tempFlightItem?.kur || 1.0000;
+                                    const toplamMaliyet = kisiSayisi * ppMaliyet;
+                                    setTempFlightItem(prev => ({
+                                      ...prev,
+                                      ppMaliyet,
+                                      toplamMaliyet,
+                                      toplamTl: toplamMaliyet * kur
+                                    }));
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={tempFlightItem?.toplamMaliyet || 0}
+                                  onChange={(e) => {
+                                    const toplamMaliyet = parseFloat(e.target.value) || 0;
+                                    const kisiSayisi = tempFlightItem?.kisiSayisi || 1;
+                                    const kur = tempFlightItem?.kur || 1.0000;
+                                    setTempFlightItem(prev => ({
+                                      ...prev,
+                                      toplamMaliyet,
+                                      ppMaliyet: kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0,
+                                      toplamTl: toplamMaliyet * kur
+                                    }));
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <select
+                                  value={tempFlightItem?.doviz || 'EUR'}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, doviz: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="number"
+                                  step="0.0001"
+                                  value={tempFlightItem?.kur || 1.0000}
+                                  onChange={(e) => {
+                                    const kur = parseFloat(e.target.value) || 1.0000;
+                                    const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                                    setTempFlightItem(prev => ({
+                                      ...prev,
+                                      kur,
+                                      toplamTl: toplamMaliyet * kur
+                                    }));
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="1.0000"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={formatNumberForDisplay(tempFlightItem?.toplamTl || 0)}
+                                  readOnly
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white bg-gray-100 dark:bg-gray-600"
+                                  placeholder="0,00"
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <textarea
+                                  value={tempFlightItem?.misafirler || ''}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, misafirler: e.target.value }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="Misafir isimleri..."
+                                  rows={2}
+                                />
+                              </td>
+                              <td className="px-2 py-1">
+                                <select
+                                  value={tempFlightItem?.durum || 'aktif'}
+                                  onChange={(e) => setTempFlightItem(prev => ({ ...prev, durum: e.target.value as 'aktif' | 'iptal' | 'iade' | 'degistirildi' }))}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                >
+                                  <option value="aktif">Aktif</option>
+                                  <option value="iptal">İptal</option>
+                                  <option value="iade">İade</option>
+                                  <option value="degistirildi">Değiştirildi</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-1">
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={handleFlightSave}
+                                    className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900 rounded"
+                                    title="Kaydet"
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={handleFlightCancel}
+                                    className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded"
+                                    title="İptal"
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Döviz Cinsine Göre Toplam Satırları */}
+                          {filteredFlightTickets.length > 0 && Object.keys(flightTotals).sort().map((doviz, index) => (
+                            <tr key={doviz} className={`font-semibold ${index === 0 ? 'bg-gray-100 dark:bg-gray-600' : 'bg-gray-50 dark:bg-gray-700'}`}>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white" colSpan={12}>
+                                TOPLAM
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                {formatIntegerForDisplay(flightTotals[doviz].kisiSayisi)}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                {formatNumberForDisplay(flightTotals[doviz].ppMaliyet)}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                {formatNumberForDisplay(flightTotals[doviz].toplamMaliyet)}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold">
+                                {doviz}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center w-32">
+                                {formatNumberForDisplay(flightTotals[doviz].toplamTl)} TL
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white" colSpan={2}>
+                                {/* Boş sütunlar */}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'otel-ekstra' && (
+                <OtelEkstraTab
+                  hotelExtras={hotelExtras}
+                  setHotelExtras={setHotelExtras}
+                  editingHotelExtraIndex={editingHotelExtraIndex}
+                  setEditingHotelExtraIndex={setEditingHotelExtraIndex}
+                  tempHotelExtraItem={tempHotelExtraItem}
+                  setTempHotelExtraItem={setTempHotelExtraItem}
+                  hotelExtraSearch={hotelExtraSearch}
+                  setHotelExtraSearch={setHotelExtraSearch}
+                  hotelExtraSortField={hotelExtraSortField}
+                  hotelExtraSortDirection={hotelExtraSortDirection}
+                  handleSort={handleSort}
+                  handleHotelExtraAdd={handleHotelExtraAdd}
+                  handleHotelExtraEdit={handleHotelExtraEdit}
+                  handleHotelExtraSave={handleHotelExtraSave}
+                  handleHotelExtraCancel={handleHotelExtraCancel}
+                  handleHotelExtraDelete={handleHotelExtraDelete}
+                  clearHotelExtraSearch={clearHotelExtraSearch}
+                  handleHotelExtraClear={handleHotelExtraClear}
+                  handleHotelExtraExport={handleHotelExtraExport}
+                  filteredHotelExtras={filteredHotelExtras}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatDateForDisplay={formatDateForDisplay}
+                  formatNumberForInput={formatNumberForInput}
+                  formatTRY={formatTRY}
+                  formatNumber={formatNumber}
+                  parseTurkishNumber={parseTurkishNumber}
+                  hotelExtraTotals={hotelExtraTotals}
+                  hotelSupplierSearch={hotelSupplierSearch}
+                  setHotelSupplierSearch={setHotelSupplierSearch}
+                  showHotelSupplierDropdown={showHotelSupplierDropdown}
+                  setShowHotelSupplierDropdown={setShowHotelSupplierDropdown}
+                  selectedSupplierIndex={selectedSupplierIndex}
+                  setSelectedSupplierIndex={setSelectedSupplierIndex}
+                  filteredHotelSuppliers={filteredHotelSuppliers}
+                  hotelExtraAmountInput={hotelExtraAmountInput}
+                  setHotelExtraAmountInput={setHotelExtraAmountInput}
+                  hotelExtraTotalTRYInput={hotelExtraTotalTRYInput}
+                  setHotelExtraTotalTRYInput={setHotelExtraTotalTRYInput}
+                  hotelExtraSubCategories={hotelExtraSubCategories}
+                  hotelExtraMainCategories={hotelExtraMainCategories}
+                  isNewHotelExtraItem={isNewHotelExtraItem}
+                  setIsNewHotelExtraItem={setIsNewHotelExtraItem}
+                  updateDropdownPosition={updateDropdownPosition}
+                  dropdownPosition={dropdownPosition}
+                  hotelSupplierInputRef={hotelSupplierInputRef}
+                />
+              )}
+              {activeTab === 'otel-ekstra_old' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 mr-4">
+                      <input
+                        type="text"
+                        placeholder="Otel Ekstra ara..."
+                        value={hotelExtraSearch}
+                        onChange={(e) => setHotelExtraSearch(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleHotelExtraAdd}
+                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Yeni Ekle
+                      </button>
+                      <button
+                        onClick={clearHotelExtraSearch}
+                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                      >
+                        Temizle
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Otel Ekstra Tablosu */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('date')}
+                            >
+                              TARİH {hotelExtraSortField === 'date' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('hotel')}
+                            >
+                              OTEL/TEDARİKÇİ {hotelExtraSortField === 'hotel' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th className="px-2 py-2 text-left font-semibold hidden">ANA KATEGORİ</th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('subCategoryName')}
+                            >
+                              ALT KATEGORİ {hotelExtraSortField === 'subCategoryName' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('roomNumber')}
+                            >
+                              ODA NO {hotelExtraSortField === 'roomNumber' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('guestName')}
+                            >
+                              MİSAFİR ADI {hotelExtraSortField === 'guestName' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('description')}
+                            >
+                              AÇIKLAMA {hotelExtraSortField === 'description' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('amount')}
+                            >
+                              TUTAR {hotelExtraSortField === 'amount' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('currency')}
+                            >
+                              DÖVİZ {hotelExtraSortField === 'currency' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('fx')}
+                            >
+                              KUR {hotelExtraSortField === 'fx' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleSort('totalTRY')}
+                            >
+                              TOPLAM TL {hotelExtraSortField === 'totalTRY' && (hotelExtraSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th className="px-2 py-2 text-left font-semibold">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {/* Yeni ekleme modu */}
+                          {editingHotelExtraIndex !== null && isNewHotelExtraItem && (
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              {/* Edit Mode */}
+                              <>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="date"
+                                    value={tempHotelExtraItem?.date || ''}
+                                    onChange={(e) => setTempHotelExtraItem(prev => ({ ...prev, date: e.target.value }))}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                </td>
+                                <td className="px-2 py-2 relative">
+                                  <input
+                                    ref={hotelSupplierInputRef}
+                                    type="text"
+                                    value={hotelSupplierSearch}
+                                    onChange={(e) => {
+                                      setHotelSupplierSearch(e.target.value);
+                                      setShowHotelSupplierDropdown(true);
+                                      updateDropdownPosition();
+                                      setSelectedSupplierIndex(-1);
+                                    }}
+                                    onFocus={() => {
+                                      setShowHotelSupplierDropdown(true);
+                                      updateDropdownPosition();
+                                      setSelectedSupplierIndex(-1);
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Otel/Tedarikçi ara..."
+                                  />
+                                </td>
+                                <td className="px-2 py-2 hidden">
+                                  <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                    OTEL | DİĞER HİZMETLER
+                                  </div>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <select
+                                    value={tempHotelExtraItem?.subCategory || ''}
+                                    onChange={(e) => {
+                                      console.log('🔍 Alt kategori değişti:', e.target.value);
+                                      setTempHotelExtraItem(prev => ({ ...prev, subCategory: e.target.value, sub_category: e.target.value }));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  >
+                                    <option value="">Alt Kategori Seçin</option>
+                                    {hotelExtraSubCategories.map(subCategory => (
+                                      <option key={subCategory.id} value={subCategory.name}>
+                                        {subCategory.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={tempHotelExtraItem?.roomNumber || ''}
+                                    onChange={(e) => {
+                                      console.log('🔍 Oda no değişti:', e.target.value);
+                                      setTempHotelExtraItem(prev => ({ ...prev, roomNumber: e.target.value, room_number: e.target.value }));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    placeholder="Oda No"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={tempHotelExtraItem?.guestName || ''}
+                                    onChange={(e) => {
+                                      console.log('🔍 Misafir adı değişti:', e.target.value);
+                                      setTempHotelExtraItem(prev => ({ ...prev, guestName: e.target.value, guest_name: e.target.value }));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    placeholder="Misafir Adı"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={tempHotelExtraItem?.description || ''}
+                                    onChange={(e) => setTempHotelExtraItem(prev => ({ ...prev, description: e.target.value }))}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    placeholder="Açıklama"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={hotelExtraAmountInput || ''}
+                                    onChange={(e) => {
+                                      // Serbest giriş - raw değeri kaydet
+                                      const inputValue = e.target.value;
+                                      setHotelExtraAmountInput(inputValue);
+
+                                      // Aynı zamanda amount'u da güncelle
+                                      const cleanValue = inputValue.replace(/[^\d.,]/g, '');
+                                      const numericValue = parseFloat(cleanValue.replace(',', '.')) || 0;
+
+                                      // Satış tabındaki gibi anlık hesaplama yap
+                                      const currency = tempHotelExtraItem?.currency || 'TRY';
+                                      const rate = tempHotelExtraItem?.exchangeRate || 1;
+                                      const totalTRY = currency === 'TRY' ? numericValue : numericValue * rate;
+
+                                      console.log('🔍 Debug - Tutar hesaplama:');
+                                      console.log('  - numericValue:', numericValue);
+                                      console.log('  - currency:', currency);
+                                      console.log('  - rate:', rate);
+                                      console.log('  - totalTRY:', totalTRY);
+
+                                      setTempHotelExtraItem(prev => ({
+                                        ...prev,
+                                        amount: numericValue,
+                                        totalTRY: totalTRY
+                                      }));
+
+                                      // Toplam TL input'unu güncelle
+                                      setHotelExtraTotalTRYInput(totalTRY.toString());
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    onFocus={(e) => {
+                                      // Focus olduğunda tüm metni seç
+                                      e.target.select();
+                                    }}
+                                    onBlur={(e) => {
+                                      // Blur olduğunda formatı düzelt ve display değerini güncelle
+                                      const value = parseFloat(formatNumberForInput(e.target.value)) || 0;
+                                      setTempHotelExtraItem(prev => ({ ...prev, amount: value }));
+                                      setHotelExtraAmountInput(formatNumberForDisplay(value));
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                    placeholder="0,00"
+                                    inputMode="decimal"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <select
+                                    value={tempHotelExtraItem?.currency || 'TRY'}
+                                    onChange={(e) => {
+                                      const newCurrency = e.target.value;
+                                      const amount = tempHotelExtraItem?.amount || 0;
+
+                                      // Döviz değiştiğinde exchange rate'i sıfırla (kullanıcı girecek)
+                                      let newRate = 1;
+                                      if (newCurrency === 'TRY') newRate = 1;
+
+                                      // TRY dövizi seçildiyse çarpma, diğerleri için çarp
+                                      const totalTRY = newCurrency === 'TRY' ? amount : amount * newRate;
+
+                                      setTempHotelExtraItem(prev => ({
+                                        ...prev,
+                                        currency: newCurrency,
+                                        exchangeRate: newRate,
+                                        totalTRY: totalTRY
+                                      }));
+                                      // Toplam TL input'unu güncelle
+                                      setHotelExtraTotalTRYInput(totalTRY.toString());
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"                                  >
+                                    <option value="TRY">TRY</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="USD">USD</option>
+                                    <option value="GBP">GBP</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="number"
+                                    step="0.0001"
+                                    value={tempHotelExtraItem?.exchangeRate || ''}
+                                    onChange={(e) => {
+                                      const rate = parseFloat(e.target.value) || 0;
+                                      const amount = tempHotelExtraItem?.amount || 0;
+                                      const currency = tempHotelExtraItem?.currency || 'TRY';
+
+                                      // TRY dövizi seçildiyse çarpma, diğerleri için çarp
+                                      const totalTRY = currency === 'TRY' ? amount : amount * rate;
+
+                                      setTempHotelExtraItem(prev => ({
+                                        ...prev,
+                                        exchangeRate: rate, // Kullanıcının girdiği değeri kaydet
+                                        totalTRY: totalTRY
+                                      }));
+                                      // TOPLAM TL alanını da güncelle
+                                      setHotelExtraTotalTRYInput(formatNumberForDisplay(totalTRY));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                    placeholder="1.00"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={hotelExtraTotalTRYInput}
+                                    onChange={(e) => {
+                                      setHotelExtraTotalTRYInput(e.target.value);
+                                      // Anlık hesaplama
+                                      const inputValue = e.target.value;
+                                      const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                      const numericValue = parseFloat(cleanValue.replace(',', '.')) || 0;
+                                      const currency = tempHotelExtraItem?.currency || 'TRY';
+                                      const rate = tempHotelExtraItem?.exchangeRate || 1;
+                                      const newAmount = rate > 0 ? numericValue / rate : 0;
+
+                                      setTempHotelExtraItem(prev => ({
+                                        ...prev,
+                                        totalTRY: numericValue,
+                                        amount: newAmount
+                                      }));
+                                      // TUTAR alanını da güncelle
+                                      setHotelExtraAmountInput(formatNumberForDisplay(newAmount));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleHotelExtraSave();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleHotelExtraCancel();
+                                      }
+                                    }}
+                                    onFocus={(e) => {
+                                      e.target.select();
+                                    }}
+                                    onBlur={(e) => {
+                                      const value = parseFloat(formatNumberForInput(e.target.value)) || 0;
+                                      const currency = tempHotelExtraItem?.currency || 'TRY';
+                                      const rate = tempHotelExtraItem?.exchangeRate || 1;
+                                      const newAmount = rate > 0 ? value / rate : 0;
+
+                                      setTempHotelExtraItem(prev => ({
+                                        ...prev,
+                                        totalTRY: value,
+                                        amount: newAmount
+                                      }));
+                                      setHotelExtraTotalTRYInput(formatNumberForDisplay(value));
+                                    }}
+                                    className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                    placeholder="0,00"
+                                    inputMode="decimal"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={handleHotelExtraSave}
+                                      className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                      title="Kaydet"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={handleHotelExtraCancel}
+                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      title="İptal"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              </>
+                            </tr>
+                          )}
+
+                          {filteredHotelExtras.length === 0 && editingHotelExtraIndex === null ? (
+                            <tr>
+                              <td colSpan={12} className="px-2 py-8 text-center text-gray-500 dark:text-gray-400">
+                                Henüz otel ekstra hizmeti eklenmemiş
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredHotelExtras.map((extra, index) => (
+                              <tr key={extra.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                {editingHotelExtraIndex === index && !isNewHotelExtraItem ? (
+                                  // Edit Mode
+                                  <>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="date"
+                                        value={tempHotelExtraItem?.date || ''}
+                                        onChange={(e) => setTempHotelExtraItem(prev => ({ ...prev, date: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" />
+                                    </td>
+                                    <td className="px-2 py-2 relative">
+                                      <input
+                                        ref={hotelSupplierInputRef}
+                                        type="text"
+                                        value={hotelSupplierSearch}
+                                        onChange={(e) => {
+                                          setHotelSupplierSearch(e.target.value);
+                                          setShowHotelSupplierDropdown(true);
+                                          updateDropdownPosition();
+                                          setSelectedSupplierIndex(-1);
+                                        }}
+                                        onFocus={() => {
+                                          setShowHotelSupplierDropdown(true);
+                                          updateDropdownPosition();
+                                          setSelectedSupplierIndex(-1);
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Otel/Tedarikçi ara..."
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2 hidden">
+                                      <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                        OTEL | DİĞER HİZMETLER
+                                      </div>
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <select
+                                        value={tempHotelExtraItem?.subCategory || ''}
+                                        onChange={(e) => {
+                                          console.log('🔍 Alt kategori değişti (kopya):', e.target.value);
+                                          setTempHotelExtraItem(prev => ({ ...prev, subCategory: e.target.value, sub_category: e.target.value }));
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"                                      >
+                                        <option value="">Alt Kategori Seçin</option>
+                                        {hotelExtraSubCategories.map(subCategory => (
+                                          <option key={subCategory.id} value={subCategory.name}>{subCategory.name}</option>
+                                        ))}
+                                      </select>
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={tempHotelExtraItem?.roomNumber || ''}
+                                        onChange={(e) => {
+                                          console.log('🔍 Oda no değişti (kopya):', e.target.value);
+                                          setTempHotelExtraItem(prev => ({ ...prev, roomNumber: e.target.value, room_number: e.target.value }));
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="101"
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={tempHotelExtraItem?.guestName || ''}
+                                        onChange={(e) => {
+                                          console.log('🔍 Misafir adı değişti (kopya):', e.target.value);
+                                          setTempHotelExtraItem(prev => ({ ...prev, guestName: e.target.value, guest_name: e.target.value }));
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Ad Soyad"
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={tempHotelExtraItem?.description || ''}
+                                        onChange={(e) => setTempHotelExtraItem(prev => ({ ...prev, description: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama"
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={hotelExtraAmountInput || ''}
+                                        onChange={(e) => {
+                                          // Serbest giriş - raw değeri kaydet
+                                          const inputValue = e.target.value;
+                                          setHotelExtraAmountInput(inputValue);
+
+                                          // Aynı zamanda amount'u da güncelle
+                                          const cleanValue = inputValue.replace(/[^\d.,]/g, '');
+                                          const numericValue = parseFloat(cleanValue.replace(',', '.')) || 0;
+
+                                          // Satış tabındaki gibi anlık hesaplama yap
+                                          const currency = tempHotelExtraItem?.currency || 'TRY';
+                                          const rate = tempHotelExtraItem?.exchangeRate || 1;
+                                          const totalTRY = currency === 'TRY' ? numericValue : numericValue * rate;
+
+                                          setTempHotelExtraItem(prev => ({
+                                            ...prev,
+                                            amount: numericValue,
+                                            totalTRY: totalTRY
+                                          }));
+
+                                          // Toplam TL input'unu güncelle
+                                          setHotelExtraTotalTRYInput(totalTRY.toString());
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        onFocus={(e) => {
+                                          // Focus olduğunda tüm metni seç
+                                          e.target.select();
+                                        }}
+                                        onBlur={(e) => {
+                                          // Blur olduğunda formatı düzelt ve display değerini güncelle
+                                          const value = parseFloat(formatNumberForInput(e.target.value)) || 0;
+                                          setTempHotelExtraItem(prev => ({ ...prev, amount: value }));
+                                          setHotelExtraAmountInput(formatNumberForDisplay(value));
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                        placeholder="0,00"
+                                        inputMode="decimal"
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <select
+                                        value={tempHotelExtraItem?.currency || 'TRY'}
+                                        onChange={(e) => {
+                                          const newCurrency = e.target.value;
+                                          const amount = tempHotelExtraItem?.amount || 0;
+
+                                          // Döviz değiştiğinde exchange rate'i sıfırla (kullanıcı girecek)
+                                          let newRate = 1;
+                                          if (newCurrency === 'TRY') newRate = 1;
+
+                                          // TRY dövizi seçildiyse çarpma, diğerleri için çarp
+                                          const totalTRY = newCurrency === 'TRY' ? amount : amount * newRate;
+
+                                          setTempHotelExtraItem(prev => ({
+                                            ...prev,
+                                            currency: newCurrency,
+                                            exchangeRate: newRate,
+                                            totalTRY: totalTRY
+                                          }));
+                                          // Toplam TL input'unu güncelle
+                                          setHotelExtraTotalTRYInput(totalTRY.toString());
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"                                      >
+                                        <option value="TRY">TRY</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="USD">USD</option>
+                                        <option value="GBP">GBP</option>
+                                      </select>
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="number"
+                                        step="0.0001"
+                                        value={tempHotelExtraItem?.exchangeRate || ''}
+                                        onChange={(e) => {
+                                          const rate = parseFloat(e.target.value) || 0;
+                                          const amount = tempHotelExtraItem?.amount || 0;
+                                          const currency = tempHotelExtraItem?.currency || 'TRY';
+
+                                          // TRY dövizi seçildiyse çarpma, diğerleri için çarp
+                                          const totalTRY = currency === 'TRY' ? amount : amount * rate;
+
+                                          setTempHotelExtraItem(prev => ({
+                                            ...prev,
+                                            exchangeRate: rate, // Kullanıcının girdiği değeri kaydet
+                                            totalTRY: totalTRY
+                                          }));
+                                          // TOPLAM TL alanını da güncelle
+                                          setHotelExtraTotalTRYInput(formatNumberForDisplay(totalTRY));
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                        placeholder="1.00"
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={hotelExtraTotalTRYInput}
+                                        onChange={(e) => {
+                                          setHotelExtraTotalTRYInput(e.target.value);
+                                          // Anlık hesaplama
+                                          const inputValue = e.target.value;
+                                          const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                          const numericValue = parseFloat(cleanValue.replace(',', '.')) || 0;
+                                          const currency = tempHotelExtraItem?.currency || 'TRY';
+                                          const rate = tempHotelExtraItem?.exchangeRate || 1;
+                                          const newAmount = rate > 0 ? numericValue / rate : 0;
+
+                                          setTempHotelExtraItem(prev => ({
+                                            ...prev,
+                                            totalTRY: numericValue,
+                                            amount: newAmount
+                                          }));
+                                          // TUTAR alanını da güncelle
+                                          setHotelExtraAmountInput(formatNumberForDisplay(newAmount));
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleHotelExtraSave();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleHotelExtraCancel();
+                                          }
+                                        }}
+                                        onFocus={(e) => {
+                                          e.target.select();
+                                        }}
+                                        onBlur={(e) => {
+                                          const value = parseFloat(formatNumberForInput(e.target.value)) || 0;
+                                          const currency = tempHotelExtraItem?.currency || 'TRY';
+                                          const rate = tempHotelExtraItem?.exchangeRate || 1;
+                                          const newAmount = rate > 0 ? value / rate : 0;
+
+                                          setTempHotelExtraItem(prev => ({
+                                            ...prev,
+                                            totalTRY: value,
+                                            amount: newAmount
+                                          }));
+                                          setHotelExtraTotalTRYInput(formatNumberForDisplay(value));
+                                        }}
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                        placeholder="0,00"
+                                        inputMode="decimal"
+                                      />
+                                    </td>
+                                    <td className="px-2 py-2">
+                                      <div className="flex gap-1">
+                                        <button
+                                          onClick={handleHotelExtraSave}
+                                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                          title="Kaydet"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={handleHotelExtraCancel}
+                                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                          title="İptal"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </>
+                                ) : (
+                                  // Display Mode
+                                  <>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{formatDateForDisplay(extra.date)}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{extra.hotel}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white hidden">
+                                      {hotelExtraMainCategories.find(cat => cat.id === extra.mainCategory)?.name || ''}
+                                    </td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{extra.subCategory}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{extra.roomNumber}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{extra.guestName}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{extra.description}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{formatNumberForDisplay(extra.amount)}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white">{extra.currency}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatTRY(extra.exchange_rate || extra.exchangeRate || 1)}</td>
+                                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatTRY(extra.total_try || extra.totalTRY || extra.amount)}</td>
+                                    <td className="px-2 py-2">
+                                      <div className="flex gap-1">
+                                        <button
+                                          onClick={() => handleHotelExtraEdit(index)}
+                                          className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                          title="Düzenle"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={() => handleHotelExtraCopy(index)}
+                                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                          title="Kopyala"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={() => handleHotelExtraDelete(index)}
+                                          className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                          title="Sil"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </>
+                                )}
+                              </tr>
+                            ))
+                          )}
+
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Genel Toplam */}
+                  {hotelExtras.length > 0 && (
+                    <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
+                      <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                        <div className="col-span-1 font-bold">GENEL TOPLAM</div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1 text-right font-bold">
+                          {Object.entries(hotelExtraTotals).map(([cur, val]: any) => `${formatNumber(Number(val.toplamMaliyet || 0))} ${cur}`).join(' + ')}
+                        </div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1 text-right font-bold">
+                          {formatNumber(hotelExtras.reduce((sum: number, item: any) => sum + (parseFloat(item.total_try || item.totalTRY || 0) || 0), 0))} TL
+                        </div>
+                        <div className="col-span-1"></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Portal ile render edilen dropdown */}
+                  {showHotelSupplierDropdown && dropdownPosition && createPortal(
+                    <div
+                      className="hotel-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-40 overflow-y-auto"
+                      style={{
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width
+                      }}
+                    >
+                      {filteredHotelSuppliers.length > 0 ? (
+                        filteredHotelSuppliers.map((supplier, index) => (
+                          <div
+                            key={`hotel-supplier-${supplier.id}-${supplier.type}-${index}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Supplier seçildi:', supplier);
+                              setTempHotelExtraItem(prev => ({ ...prev, hotel: supplier.displayName }));
+                              setHotelSupplierSearch(supplier.displayName);
+                              setShowHotelSupplierDropdown(false);
+                              setSelectedSupplierIndex(-1);
+                            }}
+                            className={`px-2 py-1.5 text-xs cursor-pointer flex items-center justify-between transition-colors duration-150 ${
+                              index === selectedSupplierIndex
+                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                                : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              }`}
+                          >
+                            <span>{supplier.displayName}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {supplier.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">Sonuç bulunamadı</div>
+                      )}
+                    </div>,
+                    document.body
+                  )}
+
+                </div>
+              )}
+              {activeTab === 'transfer-tur' && (
+                <TransferTurTab
+                  transfers={transfers}
+                  setTransfers={setTransfers}
+                  selectedTransfers={selectedTransfers}
+                  setSelectedTransfers={setSelectedTransfers}
+                  transferSearch={transferSearch}
+                  setTransferSearch={setTransferSearch}
+                  projectId={projectId}
+                  accommodationItems={accommodationItems}
+                  createTransfersFromAccommodation={createTransfersFromAccommodation}
+                  exportTransfersToExcel={exportTransfersToExcel}
+                  groupSelectedTransfers={groupSelectedTransfers}
+                  addFlightCodeToAllTransfers={addFlightCodeToAllTransfers}
+                  openBulkVehicleAssignmentModal={openBulkVehicleAssignmentModal}
+                  filteredTransfers={filteredTransfers}
+                  sortTransfers={sortTransfers}
+                  editingTransferIndex={editingTransferIndex}
+                  setEditingTransferIndex={setEditingTransferIndex}
+                  tempTransferItem={tempTransferItem}
+                  setTempTransferItem={setTempTransferItem}
+                  handleTransferSave={handleTransferSave}
+                  handleTransferCancel={handleTransferCancel}
+                  handleTransferEdit={handleTransferEdit}
+                  handleTransferDelete={handleTransferDelete}
+                  formatDateForDisplay={formatDateForDisplay}
+                  formatTimeForDisplay={formatTimeForDisplay}
+                  formatIntegerForDisplay={formatIntegerForDisplay}
+                  formatIntegerForInput={formatIntegerForInput}
+                  showVehicleAssignmentModal={showVehicleAssignmentModal}
+                  setShowVehicleAssignmentModal={setShowVehicleAssignmentModal}
+                  showTransferTimingModal={showTransferTimingModal}
+                  setShowTransferTimingModal={setShowTransferTimingModal}
+                  departureHours={departureHours}
+                  setDepartureHours={setDepartureHours}
+                  departureMinutes={departureMinutes}
+                  setDepartureMinutes={setDepartureMinutes}
+                  handleCreateTransfersWithTiming={handleCreateTransfersWithTiming}
+                  showAddTransferMenu={showAddTransferMenu}
+                  setShowAddTransferMenu={setShowAddTransferMenu}
+                  addManualTransfer={addManualTransfer}
+                  project={project}
+                  stats={stats}
+                  suppliers={suppliers}
+                  hotels={hotels}
+                  allSuppliers={allSuppliers}
+                  filteredHotelSuppliers={filteredHotelSuppliers}
+                  supplierDropdowns={supplierDropdowns}
+                  setSupplierDropdowns={setSupplierDropdowns}
+                  toggleSupplierDropdown={toggleSupplierDropdown}
+                  updateSupplierSearch={updateSupplierSearch}
+                  selectSupplier={selectSupplier}
+                  handleSupplierKeyDown={handleSupplierKeyDown}
+                  transferCostInput={transferCostInput}
+                  setTransferCostInput={setTransferCostInput}
+                  updateTransfer={updateTransfer}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  cleanInputValue={cleanInputValue}
+                  transferTotals={transferTotals}
+                  getVehicleTypeName={getVehicleTypeName}
+                  editTransfer={editTransfer}
+                  deleteTransfer={deleteTransfer}
+                  saveTransfer={saveTransfer}
+                  cancelTransferEdit={cancelTransferEdit}
+                  ungroupTransfer={ungroupTransfer}
+                  openVehicleAssignmentModal={openVehicleAssignmentModal}
+                  addTransferBelow={addTransferBelow}
+                  copyTransfer={copyTransfer}
+                  handleTransferRowKeyDown={handleTransferRowKeyDown}
+                />
+              )}
+              {activeTab === 'transfer-tur_old' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 mr-4">
+                      <input
+                        type="text"
+                        placeholder="Transfer ara..."
+                        value={transferSearch}
+                        onChange={(e) => setTransferSearch(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={createTransfersFromAccommodation}
+                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                      >
+                        Konaklamadan Transfer Oluştur
+                      </button>
+                      <button
+                        onClick={() => exportTransfersToExcel()}
+                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Excel Dışa Aktar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (transfers.length === 0) {
+                            alert('Temizlenecek transfer bulunmuyor.');
+                            return;
+                          }
+                          if (!confirm(`Tüm transferleri (${transfers.length}) temizlemek istiyor musunuz? Bu işlem geri alınamaz.`)) return;
+
+                          try {
+                            await projectTransfersService.deleteByProjectId(projectId);
+                            setTransfers([]);
+                            setSelectedTransfers([]);
+                            alert('Tüm transferler başarıyla silindi.');
+                          } catch (error) {
+                            console.error('Transfer temizleme hatası:', error);
+                            alert('Transferler silinirken hata oluştu.');
+                          }
+                        }}
+                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                      >
+                        Temizle
+                      </button>
+                    </div>
+                  </div>
+
+
+                  {/* Transfer Listesi */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-2 py-2 text-left font-semibold">
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="checkbox"
+                                  checked={filteredTransfers.length > 0 && filteredTransfers.every(t => selectedTransfers.includes(t.id))}
+                                  onChange={() => {
+                                    const filteredIds = filteredTransfers.map(t => t.id);
+                                    const allFilteredSelected = filteredIds.every(id => selectedTransfers.includes(id));
+
+                                    if (allFilteredSelected) {
+                                      // Filtrelenmiş olanları seçimden çıkar
+                                      setSelectedTransfers(selectedTransfers.filter(id => !filteredIds.includes(id)));
+                                    } else {
+                                      // Filtrelenmiş olanları seçime ekle (mevcut seçimleri koru)
+                                      const newSelections = [...new Set([...selectedTransfers, ...filteredIds])];
+                                      setSelectedTransfers(newSelections);
+                                    }
+                                  }}
+                                  className="w-3 h-3"
+                                />
+                                Seç
+                              </div>
+                            </th>
+                            <th className="px-2 py-2 text-left font-semibold">Transfer Tipi</th>
+                            <th className="px-2 py-2 text-left font-semibold">Tarih</th>
+                            <th className="px-2 py-2 text-left font-semibold">Saat</th>
+                            <th className="px-2 py-2 text-left font-semibold">Uçuş Kodu</th>
+                            <th className="px-2 py-2 text-left font-semibold">Güzergah</th>
+                            <th className="px-2 py-2 text-left font-semibold">Yolcu Sayısı</th>
+                            <th className="px-2 py-2 text-left font-semibold">Transfer Tipi</th>
+                            <th className="px-2 py-2 text-left font-semibold">Araç Tipi</th>
+                            <th className="px-2 py-2 text-left font-semibold">Tedarikçi</th>
+                            <th className="px-2 py-2 text-left font-semibold">Maliyet Tutarı</th>
+                            <th className="px-2 py-2 text-left font-semibold">Döviz</th>
+                            <th className="px-2 py-2 text-left font-semibold">Misafirler</th>
+                            <th className="px-2 py-2 text-left font-semibold">
+                              <div className="flex items-center justify-between relative">
+                                <span>İşlemler</span>
+                                <div className="relative">
+                                  <button
+                                    onClick={() => setShowAddTransferMenu(prev => !prev)}
+                                    className="p-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
+                                    title="Manuel Transfer Ekle"
+                                  >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                  </button>
+                                  {showAddTransferMenu && (
+                                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-20">
+                                      <button
+                                        onClick={() => addManualTransfer('arrival')}
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                                      >
+                                        Giriş Transferi Ekle
+                                      </button>
+                                      <button
+                                        onClick={() => addManualTransfer('departure')}
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                                      >
+                                        Çıkış Transferi Ekle
+                                      </button>
+                                      <button
+                                        onClick={() => addManualTransfer('intermediate')}
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                                      >
+                                        Ara Transfer Ekle
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredTransfers.flatMap((transfer) => [
+                            <tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={(e) => handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${transfer.isEditing ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                              <td className="px-2 py-2">
+                                {!transfer.vehicleAssigned && !transfer.isGroup && (
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedTransfers.includes(transfer.id)}
+                                    onChange={(e) => handleTransferSelect(transfer.id, e.target.checked)}
+                                    className="rounded"
+                                  />
+                                )}
+                              </td>
+                              <td className="px-2 py-2">
+                                {transfer.typeLabel === 'Ara Transfer' ? (
+                                  <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700`}>
+                                    Ara Transfer
+                                  </span>
+                                ) : transfer.isGroup ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block ${transfer.typeLabel === 'Grup Ara'
+                                        ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700'
+                                        : transfer.direction === 'arrival'
+                                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700'
+                                          : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700'
+                                      }`}>
+                                      {transfer.typeLabel || (transfer.direction === 'arrival' ? 'Grup Giriş' : 'Grup Çıkış')}
+                                    </span>
+                                    <button
+                                      onClick={() => toggleGroupDetails(transfer.id)}
+                                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                      title={expandedGroups.has(transfer.id) ? 'Detayları Gizle' : 'Detayları Göster'}
+                                    >
+                                      <svg
+                                        className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${expandedGroups.has(transfer.id) ? 'rotate-180' : ''
+                                          }`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block ${transfer.direction === 'arrival'
+                                      ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700'
+                                      : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700'
+                                    }`}>
+                                    {transfer.direction === 'arrival' ? 'Giriş' : 'Çıkış'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-2 py-2">
+                                {transfer.isEditing ? (
+                                  <input
+                                    type="text"
+                                    id={`transfer-date-${transfer.id}`}
+                                    value={transfer.date}
+                                    onChange={(e) => updateTransfer(transfer.id, 'date', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        saveTransfer(transfer.id);
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        cancelTransferEdit(transfer.id);
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                                    placeholder="DD.MM.YYYY"
+                                  />
+                                ) : (
+                                  transfer.date
+                                )}
+                              </td>
+                              <td className="px-2 py-2">
+                                {transfer.isEditing ? (
+                                  <input
+                                    type="text"
+                                    value={transfer.time}
+                                    onChange={(e) => updateTransfer(index, 'time', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        saveTransfer(index);
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        cancelTransferEdit(index);
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                                    placeholder="HH:MM"
+                                  />
+                                ) : (
+                                  transfer.time
+                                )}
+                              </td>
+                              <td className="px-2 py-2">
+                                {transfer.isEditing ? (
+                                  <input
+                                    type="text"
+                                    value={transfer.flightCode || ''}
+                                    onChange={(e) => updateTransfer(index, 'flightCode', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        saveTransfer(index);
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        cancelTransferEdit(index);
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 font-mono"
+                                    placeholder="TK1234"
+                                  />
+                                ) : (
+                                  <span className="text-xs text-gray-600 dark:text-gray-300 font-mono">
+                                    {transfer.flightCode || '-'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-2 py-2">{transfer.route}</td>
+                              <td className="px-2 py-2">
+                                {transfer.isEditing ? (
+                                  <input
+                                    type="text"
+                                    value={formatIntegerForDisplay(transfer.passengerCount)}
+                                    onChange={(e) => updateTransfer(index, 'passengerCount', parseInt(formatIntegerForInput(e.target.value)) || 1)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        saveTransfer(index);
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        cancelTransferEdit(index);
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                                    placeholder="1"
+                                  />
+                                ) : (
+                                  formatIntegerForDisplay(transfer.passengerCount)
+                                )}
+                              </td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={transfer.transferType}
+                                  onChange={(e) => updateTransfer(index, 'transferType', e.target.value)}
+                                  className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                                >
+                                  <option value="private">Özel</option>
+                                  <option value="economic">Ekonomik</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={transfer.vehicleType}
+                                  onChange={(e) => updateTransfer(index, 'vehicleType', e.target.value)}
+                                  className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                                >
+                                  <option value="">Seçiniz</option>
+                                  <option value="vito">Vito</option>
+                                  <option value="sprinter">Sprinter</option>
+                                  <option value="otobus">Otobüs</option>
+                                  <option value="binek">Binek</option>
+                                  <option value="s-class">S Class</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2 relative">
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={transfer.supplierName || ''}
+                                    placeholder="Tedarikçi Seçiniz"
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      // Sadece dropdown kapalıysa aç
+                                      if (!supplierDropdowns[transfer.id]?.isOpen) {
+                                        toggleSupplierDropdown(transfer.id);
+                                      }
+                                    }}
+                                    onFocus={() => {
+                                      // Sadece dropdown kapalıysa aç
+                                      if (!supplierDropdowns[transfer.id]?.isOpen) {
+                                        toggleSupplierDropdown(transfer.id);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      // Tedarikçi dropdown açıksa klavye navigasyonu yap
+                                      if (supplierDropdowns[transfer.id]?.isOpen) {
+                                        handleSupplierKeyDown(e, transfer.id);
+
+                                        // Enter ve ESC tuşları tedarikçi seçimi için, satır seviyesindeki işlemleri engelle
+                                        if (e.key === 'Enter' || e.key === 'Escape') {
+                                          e.stopPropagation();
+                                        }
+                                      }
+                                      // Dropdown kapalıysa satır seviyesindeki işlemler çalışsın (return yapmıyoruz)
+                                    }}
+                                    className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 cursor-pointer"
+                                    readOnly
+                                  />
+                                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+                                    {transfer.supplierName && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          updateTransfer(index, 'supplierId', '');
+                                          updateTransfer(index, 'supplierName', '');
+                                          updateTransfer(index, 'vehicleAssigned', false);
+                                        }}
+                                        className="p-0.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                        title="Tedarikçiyi Temizle"
+                                      >
+                                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    )}
+                                    <span className="pointer-events-none">
+                                      <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                      </svg>
+                                    </span>
+                                  </div>
+
+                                  {supplierDropdowns[transfer.id]?.isOpen && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-auto">
+                                      <input
+                                        type="text"
+                                        data-supplier-search={transfer.id}
+                                        value={supplierDropdowns[transfer.id]?.searchTerm || ''}
+                                        onChange={(e) => updateSupplierSearch(transfer.id, e.target.value)}
+                                        onKeyDown={(e) => {
+                                          handleSupplierKeyDown(e, transfer.id);
+                                          // Enter ve ESC tuşları tedarikçi seçimi için, satır seviyesindeki işlemleri engelle
+                                          if (e.key === 'Enter' || e.key === 'Escape') {
+                                            e.stopPropagation();
+                                          }
+                                        }}
+                                        placeholder="Tedarikçi ara..."
+                                        className="w-full px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+                                        autoFocus
+                                      />
+                                      {suppliers
+                                        .filter((s: any) =>
+                                          (s.name || '').toLowerCase().includes(
+                                            (supplierDropdowns[transfer.id]?.searchTerm || '').toLowerCase()
+                                          )
+                                        )
+                                        .map((supplier: any, supplierIndex: number) => (
+                                          <div
+                                            key={supplier.id}
+                                            onClick={() => selectSupplier(transfer.id, supplier.id, supplier.name)}
+                                            className={`px-2 py-1 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 ${supplierIndex === supplierDropdowns[transfer.id]?.selectedIndex
+                                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                                                : 'text-gray-900 dark:text-gray-100'
+                                              }`}
+                                          >
+                                            {supplier.name}
+                                          </div>
+                                        ))
+                                      }
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-2 py-2">
+                                <input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={transferCostInput[transfer.id] ?? (transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : '')}
+                                  onChange={(e) => {
+                                    let v = e.target.value.replace(/[^0-9.,]/g, '');
+                                    // Noktayı virgüze çevir ve tek ondalık ayırıcı bırak
+                                    v = v.replace(/\./g, ',');
+                                    const parts = v.split(',');
+                                    if (parts.length > 2) {
+                                      v = parts[0] + ',' + parts.slice(1).join('').replace(/,/g, '');
+                                    }
+                                    setTransferCostInput(prev => ({ ...prev, [transfer.id]: v }));
+                                  }}
+                                  onFocus={(e) => {
+                                    // Tamamını seç ki kullanıcı kolay düzeltsin
+                                    e.currentTarget.select();
+                                  }}
+                                  onBlur={(e) => {
+                                    const parsed = cleanInputValue(e.target.value);
+                                    const safe = isNaN(parsed) ? 0 : parsed;
+                                    updateTransfer(index, 'costAmount', safe);
+                                    setTransferCostInput(prev => ({ ...prev, [transfer.id]: formatNumberForDisplay(safe) }));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      const parsed = cleanInputValue((e.target as HTMLInputElement).value);
+                                      const safe = isNaN(parsed) ? 0 : parsed;
+                                      updateTransfer(index, 'costAmount', safe);
+                                      setTransferCostInput(prev => ({ ...prev, [transfer.id]: formatNumberForDisplay(safe) }));
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      setTransferCostInput(prev => ({ ...prev, [transfer.id]: (transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : '') }));
+                                    }
+                                  }}
+                                  placeholder="0,00"
+                                  className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 text-right"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={transfer.currency || 'TRY'}
+                                  onChange={(e) => updateTransfer(index, 'currency', e.target.value)}
+                                  className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                                >
+                                  <option value="TRY">TRY</option>
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="GBP">GBP</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2 w-48 max-w-[12rem] overflow-hidden">
+                                {transfer.isEditing ? (
+                                  <input
+                                    type="text"
+                                    value={(transfer as any).passengersInput ?? transfer.passengers.join(', ')}
+                                    onChange={(e) => updateTransfer(index, 'passengersInput', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const raw = (transfers[index] as any).passengersInput ?? '';
+                                        const parsed = raw.split(',').map(p => p.trim()).filter(p => p);
+                                        updateTransfer(index, 'passengers', parsed);
+                                        saveTransfer(index);
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        cancelTransferEdit(index);
+                                      }
+                                    }}
+                                    className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 truncate whitespace-nowrap overflow-hidden"
+                                    placeholder="Ad Soyad, Ad Soyad"
+                                  />
+                                ) : (
+                                  <div className="truncate whitespace-nowrap" title={transfer.passengers.join(', ')}>
+                                    {transfer.passengers.join(', ')}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-2 py-2">
+                                <div className="flex gap-1">
+                                  {transfer.isEditing ? (
+                                    <>
+                                      <button
+                                        onClick={() => saveTransfer(index)}
+                                        className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                        title="Kaydet"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={() => cancelTransferEdit(index)}
+                                        className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                        title="İptal"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : transfer.isGroup ? (
+                                    // Gruplanan transferler için butonlar
+                                    <>
+                                      {transfer.isEditing ? (
+                                        // Düzenleme modunda kaydet ve iptal butonları
+                                        <>
+                                          <button
+                                            onClick={() => saveTransfer(index)}
+                                            className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                            title="Kaydet"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => cancelTransferEdit(index)}
+                                            className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                            title="İptal"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      ) : (
+                                        // Normal modda butonlar
+                                        <>
+                                          {!transfer.vehicleAssigned && (
+                                            <button
+                                              onClick={() => openVehicleAssignmentModal(index)}
+                                              className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                              title="Araç Ata"
+                                            >
+                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                              </svg>
+                                            </button>
+                                          )}
+                                          <button
+                                            onClick={() => editTransfer(index)}
+                                            className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                            title="Düzenle"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => ungroupTransfer(index)}
+                                            className="p-1 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
+                                            title="Grubu Ayır"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      )}
+                                    </>
+                                  ) : transfer.typeLabel === 'Ara Transfer' ? (
+                                    // Ara transferler için tam özellik seti
+                                    <>
+                                      {!transfer.vehicleAssigned && (
+                                        <button
+                                          onClick={() => openVehicleAssignmentModal(index)}
+                                          className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                          title="Araç Ata"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => editTransfer(index)}
+                                        className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                        title="Düzenle"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                      </button>
+                                      {!transfer.vehicleAssigned && (
+                                        <>
+                                          <button
+                                            onClick={() => addTransferBelow(index)}
+                                            className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                            title="Ekle"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => copyTransfer(index)}
+                                            className="p-1 rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
+                                            title="Kopyala"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      )}
+                                      <button
+                                        onClick={() => deleteTransfer(index)}
+                                        className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                        title="Sil"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    // Normal transferler için tüm butonlar
+                                    <>
+                                      {!transfer.vehicleAssigned && (
+                                        <button
+                                          onClick={() => openVehicleAssignmentModal(index)}
+                                          className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                          title="Araç Ata"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => editTransfer(index)}
+                                        className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                        title="Düzenle"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                      </button>
+                                      {!transfer.vehicleAssigned && (
+                                        <>
+                                          <button
+                                            onClick={() => addTransferBelow(index)}
+                                            className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                            title="Ekle"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => copyTransfer(index)}
+                                            className="p-1 rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
+                                            title="Kopyala"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => deleteTransfer(index)}
+                                            className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                            title="Sil"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>,
+                            transfer.isGroup && expandedGroups.has(index) && (
+                              <tr key={`${transfer.id}-details`} className="bg-gray-50 dark:bg-gray-800/50">
+                                <td colSpan={12} className="px-4 py-3">
+                                  <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                      Grup Detayları ({transfer.originalTransfers?.length || 0} transfer)
+                                    </h4>
+                                    <div className="space-y-2">
+                                      {transfer.originalTransfers?.map((originalTransfer: any, detailIndex: number) => (
+                                        <div key={detailIndex} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-600 rounded border">
+                                          <div className="flex items-center gap-4 text-xs">
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${originalTransfer.direction === 'arrival'
+                                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                                : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                                              }`}>
+                                              {originalTransfer.direction === 'arrival' ? 'Giriş' : 'Çıkış'}
+                                            </span>
+                                            <span className="font-mono">{originalTransfer.date}</span>
+                                            <span className="font-mono">{originalTransfer.time}</span>
+                                            <span className="font-mono text-blue-600 dark:text-blue-400">
+                                              {originalTransfer.flightCode || '-'}
+                                            </span>
+                                            <span className="text-gray-600 dark:text-gray-300">
+                                              {originalTransfer.route}
+                                            </span>
+                                            <span className="text-gray-500 dark:text-gray-400">
+                                              {originalTransfer.passengers?.join(', ') || '-'}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ].filter(Boolean))}
+
+                          {/* Döviz Cinsine Göre Toplam Satırları */}
+                          {transfers.length > 0 && Object.keys(transferTotals).sort().map((doviz, index) => (
+                            <tr key={doviz} className={`font-semibold ${index === 0 ? 'bg-gray-100 dark:bg-gray-600' : 'bg-gray-50 dark:bg-gray-700'}`}>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white" colSpan={8}>
+                                TOPLAM ({doviz})
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                {formatIntegerForDisplay(transferTotals[doviz].kisiSayisi)}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                {formatNumberForDisplay(transferTotals[doviz].toplamMaliyet)}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold">
+                                {doviz}
+                              </td>
+                              <td className="px-2 py-2 text-gray-900 dark:text-white" colSpan={2}>
+                                {/* Boş sütunlar */}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {/* Modern İstatistik Kartları */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Giriş */}
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-green-200 dark:bg-green-800/30 rounded-full -translate-y-10 translate-x-10"></div>
+                      <div className="relative">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <h3 className="text-sm font-semibold text-green-800 dark:text-green-200">Giriş Transferleri</h3>
+                          </div>
+                          <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {stats.arrival.count}
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-green-900 dark:text-green-100 mb-1">{stats.arrival.passengers}</div>
+                        <div className="text-xs text-green-600 dark:text-green-300 mb-3">Toplam Kişi</div>
+                        <div className="space-y-1.5">
+                          {Object.entries(stats?.arrival?.byVehicle || {})
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([veh, v]: any) => (
+                              <div key={veh} className="flex items-center justify-between text-xs bg-white/50 dark:bg-green-900/20 rounded-lg px-2 py-1">
+                                <span className="text-green-700 dark:text-green-300 font-medium">{getVehicleTypeName(veh)}</span>
+                                <span className="text-green-900 dark:text-green-100 font-semibold">{v.transfers} • {v.passengers}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Çıkış */}
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 dark:bg-blue-800/30 rounded-full -translate-y-10 translate-x-10"></div>
+                      <div className="relative">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-200">Çıkış Transferleri</h3>
+                          </div>
+                          <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {stats.departure.count}
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-1">{stats.departure.passengers}</div>
+                        <div className="text-xs text-blue-600 dark:text-blue-300 mb-3">Toplam Kişi</div>
+                        <div className="space-y-1.5">
+                          {Object.entries(stats?.departure?.byVehicle || {})
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([veh, v]: any) => (
+                              <div key={veh} className="flex items-center justify-between text-xs bg-white/50 dark:bg-blue-900/20 rounded-lg px-2 py-1">
+                                <span className="text-blue-700 dark:text-blue-300 font-medium">{getVehicleTypeName(veh)}</span>
+                                <span className="text-blue-900 dark:text-blue-100 font-semibold">{v.transfers} • {v.passengers}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ara Transfer */}
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border border-amber-200 dark:border-amber-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200 dark:bg-amber-800/30 rounded-full -translate-y-10 translate-x-10"></div>
+                      <div className="relative">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Ara Transferler</h3>
+                          </div>
+                          <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {stats.intermediate.count}
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-1">{stats.intermediate.passengers}</div>
+                        <div className="text-xs text-amber-600 dark:text-amber-300 mb-3">Toplam Kişi</div>
+                        <div className="space-y-1.5">
+                          {Object.entries(stats?.intermediate?.byVehicle || {})
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([veh, v]: any) => (
+                              <div key={veh} className="flex items-center justify-between text-xs bg-white/50 dark:bg-amber-900/20 rounded-lg px-2 py-1">
+                                <span className="text-amber-700 dark:text-amber-300 font-medium">{getVehicleTypeName(veh)}</span>
+                                <span className="text-amber-900 dark:text-amber-100 font-semibold">{v.transfers} • {v.passengers}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Modern Genel Toplam */}
+                  <div className="mt-4 group relative overflow-hidden rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border border-gray-200 dark:border-gray-600 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gray-200 dark:bg-gray-600/30 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Genel Toplam</h3>
+                        </div>
+                        <div className="flex gap-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totals.count}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Transfer</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totals.passengers}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Kişi</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {Object.entries(stats?.totals?.byVehicle || {})
+                          .sort(([a], [b]) => a.localeCompare(b))
+                          .map(([veh, v]: any) => (
+                            <div key={veh} className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2 text-center">
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{getVehicleTypeName(veh)}</div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{v.transfers}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-500">{v.passengers} kişi</div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seçili Transferler için Gruplama ve Araç Atama */}
+                  {selectedTransfers.length > 0 && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                      <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        Seçili Transferler ({selectedTransfers.length})
+                      </h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => groupSelectedTransfers()}
+                          className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                          Seçili Transferleri Grupla
+                        </button>
+                        <button
+                          onClick={() => addFlightCodeToAllTransfers()}
+                          className="px-3 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 transition-colors flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Uçuş Kodu Ekle
+                        </button>
+                        <button
+                          onClick={() => openBulkVehicleAssignmentModal()}
+                          className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                          </svg>
+                          Toplu Araç Atama
+                        </button>
+                        <button
+                          onClick={() => setSelectedTransfers([])}
+                          className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors"
+                        >
+                          Seçimi Temizle
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === 'etkinlik-aktivite' && (
+                <EtkinlikAktiviteTab
+                  eventsActivities={eventsActivities}
+                  setEventsActivities={setEventsActivities}
+                  editingEventIndex={editingEventIndex}
+                  setEditingEventIndex={setEditingEventIndex}
+                  tempEventItem={tempEventItem}
+                  setTempEventItem={setTempEventItem}
+                  isNewEventItem={isNewEventItem}
+                  setIsNewEventItem={setIsNewEventItem}
+                  eventSearch={eventSearch}
+                  setEventSearch={setEventSearch}
+                  eventSortField={eventSortField}
+                  eventSortDirection={eventSortDirection}
+                  eventSubCategories={eventSubCategories}
+                  selectedEventMainCategory={selectedEventMainCategory}
+                  setSelectedEventMainCategory={setSelectedEventMainCategory}
+                  eventSupplierSearch={eventSupplierSearch}
+                  setEventSupplierSearch={setEventSupplierSearch}
+                  showEventSupplierDropdown={showEventSupplierDropdown}
+                  setShowEventSupplierDropdown={setShowEventSupplierDropdown}
+                  selectedEventSupplierIndex={selectedEventSupplierIndex}
+                  setSelectedEventSupplierIndex={setSelectedEventSupplierIndex}
+                  filteredEventSuppliers={filteredEventSuppliers}
+                  projectId={projectId}
+                  handleEventAdd={handleEventAdd}
+                  handleEventEdit={handleEventEdit}
+                  handleEventSave={handleEventSave}
+                  handleEventCancel={handleEventCancel}
+                  handleEventDelete={handleEventDelete}
+                  filteredEvents={filteredEvents}
+                  sortedEvents={sortedEvents}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatDateForDisplay={formatDateForDisplay}
+                  handleEventSort={handleEventSort}
+                  handleEventSupplierKeyDown={handleEventSupplierKeyDown}
+                  handleEventSupplierSelect={handleEventSupplierSelect}
+                  handleEventActivityClear={handleEventActivityClear}
+                  handleEventActivityExport={handleEventActivityExport}
+                  hotels={hotels}
+                  suppliers={suppliers}
+                  eventTotals={eventTotals}
+                  formatNumber={formatNumber}
+                />
+              )}
+              {activeTab === 'etkinlik-aktivite_old' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 mr-4">
+                      <input
+                        type="text"
+                        placeholder="Etkinlik & Aktivite ara..."
+                        value={eventSearch}
+                        onChange={(e) => setEventSearch(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          const newEvent = {
+                            id: `temp-${Date.now()}`,
+                            project_id: projectId,
+                            event_date: new Date().toISOString().split('T')[0],
+                            supplier_id: null,
+                            supplier_type: 'supplier',
+                            sub_category_id: null,
+                            description: '',
+                            amount: 0,
+                            currency: 'EUR',
+                            exchange_rate: 1.0000,
+                            total_tl: 0
+                          };
+                          setTempEventItem(newEvent);
+                          setIsNewEventItem(true);
+                          setEditingEventIndex(eventsActivities.length); // Yeni satır için mevcut liste uzunluğunu kullan
+                        }}
+                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Yeni Ekle
+                      </button>
+                      <button
+                        onClick={() => setEventSearch('')}
+                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                      >
+                        Temizle
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Etkinlik & Aktivite Tablosu */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => {
+                                const newDirection = eventSortField === 'event_date' && eventSortDirection === 'asc' ? 'desc' : 'asc';
+                                setEventSortField('event_date');
+                                setEventSortDirection(newDirection);
+                              }}
+                            >
+                              TARİH {eventSortField === 'event_date' && (eventSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                            >
+                              OTEL/TEDARİKÇİ
+                            </th>
+                            <th className="px-2 py-2 text-left font-semibold hidden">ANA KATEGORİ</th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                            >
+                              ALT KATEGORİ
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                            >
+                              AÇIKLAMA
+                            </th>
+                            <th
+                              className="px-2 py-2 text-right font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                            >
+                              TUTAR
+                            </th>
+                            <th className="px-2 py-2 text-center font-semibold">DÖVİZ</th>
+                            <th className="px-2 py-2 text-right font-semibold">KUR</th>
+                            <th className="px-2 py-2 text-right font-semibold">TOPLAM TL</th>
+                            <th className="px-2 py-2 text-center font-semibold w-20">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* Yeni ekleme modu */}
+                          {editingEventIndex !== null && isNewEventItem && (
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-2 py-2">
+                                <input
+                                  type="date"
+                                  value={tempEventItem?.event_date || ''}
+                                  onChange={(e) => setTempEventItem({ ...tempEventItem, event_date: e.target.value })}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={eventSupplierSearch}
+                                    onChange={(e) => {
+                                      setEventSupplierSearch(e.target.value);
+                                      setShowEventSupplierDropdown(true);
+                                    }}
+                                    onFocus={() => setShowEventSupplierDropdown(true)}
+                                    placeholder="Otel/Tedarikçi seç..."
+                                    className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  />
+                                  {showEventSupplierDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                      <div className="py-1">
+                                        {(() => {
+                                          console.log('🔍 Yeni ekleme - Hotels:', hotels);
+                                          console.log('🔍 Yeni ekleme - Suppliers:', suppliers);
+                                          const allItems = [...hotels.map(h => ({ id: h.id, name: h.name, type: 'hotel' })), ...suppliers.map(s => ({ id: s.id, name: s.name, type: 'supplier' }))];
+                                          console.log('🔍 Yeni ekleme - All items:', allItems);
+                                          return allItems;
+                                        })()
+                                          .filter(s => s.name?.toLowerCase().includes(eventSupplierSearch?.toLowerCase() || ''))
+                                          .map((s, idx) => (
+                                            <div
+                                              key={`${s.type}-${s.id}`}
+                                              className={`px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-xs ${selectedEventSupplierIndex === idx ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                                }`}
+                                              onClick={() => {
+                                                setTempEventItem({
+                                                  ...tempEventItem,
+                                                  supplier_id: s.type === 'supplier' ? s.id : null,
+                                                  hotel_id: s.type === 'hotel' ? s.id : null,
+                                                  supplier_type: s.type
+                                                });
+                                                setEventSupplierSearch(s.name);
+                                                setShowEventSupplierDropdown(false);
+                                              }}
+                                            >
+                                              {s.name} {s.type === 'hotel' ? '(Otel)' : '(Tedarikçi)'}
+                                            </div>
+                                          ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-2 py-2 hidden">Etkinlik & Aktivite</td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={tempEventItem?.sub_category_id || ''}
+                                  onChange={(e) => setTempEventItem({ ...tempEventItem, sub_category_id: e.target.value })}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                  <option value="">Alt kategori seç...</option>
+                                  {eventSubCategories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="px-2 py-2">
+                                <input
+                                  type="text"
+                                  value={tempEventItem?.description || ''}
+                                  onChange={(e) => setTempEventItem({ ...tempEventItem, description: e.target.value })}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-2 text-right">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={tempEventItem?.amount || 0}
+                                  onChange={(e) => {
+                                    const amount = parseFloat(e.target.value) || 0;
+                                    setTempEventItem({
+                                      ...tempEventItem,
+                                      amount,
+                                      total_tl: amount * (tempEventItem.exchange_rate || 1.0000)
+                                    });
+                                  }}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                />
+                              </td>
+                              <td className="px-2 py-2 text-center">
+                                <select
+                                  value={tempEventItem?.currency || 'EUR'}
+                                  onChange={(e) => setTempEventItem({ ...tempEventItem, currency: e.target.value })}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="GBP">GBP</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2 text-right">
+                                <input
+                                  type="number"
+                                  step="0.0001"
+                                  value={tempEventItem?.exchange_rate || 1.0000}
+                                  onChange={(e) => {
+                                    const rate = parseFloat(e.target.value) || 1.0000;
+                                    setTempEventItem({
+                                      ...tempEventItem,
+                                      exchange_rate: rate,
+                                      total_tl: (tempEventItem.amount || 0) * rate
+                                    });
+                                  }}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                />
+                              </td>
+                              <td className="px-2 py-2 text-right">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={tempEventItem?.total_tl || (tempEventItem.amount * tempEventItem.exchange_rate) || 0}
+                                  onChange={(e) => {
+                                    const totalTL = parseFloat(e.target.value) || 0;
+                                    const rate = tempEventItem.exchange_rate || 1.0000;
+                                    setTempEventItem({
+                                      ...tempEventItem,
+                                      total_tl: totalTL,
+                                      amount: totalTL / rate
+                                    });
+                                  }}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <div className="flex items-center justify-center gap-1">
+                                  <button
+                                    onClick={() => {
+                                      console.log('🔍 Etkinlik oluşturma başlıyor...');
+                                      console.log('🔍 tempEventItem:', tempEventItem);
+                                      console.log('🔍 projectId:', projectId);
+
+                                      const eventData = {
+                                        ...tempEventItem,
+                                        project_id: projectId
+                                      };
+                                      // total_tl generated column olduğu için çıkarıyoruz
+                                      delete eventData.total_tl;
+                                      // id alanını çıkarıyoruz, Supabase otomatik oluşturacak
+                                      delete eventData.id;
+                                      // supplier_id geçersizse null yap
+                                      if (!eventData.supplier_id || eventData.supplier_id.startsWith('temp-') || eventData.supplier_id === '') {
+                                        eventData.supplier_id = null;
+                                      }
+                                      console.log('🔍 Gönderilecek veri:', eventData);
+
+                                      projectEventsActivitiesService.create(eventData).then(newEvent => {
+                                        console.log('✅ Etkinlik başarıyla oluşturuldu:', newEvent);
+                                        setEventsActivities([...eventsActivities, newEvent]);
+                                        setEditingEventIndex(null);
+                                        setTempEventItem(null);
+                                        setIsNewEventItem(false);
+                                      }).catch(error => {
+                                        console.error('❌ Etkinlik oluşturma hatası:', error);
+                                        console.error('❌ Hata detayları:', {
+                                          message: error.message,
+                                          details: error.details,
+                                          hint: error.hint,
+                                          code: error.code
+                                        });
+                                        console.error('❌ Tam hata objesi:', JSON.stringify(error, null, 2));
+                                        alert(`Etkinlik oluşturulurken bir hata oluştu: ${error.message}\n\nDetaylar: ${JSON.stringify(error, null, 2)}`);
+                                      });
+                                    }}
+                                    className="p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                                    title="Kaydet (Enter)"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingEventIndex(null);
+                                      setTempEventItem(null);
+                                      setIsNewEventItem(false);
+                                    }}
+                                    className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                    title="İptal (Esc)"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                          {eventsActivities
+                            .filter(event => {
+                              if (!eventSearch) return true;
+                              return event.description?.toLowerCase().includes(eventSearch?.toLowerCase() || '');
+                            })
+                            .sort((a, b) => {
+                              if (!eventSortField) return 0;
+                              const aVal = a[eventSortField];
+                              const bVal = b[eventSortField];
+                              if (eventSortDirection === 'asc') {
+                                return aVal > bVal ? 1 : -1;
+                              } else {
+                                return aVal < bVal ? 1 : -1;
+                              }
+                            })
+                            .map((event, index) => {
+                              const isEditing = editingEventIndex === index;
+                              const displayEvent = isEditing ? tempEventItem : event;
+
+                              return (
+                                <tr
+                                  key={event.id || index}
+                                  className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                  onKeyDown={(e) => {
+                                    if (!isEditing) return;
+                                    if (e.key === 'Escape') {
+                                      setEditingEventIndex(null);
+                                      setTempEventItem(null);
+                                      setIsNewEventItem(false);
+                                    } else if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      // Kaydet
+                                      if (isNewEventItem) {
+                                        console.log('🔍 Enter ile etkinlik oluşturma başlıyor...');
+                                        console.log('🔍 tempEventItem:', tempEventItem);
+                                        console.log('🔍 projectId:', projectId);
+
+                                        const eventData = {
+                                          ...tempEventItem,
+                                          project_id: projectId
+                                        };
+                                        // total_tl generated column olduğu için çıkarıyoruz
+                                        delete eventData.total_tl;
+                                        // id alanını çıkarıyoruz, Supabase otomatik oluşturacak
+                                        delete eventData.id;
+                                        // supplier_id geçersizse null yap
+                                        if (!eventData.supplier_id || eventData.supplier_id.startsWith('temp-') || eventData.supplier_id === '') {
+                                          eventData.supplier_id = null;
+                                        }
+                                        console.log('🔍 Gönderilecek veri:', eventData);
+
+                                        projectEventsActivitiesService.create(eventData).then(newEvent => {
+                                          console.log('✅ Enter ile etkinlik başarıyla oluşturuldu:', newEvent);
+                                          setEventsActivities([...eventsActivities, newEvent]);
+                                          setEditingEventIndex(null);
+                                          setTempEventItem(null);
+                                          setIsNewEventItem(false);
+                                        }).catch(error => {
+                                          console.error('❌ Enter ile etkinlik oluşturma hatası:', error);
+                                          console.error('❌ Hata detayları:', {
+                                            message: error.message,
+                                            details: error.details,
+                                            hint: error.hint,
+                                            code: error.code
+                                          });
+                                          console.error('❌ Tam hata objesi:', JSON.stringify(error, null, 2));
+                                          alert(`Etkinlik oluşturulurken bir hata oluştu: ${error.message}\n\nDetaylar: ${JSON.stringify(error, null, 2)}`);
+                                        });
+                                      } else {
+                                        // total_tl generated column olduğu için çıkarıyoruz
+                                        const { total_tl, ...updateData } = tempEventItem;
+                                        projectEventsActivitiesService.update(event.id, updateData).then(updatedEvent => {
+                                          const updated = [...eventsActivities];
+                                          updated[index] = updatedEvent;
+                                          setEventsActivities(updated);
+                                          setEditingEventIndex(null);
+                                          setTempEventItem(null);
+                                          setIsNewEventItem(false);
+                                        }).catch(error => {
+                                          console.error('Etkinlik güncelleme hatası:', error);
+                                          alert('Etkinlik güncellenirken bir hata oluştu');
+                                        });
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <td className="px-2 py-2">
+                                    {isEditing ? (
+                                      <input
+                                        type="date"
+                                        value={displayEvent.event_date || ''}
+                                        onChange={(e) => setTempEventItem({ ...tempEventItem, event_date: e.target.value })}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                      />
+                                    ) : (
+                                      <span>{displayEvent.event_date ? new Date(displayEvent.event_date).toLocaleDateString('tr-TR') : '-'}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2">
+                                    {isEditing ? (
+                                      <div className="relative">
+                                        <input
+                                          type="text"
+                                          value={eventSupplierSearch}
+                                          onChange={(e) => {
+                                            setEventSupplierSearch(e.target.value);
+                                            setShowEventSupplierDropdown(true);
+                                          }}
+                                          onFocus={() => setShowEventSupplierDropdown(true)}
+                                          placeholder="Otel/Tedarikçi seç..."
+                                          className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        />
+                                        {showEventSupplierDropdown && (
+                                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                            <div className="py-1">
+                                              {(() => {
+                                                console.log('🔍 Hotels:', hotels);
+                                                console.log('🔍 Suppliers:', suppliers);
+                                                const allItems = [...hotels.map(h => ({ id: h.id, name: h.name, type: 'hotel' })), ...suppliers.map(s => ({ id: s.id, name: s.name, type: 'supplier' }))];
+                                                console.log('🔍 All items:', allItems);
+                                                return allItems;
+                                              })()
+                                                .filter(s => s.name?.toLowerCase().includes(eventSupplierSearch?.toLowerCase() || ''))
+                                                .map((s, idx) => (
+                                                  <div
+                                                    key={`${s.type}-${s.id}`}
+                                                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-xs ${selectedEventSupplierIndex === idx ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                                      }`}
+                                                    onClick={() => {
+                                                      setTempEventItem({
+                                                        ...tempEventItem,
+                                                        supplier_id: s.type === 'supplier' ? s.id : null,
+                                                        hotel_id: s.type === 'hotel' ? s.id : null,
+                                                        supplier_type: s.type
+                                                      });
+                                                      setEventSupplierSearch(s.name);
+                                                      setShowEventSupplierDropdown(false);
+                                                    }}
+                                                  >
+                                                    {s.name} {s.type === 'hotel' ? '(Otel)' : '(Tedarikçi)'}
+                                                  </div>
+                                                ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span>
+                                        {displayEvent.supplier?.name || displayEvent.hotel?.name || '-'}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2 hidden">Etkinlik & Aktivite</td>
+                                  <td className="px-2 py-2">
+                                    {isEditing ? (
+                                      <select
+                                        value={displayEvent.sub_category_id || ''}
+                                        onChange={(e) => setTempEventItem({ ...tempEventItem, sub_category_id: e.target.value })}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                      >
+                                        <option value="">Alt kategori seç...</option>
+                                        {eventSubCategories.map(cat => (
+                                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <span>{displayEvent.sub_category?.name || '-'}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={displayEvent.description || ''}
+                                        onChange={(e) => setTempEventItem({ ...tempEventItem, description: e.target.value })}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                      />
+                                    ) : (
+                                      <span>{displayEvent.description || '-'}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2 text-right">
+                                    {isEditing ? (
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={displayEvent.amount || 0}
+                                        onChange={(e) => {
+                                          const amount = parseFloat(e.target.value) || 0;
+                                          setTempEventItem({
+                                            ...tempEventItem,
+                                            amount,
+                                            total_tl: amount * (tempEventItem.exchange_rate || 1.0000)
+                                          });
+                                        }}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                      />
+                                    ) : (
+                                      <span>{parseFloat(displayEvent.amount || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2 text-center">
+                                    {isEditing ? (
+                                      <select
+                                        value={displayEvent.currency || 'EUR'}
+                                        onChange={(e) => setTempEventItem({ ...tempEventItem, currency: e.target.value })}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                      >
+                                        <option value="EUR">EUR</option>
+                                        <option value="USD">USD</option>
+                                        <option value="GBP">GBP</option>
+                                        <option value="TRY">TRY</option>
+                                      </select>
+                                    ) : (
+                                      <span>{displayEvent.currency || 'EUR'}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2 text-right">
+                                    {isEditing ? (
+                                      <input
+                                        type="number"
+                                        step="0.0001"
+                                        value={displayEvent.exchange_rate || 1.0000}
+                                        onChange={(e) => {
+                                          const rate = parseFloat(e.target.value) || 1.0000;
+                                          setTempEventItem({
+                                            ...tempEventItem,
+                                            exchange_rate: rate,
+                                            total_tl: (tempEventItem.amount || 0) * rate
+                                          });
+                                        }}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                      />
+                                    ) : (
+                                      <span>{parseFloat(displayEvent.exchange_rate || 1.0000).toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2 text-right">
+                                    {isEditing ? (
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={displayEvent.total_tl || (displayEvent.amount * (displayEvent.exchange_rate || 1.0000)) || 0}
+                                        onChange={(e) => {
+                                          const totalTL = parseFloat(e.target.value) || 0;
+                                          const rate = tempEventItem.exchange_rate || 1.0000;
+                                          setTempEventItem({
+                                            ...tempEventItem,
+                                            total_tl: totalTL,
+                                            amount: totalTL / rate
+                                          });
+                                        }}
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                      />
+                                    ) : (
+                                      <span className="font-semibold">{parseFloat(displayEvent.total_tl || (displayEvent.amount * (displayEvent.exchange_rate || 1.0000)) || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2">
+                                    <div className="flex items-center justify-center gap-1">
+                                      {isEditing ? (
+                                        <>
+                                          <button
+                                            onClick={() => {
+                                              if (isNewEventItem) {
+                                                projectEventsActivitiesService.create({
+                                                  ...tempEventItem,
+                                                  project_id: projectId
+                                                }).then(newEvent => {
+                                                  setEventsActivities([...eventsActivities, newEvent]);
+                                                  setEditingEventIndex(null);
+                                                  setTempEventItem(null);
+                                                  setIsNewEventItem(false);
+                                                }).catch(error => {
+                                                  console.error('Etkinlik oluşturma hatası:', error);
+                                                  alert('Etkinlik oluşturulurken bir hata oluştu');
+                                                });
+                                              } else {
+                                                // total_tl generated column olduğu için çıkarıyoruz
+                                                const { total_tl, ...updateData } = tempEventItem;
+                                                projectEventsActivitiesService.update(event.id, updateData).then(updatedEvent => {
+                                                  const updated = [...eventsActivities];
+                                                  updated[index] = updatedEvent;
+                                                  setEventsActivities(updated);
+                                                  setEditingEventIndex(null);
+                                                  setTempEventItem(null);
+                                                  setIsNewEventItem(false);
+                                                }).catch(error => {
+                                                  console.error('Etkinlik güncelleme hatası:', error);
+                                                  alert('Etkinlik güncellenirken bir hata oluştu');
+                                                });
+                                              }
+                                            }}
+                                            className="p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                                            title="Kaydet (Enter)"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              setEditingEventIndex(null);
+                                              setTempEventItem(null);
+                                              setIsNewEventItem(false);
+                                            }}
+                                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                            title="İptal (Esc)"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <button
+                                            onClick={() => {
+                                              setTempEventItem(event);
+                                              setIsNewEventItem(false);
+                                              setEditingEventIndex(index);
+                                              setEventSupplierSearch(event.supplier?.name || '');
+                                            }}
+                                            className="p-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="Düzenle"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
+                                                projectEventsActivitiesService.delete(event.id).then(() => {
+                                                  setEventsActivities(eventsActivities.filter((_, i) => i !== index));
+                                                }).catch(error => {
+                                                  console.error('Etkinlik silme hatası:', error);
+                                                  alert('Etkinlik silinirken bir hata oluştu');
+                                                });
+                                              }
+                                            }}
+                                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="Sil"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          {eventsActivities.length === 0 && (
+                            <tr>
+                              <td colSpan={10} className="px-2 py-8 text-center text-gray-500 dark:text-gray-400">
+                                Henüz etkinlik eklenmemiş. "Yeni Ekle" butonunu kullanarak etkinlik ekleyebilirsiniz.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Toplam İstatistikler */}
+                  {eventsActivities.length > 0 && (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                      <h3 className="text-sm font-semibold mb-2">Özet</h3>
+                      <div className="grid grid-cols-4 gap-4 text-xs">
+                        <div>
+                          <div className="text-gray-500 dark:text-gray-400">Toplam Etkinlik</div>
+                          <div className="text-lg font-bold">{eventsActivities.length}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 dark:text-gray-400">Toplam Tutar</div>
+                          <div className="text-lg font-bold">
+                            {eventsActivities.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 dark:text-gray-400">Toplam TL</div>
+                          <div className="text-lg font-bold text-green-600">
+                            ₺{eventsActivities.reduce((sum, e) => sum + parseFloat(e.total_tl || 0), 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 dark:text-gray-400">Ortalama Tutar</div>
+                          <div className="text-lg font-bold">
+                            {(eventsActivities.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0) / eventsActivities.length).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === 'insan-kaynaklari' && (
+                <InsanKaynaklariTab
+                  humanResources={humanResources}
+                  setHumanResources={setHumanResources}
+                  editingHrIndex={editingHrIndex}
+                  setEditingHrIndex={setEditingHrIndex}
+                  tempHrItem={tempHrItem}
+                  setTempHrItem={setTempHrItem}
+                  isNewHrItem={isNewHrItem}
+                  setIsNewHrItem={setIsNewHrItem}
+                  hrSearch={hrSearch}
+                  setHrSearch={setHrSearch}
+                  hrSortField={hrSortField}
+                  hrSortDirection={hrSortDirection}
+                  hrSubCategories={hrSubCategories}
+                  selectedHrMainCategory={selectedHrMainCategory}
+                  setSelectedHrMainCategory={setSelectedHrMainCategory}
+                  hrSupplierSearch={hrSupplierSearch}
+                  setHrSupplierSearch={setHrSupplierSearch}
+                  showHrSupplierDropdown={showHrSupplierDropdown}
+                  setShowHrSupplierDropdown={setShowHrSupplierDropdown}
+                  selectedHrSupplierIndex={selectedHrSupplierIndex}
+                  setSelectedHrSupplierIndex={setSelectedHrSupplierIndex}
+                  filteredHrSuppliers={filteredHrSuppliers}
+                  projectId={projectId}
+                  handleHrAdd={handleHrAdd}
+                  handleHrEdit={handleHrEdit}
+                  handleHrSave={handleHrSave}
+                  handleHrCancel={handleHrCancel}
+                  handleHrDelete={handleHrDelete}
+                  hrAmountInput={hrAmountInput}
+                  setHrAmountInput={setHrAmountInput}
+                  hrFxInput={hrFxInput}
+                  setHrFxInput={setHrFxInput}
+                  hrTotalTRYInput={hrTotalTRYInput}
+                  setHrTotalTRYInput={setHrTotalTRYInput}
+                  filteredHr={filteredHr}
+                  sortedHr={sortedHr}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatDateForDisplay={formatDateForDisplay}
+                  formatNumber={formatNumber}
+                  handleHrSort={handleHrSort}
+                  handleHrKeyDown={handleHrKeyDown}
+                  handleHrSupplierKeyDown={handleHrSupplierKeyDown}
+                  handleHrSupplierSelect={handleHrSupplierSelect}
+                  clearHrSearch={clearHrSearch}
+                  handleHrClear={handleHrClear}
+                  handleHrExport={handleHrExport}
+                  filteredHrExtras={filteredHrExtras}
+                  hrExtras={hrExtras}
+                  setHrExtras={setHrExtras}
+                  hrTotals={hrTotals}
+                />
+              )}
+              {activeTab === 'insan-kaynaklari_old' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 mr-4">
+                      <input
+                        type="text"
+                        placeholder="İnsan Kaynakları ara..."
+                        value={hrSearch}
+                        onChange={(e) => setHrSearch(e.target.value)}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleHrAdd}
+                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Yeni Ekle
+                      </button>
+                      <button
+                        onClick={clearHrSearch}
+                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                      >
+                        Temizle
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* İnsan Kaynakları Tablosu */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('date')}
+                            >
+                              TARİH {hrSortField === 'date' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('hotel')}
+                            >
+                              OTEL/TEDARİKÇİ {hrSortField === 'hotel' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th className="px-2 py-2 text-left font-semibold hidden">ANA KATEGORİ</th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('subCategoryName')}
+                            >
+                              ALT KATEGORİ {hrSortField === 'subCategoryName' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('description')}
+                            >
+                              AÇIKLAMA {hrSortField === 'description' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('amount')}
+                            >
+                              TUTAR {hrSortField === 'amount' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('currency')}
+                            >
+                              DÖVİZ {hrSortField === 'currency' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('fx')}
+                            >
+                              KUR {hrSortField === 'fx' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 select-none"
+                              onClick={() => handleHrSort('totalTRY')}
+                            >
+                              TOPLAM TL {hrSortField === 'totalTRY' && (hrSortDirection === 'asc' ? '↑' : '↓')}
+                            </th>
+                            <th className="px-2 py-2 text-left font-semibold">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {/* Yeni ekleme modu */}
+                          {editingHrIndex !== null && isNewHrItem && (
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-2 py-2">
+                                <input
+                                  type="date"
+                                  value={tempHrItem?.date || ''}
+                                  onChange={(e) => setTempHrItem(prev => ({ ...prev, date: e.target.value }))}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      handleHrSave();
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                />
+                              </td>
+                              <td className="px-2 py-2 relative">
+                                <input
+                                  ref={hotelSupplierInputRef}
+                                  type="text"
+                                  value={hrSupplierSearch || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    console.log('🔍 Otel/Tedarikçi input değişti:', value);
+                                    setHrSupplierSearch(value);
+                                    setShowHrSupplierDropdown(true);
+                                    updateDropdownPosition();
+                                    setSelectedHrSupplierIndex(-1);
+                                    // tempHrItem'ı da güncelle
+                                    setTempHrItem(prev => ({ ...prev, hotel: value }));
+                                    console.log('🔍 hrSupplierSearch güncellendi:', value);
+                                  }}
+                                  onFocus={() => {
+                                    setShowHrSupplierDropdown(true);
+                                    updateDropdownPosition();
+                                    setSelectedHrSupplierIndex(-1);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleHrSave();
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleHrCancel();
+                                    } else {
+                                      handleHrKeyDown(e);
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="Otel/Tedarikçi ara..."
+                                />
+                              </td>
+                              <td className="px-2 py-2 hidden">
+                                <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                  İNSAN KAYNAKLARI
+                                </div>
+                              </td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={tempHrItem?.subCategory || ''}
+                                  onChange={(e) => {
+                                    const selectedValue = e.target.value;
+                                    // Seçilen alt kategorinin ID'sini bul
+                                    const selectedSubCategory = hrSubCategories.find(sub => sub.name === selectedValue);
+                                    setTempHrItem(prev => ({
+                                      ...prev,
+                                      subCategory: selectedValue,
+                                      subCategoryName: selectedValue,
+                                      subCategoryId: selectedSubCategory?.id || null
+                                    }));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      handleHrSave();
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                >
+                                  <option value="">Alt Kategori Seçin</option>
+                                  {hrSubCategories.length > 0 ? (
+                                    hrSubCategories.map(subCategory => (
+                                      <option key={subCategory.id} value={subCategory.name}>{subCategory.name}</option>
+                                    ))
+                                  ) : (
+                                    <option value="" disabled>Alt kategori yükleniyor...</option>
+                                  )}
+                                </select>
+                              </td>
+                              <td className="px-2 py-2">
+                                <input
+                                  type="text"
+                                  value={tempHrItem?.description || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    console.log('🔍 Açıklama değişti:', value);
+                                    setTempHrItem(prev => {
+                                      const updated = { ...prev, description: value };
+                                      return updated;
+                                    });
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (!(window as any).hrSaveInProgress) {
+                                        handleHrSave();
+                                      }
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="Açıklama"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <input
+                                  type="text"
+                                  value={hrAmountInput || ''}
+                                  onChange={(e) => {
+                                    // Serbest giriş - raw değeri kaydet
+                                    const inputValue = e.target.value;
+                                    setHrAmountInput(inputValue);
+                                    // Aynı zamanda amount'u da güncelle
+                                    const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                    const numericValue = parseTurkishNumber(cleanValue);
+                                    const fx = parseTurkishNumber(hrFxInput || '1');
+                                    // Toplam TL = Tutar * Kur
+                                    const newTotalTRY = numericValue * fx;
+
+                                    setTempHrItem(prev => ({
+                                      ...prev,
+                                      amount: numericValue,
+                                      totalTRY: newTotalTRY
+                                    }));
+
+                                    // Toplam TL input'unu da güncelle
+                                    setHrTotalTRYInput(formatNumberForDisplay(newTotalTRY));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (!(window as any).hrSaveInProgress) {
+                                        handleHrSave();
+                                      }
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="0,00"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={tempHrItem?.currency || 'TRY'}
+                                  onChange={(e) => {
+                                    const newCurrency = e.target.value;
+                                    setTempHrItem(prev => ({ ...prev, currency: newCurrency }));
+
+                                    const amount = parseTurkishNumber(hrAmountInput || '0') || parseFloat(tempHrItem?.amount || '0');
+                                    const fx = parseTurkishNumber(hrFxInput || '1');
+                                    // Toplam TL = Tutar * Kur
+                                    const totalTRY = amount * fx;
+                                    setTempHrItem(prev => ({ ...prev, fx, totalTRY }));
+                                    setHrTotalTRYInput(formatNumberForDisplay(totalTRY));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      handleHrSave();
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                >
+                                  <option value="TRY">TRY</option>
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="GBP">GBP</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2">
+                                <input
+                                  type="text"
+                                  value={hrFxInput || ''}
+                                  onChange={(e) => {
+                                    // Serbest giriş - raw değeri kaydet
+                                    const inputValue = e.target.value;
+                                    setHrFxInput(inputValue);
+                                    // Aynı zamanda fx'i de güncelle
+                                    const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                    const numericValue = parseTurkishNumber(cleanValue) || 1;
+                                    const amount = parseTurkishNumber(hrAmountInput || '0');
+                                    // Toplam TL = Tutar * Kur
+                                    const newTotalTRY = amount * numericValue;
+
+                                    setTempHrItem(prev => ({
+                                      ...prev,
+                                      fx: numericValue,
+                                      totalTRY: newTotalTRY
+                                    }));
+
+                                    // Toplam TL input'unu da güncelle
+                                    setHrTotalTRYInput(formatNumberForDisplay(newTotalTRY));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (!(window as any).hrSaveInProgress) {
+                                        handleHrSave();
+                                      }
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="1,00"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <input
+                                  type="text"
+                                  value={hrTotalTRYInput}
+                                  onChange={(e) => {
+                                    setHrTotalTRYInput(e.target.value);
+                                    // Toplam TL girildiğinde Tutar'ı hesapla: Tutar = Toplam TL / Kur
+                                    const inputValue = e.target.value;
+                                    const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                    const numericTotalTRY = parseFloat(cleanValue.replace(',', '.')) || 0;
+                                    const fx = parseFloat(hrFxInput.replace(',', '.')) || 1;
+
+                                    // Eğer Toplam TL girildiyse, Tutar'ı hesapla: Tutar = Toplam TL / Kur
+                                    let newAmount = 0;
+                                    if (numericTotalTRY > 0 && fx > 0) {
+                                      newAmount = numericTotalTRY / fx;
+                                    }
+
+                                    setTempHrItem(prev => ({
+                                      ...prev,
+                                      totalTRY: numericTotalTRY,
+                                      amount: newAmount > 0 ? newAmount : (prev.amount || 0)
+                                    }));
+
+                                    // Tutar input'unu da güncelle
+                                    if (newAmount > 0) {
+                                      setHrAmountInput(formatNumberForDisplay(newAmount));
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (!(window as any).hrSaveInProgress) {
+                                        handleHrSave();
+                                      }
+                                    } else if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleHrCancel();
+                                    }
+                                  }}
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  placeholder="0,00"
+                                />
+                              </td>
+                              <td className="px-2 py-2">
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={handleHrSave}
+                                    className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-1"
+                                    title="Kaydet"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={handleHrCancel}
+                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                                    title="İptal"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Mevcut kayıtları listele */}
+                          {filteredHrExtras.length === 0 && editingHrIndex === null ? (
+                            <tr>
+                              <td colSpan={10} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                Henüz kayıt bulunmuyor
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredHrExtras.map((extra, index) => (
+                              <tr key={extra.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <input
+                                      type="date"
+                                      value={tempHrItem?.date || ''}
+                                      onChange={(e) => setTempHrItem(prev => ({ ...prev, date: e.target.value }))}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleHrSave();
+                                        } else if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                          handleHrCancel();
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    />
+                                  ) : (
+                                    extra.date ? formatDateForDisplay(extra.date) : '-'
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <input
+                                      ref={hotelSupplierInputRef}
+                                      type="text"
+                                      value={hrSupplierSearch || ''}
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        console.log('🔍 Otel/Tedarikçi input değişti:', value);
+                                        setHrSupplierSearch(value);
+                                        setShowHrSupplierDropdown(true);
+                                        updateDropdownPosition();
+                                        setSelectedHrSupplierIndex(-1);
+                                        // tempHrItem'ı da güncelle
+                                        setTempHrItem(prev => ({ ...prev, hotel: value }));
+                                        console.log('🔍 hrSupplierSearch güncellendi:', value);
+                                      }}
+                                      onFocus={() => {
+                                        setShowHrSupplierDropdown(true);
+                                        updateDropdownPosition();
+                                        setSelectedHrSupplierIndex(-1);
+                                      }}
+                                      onKeyDown={handleHrKeyDown}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      placeholder="Otel/Tedarikçi ara..."
+                                    />
+                                  ) : (
+                                    (() => {
+                                      console.log('🔍 extra.hotel değeri:', extra.hotel);
+                                      if (typeof extra.hotel === 'object' && extra.hotel !== null) {
+                                        return extra.hotel.name || extra.hotel.title || '-';
+                                      }
+                                      return extra.hotel || '-';
+                                    })()
+                                  )}
+                                </td>
+                                <td className="px-2 py-2 hidden">
+                                  <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                    İNSAN KAYNAKLARI
+                                  </div>
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <select
+                                      value={tempHrItem?.subCategory || ''}
+                                      onChange={(e) => {
+                                        const selectedValue = e.target.value;
+                                        // Seçilen alt kategorinin ID'sini bul
+                                        const selectedSubCategory = hrSubCategories.find(sub => sub.name === selectedValue);
+                                        setTempHrItem(prev => ({
+                                          ...prev,
+                                          subCategory: selectedValue,
+                                          subCategoryName: selectedValue,
+                                          subCategoryId: selectedSubCategory?.id || null
+                                        }));
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleHrSave();
+                                        } else if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                          handleHrCancel();
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    >
+                                      <option value="">Alt Kategori Seçin</option>
+                                      {hrSubCategories.length > 0 ? (
+                                        hrSubCategories.map(subCategory => (
+                                          <option key={subCategory.id} value={subCategory.name}>{subCategory.name}</option>
+                                        ))
+                                      ) : (
+                                        <option value="" disabled>Alt kategori yükleniyor...</option>
+                                      )}
+                                    </select>
+                                  ) : (
+                                    extra.sub_category?.name || extra.subCategoryName || extra.sub_category || '-'
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <input
+                                      type="text"
+                                      value={tempHrItem?.description || ''}
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        console.log('🔍 Açıklama değişti:', value);
+                                        setTempHrItem(prev => {
+                                          const updated = { ...prev, description: value };
+                                          return updated;
+                                        });
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleHrSave();
+                                        } else if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                          handleHrCancel();
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      placeholder="Açıklama"
+                                    />
+                                  ) : (
+                                    extra.description || '-'
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <input
+                                      type="text"
+                                      value={hrAmountInput || ''}
+                                      onChange={(e) => {
+                                        // Serbest giriş - raw değeri kaydet
+                                        const inputValue = e.target.value;
+                                        setHrAmountInput(inputValue);
+                                        // Aynı zamanda amount'u da güncelle
+                                        const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                        const numericValue = parseTurkishNumber(cleanValue);
+                                        const currency = tempHrItem?.currency || 'TRY';
+                                        const fx = parseTurkishNumber(hrFxInput || '1');
+                                        // Toplam TL = Tutar * Kur (her zaman)
+                                        const newTotalTRY = numericValue * fx;
+
+                                        setTempHrItem(prev => ({
+                                          ...prev,
+                                          amount: numericValue,
+                                          totalTRY: newTotalTRY
+                                        }));
+
+                                        // Toplam TL input'unu da güncelle
+                                        setHrTotalTRYInput(formatNumberForDisplay(newTotalTRY));
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleHrSave();
+                                        } else if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                          handleHrCancel();
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      placeholder="0,00"
+                                    />
+                                  ) : (
+                                    formatNumberForDisplay(extra.amount || 0)
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <select
+                                      value={tempHrItem?.currency || 'TRY'}
+                                      onChange={(e) => {
+                                        const newCurrency = e.target.value;
+                                        setTempHrItem(prev => ({ ...prev, currency: newCurrency }));
+
+                                        const amount = parseFloat(hrAmountInput.replace(',', '.')) || parseFloat(tempHrItem?.amount || '0');
+                                        const fx = parseFloat(hrFxInput.replace(',', '.')) || 1;
+                                        // Toplam TL = Tutar * Kur
+                                        const totalTRY = amount * fx;
+                                        setTempHrItem(prev => ({ ...prev, fx, totalTRY }));
+                                        setHrTotalTRYInput(formatNumberForDisplay(totalTRY));
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleHrSave();
+                                        } else if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                          handleHrCancel();
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    >
+                                      <option value="TRY">TRY</option>
+                                      <option value="EUR">EUR</option>
+                                      <option value="USD">USD</option>
+                                      <option value="GBP">GBP</option>
+                                    </select>
+                                  ) : (
+                                    extra.currency || 'TRY'
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <input
+                                      type="text"
+                                      value={hrFxInput || ''}
+                                      onChange={(e) => {
+                                        // Serbest giriş - raw değeri kaydet
+                                        const inputValue = e.target.value;
+                                        setHrFxInput(inputValue);
+                                        // Aynı zamanda fx'i de güncelle
+                                        const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                        const numericValue = parseFloat(cleanValue.replace(',', '.')) || 1;
+                                        const amount = parseFloat(hrAmountInput.replace(',', '.')) || 0;
+                                        const newTotalTRY = numericValue > 0 ? amount * numericValue : amount;
+
+                                        setTempHrItem(prev => ({
+                                          ...prev,
+                                          fx: numericValue,
+                                          totalTRY: newTotalTRY
+                                        }));
+
+                                        // Toplam TL input'unu da güncelle
+                                        setHrTotalTRYInput(formatNumberForDisplay(newTotalTRY));
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleHrSave();
+                                        } else if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                          handleHrCancel();
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      placeholder="1,00"
+                                    />
+                                  ) : (
+                                    formatNumberForDisplay(extra.exchange_rate || extra.fx || 1)
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <input
+                                      type="text"
+                                      value={hrTotalTRYInput}
+                                      onChange={(e) => {
+                                        setHrTotalTRYInput(e.target.value);
+                                        // Toplam TL girildiğinde Tutar'ı hesapla: Tutar = Toplam TL / Kur
+                                        const inputValue = e.target.value;
+                                        const cleanValue = inputValue.replace(/[^\d,]/g, '');
+                                        const numericTotalTRY = parseTurkishNumber(cleanValue);
+                                        const fx = parseTurkishNumber(hrFxInput || '1');
+
+                                        // Eğer Toplam TL girildiyse, Tutar'ı hesapla: Tutar = Toplam TL / Kur
+                                        let newAmount = 0;
+                                        if (numericTotalTRY > 0 && fx > 0) {
+                                          newAmount = numericTotalTRY / fx;
+                                        }
+
+                                        setTempHrItem(prev => ({
+                                          ...prev,
+                                          totalTRY: numericTotalTRY,
+                                          amount: newAmount > 0 ? newAmount : (prev.amount || 0)
+                                        }));
+
+                                        // Tutar input'unu da güncelle
+                                        if (newAmount > 0) {
+                                          setHrAmountInput(formatNumberForDisplay(newAmount));
+                                        }
+                                      }}
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      placeholder="0,00"
+                                    />
+                                  ) : (
+                                    formatNumberForDisplay(extra.totalTRY || extra.total_try || 0)
+                                  )}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {editingHrIndex === index ? (
+                                    <div className="flex space-x-2">
+                                      <button
+                                        onClick={handleHrSave}
+                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-1"
+                                        title="Kaydet"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={handleHrCancel}
+                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                                        title="İptal"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex space-x-2">
+                                      <button
+                                        onClick={() => handleHrEdit(index)}
+                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                                        title="Düzenle"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={() => handleHrDelete(index)}
+                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                                        title="Sil"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Genel Toplam */}
+                  {hrExtras.length > 0 && (
+                    <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
+                      <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                        <div className="col-span-1 font-bold">GENEL TOPLAM</div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1 text-right font-bold">
+                          {Object.entries(hrTotals).map(([cur, val]: any) => `${formatNumber(Number(val.toplamMaliyet || 0))} ${cur}`).join(' + ')}
+                        </div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-1 text-right font-bold">
+                          {formatNumber(hrExtras.reduce((sum: number, item: any) => sum + (item.totalTRY || item.amount), 0))} TL
+                        </div>
+                        <div className="col-span-1"></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Portal ile render edilen dropdown */}
+                  {showHrSupplierDropdown && dropdownPosition && createPortal(
+                    <div
+                      className="hr-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-40 overflow-y-auto"
+                      style={{
+                        top: dropdownPosition.top,
+                        left: dropdownPosition.left,
+                        width: dropdownPosition.width
+                      }}
+                    >
+                      {filteredHrSuppliers.map((supplier, index) => (
+                        <div
+                          key={`hr-supplier-${supplier.id}-${supplier.type}-${index}`}
+                          className={`px-3 py-2 text-xs cursor-pointer transition-colors duration-150 ${
+                            selectedHrSupplierIndex === index 
+                              ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                              : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                          onClick={() => handleHrSupplierSelect(supplier)}
+                          onMouseEnter={() => setSelectedHrSupplierIndex(index)}
+                        >
+                          <div className="font-medium">{supplier.name}</div>
+                          <div className="text-gray-500 dark:text-gray-400 text-[10px]">
+                            {supplier.type === 'hotel' ? 'Otel' : supplier.type === 'supplier' ? 'Tedarikçi' : supplier.type}
+                          </div>
+                        </div>
+                      ))}
+                    </div>,
+                    document.body
+                  )}
+                </div>
+              )}
+              {activeTab === 'diger-servisler' && (
+                <OtherServicesTab
+                  otherServices={otherServices}
+                  setOtherServices={setOtherServices}
+                  projectId={projectId}
+                  otherServiceSearch={otherServiceSearch}
+                  setOtherServiceSearch={setOtherServiceSearch}
+                  editingOtherServiceIndex={editingOtherServiceIndex}
+                  setEditingOtherServiceIndex={setEditingOtherServiceIndex}
+                  tempOtherServiceItem={tempOtherServiceItem}
+                  setTempOtherServiceItem={setTempOtherServiceItem}
+                  otherServiceAmountInput={otherServiceAmountInput}
+                  setOtherServiceAmountInput={setOtherServiceAmountInput}
+                  otherServiceTotalTRYInput={otherServiceTotalTRYInput}
+                  setOtherServiceTotalTRYInput={setOtherServiceTotalTRYInput}
+                  otherServiceFxInput={otherServiceFxInput}
+                  setOtherServiceFxInput={setOtherServiceFxInput}
+                  otherServiceSupplierSearch={otherServiceSupplierSearch}
+                  setOtherServiceSupplierSearch={setOtherServiceSupplierSearch}
+                  showOtherServiceSupplierDropdown={showOtherServiceSupplierDropdown}
+                  setShowOtherServiceSupplierDropdown={setShowOtherServiceSupplierDropdown}
+                  selectedOtherServiceSupplierIndex={selectedOtherServiceSupplierIndex}
+                  setSelectedOtherServiceSupplierIndex={setSelectedOtherServiceSupplierIndex}
+                  otherSubCategories={otherSubCategories}
+                  allSuppliers={allSuppliers}
+                  dropdownPosition={dropdownPosition}
+                  updateDropdownPosition={updateDropdownPosition}
+                  setOtherServiceSupplierInputRef={setOtherServiceSupplierInputRef}
+                  handleOtherServiceAdd={handleOtherServiceAdd}
+                  handleOtherServiceSave={handleOtherServiceSave}
+                  handleOtherServiceCancel={handleOtherServiceCancel}
+                  handleOtherServiceEdit={handleOtherServiceEdit}
+                  handleOtherServiceDelete={handleOtherServiceDelete}
+                  clearOtherServiceSearch={clearOtherServiceSearch}
+                  handleOtherServiceClear={handleOtherServiceClear}
+                  handleOtherServiceExport={handleOtherServiceExport}
+                  handleOtherServiceSupplierSelect={handleOtherServiceSupplierSelect}
+                  handleOtherServiceKeyDown={handleOtherServiceKeyDown}
+                  parseTurkishNumber={parseTurkishNumber}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatExchangeRateForDisplay={formatExchangeRateForDisplay}
+                  formatNumberForInput={formatNumberForInput}
+                  formatNumber={formatNumber}
+                  formatTRY={formatTRY}
+                  formatDateForDisplay={formatDateForDisplay}
+                  getCategoryName={getCategoryName}
+                  otherServicesTotals={otherServicesTotals}
+                />
+              )}
+              {activeTab === 'finansal' && (
+                <FinancialTab
+                  financialServices={financialServices}
+                  setFinancialServices={setFinancialServices}
+                  projectId={projectId}
+                  financialSearch={financialSearch}
+                  setFinancialSearch={setFinancialSearch}
+                  editingFinancialServiceIndex={editingFinancialServiceIndex}
+                  setEditingFinancialServiceIndex={setEditingFinancialServiceIndex}
+                  tempFinancialServiceItem={tempFinancialServiceItem}
+                  setTempFinancialServiceItem={setTempFinancialServiceItem}
+                  financialAmountInput={financialAmountInput}
+                  setFinancialAmountInput={setFinancialAmountInput}
+                  financialTotalTRYInput={financialTotalTRYInput}
+                  setFinancialTotalTRYInput={setFinancialTotalTRYInput}
+                  hotelSupplierSearch={hotelSupplierSearch}
+                  setHotelSupplierSearch={setHotelSupplierSearch}
+                  showHotelSupplierDropdown={showHotelSupplierDropdown}
+                  setShowHotelSupplierDropdown={setShowHotelSupplierDropdown}
+                  selectedSupplierIndex={selectedSupplierIndex}
+                  setSelectedSupplierIndex={setSelectedSupplierIndex}
+                  financialSubCategories={financialSubCategories}
+                  filteredHotelSuppliers={filteredHotelSuppliers}
+                  dropdownPosition={dropdownPosition}
+                  updateDropdownPosition={updateDropdownPosition}
+                  setFinancialSupplierInputRef={setFinancialSupplierInputRef}
+                  handleFinancialAdd={handleFinancialAdd}
+                  handleFinancialSave={handleFinancialSave}
+                  handleFinancialCancel={handleFinancialCancel}
+                  handleFinancialEdit={handleFinancialEdit}
+                  handleFinancialDelete={handleFinancialDelete}
+                  handleFinancialSupplierSelect={handleFinancialSupplierSelect}
+                  handleFinancialKeyDown={handleFinancialKeyDown}
+                  parseTurkishNumber={parseTurkishNumber}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatNumberForInput={formatNumberForInput}
+                  formatNumber={formatNumber}
+                  formatTRY={formatTRY}
+                  formatDateForDisplay={formatDateForDisplay}
+                  getCategoryName={getCategoryName}
+                  financialTotals={financialTotals}
+                  handleFinancialClear={handleFinancialClear}
+                  handleFinancialExport={handleFinancialExport}
+                  activeHotelId={activeHotelId}
+                  project={project}
+                />
+              )}
+              {activeTab === 'tahsilat' && (
+                <TahsilatTab
+                  salesTotals={salesTotals}
+                  collectionPlans={collectionPlans}
+                  setCollectionPlans={setCollectionPlans}
+                  editingPlanIndex={editingPlanIndex}
+                  setEditingPlanIndex={setEditingPlanIndex}
+                  tempPlanItem={tempPlanItem}
+                  setTempPlanItem={setTempPlanItem}
+                  planAmountInput={planAmountInput}
+                  setPlanAmountInput={setPlanAmountInput}
+                  planTotalTRYInput={planTotalTRYInput}
+                  setPlanTotalTRYInput={setPlanTotalTRYInput}
+                  collections={collections}
+                  setCollections={setCollections}
+                  editingCollectionIndex={editingCollectionIndex}
+                  setEditingCollectionIndex={setEditingCollectionIndex}
+                  tempCollectionItem={tempCollectionItem}
+                  setTempCollectionItem={setTempCollectionItem}
+                  collectionAmountInput={collectionAmountInput}
+                  setCollectionAmountInput={setCollectionAmountInput}
+                  collectionTotalTRYInput={collectionTotalTRYInput}
+                  setCollectionTotalTRYInput={setCollectionTotalTRYInput}
+                  handlePlanSave={handlePlanSave}
+                  handlePlanCancel={handlePlanCancel}
+                  handlePlanDelete={handlePlanDelete}
+                  handleCollectionSave={handleCollectionSave}
+                  handleCollectionCancel={handleCollectionCancel}
+                  handleCollectionDelete={handleCollectionDelete}
+                  formatNumber={formatNumber}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatNumberForInput={formatNumberForInput}
+                  cleanInputValue={cleanInputValue}
+                  formatDateForDisplay={formatDateForDisplay}
+                  formatTRY={formatTRY}
+                  paymentPlanByCurrency={paymentPlanByCurrency}
+                  paidByCurrency={paidByCurrency}
+                  paymentSummary={paymentSummary}
+                  planByCurrency={planByCurrency}
+                  collectedByCurrency={collectedByCurrency}
+                  balanceByCurrency={balanceByCurrency}
+                  projectId={projectId}
+                />
+              )}
+              {activeTab === 'tahsilat_old' && (
+                <div className="space-y-4">
+                  {/* Satış Genel Toplamları */}
+                  <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                      <div className="col-span-3 font-bold">Satış Genel Toplamları</div>
+                      <div className="col-span-6 text-right font-bold">
+                        {Object.entries(salesTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + ')}
+                      </div>
+                      <div className="col-span-2 text-right font-bold">
+                        {formatNumber(salesTotals.totalTRY)} TL
+                      </div>
+                      <div className="col-span-1"></div>
+                    </div>
+                  </div>
+
+                  {/* Ödeme Planı (Sözleşme) */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="p-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Ödeme Planı</h3>
+                      <button onClick={() => {
+                        const item = { id: `plan-${Date.now()}`, date: '', collectionType: '', description: '', amount: 0, currency: 'TRY', exchangeRate: 1, totalTRY: 0 };
+                        setTempPlanItem(item);
+                        setEditingPlanIndex(collectionPlans.length);
+                        setPlanAmountInput('');
+                        setPlanTotalTRYInput('');
+                      }} className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Yeni Plan</button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs table-fixed">
+                        <colgroup>
+                          <col className="w-32" />
+                          <col className="w-36" />
+                          <col />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                          <col className="w-24" />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                        </colgroup>
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-2 py-2 text-left font-semibold">TARİH</th>
+                            <th className="px-2 py-2 text-left font-semibold">TAHSİLAT TİPİ</th>
+                            <th className="px-2 py-2 text-left font-semibold">AÇIKLAMA</th>
+                            <th className="px-2 py-2 text-right font-semibold">TUTAR</th>
+                            <th className="px-2 py-2 text-center font-semibold">DÖVİZ</th>
+                            <th className="px-2 py-2 text-right font-semibold">KUR</th>
+                            <th className="px-2 py-2 text-right font-semibold">TOPLAM TL</th>
+                            <th className="px-2 py-2 text-center font-semibold">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {editingPlanIndex !== null && editingPlanIndex === collectionPlans.length && (
+                            <tr>
+                              <td className="px-2 py-2"><input type="date" value={tempPlanItem?.date || ''} onChange={(e) => setTempPlanItem((p: any) => ({ ...p, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                              <td className="px-2 py-2">
+                                <select value={tempPlanItem?.collectionType || ''} onChange={(e) => setTempPlanItem((p: any) => ({ ...p, collectionType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                  <option value="">Seçin</option>
+                                  <option value="banka">Banka Havalesi</option>
+                                  <option value="pos">Kredi Kartı / Pos</option>
+                                  <option value="cek">Çek / Senet</option>
+                                  <option value="nakit">Nakit</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2"><input type="text" value={tempPlanItem?.description || ''} onChange={(e) => setTempPlanItem((p: any) => ({ ...p, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                              <td className="px-2 py-2"><input type="text" value={planAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPlanAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = tempPlanItem?.exchangeRate || 1; const cur = tempPlanItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempPlanItem((p: any) => ({ ...p, amount, totalTRY: tl })); setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setPlanAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><select value={tempPlanItem?.currency || 'TRY'} onChange={(e) => { const cur = e.target.value; const amount = tempPlanItem?.amount || 0; const rate = tempPlanItem?.exchangeRate || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempPlanItem((p: any) => ({ ...p, currency: cur, totalTRY: tl })); setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                              <td className="px-2 py-2"><input type="number" step="0.0001" value={tempPlanItem?.exchangeRate || ''} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = tempPlanItem?.amount || 0; const cur = tempPlanItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempPlanItem((p: any) => ({ ...p, exchangeRate: r, totalTRY: tl })); setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                              <td className="px-2 py-2"><input type="text" value={planTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPlanTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = tempPlanItem?.exchangeRate || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempPlanItem((p: any) => ({ ...p, totalTRY: tl, amount: newAmount })); setPlanAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...collectionPlans, tempPlanItem]; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                            </tr>
+                          )}
+                          {collectionPlans.map((p, idx) => (
+                            editingPlanIndex === idx ? (
+                              <tr key={p.id}>
+                                <td className="px-2 py-2"><input type="date" value={tempPlanItem?.date ?? p.date} onChange={(e) => setTempPlanItem((pp: any) => ({ ...pp, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                                <td className="px-2 py-2">
+                                  <select value={(tempPlanItem?.collectionType ?? p.collectionType) || ''} onChange={(e) => setTempPlanItem((pp: any) => ({ ...pp, collectionType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                    <option value="">Seçin</option>
+                                    <option value="banka">Banka Havalesi</option>
+                                    <option value="pos">Kredi Kartı / Pos</option>
+                                    <option value="cek">Çek / Senet</option>
+                                    <option value="nakit">Nakit</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2"><input type="text" value={tempPlanItem?.description ?? p.description} onChange={(e) => setTempPlanItem((pp: any) => ({ ...pp, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                                <td className="px-2 py-2"><input type="text" value={planAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPlanAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1; const cur = (tempPlanItem?.currency ?? p.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempPlanItem((pp: any) => ({ ...pp, amount, totalTRY: tl })); setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setPlanAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><select value={tempPlanItem?.currency ?? p.currency} onChange={(e) => { const cur = e.target.value; const amount = (tempPlanItem?.amount ?? p.amount) || 0; const rate = (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempPlanItem((pp: any) => ({ ...pp, currency: cur, totalTRY: tl })); setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                                <td className="px-2 py-2"><input type="number" step="0.0001" value={tempPlanItem?.exchangeRate ?? p.exchangeRate} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = (tempPlanItem?.amount ?? p.amount) || 0; const cur = (tempPlanItem?.currency ?? p.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempPlanItem((pp: any) => ({ ...pp, exchangeRate: r, totalTRY: tl })); setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                                <td className="px-2 py-2"><input type="text" value={planTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPlanTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempPlanItem((pp: any) => ({ ...pp, totalTRY: tl, amount: newAmount })); setPlanAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...collectionPlans]; const updated = { ...p, ...(tempPlanItem || {}) }; list[idx] = updated; setCollectionPlans(list); lsSet(`project_collection_plans_${projectId}`, list); setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingPlanIndex(null); setTempPlanItem(null); setPlanAmountInput(''); setPlanTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                              </tr>
+                            ) : (
+                              <tr key={p.id}>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white">{formatDateForDisplay(p.date)}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white">{p.collectionType === 'banka' ? 'Banka Havalesi' : p.collectionType === 'pos' ? 'Kredi Kartı / Pos' : p.collectionType === 'cek' ? 'Çek / Senet' : p.collectionType === 'nakit' ? 'Nakit' : '-'}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white">{p.description}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatNumberForDisplay(p.amount)}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-center">{p.currency}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatTRY(p.exchangeRate || 1)}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatTRY(p.totalTRY || p.amount)}</td>
+                                <td className="px-2 py-2">
+                                  <div className="flex gap-1 justify-center">
+                                    <button
+                                      onClick={() => {
+                                        setEditingPlanIndex(idx);
+                                        setTempPlanItem({ ...p });
+                                        setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
+                                        setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
+                                      }}
+                                      className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                      title="Düzenle"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        const list = collectionPlans.filter((_, i) => i !== idx);
+                                        setCollectionPlans(list);
+                                        // localStorage kullanimi kaldirildi
+                                      }}
+                                      className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                      title="Sil"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Tahsilatlar */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="p-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Tahsilatlar</h3>
+                      <button onClick={() => {
+                        const item = { id: `col-${Date.now()}`, date: '', collectionType: '', description: '', amount: 0, currency: 'TRY', exchangeRate: 1, totalTRY: 0 };
+                        setTempCollectionItem(item);
+                        setEditingCollectionIndex(collections.length);
+                        setCollectionAmountInput('');
+                        setCollectionTotalTRYInput('');
+                      }} className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Yeni Tahsilat</button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs table-fixed">
+                        <colgroup>
+                          <col className="w-32" />
+                          <col className="w-36" />
+                          <col />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                          <col className="w-24" />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                        </colgroup>
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-2 py-2 text-left font-semibold">TARİH</th>
+                            <th className="px-2 py-2 text-left font-semibold">TAHSİLAT TİPİ</th>
+                            <th className="px-2 py-2 text-left font-semibold">AÇIKLAMA</th>
+                            <th className="px-2 py-2 text-right font-semibold">TUTAR</th>
+                            <th className="px-2 py-2 text-center font-semibold">DÖVİZ</th>
+                            <th className="px-2 py-2 text-right font-semibold">KUR</th>
+                            <th className="px-2 py-2 text-right font-semibold">TOPLAM TL</th>
+                            <th className="px-2 py-2 text-center font-semibold">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {editingCollectionIndex !== null && editingCollectionIndex === collections.length && (
+                            <tr>
+                              <td className="px-2 py-2"><input type="date" value={tempCollectionItem?.date || ''} onChange={(e) => setTempCollectionItem((p: any) => ({ ...p, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                              <td className="px-2 py-2">
+                                <select value={tempCollectionItem?.collectionType || ''} onChange={(e) => setTempCollectionItem((p: any) => ({ ...p, collectionType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                  <option value="">Seçin</option>
+                                  <option value="banka">Banka Havalesi</option>
+                                  <option value="pos">Kredi Kartı / Pos</option>
+                                  <option value="cek">Çek / Senet</option>
+                                  <option value="nakit">Nakit</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2"><input type="text" value={tempCollectionItem?.description || ''} onChange={(e) => setTempCollectionItem((p: any) => ({ ...p, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                              <td className="px-2 py-2"><input type="text" value={collectionAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setCollectionAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = tempCollectionItem?.exchangeRate || 1; const cur = tempCollectionItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempCollectionItem((p: any) => ({ ...p, amount, totalTRY: tl })); setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setCollectionAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><select value={tempCollectionItem?.currency || 'TRY'} onChange={(e) => { const cur = e.target.value; const amount = tempCollectionItem?.amount || 0; const rate = tempCollectionItem?.exchangeRate || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempCollectionItem((p: any) => ({ ...p, currency: cur, totalTRY: tl })); setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                              <td className="px-2 py-2"><input type="number" step="0.0001" value={tempCollectionItem?.exchangeRate || ''} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = tempCollectionItem?.amount || 0; const cur = tempCollectionItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempCollectionItem((p: any) => ({ ...p, exchangeRate: r, totalTRY: tl })); setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                              <td className="px-2 py-2"><input type="text" value={collectionTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setCollectionTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = tempCollectionItem?.exchangeRate || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempCollectionItem((p: any) => ({ ...p, totalTRY: tl, amount: newAmount })); setCollectionAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...collections, tempCollectionItem]; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                            </tr>
+                          )}
+                          {collections.map((c, idx) => (
+                            editingCollectionIndex === idx ? (
+                              <tr key={c.id}>
+                                <td className="px-2 py-2"><input type="date" value={tempCollectionItem?.date ?? c.date} onChange={(e) => setTempCollectionItem((cc: any) => ({ ...cc, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                                <td className="px-2 py-2">
+                                  <select value={(tempCollectionItem?.collectionType ?? c.collectionType) || ''} onChange={(e) => setTempCollectionItem((cc: any) => ({ ...cc, collectionType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                    <option value="">Seçin</option>
+                                    <option value="banka">Banka Havalesi</option>
+                                    <option value="pos">Kredi Kartı / Pos</option>
+                                    <option value="cek">Çek / Senet</option>
+                                    <option value="nakit">Nakit</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2"><input type="text" value={tempCollectionItem?.description ?? c.description} onChange={(e) => setTempCollectionItem((cc: any) => ({ ...cc, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                                <td className="px-2 py-2"><input type="text" value={collectionAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setCollectionAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = (tempCollectionItem?.exchangeRate ?? c.exchangeRate) || 1; const cur = (tempCollectionItem?.currency ?? c.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempCollectionItem((cc: any) => ({ ...cc, amount, totalTRY: tl })); setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setCollectionAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><select value={tempCollectionItem?.currency ?? c.currency} onChange={(e) => { const cur = e.target.value; const amount = (tempCollectionItem?.amount ?? c.amount) || 0; const rate = (tempCollectionItem?.exchangeRate ?? c.exchangeRate) || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempCollectionItem((cc: any) => ({ ...cc, currency: cur, totalTRY: tl })); setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                                <td className="px-2 py-2"><input type="number" step="0.0001" value={tempCollectionItem?.exchangeRate ?? c.exchangeRate} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = (tempCollectionItem?.amount ?? c.amount) || 0; const cur = (tempCollectionItem?.currency ?? c.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempCollectionItem((cc: any) => ({ ...cc, exchangeRate: r, totalTRY: tl })); setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                                <td className="px-2 py-2"><input type="text" value={collectionTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setCollectionTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = (tempCollectionItem?.exchangeRate ?? c.exchangeRate) || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempCollectionItem((cc: any) => ({ ...cc, totalTRY: tl, amount: newAmount })); setCollectionAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setCollectionTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...collections]; const updated = { ...c, ...(tempCollectionItem || {}) }; list[idx] = updated; setCollections(list); lsSet(`project_collections_${projectId}`, list); setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingCollectionIndex(null); setTempCollectionItem(null); setCollectionAmountInput(''); setCollectionTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hoverbg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                              </tr>
+                            ) : (
+                              <tr key={c.id}>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white">{formatDateForDisplay(c.date)}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white">{c.collectionType === 'banka' ? 'Banka Havalesi' : c.collectionType === 'pos' ? 'Kredi Kartı / Pos' : c.collectionType === 'cek' ? 'Çek / Senet' : c.collectionType === 'nakit' ? 'Nakit' : '-'}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white">{c.description}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatNumberForDisplay(c.amount)}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-center">{c.currency}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatTRY(c.exchangeRate || 1)}</td>
+                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">{formatTRY(c.totalTRY || c.amount)}</td>
+                                <td className="px-2 py-2">
+                                  <div className="flex gap-1 justify-center">
+                                    <button
+                                      onClick={() => {
+                                        setEditingCollectionIndex(idx);
+                                        setTempCollectionItem({ ...c });
+                                        setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
+                                        setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
+                                      }}
+                                      className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                      title="Düzenle"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        const list = collections.filter((_, i) => i !== idx);
+                                        setCollections(list);
+                                        lsSet(`project_collections_${projectId}`, list);
+                                      }}
+                                      className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                      title="Sil"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Bakiye Özeti */}
+                  <div className="bg-emerald-600 dark:bg-emerald-700 rounded-md p-3">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                      <div className="col-span-3 font-bold">Bakiye Özeti (Döviz Bazında)</div>
+                      <div className="col-span-9 text-right font-bold">
+                        {Array.from(new Set([...Object.keys(planByCurrency), ...Object.keys(collectedByCurrency)])).map((cur) => {
+                          const plan = planByCurrency[cur] || 0;
+                          const tahsil = collectedByCurrency[cur] || 0;
+                          const bakiye = balanceByCurrency[cur] || 0;
+                          return `${formatNumber(plan)} ${cur} / ${formatNumber(tahsil)} ${cur} / ${formatNumber(bakiye)} ${cur}`;
+                        }).join('   |   ')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'odeme' && (
+                <OdemeTab
+                  projectId={projectId}
+                  purchaseTotals={purchaseTotals}
+                  paymentPlans={paymentPlans}
+                  setPaymentPlans={setPaymentPlans}
+                  editingPaymentPlanIndex={editingPaymentPlanIndex}
+                  setEditingPaymentPlanIndex={setEditingPaymentPlanIndex}
+                  tempPaymentPlanItem={tempPaymentPlanItem}
+                  setTempPaymentPlanItem={setTempPaymentPlanItem}
+                  paymentPlanAmountInput={paymentPlanAmountInput}
+                  setPaymentPlanAmountInput={setPaymentPlanAmountInput}
+                  paymentPlanTotalTRYInput={paymentPlanTotalTRYInput}
+                  setPaymentPlanTotalTRYInput={setPaymentPlanTotalTRYInput}
+                  payments={payments}
+                  setPayments={setPayments}
+                  editingPaymentIndex={editingPaymentIndex}
+                  setEditingPaymentIndex={setEditingPaymentIndex}
+                  tempPaymentItem={tempPaymentItem}
+                  setTempPaymentItem={setTempPaymentItem}
+                  paymentAmountInput={paymentAmountInput}
+                  setPaymentAmountInput={setPaymentAmountInput}
+                  paymentTotalTRYInput={paymentTotalTRYInput}
+                  setPaymentTotalTRYInput={setPaymentTotalTRYInput}
+                  handlePaymentPlanSave={handlePaymentPlanSave}
+                  handlePaymentPlanCancel={handlePaymentPlanCancel}
+                  handlePaymentPlanDelete={handlePaymentPlanDelete}
+                  handlePaymentSave={handlePaymentSave}
+                  handlePaymentCancel={handlePaymentCancel}
+                  handlePaymentDelete={handlePaymentDelete}
+                  formatNumber={formatNumber}
+                  formatNumberForDisplay={formatNumberForDisplay}
+                  formatNumberForInput={formatNumberForInput}
+                  cleanInputValue={cleanInputValue}
+                  formatDateForDisplay={formatDateForDisplay}
+                  formatTRY={formatTRY}
+                  paymentPlanByCurrency={paymentPlanByCurrency}
+                  paidByCurrency={paidByCurrency}
+                  paymentSummary={paymentSummary}
+                  paymentPlanHotelSupplierSearch={paymentPlanHotelSupplierSearch}
+                  setPaymentPlanHotelSupplierSearch={setPaymentPlanHotelSupplierSearch}
+                  showPaymentPlanHotelSupplierDropdown={showPaymentPlanHotelSupplierDropdown}
+                  setShowPaymentPlanHotelSupplierDropdown={setShowPaymentPlanHotelSupplierDropdown}
+                  selectedPaymentPlanSupplierIndex={selectedPaymentPlanSupplierIndex}
+                  setSelectedPaymentPlanSupplierIndex={setSelectedPaymentPlanSupplierIndex}
+                  paymentHotelSupplierSearch={paymentHotelSupplierSearch}
+                  setPaymentHotelSupplierSearch={setPaymentHotelSupplierSearch}
+                  showPaymentHotelSupplierDropdown={showPaymentHotelSupplierDropdown}
+                  setShowPaymentHotelSupplierDropdown={setShowPaymentHotelSupplierDropdown}
+                  selectedPaymentSupplierIndex={selectedPaymentSupplierIndex}
+                  setSelectedPaymentSupplierIndex={setSelectedPaymentSupplierIndex}
+                  filteredHotelSuppliers={filteredHotelSuppliers}
+                  allSuppliers={allSuppliers}
+                  suppliers={suppliers}
+                  hotels={hotels}
+                  dropdownPosition={dropdownPosition}
+                  updateDropdownPosition={updateDropdownPosition}
+                  setPaymentPlanSupplierInputRef={setPaymentPlanSupplierInputRef}
+                  setPaymentSupplierInputRef={setPaymentSupplierInputRef}
+                  handlePaymentPlanSupplierSelect={handlePaymentPlanSupplierSelect}
+                  handlePaymentPlanKeyDown={handlePaymentPlanKeyDown}
+                  handlePaymentSupplierSelect={handlePaymentSupplierSelect}
+                  handlePaymentKeyDown={handlePaymentKeyDown}
+                />
+              )}
+              {activeTab === 'kar-zarar' && (
+                <KarZararTab
+                  profitLossData={profitLossData}
+                  salesTotals={salesTotals}
+                  purchaseTotals={purchaseTotals}
+                  groupedProfitLossData={groupedProfitLossData}
+                  formatNumber={formatNumber}
+                  formatByCurrencySummary={formatByCurrencySummary}
+                />
+              )}
+              {activeTab === 'odeme_old' && (
+                <div className="space-y-4">
+                  {/* Alış Genel Toplamları */}
+                  <div className="bg-red-600 dark:bg-red-700 rounded-md p-3">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                      <div className="col-span-3 font-bold">Alış Genel Toplamları</div>
+                      <div className="col-span-6 text-right font-bold">
+                        {Object.entries(purchaseTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + ')}
+                      </div>
+                      <div className="col-span-2 text-right font-bold">
+                        {formatNumber(purchaseTotals.totalTRY)} TL
+                      </div>
+                      <div className="col-span-1"></div>
+                    </div>
+                  </div>
+
+                  {/* Ödeme Planı (Alış) */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="p-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Ödeme Planı</h3>
+                      <button onClick={() => {
+                        const item = { id: `plan-${Date.now()}`, date: '', paymentType: '', description: '', amount: 0, currency: 'TRY', exchangeRate: 1, totalTRY: 0 };
+                        setTempPaymentPlanItem(item);
+                        setEditingPaymentPlanIndex(paymentPlans.length);
+                        setPaymentPlanAmountInput('');
+                        setPaymentPlanTotalTRYInput('');
+                      }} className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Yeni Plan</button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs table-fixed">
+                        <colgroup>
+                          <col className="w-32" />
+                          <col className="w-36" />
+                          <col />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                          <col className="w-24" />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                        </colgroup>
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-2 py-2 text-left font-semibold">TARİH</th>
+                            <th className="px-2 py-2 text-left font-semibold">ÖDEME TİPİ</th>
+                            <th className="px-2 py-2 text-left font-semibold">AÇIKLAMA</th>
+                            <th className="px-2 py-2 text-right font-semibold">TUTAR</th>
+                            <th className="px-2 py-2 text-center font-semibold">DÖVİZ</th>
+                            <th className="px-2 py-2 text-right font-semibold">KUR</th>
+                            <th className="px-2 py-2 text-right font-semibold">TOPLAM TL</th>
+                            <th className="px-2 py-2 text-center font-semibold">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {editingPaymentPlanIndex !== null && editingPaymentPlanIndex === paymentPlans.length && (
+                            <tr>
+                              <td className="px-2 py-2"><input type="date" value={tempPaymentPlanItem?.date || ''} onChange={(e) => setTempPaymentPlanItem((p: any) => ({ ...p, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                              <td className="px-2 py-2">
+                                <select value={tempPaymentPlanItem?.paymentType || ''} onChange={(e) => setTempPaymentPlanItem((p: any) => ({ ...p, paymentType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                  <option value="">Seçin</option>
+                                  <option value="banka">Banka Havalesi</option>
+                                  <option value="pos">Kredi Kartı / Pos</option>
+                                  <option value="cek">Çek / Senet</option>
+                                  <option value="nakit">Nakit</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2"><input type="text" value={tempPaymentPlanItem?.description || ''} onChange={(e) => setTempPaymentPlanItem((p: any) => ({ ...p, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                              <td className="px-2 py-2"><input type="text" value={paymentPlanAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentPlanAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = tempPaymentPlanItem?.exchangeRate || 1; const cur = tempPaymentPlanItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentPlanItem((p: any) => ({ ...p, amount, totalTRY: tl })); setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setPaymentPlanAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><select value={tempPaymentPlanItem?.currency || 'TRY'} onChange={(e) => { const cur = e.target.value; const amount = tempPaymentPlanItem?.amount || 0; const rate = tempPaymentPlanItem?.exchangeRate || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentPlanItem((p: any) => ({ ...p, currency: cur, totalTRY: tl })); setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                              <td className="px-2 py-2"><input type="number" step="0.0001" value={tempPaymentPlanItem?.exchangeRate || ''} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = tempPaymentPlanItem?.amount || 0; const cur = tempPaymentPlanItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempPaymentPlanItem((p: any) => ({ ...p, exchangeRate: r, totalTRY: tl })); setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                              <td className="px-2 py-2"><input type="text" value={paymentPlanTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentPlanTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = tempPaymentPlanItem?.exchangeRate || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempPaymentPlanItem((p: any) => ({ ...p, totalTRY: tl, amount: newAmount })); setPaymentPlanAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...paymentPlans, tempPaymentPlanItem]; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                            </tr>
+                          )}
+                          {paymentPlans.map((p, idx) => (
+                            editingPaymentPlanIndex === idx ? (
+                              <tr key={p.id}>
+                                <td className="px-2 py-2"><input type="date" value={tempPaymentPlanItem?.date ?? p.date} onChange={(e) => setTempPaymentPlanItem((pp: any) => ({ ...pp, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                                <td className="px-2 py-2">
+                                  <select value={(tempPaymentPlanItem?.paymentType ?? p.paymentType) || ''} onChange={(e) => setTempPaymentPlanItem((pp: any) => ({ ...pp, paymentType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                    <option value="">Seçin</option>
+                                    <option value="banka">Banka Havalesi</option>
+                                    <option value="pos">Kredi Kartı / Pos</option>
+                                    <option value="cek">Çek / Senet</option>
+                                    <option value="nakit">Nakit</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2"><input type="text" value={tempPaymentPlanItem?.description ?? p.description} onChange={(e) => setTempPaymentPlanItem((pp: any) => ({ ...pp, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                                <td className="px-2 py-2"><input type="text" value={paymentPlanAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentPlanAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = (tempPaymentPlanItem?.exchangeRate ?? p.exchangeRate) || 1; const cur = (tempPaymentPlanItem?.currency ?? p.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentPlanItem((pp: any) => ({ ...pp, amount, totalTRY: tl })); setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setPaymentPlanAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><select value={tempPaymentPlanItem?.currency ?? p.currency} onChange={(e) => { const cur = e.target.value; const amount = (tempPaymentPlanItem?.amount ?? p.amount) || 0; const rate = (tempPaymentPlanItem?.exchangeRate ?? p.exchangeRate) || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentPlanItem((pp: any) => ({ ...pp, currency: cur, totalTRY: tl })); setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                                <td className="px-2 py-2"><input type="number" step="0.0001" value={tempPaymentPlanItem?.exchangeRate ?? p.exchangeRate} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = (tempPaymentPlanItem?.amount ?? p.amount) || 0; const cur = (tempPaymentPlanItem?.currency ?? p.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempPaymentPlanItem((pp: any) => ({ ...pp, exchangeRate: r, totalTRY: tl })); setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                                <td className="px-2 py-2"><input type="text" value={paymentPlanTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentPlanTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = (tempPaymentPlanItem?.exchangeRate ?? p.exchangeRate) || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempPaymentPlanItem((pp: any) => ({ ...pp, totalTRY: tl, amount: newAmount })); setPaymentPlanAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setPaymentPlanTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...paymentPlans]; const updated = { ...p, ...(tempPaymentPlanItem || {}) }; list[idx] = updated; setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingPaymentPlanIndex(null); setTempPaymentPlanItem(null); setPaymentPlanAmountInput(''); setPaymentPlanTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                              </tr>
+                            ) : (
+                              <tr key={p.id}>
+                                <td className="px-2 py-2 text-left">{p.date ? formatDateForDisplay(p.date) : '-'}</td>
+                                <td className="px-2 py-2 text-left">{p.paymentType || '-'}</td>
+                                <td className="px-2 py-2 text-left">{p.description || '-'}</td>
+                                <td className="px-2 py-2 text-right">{formatNumberForDisplay(p.amount || 0)}</td>
+                                <td className="px-2 py-2 text-center">{p.currency || 'TRY'}</td>
+                                <td className="px-2 py-2 text-right">{formatNumberForDisplay(p.exchangeRate || 1)}</td>
+                                <td className="px-2 py-2 text-right">₺{formatNumberForDisplay(p.totalTRY || 0)}</td>
+                                <td className="px-2 py-2 text-center">
+                                  <div className="flex gap-1 justify-center">
+                                    <button onClick={() => { setTempPaymentPlanItem(p); setEditingPaymentPlanIndex(idx); setPaymentPlanAmountInput(formatNumberForDisplay(p.amount || 0)); setPaymentPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0)); }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30" title="Düzenle"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                                    <button onClick={() => { const list = paymentPlans.filter((_, i) => i !== idx); setPaymentPlans(list); lsSet(`project_payment_plans_${projectId}`, list); }} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Ödemeler */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div className="p-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Ödemeler</h3>
+                      <button onClick={() => {
+                        const item = { id: `pay-${Date.now()}`, date: '', paymentType: '', description: '', amount: 0, currency: 'TRY', exchangeRate: 1, totalTRY: 0 };
+                        setTempPaymentItem(item);
+                        setEditingPaymentIndex(payments.length);
+                        setPaymentAmountInput('');
+                        setPaymentTotalTRYInput('');
+                      }} className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Yeni Ödeme</button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs table-fixed">
+                        <colgroup>
+                          <col className="w-32" />
+                          <col className="w-36" />
+                          <col />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                          <col className="w-24" />
+                          <col className="w-32" />
+                          <col className="w-20" />
+                        </colgroup>
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-2 py-2 text-left font-semibold">TARİH</th>
+                            <th className="px-2 py-2 text-left font-semibold">ÖDEME TİPİ</th>
+                            <th className="px-2 py-2 text-left font-semibold">AÇIKLAMA</th>
+                            <th className="px-2 py-2 text-right font-semibold">TUTAR</th>
+                            <th className="px-2 py-2 text-center font-semibold">DÖVİZ</th>
+                            <th className="px-2 py-2 text-right font-semibold">KUR</th>
+                            <th className="px-2 py-2 text-right font-semibold">TOPLAM TL</th>
+                            <th className="px-2 py-2 text-center font-semibold">İŞLEMLER</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {editingPaymentIndex !== null && editingPaymentIndex === payments.length && (
+                            <tr>
+                              <td className="px-2 py-2"><input type="date" value={tempPaymentItem?.date || ''} onChange={(e) => setTempPaymentItem((p: any) => ({ ...p, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                              <td className="px-2 py-2">
+                                <select value={tempPaymentItem?.paymentType || ''} onChange={(e) => setTempPaymentItem((p: any) => ({ ...p, paymentType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                  <option value="">Seçin</option>
+                                  <option value="banka">Banka Havalesi</option>
+                                  <option value="pos">Kredi Kartı / Pos</option>
+                                  <option value="cek">Çek / Senet</option>
+                                  <option value="nakit">Nakit</option>
+                                </select>
+                              </td>
+                              <td className="px-2 py-2"><input type="text" value={tempPaymentItem?.description || ''} onChange={(e) => setTempPaymentItem((p: any) => ({ ...p, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                              <td className="px-2 py-2"><input type="text" value={paymentAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = tempPaymentItem?.exchangeRate || 1; const cur = tempPaymentItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentItem((p: any) => ({ ...p, amount, totalTRY: tl })); setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setPaymentAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><select value={tempPaymentItem?.currency || 'TRY'} onChange={(e) => { const cur = e.target.value; const amount = tempPaymentItem?.amount || 0; const rate = tempPaymentItem?.exchangeRate || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentItem((p: any) => ({ ...p, currency: cur, totalTRY: tl })); setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                              <td className="px-2 py-2"><input type="number" step="0.0001" value={tempPaymentItem?.exchangeRate || ''} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = tempPaymentItem?.amount || 0; const cur = tempPaymentItem?.currency || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempPaymentItem((p: any) => ({ ...p, exchangeRate: r, totalTRY: tl })); setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                              <td className="px-2 py-2"><input type="text" value={paymentTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = tempPaymentItem?.exchangeRate || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempPaymentItem((p: any) => ({ ...p, totalTRY: tl, amount: newAmount })); setPaymentAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                              <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...payments, tempPaymentItem]; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                            </tr>
+                          )}
+                          {payments.map((p, idx) => (
+                            editingPaymentIndex === idx ? (
+                              <tr key={p.id}>
+                                <td className="px-2 py-2"><input type="date" value={tempPaymentItem?.date ?? p.date} onChange={(e) => setTempPaymentItem((pp: any) => ({ ...pp, date: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" /></td>
+                                <td className="px-2 py-2">
+                                  <select value={(tempPaymentItem?.paymentType ?? p.paymentType) || ''} onChange={(e) => setTempPaymentItem((pp: any) => ({ ...pp, paymentType: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white">
+                                    <option value="">Seçin</option>
+                                    <option value="banka">Banka Havalesi</option>
+                                    <option value="pos">Kredi Kartı / Pos</option>
+                                    <option value="cek">Çek / Senet</option>
+                                    <option value="nakit">Nakit</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2"><input type="text" value={tempPaymentItem?.description ?? p.description} onChange={(e) => setTempPaymentItem((pp: any) => ({ ...pp, description: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" /></td>
+                                <td className="px-2 py-2"><input type="text" value={paymentAmountInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentAmountInput(raw); const amount = cleanInputValue(raw) || 0; const rate = (tempPaymentItem?.exchangeRate ?? p.exchangeRate) || 1; const cur = (tempPaymentItem?.currency ?? p.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentItem((pp: any) => ({ ...pp, amount, totalTRY: tl })); setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onBlur={(e) => { const amount = cleanInputValue(e.target.value) || 0; setPaymentAmountInput(formatNumberForDisplay(amount)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><select value={tempPaymentItem?.currency ?? p.currency} onChange={(e) => { const cur = e.target.value; const amount = (tempPaymentItem?.amount ?? p.amount) || 0; const rate = (tempPaymentItem?.exchangeRate ?? p.exchangeRate) || 1; const tl = cur === 'TRY' ? amount : amount * rate; setTempPaymentItem((pp: any) => ({ ...pp, currency: cur, totalTRY: tl })); setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+                                <td className="px-2 py-2"><input type="number" step="0.0001" value={tempPaymentItem?.exchangeRate ?? p.exchangeRate} onChange={(e) => { const r = parseFloat(e.target.value) || 0; const amount = (tempPaymentItem?.amount ?? p.amount) || 0; const cur = (tempPaymentItem?.currency ?? p.currency) || 'TRY'; const tl = cur === 'TRY' ? amount : amount * r; setTempPaymentItem((pp: any) => ({ ...pp, exchangeRate: r, totalTRY: tl })); setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" /></td>
+                                <td className="px-2 py-2"><input type="text" value={paymentTotalTRYInput} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','); setPaymentTotalTRYInput(raw); const tl = cleanInputValue(raw) || 0; const rate = (tempPaymentItem?.exchangeRate ?? p.exchangeRate) || 1; const newAmount = rate > 0 ? tl / rate : 0; setTempPaymentItem((pp: any) => ({ ...pp, totalTRY: tl, amount: newAmount })); setPaymentAmountInput(formatNumberForDisplay(newAmount)); }} onBlur={(e) => { const tl = cleanInputValue(e.target.value) || 0; setPaymentTotalTRYInput(formatNumberForDisplay(tl)); }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } else if (e.key === 'Escape') { e.preventDefault(); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); } }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" /></td>
+                                <td className="px-2 py-2"><div className="flex gap-1 justify-center"><button onClick={() => { const list = [...payments]; const updated = { ...p, ...(tempPaymentItem || {}) }; list[idx] = updated; setPayments(list); lsSet(`project_payments_${projectId}`, list); setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button><button onClick={() => { setEditingPaymentIndex(null); setTempPaymentItem(null); setPaymentAmountInput(''); setPaymentTotalTRYInput(''); }} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>
+                              </tr>
+                            ) : (
+                              <tr key={p.id}>
+                                <td className="px-2 py-2 text-left">{p.date ? formatDateForDisplay(p.date) : '-'}</td>
+                                <td className="px-2 py-2 text-left">{p.paymentType || '-'}</td>
+                                <td className="px-2 py-2 text-left">{p.description || '-'}</td>
+                                <td className="px-2 py-2 text-right">{formatNumberForDisplay(p.amount || 0)}</td>
+                                <td className="px-2 py-2 text-center">{p.currency || 'TRY'}</td>
+                                <td className="px-2 py-2 text-right">{formatNumberForDisplay(p.exchangeRate || 1)}</td>
+                                <td className="px-2 py-2 text-right">₺{formatNumberForDisplay(p.totalTRY || 0)}</td>
+                                <td className="px-2 py-2 text-center">
+                                  <div className="flex gap-1 justify-center">
+                                    <button onClick={() => { setTempPaymentItem(p); setEditingPaymentIndex(idx); setPaymentAmountInput(formatNumberForDisplay(p.amount || 0)); setPaymentTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0)); }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30" title="Düzenle"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                                    <button onClick={() => { const list = payments.filter((_, i) => i !== idx); setPayments(list); lsSet(`project_payments_${projectId}`, list); }} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Bakiye Özeti (Döviz Bazında) */}
+                  <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Bakiye Özeti (Döviz Bazında)</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+                      <table className="w-full text-xs table-fixed">
+                        <colgroup>
+                          <col className="w-24" />
+                          <col className="w-36" />
+                          <col className="w-36" />
+                          <col className="w-36" />
+                        </colgroup>
+                        <thead className="bg-gray-100 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-2 py-2 text-left font-semibold">DÖVİZ</th>
+                            <th className="px-2 py-2 text-right font-semibold">PLAN</th>
+                            <th className="px-2 py-2 text-right font-semibold">ÖDENEN</th>
+                            <th className="px-2 py-2 text-right font-semibold">BAKİYE</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {Object.keys({ ...paymentPlanByCurrency, ...paidByCurrency }).map((cur) => {
+                            const plan = paymentPlanByCurrency[cur] || 0;
+                            const paid = paidByCurrency[cur] || 0;
+                            const balance = plan - paid;
+                            return (
+                              <tr key={cur}>
+                                <td className="px-2 py-2 text-left">{cur}</td>
+                                <td className="px-2 py-2 text-right">{formatNumberForDisplay(plan)}</td>
+                                <td className="px-2 py-2 text-right">{formatNumberForDisplay(paid)}</td>
+                                <td className={`px-2 py-2 text-right ${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-green-600' : 'text-gray-700 dark:text-gray-200'}`}>{formatNumberForDisplay(balance)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                        <tfoot className="bg-gray-50 dark:bg-gray-900/40">
+                          <tr>
+                            <td className="px-2 py-2 text-left font-semibold">TOPLAM TL</td>
+                            <td className="px-2 py-2 text-right font-semibold">₺{formatNumberForDisplay(paymentSummary.planTRY)}</td>
+                            <td className="px-2 py-2 text-right font-semibold">₺{formatNumberForDisplay(paymentSummary.paidTRY)}</td>
+                            <td className={`px-2 py-2 text-right font-semibold ${paymentSummary.balanceTRY > 0 ? 'text-red-600' : paymentSummary.balanceTRY < 0 ? 'text-green-600' : 'text-gray-700 dark:text-gray-200'}`}>₺{formatNumberForDisplay(paymentSummary.balanceTRY)}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Transfer Zamanlama Modal */}
+      {showTransferTimingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Transfer Zamanlaması
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Çıkış transferleri için dönüş uçak kalkış saatinden kaç saat önce planlama yapmak istiyorsunuz?
+            </p>
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="number"
+                min="0"
+                max="23"
+                value={departureHours}
+                onChange={(e) => setDepartureHours(parseInt(e.target.value) || 0)}
+                className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center dark:bg-gray-700 dark:text-white"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-300">saat</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="15"
+                value={departureMinutes}
+                onChange={(e) => setDepartureMinutes(parseInt(e.target.value) || 0)}
+                className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center dark:bg-gray-700 dark:text-white"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-300">dakika</span>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowTransferTimingModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleCreateTransfersWithTiming}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Transferleri Oluştur
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link Modal */}
+      {/* Link Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h2 className="text-2xl font-black dark:text-white uppercase tracking-tight">Public Link Yönetimi</h2>
+                <p className="text-sm text-gray-500 font-medium">Müşterileriniz için şifre korumalı ve güvenli mutabakat linkleri oluşturun.</p>
+              </div>
+              <button 
+                onClick={() => { setShowLinkModal(false); setGeneratedLink(''); }} 
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors bg-gray-100 dark:bg-gray-700 rounded-xl"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Existing links */}
+            {projectLinks.length > 0 && (
+              <div className="mb-10 space-y-4">
+                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">MEVCUT LİNKLER & MUTABAKAT GEÇMİŞİ</h3>
+                <div className="space-y-4 pr-2">
+                  {projectLinks.map((link: any, idx: number) => {
+                    const fullLink = `${window.location.origin}/projects/view/${link.project_id || projectId}?token=${link.token}&tab=satis`;
+                    const isExpired = link.expiry_date ? new Date(link.expiry_date) < new Date() : false;
+                    const approval = link.approval;
+                    const isApproved = approval?.is_approved;
+
+                    return (
+                      <div key={link.id || idx} className={`group rounded-3xl border-2 transition-all duration-300 ${isApproved ? 'bg-green-50/30 border-green-100 dark:bg-green-900/5 dark:border-green-900/20' : link.is_active && !isExpired ? 'bg-white dark:bg-gray-800 border-slate-100 dark:border-slate-700 shadow-sm' : 'bg-gray-50 dark:bg-gray-700/50 border-gray-100 dark:border-gray-600 opacity-70'}`}>
+                        <div className="p-5">
+                          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+                            <div className="flex-1 min-w-[280px]">
+                              <div className="flex flex-wrap items-center gap-2 mb-3">
+                                <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${isApproved ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : link.is_active && !isExpired ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-400'}`}>
+                                  {isApproved ? 'ONAYLANDI' : link.is_active && !isExpired ? 'Aktif' : isExpired ? 'Süresi Dolmuş' : 'Pasif'}
+                                </span>
+                                <span className="text-[10px] text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg">
+                                  #{(link.id || '').substring(0, 8)}
+                                </span>
+                                <span className="text-[10px] text-gray-500 font-medium ml-2">
+                                  {new Date(link.created_at).toLocaleDateString('tr-TR')} {new Date(link.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 group/link cursor-pointer" onClick={() => handleCopyLinkFromList(link)}>
+                                <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[400px] hover:text-blue-500 transition-colors">{fullLink}</p>
+                                <svg className="w-3.5 h-3.5 text-blue-500 opacity-0 group-hover/link:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleToggleLinkStatus(link.id || link.token); }}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-[10px] font-bold uppercase tracking-tight ${link.is_active ? 'bg-orange-50 border-orange-100 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/10 dark:border-orange-900/20' : 'bg-green-50 border-green-100 text-green-600 hover:bg-green-100 dark:bg-green-900/10 dark:border-green-900/20'}`}
+                              >
+                                {link.is_active ? (
+                                  <>PASİF ET</>
+                                ) : (
+                                  <>AKTİF ET</>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t border-dashed border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center gap-8">
+                              <div className="space-y-1">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GÜVENLİK ŞİFRESİ</p>
+                                <div className="flex items-center gap-2 group/pass" onClick={() => togglePasswordVisibility(link.id || link.token)}>
+                                  <span className="text-xs font-black dark:text-gray-300 font-mono tracking-wider cursor-pointer">
+                                    {visiblePasswords[link.id || link.token] ? link.password : '••••••••'}
+                                  </span>
+                                  <button className="text-slate-300 hover:text-blue-500 transition-colors">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                  </button>
+                                </div>
+                              </div>
+                              {link.expiry_date && (
+                                <div className="space-y-1 border-l border-slate-100 dark:border-slate-700 pl-8">
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SON GEÇERLİLİK</p>
+                                  <p className="text-xs font-bold dark:text-gray-400">{new Date(link.expiry_date).toLocaleDateString('tr-TR')}</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {isApproved ? (
+                              <div className="bg-green-100/50 dark:bg-green-900/10 p-4 rounded-2xl border border-green-200 dark:border-green-900/30">
+                                <div className="flex items-start gap-3">
+                                  <div className="p-1.5 bg-green-500 rounded-lg text-white">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-[10px] font-black text-green-800 dark:text-green-400 uppercase tracking-widest mb-1.5">MUTABAKAT ONAY BİLGİSİ</p>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                      <div>
+                                        <p className="text-[9px] text-green-700/60 dark:text-green-500/60 font-bold uppercase">ONAYLAYAN</p>
+                                        <p className="text-[11px] font-black text-green-900 dark:text-green-300">{approval.name} {approval.surname}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[9px] text-green-700/60 dark:text-green-500/60 font-bold uppercase">E-POSTA</p>
+                                        <p className="text-[11px] font-black text-green-900 dark:text-green-300">{approval.email}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[9px] text-green-700/60 dark:text-green-500/60 font-bold uppercase">IP ADRESİ</p>
+                                        <p className="text-[11px] font-mono font-bold text-green-800 dark:text-green-400">{approval.ip_address}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[9px] text-green-700/60 dark:text-green-500/60 font-bold uppercase">LOKASYON</p>
+                                        <p className="text-[11px] font-bold text-green-800 dark:text-green-400">
+                                          {approval.geo_location ? `${approval.geo_location.city}, ${approval.geo_location.country}` : 'N/A'}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">HAKİKATEN BEKLENİYOR...</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4 border-t border-gray-100 dark:border-gray-700 pt-5">
+              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">YENİ LİNK OLUŞTUR</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Şifre (opsiyonel)</label>
+                  <input 
+                    type="text" 
+                    value={linkPassword} 
+                    onChange={e => setLinkPassword(e.target.value)} 
+                    placeholder="Otomatik oluşturulur..."
+                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Geçerlilik Tarihi</label>
+                  <input 
+                    type="date" 
+                    value={linkExpiryDate} 
+                    onChange={e => setLinkExpiryDate(e.target.value)} 
+                    min={new Date().toISOString().split('T')[0]} 
+                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" 
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs dark:text-gray-300 cursor-pointer select-none">
+                  <input 
+                    type="checkbox" 
+                    checked={linkIsActive} 
+                    onChange={e => setLinkIsActive(e.target.checked)} 
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" 
+                  />
+                  <span className="font-bold text-gray-700 dark:text-gray-300">Link Aktif Olsun</span>
+                </label>
+                
+                <button 
+                  onClick={handleCreateLink} 
+                  className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-bold uppercase tracking-widest rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
+                >
+                  Link Oluştur
+                </button>
+              </div>
+
+              {generatedLink && (
+                <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
+                  <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-2">OLUŞTURULAN LİNK</p>
+                  <div className="flex items-center gap-2">
+                    <p className="flex-1 text-xs break-all dark:text-gray-300 font-mono bg-white/50 dark:bg-black/20 p-2 rounded border border-green-200 dark:border-green-800">
+                      {generatedLink}
+                    </p>
+                    <button 
+                      onClick={handleCopyLink} 
+                      className="p-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                      title="Linki Kopyala"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD HOTEL MODAL COMPONENT */}
+      {isAddHotelModalOpen && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
+              <h2 className="text-xl font-black text-white uppercase tracking-tight">
+                {editingHotelTab ? 'Oteli Düzenle' : 'Yeni Otel Ekle'}
+              </h2>
+              <p className="text-blue-100 text-xs mt-1 font-medium">
+                {editingHotelTab ? 'Otel bilgilerini güncelleyin.' : 'Projeye yeni bir konaklama sekmesi ekleyin.'}
+              </p>
+            </div>
+
+            <div className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Otel Seçimi</label>
+                  <select 
+                    className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                    defaultValue={editingHotelTab?.hotel_id || ''}
+                    onChange={(e) => {
+                      const hId = e.target.value;
+                      (window as any).__tempAddHotelId = hId;
+                      const h = hotels.find(x => x.id === hId);
+                      if (h && (window as any).__tempConceptInput) {
+                        (window as any).__tempConceptInput.value = h.concept || '';
+                      }
+                    }}
+                  >
+                    <option value="">Otel Seçin...</option>
+                    {hotels.map(h => (
+                      <option key={h.id} value={h.id}>{h.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Konsept</label>
+                  <input 
+                    type="text" 
+                    id="add-hotel-concept"
+                    defaultValue={editingHotelTab?.hotel_concept || editingHotelTab?.concept || ''}
+                    ref={(el) => { (window as any).__tempConceptInput = el; }}
+                    className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Opsiyon</label>
+                  <input 
+                    type="text" 
+                    id="add-hotel-option"
+                    defaultValue={editingHotelTab?.option || '1. OPSİYON'}
+                    ref={(el) => { (window as any).__tempOptionInput = el; }}
+                    className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">C/IN</label>
+                    <input type="date" id="add-hotel-checkin" defaultValue={editingHotelTab?.check_in_date || ''} ref={(el) => { (window as any).__tempCheckInInput = el; }} className="w-full h-12 px-2 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">C/OUT</label>
+                    <input type="date" id="add-hotel-checkout" defaultValue={editingHotelTab?.check_out_date || ''} ref={(el) => { (window as any).__tempCheckOutInput = el; }} className="w-full h-12 px-2 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Oda</label>
+                    <input type="number" id="add-hotel-rooms" defaultValue={editingHotelTab?.room_count || 1} ref={(el) => { (window as any).__tempRoomsInput = el; }} className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pax</label>
+                    <input type="number" id="add-hotel-pax" defaultValue={editingHotelTab?.pax_count || 1} ref={(el) => { (window as any).__tempPaxInput = el; }} className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-8 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-4">
+              <button 
+                onClick={() => { setIsAddHotelModalOpen(false); setEditingHotelTab(null); }}
+                className="px-6 py-3 text-sm font-black text-gray-500 uppercase tracking-widest hover:text-gray-700 dark:hover:text-white transition-colors"
+              >
+                Vazgeç
+              </button>
+              <button 
+                onClick={() => {
+                  const hId = (window as any).__tempAddHotelId || editingHotelTab?.hotel_id;
+                  if (!hId) return toast.error('Lütfen bir otel seçin.');
+                  
+                  const hotelData = {
+                    hotel_id: hId,
+                    hotel_concept: (window as any).__tempConceptInput?.value || '',
+                    check_in_date: (window as any).__tempCheckInInput?.value || '',
+                    check_out_date: (window as any).__tempCheckOutInput?.value || '',
+                    room_count: Number((window as any).__tempRoomsInput?.value || 1),
+                    pax_count: Number((window as any).__tempPaxInput?.value || 1),
+                    option: (window as any).__tempOptionInput?.value || '1.'
+                  };
+
+                  if (editingHotelTab) {
+                    handleUpdateHotelInProject({ ...hotelData, id: editingHotelTab.id });
+                  } else {
+                    handleAddNewHotelToProject(hotelData);
+                  }
+                }}
+                className="px-8 py-3 bg-blue-600 text-white text-sm font-black uppercase tracking-widest rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 transition-all duration-300"
+              >
+                {editingHotelTab ? 'Güncelle' : 'Oteli Ekle'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modern Onay Modalı */}
+      <ConfirmModal
+        isOpen={confirmModal.open}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => {
+          if (confirmModal.onCancel) {
+            confirmModal.onCancel();
+            return;
+          }
+          setConfirmModal(prev => ({ ...prev, open: false }));
+        }}
+      />
+
+      {/* Hotel Tab Action Menu Portal */}
+      {activeHotelMenuId && activeHotelMenuPos && createPortal(
+        <div 
+          className="fixed z-[99999] flex flex-row items-center bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 p-1 space-x-1 animate-in fade-in zoom-in-95 duration-150 hotel-action-menu"
+          style={{ 
+            top: activeHotelMenuPos.top + 8, 
+            left: activeHotelMenuPos.left - 100 
+          }}
+        >
+          {(() => {
+            const h = project?.hotels_data?.find((x: any) => x.id === activeHotelMenuId);
+            if (!h) return null;
+            return (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleOpenEditHotelModal(h); setActiveHotelMenuId(null); }}
+                  title="Düzenle"
+                  className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white rounded-lg transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleCopyHotelTab(h); setActiveHotelMenuId(null); }}
+                  title="Kopyala"
+                  className="p-1.5 bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white rounded-lg transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteHotelTab(h.id); setActiveHotelMenuId(null); }}
+                  title="Sil"
+                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white rounded-lg transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </>
+            );
+          })()}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}

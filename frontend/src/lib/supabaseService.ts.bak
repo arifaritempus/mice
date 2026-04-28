@@ -1,0 +1,778 @@
+import { supabase, Quote, QuoteItem, Project, Agency, Hotel, Category, BudgetItem, User } from './supabase';
+
+// QUOTES
+export const quotesService = {
+  // Tüm teklifleri getir
+  async getAll(): Promise<Quote[]> {
+    const { data, error } = await supabase
+      .from('quotes')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Teklif oluştur
+  async create(quote: Omit<Quote, 'id' | 'created_at' | 'updated_at'>): Promise<Quote> {
+    const { data, error } = await supabase
+      .from('quotes')
+      .insert([quote])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Teklif güncelle
+  async update(id: string, quote: Partial<Quote>): Promise<Quote> {
+    const { data, error } = await supabase
+      .from('quotes')
+      .update({ ...quote, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Teklif sil
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('quotes')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // ID'ye göre teklif getir
+  async getById(id: string): Promise<Quote | null> {
+    const { data, error } = await supabase
+      .from('quotes')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+};
+
+// QUOTE ITEMS
+export const quoteItemsService = {
+  // Teklif kalemlerini getir
+  async getByQuoteId(quoteId: string): Promise<QuoteItem[]> {
+    const { data, error } = await supabase
+      .from('quote_items')
+      .select('*')
+      .eq('quote_id', quoteId)
+      .order('created_at', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Teklif kalemi oluştur
+  async create(item: Omit<QuoteItem, 'id' | 'created_at'>): Promise<QuoteItem> {
+    const { data, error } = await supabase
+      .from('quote_items')
+      .insert([item])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Teklif kalemi güncelle
+  async update(id: string, item: Partial<QuoteItem>): Promise<QuoteItem> {
+    const { data, error } = await supabase
+      .from('quote_items')
+      .update(item)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Teklif kalemi sil
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('quote_items')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Teklif kalemlerini toplu sil
+  async deleteByQuoteId(quoteId: string): Promise<void> {
+    const { error } = await supabase
+      .from('quote_items')
+      .delete()
+      .eq('quote_id', quoteId);
+    
+    if (error) throw error;
+  }
+};
+
+// PROJECTS
+export const projectsService = {
+  async getAll(): Promise<Project[]> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
+    const { data, error } = await supabase
+      .from('projects')
+      .insert([project])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, project: Partial<Project>): Promise<Project> {
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ ...project, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  async getById(id: string): Promise<Project | null> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+};
+
+// AGENCIES
+export const agenciesService = {
+  async getAll(): Promise<Agency[]> {
+    const { data, error } = await supabase
+      .from('agencies')
+      .select('*')
+      .order('name', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(agency: Omit<Agency, 'id' | 'created_at' | 'updated_at'>): Promise<Agency> {
+    const { data, error } = await supabase
+      .from('agencies')
+      .insert([agency])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, agency: Partial<Agency>): Promise<Agency> {
+    const { data, error } = await supabase
+      .from('agencies')
+      .update({ ...agency, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('agencies')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+
+// HOTELS
+export const hotelsService = {
+  async getAll(): Promise<Hotel[]> {
+    const { data, error } = await supabase
+      .from('hotels')
+      .select('*')
+      .order('name', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(hotel: Omit<Hotel, 'id' | 'created_at' | 'updated_at'>): Promise<Hotel> {
+    const { data, error } = await supabase
+      .from('hotels')
+      .insert([hotel])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, hotel: Partial<Hotel>): Promise<Hotel> {
+    const { data, error } = await supabase
+      .from('hotels')
+      .update({ ...hotel, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('hotels')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+
+// CATEGORIES
+export const categoriesService = {
+  async getAll(): Promise<Category[]> {
+    // Load from localStorage
+    const storedCategories = localStorage.getItem('categories');
+    if (storedCategories) {
+      return JSON.parse(storedCategories);
+    }
+    
+    // Sabit kategori ID'leri ile default kategoriler
+    const defaultCategories: Category[] = [
+      // Ana Kategoriler (Sabit ID'ler)
+      {
+        id: 'CAT_001',
+        name: 'OTEL | KONAKLAMA',
+        description: 'Otel konaklama hizmetleri',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'CAT_002',
+        name: 'OTEL | DİĞER HİZMETLER',
+        description: 'Otel diğer hizmetler',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'CAT_003',
+        name: 'UÇAK BİLETİ',
+        description: 'Uçak bileti hizmetleri',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'CAT_004',
+        name: 'TRANSFER & TUR',
+        description: 'Transfer ve tur hizmetleri',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'CAT_005',
+        name: 'ETKİNLİK',
+        description: 'Etkinlik hizmetleri',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'CAT_006',
+        name: 'İNSAN KAYNAKLARI',
+        description: 'İnsan kaynakları hizmetleri',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'CAT_007',
+        name: 'DİĞER OPERASYONEL HİZMETLER',
+        description: 'Diğer operasyonel hizmetler',
+        is_active: true,
+        parent_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      
+      // Alt Kategoriler (Sabit ID'ler)
+      {
+        id: 'SUBCAT_001',
+        name: 'DOUBLE ODA KİŞİ BAŞI',
+        description: 'Double oda kişi başı fiyat',
+        is_active: true,
+        parent_id: 'CAT_001',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_002',
+        name: 'SINGLE ODA',
+        description: 'Single oda fiyat',
+        is_active: true,
+        parent_id: 'CAT_001',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_003',
+        name: 'TOPLANTI SALONU KULLANIMI',
+        description: 'Toplantı salonu kullanım ücreti',
+        is_active: true,
+        parent_id: 'CAT_002',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_004',
+        name: 'TEKNİK EKİPMAN KULLANIMI',
+        description: 'Teknik ekipman kullanım ücreti',
+        is_active: true,
+        parent_id: 'CAT_002',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_005',
+        name: 'GRUP UÇAK BİLETİ',
+        description: 'Grup uçak bileti',
+        is_active: true,
+        parent_id: 'CAT_003',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_006',
+        name: 'ALAN - OTEL - ALAN | GRUP TRANSFERİ',
+        description: 'Alan-otel-alan grup transferi',
+        is_active: true,
+        parent_id: 'CAT_004',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_007',
+        name: 'GALA YEMEĞİ | MASA SÜSLEME',
+        description: 'Gala yemeği ve masa süsleme',
+        is_active: true,
+        parent_id: 'CAT_005',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_008',
+        name: 'OPERASYON MÜDÜRÜ',
+        description: 'Operasyon müdürü hizmeti',
+        is_active: true,
+        parent_id: 'CAT_006',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 'SUBCAT_009',
+        name: 'KARŞILAMA DESKİ',
+        description: 'Karşılama desk hizmeti',
+        is_active: true,
+        parent_id: 'CAT_007',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+    
+    localStorage.setItem('categories', JSON.stringify(defaultCategories));
+    return defaultCategories;
+  },
+
+  async create(category: Omit<Category, 'id' | 'created_at' | 'updated_at'>): Promise<Category> {
+    const newCategory: Category = {
+      id: Date.now().toString(),
+      ...category,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    const categories = await this.getAll();
+    const updatedCategories = [...categories, newCategory];
+    localStorage.setItem('categories', JSON.stringify(updatedCategories));
+    
+    return newCategory;
+  },
+
+  async update(id: string, category: Partial<Category>): Promise<Category> {
+    const categories = await this.getAll();
+    const updatedCategories = categories.map(cat => 
+      cat.id === id 
+        ? { ...cat, ...category, updated_at: new Date().toISOString() }
+        : cat
+    );
+    
+    localStorage.setItem('categories', JSON.stringify(updatedCategories));
+    return updatedCategories.find(cat => cat.id === id)!;
+  },
+
+  async delete(id: string): Promise<void> {
+    const categories = await this.getAll();
+    const updatedCategories = categories.filter(cat => cat.id !== id);
+    localStorage.setItem('categories', JSON.stringify(updatedCategories));
+  }
+};
+
+// BUDGET ITEMS
+export const budgetItemsService = {
+  async getAll(): Promise<BudgetItem[]> {
+    const { data, error } = await supabase
+      .from('budget_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(item: Omit<BudgetItem, 'id' | 'created_at' | 'updated_at'>): Promise<BudgetItem> {
+    const { data, error } = await supabase
+      .from('budget_items')
+      .insert([item])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, item: Partial<BudgetItem>): Promise<BudgetItem> {
+    const { data, error } = await supabase
+      .from('budget_items')
+      .update({ ...item, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('budget_items')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+}; 
+
+// USERS
+export const usersService = {
+  async getAll(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getById(id: string): Promise<User | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async create(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
+    const { data, error } = await supabase
+      .from('users')
+      .insert(user)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, user: Partial<User>): Promise<User> {
+    const { data, error } = await supabase
+      .from('users')
+      .update(user)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  async toggleActive(id: string, isActive: boolean): Promise<User> {
+    const { data, error } = await supabase
+      .from('users')
+      .update({ is_active: isActive })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+}; 
+
+// USER PERMISSIONS
+export const userPermissionsService = {
+  async getAll(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getByUserId(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .select('*')
+      .eq('user_id', userId);
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(permission: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .insert([permission])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, permission: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .update(permission)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_permissions')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  async upsert(permission: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .upsert([permission], { onConflict: 'user_id,permission_id' })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+};
+
+// ROLE PERMISSIONS
+export const rolePermissionsService = {
+  async getAll(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('role_permissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getByRoleId(roleId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('role_permissions')
+      .select('*')
+      .eq('role_id', roleId);
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(permission: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('role_permissions')
+      .insert([permission])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, permission: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('role_permissions')
+      .update(permission)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('role_permissions')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  async upsert(permission: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('role_permissions')
+      .upsert([permission], { onConflict: 'role_id,permission_id' })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+};
+
+// SERVICE TYPES
+export const serviceTypesService = {
+  async getAll(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('service_types')
+      .select('*')
+      .order('name', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getById(id: string): Promise<any | null> {
+    const { data, error } = await supabase
+      .from('service_types')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async create(serviceType: Omit<any, 'id' | 'created_at' | 'updated_at'>): Promise<any> {
+    const { data, error } = await supabase
+      .from('service_types')
+      .insert([serviceType])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, serviceType: Partial<any>): Promise<any> {
+    const { data, error } = await supabase
+      .from('service_types')
+      .update({ ...serviceType, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('service_types')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  async getActive(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('service_types')
+      .select('*')
+      .eq('is_active', true)
+      .order('name', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  }
+}; 

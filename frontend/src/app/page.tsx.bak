@@ -1,0 +1,452 @@
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import {
+  projectsService,
+  SejourService,
+  projectTransfersService,
+  ticketOptionsService,
+  projectHumanResourcesService,
+  categoriesService
+} from '@/lib/supabaseService';
+import { Module, usePermissions } from '@/lib/permissions';
+
+interface Project {
+  id: string;
+  name: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  client_name: string;
+  budget: number;
+  revenue: number;
+}
+
+interface Sejour {
+  id: string;
+  name: string;
+  hotel_name: string;
+  start_date: string;
+  end_date: string;
+  guest_count: number;
+  total_cost: number;
+  status: string;
+}
+
+interface Transfer {
+  id: string;
+  type: string;
+  pickup_location: string;
+  dropoff_location: string;
+  date: string;
+  guest_count: number;
+  cost: number;
+  status: string;
+}
+
+interface Ticket {
+  id: string;
+  flight_number: string;
+  departure: string;
+  arrival: string;
+  date: string;
+  passenger_count: number;
+  cost: number;
+  status: string;
+}
+
+interface Guide {
+  id: string;
+  name: string;
+  service_date: string;
+  location: string;
+  guest_count: number;
+  cost: number;
+  status: string;
+}
+
+interface PartTime {
+  id: string;
+  name: string;
+  service_date: string;
+  location: string;
+  hours: number;
+  hourly_rate: number;
+  status: string;
+}
+
+interface DashboardData {
+  upcomingProjects: Project[];
+  upcomingSejours: Sejour[];
+  upcomingTransfers: Transfer[];
+  upcomingTickets: Ticket[];
+  upcomingGuides: Guide[];
+  upcomingPartTime: PartTime[];
+}
+
+export default function HomePage() {
+  const { canView, canCreate, loading: permissionsLoading } = usePermissions();
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    upcomingProjects: [],
+    upcomingSejours: [],
+    upcomingTransfers: [],
+    upcomingTickets: [],
+    upcomingGuides: [],
+    upcomingPartTime: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      const [projectsData, sejoursData, ticketOptionsData, categoriesData] = await Promise.allSettled([
+        projectsService.getAll(),
+        SejourService.getSejours(),
+        ticketOptionsService.getAll(),
+        categoriesService.getAll()
+      ]);
+
+      const getData = (result: PromiseSettledResult<any>) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        }
+        console.warn('Dashboard element load failed:', result.reason);
+        return [];
+      };
+
+      let projects = getData(projectsData);
+      if (!Array.isArray(projects)) projects = [];
+      projects = projects.map((p: any) => ({
+        ...p,
+        name: p.title || p.name || 'Untitled',
+        client_name: p.company_name || p.client_name || 'Bilinmeyen Müşteri'
+      }));
+
+      const sejoursRaw = getData(sejoursData);
+      let sejours = Array.isArray(sejoursRaw) ? sejoursRaw : (sejoursRaw?.data || []);
+      sejours = sejours.map((s: any) => ({
+        ...s,
+        name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
+        start_date: s.checkInDate || s.check_in_date,
+        end_date: s.checkOutDate || s.check_out_date,
+        hotel_name: s.rooms?.[0]?.hotelName || s.hotel_name || '',
+        guest_count: s.rooms?.length || 0,
+        total_cost: s.totalAmount || s.total_amount || 0
+      }));
+
+      const activeProjects = projects.filter((p: any) => (p.status || '').toLowerCase() === 'active');
+      const transferBuckets = await Promise.all(
+        activeProjects.map((p: any) =>
+          projectTransfersService.getByProjectId(p.id).catch(() => [])
+        )
+      );
+      const transfers = transferBuckets
+        .flat()
+        .map((t: any) => ({
+          id: t.id,
+          type: t.service_type || t.transfer_type || 'Transfer',
+          pickup_location: t.pickup_location || '',
+          dropoff_location: t.dropoff_location || '',
+          date: t.date || t.transfer_date || '',
+          guest_count: t.passenger_count || 0,
+          cost: t.cost_amount || 0,
+          status: t.status || 'confirmed'
+        }));
+
+      let tickets = getData(ticketOptionsData);
+      if (!Array.isArray(tickets)) tickets = [];
+      tickets = tickets
+        .filter((t: any) => (t.status || '').toLowerCase() === 'confirmed')
+        .map((t: any) => ({
+          id: t.id,
+          flight_number: t.airline || t.flight_type || t.voucher_no || 'Bilet',
+          departure: t.departure_date || '',
+          arrival: t.return_date || '',
+          date: t.departure_date || t.entry_date || '',
+          passenger_count: t.passenger_count || 0,
+          cost: t.total_cost || 0,
+          status: t.status || 'confirmed'
+        }));
+
+      const cats = Array.isArray(getData(categoriesData)) ? getData(categoriesData) : [];
+      const categoryById: Record<string, any> = {};
+      cats.forEach((c: any) => { categoryById[c.id] = c; });
+      const hrBuckets = await Promise.all(
+        activeProjects.map((p: any) =>
+          projectHumanResourcesService.getByProjectId(p.id).catch(() => [])
+        )
+      );
+      const hrRows = hrBuckets.flat();
+
+      const guides = hrRows
+        .filter((r: any) => {
+          const n = (categoryById[r.sub_category_id]?.name || r.sub_category_name || '').toString().toLowerCase();
+          return n.includes('rehber') || n.includes('guide');
+        })
+        .map((r: any) => ({
+          id: r.id,
+          name: r.description || 'Kokartli Rehber',
+          service_date: r.date || r.created_at || '',
+          location: r.hotel || '',
+          guest_count: 0,
+          cost: r.amount || 0,
+          status: 'confirmed'
+        }));
+
+      const partTime = hrRows
+        .filter((r: any) => {
+          const n = (categoryById[r.sub_category_id]?.name || r.sub_category_name || '').toString().toLowerCase();
+          return (n.includes('part') && n.includes('time')) || n.includes('yari zamanli') || n.includes('insan kaynak');
+        })
+        .map((r: any) => ({
+          id: r.id,
+          name: r.description || 'Part-Time',
+          service_date: r.date || r.created_at || '',
+          location: r.hotel || '',
+          hours: 0,
+          hourly_rate: 0,
+          status: 'confirmed'
+        }));
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      const filterUpcoming = <T extends any>(items: T[], dateField: string): T[] => {
+        return items.filter(item => {
+          const itemAny = item as any;
+          const dateVal = itemAny[dateField] || itemAny.start_date || itemAny.check_in_date || itemAny.transfer_date || itemAny.flight_date || itemAny.service_date;
+          if (!dateVal) return false;
+          const itemDate = new Date(dateVal);
+          return itemDate >= today && itemDate <= thirtyDaysFromNow;
+        }).sort((a, b) => {
+          const aAny = a as any;
+          const bAny = b as any;
+          const aDate = new Date(aAny[dateField] || aAny.start_date || aAny.check_in_date || aAny.transfer_date || aAny.flight_date || aAny.service_date).getTime();
+          const bDate = new Date(bAny[dateField] || bAny.start_date || bAny.check_in_date || bAny.transfer_date || bAny.flight_date || bAny.service_date).getTime();
+          return aDate - bDate;
+        }).slice(0, 5);
+      };
+
+      setDashboardData({
+        upcomingProjects: filterUpcoming(projects, 'start_date'),
+        upcomingSejours: filterUpcoming(sejours, 'start_date'),
+        upcomingTransfers: filterUpcoming(transfers, 'date'),
+        upcomingTickets: filterUpcoming(tickets, 'date'),
+        upcomingGuides: filterUpcoming(guides, 'service_date'),
+        upcomingPartTime: filterUpcoming(partTime, 'service_date')
+      });
+
+      setLastUpdate(new Date());
+    } catch (error) {
+      console.error('Dashboard data yüklenirken hata:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const StatCard = ({ title, value, icon, color, link }: { title: string; value: number; icon: string; color: string; link: string }) => (
+    <Link href={link} className="block">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 hover:shadow-md transition-all duration-200 hover:scale-105">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">{title}</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">{value}</p>
+          </div>
+          <div className={`p-1.5 rounded-lg ${color}`}>
+            <span className="text-sm">{icon}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+
+  const UpcomingCard = ({ title, items, icon, color, link, dateField, nameField }: {
+    title: string;
+    items: Record<string, any>[];
+    icon: string;
+    color: string;
+    link: string;
+    dateField: string;
+    nameField: string;
+  }) => {
+    const [page, setPage] = useState(0);
+    const PAGE_SIZE = 4;
+    const cappedItems = useMemo(() => items.slice(0, 20), [items]);
+    const totalPages = Math.max(1, Math.ceil(cappedItems.length / PAGE_SIZE));
+    const pagedItems = useMemo(
+      () => cappedItems.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+      [cappedItems, page]
+    );
+
+    useEffect(() => {
+      if (page > totalPages - 1) {
+        setPage(0);
+      }
+    }, [totalPages, page]);
+
+    const plainTitle = title.replace(/^Yaklaşan\s+/i, '').toLowerCase();
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-white">{title}</h3>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="h-5 w-5 rounded border border-gray-200 dark:border-gray-700 text-[10px] disabled:opacity-40"
+                aria-label="Önceki sayfa"
+              >
+                ‹
+              </button>
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 min-w-[36px] text-center">
+                {totalPages === 0 ? '0/0' : `${page + 1}/${totalPages}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="h-5 w-5 rounded border border-gray-200 dark:border-gray-700 text-[10px] disabled:opacity-40"
+                aria-label="Sonraki sayfa"
+              >
+                ›
+              </button>
+            </div>
+            <Link href={link} className={`text-xs font-medium ${color} hover:underline`}>
+              Tümünü Gör →
+            </Link>
+          </div>
+        </div>
+
+        {cappedItems.length === 0 ? (
+          <div className="text-center py-2">
+            <span className="text-lg text-gray-400 dark:text-gray-600">{icon}</span>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Yaklaşan {plainTitle} bulunamadı</p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {pagedItems.map((item, index) => (
+              <div key={index} className="flex items-center justify-between p-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                <div className="flex items-center space-x-1.5">
+                  <div className={`p-0.5 rounded-lg ${color} bg-opacity-20`}>
+                    <span className="text-xs">{icon}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white text-xs">{item[nameField] || item.name || item.voucherNumber || 'İsimsiz'}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {new Date(item[dateField] || item.start_date || item.check_in_date || item.transfer_date || item.flight_date || item.service_date).toLocaleDateString('tr-TR')}
+                    </p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                  Yaklaşan
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (loading || permissionsLoading) {
+    return <LoadingSpinner message="Ana sayfa yükleniyor..." />;
+  }
+
+  const canViewProjects = canView(Module.PROJECTS);
+  const canViewSejour = canView(Module.SEJOUR);
+  const canViewOperations = canView(Module.OPERATIONS);
+  const canViewTickets = canView(Module.TICKETS);
+  const canViewHotels = canView(Module.HOTELS);
+  const canViewSuppliers = canView(Module.SUPPLIERS);
+  const canViewAgencies = canView(Module.AGENCIES);
+  const canViewCategories = canView(Module.CATEGORIES);
+  const canCreateSejour = canCreate(Module.SEJOUR);
+  const canCreateQuote = canCreate(Module.QUOTES);
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-1">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded-lg shadow-sm mb-1">
+        <div className="px-3 py-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">Ana Sayfa</h1>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Sistem genel durumu ve yaklaşan işlemler</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500">Son güncelleme: {lastUpdate.toLocaleString('tr-TR')}</span>
+              <button onClick={loadDashboardData} className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">Yenile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 mb-2">
+          {canViewProjects ? <StatCard title="Toplam Proje" value={dashboardData.upcomingProjects.length} icon="📊" color="text-blue-500" link="/projects" /> : null}
+          {canViewSejour ? <StatCard title="Yaklaşan Sejour" value={dashboardData.upcomingSejours.length} icon="🏨" color="text-green-500" link="/sejour" /> : null}
+          {canViewOperations ? <StatCard title="Aktif Transfer" value={dashboardData.upcomingTransfers.length} icon="🚐" color="text-purple-500" link="/operations/transfers" /> : null}
+          {canViewTickets ? <StatCard title="Bekleyen Bilet" value={dashboardData.upcomingTickets.length} icon="✈️" color="text-orange-500" link="/operations/tickets" /> : null}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 mb-2">
+          {canViewProjects ? <UpcomingCard title="Yaklaşan Projeler" items={dashboardData.upcomingProjects} icon="📊" color="text-blue-500" link="/projects" dateField="start_date" nameField="name" /> : null}
+          {canViewSejour ? <UpcomingCard title="Yaklaşan Sejour Rezervasyonları" items={dashboardData.upcomingSejours} icon="🏨" color="text-green-500" link="/sejour" dateField="start_date" nameField="name" /> : null}
+          {canViewOperations ? <UpcomingCard title="Yaklaşan Transferler" items={dashboardData.upcomingTransfers} icon="🚐" color="text-purple-500" link="/operations/transfers" dateField="date" nameField="type" /> : null}
+          {canViewTickets ? <UpcomingCard title="Yaklaşan Biletler" items={dashboardData.upcomingTickets} icon="✈️" color="text-orange-500" link="/operations/tickets" dateField="date" nameField="flight_number" /> : null}
+          {canViewOperations ? <UpcomingCard title="Yaklaşan Kokartlı Rehber" items={dashboardData.upcomingGuides} icon="👨‍💼" color="text-indigo-500" link="/operations/guides" dateField="service_date" nameField="name" /> : null}
+          {canViewOperations ? <UpcomingCard title="Yaklaşan Part-Time" items={dashboardData.upcomingPartTime} icon="⏰" color="text-pink-500" link="/operations/part-time" dateField="service_date" nameField="name" /> : null}
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2">
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-white mb-2">Hızlı İşlemler</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1 mb-2">
+            {canCreateSejour && (
+            <Link href="/sejour/create" className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors border border-blue-200 dark:border-blue-800">
+              <span className="text-sm mr-2">➕</span>
+              <div>
+                <p className="font-semibold text-blue-700 dark:text-blue-300 text-xs">Yeni Sejour</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">Rezervasyon oluştur</p>
+              </div>
+            </Link>
+            )}
+            {canCreateQuote && (
+            <Link href="/quotes/create" className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors border border-green-200 dark:border-green-800">
+              <span className="text-sm mr-2">📝</span>
+              <div>
+                <p className="font-semibold text-green-700 dark:text-green-300 text-xs">Yeni Teklif</p>
+                <p className="text-xs text-green-600 dark:text-green-400">Müşteri teklifi hazırla</p>
+              </div>
+            </Link>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
+            {canViewHotels && <Link href="/hotels" className="flex items-center justify-center p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors border border-indigo-200 dark:border-indigo-800 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+              Yeni Otel
+            </Link>}
+            {canViewSuppliers && <Link href="/suppliers" className="flex items-center justify-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors border border-purple-200 dark:border-purple-800 text-xs font-semibold text-purple-700 dark:text-purple-300">
+              Yeni Tedarikçi
+            </Link>}
+            {canViewAgencies && <Link href="/agencies" className="flex items-center justify-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              Yeni Acente
+            </Link>}
+            {canViewCategories && <Link href="/categories" className="flex items-center justify-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors border border-amber-200 dark:border-amber-800 text-xs font-semibold text-amber-700 dark:text-amber-300">
+              Yeni Kategori
+            </Link>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

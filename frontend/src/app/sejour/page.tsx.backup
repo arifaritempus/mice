@@ -1,0 +1,1170 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+interface SejourSale {
+  id: string;
+  voucherNumber: string;
+  reference?: string; // Backward compatibility
+  customerType: string;
+  customerName: string;
+  agencyName?: string;
+  checkInDate: string;
+  checkOutDate: string;
+  check_in_date?: string; // Backward compatibility
+  check_out_date?: string; // Backward compatibility
+  room_count?: number;
+  pax_count?: number;
+  room_type?: string;
+  board_type?: string;
+  totalAmount: number;
+  total_amount?: number; // Backward compatibility
+  currency: string;
+  status: string;
+  created_at: string;
+}
+
+interface SejourData {
+  id: string;
+  voucherNumber: string;
+  customerType: string;
+  agencyId: string;
+  agencyName: string;
+  customerName: string;
+  checkInDate: string;
+  checkOutDate: string;
+  rooms: Room[];
+  flights: FlightInfo[];
+  transfers: TransferInfo[];
+  extraServices: ExtraService[];
+  totals: {
+    EUR: number;
+    USD: number;
+    TRY: number;
+  };
+  costs: {
+    EUR: number;
+    USD: number;
+    TRY: number;
+  };
+  profits: {
+    EUR: number;
+    USD: number;
+    TRY: number;
+  };
+  currency: string;
+  status: string;
+  notes: string;
+  collections: Collection[];
+  salesInvoices: SalesInvoice[];
+  purchaseInvoices: PurchaseInvoice[];
+  created_at: string;
+}
+
+interface Room {
+  id: string;
+  roomNumber: string;
+  hotelId: string;
+  accommodationType?: string;
+  roomType: string;
+  guestInfo: string;
+  price: number;
+  currency: string;
+  // Alış maliyeti için yeni alanlar
+  costPrice?: number;
+  costCurrency?: string;
+}
+
+interface FlightInfo {
+  id: string;
+  flightDate: string;
+  airline: string;
+  route: string;
+  flightNo: string;
+  departureTime: string;
+  arrivalTime: string;
+  price: number;
+  currency: string;
+  type: 'departure' | 'return';
+  // Alış maliyeti için yeni alanlar
+  costPrice?: number;
+  costCurrency?: string;
+}
+
+interface TransferInfo {
+  id: string;
+  date: string;
+  provider: string;
+  type: 'private' | 'economic';
+  vehicle: string;
+  time: string;
+  price: number;
+  currency: string;
+  direction: 'arrival' | 'return';
+  // Alış maliyeti için yeni alanlar
+  costPrice?: number;
+  costCurrency?: string;
+}
+
+interface ExtraService {
+  id: string;
+  serviceType: string;
+  provider: string;
+  description: string;
+  price: number;
+  currency: string;
+  // Alış maliyeti için yeni alanlar
+  costPrice?: number;
+  costCurrency?: string;
+}
+
+interface Collection {
+  id: string;
+  type: string;
+  amount: number;
+  date: string;
+  description: string;
+}
+
+interface SalesInvoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  dueDate: string;
+  items: Array<{
+    serviceName: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>;
+}
+
+interface PurchaseInvoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  serviceType: string;
+  provider: string;
+  amount: number;
+  currency: string;
+  description: string;
+}
+
+export default function SejourPage() {
+  const [sejours, setSejours] = useState<SejourSale[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('sales'); // 'sales' or 'purchase'
+  const [sejourData, setSejourData] = useState<SejourData | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      // Load sejour data from localStorage
+      const savedSejours = localStorage.getItem('sejourSales');
+      if (savedSejours) {
+        setSejours(JSON.parse(savedSejours));
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'KONFİRME':
+      case 'TAMAMLANDI':
+        return 'bg-green-100 text-green-800';
+      case 'İPTAL':
+        return 'bg-red-100 text-red-800';
+      case 'TEKLİF':
+        return 'bg-blue-100 text-blue-800';
+      case 'BEKLEMEDE':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleDeleteSejour = (id: string) => {
+    if (window.confirm('Bu sejour\'u silmek istediğinizden emin misiniz?')) {
+      try {
+        // Remove from sejourSales
+        const existingSejourSales = JSON.parse(localStorage.getItem('sejourSales') || '[]');
+        const updatedSejourSales = existingSejourSales.filter((s: any) => s.id !== id);
+        localStorage.setItem('sejourSales', JSON.stringify(updatedSejourSales));
+
+        // Remove from sejourData
+        const existingSejourData = localStorage.getItem('sejourData');
+        if (existingSejourData) {
+          const dataArray = JSON.parse(existingSejourData);
+          const updatedDataArray = dataArray.filter((s: any) => s.id !== id);
+          localStorage.setItem('sejourData', JSON.stringify(updatedDataArray));
+        }
+
+        // Update state
+        setSejours(updatedSejourSales);
+        alert('Sejour başarıyla silindi!');
+      } catch (error) {
+        console.error('Error deleting sejour:', error);
+        alert('Sejour silinirken bir hata oluştu');
+      }
+    }
+  };
+
+  const filteredSejours = filter === 'all' 
+    ? sejours.filter(sejour => 
+        sejour.voucherNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sejour.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sejour.agencyName?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : sejours.filter(sejour => sejour.status === filter && (
+        sejour.voucherNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sejour.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sejour.agencyName?.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+
+  // Calculate counts for sejours
+  const sejoursKonfirmeCount = sejours.filter(s => s.status === 'KONFİRME').length;
+  const sejoursTeklifCount = sejours.filter(s => s.status === 'TEKLİF').length;
+  const sejoursIptalCount = sejours.filter(s => s.status === 'İPTAL').length;
+  const sejoursBekleyenCount = sejours.filter(s => s.status === 'BEKLEMEDE').length;
+
+  // Calculate total cost by currency
+  const calculateTotalCost = (sejour: SejourData) => {
+    const costs = {
+      EUR: 0,
+      USD: 0,
+      TRY: 0
+    };
+
+    // Room costs
+    sejour.rooms.forEach(room => {
+      const costCurrency = room.costCurrency || room.currency;
+      costs[costCurrency as keyof typeof costs] += room.costPrice || 0;
+    });
+
+    // Flight costs
+    sejour.flights.forEach(flight => {
+      const costCurrency = flight.costCurrency || flight.currency;
+      costs[costCurrency as keyof typeof costs] += flight.costPrice || 0;
+    });
+
+    // Transfer costs
+    sejour.transfers.forEach(transfer => {
+      const costCurrency = transfer.costCurrency || transfer.currency;
+      costs[costCurrency as keyof typeof costs] += transfer.costPrice || 0;
+    });
+
+    // Service costs
+    sejour.extraServices.forEach(service => {
+      const costCurrency = service.costCurrency || service.currency;
+      costs[costCurrency as keyof typeof costs] += service.costPrice || 0;
+    });
+
+    return costs;
+  };
+
+  // Get cost for specific currency
+  const getCostForCurrency = (sejour: SejourData, currency: string) => {
+    const costs = calculateTotalCost(sejour);
+    return costs[currency as keyof typeof costs] || 0;
+  };
+
+  // Calculate profit/loss for specific currency
+  const getProfitForCurrency = (sejour: SejourData, currency: string) => {
+    const total = sejour.totals[currency as keyof typeof sejour.totals] || 0;
+    const cost = getCostForCurrency(sejour, currency);
+    return total - cost;
+  };
+
+  // Update room cost
+  const updateRoomCost = (id: string, field: 'costPrice' | 'costCurrency', value: number | string) => {
+    if (!sejourData) return;
+    
+    const updatedRooms = sejourData.rooms.map(room => 
+      room.id === id ? { ...room, [field]: value } : room
+    );
+    
+    const updatedSejourData = {
+      ...sejourData,
+      rooms: updatedRooms
+    };
+    
+    setSejourData(updatedSejourData);
+    
+    // Update localStorage
+    const existingData = JSON.parse(localStorage.getItem('sejourData') || '[]');
+    const updatedData = existingData.map((item: SejourData) => 
+      item.id === sejourData.id ? updatedSejourData : item
+    );
+    localStorage.setItem('sejourData', JSON.stringify(updatedData));
+  };
+
+  // Update flight cost
+  const updateFlightCost = (id: string, field: 'costPrice' | 'costCurrency', value: number | string) => {
+    if (!sejourData) return;
+    
+    const updatedFlights = sejourData.flights.map(flight => 
+      flight.id === id ? { ...flight, [field]: value } : flight
+    );
+    
+    const updatedSejourData = {
+      ...sejourData,
+      flights: updatedFlights
+    };
+    
+    setSejourData(updatedSejourData);
+    
+    // Update localStorage
+    const existingData = JSON.parse(localStorage.getItem('sejourData') || '[]');
+    const updatedData = existingData.map((item: SejourData) => 
+      item.id === sejourData.id ? updatedSejourData : item
+    );
+    localStorage.setItem('sejourData', JSON.stringify(updatedData));
+  };
+
+  // Update transfer cost
+  const updateTransferCost = (id: string, field: 'costPrice' | 'costCurrency', value: number | string) => {
+    if (!sejourData) return;
+    
+    const updatedTransfers = sejourData.transfers.map(transfer => 
+      transfer.id === id ? { ...transfer, [field]: value } : transfer
+    );
+    
+    const updatedSejourData = {
+      ...sejourData,
+      transfers: updatedTransfers
+    };
+    
+    setSejourData(updatedSejourData);
+    
+    // Update localStorage
+    const existingData = JSON.parse(localStorage.getItem('sejourData') || '[]');
+    const updatedData = existingData.map((item: SejourData) => 
+      item.id === sejourData.id ? updatedSejourData : item
+    );
+    localStorage.setItem('sejourData', JSON.stringify(updatedData));
+  };
+
+  // Update extra service cost
+  const updateExtraServiceCost = (id: string, field: 'costPrice' | 'costCurrency', value: number | string) => {
+    if (!sejourData) return;
+    
+    const updatedExtraServices = sejourData.extraServices.map(service => 
+      service.id === id ? { ...service, [field]: value } : service
+    );
+    
+    const updatedSejourData = {
+      ...sejourData,
+      extraServices: updatedExtraServices
+    };
+    
+    setSejourData(updatedSejourData);
+    
+    // Update localStorage
+    const existingData = JSON.parse(localStorage.getItem('sejourData') || '[]');
+    const updatedData = existingData.map((item: SejourData) => 
+      item.id === sejourData.id ? updatedSejourData : item
+    );
+    localStorage.setItem('sejourData', JSON.stringify(updatedData));
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Sejour Yönetimi</h1>
+          <p className="text-gray-600 mt-2">Sejour işlemlerini yönetin</p>
+        </div>
+        <Link
+          href="/sejour/create"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Yeni Sejour
+        </Link>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Toplam Sejour</p>
+              <p className="text-2xl font-bold text-gray-900">{sejours.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Konfirme</p>
+              <p className="text-2xl font-bold text-gray-900">{sejoursKonfirmeCount}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Bekleyen</p>
+              <p className="text-2xl font-bold text-gray-900">{sejoursBekleyenCount}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">İptal</p>
+              <p className="text-2xl font-bold text-gray-900">{sejoursIptalCount}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow mb-6">
+        <div className="p-6">
+          {/* Search */}
+          <div className="mb-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Voucher No, Müşteri, Acente... arayın"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Status Filters */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                filter === 'all'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Tümü ({sejours.length})
+            </button>
+            <button
+              onClick={() => setFilter('TEKLİF')}
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                filter === 'TEKLİF'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Teklif ({sejoursTeklifCount})
+            </button>
+            <button
+              onClick={() => setFilter('KONFİRME')}
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                filter === 'KONFİRME'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Konfirme ({sejoursKonfirmeCount})
+            </button>
+            <button
+              onClick={() => setFilter('BEKLEMEDE')}
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                filter === 'BEKLEMEDE'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Bekleyen ({sejoursBekleyenCount})
+            </button>
+            <button
+              onClick={() => setFilter('İPTAL')}
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                filter === 'İPTAL'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              İptal ({sejoursIptalCount})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  VOUCHER NO
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Müşteri
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acente
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tarih
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tutar
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Durum
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  İşlemler
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredSejours.map((sejour) => (
+                <tr key={sejour.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {sejour.voucherNumber}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {sejour.customerName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {sejour.agencyName || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {new Date(sejour.checkInDate).toLocaleDateString('tr-TR')} - {new Date(sejour.checkOutDate).toLocaleDateString('tr-TR')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {sejour.currency} {typeof sejour.totalAmount === 'number' ? sejour.totalAmount.toLocaleString() : '0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(sejour.status)}`}>
+                      {sejour.status}
+                    </span>
+                  </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => window.open(`/sejour/${sejour.id}`, '_blank')}
+                                className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                                title="Görüntüle"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => window.open(`/sejour/${sejour.id}/edit`, '_blank')}
+                                className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
+                                title="Düzenle"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSejour(sejour.id)}
+                                className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                                title="Sil"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+                {/* Purchase Tab */}
+                {activeTab === 'purchase' && (
+                  <div className="space-y-6">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Alış Rezervasyonu - Maliyet Yönetimi</h2>
+                    
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                      <div className="bg-red-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-red-900">Toplam Maliyetler</h4>
+                        <div className="space-y-1">
+                          <p className="text-lg font-bold text-red-600">
+                            EUR: {sejourData ? getCostForCurrency(sejourData, 'EUR').toFixed(2) : '0.00'}
+                          </p>
+                          <p className="text-lg font-bold text-red-600">
+                            USD: {sejourData ? getCostForCurrency(sejourData, 'USD').toFixed(2) : '0.00'}
+                          </p>
+                          <p className="text-lg font-bold text-red-600">
+                            TRY: {sejourData ? getCostForCurrency(sejourData, 'TRY').toFixed(2) : '0.00'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-blue-900">Toplam Satış</h4>
+                        <div className="space-y-1">
+                          <p className="text-lg font-bold text-blue-600">
+                            EUR: {sejourData ? sejourData.totals.EUR.toFixed(2) : '0.00'}
+                          </p>
+                          <p className="text-lg font-bold text-blue-600">
+                            USD: {sejourData ? sejourData.totals.USD.toFixed(2) : '0.00'}
+                          </p>
+                          <p className="text-lg font-bold text-blue-600">
+                            TRY: {sejourData ? sejourData.totals.TRY.toFixed(2) : '0.00'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-green-900">Kar/Zarar</h4>
+                        <div className="space-y-1">
+                          <p className={`text-lg font-bold ${sejourData && getProfitForCurrency(sejourData, 'EUR') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            EUR: {sejourData ? getProfitForCurrency(sejourData, 'EUR').toFixed(2) : '0.00'}
+                          </p>
+                          <p className={`text-lg font-bold ${sejourData && getProfitForCurrency(sejourData, 'USD') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            USD: {sejourData ? getProfitForCurrency(sejourData, 'USD').toFixed(2) : '0.00'}
+                          </p>
+                          <p className={`text-lg font-bold ${sejourData && getProfitForCurrency(sejourData, 'TRY') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            TRY: {sejourData ? getProfitForCurrency(sejourData, 'TRY').toFixed(2) : '0.00'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-purple-900">Kar Marjı</h4>
+                        <div className="space-y-1">
+                          <p className="text-lg font-bold text-purple-600">
+                            EUR: {sejourData && sejourData.totals.EUR > 0 ? ((getProfitForCurrency(sejourData, 'EUR') / sejourData.totals.EUR) * 100).toFixed(1) : 0}%
+                          </p>
+                          <p className="text-lg font-bold text-purple-600">
+                            USD: {sejourData && sejourData.totals.USD > 0 ? ((getProfitForCurrency(sejourData, 'USD') / sejourData.totals.USD) * 100).toFixed(1) : 0}%
+                          </p>
+                          <p className="text-lg font-bold text-purple-600">
+                            TRY: {sejourData && sejourData.totals.TRY > 0 ? ((getProfitForCurrency(sejourData, 'TRY') / sejourData.totals.TRY) * 100).toFixed(1) : 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Accommodation Section - Maliyet Yönetimi */}
+                    {sejourData && sejourData.rooms.length > 0 && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-medium text-red-900">Konaklama Maliyetleri</h3>
+                          <div className="text-sm text-red-600">
+                            Satış verilerinden çekilen odalar - Maliyetleri düzenleyebilirsiniz
+                          </div>
+                        </div>
+                        
+                        {sejourData.rooms.map((room, index) => (
+                          <div key={room.id} className="border border-red-300 rounded-lg p-4 mb-4">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-red-800">Oda {index + 1}</h4>
+                              <div className="text-sm text-red-600">
+                                Satış: {room.price} {room.currency}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-red-700 mb-1">Otel</label>
+                                <input
+                                  type="text"
+                                  value={room.hotelId}
+                                  className="w-full px-3 py-2 border border-red-300 rounded-md bg-gray-100"
+                                  readOnly
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-red-700 mb-1">Oda Tipi</label>
+                                <input
+                                  type="text"
+                                  value={room.roomType}
+                                  className="w-full px-3 py-2 border border-red-300 rounded-md bg-gray-100"
+                                  readOnly
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-red-700 mb-1">Misafir</label>
+                                <input
+                                  type="text"
+                                  value={room.guestInfo}
+                                  className="w-full px-3 py-2 border border-red-300 rounded-md bg-gray-100"
+                                  readOnly
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-red-700 mb-1">Maliyet</label>
+                                <input
+                                  type="number"
+                                  value={room.costPrice || 0}
+                                  onChange={(e) => updateRoomCost(room.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                  className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                  placeholder="Maliyet"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-red-700 mb-1">Maliyet Para Birimi</label>
+                                <select
+                                  value={room.costCurrency || room.currency}
+                                  onChange={(e) => updateRoomCost(room.id, 'costCurrency', e.target.value)}
+                                  className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-red-700 mb-1">Kar/Zarar</label>
+                                <div className={`px-3 py-2 rounded-md text-sm font-medium ${
+                                  (room.price - (room.costPrice || 0)) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {room.currency === (room.costCurrency || room.currency) 
+                                    ? (room.price - (room.costPrice || 0)).toFixed(2)
+                                    : 'Farklı para birimi'
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Flight Information (Same as Sales but with cost fields) */}
+                    {sejourData && sejourData.flights.length > 0 && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                        <h3 className="text-lg font-medium text-orange-900 mb-4">Uçuş Maliyetleri</h3>
+                        {sejourData.flights.map((flight, index) => (
+                          <div key={flight.id} className="border border-orange-300 rounded-lg p-4 mb-4">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-orange-800">
+                                {flight.type === 'departure' ? 'Gidiş' : 'Dönüş'} Uçuşu {index + 1}
+                              </h4>
+                              <div className="text-sm text-orange-600">
+                                Satış: {flight.price} {flight.currency}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                              <input
+                                type="text"
+                                value={flight.airline}
+                                className="px-3 py-2 border border-orange-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={flight.route}
+                                className="px-3 py-2 border border-orange-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={flight.flightNo}
+                                className="px-3 py-2 border border-orange-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={flight.departureTime}
+                                className="px-3 py-2 border border-orange-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={flight.arrivalTime}
+                                className="px-3 py-2 border border-orange-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="number"
+                                value={flight.costPrice || 0}
+                                onChange={(e) => updateFlightCost(flight.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                className="px-3 py-2 border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                placeholder="Maliyet"
+                              />
+                              <select
+                                value={flight.costCurrency || flight.currency}
+                                onChange={(e) => updateFlightCost(flight.id, 'costCurrency', e.target.value)}
+                                className="px-3 py-2 border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                              >
+                                <option value="EUR">EUR</option>
+                                <option value="USD">USD</option>
+                                <option value="TRY">TRY</option>
+                              </select>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Transfer Information (Same as Sales but with cost fields) */}
+                    {sejourData && sejourData.transfers.length > 0 && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                        <h3 className="text-lg font-medium text-yellow-900 mb-4">Transfer Maliyetleri</h3>
+                        {sejourData.transfers.map((transfer, index) => (
+                          <div key={transfer.id} className="border border-yellow-300 rounded-lg p-4 mb-4">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-yellow-800">
+                                {transfer.direction === 'arrival' ? 'Geliş' : 'Dönüş'} Transferi {index + 1}
+                              </h4>
+                              <div className="text-sm text-yellow-600">
+                                Satış: {transfer.price} {transfer.currency}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+                              <input
+                                type="text"
+                                value={transfer.provider}
+                                className="px-3 py-2 border border-yellow-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={transfer.type}
+                                className="px-3 py-2 border border-yellow-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={transfer.vehicle}
+                                className="px-3 py-2 border border-yellow-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={transfer.time}
+                                className="px-3 py-2 border border-yellow-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="number"
+                                value={transfer.costPrice || 0}
+                                onChange={(e) => updateTransferCost(transfer.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                className="px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                placeholder="Maliyet"
+                              />
+                              <select
+                                value={transfer.costCurrency || transfer.currency}
+                                onChange={(e) => updateTransferCost(transfer.id, 'costCurrency', e.target.value)}
+                                className="px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                              >
+                                <option value="EUR">EUR</option>
+                                <option value="USD">USD</option>
+                                <option value="TRY">TRY</option>
+                              </select>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Extra Services (Same as Sales but with cost fields) */}
+                    {sejourData && sejourData.extraServices.length > 0 && (
+                      <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-6">
+                        <h3 className="text-lg font-medium text-pink-900 mb-4">Ekstra Hizmet Maliyetleri</h3>
+                        
+                        {sejourData.extraServices.map((service, index) => (
+                          <div key={service.id} className="border border-pink-300 rounded-lg p-4 mb-3">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-pink-800">Hizmet {index + 1}</h4>
+                              <div className="text-sm text-pink-600">
+                                Satış: {service.price} {service.currency}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                              <input
+                                type="text"
+                                value={service.serviceType}
+                                className="px-3 py-2 border border-pink-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={service.provider}
+                                className="px-3 py-2 border border-pink-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="text"
+                                value={service.description}
+                                className="px-3 py-2 border border-pink-300 rounded-md bg-gray-100"
+                                readOnly
+                              />
+                              <input
+                                type="number"
+                                value={service.costPrice || 0}
+                                onChange={(e) => updateExtraServiceCost(service.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                className="px-3 py-2 border border-pink-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                placeholder="Maliyet"
+                              />
+                              <select
+                                value={service.costCurrency || service.currency}
+                                onChange={(e) => updateExtraServiceCost(service.id, 'costCurrency', e.target.value)}
+                                className="px-3 py-2 border border-pink-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                              >
+                                <option value="EUR">EUR</option>
+                                <option value="USD">USD</option>
+                                <option value="TRY">TRY</option>
+                              </select>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Purchase Tab */}
+                {activeTab === 'purchase' && sejourData && (
+                  <div className="space-y-6">
+                    {/* Cost Summary */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Maliyet ve Kar/Zarar Özeti</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Toplam Maliyet</p>
+                          <div className="space-y-2">
+                            <p className="text-lg font-bold text-red-600">EUR: {getCostForCurrency(sejourData, 'EUR')}</p>
+                            <p className="text-lg font-bold text-red-600">USD: {getCostForCurrency(sejourData, 'USD')}</p>
+                            <p className="text-lg font-bold text-red-600">TRY: {getCostForCurrency(sejourData, 'TRY')}</p>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Toplam Satış</p>
+                          <div className="space-y-2">
+                            <p className="text-lg font-bold text-green-600">EUR: {sejourData.totals.EUR}</p>
+                            <p className="text-lg font-bold text-green-600">USD: {sejourData.totals.USD}</p>
+                            <p className="text-lg font-bold text-green-600">TRY: {sejourData.totals.TRY}</p>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Kar/Zarar</p>
+                          <div className="space-y-2">
+                            <p className={`text-lg font-bold ${getProfitForCurrency(sejourData, 'EUR') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              EUR: {getProfitForCurrency(sejourData, 'EUR')}
+                            </p>
+                            <p className={`text-lg font-bold ${getProfitForCurrency(sejourData, 'USD') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              USD: {getProfitForCurrency(sejourData, 'USD')}
+                            </p>
+                            <p className={`text-lg font-bold ${getProfitForCurrency(sejourData, 'TRY') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              TRY: {getProfitForCurrency(sejourData, 'TRY')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Kar Marjı</p>
+                          <div className="space-y-2">
+                            <p className={`text-lg font-bold ${getProfitForCurrency(sejourData, 'EUR') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              EUR: {sejourData.totals.EUR > 0 ? ((getProfitForCurrency(sejourData, 'EUR') / sejourData.totals.EUR) * 100).toFixed(2) : 0}%
+                            </p>
+                            <p className={`text-lg font-bold ${getProfitForCurrency(sejourData, 'USD') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              USD: {sejourData.totals.USD > 0 ? ((getProfitForCurrency(sejourData, 'USD') / sejourData.totals.USD) * 100).toFixed(2) : 0}%
+                            </p>
+                            <p className={`text-lg font-bold ${getProfitForCurrency(sejourData, 'TRY') >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              TRY: {sejourData.totals.TRY > 0 ? ((getProfitForCurrency(sejourData, 'TRY') / sejourData.totals.TRY) * 100).toFixed(2) : 0}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Rooms Cost Management */}
+                    {sejourData.rooms.length > 0 && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Oda Maliyetleri</h3>
+                        <div className="space-y-4">
+                          {sejourData.rooms.map((room) => (
+                            <div key={room.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-medium text-gray-900">{room.roomNumber} - {room.roomType}</h4>
+                                <span className="text-sm text-gray-500">Satış: {room.price} {room.currency}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="number"
+                                  value={room.costPrice || 0}
+                                  onChange={(e) => updateRoomCost(room.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Maliyet"
+                                />
+                                <select
+                                  value={room.costCurrency || room.currency}
+                                  onChange={(e) => updateRoomCost(room.id, 'costCurrency', e.target.value)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Flights Cost Management */}
+                    {sejourData.flights.length > 0 && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Uçuş Maliyetleri</h3>
+                        <div className="space-y-4">
+                          {sejourData.flights.map((flight) => (
+                            <div key={flight.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-medium text-gray-900">{flight.airline} - {flight.route}</h4>
+                                <span className="text-sm text-gray-500">Satış: {flight.price} {flight.currency}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="number"
+                                  value={flight.costPrice || 0}
+                                  onChange={(e) => updateFlightCost(flight.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Maliyet"
+                                />
+                                <select
+                                  value={flight.costCurrency || flight.currency}
+                                  onChange={(e) => updateFlightCost(flight.id, 'costCurrency', e.target.value)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Transfers Cost Management */}
+                    {sejourData.transfers.length > 0 && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer Maliyetleri</h3>
+                        <div className="space-y-4">
+                          {sejourData.transfers.map((transfer) => (
+                            <div key={transfer.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-medium text-gray-900">{transfer.provider} - {transfer.type}</h4>
+                                <span className="text-sm text-gray-500">Satış: {transfer.price} {transfer.currency}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="number"
+                                  value={transfer.costPrice || 0}
+                                  onChange={(e) => updateTransferCost(transfer.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Maliyet"
+                                />
+                                <select
+                                  value={transfer.costCurrency || transfer.currency}
+                                  onChange={(e) => updateTransferCost(transfer.id, 'costCurrency', e.target.value)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Extra Services Cost Management */}
+                    {sejourData.extraServices.length > 0 && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Ek Hizmet Maliyetleri</h3>
+                        <div className="space-y-4">
+                          {sejourData.extraServices.map((service) => (
+                            <div key={service.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-medium text-gray-900">{service.serviceType} - {service.provider}</h4>
+                                <span className="text-sm text-gray-500">Satış: {service.price} {service.currency}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <input
+                                  type="number"
+                                  value={service.costPrice || 0}
+                                  onChange={(e) => updateExtraServiceCost(service.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Maliyet"
+                                />
+                                <select
+                                  value={service.costCurrency || service.currency}
+                                  onChange={(e) => updateExtraServiceCost(service.id, 'costCurrency', e.target.value)}
+                                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="EUR">EUR</option>
+                                  <option value="USD">USD</option>
+                                  <option value="TRY">TRY</option>
+                                </select>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 
