@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import moment from 'moment';
+import 'moment/locale/tr';
+import { X, Info, AlertTriangle, AlertCircle, CheckCircle2, Calendar, Clock, ExternalLink } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -11,6 +13,7 @@ interface Notification {
   type: string;
   is_read: boolean;
   created_at: string;
+  action_url?: string;
 }
 
 interface NotificationModalProps {
@@ -26,72 +29,170 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (isOpen && mounted) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, mounted]);
+
   if (!isOpen || !notification || !mounted) return null;
 
-  const typeStyles: Record<string, string> = {
-    info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    success: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  const typeConfig: Record<string, { 
+    container: string; 
+    iconBg: string; 
+    iconColor: string; 
+    icon: any;
+    border: string;
+    glow: string;
+  }> = {
+    info: { 
+      container: 'bg-blue-50 dark:bg-blue-900/10', 
+      iconBg: 'bg-blue-100 dark:bg-blue-900/30', 
+      iconColor: 'text-blue-600 dark:text-blue-400', 
+      icon: Info,
+      border: 'border-blue-100 dark:border-blue-800/50',
+      glow: 'shadow-blue-500/10'
+    },
+    warning: { 
+      container: 'bg-amber-50 dark:bg-amber-900/10', 
+      iconBg: 'bg-amber-100 dark:bg-amber-900/30', 
+      iconColor: 'text-amber-600 dark:text-amber-400', 
+      icon: AlertTriangle,
+      border: 'border-amber-100 dark:border-amber-800/50',
+      glow: 'shadow-amber-500/10'
+    },
+    error: { 
+      container: 'bg-red-50 dark:bg-red-900/10', 
+      iconBg: 'bg-red-100 dark:bg-red-900/30', 
+      iconColor: 'text-red-600 dark:text-red-400', 
+      icon: AlertCircle,
+      border: 'border-red-100 dark:border-red-800/50',
+      glow: 'shadow-red-500/10'
+    },
+    success: { 
+      container: 'bg-emerald-50 dark:bg-emerald-900/10', 
+      iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', 
+      iconColor: 'text-emerald-600 dark:text-emerald-400', 
+      icon: CheckCircle2,
+      border: 'border-emerald-100 dark:border-emerald-800/50',
+      glow: 'shadow-emerald-500/10'
+    },
   };
 
-  const typeIcons: Record<string, string> = {
-    info: 'ℹ️',
-    warning: '⚠️',
-    error: '🚫',
-    success: '✅',
-  };
+  const config = typeConfig[notification.type] || typeConfig.info;
+  const Icon = config.icon;
+
+  const isHtml = (str: string) => /<[a-z][\s\S]*>/i.test(str);
 
   return createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-6">
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-950/40 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800 animate-in fade-in zoom-in duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <span className={`flex items-center justify-center w-10 h-10 rounded-xl text-xl ${typeStyles[notification.type] || typeStyles.info}`}>
-              {typeIcons[notification.type] || typeIcons.info}
-            </span>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+      
+      <div className={`relative w-full max-w-3xl bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-2xl overflow-hidden border ${config.border} animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]`}>
+        {/* Header Section */}
+        <div className={`p-6 md:p-8 flex items-start justify-between ${config.container} border-b ${config.border}`}>
+          <div className="flex items-start gap-4 md:gap-6">
+            <div className={`flex-shrink-0 w-14 h-14 rounded-2xl ${config.iconBg} flex items-center justify-center ${config.iconColor} shadow-lg ${config.glow}`}>
+              <Icon size={32} strokeWidth={2.5} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
                 {notification.title}
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {moment(notification.created_at).format('DD MMMM YYYY, HH:mm')}
-              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                  <Calendar size={14} className="opacity-70" />
+                  {moment(notification.created_at).format('DD MMMM YYYY')}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                  <Clock size={14} className="opacity-70" />
+                  {moment(notification.created_at).format('HH:mm')}
+                </div>
+              </div>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            className="p-2.5 bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full transition-all active:scale-90"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-8 max-h-[70vh] overflow-y-auto">
-          <div className="prose dark:prose-invert max-w-none">
-            <div 
-              className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{ __html: notification.message }}
-            />
+        {/* Content Section */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
+          <div className={`prose dark:prose-invert max-w-none 
+            prose-headings:font-black prose-headings:tracking-tight
+            prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-p:leading-relaxed
+            prose-table:border prose-table:border-slate-200 dark:prose-table:border-slate-800 prose-table:rounded-xl prose-table:overflow-hidden
+            prose-th:bg-slate-50 dark:prose-th:bg-slate-800/50 prose-th:px-4 prose-th:py-3 prose-th:text-xs prose-th:font-black prose-th:uppercase prose-th:tracking-widest
+            prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:border-t prose-td:border-slate-100 dark:prose-td:border-slate-800
+          `}>
+            {isHtml(notification.message) ? (
+              <div 
+                dangerouslySetInnerHTML={{ __html: notification.message }}
+                className="notification-html-content"
+              />
+            ) : (
+              <p className="text-lg font-medium whitespace-pre-wrap">
+                {notification.message}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all active:scale-95"
-          >
-            Kapat
-          </button>
+        {/* Action / Footer Section */}
+        <div className="p-6 md:p-8 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-xs text-slate-400 font-medium">
+            Bu bildirim sistem tarafından otomatik olarak oluşturulmuştur.
+          </div>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {notification.action_url && (
+              <a
+                href={notification.action_url}
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              >
+                Detaylara Git
+                <ExternalLink size={18} />
+              </a>
+            )}
+            <button
+              onClick={onClose}
+              className="flex-1 md:flex-none px-8 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all active:scale-95"
+            >
+              Kapat
+            </button>
+          </div>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .notification-html-content table {
+          width: 100% !important;
+          border-collapse: separate !important;
+          border-spacing: 0 !important;
+          margin: 1.5rem 0 !important;
+        }
+        .notification-html-content th, 
+        .notification-html-content td {
+          border: 1px solid rgba(148, 163, 184, 0.1) !important;
+        }
+        .notification-html-content a[style*="display: inline-block"] {
+          display: none !important; /* Hide the legacy inline buttons as we have our own in the footer */
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.3); }
+      `}} />
     </div>,
     document.body
   );

@@ -128,11 +128,17 @@ export default function CreateQuotePage() {
     status: 'TEKLİF',
     quote_type: 'BİRİM',
     operation_managers: [] as string[], // Operasyon sorumluları
+    voucher_no: '',
+    project_code: '',
+    reference_code: '',
     notes: `FİYATLAR, NET & KOMİSYONSUZ & KDV DAHİLDİR.
 ALINMASI HENÜZ KESİNLEŞMEYEN SERVİSLER İÇİN BİRİM/ ADET veya SEFER/TEKRAR ÇARPANI "0" (SIFIR) OLARAK GÜNCELLENMİŞTİR.
 OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ GÜNÜ KONAKLAMA SABAH KAHVALTISI İLE SON BULUR.
 OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ EKSTRA OLARAK ÜCRETLENDİRİLİR.`
   });
+
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [activeHotelId, setActiveHotelId] = useState<string | null>(null);
   const [selectedHotels, setSelectedHotels] = useState<SelectedHotel[]>([]);
@@ -659,6 +665,9 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         status: formData.status,
         quote_type: formData.quote_type,
         operation_managers: validOperationManagers,
+        voucher_no: formData.voucher_no,
+        project_code: formData.project_code,
+        reference_code: formData.reference_code,
         notes: formData.notes,
         total_amount: totalAmount,
         currency: currency
@@ -670,6 +679,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         
         await quoteItemsService.create({
           quote_id: createdQuote.id,
+          reference: createdQuote.reference,
           main_category: item.main_category || '',
           sub_category: item.sub_category || '',
           unit_quantity: Number(item.unit_quantity || 0),
@@ -688,18 +698,17 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
 
       if (formData.status === 'KONFİRME') {
         try {
-          // Yeni tekliflerde tüm otelleri konfirme sayabiliriz
           await createProjectFromQuote(createdQuote.id, activeHotels);
-          alert('Teklif oluşturuldu ve projelere aktarıldı.');
+          setSuccessMessage('Teklif oluşturuldu ve projelere aktarıldı.');
+          setIsSuccessModalOpen(true);
         } catch (err) {
           console.error('Proje aktarım hatası:', err);
           alert('Teklif oluşturuldu ancak projelere aktarılırken hata oluştu.');
         }
       } else {
-        alert('Teklif başarıyla oluşturuldu!');
+        setSuccessMessage('Teklif başarıyla oluşturuldu!');
+        setIsSuccessModalOpen(true);
       }
-
-      router.push('/quotes');
     } catch (error) {
       console.error('Error creating quote:', error);
       alert(`Teklif oluşturulurken bir hata oluştu: ${error?.message || 'Bilinmeyen hata'}`);
@@ -834,19 +843,49 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-200">Teklif Bilgileri</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Reference */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
-                  Reference *
-                </label>
-                <input
-                  type="text"
-                  name="reference"
-                  value={formData.reference}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
-                />
+              {/* Reference & Custom Codes */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">REFERENCE *</label>
+                  <input
+                    type="text"
+                    name="reference"
+                    value={formData.reference}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">VOUCHER NO</label>
+                  <input
+                    type="text"
+                    name="voucher_no"
+                    value={formData.voucher_no}
+                    onChange={handleInputChange}
+                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">PROJE KODU</label>
+                  <input
+                    type="text"
+                    name="project_code"
+                    value={formData.project_code}
+                    onChange={handleInputChange}
+                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">REFERANS KODU</label>
+                  <input
+                    type="text"
+                    name="reference_code"
+                    value={formData.reference_code}
+                    onChange={handleInputChange}
+                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
+                  />
+                </div>
               </div>
 
               {/* Agency */}
@@ -1315,6 +1354,34 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
             </button>
           </div>
         </form>
+
+        {/* Success Modal */}
+        <AnimatePresence>
+          {isSuccessModalOpen && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl border border-gray-200 dark:border-gray-800"
+              >
+                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Başarılı!</h3>
+                <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">{successMessage}</p>
+                <button
+                  onClick={() => router.push('/quotes')}
+                  className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
+                >
+                  TAMAM
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

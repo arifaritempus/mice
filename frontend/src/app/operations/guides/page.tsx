@@ -44,6 +44,208 @@ interface MultiTokenFilterInputProps {
   onRemoveToken: (value: string) => void;
 }
 
+interface DateRangeFieldProps {
+  label: string;
+  startValue: string;
+  endValue: string;
+  onStartChange: (value: string) => void;
+  onEndChange: (value: string) => void;
+  onApply: (start?: string, end?: string) => void;
+}
+
+const toDate = (value: string) => {
+  if (!value) return null;
+  const parsed = parseISO(value);
+  return isValidDate(parsed) ? parsed : null;
+};
+
+const parseTypedDate = (value: string): string | null => {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  const parsed = parseDateFns(trimmed, 'dd.MM.yyyy', new Date());
+  if (!isValidDate(parsed)) return null;
+  return formatDateFns(parsed, 'yyyy-MM-dd');
+};
+
+function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
+  const startDate = toDate(startValue);
+  const endDate = toDate(endValue);
+  const [startText, setStartText] = useState(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
+  const [endText, setEndText] = useState(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [pickerRange, setPickerRange] = useState<[Date | null, Date | null]>([startDate, endDate]);
+  const [calendarStyle, setCalendarStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  useEffect(() => {
+    const s = toDate(startValue);
+    setStartText(s ? formatDateFns(s, 'dd.MM.yyyy') : '');
+  }, [startValue]);
+
+  useEffect(() => {
+    const e = toDate(endValue);
+    setEndText(e ? formatDateFns(e, 'dd.MM.yyyy') : '');
+  }, [endValue]);
+
+  useEffect(() => {
+    if (isCalendarOpen) {
+      setPickerRange([toDate(startValue), toDate(endValue)]);
+    }
+  }, [isCalendarOpen, startValue, endValue]);
+
+  useEffect(() => {
+    const onClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (!containerRef.current) return;
+      if (containerRef.current.contains(target)) return;
+      if (calendarRef.current?.contains(target)) return;
+      setIsCalendarOpen(false);
+      setPickerRange([toDate(startValue), toDate(endValue)]);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [startValue, endValue]);
+
+  const handleStartTextChange = (value: string) => {
+    setStartText(value);
+    if (value === '') {
+      onStartChange('');
+      onApply('', endText.length === 10 ? parseTypedDate(endText) || '' : '');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10) {
+          const endParsed = parseTypedDate(endText);
+          if (endParsed) onApply(parsed, endParsed);
+        }
+      }
+    }
+  };
+
+  const handleEndTextChange = (value: string) => {
+    setEndText(value);
+    if (value === '') {
+      onEndChange('');
+      onApply(startText.length === 10 ? parseTypedDate(startText) || '' : '', '');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10) {
+          const startParsed = parseTypedDate(startText);
+          if (startParsed) onApply(startParsed, parsed);
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const s = parseTypedDate(startText) || '';
+      const e_ = parseTypedDate(endText) || '';
+      onApply(s, e_);
+      setIsCalendarOpen(false);
+    }
+  };
+
+  const calStart = isCalendarOpen ? pickerRange[0] : startDate;
+  const calEnd = isCalendarOpen ? pickerRange[1] : endDate;
+  const openCalendar = () => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setCalendarStyle({
+        top: rect.bottom + 4,
+        left: Math.max(6, rect.left)
+      });
+    }
+    setIsCalendarOpen(true);
+  };
+
+  return (
+    <div className="min-w-0 relative" ref={containerRef}>
+      <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate" title={label}>
+        {label}
+      </label>
+      <div className="flex gap-0.5">
+        <input
+          value={startText}
+          onChange={(e) => handleStartTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={openCalendar}
+          placeholder="gg.aa.yyyy"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        />
+        <input
+          value={endText}
+          onChange={(e) => handleEndTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={openCalendar}
+          placeholder="gg.aa.yyyy"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        />
+      </div>
+      {isCalendarOpen && typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={calendarRef}
+            className="transfer-range-datepicker-popover fixed z-[9999] w-max max-w-[calc(100vw-0.75rem)] shadow-2xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 overflow-x-auto"
+            style={{ top: `${calendarStyle.top}px`, left: `${calendarStyle.left}px` }}
+          >
+            <DatePicker
+              inline
+              locale={tr}
+              monthsShown={2}
+              selectsRange
+              startDate={calStart || undefined}
+              endDate={calEnd || undefined}
+              onChange={(dates) => {
+                const [start, end] = dates as [Date | null, Date | null];
+                setPickerRange([start, end]);
+                if (start && !end) {
+                  onStartChange(toIsoDate(start));
+                  onEndChange('');
+                  return;
+                }
+                if (start && end) {
+                  const s = toIsoDate(start);
+                  const e = toIsoDate(end);
+                  onStartChange(s);
+                  onEndChange(e);
+                  onApply(s, e);
+                  setIsCalendarOpen(false);
+                  return;
+                }
+                if (!start && !end) {
+                  onStartChange('');
+                  onEndChange('');
+                  onApply('', '');
+                }
+              }}
+              calendarClassName="!border-none !bg-transparent dark:!text-white"
+            />
+          </div>,
+          document.body
+        )
+      }
+    </div>
+  );
+}
+
+import { createPortal } from 'react-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { tr } from 'date-fns/locale';
+import { parseISO, isValid as isValidDate, format as formatDateFns, parse as parseDateFns } from 'date-fns';
+
+const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
+
 function MultiTokenFilterInput({
   label,
   tokens,
@@ -51,8 +253,9 @@ function MultiTokenFilterInput({
   suggestions,
   onInputChange,
   onAddToken,
-  onRemoveToken
-}: MultiTokenFilterInputProps) {
+  onRemoveToken,
+  rootClassName = ""
+}: MultiTokenFilterInputProps & { rootClassName?: string }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const normalizedInput = inputValue.trim().toLowerCase();
   const filteredSuggestions = suggestions
@@ -69,7 +272,7 @@ function MultiTokenFilterInput({
   };
 
   return (
-    <div className="relative min-w-0">
+    <div className={`relative min-w-0 ${rootClassName}`}>
       <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate" title={label}>
         {label}
       </label>
@@ -100,16 +303,16 @@ function MultiTokenFilterInput({
             }
           }}
           className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-xs"
-          placeholder="Yaz, Enter ile ekle"
+          placeholder="Yaz, Enter"
         />
       </div>
       {filteredSuggestions.length > 0 && (
-        <div className="absolute z-20 mt-0.5 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-32 overflow-y-auto">
+        <div className="absolute z-20 mt-0.5 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-32 overflow-y-auto text-xs">
           {filteredSuggestions.map((suggestion) => (
             <button
               type="button"
               key={suggestion}
-              className="w-full text-left px-2 py-1.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="w-full text-left px-2 py-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               onMouseDown={(ev) => ev.preventDefault()}
               onClick={() => handleAdd(suggestion)}
             >
@@ -409,7 +612,13 @@ export default function GuidesPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
+  const [filter, setFilter] = useState<'all' | 'mice' | 'sejour'>('all');
+  const [typeCounts, setTypeCounts] = useState({ all: 0, mice: 0, sejour: 0 });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [dateRange, setDateRange] = useState({ startDate: todayStr, endDate: '' });
+  const [draftStart, setDraftStart] = useState(todayStr);
+  const [draftEnd, setDraftEnd] = useState('');
   
   const [filterKey, setFilterKey] = useState<number>(0);
   const [forceReload, setForceReload] = useState<number>(0);
@@ -422,6 +631,7 @@ export default function GuidesPage() {
         page: String(page),
         pageSize: String(pageSize),
         searchTerm: '',
+        filter,
         sortField: String(sortField),
         sortDirection,
         startDate: dateRange.startDate || '',
@@ -440,6 +650,15 @@ export default function GuidesPage() {
       setGuides(Array.isArray(result.data) ? result.data : []);
       setTotalCount(Number(result.total || 0));
       setTotalPages(Number(result.totalPages || 1));
+      
+      const tc = result.sourceTotals;
+      if (tc) {
+        setTypeCounts({
+          all: Number(result.total || 0),
+          mice: Number(tc.mice || 0),
+          sejour: Number(tc.sejour || 0)
+        });
+      }
     } catch (error) {
       console.error('Kokartlı rehber verileri yüklenirken hata:', error);
     } finally {
@@ -462,12 +681,19 @@ export default function GuidesPage() {
 
   useEffect(() => {
     loadGuides();
-  }, [page, pageSize, scopedSearchState, sortField, sortDirection, dateRange.startDate, dateRange.endDate, forceReload]);
+  }, [page, pageSize, scopedSearchState, filter, sortField, sortDirection, dateRange, forceReload]);
+
+  const handleApplyDates = (start?: string, end?: string) => {
+    setDateRange({
+      startDate: start !== undefined ? start : draftStart,
+      endDate: end !== undefined ? end : draftEnd
+    });
+    setPage(1);
+    setForceReload(prev => prev + 1);
+  };
 
   // Filtreleri temizleme fonksiyonu
   const clearGuidesFilters = () => {
-    console.log('=== GUIDES FİLTRE TEMİZLEME BAŞLADI ===');
-    
     setVoucherTokens([]);
     setVoucherInput('');
     setCustomerTokens([]);
@@ -478,11 +704,14 @@ export default function GuidesPage() {
     setSupplierInput('');
     setGuideTokens([]);
     setGuideInput('');
-    setDateRange({ startDate: '', endDate: '' });
+    const todayStr = new Date().toISOString().split('T')[0];
+    setDraftStart(todayStr);
+    setDraftEnd('');
+    setDateRange({ startDate: todayStr, endDate: '' });
+    setFilter('all');
+    setPage(1);
     setFilterKey(prev => prev + 1);
     setForceReload(prev => prev + 1);
-    
-    console.log('Guides filtreleri temizlendi');
   };
 
   // Excel export fonksiyonu
@@ -690,41 +919,80 @@ export default function GuidesPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      <div className="w-full min-w-0 flex flex-col flex-1">
+    <div className="flex flex-col h-screen p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden font-sans">
+      <div className="w-full min-w-0 flex flex-col h-full gap-2">
         {/* Header */}
-        <div className="mb-4 flex justify-between items-start">
+        <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Kokartlı Rehber Yönetimi</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">MICE ve Sejour kokartlı rehber operasyonlarını yönetin</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Kokartlı Rehber Yönetimi</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">MICE ve Sejour rehber operasyonlarını tek ekrandan yönetin</p>
           </div>
+          <button
+            type="button"
+            onClick={exportGuidesToExcel}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm text-sm font-semibold"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel
+          </button>
+        </div>
+
+        {/* Tab Sistemi */}
+        <div className="flex gap-1 bg-gray-200/50 dark:bg-gray-800/50 p-1 rounded-xl w-full">
+          <button
+            onClick={() => { setFilter('all'); setPage(1); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              filter === 'all'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Tüm Rehberler ({typeCounts.all})
+          </button>
+          <button
+            onClick={() => { setFilter('mice'); setPage(1); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              filter === 'mice'
+                ? 'bg-orange-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            MICE ({typeCounts.mice})
+          </button>
+          <button
+            onClick={() => { setFilter('sejour'); setPage(1); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              filter === 'sejour'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Sejour ({typeCounts.sejour})
+          </button>
         </div>
 
         {/* Arama ve Filtreleme */}
-        <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 mb-2 w-full min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Arama ve Filtreleme</h3>
-            <div className="flex shrink-0 gap-2">
-              <button
-                type="button"
-                onClick={exportGuidesToExcel}
-                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200"
-              >
-                📥 Excel Export
-              </button>
-              <button
-                type="button"
-                onClick={clearGuidesFilters}
-                className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200 shrink-0"
-                title="Filtreleri temizle"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1 md:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)]">
+        <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-2 w-full min-w-0">
+          <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1fr 1fr auto' }}>
+            <DateRangeField
+              label="Hizmet Tarihi"
+              startValue={dateRange.startDate}
+              endValue={dateRange.endDate}
+              onStartChange={(v) => setDraftStart(v)}
+              onEndChange={(v) => setDraftEnd(v)}
+              onApply={handleApplyDates}
+            />
             <MultiTokenFilterInput
               label="Voucher"
               tokens={voucherTokens}
@@ -770,30 +1038,16 @@ export default function GuidesPage() {
               onAddToken={(value) => addToken(value, setGuideTokens, setGuideInput)}
               onRemoveToken={(value) => removeToken(value, setGuideTokens)}
             />
-            <div className="w-full shrink-0 md:w-[11rem] md:min-w-[10.5rem]">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 leading-snug">
-                <span className="block">Hizmet Tarihi</span>
-                <span className="block">Başlangıç</span>
-              </label>
-              <input
-                type="date"
-                value={dateRange.startDate}
-                onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                className="w-full h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-              />
-            </div>
-            <div className="w-full shrink-0 md:w-[11rem] md:min-w-[10.5rem]">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 leading-snug">
-                <span className="block">Hizmet Tarihi</span>
-                <span className="block">Bitiş</span>
-              </label>
-              <input
-                type="date"
-                value={dateRange.endDate}
-                onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                className="w-full h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={clearGuidesFilters}
+              className="h-8 w-8 flex items-center justify-center rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 shrink-0 shadow-sm"
+              title="Filtreleri Temizle"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
         </div>
 

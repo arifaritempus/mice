@@ -14,6 +14,7 @@ export default function AuthWrapper({
 }) {
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState<boolean>(true);
+  const [debugInfo, setDebugInfo] = useState({ role: '', module: '' });
   const pathname = usePathname();
   const router = useRouter();
 
@@ -138,6 +139,7 @@ export default function AuthWrapper({
         console.debug(`[AuthWrapper] Access check for path "${currentPathname}" (Module: ${module}, Role: ${resolvedRole}): ${allowed ? 'ALLOWED' : 'DENIED'}`);
         
         setHasAccess(allowed);
+        setDebugInfo({ role: resolvedRole, module: module as string });
         finishLoading();
         
       } catch (error) {
@@ -177,6 +179,7 @@ export default function AuthWrapper({
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Hesabinizda bu bolumu goruntuleme izni tanimli degil. Gerekli ise yoneticinizden erisim talep edebilirsiniz.
           </p>
+          <p className="text-xs text-slate-400 mt-4">Debug: Role: {debugInfo.role}, Module: {debugInfo.module}</p>
           <button
             type="button"
             onClick={() => router.push('/')}

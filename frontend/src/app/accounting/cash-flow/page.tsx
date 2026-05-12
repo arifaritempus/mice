@@ -3,27 +3,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { projectCollectionPlansService, projectPaymentPlansService, projectsService, ticketPaymentPlansService, ticketOptionsService } from '@/lib/supabaseService';
-import { 
-  DollarSign, 
-  Calendar as CalendarIcon, 
-  Search, 
-  RotateCcw, 
-  ChevronLeft, 
-  ChevronRight, 
-  Plus,
-  ArrowUpRight,
-  TrendingUp,
-  Filter,
-  Download,
-  LayoutGrid,
-  List,
-  CalendarDays,
-  CalendarRange
-} from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, Search, RotateCcw, TrendingUp, TrendingDown, DollarSign, Calendar as CalendarIcon, ArrowUpRight, Plus, X, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-react';
+import Modal from '@/components/Modal';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { usePermissions, Module } from '@/lib/permissions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DateRangeFieldAccounting } from '@/components/accounting/DateRangeFieldAccounting';
+import { getLogosForExcel } from '@/utils/logoUtils';
 
 interface CollectionPlan {
   id: string;
@@ -113,6 +99,7 @@ interface CashFlowItem {
   collection_type?: string;
   payment_type?: string;
   hotel?: string;
+  exchange_rate?: number;
 }
 
 interface CalendarPeriod {
@@ -806,9 +793,89 @@ export default function CashFlowPage() {
         return '';
     }
   };
-  if (permissionsLoading) {
-    return <LoadingSpinner message="Yükleniyor..." />;
-  }
+  // Excel Export
+  const exportCashFlowExcel = async () => {
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Nakit Akışı');
+    sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.2, right: 0.2, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
+
+    // Header band
+    const top = sheet.addRow([]); top.height = 48; sheet.mergeCells('A1:L1');
+    for (let c = 1; c <= 12; c++) { sheet.getRow(1).getCell(c).value=''; sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any; }
+    
+    // Logos
+    const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+    const inchToPx = (inch: number) => Math.round(inch * 96);
+    const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+    if (iconLogoBase64) { const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }); sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any); }
+    if (wordmarkLogoBase64) { const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }); sheet.addImage(markId, { tl: { col: 10.2, row: 0.23 }, ext: { width: inchToPx(1.8), height: inchToPx(0.45) } as any } as any); }
+
+    const columns = [
+      { header: 'TARİH', key: 'date', width: 14 },
+      { header: 'TÜR', key: 'type', width: 12 },
+      { header: 'KATEGORİ', key: 'category', width: 15 },
+      { header: 'PROJE / BİLET', key: 'project', width: 25 },
+      { header: 'FİRMA / ACENTE', key: 'company', width: 25 },
+      { header: 'REFERANS', key: 'reference', width: 18 },
+      { header: 'OTEL / TEDARİKÇİ', key: 'hotel', width: 25 },
+      { header: 'AÇIKLAMA', key: 'description', width: 30 },
+      { header: 'TUTAR', key: 'amount', width: 16 },
+      { header: 'DÖVİZ', key: 'currency', width: 10 },
+      { header: 'KUR', key: 'rate', width: 10 },
+      { header: 'TOPLAM (TRY)', key: 'total_try', width: 18 }
+    ];
+    sheet.columns = columns;
+
+    // Header values row
+    const headerRow = sheet.addRow(columns.map(c => c.header));
+    headerRow.height = 18;
+    headerRow.eachCell((cell) => { 
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; 
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } } as any; 
+      cell.alignment = { vertical: 'middle', horizontal: 'center' } as any; 
+    });
+
+    // Data rows
+    const data = [...filteredItems].sort((a, b) => a.date.localeCompare(b.date));
+    data.forEach(item => {
+      const row = sheet.addRow({
+        date: item.date ? new Date(item.date).toLocaleDateString('tr-TR') : '',
+        type: item.type === 'collection' ? 'Tahsilat' : 'Ödeme',
+        category: item.type === 'collection' ? (item.collection_type || '-') : (item.payment_type || '-'),
+        project: item.project_title || '-',
+        company: item.project_company || item.agency_name || '-',
+        reference: item.project_reference || '-',
+        hotel: item.hotel || item.hotel_name || '-',
+        description: item.description || '-',
+        amount: item.amount,
+        currency: item.currency,
+        rate: item.exchange_rate || 0,
+        total_try: item.total_try || 0
+      });
+
+      row.getCell('amount').numFmt = '#,##0.00';
+      row.getCell('total_try').numFmt = '#,##0.00';
+      row.getCell('rate').numFmt = '#,##0.0000';
+      
+      row.getCell('amount').alignment = { horizontal: 'right' };
+      row.getCell('total_try').alignment = { horizontal: 'right' };
+      row.getCell('rate').alignment = { horizontal: 'right' };
+      
+      row.eachCell((cell) => {
+        cell.alignment = { ...cell.alignment, vertical: 'middle' } as any;
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `nakit_akisi_${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   if (!canView(Module.CASH_FLOW)) {
     return (
@@ -851,6 +918,7 @@ export default function CashFlowPage() {
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button
+                onClick={exportCashFlowExcel}
                 className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 px-5 text-[10px] font-black"
               >
                 <Download className="w-4 h-4" />
@@ -1141,257 +1209,208 @@ export default function CashFlowPage() {
       </main>
 
       {/* Modern Detail Modal */}
-      <AnimatePresence>
-        {isModalOpen && selectedItem && (
-          <div className="fixed inset-0 flex items-center justify-center z-[100] px-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl max-w-2xl w-full relative z-10 overflow-hidden border border-gray-200 dark:border-gray-800"
-            >
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-4 rounded-3xl ${selectedItem.type === 'collection' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600'}`}>
-                      {selectedItem.type === 'collection' ? <DollarSign className="w-8 h-8" /> : <TrendingUp className="w-8 h-8 rotate-180" />}
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">
-                        {selectedItem.type === 'collection' ? 'Tahsilat İşlemi' : 'Ödeme İşlemi'}
-                      </h2>
-                      <p className="text-xs font-bold text-gray-500 mt-0.5">#{selectedItem.id.slice(0, 8)}</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setIsModalOpen(false)}
-                    className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-2xl hover:text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    <Plus className="w-6 h-6 rotate-45" />
-                  </button>
+      <Modal
+        isOpen={isModalOpen && !!selectedItem}
+        onClose={() => setIsModalOpen(false)}
+        title={selectedItem?.type === 'collection' ? 'TAHSİLAT DETAYI' : 'ÖDEME DETAYI'}
+        maxWidth="max-w-2xl"
+      >
+        {selectedItem && (
+          <div className="flex flex-col space-y-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-4 rounded-3xl ${selectedItem.type === 'collection' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-600'}`}>
+                  {selectedItem.type === 'collection' ? <TrendingUpIcon className="w-8 h-8" /> : <TrendingDownIcon className="w-8 h-8" />}
                 </div>
-
-                <div className="space-y-8">
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İşlem Tutarı</span>
-                      <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mt-1">
-                        {formatCurrency(selectedItem.amount, selectedItem.currency)}
-                      </h2>
-                    </div>
-                    {selectedItem.currency !== 'TRY' && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-2xl border border-blue-100 dark:border-blue-800/50">
-                        <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">TL Karşılığı</span>
-                        <p className="text-lg font-black text-blue-600 dark:text-blue-400">
-                          {formatCurrency(selectedItem.amount * (selectedItem.exchange_rate || 1), 'TRY')}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-y-8 gap-x-12 py-8 border-y border-gray-100 dark:border-gray-800">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İLGİLİ PROJE / REFERANS</p>
-                      <p className="text-sm font-black text-gray-900 dark:text-white leading-snug">{selectedItem.project_title || 'Genel İşlem'}</p>
-                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">{selectedItem.project_reference || 'REF YOK'}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[9px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-700">
-                          {formatDate(selectedItem.project_start_date)} - {formatDate(selectedItem.project_end_date)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        {selectedItem.type === 'collection' ? 'MÜŞTERİ / ACENTE' : 'OTEL / TEDARİKÇİ'}
-                      </p>
-                      <p className="text-sm font-black text-gray-900 dark:text-white leading-snug">
-                        {selectedItem.type === 'collection' 
-                          ? (selectedItem.project_company || selectedItem.agency_name || 'Bireysel')
-                          : (selectedItem.hotel || selectedItem.hotel_name || 'Tanımlanmamış')
-                        }
-                      </p>
-                      {selectedItem.type === 'collection' && selectedItem.agency_name && selectedItem.agency_name !== selectedItem.project_company && (
-                        <p className="text-[10px] font-bold text-gray-400">{selectedItem.agency_name}</p>
-                      )}
-                      {selectedItem.type === 'payment' && selectedItem.hotel_name && selectedItem.hotel_name !== selectedItem.hotel && (
-                        <p className="text-[10px] font-bold text-gray-400">{selectedItem.hotel_name}</p>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">PLANLANAN TARİH</p>
-                      <div className="flex items-center text-sm font-black text-gray-900 dark:text-white">
-                        <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
-                        {formatDate(selectedItem.date)}
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İŞLEM TÜRÜ / KUR</p>
-                      <div className="flex flex-col gap-1.5">
-                        <span className={`w-fit px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                          selectedItem.type === 'collection' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
-                        }`}>
-                          {selectedItem.collection_type || selectedItem.payment_type || 'KATEGORİSİZ'}
-                        </span>
-                        {selectedItem.exchange_rate > 1 && (
-                          <span className="text-[10px] font-bold text-gray-400">Kur: 1 {selectedItem.currency} = {selectedItem.exchange_rate.toFixed(4)} TRY</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-3xl border border-gray-100 dark:border-gray-700/50">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">AÇIKLAMA VE NOTLAR</p>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 font-bold leading-relaxed">
-                        {selectedItem.description || 'Bu işlem için ek bir açıklama girilmemiş.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-4">
-                    <div className="flex gap-2">
-                      {selectedItem.project_id && (
-                        <button className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all">
-                          PROJEYE GİT
-                        </button>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setIsModalOpen(false)}
-                      className="px-8 py-3 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl text-[10px] font-black shadow-xl hover:scale-105 transition-all active:scale-95"
-                    >
-                      KAPAT
-                    </button>
-                  </div>
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">İŞLEM TUTARI</p>
+                  <p className={`text-3xl font-black tracking-tight ${selectedItem.type === 'collection' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {formatCurrency(selectedItem.amount, selectedItem.currency)}
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              <div className="text-right">
+                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-800/50">
+                  #{selectedItem.id.slice(0, 8)}
+                </span>
+              </div>
+            </div>
 
-      {/* Daily Summary Modal */}
-      <AnimatePresence>
-        {isPeriodModalOpen && selectedPeriod && (
-          <div className="fixed inset-0 flex items-center justify-center z-[100] px-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsPeriodModalOpen(false)}
-              className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl max-w-3xl w-full relative z-10 overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col max-h-[85vh]"
-            >
-              <div className="p-8 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-3xl">
-                      <CalendarIcon className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">GÜNLÜK ÖZET</h2>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-                        {formatDate(selectedPeriod.startDate)}
-                      </p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setIsPeriodModalOpen(false)}
-                    className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-2xl hover:text-red-500 transition-all hover:bg-red-50"
-                  >
-                    <Plus className="w-6 h-6 rotate-45" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100/50 dark:border-emerald-800/30">
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">TOPLAM TAHSİLAT</p>
-                    <p className="text-xl font-black text-emerald-600">{formatCurrency(selectedPeriod.totals.TRY.collection, 'TRY')}</p>
-                  </div>
-                  <div className="bg-rose-50/50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100/50 dark:border-rose-800/30">
-                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">TOPLAM ÖDEME</p>
-                    <p className="text-xl font-black text-rose-600">{formatCurrency(selectedPeriod.totals.TRY.payment, 'TRY')}</p>
-                  </div>
+            <div className="grid grid-cols-2 gap-y-8 gap-x-12 py-8 border-y border-gray-100 dark:border-gray-800">
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İLGİLİ PROJE / REFERANS</p>
+                <p className="text-sm font-black text-gray-900 dark:text-white leading-snug">{selectedItem.project_title || 'Genel İşlem'}</p>
+                <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">{selectedItem.project_reference || 'REF YOK'}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[9px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-700">
+                    {formatDate(selectedItem.project_start_date)} - {formatDate(selectedItem.project_end_date)}
+                  </span>
                 </div>
               </div>
-
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <div className="space-y-4">
-                  {selectedPeriod.items.length > 0 ? (
-                    selectedPeriod.items.map((item) => (
-                      <div 
-                        key={item.id}
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setIsModalOpen(true);
-                        }}
-                        className={`group p-4 rounded-2xl border cursor-pointer transition-all hover:scale-[1.02] shadow-sm ${
-                          item.type === 'collection' 
-                            ? 'bg-white dark:bg-gray-800/50 border-emerald-100 dark:border-emerald-800/50 hover:border-emerald-500' 
-                            : 'bg-white dark:bg-gray-800/50 border-rose-100 dark:border-rose-800/50 hover:border-rose-500'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
-                              item.type === 'collection' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                            }`}>
-                              {item.collection_type || item.payment_type || 'İŞLEM'}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-400">#{item.id.slice(0, 8)}</span>
-                          </div>
-                          <span className={`text-sm font-black ${item.type === 'collection' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {formatCurrency(item.amount, item.currency)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-end">
-                          <div>
-                            <p className="text-xs font-black text-gray-900 dark:text-white truncate max-w-[400px]">
-                              {item.project_title || 'Genel İşlem'}
-                            </p>
-                            <p className="text-[10px] font-bold text-gray-400 truncate max-w-[400px]">
-                              {item.type === 'collection' 
-                                ? (item.project_company || item.agency_name || 'Bireysel')
-                                : (item.hotel || item.hotel_name || 'Tedarikçi')
-                              } • {item.description || 'Açıklama yok'}
-                            </p>
-                          </div>
-                          <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors" />
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-gray-400 font-bold">Bu tarihte herhangi bir işlem bulunamadı.</p>
-                    </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  {selectedItem.type === 'collection' ? 'MÜŞTERİ / ACENTE' : 'OTEL / TEDARİKÇİ'}
+                </p>
+                <p className="text-sm font-black text-gray-900 dark:text-white leading-snug">
+                  {selectedItem.type === 'collection' 
+                    ? (selectedItem.project_company || selectedItem.agency_name || 'Bireysel')
+                    : (selectedItem.hotel || selectedItem.hotel_name || 'Tanımlanmamış')
+                  }
+                </p>
+                {selectedItem.type === 'collection' && selectedItem.agency_name && selectedItem.agency_name !== selectedItem.project_company && (
+                  <p className="text-[10px] font-bold text-gray-400">{selectedItem.agency_name}</p>
+                )}
+                {selectedItem.type === 'payment' && selectedItem.hotel_name && selectedItem.hotel_name !== selectedItem.hotel && (
+                  <p className="text-[10px] font-bold text-gray-400">{selectedItem.hotel_name}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">PLANLANAN TARİH</p>
+                <div className="flex items-center text-sm font-black text-gray-900 dark:text-white">
+                  <CalendarIcon className="w-4 h-4 mr-2 text-blue-500" />
+                  {formatDate(selectedItem.date)}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İŞLEM TÜRÜ / KUR</p>
+                <div className="flex flex-col gap-1.5">
+                  <span className={`w-fit px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    selectedItem.type === 'collection' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+                  }`}>
+                    {selectedItem.collection_type || selectedItem.payment_type || 'KATEGORİSİZ'}
+                  </span>
+                  {selectedItem.exchange_rate > 1 && (
+                    <span className="text-[10px] font-bold text-gray-400">Kur: 1 {selectedItem.currency} = {selectedItem.exchange_rate.toFixed(4)} TRY</span>
                   )}
                 </div>
               </div>
+            </div>
 
-              <div className="p-8 border-t border-gray-100 dark:border-gray-800 flex justify-end">
-                <button
-                  onClick={() => setIsPeriodModalOpen(false)}
-                  className="px-8 py-3 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl text-[10px] font-black shadow-xl hover:scale-105 transition-all"
-                >
-                  KAPAT
-                </button>
+            <div className="space-y-4">
+              <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-3xl border border-gray-100 dark:border-gray-700/50">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">AÇIKLAMA VE NOTLAR</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 font-bold leading-relaxed">
+                  {selectedItem.description || 'Bu işlem için ek bir açıklama girilmemiş.'}
+                </p>
               </div>
-            </motion.div>
+            </div>
+
+            <div className="flex justify-between items-center pt-4">
+              <div className="flex gap-2">
+                {selectedItem.project_id && (
+                  <button className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest">
+                    PROJEYE GİT
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-8 py-3 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl text-[10px] font-black shadow-xl hover:scale-105 transition-all active:scale-95 uppercase tracking-widest"
+              >
+                KAPAT
+              </button>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
+
+      {/* Daily Summary Modal */}
+      <Modal
+        isOpen={isPeriodModalOpen && !!selectedPeriod}
+        onClose={() => setIsPeriodModalOpen(false)}
+        title="GÜNLÜK ÖZET"
+        maxWidth="max-w-3xl"
+      >
+        {selectedPeriod && (
+          <div className="flex flex-col space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-3xl">
+                <CalendarIcon className="w-8 h-8" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">DÖNEM TARİHİ</p>
+                <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                  {formatDate(selectedPeriod.startDate)}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-5 rounded-[2rem] border border-emerald-100/50 dark:border-emerald-800/30">
+                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">TOPLAM TAHSİLAT</p>
+                <p className="text-2xl font-black text-emerald-600 tracking-tight">{formatCurrency(selectedPeriod.totals.TRY.collection, 'TRY')}</p>
+              </div>
+              <div className="bg-rose-50/50 dark:bg-rose-900/10 p-5 rounded-[2rem] border border-rose-100/50 dark:border-rose-800/30">
+                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">TOPLAM ÖDEME</p>
+                <p className="text-2xl font-black text-rose-600 tracking-tight">{formatCurrency(selectedPeriod.totals.TRY.payment, 'TRY')}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İŞLEM LİSTESİ</p>
+              <div className="space-y-3">
+                {selectedPeriod.items.length > 0 ? (
+                  selectedPeriod.items.map((item) => (
+                    <div 
+                      key={item.id}
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setIsModalOpen(true);
+                      }}
+                      className={`group p-5 rounded-3xl border cursor-pointer transition-all hover:scale-[1.02] shadow-sm ${
+                        item.type === 'collection' 
+                          ? 'bg-white dark:bg-gray-800/50 border-emerald-100 dark:border-emerald-800/50 hover:border-emerald-500' 
+                          : 'bg-white dark:bg-gray-800/50 border-rose-100 dark:border-rose-800/50 hover:border-rose-500'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                            item.type === 'collection' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                          }`}>
+                            {item.collection_type || item.payment_type || 'İŞLEM'}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-400">#{item.id.slice(0, 8)}</span>
+                        </div>
+                        <span className={`text-sm font-black ${item.type === 'collection' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {formatCurrency(item.amount, item.currency)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-black text-gray-900 dark:text-white truncate">
+                            {item.project_title || 'Genel İşlem'}
+                          </p>
+                          <p className="text-[10px] font-bold text-gray-400 truncate">
+                            {item.type === 'collection' 
+                              ? (item.project_company || item.agency_name || 'Bireysel')
+                              : (item.hotel || item.hotel_name || 'Tedarikçi')
+                            } • {item.description || 'Açıklama yok'}
+                          </p>
+                        </div>
+                        <ArrowUpRight className="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition-colors" />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Bu tarihte herhangi bir işlem bulunamadı.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-6 flex justify-end">
+              <button
+                onClick={() => setIsPeriodModalOpen(false)}
+                className="px-10 py-3 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl text-[10px] font-black shadow-xl hover:scale-105 transition-all uppercase tracking-widest"
+              >
+                KAPAT
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {

@@ -8,9 +8,12 @@ import { tr } from 'date-fns/locale';
 import { formatNumber, formatDate } from '@/utils/formatters';
 import { ExcelUtils } from '@/utils/excelUtils';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import Modal from '@/components/Modal';
 import { projectsService, quotesService, agenciesService, hotelsService, quoteItemsService, projectSalesItemsService, projectPurchaseItemsService } from '@/lib/supabaseService';
 import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE } from '@/types/pagination';
+import { toast } from 'react-hot-toast';
+import { Trash2, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 // import { loadTeklifler } from '../../../../src/supabaseClient';
 
 // async function fetchData() {
@@ -89,6 +92,7 @@ interface DateRangeFieldProps {
   endValue: string;
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
+  onApply?: (start?: string, end?: string) => void;
 }
 
 const toDate = (value: string) => {
@@ -112,7 +116,8 @@ function DateRangeField({
   startValue,
   endValue,
   onStartChange,
-  onEndChange
+  onEndChange,
+  onApply
 }: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startDate = toDate(startValue);
@@ -142,14 +147,42 @@ function DateRangeField({
 
   const handleStartTextChange = (value: string) => {
     setStartText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onStartChange(parsed);
+    if (value === '') {
+      onStartChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10 && onApply) onApply();
+      }
+    }
   };
 
   const handleEndTextChange = (value: string) => {
     setEndText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onEndChange(parsed);
+    if (value === '') {
+      onEndChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10 && onApply) onApply();
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && onApply) {
+      e.preventDefault();
+      const s = startText.length === 10 ? parseTypedDate(startText) || '' : '';
+      const eVal = endText.length === 10 ? parseTypedDate(endText) || '' : '';
+      onApply(s, eVal);
+      setIsCalendarOpen(false);
+    }
   };
 
   return (
@@ -160,6 +193,7 @@ function DateRangeField({
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
           onFocus={() => setIsCalendarOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
@@ -167,6 +201,7 @@ function DateRangeField({
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
           onFocus={() => setIsCalendarOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
@@ -184,7 +219,10 @@ function DateRangeField({
               const [start, end] = dates as [Date | null, Date | null];
               onStartChange(toIsoDate(start));
               onEndChange(toIsoDate(end));
-              if (start && end) setIsCalendarOpen(false);
+              if (start && end) {
+                setIsCalendarOpen(false);
+                if (onApply) onApply();
+              }
             }}
             openToDate={startDate || endDate || new Date()}
           />
@@ -298,15 +336,26 @@ export default function QuotesPage() {
   const [appliedStatusTokens, setAppliedStatusTokens] = useState<string[]>([]);
   const [sortField, setSortField] = useState<string>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null);
+  const [showGeneralConfirm, setShowGeneralConfirm] = useState(false);
+  const [generalConfirmConfig, setGeneralConfirmConfig] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    cancelText?: string;
+  } | null>(null);
 
   // Yeni tarih filtreleri
-  const [quoteDateStart, setQuoteDateStart] = useState('');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [quoteDateStart, setQuoteDateStart] = useState(todayStr);
   const [quoteDateEnd, setQuoteDateEnd] = useState('');
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
   const [optionStart, setOptionStart] = useState('');
   const [optionEnd, setOptionEnd] = useState('');
-  const [appliedQuoteDateStart, setAppliedQuoteDateStart] = useState('');
+  const [appliedQuoteDateStart, setAppliedQuoteDateStart] = useState(todayStr);
   const [appliedQuoteDateEnd, setAppliedQuoteDateEnd] = useState('');
   const [appliedCheckInDate, setAppliedCheckInDate] = useState('');
   const [appliedCheckOutDate, setAppliedCheckOutDate] = useState('');
@@ -342,11 +391,10 @@ export default function QuotesPage() {
         sortField,
         sortDirection
       });
-      // Geçmiş kayıtlarda locked=false kalsa bile KONFİRME durumunu kilitli kabul et
       setQuotes(
         (response.data || []).map((q: any) => ({
           ...q,
-          locked: Boolean(q.locked) || q.status === 'KONFİRME',
+          locked: q.locked === null ? q.status === 'KONFİRME' : Boolean(q.locked),
         })),
       );
       setTotalCount(response.total);
@@ -377,8 +425,9 @@ export default function QuotesPage() {
   };
 
   const isQuoteLocked = (quote: Quote) => {
-    // İş kuralı: KONFİRME olan teklifler her zaman kilitli kabul edilir
-    return Boolean((quote as any).locked) || quote.status === 'KONFİRME';
+    // Super admin her zaman kilit durumunu değiştirebilir, ama canEdit canDelete isQuoteLocked sonucuna bakar
+    // Bu yüzden state'deki locked değerini dönüyoruz
+    return Boolean((quote as any).locked);
   };
 
   const toggleLock = async (quote: Quote) => {
@@ -386,13 +435,13 @@ export default function QuotesPage() {
     if (lockUpdatingId) return;
     try {
       setLockUpdatingId(quote.id);
-      const updated = await quotesService.update(quote.id, { locked: !quote.locked } as any);
-      setQuotes(prev =>
-        prev.map(q => (q.id === quote.id ? { ...q, locked: (updated as any).locked } : q)),
-      );
-    } catch (error) {
-      console.error('Teklif kilitleme/kilidi açma hatası:', error);
-      alert('Teklif kilidi güncellenirken bir hata oluştu.');
+      const newStatus = !quote.locked;
+      await quotesService.update(quote.id, { locked: newStatus } as any);
+      toast.success(newStatus ? 'Teklif kilitlendi' : 'Teklif kilidi açıldı');
+      loadQuotes();
+    } catch (err) {
+      console.error('Kilit hatası:', err);
+      toast.error('Teklif kilidi güncellenirken bir hata oluştu.');
     } finally {
       setLockUpdatingId(null);
     }
@@ -401,7 +450,6 @@ export default function QuotesPage() {
   const addNewQuote = (newQuote: Quote) => {
     const updatedQuotes = [...quotes, newQuote];
     setQuotes(updatedQuotes);
-    // Supabase'e kaydedildi
   };
 
   const getStatusColor = (status: string) => {
@@ -440,34 +488,6 @@ export default function QuotesPage() {
     return hotels.find(hotel => hotel.id === hotelId)?.name || '';
   };
 
-  const searchQuotes = (quotes: Quote[], searchTerm: string) => {
-    if (!searchTerm.trim()) return quotes;
-
-    const searchLower = searchTerm.toLowerCase();
-
-    return quotes.filter(quote => {
-      // Referans numarası
-      if (quote.reference?.toLowerCase().includes(searchLower)) return true;
-
-      // Acente adı
-      const agencyName = getAgencyName(quote.agency_id)?.toLowerCase() || '';
-      if (agencyName.includes(searchLower)) return true;
-
-      // Otel adı
-      const hotelName = getHotelName(quote.hotel_id)?.toLowerCase() || '';
-      if (hotelName.includes(searchLower)) return true;
-
-      // Proje adı
-      if (quote.project_name?.toLowerCase().includes(searchLower)) return true;
-
-      return false;
-    });
-  };
-
-  const isRangeCompleteOrEmpty = (start: string, end: string) => {
-    return (Boolean(start) && Boolean(end)) || (!start && !end);
-  };
-
   useEffect(() => {
     loadAgencies();
     loadHotels();
@@ -477,27 +497,6 @@ export default function QuotesPage() {
     loadQuotes();
   }, [page, pageSize, filter, optionFilter, sortField, sortDirection, appliedQuoteDateStart, appliedQuoteDateEnd, appliedCheckInDate, appliedCheckOutDate, appliedOptionStart, appliedOptionEnd]);
 
-
-  // Debug için: Opsiyon filtreleme kontrolü
-  useEffect(() => {
-    if (quotes.length > 0 && optionFilter !== 'all') {
-      console.log('=== OPSİYON FİLTRELEME DEBUG ===');
-      console.log('Seçilen optionFilter:', optionFilter);
-      console.log('Mevcut tekliflerin option değerleri:', quotes.map(q => ({
-        id: q.id,
-        reference: q.reference,
-        option: q.option,
-        optionLength: q.option?.length || 0
-      })));
-
-      // Filtrelenmiş sonuçları da kontrol et
-      const filtered = quotes.filter(q => q.option === optionFilter);
-      console.log('Filtrelenmiş teklif sayısı:', filtered.length);
-      console.log('Filtrelenmiş teklifler:', filtered.map(q => q.reference));
-    }
-  }, [optionFilter, quotes]);
-
-  // Global fonksiyon olarak ekle
   useEffect(() => {
     (window as any).addNewQuote = addNewQuote;
     return () => {
@@ -505,7 +504,6 @@ export default function QuotesPage() {
     };
   }, []);
 
-  // Metin tabanlı filtreler anında uygulanır
   useEffect(() => {
     setAppliedReferenceTokens(referenceTokens);
     setAppliedCompanyTokens(companyTokens);
@@ -514,60 +512,33 @@ export default function QuotesPage() {
     setPage(1);
   }, [referenceTokens, companyTokens, agencyTokens, statusTokens]);
 
-  // Teklif tarihi aralığı: sadece başlangıç+bitiş birlikte seçilince uygula
-  useEffect(() => {
-    if (!isRangeCompleteOrEmpty(quoteDateStart, quoteDateEnd)) return;
-    setAppliedQuoteDateStart(quoteDateStart);
-    setAppliedQuoteDateEnd(quoteDateEnd);
+  const handleApplyQuoteDates = (start?: string, end?: string) => {
+    setAppliedQuoteDateStart(start !== undefined ? start : quoteDateStart);
+    setAppliedQuoteDateEnd(end !== undefined ? end : quoteDateEnd);
     setPage(1);
-  }, [quoteDateStart, quoteDateEnd]);
+  };
 
-  // Organizasyon tarihi aralığı: sadece başlangıç+bitiş birlikte seçilince uygula
-  useEffect(() => {
-    if (!isRangeCompleteOrEmpty(checkInDate, checkOutDate)) return;
-    setAppliedCheckInDate(checkInDate);
-    setAppliedCheckOutDate(checkOutDate);
+  const handleApplyCheckInDates = (start?: string, end?: string) => {
+    setAppliedCheckInDate(start !== undefined ? start : checkInDate);
+    setAppliedCheckOutDate(end !== undefined ? end : checkOutDate);
     setPage(1);
-  }, [checkInDate, checkOutDate]);
+  };
 
-  // Opsiyon tarihi aralığı: birlikte seçilince uygula
-  useEffect(() => {
-    if (!isRangeCompleteOrEmpty(optionStart, optionEnd)) return;
-    setAppliedOptionStart(optionStart);
-    setAppliedOptionEnd(optionEnd);
+  const handleApplyOptionDates = (start?: string, end?: string) => {
+    setAppliedOptionStart(start !== undefined ? start : optionStart);
+    setAppliedOptionEnd(end !== undefined ? end : optionEnd);
     setPage(1);
-  }, [
-    optionStart,
-    optionEnd,
-  ]);
+  };
 
-
-
-
-  // Filtreleri temizleme fonksiyonu
   const clearAllFilters = () => {
-    console.log('=== FİLTRELERİ TEMİZLE BUTONU TIKLANDI ===');
-
-    console.log('Temizlenmeden önce state değerleri:');
-    console.log('- quoteDateStart:', quoteDateStart);
-    console.log('- quoteDateEnd:', quoteDateEnd);
-    console.log('- checkInDate:', checkInDate);
-    console.log('- checkOutDate:', checkOutDate);
-    console.log('- optionStart:', optionStart);
-    console.log('- optionEnd:', optionEnd);
-    console.log('- optionFilter:', optionFilter);
-    console.log('- searchTerm:', searchTerm);
-    console.log('- filter (Durum):', filter);
-
-    // Tüm filtreleri temizle
-    setQuoteDateStart(''); // Boş string yap
+    setQuoteDateStart(''); 
     setQuoteDateEnd('');
     setCheckInDate('');
     setCheckOutDate('');
     setOptionStart('');
     setOptionEnd('');
-    setOptionFilter('all'); // Opsiyon türü filtresi
-    setFilter('all'); // Durum filtresi (Teklif, Konfirme, İptal)
+    setOptionFilter('all');
+    setFilter('all');
     setSearchTerm('');
     setReferenceTokens([]);
     setReferenceInput('');
@@ -589,111 +560,6 @@ export default function QuotesPage() {
     setAppliedStatusTokens([]);
     setPageSize(DEFAULT_PAGE_SIZE);
     setPage(1);
-
-    console.log('Tüm filtreler temizlendi:');
-    console.log('- Tarih filtreleri temizlendi');
-    console.log('- Opsiyon türü filtresi: "Tüm Opsiyonlar"');
-    console.log('- Durum filtresi: "Tümü"');
-    console.log('- Arama temizlendi');
-  };
-
-
-
-
-  // Yeni tarih ve opsiyon filtreleme fonksiyonu
-  const filterQuotesByDatesAndOptions = (quotes: Quote[]) => {
-    return quotes.filter(quote => {
-      // Teklif tarihi filtreleri (oluşturulma tarihi)
-      if (quoteDateStart && quote.created_at < quoteDateStart) return false;
-      if (quoteDateEnd && quote.created_at > quoteDateEnd) return false;
-
-      // Check-in tarihi filtresi
-      if (checkInDate && quote.check_in_date !== checkInDate) return false;
-
-      // Check-out tarihi filtresi
-      if (checkOutDate && quote.check_out_date !== checkOutDate) return false;
-
-      // Opsiyon tarihi filtreleri
-      if (optionStart && quote.option_date && quote.option_date < optionStart) return false;
-      if (optionEnd && quote.option_date && quote.option_date > optionEnd) return false;
-
-      // Opsiyon türü filtresi
-      if (optionFilter !== 'all' && quote.option !== optionFilter) return false;
-
-      return true;
-    });
-  };
-
-  const sortQuotes = (quotes: Quote[], field: string, direction: 'asc' | 'desc') => {
-    if (!field) return quotes;
-
-    return [...quotes].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (field) {
-        case 'created_at':
-          aValue = new Date(a.created_at || '').getTime();
-          bValue = new Date(b.created_at || '').getTime();
-          break;
-        case 'reference':
-          aValue = a.reference || '';
-          bValue = b.reference || '';
-          break;
-        case 'agency':
-          aValue = getAgencyName(a.agency_id) || '';
-          bValue = getAgencyName(b.agency_id) || '';
-          break;
-        case 'company_name':
-          aValue = a.company_name || '';
-          bValue = b.company_name || '';
-          break;
-        case 'hotel':
-          aValue = getHotelName(a.hotel_id) || '';
-          bValue = getHotelName(b.hotel_id) || '';
-          break;
-        case 'quote_type':
-          aValue = a.quote_type || '';
-          bValue = b.quote_type || '';
-          break;
-        case 'option':
-          aValue = a.option || '';
-          bValue = b.option || '';
-          break;
-        case 'option_date':
-          aValue = a.option_date ? new Date(a.option_date).getTime() : 0;
-          bValue = b.option_date ? new Date(b.option_date).getTime() : 0;
-          break;
-        case 'date':
-          aValue = new Date(a.check_in_date || '').getTime();
-          bValue = new Date(b.check_in_date || '').getTime();
-          break;
-        case 'room_pax':
-          aValue = a.room_pax || '';
-          bValue = b.room_pax || '';
-          break;
-        case 'total_amount':
-          aValue = a.total_amount || 0;
-          bValue = b.total_amount || 0;
-          break;
-        case 'currency':
-          aValue = a.items?.[0]?.currency || 'EUR';
-          bValue = b.items?.[0]?.currency || 'EUR';
-          break;
-        case 'status':
-          aValue = a.status || '';
-          bValue = b.status || '';
-          break;
-        default:
-          return 0;
-      }
-
-      if (direction === 'asc') {
-        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-      } else {
-        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-      }
-    });
   };
 
   const handleSort = (field: string) => {
@@ -705,25 +571,30 @@ export default function QuotesPage() {
     }
   };
 
+  const handleDeleteQuote = (id: string) => {
+    setQuoteToDelete(id);
+    setShowDeleteConfirm(true);
+  };
 
-
-  const handleDeleteQuote = async (quoteId: string) => {
-    if (confirm('Bu teklifi silmek istediğinizden emin misiniz?')) {
-      try {
-        await quotesService.delete(quoteId);
-        const updatedQuotes = quotes.filter(q => q.id !== quoteId);
-        setQuotes(updatedQuotes);
-        alert('Teklif başarıyla silindi!');
-      } catch (error) {
-        console.error('Error deleting quote:', error);
-        alert('Teklif silinirken hata oluştu');
-      }
+  const confirmDelete = async () => {
+    if (!quoteToDelete) return;
+    try {
+      setLoading(true);
+      await quotesService.delete(quoteToDelete);
+      toast.success('Teklif başarıyla silindi!');
+      loadQuotes();
+    } catch (err) {
+      console.error('Silme hatası:', err);
+      toast.error('Teklif silinirken hata oluştu');
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirm(false);
+      setQuoteToDelete(null);
     }
   };
 
   const handleCopyQuote = async (quote: Quote) => {
     try {
-      // Yeni quote oluştur
       const created = await quotesService.create({
         reference: `${quote.reference}-COPY`,
         agency_id: quote.agency_id,
@@ -743,7 +614,6 @@ export default function QuotesPage() {
         total_amount: quote.total_amount || 0
       } as any);
 
-      // Eğer kaynak quote'da kalemler varsa, yeni quote_id ile kopyala
       try {
         const items = (quote as any).items || [];
         for (const item of items) {
@@ -763,40 +633,51 @@ export default function QuotesPage() {
         console.error('Kalem kopyalama hatası:', err);
       }
 
-      // UI'yı güncelle
       setQuotes(prev => [created as any, ...prev]);
-      alert('Teklif başarıyla kopyalandı!');
-    } catch (e) {
-      console.error('Teklif kopyalama hatası:', e);
-      alert('Kopyalama sırasında hata oluştu.');
+      toast.success('Teklif başarıyla kopyalandı!');
+      loadQuotes();
+    } catch (err) {
+      console.error('Kopyalama hatası:', err);
+      toast.error('Kopyalama sırasında hata oluştu.');
     }
   };
 
-  // KONFİRME teklifleri projeye aktar (quotes sayfasından)
   const transferConfirmedToProjects = async () => {
     try {
       setTransferring(true);
       const existingProjects = await projectsService.getAll();
       const existingByQuote = new Set(existingProjects.map(p => p.quote_id).filter(Boolean) as string[]);
 
-      // Sadece henüz aktarılmamış olanları filtrele
       const pendingQuotes = quotes.filter(q => q.status === 'KONFİRME' && !existingByQuote.has(q.id));
 
       if (pendingQuotes.length === 0) {
-        alert('Aktarılacak yeni konfirme teklif bulunamadı.');
+        toast.error('Aktarılacak yeni konfirme teklif bulunamadı.');
         return;
       }
 
-      const proceed = confirm(
-        `Henüz aktarılmamış ${pendingQuotes.length} teklif kontrol ediliyor.\n\nDevam edilsin mi?`
-      );
-      if (!proceed) return;
+      setGeneralConfirmConfig({
+        title: 'PROJEYE AKTAR',
+        message: `Henüz aktarılmamış ${pendingQuotes.length} teklif kontrol ediliyor. Bu işlem seçili otelleri projeye dönüştürecektir. Devam edilsin mi?`,
+        onConfirm: () => executeTransfer(pendingQuotes),
+        confirmText: 'AKTARIMI BAŞLAT',
+        cancelText: 'İPTAL'
+      });
+      setShowGeneralConfirm(true);
+    } catch (err) {
+      console.error('Aktarım hatası:', err);
+      toast.error('Aktarım başlatılırken bir hata oluştu.');
+    } finally {
+      setTransferring(false);
+    }
+  };
 
-      let createdCount = 0;
+  const executeTransfer = async (pendingQuotes: Quote[]) => {
+    setShowGeneralConfirm(false);
+    setTransferring(true);
+    let createdCount = 0;
+    try {
       for (const q of pendingQuotes) {
         try {
-          // Loop içinde tekrar kontrole gerek kalmadı ama güvenlik için bırakılabilir 
-          // (sequential olduğu için sorun olmaz)
           const hotelsData = (q as any).hotels_data || [];
           const confirmedHotels = Array.isArray(hotelsData)
             ? hotelsData.filter(h => h.is_confirmed === true)
@@ -822,7 +703,7 @@ export default function QuotesPage() {
       }
 
       loadQuotes();
-      alert(`${createdCount} yeni proje oluşturuldu.`);
+      toast.success(`${createdCount} yeni proje oluşturuldu.`);
     } finally {
       setTransferring(false);
     }
@@ -995,10 +876,10 @@ export default function QuotesPage() {
       });
 
       await ExcelUtils.exportQuotes(fullyFilteredQuotes, agencies, hotels);
-      alert(`Excel dosyası başarıyla indirildi! (${fullyFilteredQuotes.length} teklif)`);
+      toast.success(`Excel dosyası başarıyla indirildi! (${fullyFilteredQuotes.length} teklif)`);
     } catch (error) {
       console.error('Excel export hatası:', error);
-      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+      toast.error('Excel dosyası oluşturulurken bir hata oluştu.');
     } finally {
       setExporting(false);
     }
@@ -1269,6 +1150,7 @@ export default function QuotesPage() {
                 endValue={quoteDateEnd}
                 onStartChange={setQuoteDateStart}
                 onEndChange={setQuoteDateEnd}
+                onApply={handleApplyQuoteDates}
               />
             </div>
             <div className="min-w-0">
@@ -1289,6 +1171,7 @@ export default function QuotesPage() {
                 endValue={checkOutDate}
                 onStartChange={setCheckInDate}
                 onEndChange={setCheckOutDate}
+                onApply={handleApplyCheckInDates}
               />
             </div>
             <div className="min-w-0">
@@ -1704,108 +1587,102 @@ export default function QuotesPage() {
         </div>
         {totalCount > 0 && (
           <div className="flex justify-end px-2 py-2 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
-              <span className="text-sm">Toplam {totalOffersLabel} teklif</span>
+            <div className="flex items-center gap-3">
               <button
-                className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40"
+                className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40 flex items-center justify-center transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
                 title="Önceki"
               >
-                ‹
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               </button>
-              <span className="text-sm font-medium">{page}</span>
+              <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 min-w-[1.5rem] text-center">{page}</span>
               <button
-                className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40"
+                className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40 flex items-center justify-center transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
                 title="Sonraki"
               >
-                ›
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </button>
-              <span className="h-8 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm">
-                20 / sayfa
+              <span className="h-8 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 text-xs font-bold text-gray-500 tracking-tight">
+                {pageSize} / SAYFA
               </span>
             </div>
           </div>
         )}
       </div>
-      {/* Selective Confirmation Modal */}
-      {showConfirmModal && quoteToConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-                <svg className="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Otel Konfirme Seçimi
-              </h2>
-              <button onClick={() => setShowConfirmModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
 
-            <div className="p-6 space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-semibold text-gray-900 dark:text-gray-200">{quoteToConfirm.reference}</span> referanslı teklif için konfirme edilecek otelleri seçin:
-              </p>
+      <Modal
+        isOpen={showConfirmModal && !!quoteToConfirm}
+        onClose={() => setShowConfirmModal(false)}
+        title="TEKLİF KONFİRME ET"
+        maxWidth="max-w-2xl"
+      >
+        {quoteToConfirm && (
+          <div className="flex flex-col space-y-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="font-bold text-gray-900 dark:text-white uppercase tracking-tight">{quoteToConfirm.reference}</span> referanslı teklif için konfirme edilecek otelleri seçin:
+            </p>
 
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                {((quoteToConfirm as any).hotels_data || []).map((h: any, idx: number) => {
-                  const hotelObj = hotels.find(ht => ht.id === h.hotel_id);
-                  return (
-                    <label
-                      key={h.id}
-                      className={`flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer ${selectedHotels[h.id]
-                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                          : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
-                        }`}
-                    >
+            <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+              {((quoteToConfirm as any).hotels_data || []).map((h: any, idx: number) => {
+                const hotelObj = hotels.find(ht => ht.id === h.hotel_id);
+                const isSelected = selectedHotels[h.id] || false;
+                return (
+                  <label
+                    key={h.id}
+                    className={`flex items-center p-4 rounded-2xl border-2 transition-all cursor-pointer ${isSelected
+                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/20'
+                      : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 bg-white dark:bg-gray-800/50'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-gray-600'}`}>
+                      {isSelected && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                       <input
                         type="checkbox"
-                        checked={selectedHotels[h.id] || false}
+                        checked={isSelected}
                         onChange={(e) => setSelectedHotels(prev => ({ ...prev, [h.id]: e.target.checked }))}
-                        className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                        className="sr-only"
                       />
-                      <div className="ml-3 flex-1">
-                        <div className="flex justify-between items-start">
-                          <span className="text-sm font-bold text-gray-900 dark:text-white">
-                            {idx + 1}. {hotelObj?.name || 'Otel Bilgisi Yok'}
-                          </span>
-                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
-                            {h.option}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                          {formatDate(h.check_in_date)} - {formatDate(h.check_out_date)} | {h.room_count} Oda, {h.pax_count} Pax
-                        </div>
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                          {idx + 1}. {hotelObj?.name || 'Otel Bilgisi Yok'}
+                        </span>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 uppercase tracking-widest">
+                          {h.option}
+                        </span>
                       </div>
-                    </label>
-                  );
-                })}
+                      <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-1">
+                        {formatDate(h.check_in_date)} - {formatDate(h.check_out_date)} • {h.room_count} Oda, {h.pax_count} Pax
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
 
-                {(!(quoteToConfirm as any).hotels_data || (quoteToConfirm as any).hotels_data.length === 0) && (
-                  <div className="text-center py-4 text-sm text-gray-500">
-                    Otel verisi bulunamadı.
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start">
-                <svg className="w-5 h-5 text-blue-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-[11px] text-blue-700 dark:text-blue-300">
-                  Seçilen tüm oteller TEK BİR PROJE içerisinde birleştirilerek aktarılacaktır.
-                </p>
-              </div>
+              {(!(quoteToConfirm as any).hotels_data || (quoteToConfirm as any).hotels_data.length === 0) && (
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/30 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Otel verisi bulunamadı.</p>
+                </div>
+              )}
             </div>
 
-            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-800/30 flex items-start gap-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 rounded-xl">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <p className="text-[11px] font-bold text-blue-700 dark:text-blue-300 leading-relaxed">
+                Seçilen tüm oteller TEK BİR PROJE içerisinde birleştirilerek aktarılacaktır.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition-all"
                 disabled={transferring}
               >
                 İptal
@@ -1813,44 +1690,33 @@ export default function QuotesPage() {
               <button
                 onClick={async () => {
                   if (!quoteToConfirm) return;
-
                   try {
                     setTransferring(true);
-
-                    // 1. hotels_data içindeki is_confirmed alanlarını güncelle
                     const updatedHotelsData = ((quoteToConfirm as any).hotels_data || []).map((h: any) => ({
                       ...h,
                       is_confirmed: selectedHotels[h.id] || false
                     }));
-
-                    // 2. Quote statüsünü KONFİRME yap ve hotels_data'yı kaydet
                     await quotesService.update(quoteToConfirm.id, {
                       status: 'KONFİRME',
                       locked: true,
                       hotels_data: updatedHotelsData,
                       confirmed_at: new Date().toISOString()
                     } as any);
-
-                    // 3. Projeye aktarma işlemini tetikle (Sadece bu quote için)
-                    // transferConfirmedToProjects tüm konfirme teklifleri taradığı için 
-                    // yeni eklediğimiz is_confirmed mantığı bu quote için de çalışacaktır.
-
                     setShowConfirmModal(false);
-                    await transferConfirmedToProjects(); // Bu işlem bittiğinde alert verir
-
+                    await transferConfirmedToProjects();
                   } catch (err) {
                     console.error('Konfirme hatası:', err);
-                    alert('Konfirme işlemi sırasında bir hata oluştu.');
+                    toast.error('Konfirme işlemi sırasında bir hata oluştu.');
                   } finally {
                     setTransferring(false);
                   }
                 }}
                 disabled={transferring || !Object.values(selectedHotels).some(v => v)}
-                className="px-6 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-lg shadow-lg shadow-indigo-500/30 disabled:opacity-50 transition-all flex items-center"
+                className="px-10 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-500/20 disabled:opacity-50 transition-all active:scale-95 flex items-center gap-2"
               >
                 {transferring ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -1862,8 +1728,72 @@ export default function QuotesPage() {
               </button>
             </div>
           </div>
+        )}
+      </Modal>
+
+      {/* Modern Confirmation Modals */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="SİLMEYİ ONAYLA"
+        maxWidth="max-w-md"
+      >
+        <div className="flex flex-col items-center text-center space-y-6">
+          <div className="w-20 h-20 rounded-3xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600 shadow-xl shadow-red-500/10">
+            <Trash2 size={40} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Emin misiniz?</p>
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Bu teklifi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+          </div>
+          <div className="flex gap-3 w-full pt-2">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
+            >
+              İPTAL
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="flex-1 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-red-500/20 transition-all active:scale-95"
+            >
+              SİL
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
+
+      <Modal
+        isOpen={showGeneralConfirm && !!generalConfirmConfig}
+        onClose={() => setShowGeneralConfirm(false)}
+        title={generalConfirmConfig?.title || 'ONAYLA'}
+        maxWidth="max-w-md"
+      >
+        <div className="flex flex-col items-center text-center space-y-6">
+          <div className="w-20 h-20 rounded-3xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 shadow-xl shadow-indigo-500/10">
+            <AlertTriangle size={40} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 leading-relaxed">
+              {generalConfirmConfig?.message}
+            </p>
+          </div>
+          <div className="flex gap-3 w-full pt-2">
+            <button
+              onClick={() => setShowGeneralConfirm(false)}
+              className="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
+            >
+              {generalConfirmConfig?.cancelText || 'İPTAL'}
+            </button>
+            <button
+              onClick={() => generalConfirmConfig?.onConfirm()}
+              className="flex-1 px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95"
+            >
+              {generalConfirmConfig?.confirmText || 'ONAYLA'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

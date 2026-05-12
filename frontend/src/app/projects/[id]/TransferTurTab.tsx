@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { projectTransfersService } from '@/lib/supabaseService';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface TransferTurTabProps {
   transfers: any[];
@@ -24,10 +26,10 @@ interface TransferTurTabProps {
   setEditingTransferIndex: (index: number | null) => void;
   tempTransferItem: any;
   setTempTransferItem: (item: any) => void;
-  handleTransferSave: () => void;
-  handleTransferCancel: () => void;
-  handleTransferEdit: (index: number) => void;
-  handleTransferDelete: (index: number) => void;
+  handleTransferSave: (id: string) => void;
+  handleTransferCancel: (id: string) => void;
+  handleTransferEdit: (id: string) => void;
+  handleTransferDelete: (id: string) => void;
   formatDateForDisplay: (dateValue: any) => string;
   formatTimeForDisplay: (timeValue: any) => string;
   formatIntegerForDisplay: (value: number | string) => string;
@@ -44,12 +46,7 @@ interface TransferTurTabProps {
   showAddTransferMenu: boolean;
   setShowAddTransferMenu: (show: boolean | ((prev: boolean) => boolean)) => void;
   addManualTransfer: (kind: 'arrival' | 'departure' | 'intermediate') => void;
-  stats: {
-    arrival: { count: number; passengers: number; byVehicle: Record<string, { transfers: number; passengers: number }> };
-    departure: { count: number; passengers: number; byVehicle: Record<string, { transfers: number; passengers: number }> };
-    intermediate: { count: number; passengers: number; byVehicle: Record<string, { transfers: number; passengers: number }> };
-    totals: { count: number; passengers: number; byVehicle: Record<string, { transfers: number; passengers: number }> };
-  };
+  stats: any;
   suppliers: any[];
   hotels: any[];
   allSuppliers: any[];
@@ -62,22 +59,22 @@ interface TransferTurTabProps {
   handleSupplierKeyDown: (e: React.KeyboardEvent, transferId: string) => void;
   transferCostInput: { [key: string]: string };
   setTransferCostInput: (value: { [key: string]: string } | ((prev: { [key: string]: string }) => { [key: string]: string })) => void;
-  updateTransfer: (id: string, field: string, value: any) => void;
+  updateTransfer: (id: string, field: string | Record<string, any>, value?: any) => void;
   formatNumberForDisplay: (value: number | string) => string;
   cleanInputValue: (value: string) => number;
   transferTotals: { [key: string]: { kisiSayisi: number; toplamMaliyet: number } };
   getVehicleTypeName: (vehicleTypeCode: string) => string;
-  editTransfer: (index: number) => void;
-  deleteTransfer: (indexOrId: number | string) => void;
-  saveTransfer: (index: number) => void;
-  cancelTransferEdit: (index: number) => void;
-  ungroupTransfer: (index: number) => void;
-  openVehicleAssignmentModal: (index: number) => void;
-  addTransferBelow: (index: number) => void;
-  copyTransfer: (index: number) => void;
-  handleTransferRowKeyDown: (e: React.KeyboardEvent, rowIndex: number) => void;
-  isLocked?: boolean; // Proje kilit durumu
-  [key: string]: any; // Diğer gerekli prop'lar için
+  editTransfer: (id: string) => void;
+  deleteTransfer: (id: string) => void;
+  saveTransfer: (id: string) => void;
+  cancelTransferEdit: (id: string) => void;
+  ungroupTransfer: (id: string) => void;
+  openVehicleAssignmentModal: (id: string) => void;
+  addTransferBelow: (id: string) => void;
+  copyTransfer: (id: string) => void;
+  handleTransferRowKeyDown: (e: React.KeyboardEvent, id: string) => void;
+  isLocked?: boolean;
+  [key: string]: any;
 }
 
 export default function TransferTurTab(props: TransferTurTabProps) {
@@ -153,7 +150,82 @@ export default function TransferTurTab(props: TransferTurTabProps) {
   } = props;
 
   // Grup detaylarını açık/kapalı tutmak için state
-  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Dropdown pozisyonu state'i
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [addMenuPosition, setAddMenuPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // Refler
+  const addMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const supplierInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+
+  // Dropdown pozisyonunu güncelleme fonksiyonu
+  const updateDropdownPosition = (transferId: string) => {
+    const input = supplierInputRefs.current[transferId];
+    if (input) {
+      const rect = input.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: Math.max(rect.width, 220) // Minimum 220px genişlik
+      });
+    }
+  };
+
+  // Manuel ekleme menüsü pozisyonunu güncelleme
+  const updateAddMenuPosition = () => {
+    if (addMenuButtonRef.current) {
+      const rect = addMenuButtonRef.current.getBoundingClientRect();
+      setAddMenuPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.right + window.scrollX - 176 // 176px (w-44) genişliğe göre hizala
+      });
+    }
+  };
+
+  // Dışarı tıklama kontrolü
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Manuel ekleme menüsü için
+      if (showAddTransferMenu && addMenuButtonRef.current && !addMenuButtonRef.current.contains(event.target as Node)) {
+        const menuElement = document.getElementById('manual-transfer-menu');
+        if (menuElement && !menuElement.contains(event.target as Node)) {
+          setShowAddTransferMenu(false);
+        }
+      }
+
+      // Tedarikçi dropdown'ları için
+      Object.keys(supplierDropdowns).forEach(id => {
+        if (supplierDropdowns[id]?.isOpen) {
+          const input = supplierInputRefs.current[id];
+          const dropdown = document.getElementById(`supplier-dropdown-${id}`);
+          if (input && !input.contains(event.target as Node) && dropdown && !dropdown.contains(event.target as Node)) {
+            setSupplierDropdowns(prev => ({
+              ...prev,
+              [id]: { ...prev[id], isOpen: false }
+            }));
+          }
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAddTransferMenu, supplierDropdowns, setShowAddTransferMenu, setSupplierDropdowns]);
+
+  // Sayfa kaydırıldığında pozisyonları güncelle
+  useEffect(() => {
+    const handleScroll = () => {
+      if (showAddTransferMenu) updateAddMenuPosition();
+      Object.keys(supplierDropdowns).forEach(id => {
+        if (supplierDropdowns[id]?.isOpen) updateDropdownPosition(id);
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [showAddTransferMenu, supplierDropdowns]);
 
   // Onay modalı state'i (callback tabanlı — her işlem için kullanılabilir)
   const [confirmModal, setConfirmModal] = useState<{
@@ -172,31 +244,31 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     setConfirmModal({ open: true, title, message, onConfirm });
   };
 
-  const openDeleteConfirm = (index: number) => {
+  const openDeleteConfirm = (id: string) => {
     openConfirm(
       'Transferi Sil',
       'Bu transferi kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-      () => deleteTransfer(index)
+      () => deleteTransfer(id)
     );
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmAction = () => {
     confirmModal.onConfirm();
     setConfirmModal(prev => ({ ...prev, open: false }));
   };
 
-  const handleCancelDelete = () => {
+  const handleCancelAction = () => {
     setConfirmModal(prev => ({ ...prev, open: false }));
   };
 
   // Grup detaylarını aç/kapa
-  const toggleGroupDetails = (index: number) => {
+  const toggleGroupDetails = (id: string) => {
     setExpandedGroups(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
+      if (newSet.has(id)) {
+        newSet.delete(id);
       } else {
-        newSet.add(index);
+        newSet.add(id);
       }
       return newSet;
     });
@@ -308,7 +380,11 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                 <span>İşlemler</span>
                                 <div className="relative">
                                 <button
-                                    onClick={() => setShowAddTransferMenu(prev => !prev)}
+                                    ref={addMenuButtonRef}
+                                    onClick={() => {
+                                      updateAddMenuPosition();
+                                      setShowAddTransferMenu(prev => !prev);
+                                    }}
                                   className="p-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
                                     title="Manuel Transfer Ekle"
                                 >
@@ -316,27 +392,44 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                                   </svg>
                                   </button>
-                                  {showAddTransferMenu && (
-                                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20 py-1">
+                                  {showAddTransferMenu && addMenuPosition && createPortal(
+                                    <div 
+                                      id="manual-transfer-menu"
+                                      className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] py-1 w-44"
+                                      style={{
+                                        top: addMenuPosition.top,
+                                        left: addMenuPosition.left
+                                      }}
+                                    >
                                       <button
-                                        onClick={() => addManualTransfer('arrival')}
+                                        onClick={() => {
+                                          addManualTransfer('arrival');
+                                          setShowAddTransferMenu(false);
+                                        }}
                                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-150"
                                       >
                                         Giriş Transferi Ekle
                                       </button>
                                       <button
-                                        onClick={() => addManualTransfer('departure')}
+                                        onClick={() => {
+                                          addManualTransfer('departure');
+                                          setShowAddTransferMenu(false);
+                                        }}
                                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-150"
                                       >
                                         Çıkış Transferi Ekle
                                       </button>
                                       <button
-                                        onClick={() => addManualTransfer('intermediate')}
+                                        onClick={() => {
+                                          addManualTransfer('intermediate');
+                                          setShowAddTransferMenu(false);
+                                        }}
                                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-150"
                                       >
                                         Ara Transfer Ekle
                                       </button>
-                                    </div>
+                                    </div>,
+                                    document.body
                                   )}
                                 </div>
                               </div>
@@ -344,13 +437,9 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredTransfers.flatMap((transfer, filteredIndex) => {
-                            // transfers array'indeki gerçek index'i bul
-                            const realIndex = transfers.findIndex(t => t.id === transfer.id || (t === transfer && !t.id));
-                            const actualIndex = realIndex !== -1 ? realIndex : filteredIndex;
-                            const index = actualIndex; // index değişkenini actualIndex'e eşitle
+                          {filteredTransfers.flatMap((transfer) => {
                             const elements: any[] = [
-                            <tr key={transfer.id} id={`transfer-row-${actualIndex}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={(e)=>handleTransferRowKeyDown(e, actualIndex)} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${transfer.isEditing ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                            <tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={(e)=>handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${transfer.isEditing ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
                               <td className="px-2 py-2">
                                 {!transfer.vehicleAssigned && !transfer.isGroup && (
                                 <input
@@ -378,13 +467,13 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       {transfer.typeLabel || (transfer.direction === 'arrival' ? 'Grup Giriş' : 'Grup Çıkış')}
                                 </span>
                                     <button
-                                      onClick={() => toggleGroupDetails(actualIndex)}
+                                      onClick={() => toggleGroupDetails(transfer.id)}
                                       className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                      title={expandedGroups.has(actualIndex) ? 'Detayları Gizle' : 'Detayları Göster'}
+                                      title={expandedGroups.has(transfer.id) ? 'Detayları Gizle' : 'Detayları Göster'}
                                     >
                                       <svg
                                         className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${
-                                          expandedGroups.has(actualIndex) ? 'rotate-180' : ''
+                                          expandedGroups.has(transfer.id) ? 'rotate-180' : ''
                                         }`}
                                         fill="none"
                                         stroke="currentColor"
@@ -398,7 +487,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                   <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block ${
                                     transfer.direction === 'arrival'
                                       ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700'
-                                      : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700'
+                                      : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-gray-700'
                                   }`}>
                                     {transfer.direction === 'arrival' ? 'Giriş' : 'Çıkış'}
                                   </span>
@@ -423,16 +512,16 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                 {transfer.isEditing ? (
                                   <input
                                     type="text"
-                                    id={`transfer-date-${index}`}
+                                    id={`transfer-date-${transfer.id}`}
                                     value={transfer.date}
                                     onChange={(e) => updateTransfer(transfer.id, 'date', e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
@@ -451,10 +540,10 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
@@ -473,10 +562,10 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 font-mono"
@@ -498,10 +587,10 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
@@ -538,33 +627,30 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                               <td className="px-2 py-2 relative">
                                 <div className="relative">
                                   <input
+                                    ref={(el) => (supplierInputRefs.current[transfer.id] = el)}
                                     type="text"
                                     value={transfer.supplierName || ''}
                                     placeholder="Tedarikçi Seçiniz"
                                     onMouseDown={(e) => {
                                       e.preventDefault();
-                                      // Sadece dropdown kapalıysa aç
                                       if (!supplierDropdowns[transfer.id]?.isOpen) {
                                         toggleSupplierDropdown(transfer.id);
+                                        updateDropdownPosition(transfer.id);
                                       }
                                     }}
                                     onFocus={() => {
-                                      // Sadece dropdown kapalıysa aç
                                       if (!supplierDropdowns[transfer.id]?.isOpen) {
                                         toggleSupplierDropdown(transfer.id);
+                                        updateDropdownPosition(transfer.id);
                                       }
                                     }}
                                     onKeyDown={(e) => {
-                                      // Tedarikçi dropdown açıksa klavye navigasyonu yap
                                       if (supplierDropdowns[transfer.id]?.isOpen) {
                                         handleSupplierKeyDown(e, transfer.id);
-                                        
-                                        // Enter ve ESC tuşları tedarikçi seçimi için, satır seviyesindeki işlemleri engelle
                                         if (e.key === 'Enter' || e.key === 'Escape') {
                                           e.stopPropagation();
                                         }
                                       }
-                                      // Dropdown kapalıysa satır seviyesindeki işlemler çalışsın (return yapmıyoruz)
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 cursor-pointer"
                                     readOnly
@@ -587,14 +673,22 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       </button>
                                     )}
                                     <span className="pointer-events-none">
-                                    <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
+                                      <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                      </svg>
                                     </span>
                                   </div>
 
-                                  {supplierDropdowns[transfer.id]?.isOpen && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-auto">
+                                  {supplierDropdowns[transfer.id]?.isOpen && dropdownPosition && createPortal(
+                                    <div 
+                                      id={`supplier-dropdown-${transfer.id}`}
+                                      className="fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-60 overflow-y-auto"
+                                      style={{
+                                        top: dropdownPosition.top,
+                                        left: dropdownPosition.left,
+                                        width: dropdownPosition.width
+                                      }}
+                                    >
                                       <input
                                         type="text"
                                         data-supplier-search={transfer.id}
@@ -602,38 +696,26 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         onChange={(e) => updateSupplierSearch(transfer.id, e.target.value)}
                                         onKeyDown={(e) => {
                                           handleSupplierKeyDown(e, transfer.id);
-                                          // Enter ve ESC tuşları tedarikçi seçimi için, satır seviyesindeki işlemleri engelle
                                           if (e.key === 'Enter' || e.key === 'Escape') {
                                             e.stopPropagation();
                                           }
                                         }}
                                         placeholder="Tedarikçi ara..."
-                                        className="w-full px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none"
+                                        className="w-full px-2 py-1.5 text-xs border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none sticky top-0"
                                         autoFocus
                                       />
                                       {filteredHotelSuppliers
                                         .filter((item: any) =>
-                                          (item.displayName || item.name || item.title || '').toLowerCase().includes(
-                                            (supplierDropdowns[transfer.id]?.searchTerm || '').toLowerCase()
-                                          )
+                                          (item.displayName || item.name || item.title || '').toLowerCase().includes((supplierDropdowns[transfer.id]?.searchTerm || '').toLowerCase())
                                         )
                                         .map((item: any, itemIndex: number) => (
                                           <div
                                             key={`${item.type}-${item.id}`}
                                             onClick={() => selectSupplier(transfer.id, item.id, item.displayName || item.name || item.title)}
-                                            onMouseEnter={() => {
-                                              const current = supplierDropdowns[transfer.id];
-                                              if (current) {
-                                                setSupplierDropdowns({
-                                                  ...supplierDropdowns,
-                                                  [transfer.id]: { ...current, selectedIndex: itemIndex }
-                                                });
-                                              }
-                                            }}
                                             className={`px-3 py-2 text-xs cursor-pointer transition-colors duration-150 flex items-center justify-between ${
                                               itemIndex === supplierDropdowns[transfer.id]?.selectedIndex
                                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                                                : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
                                             }`}
                                           >
                                             <span>{item.displayName || item.name || item.title}</span>
@@ -641,9 +723,9 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                               {item.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
                                             </span>
                                           </div>
-                                        ))
-                                      }
-                                    </div>
+                                        ))}
+                                    </div>,
+                                    document.body
                                   )}
                                 </div>
                               </td>
@@ -654,7 +736,6 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                   value={transferCostInput[transfer.id] ?? (transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : '')}
                                   onChange={(e) => {
                                     let v = e.target.value.replace(/[^0-9.,]/g, '');
-                                    // Noktayı virgüze çevir ve tek ondalık ayırıcı bırak
                                     v = v.replace(/\./g, ',');
                                     const parts = v.split(',');
                                     if (parts.length > 2) {
@@ -663,7 +744,6 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                     setTransferCostInput(prev => ({ ...prev, [transfer.id]: v }));
                                   }}
                                   onFocus={(e) => {
-                                    // Tamamını seç ki kullanıcı kolay düzeltsin
                                     e.currentTarget.select();
                                   }}
                                   onBlur={(e) => {
@@ -712,10 +792,10 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         const raw = (transfer as any).passengersInput ?? '';
                                         const parsed = raw.split(',').map((p: any) => p.trim()).filter((p: any) => p);
                                         updateTransfer(transfer.id, 'passengers', parsed);
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 truncate whitespace-nowrap overflow-hidden"
@@ -732,7 +812,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                   {transfer.isEditing ? (
                                     <>
                                       <button
-                                        onClick={() => saveTransfer(index)}
+                                        onClick={() => saveTransfer(transfer.id)}
                                         className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                         title="Kaydet"
                                       >
@@ -741,7 +821,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         </svg>
                                       </button>
                                       <button
-                                        onClick={() => cancelTransferEdit(index)}
+                                        onClick={() => cancelTransferEdit(transfer.id)}
                                         className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                         title="İptal"
                                       >
@@ -751,71 +831,10 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       </button>
                                     </>
                                   ) : transfer.isGroup ? (
-                                    // Gruplanan transferler için butonlar
-                                    <>
-                                      {transfer.isEditing ? (
-                                        // Düzenleme modunda kaydet ve iptal butonları
-                                        <>
-                                          <button
-                                            onClick={() => saveTransfer(index)}
-                                            className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                                            title="Kaydet"
-                                          >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                          </button>
-                                          <button
-                                            onClick={() => cancelTransferEdit(index)}
-                                            className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
-                                            title="İptal"
-                                          >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                          </button>
-                                        </>
-                                      ) : (
-                                        // Normal modda butonlar
-                                        <>
-                                          {!transfer.vehicleAssigned && (
-                                  <button
-                                    onClick={() => openVehicleAssignmentModal(index)}
-                                              className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                                              title="Araç Ata"
-                                  >
-                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                              </svg>
-                                  </button>
-                                          )}
-                                  <button
-                                    onClick={() => editTransfer(index)}
-                                            className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-                                            title="Düzenle"
-                                  >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                  </button>
-                                    <button
-                                      onClick={() => ungroupTransfer(index)}
-                                            className="p-1 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
-                                      title="Grubu Ayır"
-                                    >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                            </svg>
-                                    </button>
-                                        </>
-                                      )}
-                                    </>
-                                  ) : transfer.typeLabel === 'Ara Transfer' ? (
-                                    // Ara transferler için tam özellik seti
                                     <>
                                       {!transfer.vehicleAssigned && (
                                         <button
-                                          onClick={() => openVehicleAssignmentModal(index)}
+                                          onClick={() => openVehicleAssignmentModal(transfer.id)}
                                           className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                           title="Araç Ata"
                                         >
@@ -825,7 +844,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         </button>
                                       )}
                                       <button
-                                        onClick={() => editTransfer(index)}
+                                        onClick={() => editTransfer(transfer.id)}
                                         className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                         title="Düzenle"
                                       >
@@ -833,48 +852,21 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                       </button>
-                                      {!transfer.vehicleAssigned && (
-                                        <>
-                                          <button
-                                            onClick={() => addTransferBelow(index)}
-                                            className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                                            title="Ekle"
-                                          >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                            </svg>
-                                          </button>
-                                          <button
-                                            onClick={() => copyTransfer(index)}
-                                            className="p-1 rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
-                                            title="Kopyala"
-                                          >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                            </svg>
-                                          </button>
-                                        </>
-                                      )}
                                       <button
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                openDeleteConfirm(actualIndex);
-                                              }}
-                                        className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                        title="Sil"
+                                        onClick={() => ungroupTransfer(transfer.id)}
+                                        className="p-1 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
+                                        title="Grubu Ayır"
                                       >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                         </svg>
                                       </button>
                                     </>
                                   ) : (
-                                    // Normal transferler için tüm butonlar
                                     <>
                                       {!transfer.vehicleAssigned && (
                                         <button
-                                          onClick={() => openVehicleAssignmentModal(index)}
+                                          onClick={() => openVehicleAssignmentModal(transfer.id)}
                                           className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                           title="Araç Ata"
                                         >
@@ -884,7 +876,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         </button>
                                       )}
                                       <button
-                                        onClick={() => editTransfer(index)}
+                                        onClick={() => editTransfer(transfer.id)}
                                         className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                         title="Düzenle"
                                       >
@@ -895,7 +887,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       {!transfer.vehicleAssigned && (
                                         <>
                                           <button
-                                            onClick={() => addTransferBelow(index)}
+                                            onClick={() => addTransferBelow(transfer.id)}
                                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                             title="Ekle"
                                           >
@@ -904,7 +896,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                             </svg>
                                           </button>
                                           <button
-                                            onClick={() => copyTransfer(index)}
+                                            onClick={() => copyTransfer(transfer.id)}
                                             className="p-1 rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
                                             title="Kopyala"
                                           >
@@ -912,11 +904,13 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                             </svg>
                                           </button>
+                                        </>
+                                      )}
                                       <button
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
-                                          openDeleteConfirm(actualIndex);
+                                          openDeleteConfirm(transfer.id);
                                         }}
                                         className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                         title="Sil"
@@ -927,13 +921,11 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       </button>
                                     </>
                                   )}
-                                    </>
-                                  )}
                                 </div>
                               </td>
                             </tr>
                           ];
-                            if (transfer.isGroup && expandedGroups.has(actualIndex)) {
+                            if (transfer.isGroup && expandedGroups.has(transfer.id)) {
                               elements.push(
                                 <tr key={`${transfer.id}-details`} className="bg-gray-50 dark:bg-gray-800/50">
                                   <td colSpan={12} className="px-4 py-3">
@@ -942,30 +934,47 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         Grup Detayları ({transfer.originalTransfers?.length || 0} transfer)
                                       </h4>
                                       <div className="space-y-2">
-                                        {transfer.originalTransfers?.map((originalTransfer: any, detailIndex: number) => (
-                                          <div key={detailIndex} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-600 rounded border">
-                                            <div className="flex items-center gap-4 text-xs">
-                                              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                originalTransfer.direction === 'arrival'
-                                                  ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                                  : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                                              }`}>
-                                                {originalTransfer.direction === 'arrival' ? 'Giriş' : 'Çıkış'}
-                                              </span>
-                                              <span className="font-mono">{originalTransfer.date}</span>
-                                              <span className="font-mono">{originalTransfer.time}</span>
-                                              <span className="font-mono text-blue-600 dark:text-blue-400">
-                                                {originalTransfer.flightCode || '-'}
-                                              </span>
-                                              <span className="text-gray-600 dark:text-gray-300">
-                                                {originalTransfer.route}
-                                              </span>
-                                              <span className="text-gray-500 dark:text-gray-400">
-                                                {originalTransfer.passengers?.join(', ') || '-'}
-                                              </span>
+                                        {transfer.originalTransfers?.map((originalTransfer: any, detailIndex: number) => {
+                                          const hotelName = (() => {
+                                            if (!originalTransfer.hotel_id) return 'Genel';
+                                            const tabHotel = project?.hotels_data?.find((h: any) => h.id === originalTransfer.hotel_id);
+                                            if (tabHotel) {
+                                              if (tabHotel.hotel_name) return tabHotel.hotel_name;
+                                              const masterHotel = hotels?.find((h: any) => h.id === tabHotel.hotel_id);
+                                              if (masterHotel) return masterHotel.name;
+                                            }
+                                            const masterHotel = hotels?.find((h: any) => h.id === originalTransfer.hotel_id);
+                                            return masterHotel?.name || 'Otel';
+                                          })();
+
+                                          return (
+                                            <div key={detailIndex} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-600 rounded border">
+                                              <div className="flex items-center gap-4 text-xs">
+                                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                  originalTransfer.direction === 'arrival'
+                                                    ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                                    : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                                                }`}>
+                                                  {originalTransfer.direction === 'arrival' ? 'Giriş' : 'Çıkış'}
+                                                </span>
+                                                <span className="font-bold text-gray-500 dark:text-gray-400 border-r pr-4 uppercase tracking-tighter">
+                                                  {hotelName}
+                                                </span>
+                                                <span className="font-mono">{originalTransfer.date}</span>
+                                                <span className="font-mono">{originalTransfer.time}</span>
+                                                <span className="font-mono text-blue-600 dark:text-blue-400">
+                                                  {originalTransfer.flightCode || '-'}
+                                                </span>
+                                                <span className="text-gray-600 dark:text-gray-300">
+                                                  {originalTransfer.route}
+                                                </span>
+                                                <span className="text-gray-500 dark:text-gray-400">
+                                                  {originalTransfer.passengers?.join(', ') || '-'}
+                                                </span>
+                                              </div>
                                             </div>
-                                          </div>
-                                        ))}
+                                          );
+                                        })}
                                       </div>
                                     </div>
                                   </td>
@@ -1169,45 +1178,14 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       </div>
                     </div>
                   )}
-      {/* Silme Onay Modalı */}
-      {confirmModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={handleCancelDelete}
-          />
-          {/* Modal kutusu */}
-          <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
-            {/* İkon */}
-            <div className="flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white text-center mb-2">
-              {confirmModal.title}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
-              {confirmModal.message}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleCancelDelete}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-              >
-                İptal
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-              >
-                Evet, Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modern Onay Modalı */}
+      <ConfirmModal
+        isOpen={confirmModal.open}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCancelAction}
+      />
     </div>
   );
 }

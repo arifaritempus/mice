@@ -9,6 +9,7 @@ import html2canvas from 'html2canvas';
 import { getLogosForExcel } from '@/utils/logoUtils';
 import { usePermissions, Module } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { toast } from 'react-hot-toast';
 
 // Basit arama ve klavye destekli ComboBox - Modernize Edildi
 function ComboBox({
@@ -363,7 +364,7 @@ export default function CreateSejourPage() {
       pdf.save(`voucher-${salesData.voucherNumber || 'draft'}.pdf`);
     } catch (error) {
       console.error('PDF oluşturma hatası:', error);
-      alert('PDF oluşturulurken hata oluştu: ' + (error as Error).message);
+      toast.error('PDF oluşturulurken hata oluştu: ' + (error as Error).message);
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -752,6 +753,7 @@ export default function CreateSejourPage() {
         sejourData
       });
 
+      toast.success('Sejour başarıyla oluşturuldu!');
       setSuccess('Sejour başarıyla oluşturuldu!');
       
       // Redirect after 2 seconds

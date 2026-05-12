@@ -9,6 +9,7 @@ import { ticketOptionsService, ticketPaymentPlansService, ticketPaymentRecordsSe
 import PaginationControls from '@/components/PaginationControls'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination'
+import Modal from '@/components/Modal'
 import { usePermissions, Module } from '@/lib/permissions';
 import { toast } from 'react-hot-toast';
 import { 
@@ -75,14 +76,6 @@ interface PaymentRecord {
   recipient: string
 }
 
-interface DateRangeFieldProps {
-  label: string
-  startValue: string
-  endValue: string
-  onStartChange: (value: string) => void
-  onEndChange: (value: string) => void
-}
-
 const toDate = (value: string) => {
   if (!value) return null
   const parsed = parseISO(value)
@@ -99,7 +92,16 @@ const parseTypedDate = (value: string): string | null => {
   return formatDateFns(parsed, 'yyyy-MM-dd')
 }
 
-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange }: DateRangeFieldProps) {
+interface DateRangeFieldProps {
+  label: string
+  startValue: string
+  endValue: string
+  onStartChange: (value: string) => void
+  onEndChange: (value: string) => void
+  onApply?: (start: string, end: string) => void
+}
+
+function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const calendarRef = useRef<HTMLDivElement | null>(null)
   const startDate = toDate(startValue)
@@ -146,7 +148,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
       if (!rect) return
       setCalendarStyle({
         top: rect.bottom + 4,
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+        left: Math.max(6, rect.left)
       })
     }
     updatePos()
@@ -163,45 +165,87 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
     if (rect) {
       setCalendarStyle({
         top: rect.bottom + 4,
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+        left: Math.max(6, rect.left)
       })
     }
     setIsCalendarOpen(true)
   }
 
+  const handleStartTextChange = (value: string) => {
+    setStartText(value)
+    if (value === '') {
+      onStartChange('')
+      if (onApply) onApply('', endText.length === 10 ? parseTypedDate(endText) || '' : '')
+      return
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value)
+      if (parsed !== null) {
+        onStartChange(parsed)
+        if (onApply) {
+          const endParsed = endText.length === 10 ? parseTypedDate(endText) : ''
+          onApply(parsed, endParsed || '')
+        }
+      }
+    }
+  }
+
+  const handleEndTextChange = (value: string) => {
+    setEndText(value)
+    if (value === '') {
+      onEndChange('')
+      if (onApply) onApply(startText.length === 10 ? parseTypedDate(startText) || '' : '', '')
+      return
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value)
+      if (parsed !== null) {
+        onEndChange(parsed)
+        if (onApply) {
+          const startParsed = startText.length === 10 ? parseTypedDate(startText) : ''
+          onApply(startParsed || '', parsed)
+        }
+      }
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const s = parseTypedDate(startText) || ''
+      const e_ = parseTypedDate(endText) || ''
+      onStartChange(s)
+      onEndChange(e_)
+      if (onApply) onApply(s, e_)
+      setIsCalendarOpen(false)
+    }
+  }
+
   return (
     <div className="min-w-0 relative" ref={containerRef}>
-      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 truncate" title={label}>{label}</label>
-      <div className="flex gap-1">
+      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5 truncate" title={label}>{label}</label>
+      <div className="flex gap-0.5">
         <input
           value={startText}
-          onChange={(e) => {
-            const v = e.target.value
-            setStartText(v)
-            const parsed = parseTypedDate(v)
-            if (parsed !== null) onStartChange(parsed)
-          }}
+          onChange={(e) => handleStartTextChange(e.target.value)}
           onFocus={openCalendar}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
-          className="w-full h-7 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
+          className="w-full h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
         <input
           value={endText}
-          onChange={(e) => {
-            const v = e.target.value
-            setEndText(v)
-            const parsed = parseTypedDate(v)
-            if (parsed !== null) onEndChange(parsed)
-          }}
+          onChange={(e) => handleEndTextChange(e.target.value)}
           onFocus={openCalendar}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
-          className="w-full h-7 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
+          className="w-full h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
       {isCalendarOpen && typeof document !== 'undefined' && createPortal(
         <div
           ref={calendarRef}
-          className="transfer-range-datepicker-popover fixed z-[300] w-max max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl p-1.5 overflow-x-auto"
+          className="transfer-range-datepicker-popover fixed z-[9999] w-max max-w-[calc(100vw-0.75rem)] shadow-2xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 overflow-x-auto"
           style={{ top: `${calendarStyle.top}px`, left: `${calendarStyle.left}px` }}
         >
           <DatePicker
@@ -217,11 +261,11 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
               if (start && end) {
                 onStartChange(toIsoDate(start))
                 onEndChange(toIsoDate(end))
+                if (onApply) onApply(toIsoDate(start), toIsoDate(end))
                 setIsCalendarOpen(false)
               }
             }}
             openToDate={pickerRange[0] || pickerRange[1] || new Date()}
-            calendarClassName="!text-xs"
           />
         </div>,
         document.body
@@ -269,13 +313,19 @@ export default function TicketPaymentsPage() {
   const [companyFilter, setCompanyFilter] = useState('')
   const [agencyFilter, setAgencyFilter] = useState('')
   const [pnrFilter, setPnrFilter] = useState('')
+  const todayStr = new Date().toISOString().split('T')[0];
   const [departureDateRange, setDepartureDateRange] = useState({ startDate: '', endDate: '' })
-  const [paymentDateRange, setPaymentDateRange] = useState({ startDate: '', endDate: '' })
+  const [paymentDateRange, setPaymentDateRange] = useState({ startDate: todayStr, endDate: '' })
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   
   // Sıralama State'i
   const [sortBy, setSortBy] = useState<'flight' | 'payment' | 'balance'>('flight')
+  const [filterKey, setFilterKey] = useState(0)
+  
+  useEffect(() => {
+    setPage(1)
+  }, [companyFilter, agencyFilter, pnrFilter, departureDateRange, paymentDateRange, sortBy])
   
   // Modal State'leri
   const [showPaymentPlanModal, setShowPaymentPlanModal] = useState(false)
@@ -295,6 +345,19 @@ export default function TicketPaymentsPage() {
     recipient: '',
     notes: ''
   })
+
+  // Silme Onay Modal State
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    type: 'plan' | 'record' | null;
+    id: string | null;
+    isDeleting: boolean;
+  }>({
+    show: false,
+    type: null,
+    id: null,
+    isDeleting: false
+  });
 
   // Güvenli tarih parse: 'dd.MM.yyyy' ve 'yyyy-MM-dd' destekler
   const parseDate = useCallback((value?: string) => {
@@ -453,6 +516,7 @@ export default function TicketPaymentsPage() {
     try {
       const planData = {
         ticket_id: ticketId,
+        voucher_no: confirmedTickets.find(t => t.id === ticketId)?.voucher_no || null,
         installments: installments,
         total_amount: installments.reduce((sum, inst) => sum + inst.amount, 0),
         total_percentage: installments.reduce((sum, inst) => sum + inst.percentage, 0),
@@ -488,12 +552,13 @@ export default function TicketPaymentsPage() {
     try {
       const index = paymentPlans.findIndex(plan => plan.id === planId)
       if (index === -1) {
-        alert('Ödeme planı bulunamadı!')
+        toast.error('Ödeme planı bulunamadı!')
         return
       }
 
       const updateData = {
         installments: installments,
+        voucher_no: confirmedTickets.find(t => t.id === paymentPlans[index].ticket_id)?.voucher_no || null,
         total_amount: installments.reduce((sum, inst) => sum + inst.amount, 0),
         total_percentage: installments.reduce((sum, inst) => sum + inst.percentage, 0)
       }
@@ -536,7 +601,7 @@ export default function TicketPaymentsPage() {
     }
     
     if (!newPayment.payment_date) {
-      alert('Lütfen ödeme tarihi seçin!')
+      toast.error('Lütfen ödeme tarihi seçin!')
       return
     }
     
@@ -553,7 +618,8 @@ export default function TicketPaymentsPage() {
           payment_date: newPayment.payment_date,
           payment_method: newPayment.payment_method,
           recipient: newPayment.recipient.trim(),
-          notes: newPayment.notes || null
+          notes: newPayment.notes || null,
+          voucher_no: confirmedTickets.find(t => t.id === selectedPaymentPlan.ticket_id)?.voucher_no || null
         }
         
         const updatedRecord = await ticketPaymentRecordsService.update(selectedPaymentRecord.id, updateData)
@@ -571,7 +637,34 @@ export default function TicketPaymentsPage() {
           )
         })
         
-        toast.success(selectedPaymentRecord ? 'Ödeme başarıyla güncellendi!' : 'Ödeme başarıyla kaydedildi!');
+        toast.success('Ödeme başarıyla güncellendi!');
+      } else {
+        // YENİ ÖDEME KAYDI OLUŞTUR
+        const ticket = confirmedTickets.find(t => t.id === selectedPaymentPlan.ticket_id);
+        const recordData = {
+          payment_plan_id: selectedPaymentPlan.id,
+          ticket_id: selectedPaymentPlan.ticket_id,
+          amount: newPayment.amount,
+          payment_date: newPayment.payment_date,
+          payment_method: newPayment.payment_method,
+          recipient: newPayment.recipient.trim(),
+          notes: newPayment.notes || null,
+          voucher_no: ticket?.voucher_no || null
+        }
+        
+        const createdRecord = await ticketPaymentRecordsService.create(recordData)
+        
+        setPaymentRecords(prev => [
+          {
+            ...createdRecord,
+            payment_date: toCalendarYmd(createdRecord.payment_date),
+            notes: createdRecord.notes || '',
+            recipient: createdRecord.recipient || ''
+          },
+          ...prev
+        ])
+        
+        toast.success('Ödeme başarıyla kaydedildi!');
       }
 
       setShowPaymentModal(false)
@@ -691,51 +784,48 @@ export default function TicketPaymentsPage() {
     setShowPaymentModal(true)
   }, [paymentPlans])
 
-  const deletePayment = useCallback(async (paymentId: string) => {
-    if (confirm('Bu ödeme kaydını silmek istediğinizden emin misiniz?')) {
-      try {
-        await ticketPaymentRecordsService.delete(paymentId)
+  const handleDeletePlanClick = (planId: string) => {
+    setDeleteConfirm({ show: true, type: 'plan', id: planId, isDeleting: false });
+  };
+
+  const handleDeleteRecordClick = (recordId: string) => {
+    setDeleteConfirm({ show: true, type: 'record', id: recordId, isDeleting: false });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm.id || !deleteConfirm.type) return;
+    
+    setDeleteConfirm(prev => ({ ...prev, isDeleting: true }));
+    try {
+      if (deleteConfirm.type === 'plan') {
+        await ticketPaymentPlansService.delete(deleteConfirm.id);
+        setPaymentPlans(prev => prev.filter(plan => plan.id !== deleteConfirm.id));
+        toast.success('Ödeme planı başarıyla silindi!');
+      } else {
+        await ticketPaymentRecordsService.delete(deleteConfirm.id);
+        setPaymentRecords(prev => prev.filter(record => record.id !== deleteConfirm.id));
         
-        setPaymentRecords(prev => {
-          return prev.filter(record => record.id !== paymentId)
-        })
-        
-        // Eğer modal açıksa kapat
         if (showPaymentModal) {
-          setShowPaymentModal(false)
-          setSelectedPaymentPlan(null)
+          setShowPaymentModal(false);
+          setSelectedPaymentPlan(null);
           setNewPayment({
             amount: 0,
             payment_date: toCalendarYmd(new Date()),
-            payment_method: 'credit_card' as 'credit_card' | 'bank_transfer' | 'cash' | 'online',
+            payment_method: 'credit_card',
             recipient: '',
             notes: ''
-          })
+          });
         }
-        
-        alert('Ödeme kaydı başarıyla silindi!')
-      } catch (error) {
-        console.error('Ödeme silme hatası:', error)
-        alert('Ödeme silinirken hata oluştu!')
+        toast.success('Ödeme kaydı başarıyla silindi!');
       }
+      setDeleteConfirm({ show: false, type: null, id: null, isDeleting: false });
+    } catch (error) {
+      console.error('Silme hatası:', error);
+      toast.error(deleteConfirm.type === 'plan' ? 'Ödeme planı silinirken hata oluştu!' : 'Ödeme silinirken hata oluştu!');
+    } finally {
+      setDeleteConfirm(prev => ({ ...prev, isDeleting: false }));
     }
-  }, [showPaymentModal, toCalendarYmd])
-
-  const deletePaymentPlan = useCallback(async (planId: string) => {
-    if (confirm('Bu ödeme planını silmek istediğinizden emin misiniz?')) {
-      try {
-        await ticketPaymentPlansService.delete(planId)
-        
-        setPaymentPlans(prev => {
-          return prev.filter(plan => plan.id !== planId)
-        })
-        alert('Ödeme planı başarıyla silindi!')
-      } catch (error) {
-        console.error('Ödeme planı silme hatası:', error)
-        alert('Ödeme planı silinirken hata oluştu!')
-      }
-    }
-  }, [])
+  };
 
   // ExcelJS ile Export
   const exportPaymentsExcel = async () => {
@@ -996,158 +1086,135 @@ export default function TicketPaymentsPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      <div className="max-w-none mx-auto flex-1 flex flex-col min-h-0 w-full">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 mb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                💰 Bilet Ödemeleri
-              </h1>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                Onaylanmış biletlerin ödeme planları ve ödeme kayıtları
-              </p>
+    <div className="max-w-full mx-auto px-1 space-y-2 pb-8">
+      {/* Modern Header */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-xl p-3 mb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Bilet Ödemeleri</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Konfirme biletlerin ödeme planlarını ve kayıtlarını yönetin</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right mr-2">
+              <div className="text-xs font-medium text-gray-900 dark:text-white">
+                {filteredTickets.length} / {confirmedTickets.length} Bilet
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-xs font-medium text-gray-900 dark:text-white">
-                  {filteredTickets.length} / {confirmedTickets.length} Bilet
-                  {(companyFilter || agencyFilter || pnrFilter || departureDateRange.startDate || departureDateRange.endDate || paymentDateRange.startDate || paymentDateRange.endDate) && (
-                    <span className="text-blue-600 dark:text-blue-400 ml-2">(Filtrelenmiş)</span>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition-colors text-xs"
-                >
-                  🔄 Güncellemek için yeniden başlat
-                </button>
-                <button 
-                  onClick={exportPaymentsExcel}
-                  className="bg-green-600 text-white px-2 py-1.5 rounded hover:bg-green-700 transition-colors text-xs"
-                >
-                  Excel
-                </button>
-              </div>
-              
-              {/** Eski verileri temizle butonu kaldırıldı */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={exportPaymentsExcel}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm text-xs font-semibold"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Excel
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Arama ve Filtreleme */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 mb-2 w-full min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Arama ve Filtreleme</h3>
+      {/* Filter Section */}
+      <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-2 w-full min-w-0">
+        <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1" style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr auto' }}>
+          <DateRangeField
+            label="Ödeme Tarihi"
+            startValue={paymentDateRange.startDate}
+            endValue={paymentDateRange.endDate}
+            onStartChange={(v) => setPaymentDateRange(prev => ({ ...prev, startDate: v }))}
+            onEndChange={(v) => setPaymentDateRange(prev => ({ ...prev, endDate: v }))}
+            onApply={() => setPage(1)}
+          />
+          <DateRangeField
+            label="Uçuş Tarihi"
+            startValue={departureDateRange.startDate}
+            endValue={departureDateRange.endDate}
+            onStartChange={(v) => setDepartureDateRange(prev => ({ ...prev, startDate: v }))}
+            onEndChange={(v) => setDepartureDateRange(prev => ({ ...prev, endDate: v }))}
+            onApply={() => setPage(1)}
+          />
+          <div className="min-w-0">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5 truncate" title="Firma Adı">Firma Adı</label>
+            <input
+              type="text"
+              value={companyFilter}
+              onChange={(e) => setCompanyFilter(e.target.value)}
+              placeholder="Filtrele..."
+              className="w-full h-8 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
+            />
+          </div>
+          <div className="min-w-0">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5 truncate" title="Acente Adı">Acente Adı</label>
+            <input
+              type="text"
+              value={agencyFilter}
+              onChange={(e) => setAgencyFilter(e.target.value)}
+              placeholder="Filtrele..."
+              className="w-full h-8 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
+            />
+          </div>
+          <div className="min-w-0">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5 truncate" title="PNR">PNR</label>
+            <input
+              type="text"
+              value={pnrFilter}
+              onChange={(e) => setPnrFilter(e.target.value)}
+              placeholder="PNR..."
+              className="w-full h-8 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const todayStr = new Date().toISOString().split('T')[0];
+              setCompanyFilter('')
+              setAgencyFilter('')
+              setPnrFilter('')
+              setDepartureDateRange({ startDate: '', endDate: '' })
+              setPaymentDateRange({ startDate: todayStr, endDate: '' })
+              setSortBy('flight')
+              setPage(1)
+              setFilterKey(k => k + 1)
+            }}
+            className="h-8 w-8 flex items-center justify-center rounded bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 shrink-0 shadow-sm mb-0.5"
+            title="Filtreleri temizle"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="mt-2 flex items-center gap-2 border-t border-gray-100 dark:border-gray-700 pt-2">
+          <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sıralama:</span>
+          <div className="flex gap-1">
             <button
               type="button"
-              onClick={() => {
-                setCompanyFilter('')
-                setAgencyFilter('')
-                setPnrFilter('')
-                setDepartureDateRange({ startDate: '', endDate: '' })
-                setPaymentDateRange({ startDate: '', endDate: '' })
-              }}
-              className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200 shrink-0"
-              title="Filtreleri temizle"
+              onClick={() => setSortBy('flight')}
+              className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${sortBy === 'flight' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
+              UÇUŞ TARİHİ
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortBy('payment')}
+              className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${sortBy === 'payment' ? 'bg-green-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
+            >
+              ÖDEME TARİHİ
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortBy('balance')}
+              className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${sortBy === 'balance' ? 'bg-orange-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
+            >
+              BAKİYESİ OLAN
             </button>
           </div>
-
-          <div className="space-y-2">
-            <div
-              className="grid w-full min-w-0 items-end gap-2"
-              style={{ gridTemplateColumns: 'minmax(0,1.35fr) minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.9fr)' }}
-            >
-              <DateRangeField
-                label="Gidiş Dönüş Tarihi"
-                startValue={departureDateRange.startDate}
-                endValue={departureDateRange.endDate}
-                onStartChange={(value) => setDepartureDateRange(prev => ({ ...prev, startDate: value }))}
-                onEndChange={(value) => setDepartureDateRange(prev => ({ ...prev, endDate: value }))}
-              />
-              <DateRangeField
-                label="Ödeme Başlangıç Bitiş Tarihi"
-                startValue={paymentDateRange.startDate}
-                endValue={paymentDateRange.endDate}
-                onStartChange={(value) => setPaymentDateRange(prev => ({ ...prev, startDate: value }))}
-                onEndChange={(value) => setPaymentDateRange(prev => ({ ...prev, endDate: value }))}
-              />
-              <div className="min-w-0">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Firma Adı</label>
-                <input
-                  type="text"
-                  value={companyFilter}
-                  onChange={(e) => setCompanyFilter(e.target.value)}
-                  placeholder="Firma adı ile filtrele"
-                  className="w-full h-7 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
-                />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Acente Adı</label>
-                <input
-                  type="text"
-                  value={agencyFilter}
-                  onChange={(e) => setAgencyFilter(e.target.value)}
-                  placeholder="Acente adı ile filtrele"
-                  className="w-full h-7 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
-                />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">PNR</label>
-                <input
-                  type="text"
-                  value={pnrFilter}
-                  onChange={(e) => setPnrFilter(e.target.value)}
-                  placeholder="PNR ile filtrele"
-                  className="w-full h-7 px-1.5 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-[11px]"
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-1">
-                <button
-                  type="button"
-                  onClick={() => setSortBy('flight')}
-                  className={`px-2 py-1.5 rounded text-xs font-medium transition-all ${
-                    sortBy === 'flight'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
-                  }`}
-                >
-                  Uçuş Tarihine
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSortBy('payment')}
-                  className={`px-2 py-1.5 rounded text-xs font-medium transition-all ${
-                    sortBy === 'payment'
-                      ? 'bg-green-600 text-white shadow-sm'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
-                  }`}
-                >
-                  Ödeme Tarihine
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSortBy('balance')}
-                  className={`px-2 py-1.5 rounded text-xs font-medium transition-all ${
-                    sortBy === 'balance'
-                      ? 'bg-orange-600 text-white shadow-sm'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
-                  }`}
-                >
-                  Bakiyesi Olan
-                </button>
-            </div>
-          </div>
         </div>
-
+      </div>
+      
         {/* Bilet Listesi */}
         {(!confirmedTickets || confirmedTickets.length === 0) ? (
           <div className="text-center py-12">
@@ -1163,18 +1230,6 @@ export default function TicketPaymentsPage() {
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
                   Arama kriterlerine uygun bilet bulunamadı.
                 </p>
-                <button
-                  onClick={() => {
-                    setCompanyFilter('')
-                    setAgencyFilter('')
-                    setPnrFilter('')
-                    setDepartureDateRange({ startDate: '', endDate: '' })
-                    setPaymentDateRange({ startDate: '', endDate: '' })
-                  }}
-                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                >
-                  Filtreleri Temizle
-                </button>
               </div>
             ) : (
               paginatedTickets.items.map((ticket) => {
@@ -1333,7 +1388,7 @@ export default function TicketPaymentsPage() {
                               💰 Ödeme
                             </button>
                             <button
-                              onClick={() => deletePaymentPlan(ticketPlans[0]!.id)}
+                              onClick={() => handleDeletePlanClick(ticketPlans[0]!.id)}
                               className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition-colors font-medium"
                             >
                               🗑️ Sil
@@ -1471,7 +1526,7 @@ export default function TicketPaymentsPage() {
                                           ✏️ Düzenle
                                         </button>
                                         <button
-                                          onClick={() => deletePayment(payment.id)}
+                                          onClick={() => handleDeleteRecordClick(payment.id)}
                                           className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition-colors font-medium"
                                         >
                                           🗑️ Sil
@@ -1832,7 +1887,53 @@ export default function TicketPaymentsPage() {
             </div>
           </div>
         )}
-      </div>
+      {/* MODERN SİLME ONAY MODALI */}
+      <Modal
+        isOpen={deleteConfirm.show}
+        onClose={() => !deleteConfirm.isDeleting && setDeleteConfirm(prev => ({ ...prev, show: false }))}
+        title={deleteConfirm.type === 'plan' ? 'Ödeme Planını Sil' : 'Ödeme Kaydını Sil'}
+      >
+        <div className="p-6 text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Emin misiniz?</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Bu {deleteConfirm.type === 'plan' ? 'ödeme planını' : 'ödeme kaydını'} silmek istediğinizden emin misiniz? 
+            {deleteConfirm.type === 'plan' ? ' Plan silindiğinde tüm taksitler kaldırılır.' : ' Bu işlem geri alınamaz.'}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setDeleteConfirm(prev => ({ ...prev, show: false }))}
+              disabled={deleteConfirm.isDeleting}
+              className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-medium"
+            >
+              Vazgeç
+            </button>
+            <button
+              onClick={confirmDelete}
+              disabled={deleteConfirm.isDeleting}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
+            >
+              {deleteConfirm.isDeleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Siliniyor...
+                </>
+              ) : (
+                'Evet, Sil'
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <style jsx global>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(16px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   )
 }

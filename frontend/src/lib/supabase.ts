@@ -108,6 +108,7 @@ export interface Quote {
   room_pax?: string;
   confirmed_at?: string;
   operation_managers?: string[];
+  project_name?: string;
   created_at: string;
   updated_at: string;
 }
@@ -200,6 +201,7 @@ export interface Category {
   icon?: string;
   color?: string;
   sort_order?: number;
+  code?: string | number;
   created_at: string;
   updated_at?: string;
 }
@@ -240,6 +242,8 @@ export interface ProjectSalesItem {
   currency: string;
   vat: number;
   fx: number;
+  sefer?: number;
+  repeat?: number;
   hotel_id?: string;
   created_at: string;
   updated_at: string;
@@ -258,6 +262,8 @@ export interface ProjectPurchaseItem {
   vat: number;
   fx: number;
   hotel_id?: string;
+  sefer?: number;
+  repeat?: number;
   created_at: string;
   updated_at: string;
 }

@@ -5,10 +5,11 @@ import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { SejourService, AgencyService, HotelService, SupplierService, ServiceTypeService, SettingsService } from '@/lib/supabaseService';
 import { usePermissions, Module } from '@/lib/permissions';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { getLogosForExcel } from '@/utils/logoUtils';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { toast } from 'react-hot-toast';
 
 // Basit arama ve klavye destekli ComboBox - Modernize Edildi
 function ComboBox({
@@ -342,7 +343,7 @@ export default function EditSejourPage() {
       pdf.save(`voucher-${salesData.voucherNumber || 'draft'}.pdf`);
     } catch (error) {
       console.error('PDF oluşturma hatası:', error);
-      alert('PDF oluşturulurken hata oluştu: ' + (error as Error).message);
+      toast.error('PDF oluşturulurken hata oluştu: ' + (error as Error).message);
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -763,6 +764,7 @@ export default function EditSejourPage() {
         sejourId
       });
 
+      toast.success('Sejour başarıyla güncellendi!');
       setSuccess('Sejour başarıyla güncellendi!');
       
       // Redirect after 2 seconds

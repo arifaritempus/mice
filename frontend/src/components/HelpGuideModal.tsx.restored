@@ -1,0 +1,2 @@
+"'use client';\n\nimport { useEffect, useState } from 'react';\nimport { createPortal } from 'react-dom';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { \n  X, \n  BookOpen, \n  ChevronRight, \n  LayoutDashboard, \n  Briefcase, \n  Hot
+<truncated 14520 bytes>

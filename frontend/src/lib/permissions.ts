@@ -240,30 +240,40 @@ async function loadAuthorizationSnapshot(force = false): Promise<Snapshot> {
   const token = session?.access_token;
   if (!token) throw new Error('session token bulunamadi');
 
-  const resp = await fetch('/api/permissions/me', {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  if (!resp.ok) throw new Error('permissions endpoint okunamadi');
-  const payload = await resp.json();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
-  const currentRole = String(payload?.role || Role.VIEWER);
-  const effectivePermissions = payload?.effectivePermissions || {};
-  const grantMap: GrantMap = {};
-  const roleKey = normalizeRole(currentRole);
-  grantMap[roleKey] = {} as any;
-  for (const [moduleRaw, actions] of Object.entries(effectivePermissions)) {
-    const module = normalizeModule(moduleRaw);
-    if (!grantMap[roleKey][module]) grantMap[roleKey][module] = new Set<Permission>();
-    for (const actionRaw of (actions as string[])) {
-      grantMap[roleKey][module].add(normalizeAction(actionRaw));
+  try {
+    const resp = await fetch('/api/permissions/me', {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    if (!resp.ok) throw new Error('permissions endpoint okunamadi');
+    const payload = await resp.json();
+
+    const currentRole = String(payload?.role || Role.VIEWER);
+    const effectivePermissions = payload?.effectivePermissions || {};
+    const grantMap: GrantMap = {};
+    const roleKey = normalizeRole(currentRole);
+    grantMap[roleKey] = {} as any;
+    for (const [moduleRaw, actions] of Object.entries(effectivePermissions)) {
+      const module = normalizeModule(moduleRaw);
+      if (!grantMap[roleKey][module]) grantMap[roleKey][module] = new Set<Permission>();
+      for (const actionRaw of (actions as string[])) {
+        grantMap[roleKey][module].add(normalizeAction(actionRaw));
+      }
     }
-  }
 
-  const snapshot: Snapshot = { grantMap, roleById: {}, currentRole, ts: now };
-  snapshotCache = snapshot;
-  saveToSessionStorage(snapshot);
-  return snapshot;
+    const snapshot: Snapshot = { grantMap, roleById: {}, currentRole, ts: now };
+    snapshotCache = snapshot;
+    saveToSessionStorage(snapshot);
+    return snapshot;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
 }
 
 function isSuperAdminRole(role: string): boolean {

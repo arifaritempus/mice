@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { TrendingUp, TrendingDown, DollarSign, Percent, Briefcase, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { projectsService, projectSalesItemsService, projectPurchaseItemsService, suppliersService, categoriesService, projectAccommodationItemsService, quoteItemsService, projectHotelExtrasService, agenciesService, hotelsService, projectTransfersService, projectEventsActivitiesService, projectHumanResourcesService, projectOtherServicesService, projectFinancialServicesService, projectCollectionPlansService, projectCollectionsService, projectPaymentPlansService, projectPaymentsService, usersService, projectUsersService, publicLinksService } from '@/lib/supabaseService';
 import { supabase } from '@/lib/supabase';
 import { lsGet, lsSet } from '@/utils/safeStorage';
@@ -155,13 +156,31 @@ export default function ProjectDetailPage() {
     message: string;
     onConfirm: () => void | Promise<void>;
     onCancel?: () => void;
+    type?: 'danger' | 'info' | 'success';
+    showCancel?: boolean;
+    confirmText?: string;
   }>({
     open: false,
     title: '',
     message: '',
     onConfirm: () => { },
     onCancel: undefined,
+    type: 'danger',
+    showCancel: true,
+    confirmText: 'Evet, Sil'
   });
+  
+  const showNotification = (message: string, type: 'success' | 'info' | 'danger' = 'info', title?: string) => {
+    setConfirmModal({
+      open: true,
+      title: title || (type === 'success' ? 'Başarılı' : type === 'danger' ? 'Hata' : 'Bilgi'),
+      message,
+      onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+      type,
+      showCancel: false,
+      confirmText: 'Tamam'
+    });
+  };
 
   const handleOpenEditHotelModal = (h: any) => {
     setEditingHotelTab(h);
@@ -444,6 +463,30 @@ export default function ProjectDetailPage() {
   const formatTimeFromSupabase = projectUtils.formatTimeFromSupabase;
   const formatDateToSupabase = projectUtils.formatDateToSupabase;
   const formatTimeToSupabase = projectUtils.formatTimeToSupabase;
+
+  const mapTransferFromSupabase = (transfer: any) => ({
+    ...transfer,
+    direction: transfer.direction,
+    typeLabel: transfer.type_label,
+    date: transfer.date ? formatDateFromSupabase(transfer.date) : transfer.date,
+    time: transfer.time ? formatTimeFromSupabase(transfer.time) : transfer.time,
+    flightCode: transfer.flight_code,
+    route: transfer.route,
+    passengerCount: transfer.passenger_count,
+    passengers: transfer.passengers || [],
+    transferType: transfer.transfer_type,
+    vehicleType: transfer.vehicle_type,
+    supplierId: transfer.supplier_id,
+    supplierName: transfer.supplier_name,
+    vehicleAssigned: transfer.vehicle_assigned,
+    costAmount: transfer.cost_amount,
+    currency: transfer.currency,
+    isGroup: transfer.is_group,
+    groupTransfers: transfer.group_transfers ? (typeof transfer.group_transfers === 'string' ? JSON.parse(transfer.group_transfers) : transfer.group_transfers) : [],
+    originalTransfers: transfer.group_transfers ? (typeof transfer.group_transfers === 'string' ? JSON.parse(transfer.group_transfers) : transfer.group_transfers) : [],
+    isEditing: false,
+    isNew: false
+  });
   // Transfer state'leri useTransferState hook'undan geliyor
 
   // Transferleri sıralama: önce Giriş, sonra Ara, en sonda Çıkış (tarih+saat'e göre)
@@ -601,7 +644,7 @@ export default function ProjectDetailPage() {
   const [selectedSupplierIndex, setSelectedSupplierIndex] = useState<number>(-1);
 
   // Otel Ekstra kategorileri - API'den yükleniyor
-  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState<Set<string | number>>(new Set());
 
   // Tedarikçi dropdown state'leri
   const [supplierDropdowns, setSupplierDropdowns] = useState<{ [key: string]: { isOpen: boolean; searchTerm: string; selectedIndex: number } }>({});
@@ -666,7 +709,7 @@ export default function ProjectDetailPage() {
       // Proje kullanıcıları artık Supabase'de saklanacak
 
       setIsEditingProject(false);
-      alert('Proje başarıyla güncellendi!');
+      showNotification('Proje başarıyla güncellendi!', 'success');
     } catch (error: any) {
       const errorMessage =
         error?.message ||
@@ -674,7 +717,7 @@ export default function ProjectDetailPage() {
         (typeof error === 'string' ? error : '') ||
         'Proje güncellenirken bir hata oluştu.';
       console.error('Proje güncellenirken hata:', errorMessage, error);
-      alert(`Proje güncellenirken hata: ${errorMessage}`);
+      showNotification(`Proje güncellenirken hata: ${errorMessage}`, 'danger');
     }
   }, [projectId, projectFormData, project, projectUsersMap, selectedUsers]);
 
@@ -955,7 +998,7 @@ export default function ProjectDetailPage() {
 
       if (projectData.status === 'rejected') {
         console.error('[PROJECT DETAIL] Proje yüklenemedi:', projectData.reason);
-        alert('Proje yüklenemedi. Lütfen sayfayı yenileyin.');
+        showNotification('Proje yüklenemedi. Lütfen sayfayı yenileyin.', 'danger');
         setLoading(false);
         return;
       }
@@ -1982,7 +2025,7 @@ export default function ProjectDetailPage() {
       // Temp ID'leri gerçek ID'lerle swap et — functional updater
       if (idMap.size > 0) {
         const setter = dbSide === 'sales' ? setItemsSales : setItemsPurchase;
-        setter(prev => prev.map(it => idMap.has(it.id) ? { ...it, id: idMap.get(it.id)!, isEditing: false } : it));
+        setter(prev => prev.map(it => idMap.has(String(it.id)) ? { ...it, id: idMap.get(String(it.id))!, isEditing: false } : it));
       }
     };
 
@@ -2489,7 +2532,7 @@ export default function ProjectDetailPage() {
           sub_category: it.sub_category || '',
           description: desc,
           unit_quantity: qtyOnly || 1,
-          // sefer: repeatOnly || 1, // Removing to fix 400 error
+          sefer: repeatOnly || 1, // Removing to fix 400 error
           unit_price: 0, // Alış fiyatı boş olarak başlar
           total_price: 0,
           currency,
@@ -2623,7 +2666,7 @@ export default function ProjectDetailPage() {
           sub_category: it.sub_category || '',
           description: finalDescription,
           unit_quantity: qtyOnly || 1,
-          // sefer: repeatOnly || 1, // Removing to fix 400 error
+          sefer: repeatOnly || 1, // Removing to fix 400 error
           unit_price: 0, // Alış fiyatı boş olarak başlar
           total_price: 0,
           currency,
@@ -2863,7 +2906,7 @@ export default function ProjectDetailPage() {
 
       const worksheet = workbook.worksheets[0];
       if (!worksheet) {
-        alert('Excel dosyasında çalışma sayfası bulunamadı');
+        showNotification('Excel dosyasında çalışma sayfası bulunamadı', 'info');
         return;
       }
 
@@ -2965,10 +3008,10 @@ export default function ProjectDetailPage() {
       // Supabase'e kaydet
       await saveAccommodationItems(rebased);
 
-      alert(`${newItems.length} konaklama kaydı başarıyla import edildi`);
+      showNotification(`${newItems.length} konaklama kaydı başarıyla import edildi`, 'success');
 
     } catch (error: any) {
-      alert('Excel dosyası import edilirken hata oluştu: ' + error.message);
+      showNotification('Excel dosyası import edilirken hata oluştu: ' + error.message, 'danger');
     }
   };
   // Excel hücre değerini güvenli şekilde al (formül sonuçlarını dahil)
@@ -3299,13 +3342,13 @@ export default function ProjectDetailPage() {
         }
 
         // Başarı mesajı
-        alert('Uçak bileti başarıyla kaydedildi!');
+        showNotification('Uçak bileti başarıyla kaydedildi!', 'success');
 
         setEditingFlightIndex(null);
         setTempFlightItem(null);
         setIsNewFlightItem(false);
       } catch (error) {
-        alert('Uçak bileti kaydedilemedi. Lütfen tekrar deneyin.');
+        showNotification('Uçak bileti kaydedilemedi. Lütfen tekrar deneyin.', 'danger');
       }
     }
   }, [editingFlightIndex, tempFlightItem, flightTickets, projectId, isNewFlightItem]);
@@ -3979,9 +4022,9 @@ export default function ProjectDetailPage() {
         setIsNewFlightItem(false);
       }
 
-      alert('Uçak bileti başarıyla silindi!');
+      showNotification('Uçak bileti başarıyla silindi!', 'success');
     } catch (error) {
-      alert('Uçak bileti silinirken bir hata oluştu. Lütfen tekrar deneyin.');
+      showNotification('Uçak bileti silinirken bir hata oluştu. Lütfen tekrar deneyin.', 'danger');
     }
   }, [editingFlightIndex, flightTickets, projectId]);
 
@@ -4146,9 +4189,9 @@ export default function ProjectDetailPage() {
       setFlightTickets(prev => [...prev, ...savedTickets]);
 
       if (savedTickets.length === importedTickets.length) {
-        alert(`${savedTickets.length} adet uçak bileti başarıyla içe aktarıldı ve kaydedildi.`);
+        showNotification(`${savedTickets.length} adet uçak bileti başarıyla içe aktarıldı ve kaydedildi.`, 'success');
       } else {
-        alert(`${savedTickets.length} adet uçak bileti kaydedildi. ${importedTickets.length - savedTickets.length} adet bilet kaydedilemedi.`);
+        showNotification(`${savedTickets.length} adet uçak bileti kaydedildi. ${importedTickets.length - savedTickets.length} adet bilet kaydedilemedi.`, 'info');
       }
 
       // Input'u temizle
@@ -4518,7 +4561,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
 
     } catch (error) {
-      alert('Excel dışa aktarma sırasında hata oluştu.');
+      showNotification('Excel dışa aktarma sırasında hata oluştu.', 'danger');
     }
   }, [filteredFlightTickets, flightTotals, project]);
 
@@ -5972,12 +6015,12 @@ export default function ProjectDetailPage() {
         totalTRY = amount * exchangeRate;
         console.log('🔍 Tutar girilmiş, Toplam TL hesaplanıyor:', totalTRY, '= ', amount, '*', exchangeRate);
       } else {
-        alert('Lütfen geçerli bir tutar veya toplam TL giriniz.');
+        showNotification('Lütfen geçerli bir tutar veya toplam TL giriniz.', 'info');
         return;
       }
 
       if (amount <= 0 || totalTRY <= 0) {
-        alert('Lütfen geçerli bir tutar giriniz.');
+        showNotification('Lütfen geçerli bir tutar giriniz.', 'info');
         return;
       }
 
@@ -6084,7 +6127,7 @@ export default function ProjectDetailPage() {
 
     } catch (error) {
       console.error('❌ Diğer Servisler kaydedilirken hata:', error);
-      alert('Diğer Servisler kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'));
+      showNotification('Diğer Servisler kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'danger');
     }
   };
 
@@ -6114,7 +6157,7 @@ export default function ProjectDetailPage() {
       setOtherServices(updated);
     } catch (error) {
       console.error('Diğer Servisler silinirken hata:', error);
-      alert('Diğer Servisler silinirken hata oluştu.');
+      showNotification('Diğer Servisler silinirken hata oluştu.', 'danger');
     }
   };
 
@@ -7159,12 +7202,12 @@ export default function ProjectDetailPage() {
       const supplierValue = (tempFinancialServiceItem?.supplier || tempFinancialServiceItem?.hotel || hotelSupplierSearch || '').trim();
 
       if (!supplierValue || supplierValue === '') {
-        alert('Lütfen otel/tedarikçi alanını doldurunuz.');
+        showNotification('Lütfen otel/tedarikçi alanını doldurunuz.', 'info');
         return;
       }
 
       if (!tempFinancialServiceItem?.subCategory || tempFinancialServiceItem.subCategory.trim() === '') {
-        alert('Lütfen alt kategori seçiniz.');
+        showNotification('Lütfen alt kategori seçiniz.', 'info');
         return;
       }
 
@@ -7253,7 +7296,7 @@ export default function ProjectDetailPage() {
       setHotelSupplierSearch('');
     } catch (error) {
       console.error('Finansal servis kaydedilirken hata:', error);
-      alert('Finansal servis kaydedilirken hata oluştu: ' + (error as any).message || 'Bilinmeyen hata');
+      showNotification('Finansal servis kaydedilirken hata oluştu: ' + ((error as any).message || 'Bilinmeyen hata'), 'danger');
     }
   };
 
@@ -7281,7 +7324,7 @@ export default function ProjectDetailPage() {
       setFinancialServices(updated);
     } catch (error) {
       console.error('Finansal servis silinirken hata:', error);
-      alert('Finansal servis silinirken hata oluştu.');
+      showNotification('Finansal servis silinirken hata oluştu.', 'danger');
     }
   };
 
@@ -8091,9 +8134,11 @@ export default function ProjectDetailPage() {
   const selectSupplier = (transferId: string, supplierId: string, supplierName: string) => {
     const transferIndex = transfers.findIndex(t => t.id === transferId);
     if (transferIndex !== -1) {
-      updateTransfer(transferId, 'supplierId', supplierId);
-      updateTransfer(transferId, 'supplierName', supplierName);
-      updateTransfer(transferId, 'vehicleAssigned', true);
+      updateTransfer(transferId, {
+        supplierId: supplierId,
+        supplierName: supplierName,
+        vehicleAssigned: true
+      });
     }
   
     setSupplierDropdowns(prev => ({
@@ -8207,19 +8252,20 @@ export default function ProjectDetailPage() {
     setSelectedTransfers(allTransferIds);
   };
 
-  const updateTransfer = async (id: string, field: string, value: any) => {
+  const updateTransfer = async (id: string, field: string | Record<string, any>, value?: any) => {
     console.log('🔍 updateTransfer çağrıldı:', { id, field, value });
     const realIndex = transfers.findIndex(t => t.id === id);
     if (realIndex === -1) return;
 
     const newTransfers = [...transfers];
-    newTransfers[realIndex] = { ...newTransfers[realIndex], [field]: value };
+    const updates = typeof field === 'string' ? { [field]: value } : field;
+    newTransfers[realIndex] = { ...newTransfers[realIndex], ...updates };
 
     // Araç kapasitesi kontrolü
-    if (field === 'vehicleType' || field === 'passengerCount') {
+    if ('vehicleType' in updates || 'passengerCount' in updates) {
       const transfer = newTransfers[realIndex];
-      const passengerCount = field === 'passengerCount' ? value : transfer.passengerCount;
-      const vehicleType = field === 'vehicleType' ? value : transfer.vehicleType;
+      const passengerCount = transfer.passengerCount;
+      const vehicleType = transfer.vehicleType;
 
       if (vehicleType && passengerCount) {
         let maxCapacity = 0;
@@ -8249,7 +8295,15 @@ export default function ProjectDetailPage() {
         }
 
         if (maxCapacity > 0 && passengerCount > maxCapacity) {
-          alert(`${vehicleName} araç tipi maksimum ${maxCapacity} kişi alabilir! Seçilen yolcu sayısı: ${passengerCount}`);
+          setConfirmModal({
+            open: true,
+            title: 'Kapasite Uyarısı',
+            message: `${vehicleName} araç tipi maksimum ${maxCapacity} kişi alabilir! Seçilen yolcu sayısı: ${passengerCount}`,
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+            type: 'info',
+            showCancel: false,
+            confirmText: 'Tamam'
+          });
         }
       }
     }
@@ -8273,31 +8327,37 @@ export default function ProjectDetailPage() {
         const updateData: any = {};
 
         // Frontend alanlarını Supabase alanlarına çevir
-        if (field === 'passengerCount') updateData.passenger_count = value;
-        else if (field === 'vehicleType') updateData.vehicle_type = value;
-        else if (field === 'supplierId') updateData.supplier_id = value;
-        else if (field === 'supplierName') updateData.supplier_name = value;
-        else if (field === 'costAmount') updateData.cost_amount = value;
-        else if (field === 'currency') updateData.currency = value;
-        else if (field === 'transferType') updateData.transfer_type = value;
-        else if (field === 'date') updateData.date = value;
-        else if (field === 'time') updateData.time = value;
-        else if (field === 'flightCode') updateData.flight_code = value;
-        else if (field === 'route') updateData.route = value;
-        else if (field === 'passengers') updateData.passengers = value;
-        else if (field === 'vehicleAssigned') updateData.vehicle_assigned = value;
-        else updateData[field] = value;
+        for (const [k, v] of Object.entries(updates)) {
+          if (k === 'passengerCount') updateData.passenger_count = v;
+          else if (k === 'vehicleType') updateData.vehicle_type = v === '' ? null : v;
+          else if (k === 'supplierId') updateData.supplier_id = v === '' ? null : v;
+          else if (k === 'supplierName') updateData.supplier_name = v;
+          else if (k === 'costAmount') updateData.cost_amount = v;
+          else if (k === 'currency') updateData.currency = v;
+          else if (k === 'transferType') updateData.transfer_type = v;
+          else if (k === 'date') updateData.date = v;
+          else if (k === 'time') updateData.time = v;
+          else if (k === 'flightCode') updateData.flight_code = v;
+          else if (k === 'route') updateData.route = v;
+          else if (k === 'passengers') updateData.passengers = v;
+          else if (k === 'vehicleAssigned') updateData.vehicle_assigned = v;
+          else updateData[k] = v;
+        }
 
         await projectTransfersService.update(transfer.id, updateData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Transfer güncelleme hatası:', error);
+        // Supabase foreign key hatası (23503) veya UUID hatası (22P02)
+        if (error?.code === '23503' || error?.code === '22P02') {
+           // Tedarikçi verisi senkronizasyon hatası durumunda kullanıcıyı bilgilendir
+           // Ama sessizce hata kaydı da yapabiliriz
+        }
       }
     }
   };
 
   const addTransferBelow = async (id: string) => {
     try {
-      console.log('🔍 Satır altına transfer ekleniyor, id:', id);
       const realIndex = transfers.findIndex(t => t.id === id);
       if (realIndex === -1) return;
 
@@ -8306,16 +8366,16 @@ export default function ProjectDetailPage() {
         hotel_id: activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null,
         direction: 'arrival',
         type_label: 'Giriş',
-        date: null, // Boş tarih için null
-        time: null, // Boş saat için null
+        date: null,
+        time: null,
         route: 'Havaalanı → Otel',
         passenger_count: 1,
         transfer_type: 'private',
-        vehicle_type: null, // Boş araç tipi için null
-        supplier_id: null, // Boş tedarikçi ID için null
-        supplier_name: null, // Boş tedarikçi adı için null
+        vehicle_type: null,
+        supplier_id: null,
+        supplier_name: null,
         passengers: [''],
-        flight_code: null, // Boş uçuş kodu için null
+        flight_code: null,
         currency: 'TRY',
         cost_amount: 0,
         is_group: false,
@@ -8323,11 +8383,8 @@ export default function ProjectDetailPage() {
         sort_key: `9999-12-31 23:59`
       };
 
-      console.log('🔍 Supabase\'e gönderilecek transfer verisi:', newTransfer);
       const createdTransfer = await projectTransfersService.create(newTransfer);
-      console.log('🔍 Supabase\'den dönen transfer verisi:', createdTransfer);
 
-      // Frontend formatına çevir
       const formattedTransfer = {
         ...createdTransfer,
         direction: createdTransfer.direction,
@@ -8352,12 +8409,11 @@ export default function ProjectDetailPage() {
       };
 
       const newTransfers = [...transfers];
-      newTransfers.splice(index + 1, 0, formattedTransfer);
+      newTransfers.splice(realIndex + 1, 0, formattedTransfer);
       setTransfers(newTransfers);
 
-      // yeni satırın tarih inputuna odaklan
       setTimeout(() => {
-        const dateEl = document.getElementById(`transfer-date-${index + 1}`) as HTMLInputElement | null;
+        const dateEl = document.getElementById(`transfer-date-${formattedTransfer.id}`) as HTMLInputElement | null;
         dateEl?.focus?.();
       }, 0);
     } catch (error) {
@@ -8366,19 +8422,52 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const copyTransfer = (index: number) => {
-    const originalTransfer = transfers[index];
-    const copiedTransfer = {
-      ...originalTransfer,
-      id: `transfer-${Date.now()}`,
-      passengers: [...originalTransfer.passengers],
-      vehicleAssigned: false
-    };
+  const copyTransfer = async (id: string) => {
+    try {
+      const realIndex = transfers.findIndex(t => t.id === id);
+      if (realIndex === -1) return;
+      const originalTransfer = transfers[realIndex];
 
-    const newTransfers = [...transfers];
-    newTransfers.splice(index + 1, 0, copiedTransfer);
-    setTransfers(newTransfers);
-    // localStorage kaldırıldı - sadece Supabase kullanılıyor
+      const newTransfer = {
+        project_id: projectId,
+        hotel_id: originalTransfer.hotel_id,
+        direction: originalTransfer.direction,
+        type_label: originalTransfer.typeLabel,
+        date: originalTransfer.date ? formatDateToSupabase(originalTransfer.date) : null,
+        time: originalTransfer.time ? formatTimeToSupabase(originalTransfer.time) : null,
+        route: originalTransfer.route,
+        passenger_count: originalTransfer.passengerCount,
+        passengers: originalTransfer.passengers || [],
+        transfer_type: originalTransfer.transferType,
+        vehicle_type: originalTransfer.vehicleType,
+        supplier_id: originalTransfer.supplierId,
+        supplier_name: originalTransfer.supplierName,
+        flight_code: originalTransfer.flightCode,
+        currency: originalTransfer.currency,
+        cost_amount: originalTransfer.costAmount,
+        is_group: false,
+        vehicle_assigned: false,
+        sort_key: `${originalTransfer.date ? formatDateToSupabase(originalTransfer.date) : '9999-12-31'} ${originalTransfer.time || '23:59'}`
+      };
+
+      const createdTransfer = await projectTransfersService.create(newTransfer);
+      const formattedTransfer = mapTransferFromSupabase(createdTransfer);
+
+      const newTransfers = [...transfers];
+      newTransfers.splice(realIndex + 1, 0, formattedTransfer);
+      setTransfers(newTransfers);
+    } catch (error: any) {
+      console.error('🔍 Transfer kopyalama hatası:', error);
+      setConfirmModal({
+        open: true,
+        title: 'Hata',
+        message: `Transfer kopyalanırken hata oluştu: ${error.message}`,
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'danger',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
+    }
   };
 
   const deleteTransfer = useCallback(async (id: string) => {
@@ -8407,47 +8496,86 @@ export default function ProjectDetailPage() {
       setSelectedTransfers(prev => prev.filter(tid => tid !== id));
     } catch (error) {
       console.error('Transfer silme hatası:', error);
-      alert('Transfer silinirken hata oluştu.');
+      setConfirmModal({
+        open: true,
+        title: 'Hata',
+        message: 'Transfer silinirken hata oluştu.',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'danger',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
     }
   }, [transfers]);
 
-  const openVehicleAssignmentModal = async (index: number) => {
-    const transfer = transfers[index];
+  const openVehicleAssignmentModal = async (id: string) => {
+    const realIndex = transfers.findIndex(t => t.id === id);
+    if (realIndex === -1) return;
+    const transfer = transfers[realIndex];
 
-    // Araç tipi ve tedarikçi kontrolü
     if (!transfer.vehicleType || !transfer.supplierName) {
-      alert('Araç tipi ve tedarikçi seçimi zorunludur!');
+      setConfirmModal({
+        open: true,
+        title: 'Eksik Bilgi',
+        message: 'Araç tipi ve tedarikçi seçimi zorunludur!',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'info',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
       return;
     }
 
-    try {
-      // Supabase'e araç atamasını kaydet
-      const updateData = {
-        vehicle_assigned: true,
-        vehicle_type: transfer.vehicleType,
-        supplier_id: transfer.supplierId,
-        supplier_name: transfer.supplierName
-      };
+    setConfirmModal({
+      open: true,
+      title: 'Araç Ataması Onayı',
+      message: `${transfer.supplierName} tedarikçisinden ${getVehicleTypeName(transfer.vehicleType)} araç atamasını onaylıyor musunuz?`,
+      onConfirm: async () => {
+        try {
+          const updateData = {
+            vehicle_assigned: true,
+            vehicle_type: transfer.vehicleType,
+            supplier_id: transfer.supplierId,
+            supplier_name: transfer.supplierName
+          };
 
-      await projectTransfersService.update(transfer.id, updateData);
+          await projectTransfersService.update(transfer.id, updateData);
 
-      // Frontend state'ini güncelle
-      const newTransfers = [...transfers];
-      newTransfers[index] = {
-        ...newTransfers[index],
-        isEditing: false,
-        vehicleAssigned: true
-      };
-      setTransfers(newTransfers);
+          const newTransfers = [...transfers];
+          const updatedIndex = newTransfers.findIndex(t => t.id === id);
+          if (updatedIndex !== -1) {
+            newTransfers[updatedIndex] = {
+              ...newTransfers[updatedIndex],
+              isEditing: false,
+              vehicleAssigned: true
+            };
+            setTransfers(newTransfers);
+          }
 
-      // Checkbox seçimini kapat
-      setSelectedTransfers(selectedTransfers.filter(id => id !== transfer.id));
-
-      alert('Araç ataması tamamlandı!');
-    } catch (error) {
-      console.error('Araç ataması kaydetme hatası:', error);
-      alert('Araç ataması kaydedilirken hata oluştu.');
-    }
+          setSelectedTransfers(prev => prev.filter(tid => tid !== id));
+          setConfirmModal({
+            open: true,
+            title: 'Başarılı',
+            message: 'Araç ataması tamamlandı!',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+            type: 'success',
+            showCancel: false,
+            confirmText: 'Tamam'
+          });
+        } catch (error) {
+          console.error('Araç ataması kaydetme hatası:', error);
+          setConfirmModal({
+            open: true,
+            title: 'Hata',
+            message: 'Araç ataması kaydedilirken hata oluştu.',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+            type: 'danger',
+            showCancel: false,
+            confirmText: 'Tamam'
+          });
+        }
+      }
+    });
   };
   const openBulkVehicleAssignmentModal = () => {
     setCurrentTransferIndex(null);
@@ -8462,7 +8590,15 @@ export default function ProjectDetailPage() {
 
     if (!Array.isArray(accommodationItems) || accommodationItems.length === 0) {
       console.log('🔍 Konaklama verisi bulunamadı');
-      alert('Konaklama verisi bulunamadı.');
+      setConfirmModal({
+        open: true,
+        title: 'Bilgi',
+        message: 'Konaklama verisi bulunamadı.',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'info',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
       return;
     }
 
@@ -8485,7 +8621,15 @@ export default function ProjectDetailPage() {
           });
 
       if (itemsToProcess.length === 0) {
-        alert('Bu otel için konaklama verisi bulunamadı.');
+        setConfirmModal({
+          open: true,
+          title: 'Bilgi',
+          message: 'Bu otel için konaklama verisi bulunamadı.',
+          onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+          type: 'info',
+          showCancel: false,
+          confirmText: 'Tamam'
+        });
         return;
       }
 
@@ -8522,11 +8666,27 @@ export default function ProjectDetailPage() {
       const merged = sortTransfers([...transfers, ...formattedTransfers]);
       setTransfers(merged);
       setShowTransferTimingModal(false);
-      alert(`${createdTransfers.length} transfer oluşturuldu.`);
+      setConfirmModal({
+        open: true,
+        title: 'Başarılı',
+        message: `${createdTransfers.length} transfer oluşturuldu.`,
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'success',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
       setActiveTab('transfer-tur');
     } catch (error) {
       console.error('Konaklama transfer oluşturma hatası:', error);
-      alert('Transferler oluşturulurken hata oluştu.');
+      setConfirmModal({
+        open: true,
+        title: 'Hata',
+        message: 'Transferler oluşturulurken hata oluştu.',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'danger',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
     }
   };
   // Tüm transferlere flightCode alanı ekle
@@ -8547,18 +8707,26 @@ export default function ProjectDetailPage() {
   };
 
   // Grup detaylarını aç/kapat
-  const toggleGroupDetails = (index: number) => {
+  const toggleGroupDetails = (id: string) => {
     const newExpandedGroups = new Set(expandedGroups);
-    if (newExpandedGroups.has(index)) {
-      newExpandedGroups.delete(index);
+    if (newExpandedGroups.has(id)) {
+      newExpandedGroups.delete(id);
     } else {
-      newExpandedGroups.add(index);
+      newExpandedGroups.add(id);
     }
     setExpandedGroups(newExpandedGroups);
   };
   const groupSelectedTransfers = async () => {
     if (selectedTransfers.length < 2) {
-      alert('En az 2 transfer seçmelisiniz!');
+      setConfirmModal({
+        open: true,
+        title: 'Uyarı',
+        message: 'En az 2 transfer seçmelisiniz!',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'info',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
       return;
     }
 
@@ -8571,7 +8739,15 @@ export default function ProjectDetailPage() {
       // Araç ataması yapılmış transferleri hariç tut
       const unassignedTransfers = selectedTransferObjects.filter(t => !t.vehicleAssigned);
       if (unassignedTransfers.length !== selectedTransferObjects.length) {
-        alert('Araç ataması yapılmış transferler gruplamaya dahil edilemez!');
+        setConfirmModal({
+          open: true,
+          title: 'Uyarı',
+          message: 'Araç ataması yapılmış transferler gruplamaya dahil edilemez!',
+          onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+          type: 'info',
+          showCancel: false,
+          confirmText: 'Tamam'
+        });
         return;
       }
 
@@ -8581,15 +8757,57 @@ export default function ProjectDetailPage() {
 
       // Farklı tarihlerdeki transferleri gruplamaya izin verme
       if (dates.length > 1) {
-        alert('Farklı tarihlerdeki transferleri gruplayamazsınız!');
+        setConfirmModal({
+          open: true,
+          title: 'Uyarı',
+          message: 'Farklı tarihlerdeki transferleri gruplayamazsınız!',
+          onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+          type: 'info',
+          showCancel: false,
+          confirmText: 'Tamam'
+        });
         return;
       }
 
       // Gidiş ve dönüş transferlerini gruplamaya izin verme
       if (directions.length > 1) {
-        alert('Gidiş ve dönüş transferlerini gruplayamazsınız!');
+        setConfirmModal({
+          open: true,
+          title: 'Uyarı',
+          message: 'Gidiş ve dönüş transferlerini gruplayamazsınız!',
+          onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+          type: 'info',
+          showCancel: false,
+          confirmText: 'Tamam'
+        });
         return;
       }
+
+      // İlk transferi referans al
+      const firstTransfer = selectedTransferObjects[0];
+      const allPassengers = selectedTransferObjects.flatMap(t => t.passengers);
+
+      // Uçuş kodlarını topla ve en geç saatteki uçuş kodunu seç
+      const transfersWithFlightCode = selectedTransferObjects.filter(t => t.flightCode && t.flightCode.trim() !== '');
+      let groupFlightCode = '';
+      let groupTime = firstTransfer.time;
+
+      if (transfersWithFlightCode.length === 1) {
+        groupFlightCode = transfersWithFlightCode[0].flightCode;
+        groupTime = transfersWithFlightCode[0].time;
+      } else if (transfersWithFlightCode.length > 1) {
+        const sortedByTime = transfersWithFlightCode.sort((a, b) => b.time.localeCompare(a.time));
+        groupFlightCode = sortedByTime[0].flightCode;
+        groupTime = sortedByTime[0].time;
+      } else {
+        const sortedByTime = [...selectedTransferObjects].sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+        groupTime = sortedByTime[0]?.time || '00:00';
+      }
+
+      // Ara transfer kontrolü ve grup etiketi belirleme
+      const isIntermediateGroup = selectedTransferObjects.some(t => t.typeLabel === 'Ara Transfer');
+      const groupTypeLabel = isIntermediateGroup ? 'Grup Ara' :
+        (firstTransfer.direction === 'arrival' ? 'Grup Giriş' : 'Grup Çıkış');
 
       // Uçuş saatleri arasında yarım saatten fazla fark varsa uyarı
       const times = selectedTransferObjects.map(t => t.time).filter(t => t);
@@ -8607,48 +8825,36 @@ export default function ProjectDetailPage() {
           const minutes = timeDifference % 60;
           const timeDiffText = hours > 0 ? `${hours} saat ${minutes} dakika` : `${minutes} dakika`;
 
-          const shouldGroup = confirm(
-            `Uyarı: Seçili transferler arasında ${timeDiffText} saat farkı var.\n\n` +
-            `Bu transferleri gruplamak istiyor musunuz?\n\n` +
-            `İptal: Gruplamayı iptal et\n` +
-            `Tamam: Yine de grupla`
-          );
-
-          if (!shouldGroup) {
-            return;
-          }
+          setConfirmModal({
+            open: true,
+            title: 'Zaman Farkı Uyarısı',
+            message: `Seçili transferler arasında ${timeDiffText} saat farkı var. Yine de gruplamak istiyor musunuz?`,
+            onConfirm: async () => {
+              setConfirmModal(prev => ({ ...prev, open: false }));
+              await executeGrouping(selectedTransferObjects, allPassengers, groupFlightCode, groupTime, groupTypeLabel);
+            }
+          });
+          return;
         }
       }
 
-      // İlk transferi referans al
-      const firstTransfer = selectedTransferObjects[0];
-      const allPassengers = selectedTransferObjects.flatMap(t => t.passengers);
+      await executeGrouping(selectedTransferObjects, allPassengers, groupFlightCode, groupTime, groupTypeLabel);
+    } catch (error) {
+      console.error('🔍 Grup oluşturma hatası:', error);
+      setConfirmModal({
+        open: true,
+        title: 'Hata',
+        message: 'Transferler gruplanırken hata oluştu.',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'danger',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
+    }
+  };
 
-      // Uçuş kodlarını topla ve en geç saatteki uçuş kodunu seç
-      const transfersWithFlightCode = selectedTransferObjects.filter(t => t.flightCode && t.flightCode.trim() !== '');
-      let groupFlightCode = '';
-      let groupTime = firstTransfer.time;
-
-      if (transfersWithFlightCode.length === 1) {
-        // 1 uçuş kodu varsa onu kullan
-        groupFlightCode = transfersWithFlightCode[0].flightCode;
-        groupTime = transfersWithFlightCode[0].time;
-      } else if (transfersWithFlightCode.length > 1) {
-        // Birden çok uçuş kodu varsa en geç saatteki uçuş kodunu seç
-        const sortedByTime = transfersWithFlightCode.sort((a, b) => b.time.localeCompare(a.time));
-        groupFlightCode = sortedByTime[0].flightCode;
-        groupTime = sortedByTime[0].time;
-      } else {
-        // Hiç uçuş kodu yoksa en geç saatteki transferin saatini kullan
-        const sortedByTime = selectedTransferObjects.sort((a, b) => b.time.localeCompare(b.time));
-        groupTime = sortedByTime[0].time;
-      }
-
-      // Ara transfer kontrolü ve grup etiketi belirleme
-      const isIntermediateGroup = selectedTransferObjects.some(t => t.typeLabel === 'Ara Transfer');
-      const groupTypeLabel = isIntermediateGroup ? 'Grup Ara' :
-        (firstTransfer.direction === 'arrival' ? 'Grup Giriş' : 'Grup Çıkış');
-
+  const executeGrouping = async (selectedTransferObjects: any[], allPassengers: string[], groupFlightCode: string, groupTime: string, groupTypeLabel: string) => {
+    try {
       // Seçili transferleri Supabase'den sil
       for (const transfer of selectedTransferObjects) {
         if (transfer.id && !transfer.id.startsWith('transfer-')) {
@@ -8658,14 +8864,19 @@ export default function ProjectDetailPage() {
       }
 
       // Grup transferi oluştur
+      const sameHotelId = selectedTransferObjects.every(t => t.hotel_id === selectedTransferObjects[0].hotel_id) 
+        ? selectedTransferObjects[0].hotel_id 
+        : null;
+
       const groupTransferData = {
         project_id: projectId,
-        direction: firstTransfer.direction,
+        hotel_id: sameHotelId,
+        direction: selectedTransferObjects[0].direction,
         type_label: groupTypeLabel,
-        date: firstTransfer.date ? formatDateToSupabase(firstTransfer.date) : null,
+        date: selectedTransferObjects[0].date ? formatDateToSupabase(selectedTransferObjects[0].date) : null,
         time: groupTime || null,
         flight_code: groupFlightCode || null,
-        route: firstTransfer.route || null,
+        route: selectedTransferObjects[0].route || null,
         passenger_count: allPassengers.length,
         passengers: allPassengers,
         transfer_type: 'private',
@@ -8677,15 +8888,11 @@ export default function ProjectDetailPage() {
         vehicle_assigned: false,
         is_group: true,
         group_transfers: JSON.stringify(selectedTransferObjects),
-        sort_key: `${firstTransfer.date ? formatDateToSupabase(firstTransfer.date) : '9999-12-31'} ${groupTime || '23:59'}`
+        sort_key: `${selectedTransferObjects[0].date ? formatDateToSupabase(selectedTransferObjects[0].date) : '9999-12-31'} ${groupTime || '23:59'}`
       };
 
-      console.log('🔍 Grup transferi Supabase\'e kaydediliyor:', groupTransferData);
-      console.log('🔍 Seçili transferler:', selectedTransferObjects);
-      console.log('🔍 JSON.stringify sonucu:', JSON.stringify(selectedTransferObjects));
       const createdGroupTransfer = await projectTransfersService.create(groupTransferData);
-
-      // Frontend formatına çevir
+      
       const groupTransfer = {
         ...createdGroupTransfer,
         direction: createdGroupTransfer.direction,
@@ -8710,161 +8917,119 @@ export default function ProjectDetailPage() {
         isNew: false
       };
 
-      // Seçili transferleri listeden kaldır ve grup transferini ekle
       const newTransfers = transfers.filter(t => !selectedTransfers.includes(t.id));
       const finalTransfers = sortTransfers([...newTransfers, groupTransfer]);
       setTransfers(finalTransfers);
-
-      // Gruplama sonrası checkbox'ları kapat
       setSelectedTransfers([]);
-
-      console.log('🔍 Grup oluşturma tamamlandı');
-      alert('Transferler başarıyla gruplandı!');
+      setConfirmModal({
+        open: true,
+        title: 'Başarılı',
+        message: 'Transferler başarıyla gruplandı!',
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+        type: 'success',
+        showCancel: false,
+        confirmText: 'Tamam'
+      });
     } catch (error) {
-      console.error('🔍 Grup oluşturma hatası:', error);
-      alert('Transferler gruplanırken hata oluştu.');
+      console.error('🔍 Grup oluşturma hatası (execute):', error);
+      alert('Grup oluşturulurken hata oluştu.');
     }
   };
 
-  const ungroupTransfer = async (index: number) => {
-    const groupTransfer = transfers[index];
+  const ungroupTransfer = async (id: string) => {
+    const realIndex = transfers.findIndex(t => t.id === id);
+    if (realIndex === -1) return;
+    const groupTransfer = transfers[realIndex];
     if (!groupTransfer.isGroup) return;
 
-    try {
-      console.log('🔍 Grup çözme başlatılıyor:', groupTransfer);
+    setConfirmModal({
+      open: true,
+      title: 'Grubu Çöz',
+      message: 'Bu grup transferini çözmek ve içindeki transferleri tekil hale getirmek istediğinizden emin misiniz?',
+      onConfirm: async () => {
+        try {
+          console.log('🔍 Grup çözme başlatılıyor:', groupTransfer);
 
-      // Grup transferini Supabase'den sil
-      if (groupTransfer.id && !groupTransfer.id.startsWith('group-')) {
-        await projectTransfersService.delete(groupTransfer.id);
-        console.log('🔍 Grup transferi Supabase\'den silindi');
-      }
+          if (groupTransfer.id && !groupTransfer.id.startsWith('group-')) {
+            await projectTransfersService.delete(groupTransfer.id);
+          }
 
-      // Orijinal transferleri geri yuklemeyi tercih et; yoksa fallback olarak yolculardan olustur
-      const newTransfers = [...transfers];
-      newTransfers.splice(index, 1); // Grup transferini kaldır
+          const newTransfersList = transfers.filter(t => t.id !== id);
 
-      if (groupTransfer.originalTransfers && Array.isArray(groupTransfer.originalTransfers) && groupTransfer.originalTransfers.length > 0) {
-        // Orijinal transferleri Supabase'e kaydet
-        for (const original of groupTransfer.originalTransfers) {
-          const transferData = {
-            project_id: projectId,
-            direction: original.direction,
-            type_label: original.typeLabel || (original.direction === 'arrival' ? 'Giriş' : 'Çıkış'),
-            date: original.date ? formatDateToSupabase(original.date) : null,
-            time: original.time || null,
-            flight_code: original.flightCode || null,
-            route: original.route || null,
-            passenger_count: original.passengerCount || 1,
-            passengers: original.passengers || [],
-            transfer_type: original.transferType || 'private',
-            vehicle_type: original.vehicleType || null,
-            supplier_id: original.supplierId || null,
-            supplier_name: original.supplierName || null,
-            cost_amount: original.costAmount || 0,
-            currency: original.currency || 'TRY',
-            vehicle_assigned: original.vehicleAssigned || false,
-            is_group: false,
-            group_transfers: null,
-            sort_key: `${original.date ? formatDateToSupabase(original.date) : '9999-12-31'} ${original.time || '23:59'}`
-          };
+          if (groupTransfer.originalTransfers && Array.isArray(groupTransfer.originalTransfers) && groupTransfer.originalTransfers.length > 0) {
+            for (const original of groupTransfer.originalTransfers) {
+              const transferData = {
+                project_id: projectId,
+                hotel_id: original.hotel_id || original.hotelId || null,
+                direction: original.direction,
+                type_label: original.typeLabel || (original.direction === 'arrival' ? 'Giriş' : 'Çıkış'),
+                date: original.date ? formatDateToSupabase(original.date) : null,
+                time: original.time || null,
+                flight_code: original.flightCode || null,
+                route: original.route || null,
+                passenger_count: original.passengerCount || 1,
+                passengers: original.passengers || [],
+                transfer_type: original.transferType || 'private',
+                vehicle_type: original.vehicleType || null,
+                supplier_id: original.supplierId || null,
+                supplier_name: original.supplierName || null,
+                cost_amount: original.costAmount || 0,
+                currency: original.currency || 'TRY',
+                vehicle_assigned: original.vehicleAssigned || false,
+                is_group: false,
+                group_transfers: null,
+                sort_key: `${original.date ? formatDateToSupabase(original.date) : '9999-12-31'} ${original.time || '23:59'}`
+              };
 
-          console.log('🔍 Orijinal transfer Supabase\'e kaydediliyor:', transferData);
-          const createdTransfer = await projectTransfersService.create(transferData);
+              const createdTransfer = await projectTransfersService.create(transferData);
+              newTransfersList.push(mapTransferFromSupabase(createdTransfer));
+            }
+          } else {
+            for (const passenger of groupTransfer.passengers) {
+              const transferData = {
+                project_id: projectId,
+                hotel_id: groupTransfer.hotel_id || groupTransfer.hotelId || null,
+                direction: groupTransfer.direction,
+                type_label: groupTransfer.direction === 'arrival' ? 'Giriş' : 'Çıkış',
+                date: groupTransfer.date ? formatDateToSupabase(groupTransfer.date) : null,
+                time: groupTransfer.time || null,
+                flight_code: groupTransfer.flightCode || null,
+                route: groupTransfer.route || null,
+                passenger_count: 1,
+                passengers: [passenger],
+                transfer_type: groupTransfer.transferType || 'private',
+                vehicle_type: null,
+                supplier_id: null,
+                supplier_name: null,
+                cost_amount: 0,
+                currency: 'TRY',
+                vehicle_assigned: false,
+                is_group: false,
+                group_transfers: null,
+                sort_key: `${groupTransfer.date ? formatDateToSupabase(groupTransfer.date) : '9999-12-31'} ${groupTransfer.time || '23:59'}`
+              };
 
-          // Frontend formatına çevir
-          const formattedTransfer = {
-            ...createdTransfer,
-            direction: createdTransfer.direction,
-            typeLabel: createdTransfer.type_label,
-            date: createdTransfer.date ? formatDateFromSupabase(createdTransfer.date) : createdTransfer.date,
-            time: createdTransfer.time ? formatTimeFromSupabase(createdTransfer.time) : createdTransfer.time,
-            flightCode: createdTransfer.flight_code,
-            route: createdTransfer.route,
-            passengerCount: createdTransfer.passenger_count,
-            passengers: createdTransfer.passengers || [],
-            transferType: createdTransfer.transfer_type,
-            vehicleType: createdTransfer.vehicle_type,
-            supplierId: createdTransfer.supplier_id,
-            supplierName: createdTransfer.supplier_name,
-            costAmount: createdTransfer.cost_amount,
-            currency: createdTransfer.currency,
-            vehicleAssigned: createdTransfer.vehicle_assigned,
-            isGroup: false,
-            groupTransfers: null,
-            isEditing: false,
-            isNew: false
-          };
+              const createdTransfer = await projectTransfersService.create(transferData);
+              newTransfersList.push(mapTransferFromSupabase(createdTransfer));
+            }
+          }
 
-          newTransfers.push(formattedTransfer);
-        }
-      } else {
-        // Fallback: yolcu listesinden tekil transferler olustur ve grup ucus kodunu devral
-        for (let passengerIndex = 0; passengerIndex < groupTransfer.passengers.length; passengerIndex++) {
-          const passenger = groupTransfer.passengers[passengerIndex];
-
-          const transferData = {
-            project_id: projectId,
-            direction: groupTransfer.direction,
-            type_label: groupTransfer.direction === 'arrival' ? 'Giriş' : 'Çıkış',
-            date: groupTransfer.date ? formatDateToSupabase(groupTransfer.date) : null,
-            time: groupTransfer.time || null,
-            flight_code: groupTransfer.flightCode || null,
-            route: groupTransfer.route || null,
-            passenger_count: 1,
-            passengers: [passenger],
-            transfer_type: groupTransfer.transferType || 'private',
-            vehicle_type: null,
-            supplier_id: null,
-            supplier_name: null,
-            cost_amount: 0,
-            currency: 'TRY',
-            vehicle_assigned: false,
-            is_group: false,
-            group_transfers: null,
-            sort_key: `${groupTransfer.date ? formatDateToSupabase(groupTransfer.date) : '9999-12-31'} ${groupTransfer.time || '23:59'}`
-          };
-
-          console.log('🔍 Fallback transfer Supabase\'e kaydediliyor:', transferData);
-          const createdTransfer = await projectTransfersService.create(transferData);
-
-          // Frontend formatına çevir
-          const formattedTransfer = {
-            ...createdTransfer,
-            direction: createdTransfer.direction,
-            typeLabel: createdTransfer.type_label,
-            date: createdTransfer.date ? formatDateFromSupabase(createdTransfer.date) : createdTransfer.date,
-            time: createdTransfer.time ? formatTimeFromSupabase(createdTransfer.time) : createdTransfer.time,
-            flightCode: createdTransfer.flight_code,
-            route: createdTransfer.route,
-            passengerCount: createdTransfer.passenger_count,
-            passengers: createdTransfer.passengers || [],
-            transferType: createdTransfer.transfer_type,
-            vehicleType: createdTransfer.vehicle_type,
-            supplierId: createdTransfer.supplier_id,
-            supplierName: createdTransfer.supplier_name,
-            costAmount: createdTransfer.cost_amount,
-            currency: createdTransfer.currency,
-            vehicleAssigned: createdTransfer.vehicle_assigned,
-            isGroup: false,
-            groupTransfers: null,
-            isEditing: false,
-            isNew: false
-          };
-
-          newTransfers.push(formattedTransfer);
+          setTransfers(sortTransfers(newTransfersList));
+          setConfirmModal({
+            open: true,
+            title: 'Başarılı',
+            message: 'Grup başarıyla çözüldü!',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, open: false })),
+            type: 'success',
+            showCancel: false,
+            confirmText: 'Tamam'
+          });
+        } catch (error) {
+          console.error('🔍 Grup çözme hatası:', error);
+          alert('Grup çözülürken hata oluştu.');
         }
       }
-
-      // Transferleri sırala: giriş önce, çıkış sonra, sonra tarih, saat, uçuş kodu
-      const sortedTransfers = sortTransfers(newTransfers);
-      setTransfers(sortedTransfers);
-
-      console.log('🔍 Grup çözme tamamlandı');
-      alert('Grup başarıyla çözüldü!');
-    } catch (error) {
-      console.error('🔍 Grup çözme hatası:', error);
-      alert('Grup çözülürken hata oluştu.');
-    }
+    });
   };
 
   const editTransfer = (id: string) => {
@@ -9496,7 +9661,7 @@ export default function ProjectDetailPage() {
         const groupArrivals = arrivalTransfers.filter(t => t.isGroup);
         const individualArrivals = arrivalTransfers.filter(t => !t.isGroup);
 
-        // Grup transferleri
+        // Grup transferi
         groupArrivals.forEach(transfer => {
           // Grup başlığı
           const groupRow = worksheet.addRow([
@@ -9530,7 +9695,7 @@ export default function ProjectDetailPage() {
                 originalTransfer.route || '-',
                 originalTransfer.passengerCount || 1,
                 originalTransfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
-                getVehicleTypeName(originalTransfer.vehicleType),
+                getVehicleTypeName(transfer.vehicleType || originalTransfer.vehicleType),
                 transfer.supplierName || '-',
                 (originalTransfer.passengers || []).join(', '),
                 `Detay ${index + 1}`
@@ -9598,8 +9763,61 @@ export default function ProjectDetailPage() {
         headersRow.height = 20;
         currentRow++;
 
-        // Ara verileri
-        intermediateTransfers.forEach(transfer => {
+        // Ara verileri - grup transferleri önce
+        const groupIntermediates = intermediateTransfers.filter(t => t.isGroup);
+        const individualIntermediates = intermediateTransfers.filter(t => !t.isGroup);
+
+        // Grup transferleri
+        groupIntermediates.forEach(transfer => {
+          // Grup başlığı
+          const groupRow = worksheet.addRow([
+            'Grup Ara',
+            transfer.date || '-',
+            transfer.time || '-',
+            transfer.flightCode || '-',
+            transfer.route || '-',
+            `${transfer.passengerCount || 1} ${transfer.transferType === 'private' ? 'Özel' : 'Ekonomik'}`,
+            transfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+            getVehicleTypeName(transfer.vehicleType),
+            transfer.supplierName || '-',
+            transfer.passengers.join(', '),
+            `GRUP (${transfer.originalTransfers?.length || transfer.passengerCount || 1} transfer)`
+          ]);
+
+          // Grup satırını tamamen bold yap
+          for (let i = 1; i <= 11; i++) {
+            groupRow.getCell(i).font = { bold: true };
+          }
+          currentRow++;
+
+          // Grup detayları
+          if (transfer.originalTransfers && transfer.originalTransfers.length > 0) {
+            transfer.originalTransfers.forEach((originalTransfer: any, index: number) => {
+              const detailRow = worksheet.addRow([
+                'Ara Transfer',
+                originalTransfer.date || '-',
+                originalTransfer.time || '-',
+                originalTransfer.flightCode || '-',
+                originalTransfer.route || '-',
+                originalTransfer.passengerCount || 1,
+                originalTransfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
+                getVehicleTypeName(transfer.vehicleType || originalTransfer.vehicleType),
+                transfer.supplierName || '-',
+                (originalTransfer.passengers || []).join(', '),
+                `Detay ${index + 1}`
+              ]);
+
+              // Grup detay satırları tamamen gri renk
+              for (let i = 1; i <= 11; i++) {
+                detailRow.getCell(i).font = { italic: true, color: { argb: 'FF6B7280' }, bold: false };
+              }
+              currentRow++;
+            });
+          }
+        });
+
+        // Bireysel transferler
+        individualIntermediates.forEach(transfer => {
           const dataRow = worksheet.addRow([
             transfer.typeLabel || 'Ara Transfer',
             transfer.date || '-',
@@ -9689,7 +9907,7 @@ export default function ProjectDetailPage() {
                 originalTransfer.route || '-',
                 originalTransfer.passengerCount || 1,
                 originalTransfer.transferType === 'private' ? 'Özel' : 'Ekonomik',
-                getVehicleTypeName(originalTransfer.vehicleType),
+                getVehicleTypeName(transfer.vehicleType || originalTransfer.vehicleType),
                 transfer.supplierName || '-',
                 (originalTransfer.passengers || []).join(', '),
                 `Detay ${index + 1}`
@@ -11115,9 +11333,9 @@ export default function ProjectDetailPage() {
 
   const hotelsData = (project as any)?.hotels_data || [];
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-2 transition-colors duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div>
           <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200">Proje Detayı</h1>
         </div>
@@ -11175,61 +11393,61 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Stats (özet) */}
-      <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-10 gap-1 mb-3">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Referans</p>
+      <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-10 gap-1.5 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Referans</p>
           {isEditingProject ? (
             <input
               type="text"
               value={projectFormData.reference || ''}
               onChange={(e) => handleProjectFormChange('reference', e.target.value)}
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
             />
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{project?.reference || projectId}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{project?.reference || projectId}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Başlangıç</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Başlangıç</p>
           {isEditingProject ? (
             <input
               type="date"
               value={projectFormData.start_date || ''}
               onChange={(e) => handleProjectFormChange('start_date', e.target.value)}
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
             />
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{formatDate(headerDisplayData.start_date)}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{formatDate(headerDisplayData.start_date)}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Bitiş</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Bitiş</p>
           {isEditingProject ? (
             <input
               type="date"
               value={projectFormData.end_date || ''}
               onChange={(e) => handleProjectFormChange('end_date', e.target.value)}
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
             />
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{formatDate(headerDisplayData.end_date)}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{formatDate(headerDisplayData.end_date)}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Firma Adı</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Firma Adı</p>
           {isEditingProject ? (
             <input
               type="text"
               value={projectFormData.company_name || ''}
               onChange={(e) => handleProjectFormChange('company_name', e.target.value)}
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
             />
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{project?.company_name || project?.company?.name || '-'}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">{project?.company_name || project?.company?.name || '-'}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200 relative agency-dropdown">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Acente Adı</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200 relative agency-dropdown">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Acente Adı</p>
           {isEditingProject ? (
             <div className="relative">
               <input
@@ -11242,7 +11460,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowAgencyDropdown(true)}
                 onKeyDown={handleAgencyKeyDown}
-                className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
                 placeholder="Acente ara..."
                 autoComplete="off"
               />
@@ -11263,11 +11481,11 @@ export default function ProjectDetailPage() {
               )}
             </div>
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getAgencyName(project?.agency_id) || '-'}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">{getAgencyName(project?.agency_id) || '-'}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200 relative hotel-dropdown">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Otel Adı</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200 relative hotel-dropdown">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Otel Adı</p>
           {isEditingProject ? (
             <div className="relative">
               <input
@@ -11280,7 +11498,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowHotelDropdown(true)}
                 onKeyDown={handleHotelKeyDown}
-                className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
                 placeholder="Otel ara..."
                 autoComplete="off"
               />
@@ -11301,51 +11519,64 @@ export default function ProjectDetailPage() {
               )}
             </div>
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getHotelName(headerDisplayData.hotel_id) || '-'}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">
+              {(() => {
+                const primaryHotelId = headerDisplayData.hotel_id;
+                if (!primaryHotelId) return '-';
+                
+                const tabHotel = project?.hotels_data?.find((h: any) => h.id === primaryHotelId || h.hotel_id === primaryHotelId);
+                if (tabHotel) {
+                  if (tabHotel.hotel_name) return tabHotel.hotel_name;
+                  const masterHotel = hotels?.find((mh: any) => mh.id === tabHotel.hotel_id);
+                  if (masterHotel) return masterHotel.name;
+                }
+                
+                return getHotelName(primaryHotelId) || '-';
+              })()}
+            </p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Oda | Pax</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Oda | Pax</p>
           {isEditingProject ? (
             <input
               type="text"
               value={projectFormData.room_pax || ''}
               onChange={(e) => handleProjectFormChange('room_pax', e.target.value)}
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
               placeholder="Oda | Pax"
             />
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{headerDisplayData.room_pax}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{headerDisplayData.room_pax}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Teklif Türü</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Teklif Türü</p>
           {isEditingProject ? (
             <select
               value={projectFormData.quote_type || ''}
               onChange={(e) => handleProjectFormChange('quote_type', e.target.value)}
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
             >
               <option value="">Teklif Türü Seçin</option>
               <option value="BİRİM">BİRİM</option>
               <option value="PAKET">PAKET</option>
             </select>
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{project?.quote_type || '-'}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{project?.quote_type || '-'}</p>
           )}
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200 relative user-dropdown">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Proje Sorumlusu</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200 relative user-dropdown">
+          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Proje Sorumlusu</p>
           {isEditingProject ? (
             <div className="relative">
-              {/* Seçili kullanıcıları göster */}
               <div className="flex flex-wrap gap-1 mb-1">
                 {selectedUsers.map(userId => {
                   const user = users.find(u => u.id === userId);
                   return user ? (
                     <span
                       key={userId}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-[10px] font-bold rounded-full"
                     >
                       {user.first_name} {user.last_name}
                       <button
@@ -11371,7 +11602,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowUserDropdown(true)}
                 onKeyDown={handleUserKeyDown}
-                className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
                 placeholder="Kullanıcı ara..."
                 autoComplete="off"
               />
@@ -11405,7 +11636,7 @@ export default function ProjectDetailPage() {
               )}
             </div>
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">{getProjectManagers(projectId)}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">{getProjectManagers(projectId)}</p>
           )}
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
@@ -11424,6 +11655,50 @@ export default function ProjectDetailPage() {
           ) : (
             <p className="text-xs font-semibold text-gray-900 dark:text-white">{getStatusText(project?.status || 'active')}</p>
           )}
+        </div>
+      </div>
+
+      {/* Financial Summary Cards - Dashboard Style */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-blue-500">
+          <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+            <TrendingUp size={18} />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">TOPLAM SATIŞ</p>
+            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{formatTRY(salesTotals.totalTRY)}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-red-500">
+          <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+            <TrendingDown size={18} />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">TOPLAM ALIŞ</p>
+            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{formatTRY(purchaseTotals.totalTRY)}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-purple-500">
+          <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+            <DollarSign size={18} />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">NET KAR/ZARAR</p>
+            <p className={`text-sm font-black leading-none ${(salesTotals.totalTRY - purchaseTotals.totalTRY) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              {formatTRY(salesTotals.totalTRY - purchaseTotals.totalTRY)}
+            </p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-emerald-500">
+          <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+            <Percent size={18} />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">KAR MARJI</p>
+            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">
+              {salesTotals.totalTRY > 0 ? `${(( (salesTotals.totalTRY - purchaseTotals.totalTRY) / salesTotals.totalTRY ) * 100).toFixed(2)} %` : '0.00 %'}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -11458,7 +11733,7 @@ export default function ProjectDetailPage() {
                   </button>
                   
                   {/* Action Dropdown for Hotel Tab */}
-                  {canEdit('projects') && (
+                  {canEdit(Module.PROJECTS) && (
                     <div className="relative hotel-action-menu ml-1">
                       <button
                         onClick={(e) => handleOpenHotelMenu(e, h.id)}
@@ -11478,7 +11753,7 @@ export default function ProjectDetailPage() {
             })}
             
             {/* Add Hotel Button */}
-            {canEdit('projects') && (
+            {canEdit(Module.PROJECTS) && (
               <button
                 onClick={() => setIsAddHotelModalOpen(true)}
                 title="Yeni Otel Ekle"
@@ -11492,7 +11767,7 @@ export default function ProjectDetailPage() {
 
             <button
               onClick={() => handleHotelChange('general')}
-              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[10px] ${activeHotelId === 'general'
+              className={`flex items-center px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${activeHotelId === 'general'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
@@ -11505,14 +11780,14 @@ export default function ProjectDetailPage() {
 
       {/* Tabs - Premium Style */}
       <div className="mb-4">
-        <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto shadow-sm">
+        <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1 rounded-xl border border-gray-100 dark:border-gray-700 space-x-1.5 overflow-x-auto shadow-sm no-scrollbar">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => handleTabChange(t.key)}
-              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[10px] font-black uppercase tracking-widest ${activeTab === t.key
+              className={`flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-black uppercase tracking-widest ${activeTab === t.key
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent'
                 }`}
             >
               {t.label}
@@ -13507,7 +13782,7 @@ export default function ProjectDetailPage() {
                                     <td className="px-2 py-2">
                                       <div className="flex gap-1">
                                         <button
-                                          onClick={() => handleHotelExtraEdit(index)}
+                                          onClick={() => handleHotelExtraEdit(extra.id)}
                                           className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                           title="Düzenle"
                                         >
@@ -13516,7 +13791,7 @@ export default function ProjectDetailPage() {
                                           </svg>
                                         </button>
                                         <button
-                                          onClick={() => handleHotelExtraCopy(index)}
+                                          onClick={() => handleHotelExtraCopy(extra.id)}
                                           className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                           title="Kopyala"
                                         >
@@ -13525,7 +13800,7 @@ export default function ProjectDetailPage() {
                                           </svg>
                                         </button>
                                         <button
-                                          onClick={() => handleHotelExtraDelete(index)}
+                                          onClick={() => handleHotelExtraDelete(extra.id)}
                                           className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                           title="Sil"
                                         >
@@ -13818,7 +14093,7 @@ export default function ProjectDetailPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredTransfers.flatMap((transfer) => [
+                          {filteredTransfers.flatMap((transfer, index) => [
                             <tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={(e) => handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${transfer.isEditing ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
                               <td className="px-2 py-2">
                                 {!transfer.vehicleAssigned && !transfer.isGroup && (
@@ -13898,14 +14173,14 @@ export default function ProjectDetailPage() {
                                   <input
                                     type="text"
                                     value={transfer.time}
-                                    onChange={(e) => updateTransfer(index, 'time', e.target.value)}
+                                    onChange={(e) => updateTransfer(transfer.id, 'time', e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
@@ -13920,14 +14195,14 @@ export default function ProjectDetailPage() {
                                   <input
                                     type="text"
                                     value={transfer.flightCode || ''}
-                                    onChange={(e) => updateTransfer(index, 'flightCode', e.target.value)}
+                                    onChange={(e) => updateTransfer(transfer.id, 'flightCode', e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 font-mono"
@@ -13945,14 +14220,14 @@ export default function ProjectDetailPage() {
                                   <input
                                     type="text"
                                     value={formatIntegerForDisplay(transfer.passengerCount)}
-                                    onChange={(e) => updateTransfer(index, 'passengerCount', parseInt(formatIntegerForInput(e.target.value)) || 1)}
+                                    onChange={(e) => updateTransfer(transfer.id, 'passengerCount', parseInt(formatIntegerForInput(e.target.value)) || 1)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        saveTransfer(index);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
@@ -13965,7 +14240,7 @@ export default function ProjectDetailPage() {
                               <td className="px-2 py-2">
                                 <select
                                   value={transfer.transferType}
-                                  onChange={(e) => updateTransfer(index, 'transferType', e.target.value)}
+                                  onChange={(e) => updateTransfer(transfer.id, 'transferType', e.target.value)}
                                   className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
                                 >
                                   <option value="private">Özel</option>
@@ -13975,7 +14250,7 @@ export default function ProjectDetailPage() {
                               <td className="px-2 py-2">
                                 <select
                                   value={transfer.vehicleType}
-                                  onChange={(e) => updateTransfer(index, 'vehicleType', e.target.value)}
+                                  onChange={(e) => updateTransfer(transfer.id, 'vehicleType', e.target.value)}
                                   className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
                                 >
                                   <option value="">Seçiniz</option>
@@ -13994,13 +14269,6 @@ export default function ProjectDetailPage() {
                                     placeholder="Tedarikçi Seçiniz"
                                     onMouseDown={(e) => {
                                       e.preventDefault();
-                                      // Sadece dropdown kapalıysa aç
-                                      if (!supplierDropdowns[transfer.id]?.isOpen) {
-                                        toggleSupplierDropdown(transfer.id);
-                                      }
-                                    }}
-                                    onFocus={() => {
-                                      // Sadece dropdown kapalıysa aç
                                       if (!supplierDropdowns[transfer.id]?.isOpen) {
                                         toggleSupplierDropdown(transfer.id);
                                       }
@@ -14025,9 +14293,11 @@ export default function ProjectDetailPage() {
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          updateTransfer(index, 'supplierId', '');
-                                          updateTransfer(index, 'supplierName', '');
-                                          updateTransfer(index, 'vehicleAssigned', false);
+                                          updateTransfer(transfer.id, {
+                                            supplierId: '',
+                                            supplierName: '',
+                                            vehicleAssigned: false
+                                          });
                                         }}
                                         className="p-0.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
                                         title="Tedarikçiyi Temizle"
@@ -14107,7 +14377,7 @@ export default function ProjectDetailPage() {
                                   onBlur={(e) => {
                                     const parsed = cleanInputValue(e.target.value);
                                     const safe = isNaN(parsed) ? 0 : parsed;
-                                    updateTransfer(index, 'costAmount', safe);
+                                    updateTransfer(transfer.id, 'costAmount', safe);
                                     setTransferCostInput(prev => ({ ...prev, [transfer.id]: formatNumberForDisplay(safe) }));
                                   }}
                                   onKeyDown={(e) => {
@@ -14115,7 +14385,7 @@ export default function ProjectDetailPage() {
                                       e.preventDefault();
                                       const parsed = cleanInputValue((e.target as HTMLInputElement).value);
                                       const safe = isNaN(parsed) ? 0 : parsed;
-                                      updateTransfer(index, 'costAmount', safe);
+                                      updateTransfer(transfer.id, 'costAmount', safe);
                                       setTransferCostInput(prev => ({ ...prev, [transfer.id]: formatNumberForDisplay(safe) }));
                                     } else if (e.key === 'Escape') {
                                       e.preventDefault();
@@ -14129,7 +14399,7 @@ export default function ProjectDetailPage() {
                               <td className="px-2 py-2">
                                 <select
                                   value={transfer.currency || 'TRY'}
-                                  onChange={(e) => updateTransfer(index, 'currency', e.target.value)}
+                                  onChange={(e) => updateTransfer(transfer.id, 'currency', e.target.value)}
                                   className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
                                 >
                                   <option value="TRY">TRY</option>
@@ -14143,17 +14413,17 @@ export default function ProjectDetailPage() {
                                   <input
                                     type="text"
                                     value={(transfer as any).passengersInput ?? transfer.passengers.join(', ')}
-                                    onChange={(e) => updateTransfer(index, 'passengersInput', e.target.value)}
+                                    onChange={(e) => updateTransfer(transfer.id, 'passengersInput', e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        const raw = (transfers[index] as any).passengersInput ?? '';
+                                        const raw = (transfer as any).passengersInput ?? '';
                                         const parsed = raw.split(',').map(p => p.trim()).filter(p => p);
-                                        updateTransfer(index, 'passengers', parsed);
-                                        saveTransfer(index);
+                                        updateTransfer(transfer.id, 'passengers', parsed);
+                                        saveTransfer(transfer.id);
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                        cancelTransferEdit(index);
+                                        cancelTransferEdit(transfer.id);
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 truncate whitespace-nowrap overflow-hidden"
@@ -14170,7 +14440,7 @@ export default function ProjectDetailPage() {
                                   {transfer.isEditing ? (
                                     <>
                                       <button
-                                        onClick={() => saveTransfer(index)}
+                                        onClick={() => saveTransfer(transfer.id)}
                                         className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                         title="Kaydet"
                                       >
@@ -14179,7 +14449,7 @@ export default function ProjectDetailPage() {
                                         </svg>
                                       </button>
                                       <button
-                                        onClick={() => cancelTransferEdit(index)}
+                                        onClick={() => cancelTransferEdit(transfer.id)}
                                         className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                         title="İptal"
                                       >
@@ -14195,7 +14465,7 @@ export default function ProjectDetailPage() {
                                         // Düzenleme modunda kaydet ve iptal butonları
                                         <>
                                           <button
-                                            onClick={() => saveTransfer(index)}
+                                            onClick={() => saveTransfer(transfer.id)}
                                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                             title="Kaydet"
                                           >
@@ -14204,7 +14474,7 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                           <button
-                                            onClick={() => cancelTransferEdit(index)}
+                                            onClick={() => cancelTransferEdit(transfer.id)}
                                             className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                             title="İptal"
                                           >
@@ -14218,7 +14488,7 @@ export default function ProjectDetailPage() {
                                         <>
                                           {!transfer.vehicleAssigned && (
                                             <button
-                                              onClick={() => openVehicleAssignmentModal(index)}
+                                              onClick={() => openVehicleAssignmentModal(transfer.id)}
                                               className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                               title="Araç Ata"
                                             >
@@ -14228,7 +14498,7 @@ export default function ProjectDetailPage() {
                                             </button>
                                           )}
                                           <button
-                                            onClick={() => editTransfer(index)}
+                                            onClick={() => editTransfer(transfer.id)}
                                             className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                             title="Düzenle"
                                           >
@@ -14237,7 +14507,7 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                           <button
-                                            onClick={() => ungroupTransfer(index)}
+                                            onClick={() => ungroupTransfer(transfer.id)}
                                             className="p-1 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
                                             title="Grubu Ayır"
                                           >
@@ -14253,7 +14523,7 @@ export default function ProjectDetailPage() {
                                     <>
                                       {!transfer.vehicleAssigned && (
                                         <button
-                                          onClick={() => openVehicleAssignmentModal(index)}
+                                          onClick={() => openVehicleAssignmentModal(transfer.id)}
                                           className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                           title="Araç Ata"
                                         >
@@ -14263,7 +14533,7 @@ export default function ProjectDetailPage() {
                                         </button>
                                       )}
                                       <button
-                                        onClick={() => editTransfer(index)}
+                                        onClick={() => editTransfer(transfer.id)}
                                         className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                         title="Düzenle"
                                       >
@@ -14274,7 +14544,7 @@ export default function ProjectDetailPage() {
                                       {!transfer.vehicleAssigned && (
                                         <>
                                           <button
-                                            onClick={() => addTransferBelow(index)}
+                                            onClick={() => addTransferBelow(transfer.id)}
                                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                             title="Ekle"
                                           >
@@ -14283,7 +14553,7 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                           <button
-                                            onClick={() => copyTransfer(index)}
+                                            onClick={() => copyTransfer(transfer.id)}
                                             className="p-1 rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
                                             title="Kopyala"
                                           >
@@ -14294,7 +14564,7 @@ export default function ProjectDetailPage() {
                                         </>
                                       )}
                                       <button
-                                        onClick={() => deleteTransfer(index)}
+                                        onClick={() => deleteTransfer(transfer.id)}
                                         className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                         title="Sil"
                                       >
@@ -14308,7 +14578,7 @@ export default function ProjectDetailPage() {
                                     <>
                                       {!transfer.vehicleAssigned && (
                                         <button
-                                          onClick={() => openVehicleAssignmentModal(index)}
+                                          onClick={() => openVehicleAssignmentModal(transfer.id)}
                                           className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                           title="Araç Ata"
                                         >
@@ -14318,7 +14588,7 @@ export default function ProjectDetailPage() {
                                         </button>
                                       )}
                                       <button
-                                        onClick={() => editTransfer(index)}
+                                        onClick={() => editTransfer(transfer.id)}
                                         className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                         title="Düzenle"
                                       >
@@ -14329,7 +14599,7 @@ export default function ProjectDetailPage() {
                                       {!transfer.vehicleAssigned && (
                                         <>
                                           <button
-                                            onClick={() => addTransferBelow(index)}
+                                            onClick={() => addTransferBelow(transfer.id)}
                                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                                             title="Ekle"
                                           >
@@ -14338,7 +14608,7 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                           <button
-                                            onClick={() => copyTransfer(index)}
+                                            onClick={() => copyTransfer(transfer.id)}
                                             className="p-1 rounded text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
                                             title="Kopyala"
                                           >
@@ -14347,7 +14617,7 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                           <button
-                                            onClick={() => deleteTransfer(index)}
+                                            onClick={() => deleteTransfer(transfer.id)}
                                             className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                             title="Sil"
                                           >
@@ -14362,7 +14632,7 @@ export default function ProjectDetailPage() {
                                 </div>
                               </td>
                             </tr>,
-                            transfer.isGroup && expandedGroups.has(index) && (
+                            transfer.isGroup && expandedGroups.has(transfer.id) && (
                               <tr key={`${transfer.id}-details`} className="bg-gray-50 dark:bg-gray-800/50">
                                 <td colSpan={12} className="px-4 py-3">
                                   <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
@@ -16950,48 +17220,65 @@ export default function ProjectDetailPage() {
 
       {/* Transfer Zamanlama Modal */}
       {showTransferTimingModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Transfer Zamanlaması
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Çıkış transferleri için dönüş uçak kalkış saatinden kaç saat önce planlama yapmak istiyorsunuz?
-            </p>
-            <div className="flex items-center gap-2 mb-4">
-              <input
-                type="number"
-                min="0"
-                max="23"
-                value={departureHours}
-                onChange={(e) => setDepartureHours(parseInt(e.target.value) || 0)}
-                className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center dark:bg-gray-700 dark:text-white"
-              />
-              <span className="text-sm text-gray-600 dark:text-gray-300">saat</span>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                step="15"
-                value={departureMinutes}
-                onChange={(e) => setDepartureMinutes(parseInt(e.target.value) || 0)}
-                className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center dark:bg-gray-700 dark:text-white"
-              />
-              <span className="text-sm text-gray-600 dark:text-gray-300">dakika</span>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5">
+              <h3 className="text-lg font-black text-white uppercase tracking-tight">
+                Transfer Zamanlaması
+              </h3>
+              <p className="text-blue-100 text-[11px] mt-1 font-medium">
+                Otomatik transfer planlaması için zaman aşımı süresini belirleyin.
+              </p>
             </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowTransferTimingModal(false)}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                İptal
-              </button>
-              <button
-                onClick={handleCreateTransfersWithTiming}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-              >
-                Transferleri Oluştur
-              </button>
+            
+            <div className="p-6">
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">
+                Çıkış transferleri için dönüş uçak kalkış saatinden kaç saat önce planlama yapmak istiyorsunuz?
+              </p>
+              
+              <div className="flex items-center justify-center gap-4 mb-6 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <div className="flex flex-col items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={departureHours}
+                    onChange={(e) => setDepartureHours(parseInt(e.target.value) || 0)}
+                    className="w-20 h-12 text-xl font-bold border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                  <span className="text-[10px] font-black text-gray-400 uppercase">Saat</span>
+                </div>
+                
+                <div className="text-2xl font-bold text-gray-300 dark:text-gray-600 mb-4">:</div>
+                
+                <div className="flex flex-col items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    step="5"
+                    value={departureMinutes}
+                    onChange={(e) => setDepartureMinutes(parseInt(e.target.value) || 0)}
+                    className="w-20 h-12 text-xl font-bold border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                  <span className="text-[10px] font-black text-gray-400 uppercase">Dakika</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={() => setShowTransferTimingModal(false)}
+                  className="flex-1 px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleCreateTransfersWithTiming}
+                  className="flex-1 px-4 py-3 bg-blue-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]"
+                >
+                  Transferleri Oluştur
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -17329,6 +17616,9 @@ export default function ProjectDetailPage() {
           }
           setConfirmModal(prev => ({ ...prev, open: false }));
         }}
+        type={confirmModal.type}
+        showCancel={confirmModal.showCancel}
+        confirmText={confirmModal.confirmText}
       />
 
       {/* Hotel Tab Action Menu Portal */}

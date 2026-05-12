@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { getLogosForExcel } from '@/utils/logoUtils';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import { apiRequest } from '@/lib/api';
@@ -76,11 +77,7 @@ const REPORT_GROUPS: ReportGroup[] = [
 ];
 
 const OPSIYON_DURUMU_FILTER_OPTIONS = ['1. OPSİYON', '2. OPSİYON', 'SOR-SAT'];
-const GROUP_CARD_STYLES: Record<string, string> = {
-  teklif: 'bg-blue-50/60 dark:bg-blue-950/20 border-blue-200/70 dark:border-blue-800/50',
-  proje_kar: 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-800/50',
-  sejour: 'bg-violet-50/60 dark:bg-violet-950/20 border-violet-200/70 dark:border-violet-800/50'
-};
+
 const COLUMN_LABELS: Record<string, string> = {
   teklif_no: 'TEKLIF NO',
   cin_tarihi: 'C/IN TARIHI',
@@ -94,8 +91,7 @@ const COLUMN_LABELS: Record<string, string> = {
   kalan_gun: 'KALAN GUN',
   toplam_tutar: 'TOPLAM TUTAR',
   opsiyon_tutari: 'TOPLAM TUTAR',
-  doviz_birimi: 'DOVIZ BIRIMI'
-  ,
+  doviz_birimi: 'DOVIZ BIRIMI',
   birim_satis: 'BIRIM SATIS',
   birim_maliyet: 'BIRIM MALIYET',
   adet: 'ADET',
@@ -103,8 +99,7 @@ const COLUMN_LABELS: Record<string, string> = {
   para_birimi: 'PARA BIRIMI',
   satir_toplami: 'SATIR TOPLAMI',
   kalem_otel: 'KALEM OTELI',
-  teklif_durumu: 'TEKLIF DURUMU'
-  ,
+  teklif_durumu: 'TEKLIF DURUMU',
   alt_kategori: 'ALT KATEGORI',
   proje_referans: 'PROJE REFERANS',
   referans_no: 'REFERANS NO',
@@ -119,7 +114,6 @@ const COLUMN_LABELS: Record<string, string> = {
   proje_sayisi: 'PROJE SAYISI',
   voucher_no: 'VOUCHER NO',
   voucher_sayisi: 'VOUCHER SAYISI',
-  proje_sayisi: 'PROJE SAYISI',
   yil: 'YIL',
   toplam_tl: 'TOPLAM (TL)',
   ocak: 'OCAK',
@@ -138,10 +132,11 @@ const COLUMN_LABELS: Record<string, string> = {
 
 const statusBadgeClass = (value: unknown) => {
   const normalized = String(value || '').toUpperCase();
-  if (normalized.includes('KONF')) return 'bg-green-500/20 text-green-300 border-green-500/30';
-  if (normalized.includes('IPT') || normalized.includes('İPT')) return 'bg-red-500/20 text-red-300 border-red-500/30';
-  return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+  if (normalized.includes('KONF')) return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+  if (normalized.includes('IPT') || normalized.includes('İPT')) return 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800';
+  return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
 };
+
 const formatCell = (value: unknown, columnKey?: string) => {
   if (value === null || value === undefined || value === '') return '-';
   if (columnKey === 'kar_marj_yuzde') {
@@ -191,8 +186,14 @@ export default function ReportsPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
   const [activeReportId, setActiveReportId] = useState(REPORT_GROUPS[0].reports[0].id);
   const [datePreset, setDatePreset] = useState<DatePreset>('bu_ay');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(() => {
+    const now = new Date();
+    return toLocalInputDate(new Date(now.getFullYear(), now.getMonth(), 1));
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const now = new Date();
+    return toLocalInputDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  });
   const [opsiyonDurumuFilter, setOpsiyonDurumuFilter] = useState('tum');
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearchInput, setAppliedSearchInput] = useState('');
@@ -213,8 +214,6 @@ export default function ReportsPage() {
   const dateRangeRef = useRef<HTMLDivElement | null>(null);
   const dateRangeCalendarRef = useRef<HTMLDivElement | null>(null);
 
-
-
   const activeReport = useMemo(() => {
     const all = REPORT_GROUPS.flatMap((g) => g.reports);
     return all.find((r) => r.id === activeReportId) || all[0];
@@ -222,52 +221,13 @@ export default function ReportsPage() {
 
   const columns = useMemo(() => {
     if (activeReport.id === 'opsiyon_takip') {
-      return [
-        'teklif_no',
-        'cin_tarihi',
-        'cout_tarihi',
-        'firma_adi',
-        'acente',
-        'otel',
-        'opsiyon_tarihi',
-        'opsiyon_durumu',
-        'otel_durumu',
-        'kalan_gun',
-        'toplam_tutar',
-        'doviz_birimi'
-      ];
+      return ['teklif_no', 'cin_tarihi', 'cout_tarihi', 'firma_adi', 'acente', 'otel', 'opsiyon_tarihi', 'opsiyon_durumu', 'otel_durumu', 'kalan_gun', 'toplam_tutar', 'doviz_birimi'];
     }
     if (activeReport.id === 'otel_detay_teklif') {
-      return [
-        'teklif_no',
-        'cin_tarihi',
-        'cout_tarihi',
-        'firma_adi',
-        'acente',
-        'otel',
-        'alt_kategori',
-        'adet',
-        'sefer',
-        'birim_satis',
-        'para_birimi',
-        'teklif_durumu'
-      ];
+      return ['teklif_no', 'cin_tarihi', 'cout_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'para_birimi', 'teklif_durumu'];
     }
     if (activeReport.id === 'otel_detay_proje_maliyet') {
-      return [
-        'proje_referans',
-        'organizasyon_tarihi',
-        'cikis_tarihi',
-        'firma_adi',
-        'acente',
-        'otel',
-        'alt_kategori',
-        'adet',
-        'sefer',
-        'birim_satis',
-        'birim_maliyet',
-        'para_birimi'
-      ];
+      return ['proje_referans', 'organizasyon_tarihi', 'cikis_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'birim_maliyet', 'para_birimi'];
     }
     if (activeReport.id === 'acente_kar_zarar' || activeReport.id === 'acente_marj') {
       return ['acente', 'proje_sayisi', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
@@ -276,22 +236,11 @@ export default function ReportsPage() {
       return ['otel', 'proje_sayisi', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
     }
     if (activeReport.id === 'kar_zarar_detay') {
-      return [
-        'referans_no',
-        'organizasyon_tarihi',
-        'cikis_tarihi',
-        'firma',
-        'acente',
-        'otel',
-        'durum',
-        'satis_tl',
-        'maliyet_tl',
-        'kar_zarar_tl',
-        'kar_marj_yuzde'
-      ];
+      return ['referans_no', 'organizasyon_tarihi', 'cikis_tarihi', 'firma', 'acente', 'otel', 'durum', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
     }
     return rows[0] ? Object.keys(rows[0]).filter((k) => k !== 'project_id') : [];
   }, [rows, activeReport.id]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [activeReport.id, appliedSearchInput, opsiyonDurumuFilter, otelFilterInput, startDate, endDate, sortKey, sortDirection, pageSize]);
@@ -324,7 +273,6 @@ export default function ReportsPage() {
   };
 
   useEffect(() => {
-    // Varsayılan "Bu Ay" seçimi için tarihleri ilk yüklemede otomatik doldur.
     applyPreset('bu_ay');
   }, []);
 
@@ -346,7 +294,7 @@ export default function ReportsPage() {
       const rect = dateRangeRef.current?.getBoundingClientRect();
       if (!rect) return;
       setRangeCalendarPos({
-        top: rect.bottom + 4,
+        top: rect.bottom + 8,
         left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
       });
     };
@@ -439,6 +387,148 @@ export default function ReportsPage() {
     }
   };
 
+  const handleExportExcel = async () => {
+    if (rows.length === 0) {
+      alert('Dışa aktarılacak veri bulunamadı.');
+      return;
+    }
+
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet(activeReport.title.substring(0, 31));
+
+      // 1. LOGOS & TOP BAND (Row 1)
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true); // Dark logos for dark band
+      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
+      const inchToPx = (inch: number) => Math.round(inch * 96);
+
+      const topRow = worksheet.addRow([]);
+      topRow.height = 48;
+      const colCount = columns.length;
+      const lastColLetter = String.fromCharCode(64 + colCount); // Basic A-Z mapping
+      worksheet.mergeCells(1, 1, 1, colCount);
+      
+      for (let i = 1; i <= colCount; i++) {
+        const cell = topRow.getCell(i);
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
+      }
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
+        worksheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.70) }
+        });
+      }
+
+      if (wordmarkLogoBase64) {
+        const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
+        worksheet.addImage(wordmarkId, {
+          tl: { col: Math.max(2, colCount - 2.8), row: 0.23 },
+          ext: { width: inchToPx(2.4), height: inchToPx(0.55) }
+        });
+      }
+
+      // 2. REPORT INFO (Rows 3-5)
+      worksheet.mergeCells(2, 1, 3, colCount);
+      const titleCell = worksheet.getCell(2, 1);
+      titleCell.value = activeReport.title.toUpperCase();
+      titleCell.font = { name: 'Arial Black', size: 16, color: { argb: 'FF1E3A8A' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      worksheet.mergeCells(4, 1, 4, colCount);
+      const metaCell = worksheet.getCell(4, 1);
+      metaCell.value = `Rapor Dönemi: ${formatDate(startDate)} - ${formatDate(endDate)} | Oluşturulma: ${new Date().toLocaleString('tr-TR')}`;
+      metaCell.font = { name: 'Arial', size: 10, color: { argb: 'FF64748B' }, italic: true };
+      metaCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // 3. TABLE HEADERS (Starting from Row 6)
+      const startRow = 6;
+      const headerRow = worksheet.getRow(startRow);
+      headerRow.values = columns.map(col => COLUMN_LABELS[col] || col.replace(/_/g, ' ').toUpperCase());
+      headerRow.height = 25;
+
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } }; // Darker Slate
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+
+      // 4. DATA ROWS
+      rows.forEach((row, index) => {
+        const rowData = columns.map(col => {
+          const val = row[col];
+          // Money/Number formatting
+          if (col.includes('tutar') || col.includes('satis') || col.includes('maliyet') || col.includes('tl') || col.includes('adet') || col.includes('sefer') || col.includes('proje_sayisi') || col.includes('voucher_sayisi')) {
+            return Number(val) || 0;
+          }
+          if (col === 'kar_marj_yuzde') return (Number(val) || 0) / 100;
+          return val;
+        });
+        
+        const r = worksheet.addRow(rowData);
+        r.height = 22;
+        
+        // Striped rows
+        const isEven = index % 2 === 0;
+        const rowFill = isEven ? { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF8FAFC' } } : undefined;
+
+        r.eachCell((cell, colNumber) => {
+          const colKey = columns[colNumber - 1];
+          cell.fill = rowFill || { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+          };
+          cell.alignment = { vertical: 'middle', horizontal: colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl') ? 'right' : 'left' };
+
+          if (colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl')) {
+            cell.numFmt = '#,##0.00 "₺"';
+          } else if (colKey === 'kar_marj_yuzde') {
+            cell.numFmt = '0.00%';
+          } else if (colKey.includes('adet') || colKey.includes('sefer') || colKey.includes('proje_sayisi') || colKey.includes('voucher_sayisi')) {
+            cell.numFmt = '#,##0';
+          } else if (typeof cell.value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(cell.value)) {
+            cell.value = new Date(cell.value);
+            cell.numFmt = 'dd.mm.yyyy';
+          }
+        });
+      });
+
+      // 4. COLUMN WIDTHS
+      worksheet.columns.forEach(column => {
+        let maxLen = 0;
+        column.eachCell!({ includeEmpty: true }, cell => {
+          const len = cell.value ? cell.value.toString().length : 10;
+          if (len > maxLen) maxLen = len;
+        });
+        column.width = Math.min(40, Math.max(12, maxLen + 2));
+      });
+
+      // 5. DOWNLOAD
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${activeReport.title}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('Excel export hatası:', error);
+      alert('Excel dosyası oluşturulurken hata oluştu: ' + error.message);
+    }
+  };
+
   const applySearch = () => {
     const nextSearch = searchInput.trim();
     setAppliedSearchInput(nextSearch);
@@ -454,14 +544,16 @@ export default function ReportsPage() {
     return <LoadingSpinner message="Yükleniyor..." />;
   }
 
-  // Reports görüntüleme yetkisi kontrolü
   if (!canView(Module.REPORTS)) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center transition-colors duration-200">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Raporlar sayfasına erişim için yetkiniz bulunmuyor.</p>
-          <a href="/" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors duration-300">
+        <div className="text-center max-w-md bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-6">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Erişim Engellendi</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-8">Raporlar sayfasına erişim için yetkiniz bulunmuyor. Lütfen yönetici ile iletişime geçin.</p>
+          <a href="/" className="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl transition-all duration-200 shadow-lg shadow-blue-500/20">
             Ana Sayfaya Dön
           </a>
         </div>
@@ -470,22 +562,31 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 transition-colors duration-200 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 w-full min-w-0">
-      <div className="max-w-[1600px] mx-auto space-y-3 text-sm flex-1 flex flex-col min-h-0 w-full">
-        <div
-          className="rounded-2xl border p-4 shadow-sm transition-colors duration-200 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
-        >
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Rapor Merkezi</h1>
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <div className="flex-1 p-4 lg:p-8 space-y-6 max-w-[1920px] mx-auto w-full">
+        {/* Header Section - Left Aligned */}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          </div>
+          <div className="space-y-0.5">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Rapor Merkezi</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Sistem verilerini analiz edin ve stratejik kararlar alın.</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {/* Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {REPORT_GROUPS.map((group) => (
-            <div
-              key={group.id}
-              className={`rounded-2xl border p-3 transition-colors duration-200 ${GROUP_CARD_STYLES[group.id] || 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'}`}
-            >
-              <h2 className="text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100">{group.title}</h2>
-              <div className="flex flex-wrap gap-2">
+            <div key={group.id} className="bg-white dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`w-1.5 h-6 rounded-full ${
+                  group.id === 'teklif' ? 'bg-blue-500' : 
+                  group.id === 'proje_kar' ? 'bg-emerald-500' : 'bg-indigo-500'
+                }`}></span>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{group.title}</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
                 {group.reports.map((report) => (
                   <button
                     key={report.id}
@@ -501,21 +602,16 @@ export default function ReportsPage() {
                       setSortKey('');
                       setSortDirection('asc');
                     }}
-                    style={
+                    className={`group flex items-center justify-between p-3 rounded-2xl border text-left transition-all duration-200 ${
                       activeReportId === report.id
-                        ? {
-                            backgroundColor: 'var(--color-primary, #2563eb)',
-                            borderColor: 'var(--color-primary, #2563eb)'
-                          }
-                        : {}
-                    }
-                    className={`text-xs px-2.5 py-1.5 rounded-xl border transition-all ${
-                      activeReportId === report.id
-                        ? 'text-white shadow'
-                        : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-blue-400'
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
+                        : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    {report.title}
+                    <span className="text-xs font-bold leading-tight">{report.title}</span>
+                    <svg className={`w-4 h-4 transition-transform duration-200 ${activeReportId === report.id ? 'translate-x-1' : 'group-hover:translate-x-1 opacity-50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                   </button>
                 ))}
               </div>
@@ -523,329 +619,243 @@ export default function ReportsPage() {
           ))}
         </div>
 
-        <div
-          className="rounded-2xl border p-3 shadow-sm transition-colors duration-200 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 flex flex-col flex-1 min-h-0 gap-3"
-        >
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{activeReport.title}</h3>
-            {activeReport.description ? (
-              <p className="text-xs text-gray-600 dark:text-gray-300">{activeReport.description}</p>
-            ) : null}
-            </div>
+        {/* Content Container */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col min-h-[600px]">
+          {/* Unified Controls Bar - Single Row Layout */}
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
+            <div className="flex flex-row items-center gap-4 flex-wrap lg:flex-nowrap">
+              {/* Title Area */}
+              <div className="flex items-center gap-2 shrink-0 border-r border-slate-200 dark:border-slate-700 pr-4 h-10">
+                <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </div>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight whitespace-nowrap">{activeReport.title}</h3>
+              </div>
 
-            <div
-              className="w-full rounded-2xl border p-2 transition-colors duration-200 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-            >
-              <div className="flex w-full flex-nowrap items-end gap-2">
-                <label className="text-xs text-gray-600 dark:text-gray-300 min-w-0 flex-1">
-                  Arama
+              {/* Presets */}
+              <div className="inline-flex bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+                {(['bu_ay', 'bu_yil', 'ozel'] as DatePreset[]).map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => applyPreset(preset)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                      datePreset === preset
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-100'
+                    }`}
+                  >
+                    {preset === 'bu_ay' ? 'AY' : preset === 'bu_yil' ? 'YIL' : 'ÖZEL'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              <div className="relative flex-[1.5] min-w-[140px]">
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && applySearch()}
+                  placeholder="Arama..."
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all pr-8"
+                />
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+              </div>
+
+              {/* Optional: Otel Filter */}
+              {(activeReport.id.includes('otel')) && (
+                <div className="flex-1 min-w-[120px]">
+                  <input
+                    list="report-hotels-list"
+                    value={otelFilterInput}
+                    onChange={(e) => setOtelFilterInput(e.target.value)}
+                    placeholder="Otel..."
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Optional: Opsiyon Filter */}
+              {activeReport.id === 'opsiyon_takip' && (
+                <div className="flex-1 min-w-[100px]">
+                  <select
+                    value={opsiyonDurumuFilter}
+                    onChange={(e) => setOpsiyonDurumuFilter(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none"
+                  >
+                    <option value="tum">TÜMÜ</option>
+                    {OPSIYON_DURUMU_FILTER_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {/* Dates */}
+              <div className="flex items-center gap-1 shrink-0">
+                <div className="relative" ref={dateRangeRef}>
                   <input
                     type="text"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        applySearch();
-                      }
-                    }}
-                    placeholder="Teklif no, firma... (+acente +otel) Enter"
-                    className="mt-1 w-full rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                    readOnly
+                    value={startDate ? formatDate(startDate) : ''}
+                    onClick={() => datePreset === 'ozel' && setIsDateRangeOpen(true)}
+                    placeholder="Başlangıç"
+                    className={`w-[90px] border rounded-xl px-2 py-2 text-[11px] font-bold text-center outline-none transition-all ${
+                      datePreset === 'ozel' ? 'bg-white dark:bg-slate-900 border-slate-200 cursor-pointer' : 'bg-slate-100 dark:bg-slate-800 border-transparent text-slate-500'
+                    }`}
                   />
-                </label>
-                {(activeReport.id === 'otel_detay_teklif' ||
-                  activeReport.id === 'otel_detay_proje_maliyet' ||
-                  activeReport.id === 'otel_kar_zarar' ||
-                  activeReport.id === 'otel_marj') && (
-                  <label className="text-xs text-gray-600 dark:text-gray-300 w-[170px] shrink-0">
-                    Otel
-                    <input
-                      list="report-hotels-list"
-                      value={otelFilterInput}
-                      onChange={(e) => setOtelFilterInput(e.target.value)}
-                      placeholder="Tüm oteller (ara/seç)"
-                      className="mt-1 w-full rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                    />
-                    <datalist id="report-hotels-list">
-                      {reportHotels.map((hotelName) => (
-                        <option key={hotelName} value={hotelName} />
-                      ))}
-                    </datalist>
-                  </label>
-                )}
-                {activeReport.id === 'opsiyon_takip' && (
-                  <label className="text-xs text-gray-600 dark:text-gray-300 w-[150px] shrink-0">
-                    Opsiyon Durumu
-                    <select
-                      value={opsiyonDurumuFilter}
-                      onChange={(e) => setOpsiyonDurumuFilter(e.target.value)}
-                      className="mt-1 w-full rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                    >
-                      <option value="tum">Tümü</option>
-                      {OPSIYON_DURUMU_FILTER_OPTIONS.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-                <span className="text-xs font-semibold uppercase tracking-wide mr-1 mb-2 text-gray-600 dark:text-gray-300 shrink-0">Dönem</span>
-                <div
-                  className="inline-flex shrink-0 rounded-xl border p-1 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
-                >
-                  <button
-                    onClick={() => applyPreset('bu_ay')}
-                    style={
-                      datePreset === 'bu_ay'
-                        ? { backgroundColor: 'var(--color-primary, #2563eb)' }
-                        : {}
-                    }
-                    className={`text-xs px-3 py-1.5 rounded-lg transition ${datePreset === 'bu_ay' ? 'text-white shadow' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                  >
-                    Bu Ay
-                  </button>
-                  <button
-                    onClick={() => applyPreset('bu_yil')}
-                    style={
-                      datePreset === 'bu_yil'
-                        ? { backgroundColor: 'var(--color-primary, #2563eb)' }
-                        : {}
-                    }
-                    className={`text-xs px-3 py-1.5 rounded-lg transition ${datePreset === 'bu_yil' ? 'text-white shadow' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                  >
-                    Bu Yıl
-                  </button>
-                  <button
-                    onClick={() => applyPreset('ozel')}
-                    style={
-                      datePreset === 'ozel'
-                        ? { backgroundColor: 'var(--color-primary, #2563eb)' }
-                        : {}
-                    }
-                    className={`text-xs px-3 py-1.5 rounded-lg transition ${datePreset === 'ozel' ? 'text-white shadow' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                  >
-                    Özel
-                  </button>
                 </div>
+                <span className="text-slate-400 font-bold">-</span>
+                <input
+                  type="text"
+                  readOnly
+                  value={endDate ? formatDate(endDate) : ''}
+                  onClick={() => datePreset === 'ozel' && setIsDateRangeOpen(true)}
+                  placeholder="Bitiş"
+                  className={`w-[90px] border rounded-xl px-2 py-2 text-[11px] font-bold text-center outline-none transition-all ${
+                    datePreset === 'ozel' ? 'bg-white dark:bg-slate-900 border-slate-200 cursor-pointer' : 'bg-slate-100 dark:bg-slate-800 border-transparent text-slate-500'
+                  }`}
+                />
+              </div>
 
-                {datePreset !== 'ozel' ? (
-                  <>
-                    <label className="text-xs text-gray-600 dark:text-gray-300 shrink-0">
-                      Başlangıç
-                      <input
-                        type="date"
-                        value={startDate}
-                        readOnly
-                        className="mt-1 w-[132px] rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                      />
-                    </label>
-                    <label className="text-xs text-gray-600 dark:text-gray-300 shrink-0">
-                      Bitiş
-                      <input
-                        type="date"
-                        value={endDate}
-                        readOnly
-                        className="mt-1 w-[132px] rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                      />
-                    </label>
-                  </>
-                ) : (
-                  <div className="relative shrink-0" ref={dateRangeRef}>
-                    <div className="flex items-end gap-2">
-                      <label className="text-xs text-gray-600 dark:text-gray-300 shrink-0">
-                        Başlangıç
-                        <input
-                          type="text"
-                          readOnly
-                          value={startDate ? formatDate(startDate) : ''}
-                          placeholder="Tarih seçin"
-                          onClick={() => setIsDateRangeOpen(true)}
-                          className="mt-1 h-[42px] w-[132px] rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 cursor-pointer"
-                        />
-                      </label>
-                      <label className="text-xs text-gray-600 dark:text-gray-300 shrink-0">
-                        Bitiş
-                        <input
-                          type="text"
-                          readOnly
-                          value={endDate ? formatDate(endDate) : ''}
-                          placeholder="Tarih seçin"
-                          onClick={() => setIsDateRangeOpen(true)}
-                          className="mt-1 h-[42px] w-[132px] rounded-xl border px-2 py-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 cursor-pointer"
-                        />
-                      </label>
-                    </div>
-                    {isDateRangeOpen &&
-                      typeof document !== 'undefined' &&
-                      createPortal(
-                        <div
-                          ref={dateRangeCalendarRef}
-                          className="transfer-range-datepicker-popover fixed z-[300] rounded-xl border p-2 shadow-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
-                          style={{ top: `${rangeCalendarPos.top}px`, left: `${rangeCalendarPos.left}px` }}
-                        >
-                          <DatePicker
-                            inline
-                            locale={tr}
-                            monthsShown={2}
-                            selectsRange
-                            startDate={pickerRange[0]}
-                            endDate={pickerRange[1]}
-                            onChange={(dates) => {
-                              const [a, b] = dates as [Date | null, Date | null];
-                              setPickerRange([a, b]);
-                              if (a && b) {
-                                const t0 = a.getTime();
-                                const t1 = b.getTime();
-                                const rangeStart = t0 <= t1 ? a : b;
-                                const rangeEnd = t0 <= t1 ? b : a;
-                                setStartDate(toLocalInputDate(rangeStart));
-                                setEndDate(toLocalInputDate(rangeEnd));
-                                setIsDateRangeOpen(false);
-                              }
-                            }}
-                            openToDate={pickerRange[0] || pickerRange[1] || new Date()}
-                            calendarClassName="!text-xs"
-                          />
-                        </div>,
-                        document.body
-                      )}
-                  </div>
-                )}
-
-                <button
-                  onClick={applySearch}
-                  className="text-xs px-3 py-2 rounded-xl text-white shadow h-[40px] shrink-0"
-                  style={{ backgroundColor: 'var(--color-primary, #2563eb)' }}
+              {/* Buttons */}
+              <div className="flex items-center gap-1 shrink-0 ml-auto border-l border-slate-200 dark:border-slate-700 pl-4">
+                <button onClick={() => fetchReport()} className="bg-blue-600 hover:bg-blue-700 text-white font-black py-2 px-6 rounded-xl shadow-md text-[10px] uppercase tracking-widest transition-all">SORGULA</button>
+                <button 
+                  onClick={handleExportExcel} 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 px-4 rounded-xl shadow-md text-[10px] uppercase tracking-widest transition-all flex items-center gap-2"
+                  title="Excel'e Aktar"
                 >
-                  Raporu Getir
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" /></svg>
+                  EXCEL
                 </button>
-                <button
-                  onClick={() => {
-                    setDatePreset('bu_ay');
-                    setStartDate('');
-                    setEndDate('');
-                    setSearchInput('');
-                    setAppliedSearchInput('');
-                    setOtelFilterInput('');
-                    setIsDateRangeOpen(false);
-                    setCurrentPage(1);
-                    setRows([]);
-                    setError('');
-                    applyPreset('bu_ay');
-                  }}
-                  className="text-xs px-3 py-2 rounded-xl border h-[40px] shrink-0 transition-colors duration-200 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  Temizle
+                <button onClick={() => { applyPreset('bu_ay'); setSearchInput(''); setAppliedSearchInput(''); setOtelFilterInput(''); setCurrentPage(1); }} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="overflow-auto rounded-2xl border transition-colors duration-200 border-gray-200 dark:border-gray-700 flex-1 min-h-0 w-full relative">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 shadow-sm">
+          {/* Table Area */}
+          <div className="flex-1 overflow-auto custom-scrollbar relative">
+            {loading && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-20 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-sm font-bold text-blue-600">Yükleniyor...</p>
+                </div>
+              </div>
+            )}
+
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800/80 backdrop-blur-md z-10 border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  {columns.map((c) => (
-                    <th
-                      key={c}
-                      onClick={() => handleSort(c)}
-                      className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
-                    >
-                      {COLUMN_LABELS[c] || c.replace(/_/g, ' ').toUpperCase()}
-                      {sortKey === c ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : ''}
+                  {columns.map((col) => (
+                    <th key={col} onClick={() => handleSort(col)} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none group">
+                      <div className="flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                        {COLUMN_LABELS[col] || col.replace(/_/g, ' ').toUpperCase()}
+                        <div className="flex flex-col scale-75 opacity-50">
+                          <svg className={`w-2 h-2 ${sortKey === col && sortDirection === 'asc' ? 'text-blue-500 opacity-100' : ''}`} fill="currentColor" viewBox="0 0 24 24"><path d="M12 5l-7 7h14l-7-7z"></path></svg>
+                          <svg className={`w-2 h-2 ${sortKey === col && sortDirection === 'desc' ? 'text-blue-500 opacity-100' : ''}`} fill="currentColor" viewBox="0 0 24 24"><path d="M12 19l7-7H5l7 7z"></path></svg>
+                        </div>
+                      </div>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y bg-white dark:bg-gray-900 divide-gray-200 dark:divide-gray-700">
-                {loading && (
-                  <tr>
-                    <td colSpan={Math.max(columns.length, 1)} className="px-3 py-6 text-center text-xs text-gray-600 dark:text-gray-300">
-                      Rapor hazırlanıyor...
-                    </td>
-                  </tr>
-                )}
-                {!loading && !!error && (
-                  <tr>
-                    <td colSpan={Math.max(columns.length, 1)} className="px-3 py-6 text-center text-xs text-red-300">
-                      {error}
-                    </td>
-                  </tr>
-                )}
-                {!loading &&
-                  !error &&
-                  rows.map((r, i) => (
-                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      {columns.map((c) => (
-                        <td key={`${i}-${c}`} className="px-3 py-2 text-xs whitespace-pre-line text-gray-800 dark:text-gray-100">
-                          {c.includes('durum') || c.includes('status') ? (
-                            <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${statusBadgeClass(r[c])}`}>{formatCell(r[c], c)}</span>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {rows.length > 0 ? rows.map((row, idx) => (
+                  <tr key={idx} className="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
+                    {columns.map((col) => {
+                      const cellValue = row[col];
+                      const isStatus = col.includes('durum') || col.includes('status');
+                      const isAmount = col.includes('tutar') || col.includes('satis') || col.includes('maliyet') || col.includes('tl');
+                      const isMargin = col === 'kar_marj_yuzde';
+
+                      return (
+                        <td key={`${idx}-${col}`} className="px-6 py-4 text-xs font-medium text-slate-700 dark:text-slate-300">
+                          {isStatus ? (
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass(cellValue)}`}>
+                              {formatCell(cellValue, col)}
+                            </span>
+                          ) : isMargin ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-1.5 w-12 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full ${Number(cellValue) > 15 ? 'bg-emerald-500' : Number(cellValue) > 5 ? 'bg-blue-500' : 'bg-red-500'}`}
+                                  style={{ width: `${Math.min(100, Math.max(0, Number(cellValue)))}%` }}
+                                />
+                              </div>
+                              <span className={Number(cellValue) >= 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold'}>
+                                {formatCell(cellValue, col)}
+                              </span>
+                            </div>
                           ) : (
-                            formatCell(
-                              c === 'toplam_tutar'
-                                ? (r[c] ?? r.opsiyon_tutari)
-                                : c === 'doviz_birimi'
-                                ? (r[c] ?? '-')
-                                : r[c],
-                              c
-                            )
+                            <span className={isAmount ? 'font-mono font-bold' : ''}>
+                              {formatCell(col === 'toplam_tutar' ? (cellValue ?? row.opsiyon_tutari) : col === 'doviz_birimi' ? (cellValue ?? '-') : cellValue, col)}
+                            </span>
                           )}
                         </td>
-                      ))}
-                    </tr>
-                  ))}
-                {!loading && !error && rows.length === 0 && (
+                      );
+                    })}
+                  </tr>
+                )) : !loading && (
                   <tr>
-                    <td colSpan={Math.max(columns.length, 1)} className="px-3 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
-                      Bu dönem veya arama kriterlerine uygun kayıt bulunamadı. Tarih aralığını veya filtreleri genişletmeyi deneyin.
+                    <td colSpan={columns.length} className="px-6 py-24 text-center">
+                      <div className="flex flex-col items-center gap-4 text-slate-400">
+                        <svg className="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p className="text-sm font-bold uppercase tracking-widest">Kayıt Bulunmadı</p>
+                      </div>
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-          {!loading && !error && (
-            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 px-1">
-              <span>
-                Toplam {totalCount} kayıt - Sayfa {currentPage}/{totalPages}
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs whitespace-nowrap">Sayfa Boyutu</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="h-8 w-[88px] rounded-lg border px-2 transition-colors duration-200 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                  >
-                    {[20, 50, 100, 200, 1000].map((size) => (
-                      <option key={size} value={size}>{size}</option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50"
-                >
-                  Önceki
-                </button>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50"
-                >
-                  Sonraki
-                </button>
-              </div>
+
+          {/* Pagination Footer */}
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Toplam <span className="text-slate-900 dark:text-white">{totalCount}</span> Kayıt</div>
+            <div className="flex items-center gap-1.5">
+              <button disabled={currentPage === 1 || loading} onClick={() => setCurrentPage(1)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 disabled:opacity-30 transition-all text-xs">«</button>
+              <button disabled={currentPage === 1 || loading} onClick={() => setCurrentPage(p => p - 1)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 disabled:opacity-30 transition-all text-xs">‹</button>
+              <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold">{currentPage} / {totalPages}</div>
+              <button disabled={currentPage === totalPages || loading} onClick={() => setCurrentPage(p => p + 1)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 disabled:opacity-30 transition-all text-xs">›</button>
+              <button disabled={currentPage === totalPages || loading} onClick={() => setCurrentPage(totalPages)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 disabled:opacity-30 transition-all text-xs">»</button>
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Satır</span>
+              <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold outline-none">
+                {[25, 50, 100, 250].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
+
+      <datalist id="report-hotels-list">{reportHotels.map(h => <option key={h} value={h} />)}</datalist>
+
+      {isDateRangeOpen && typeof document !== 'undefined' && createPortal(
+        <div ref={dateRangeCalendarRef} className="transfer-range-datepicker-popover fixed z-[9999] rounded-3xl border shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 p-2" style={{ top: `${rangeCalendarPos.top}px`, left: `${rangeCalendarPos.left}px` }}>
+          <DatePicker inline locale={tr} monthsShown={2} selectsRange startDate={pickerRange[0]} endDate={pickerRange[1]} onChange={(dates) => {
+            const [a, b] = dates as [Date | null, Date | null];
+            setPickerRange([a, b]);
+            if (a && b) {
+              setStartDate(toLocalInputDate(a));
+              setEndDate(toLocalInputDate(b));
+              setIsDateRangeOpen(false);
+            }
+          }} />
+        </div>,
+        document.body
+      )}
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.4); }
+      `}</style>
     </div>
   );
 }

@@ -6,6 +6,9 @@ import { rolesService, permissionsService, rolePermissionsService } from '@/lib/
 import { usePermissions, Module } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { storage } from '@/utils/safeStorage';
+import { Pencil, Trash2, Shield, Info, Plus } from 'lucide-react';
+import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Role {
   id: string;
@@ -141,6 +144,7 @@ export default function RolePermissionsPage() {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   const [moduleQuery, setModuleQuery] = useState('');
+  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -357,21 +361,20 @@ export default function RolePermissionsPage() {
   };
 
   const handleDeleteRole = async (roleId: string) => {
-    if (confirm('Bu rolü silmek istediğinizden emin misiniz?')) {
-      try {
-        await rolesService.delete(roleId);
-
-        // Reload data to get updated roles
-        await loadData();
-
-        setSuccess('Rol başarıyla silindi');
-        setTimeout(() => setSuccess(''), 3000);
-      } catch (error: any) {
-        console.error('Delete role error:', error);
-        setError('Rol silinirken hata oluştu: ' + error.message);
-      }
+    try {
+      await rolesService.delete(roleId);
+      await loadData();
+      setSuccess('Rol başarıyla silindi');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      console.error('Delete role error:', error);
+      setError('Rol silinirken hata oluştu: ' + error.message);
+    } finally {
+      setRoleToDelete(null);
     }
   };
+
+
 
   if (loading) {
     return <LoadingSpinner message="Rol ve yetkiler yükleniyor..." />;
@@ -445,10 +448,10 @@ export default function RolePermissionsPage() {
               {roles.map((role) => {
                 const active = role.id === selectedRoleEffectiveId;
                 return (
-                  <button
+                  <div
                     key={role.id}
                     onClick={() => setSelectedRoleId(role.id)}
-                    className={`w-full text-left rounded-xl border px-3 py-2 transition-all ${
+                    className={`w-full text-left rounded-xl border px-3 py-2 transition-all cursor-pointer ${
                       active
                         ? 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
                         : 'border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800'
@@ -457,30 +460,33 @@ export default function RolePermissionsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-medium text-sm text-slate-900 dark:text-white">{role.name}</div>
                       {canEdit(Module.USERS) && (
-                        <div className="flex items-center gap-2 text-xs">
-                          <span
+                        <div className="flex items-center gap-1">
+
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditRole(role);
                             }}
-                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                            className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors"
+                            title="Düzenle"
                           >
-                            Duzenle
-                          </span>
-                          <span
+                            <Pencil size={16} />
+                          </button>
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteRole(role.id);
+                              setRoleToDelete(role.id);
                             }}
-                            className="text-red-600 dark:text-red-400 hover:underline"
+                            className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                            title="Sil"
                           >
-                            Sil
-                          </span>
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       )}
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{role.description || 'Aciklama yok'}</p>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -560,102 +566,124 @@ export default function RolePermissionsPage() {
       </div>
 
       {/* Add Role Modal */}
-      {showAddRoleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Yeni Rol Ekle</h3>
-            <form onSubmit={handleAddRole}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Rol Adı
-                </label>
-                <input
-                  type="text"
-                  value={newRole.name}
-                  onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Açıklama
-                </label>
-                <textarea
-                  value={newRole.description}
-                  onChange={(e) => setNewRole({ ...newRole, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  rows={3}
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddRoleModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
-                >
-                  Ekle
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddRoleModal}
+        onClose={() => setShowAddRoleModal(false)}
+        title="Yeni Rol Ekle"
+      >
+        <form onSubmit={handleAddRole} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+              <Shield size={16} className="text-blue-500" />
+              Rol Adı
+            </label>
+            <input
+              type="text"
+              value={newRole.name}
+              onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+              placeholder="Örn: Proje Yöneticisi"
+              required
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+              <Info size={16} className="text-blue-500" />
+              Açıklama
+            </label>
+            <textarea
+              value={newRole.description}
+              onChange={(e) => setNewRole({ ...newRole, description: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+              rows={3}
+              placeholder="Rol yetkileri hakkında kısa bilgi..."
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowAddRoleModal(false)}
+              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Rolü Oluştur
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Edit Role Modal */}
-      {showEditRoleModal && editingRole && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rol Düzenle</h3>
-            <form onSubmit={handleUpdateRole}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Rol Adı
-                </label>
-                <input
-                  type="text"
-                  value={editingRole.name}
-                  onChange={(e) => setEditingRole({ ...editingRole, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Açıklama
-                </label>
-                <textarea
-                  value={editingRole.description}
-                  onChange={(e) => setEditingRole({ ...editingRole, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  rows={3}
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowEditRoleModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
-                >
-                  Güncelle
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showEditRoleModal}
+        onClose={() => setShowEditRoleModal(false)}
+        title="Rol Düzenle"
+      >
+        {editingRole && (
+          <form onSubmit={handleUpdateRole} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <Shield size={16} className="text-blue-500" />
+                Rol Adı
+              </label>
+              <input
+                type="text"
+                value={editingRole.name}
+                onChange={(e) => setEditingRole({ ...editingRole, name: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <Info size={16} className="text-blue-500" />
+                Açıklama
+              </label>
+              <textarea
+                value={editingRole.description}
+                onChange={(e) => setEditingRole({ ...editingRole, description: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowEditRoleModal(false)}
+                className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+              >
+                İptal
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+              >
+                <Pencil size={18} />
+                Güncelle
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!roleToDelete}
+        title="Rolü Sil"
+        message="Bu rolü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        onConfirm={() => roleToDelete && handleDeleteRole(roleToDelete)}
+        onCancel={() => setRoleToDelete(null)}
+        confirmText="Evet, Sil"
+        cancelText="İptal"
+        type="danger"
+      />
+
+
     </div>
   );
 } 

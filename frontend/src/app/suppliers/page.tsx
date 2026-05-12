@@ -8,6 +8,9 @@ import { formatDate } from '@/utils/formatters';
 import { suppliersService } from '@/lib/supabaseService';
 import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
+import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
+import { Building2, User, Phone, Mail, FileText, Plus, Pencil, Save, MapPin, Briefcase, CreditCard } from 'lucide-react';
 
 interface Supplier {
   id: string;
@@ -53,6 +56,7 @@ export default function SuppliersPage() {
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [supplierToDelete, setSupplierToDelete] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -475,20 +479,16 @@ export default function SuppliersPage() {
   };
 
   const handleDeleteSupplier = async (id: string) => {
-    if (!confirm('Bu tedarikçiyi silmek istediğinizden emin misiniz?')) return;
-
     try {
-      const updatedSuppliers = suppliers.filter(supplier => supplier.id !== id);
-      setSuppliers(updatedSuppliers);
-      try {
-        await suppliersService.delete(id);
-        await loadSuppliers();
-      } catch (e: any) {
-        alert(`Supabase silme hatası: ${e?.message || e}`);
-      }
+      await suppliersService.delete(id);
+      await loadSuppliers();
       setSuccess('Tedarikçi başarıyla silindi');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
+      console.error('Tedarikçi silinirken hata:', error);
       setError('Tedarikçi silinirken hata oluştu');
+    } finally {
+      setSupplierToDelete(null);
     }
   };
 
@@ -1017,7 +1017,7 @@ export default function SuppliersPage() {
                         )}
                         {canDelete(Module.SUPPLIERS) && (
                           <button
-                            onClick={() => handleDeleteSupplier(supplier.id)}
+                            onClick={() => setSupplierToDelete(supplier.id)}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
                             title="Sil"
                           >
@@ -1045,477 +1045,265 @@ export default function SuppliersPage() {
           compactRight
         />
 
-        {/* Yeni Tedarikçi Modal */}
-        {showCreateModal && (
-          <div 
-            className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-800 dark:bg-opacity-70 overflow-y-auto h-full w-full z-50"
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
+
+      {/* Add/Edit Supplier Modal */}
+      <Modal
+        isOpen={showCreateModal || showEditModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setShowEditModal(false);
+          setEditingSupplier(null);
+        }}
+        title={editingSupplier ? 'Tedarikçi Düzenle' : 'Yeni Tedarikçi Ekle'}
+        maxWidth="max-w-5xl"
+      >
+        <form onSubmit={editingSupplier ? handleUpdateSupplier : handleCreateSupplier} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Temel Bilgiler Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                <Building2 size={16} className="text-blue-500" />
+                Kurumsal Bilgiler
+              </h4>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Tedarikçi Adı *
+                  </label>
+                  <input
+                    ref={editingSupplier ? editNameInputRef : newNameInputRef}
+                    type="text"
+                    defaultValue={editingSupplier?.name || ''}
+                    required
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    placeholder="Kısa isim"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Tedarikçi Unvanı *
+                  </label>
+                  <input
+                    ref={editingSupplier ? editTitleInputRef : newTitleInputRef}
+                    type="text"
+                    defaultValue={editingSupplier?.title || ''}
+                    required
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    placeholder="Tam ticari unvan"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Hizmet Türü *
+                    </label>
+                    <select
+                      value={editingSupplier ? editingSupplier.service_type : newSupplier.service_type}
+                      onChange={(e) => editingSupplier 
+                        ? setEditingSupplier({...editingSupplier, service_type: e.target.value})
+                        : setNewSupplier({...newSupplier, service_type: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm cursor-pointer appearance-none"
+                      required
+                    >
+                      <option value="">Seçiniz</option>
+                      {serviceTypes.map(st => (
+                        <option key={st.id} value={st.name.toLowerCase()}>{st.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Vade / Ödeme Koşulu
+                    </label>
+                    <input
+                      ref={editingSupplier ? editPaymentTermsInputRef : newPaymentTermsInputRef}
+                      type="text"
+                      defaultValue={editingSupplier?.contract_info?.payment_terms || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      placeholder="Örn: 30 Gün"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Vergi No
+                    </label>
+                    <input
+                      ref={editingSupplier ? editTaxIdInputRef : newTaxIdInputRef}
+                      type="text"
+                      defaultValue={editingSupplier?.tax_id || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Vergi Dairesi
+                    </label>
+                    <input
+                      ref={editingSupplier ? editTaxOfficeInputRef : newTaxOfficeInputRef}
+                      type="text"
+                      defaultValue={editingSupplier?.tax_office || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* İletişim Bilgileri Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                <Phone size={16} className="text-blue-500" />
+                İletişim Detayları
+              </h4>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    İletişim Kişisi *
+                  </label>
+                  <input
+                    ref={editingSupplier ? editContactPersonInputRef : newContactPersonInputRef}
+                    type="text"
+                    defaultValue={editingSupplier?.contact_person || ''}
+                    required
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    placeholder="Ad Soyad"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                      <Phone size={12} /> Telefon *
+                    </label>
+                    <input
+                      ref={editingSupplier ? editPhoneInputRef : newPhoneInputRef}
+                      type="tel"
+                      defaultValue={editingSupplier?.phone || ''}
+                      required
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                      <Mail size={12} /> E-posta *
+                    </label>
+                    <input
+                      ref={editingSupplier ? editEmailInputRef : newEmailInputRef}
+                      type="email"
+                      defaultValue={editingSupplier?.email || ''}
+                      required
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <MapPin size={12} /> Adres *
+                  </label>
+                  <textarea
+                    ref={editingSupplier ? editAddressInputRef : newAddressInputRef}
+                    defaultValue={editingSupplier?.address || ''}
+                    required
+                    rows={3}
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm resize-none"
+                    placeholder="Fatura ve şirket adresi"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Muhasebe Kodları Section */}
+          <div className="space-y-4 pt-2">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <FileText size={16} className="text-blue-500" />
+              Muhasebe Bağlantı Kodları
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">TL Kodu</label>
+                <input ref={editingSupplier ? editTlCodeInputRef : newTlCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.TL || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">EUR Kodu</label>
+                <input ref={editingSupplier ? editEurCodeInputRef : newEurCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.EUR || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">USD Kodu</label>
+                <input ref={editingSupplier ? editUsdCodeInputRef : newUsdCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.USD || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">GBP Kodu</label>
+                <input ref={editingSupplier ? editGbpCodeInputRef : newGbpCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.GBP || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              id="isActiveModal"
+              type="checkbox"
+              className="w-4 h-4 text-blue-600 rounded border-slate-200 focus:ring-blue-500"
+              checked={editingSupplier ? editingSupplier.is_active : newSupplier.is_active}
+              onChange={(e) => editingSupplier 
+                ? setEditingSupplier({...editingSupplier, is_active: e.target.checked})
+                : setNewSupplier({...newSupplier, is_active: e.target.checked})}
+            />
+            <label htmlFor="isActiveModal" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Bu tedarikçi aktif olarak işaretlensin
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
                 setShowCreateModal(false);
-                setNewSupplier({
-                  name: '',
-                  title: '',
-                  service_type: '',
-                  contact_person: '',
-                  phone: '',
-                  email: '',
-                  address: '',
-                  tax_id: '',
-                  tax_office: '',
-                  accounting_link_codes: {
-                    TL: '',
-                    EUR: '',
-                    USD: '',
-                    GBP: ''
-                  },
-                  bank_info: {
-                    bank_name: '',
-                    account_number: '',
-                    iban: ''
-                  },
-                  contract_info: {
-                    contract_start: '',
-                    contract_end: '',
-                    commission_rate: 0,
-                    payment_terms: ''
-                  },
-                  is_active: true,
-                  notes: ''
-                });
-              }
-            }}
-            tabIndex={0}
-            ref={(el) => {
-              if (el) {
-                el.focus();
-              }
-            }}
-          >
-            <div className="relative top-10 mx-auto p-2 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Yeni Tedarikçi Ekle</h3>
-                <form onSubmit={handleCreateSupplier}>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Tedarikçi Adı</label>
-                      <input
-                        ref={newNameInputRef}
-                        type="text"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Tedarikçi Unvanı</label>
-                      <input
-                        ref={newTitleInputRef}
-                        type="text"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        placeholder="Örn: Transfer Şirketi, Rehber Derneği"
-                        required
-                      />
-                    </div>
-                                          <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Hizmet Türü</label>
-                        <select
-                          value={newSupplier.service_type}
-                          onChange={(e) => setNewSupplier({...newSupplier, service_type: e.target.value as any})}
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        >
-                          <option value="">Hizmet Türü Seçin</option>
-                          {serviceTypes.map(serviceType => (
-                            <option key={serviceType.id} value={serviceType.name.toLowerCase()}>
-                              {serviceType.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">İletişim Kişisi</label>
-                        <input
-                          ref={newContactPersonInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Telefon</label>
-                        <input
-                          ref={newPhoneInputRef}
-                          type="tel"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">E-posta</label>
-                      <input
-                        ref={newEmailInputRef}
-                        type="email"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Adres</label>
-                      <textarea
-                        ref={newAddressInputRef}
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        rows={2}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vergi Numarası</label>
-                        <input
-                          ref={newTaxIdInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vergi Dairesi</label>
-                        <input
-                          ref={newTaxOfficeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (TL)</label>
-                        <input
-                          ref={newTlCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.001"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (EUR)</label>
-                        <input
-                          ref={newEurCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.002"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (USD)</label>
-                        <input
-                          ref={newUsdCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.003"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (GBP)</label>
-                        <input
-                          ref={newGbpCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.004"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Ödeme Koşulları</label>
-                      <input
-                        ref={newPaymentTermsInputRef}
-                        type="text"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        placeholder="30 gün"
-                        required
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        id="isActive"
-                        name="isActive"
-                        type="checkbox"
-                        className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-blue-600"
-                        checked={newSupplier.is_active}
-                        onChange={(e) => setNewSupplier({ ...newSupplier, is_active: e.target.checked })}
-                      />
-                      <label htmlFor="isActive" className="ml-2 block text-xs text-gray-900 dark:text-gray-300">Aktif</label>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateModal(false)}
-                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 bg-white dark:bg-gray-800"
-                    >
-                      İptal
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-3 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
-                    >
-                      Kaydet
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Düzenleme Modal */}
-        {showEditModal && editingSupplier && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-800 dark:bg-opacity-70 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-2 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Tedarikçi Düzenle</h3>
-                <form onSubmit={handleUpdateSupplier}>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Tedarikçi Adı</label>
-                      <input
-                        ref={editNameInputRef}
-                        type="text"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Tedarikçi Unvanı</label>
-                      <input
-                        ref={editTitleInputRef}
-                        type="text"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        placeholder="Örn: Transfer Şirketi, Rehber Derneği"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Hizmet Türü</label>
-                      <select
-                        value={editingSupplier.service_type}
-                        onChange={(e) => setEditingSupplier({...editingSupplier, service_type: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        required
-                      >
-                        <option value="">Hizmet Türü Seçin</option>
-                        {serviceTypes.map(serviceType => (
-                          <option key={serviceType.id} value={serviceType.name.toLowerCase()}>
-                            {serviceType.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">İletişim Kişisi</label>
-                        <input
-                          ref={editContactPersonInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Telefon</label>
-                        <input
-                          ref={editPhoneInputRef}
-                          type="tel"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">E-posta</label>
-                      <input
-                        ref={editEmailInputRef}
-                        type="email"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Adres</label>
-                      <textarea
-                        ref={editAddressInputRef}
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        rows={2}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Vergi Numarası</label>
-                        <input
-                          ref={editTaxIdInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Vergi Dairesi</label>
-                        <input
-                          ref={editTaxOfficeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (TL)</label>
-                        <input
-                          ref={editTlCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.001"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (EUR)</label>
-                        <input
-                          ref={editEurCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.002"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (USD)</label>
-                        <input
-                          ref={editUsdCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.003"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Muhasebe Bağlantı Kodu (GBP)</label>
-                        <input
-                          ref={editGbpCodeInputRef}
-                          type="text"
-                          defaultValue=""
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                          placeholder="Örn: 120.01.004"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Ödeme Koşulları</label>
-                      <input
-                        ref={editPaymentTermsInputRef}
-                        type="text"
-                        defaultValue=""
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
-                        placeholder="30 gün"
-                        required
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        id="isActiveEdit"
-                        name="isActiveEdit"
-                        type="checkbox"
-                        className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-blue-600"
-                        checked={editingSupplier.is_active}
-                        onChange={(e) => setEditingSupplier({ ...editingSupplier, is_active: e.target.checked })}
-                      />
-                      <label htmlFor="isActiveEdit" className="ml-2 block text-xs text-gray-900 dark:text-gray-300">Aktif</label>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowEditModal(false);
-                        setEditingSupplier(null);
-                      }}
-                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 bg-white dark:bg-gray-800"
-                    >
-                      İptal
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-3 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
-                    >
-                      Güncelle
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Hata ve Başarı Mesajları */}
-        {error && (
-          <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-200 px-4 py-3 rounded z-50">
-            <span className="block sm:inline">{error}</span>
-            <button
-              onClick={() => setError('')}
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                setShowEditModal(false);
+                setEditingSupplier(null);
+              }}
+              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
             >
-              <span className="sr-only">Kapat</span>
-              <svg className="fill-current h-6 w-6" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <title>Kapat</title>
-                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
-              </svg>
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+            >
+              {editingSupplier ? <Pencil size={18} /> : <Plus size={18} />}
+              {editingSupplier ? 'Güncelle' : 'Tedarikçi Oluştur'}
             </button>
           </div>
-        )}
+        </form>
+      </Modal>
 
-        {success && (
-          <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200 px-4 py-3 rounded z-50">
-            <span className="block sm:inline">{success}</span>
-            <button
-              onClick={() => setSuccess('')}
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            >
-              <span className="sr-only">Kapat</span>
-              <svg className="fill-current h-6 w-6" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <title>Kapat</title>
-                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
-              </svg>
-            </button>
+      {/* Silme Onay Modal */}
+      <ConfirmModal
+        isOpen={!!supplierToDelete}
+        title="Tedarikçiyi Sil"
+        message="Bu tedarikçiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        onConfirm={() => supplierToDelete && handleDeleteSupplier(supplierToDelete)}
+        onCancel={() => setSupplierToDelete(null)}
+        type="danger"
+        confirmText="Evet, Sil"
+        cancelText="İptal"
+      />
+
+      {/* Mesaj Bildirimleri */}
+      {(success || error) && (
+        <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-[1000] border backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          success 
+            ? 'bg-green-500/90 border-green-400 text-white' 
+            : 'bg-red-500/90 border-red-400 text-white'
+        }`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${success ? 'bg-green-400/20' : 'bg-red-400/20'}`}>
+            {success ? <Save size={18} className="text-white" /> : <Building2 size={18} className="text-white" />}
           </div>
-        )}
-      </div>
+          <span className="font-bold text-sm">{success || error}</span>
+        </div>
+      )}
     </div>
+  </div>
   );
 } 

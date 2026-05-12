@@ -456,17 +456,46 @@ export const projectsService = {
       // Proje kullanıcı eşleştirmeleri + public linkleri
       supabase.from('project_users').delete().eq('project_id', id),
       supabase.from('public_links').delete().eq('project_id', id),
-
-      // Muhasebe kalemleri
-      supabase.from('invoice_items').delete().eq('project_id', id),
-      supabase.from('invoices').delete().eq('project_id', id)
     ].filter(Boolean) as Promise<any>[];
 
     const results = await Promise.allSettled(deleteTasks);
     const rejected = results.filter((res) => res.status === 'rejected') as PromiseRejectedResult[];
     if (rejected.length > 0) {
-      throw new Error(`Projeye bağlı bazı kayıtlar silinemedi (${rejected.length} hata).`);
+      console.warn(`Projeye bağlı bazı kayıtlar silinemedi (${rejected.length} hata).`);
     }
+
+    // Muhasebe kalemlerini temizle (invoices tablosunda project_id yoksa invoice_items üzerinden bul)
+    try {
+      // 1. Projeye ait tüm satış ve alış kalemlerinin ID'lerini al
+      const [salesItems, purchaseItems] = await Promise.all([
+        supabase.from('project_sales_items').select('id').eq('project_id', id),
+        supabase.from('project_purchase_items').select('id').eq('project_id', id)
+      ]);
+
+      const allProjectItemIds = [
+        ...(salesItems.data || []).map(i => i.id),
+        ...(purchaseItems.data || []).map(i => i.id)
+      ];
+
+      if (allProjectItemIds.length > 0) {
+        // 2. Bu kalemlere bağlı invoice_items kayıtlarını bul
+        const { data: relatedInvoiceItems } = await supabase
+          .from('invoice_items')
+          .select('invoice_id')
+          .in('item_id', allProjectItemIds);
+
+        const invoiceIds = Array.from(new Set((relatedInvoiceItems || []).map(ri => ri.invoice_id).filter(Boolean)));
+
+        if (invoiceIds.length > 0) {
+          // 3. Önce invoice_items, sonra invoices'ları sil
+          await supabase.from('invoice_items').delete().in('invoice_id', invoiceIds);
+          await supabase.from('invoices').delete().in('id', invoiceIds);
+        }
+      }
+    } catch (err) {
+      console.warn('Muhasebe kayıtları silinirken hata (devam ediliyor):', err);
+    }
+
 
     const { error } = await supabase
       .from('projects')
@@ -1693,6 +1722,7 @@ export class SejourService {
       const roomData = sejourData.rooms.map((room: any) => {
         const data: any = {
           sejour_id: sejour.id,
+          voucher_number: sejour.voucher_number,
           room_number: room.roomNumber || null,
           hotel_id: room.hotelId || null,
           room_type: room.roomType || null,
@@ -1764,6 +1794,7 @@ export class SejourService {
 
         const flightData: any = {
           sejour_id: sejour.id,
+          voucher_number: sejour.voucher_number,
           flight_direction: flight.type || 'departure', // 'departure' veya 'return'
           // Uçuş bilgileri
           airline: flight.airline || flight.departureAirline || null,
@@ -1830,6 +1861,7 @@ export class SejourService {
       const transferData = sejourData.transfers.map((transfer: any) => {
         const data: any = {
           sejour_id: sejour.id,
+          voucher_number: sejour.voucher_number,
           direction: transfer.direction || 'arrival', // NOT NULL constraint için her zaman ekle
           supplier_id: transfer.provider || transfer.supplierId || null,
           transfer_type: transfer.type || transfer.transferType || 'private', // NOT NULL constraint için varsayılan
@@ -1900,6 +1932,7 @@ export class SejourService {
       const serviceData = sejourData.extraServices.map((service: any) => {
         const data: any = {
           sejour_id: sejour.id,
+          voucher_number: sejour.voucher_number,
           service_type_id: service.serviceType || service.serviceTypeId || null,
           supplier_id: service.provider || service.supplierId || null,
           service_name: service.serviceName || service.service_types?.name || service.serviceTypeName || null,
@@ -1953,6 +1986,7 @@ export class SejourService {
     if (sejourData.collections && sejourData.collections.length > 0) {
       const collectionData = sejourData.collections.map((collection: any) => ({
         sejour_id: sejour.id,
+        voucher_number: sejour.voucher_number,
         collection_date: collection.date || new Date().toISOString().split('T')[0],
         amount: collection.amount || 0,
         currency: collection.currency || 'TRY',
@@ -2019,6 +2053,7 @@ export class SejourService {
 
           const data: any = {
             sejour_id: sejourId,
+            voucher_number: sejourData.voucherNumber,
             room_number: room.roomNumber,
             hotel_id: room.hotelId,
             room_type: room.roomType,
@@ -2082,6 +2117,7 @@ export class SejourService {
 
           const flightData: any = {
             sejour_id: sejourId,
+            voucher_number: sejourData.voucherNumber,
             flight_direction: flight.type || 'departure', // 'departure' veya 'return'
             // Uçuş bilgileri
             airline: flight.airline || flight.departureAirline || null,
@@ -2150,6 +2186,7 @@ export class SejourService {
         const transferData = sejourData.transfers.map((transfer: any) => {
           const data: any = {
             sejour_id: sejourId,
+            voucher_number: sejourData.voucherNumber,
             direction: transfer.direction || 'arrival', // NOT NULL constraint için her zaman ekle
             supplier_id: transfer.provider || transfer.supplierId || null,
             transfer_type: transfer.type || transfer.transferType || 'private', // NOT NULL constraint için varsayılan
@@ -2218,6 +2255,7 @@ export class SejourService {
         const serviceData = sejourData.extraServices.map((service: any) => {
           const data: any = {
             sejour_id: sejourId,
+            voucher_number: sejourData.voucherNumber,
             service_type_id: service.serviceType || service.serviceTypeId || null,
             supplier_id: service.provider || service.supplierId || null,
             service_name: service.serviceName || null,
@@ -2269,6 +2307,7 @@ export class SejourService {
       if (sejourData.collections.length > 0) {
         const collectionData = sejourData.collections.map((collection: any) => ({
           sejour_id: sejourId,
+          voucher_number: sejourData.voucherNumber,
           collection_date: collection.date || new Date().toISOString().split('T')[0],
           amount: collection.amount || 0,
           currency: collection.currency || 'TRY',
@@ -2312,16 +2351,25 @@ export class SejourService {
     ];
 
     // Muhasebe bağlı kalemleri temizle
-    const invoiceDeletes: Promise<any>[] = [
-      supabase.from('invoice_items').delete().eq('project_id', sejourId),
-      supabase.from('invoices').delete().eq('project_id', sejourId)
-    ];
     if (allItemIds.length > 0) {
-      invoiceDeletes.push(supabase.from('invoice_items').delete().in('item_id', allItemIds));
-    }
-    const invoiceDeleteResults = await Promise.all(invoiceDeletes);
-    for (const result of invoiceDeleteResults) {
-      if (result.error) throw result.error;
+      try {
+        const { data: relatedInvoiceItems } = await supabase
+          .from('invoice_items')
+          .select('invoice_id')
+          .in('item_id', allItemIds);
+
+        const invoiceIds = Array.from(new Set((relatedInvoiceItems || []).map(ri => ri.invoice_id).filter(Boolean)));
+
+        if (invoiceIds.length > 0) {
+          await supabase.from('invoice_items').delete().in('invoice_id', invoiceIds);
+          await supabase.from('invoices').delete().in('id', invoiceIds);
+        }
+        
+        // Kalan item_id bazlı kayıtları da temizle (Eğer varsa)
+        await supabase.from('invoice_items').delete().in('item_id', allItemIds);
+      } catch (err) {
+        console.warn('Sejour muhasebe kayıtları silinirken hata:', err);
+      }
     }
 
     // Sejour alt kayıtları
@@ -3730,6 +3778,7 @@ export const publicLinksService = {
       
       return {
         project_id: project.id,
+        reference: project.reference,
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         description: withTabTag(item.description || '', tabUUID),
@@ -3751,6 +3800,7 @@ export const publicLinksService = {
       
       return {
         project_id: project.id,
+        reference: project.reference,
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         description: withTabTag(item.description || '', tabUUID),

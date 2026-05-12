@@ -410,6 +410,7 @@ export default function QuoteEditPage() {
 
       const payload = {
         project_id: created.id,
+        reference: q.reference,
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         // Gölge tag'i açıklamaya gizle
@@ -436,6 +437,7 @@ export default function QuoteEditPage() {
 
       const payload = {
         project_id: created.id,
+        reference: q.reference,
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         description: tabUUID ? `${item.description || ''} [T:${tabUUID}]` : (item.description || ''),
@@ -504,6 +506,7 @@ export default function QuoteEditPage() {
 
         await quoteItemsService.create({
           quote_id: quoteId,
+          reference: formData.reference,
           main_category: item.main_category || '',
           sub_category: item.sub_category || '',
           unit_quantity: Number(item.unit_quantity || 0),

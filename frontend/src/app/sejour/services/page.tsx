@@ -104,6 +104,7 @@ interface DateRangeFieldProps {
   endValue: string;
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
+  onApply?: (start?: string, end?: string) => void;
 }
 
 const toDate = (value: string) => {
@@ -122,7 +123,14 @@ const parseTypedDate = (value: string): string | null => {
   return formatDateFns(parsed, 'yyyy-MM-dd');
 };
 
-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange }: DateRangeFieldProps) {
+function DateRangeField({ 
+  label, 
+  startValue, 
+  endValue, 
+  onStartChange, 
+  onEndChange,
+  onApply 
+}: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startDate = toDate(startValue);
   const endDate = toDate(endValue);
@@ -147,16 +155,56 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  const handleApply = () => {
+    if (onApply) {
+      const s = startText.length === 10 ? parseTypedDate(startText) || '' : '';
+      const eVal = endText.length === 10 ? parseTypedDate(endText) || '' : '';
+      onApply(s, eVal);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleApply();
+      setIsCalendarOpen(false);
+    }
+  };
+
   const handleStartTextChange = (value: string) => {
     setStartText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onStartChange(parsed);
+    if (value === '') {
+      onStartChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10 && onApply) {
+          const eVal = parseTypedDate(endText) || '';
+          onApply(parsed, eVal);
+        }
+      }
+    }
   };
 
   const handleEndTextChange = (value: string) => {
     setEndText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onEndChange(parsed);
+    if (value === '') {
+      onEndChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10 && onApply) {
+          const sVal = parseTypedDate(startText) || '';
+          onApply(sVal, parsed);
+        }
+      }
+    }
   };
 
   return (
@@ -166,6 +214,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
         <input
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={() => setIsCalendarOpen(true)}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -173,6 +222,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
         <input
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={() => setIsCalendarOpen(true)}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -189,9 +239,14 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
             endDate={endDate}
             onChange={(dates) => {
               const [start, end] = dates as [Date | null, Date | null];
-              onStartChange(toIsoDate(start));
-              onEndChange(toIsoDate(end));
-              if (start && end) setIsCalendarOpen(false);
+              const sIso = toIsoDate(start);
+              const eIso = toIsoDate(end);
+              onStartChange(sIso);
+              onEndChange(eIso);
+              if (start && end) {
+                setIsCalendarOpen(false);
+                if (onApply) onApply(sIso, eIso);
+              }
             }}
             openToDate={startDate || endDate || new Date()}
           />
@@ -273,10 +328,11 @@ export default function SejourServicesPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Satış tabı için filtreler
-  const [salesFromDate, setSalesFromDate] = useState<string>('');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [salesFromDate, setSalesFromDate] = useState<string>(todayStr);
   const [salesToDate, setSalesToDate] = useState<string>('');
-  const [salesDraftFromDate, setSalesDraftFromDate] = useState<string>('');
-  const [salesDraftToDate, setSalesDraftToDate] = useState<string>('');
+  const [appliedSalesFromDate, setAppliedSalesFromDate] = useState<string>(todayStr);
+  const [appliedSalesToDate, setAppliedSalesToDate] = useState<string>('');
   const [salesVoucherTokens, setSalesVoucherTokens] = useState<string[]>([]);
   const [salesVoucherInput, setSalesVoucherInput] = useState<string>('');
   const [salesCustomerTokens, setSalesCustomerTokens] = useState<string[]>([]);
@@ -287,10 +343,10 @@ export default function SejourServicesPage() {
   const [salesGuestInput, setSalesGuestInput] = useState<string>('');
 
   // Alış tabı için filtreler
-  const [costFromDate, setCostFromDate] = useState<string>('');
+  const [costFromDate, setCostFromDate] = useState<string>(todayStr);
   const [costToDate, setCostToDate] = useState<string>('');
-  const [costDraftFromDate, setCostDraftFromDate] = useState<string>('');
-  const [costDraftToDate, setCostDraftToDate] = useState<string>('');
+  const [appliedCostFromDate, setAppliedCostFromDate] = useState<string>(todayStr);
+  const [appliedCostToDate, setAppliedCostToDate] = useState<string>('');
   const [costVoucherTokens, setCostVoucherTokens] = useState<string[]>([]);
   const [costVoucherInput, setCostVoucherInput] = useState<string>('');
   const [costCustomerTokens, setCostCustomerTokens] = useState<string[]>([]);
@@ -315,15 +371,26 @@ export default function SejourServicesPage() {
   const queryString = useMemo(() => {
     const q = new URLSearchParams();
     const currentVoucherQuery = activeTab === 'sales' ? salesVoucherTokens.join(' ') : costVoucherTokens.join(' ');
-    const currentFromDate = activeTab === 'sales' ? salesFromDate : costFromDate;
-    const currentToDate = activeTab === 'sales' ? salesToDate : costToDate;
+    const currentCustomerQuery = activeTab === 'sales' ? salesCustomerTokens.join(' ') : costCustomerTokens.join(' ');
+    const currentHotelQuery = activeTab === 'sales' ? salesHotelTokens.join(' ') : costHotelTokens.join(' ');
+    const currentGuestQuery = activeTab === 'sales' ? salesGuestTokens.join(' ') : costGuestTokens.join(' ');
+
+    const currentFromDate = activeTab === 'sales' ? appliedSalesFromDate : appliedCostFromDate;
+    const currentToDate = activeTab === 'sales' ? appliedSalesToDate : appliedCostToDate;
 
     if (currentVoucherQuery) q.set('voucher', currentVoucherQuery);
+    if (currentCustomerQuery) q.set('customer', currentCustomerQuery);
+    if (currentHotelQuery) q.set('hotel', currentHotelQuery);
+    if (currentGuestQuery) q.set('guest', currentGuestQuery);
     if (currentFromDate) q.set('from', currentFromDate);
     if (currentToDate) q.set('to', currentToDate);
     q.set('_t', String(Date.now())); // cache-bust
     return q.toString();
-  }, [salesVoucherTokens, salesFromDate, salesToDate, costVoucherTokens, costFromDate, costToDate, activeTab]);
+  }, [
+    salesVoucherTokens, salesCustomerTokens, salesHotelTokens, salesGuestTokens,
+    costVoucherTokens, costCustomerTokens, costHotelTokens, costGuestTokens,
+    appliedSalesFromDate, appliedSalesToDate, appliedCostFromDate, appliedCostToDate, activeTab
+  ]);
 
   // Sıralama fonksiyonu
   const handleSort = (key: string) => {
@@ -364,25 +431,23 @@ export default function SejourServicesPage() {
   }, [costRows, sortConfig]);
   useEffect(() => {
     setPage(1);
-  }, [activeTab, salesFromDate, salesToDate, costFromDate, costToDate, sortConfig, salesVoucherTokens, costVoucherTokens, salesCustomerTokens, costCustomerTokens, salesHotelTokens, costHotelTokens, salesGuestTokens, costGuestTokens]);
+  }, [
+    activeTab, appliedSalesFromDate, appliedSalesToDate, appliedCostFromDate, appliedCostToDate, sortConfig,
+    salesVoucherTokens, salesCustomerTokens, salesHotelTokens, salesGuestTokens,
+    costVoucherTokens, costCustomerTokens, costHotelTokens, costGuestTokens
+  ]);
 
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(salesDraftFromDate) && Boolean(salesDraftToDate)) || (!salesDraftFromDate && !salesDraftToDate);
-    if (!rangeCompleteOrEmpty) return;
-    setSalesFromDate(salesDraftFromDate);
-    setSalesToDate(salesDraftToDate);
+  const handleApplySalesDates = (start?: string, end?: string) => {
+    setAppliedSalesFromDate(start !== undefined ? start : salesFromDate);
+    setAppliedSalesToDate(end !== undefined ? end : salesToDate);
     setPage(1);
-  }, [salesDraftFromDate, salesDraftToDate]);
+  };
 
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(costDraftFromDate) && Boolean(costDraftToDate)) || (!costDraftFromDate && !costDraftToDate);
-    if (!rangeCompleteOrEmpty) return;
-    setCostFromDate(costDraftFromDate);
-    setCostToDate(costDraftToDate);
+  const handleApplyCostDates = (start?: string, end?: string) => {
+    setAppliedCostFromDate(start !== undefined ? start : costFromDate);
+    setAppliedCostToDate(end !== undefined ? end : costToDate);
     setPage(1);
-  }, [costDraftFromDate, costDraftToDate]);
+  };
 
   const load = async () => {
     try {
@@ -390,8 +455,8 @@ export default function SejourServicesPage() {
       setError(null);
 
       const currentVoucherQuery = activeTab === 'sales' ? salesVoucherTokens.join(' ') : costVoucherTokens.join(' ');
-      const currentFromDate = activeTab === 'sales' ? salesFromDate : costFromDate;
-      const currentToDate = activeTab === 'sales' ? salesToDate : costToDate;
+      const currentFromDate = activeTab === 'sales' ? appliedSalesFromDate : appliedCostFromDate;
+      const currentToDate = activeTab === 'sales' ? appliedSalesToDate : appliedCostToDate;
       const response = await SejourService.getSejoursPage({
         page,
         pageSize,
@@ -469,34 +534,22 @@ export default function SejourServicesPage() {
       // Filtreleme uygula - ek güvenlik filtresi
       let filteredServices = services;
 
-      // Voucher filtresi - tüm alanlarda arama yap
+      // Token tabanlı filtreleme
+      const currentCustomerTokens = activeTab === 'sales' ? salesCustomerTokens : costCustomerTokens;
+      const currentHotelTokens = activeTab === 'sales' ? salesHotelTokens : costHotelTokens;
+      const currentGuestTokens = activeTab === 'sales' ? salesGuestTokens : costGuestTokens;
+
       if (currentVoucherQuery) {
-        filteredServices = filteredServices.filter(service => {
-          const query = currentVoucherQuery.toLowerCase();
-          return (
-            // Voucher numarası
-            service.voucherNumber.toLowerCase().includes(query) ||
-            // Müşteri/Acente adı
-            service.customerName.toLowerCase().includes(query) ||
-            // Misafir isimleri
-            service.guestName.toLowerCase().includes(query) ||
-            // Otel adı
-            service.hotelName.toLowerCase().includes(query) ||
-            // Konaklama tipi
-            service.boardType.toLowerCase().includes(query) ||
-            // Oda tipi
-            service.roomType.toLowerCase().includes(query) ||
-            // Tarih bilgileri
-            service.checkInDate.toLowerCase().includes(query) ||
-            service.checkOutDate.toLowerCase().includes(query) ||
-            // Tutar bilgileri
-            service.totalAmount.toString().includes(query) ||
-            service.accommodationAmount.toString().includes(query) ||
-            service.flightAmount.toString().includes(query) ||
-            service.transferAmount.toString().includes(query) ||
-            service.extraAmount.toString().includes(query)
-          );
-        });
+        filteredServices = filteredServices.filter(s => includesByTokens(s.voucherNumber, activeTab === 'sales' ? salesVoucherTokens : costVoucherTokens));
+      }
+      if (currentCustomerTokens.length > 0) {
+        filteredServices = filteredServices.filter(s => includesByTokens(s.customerName, currentCustomerTokens));
+      }
+      if (currentHotelTokens.length > 0) {
+        filteredServices = filteredServices.filter(s => includesByTokens(s.hotelName, currentHotelTokens));
+      }
+      if (currentGuestTokens.length > 0) {
+        filteredServices = filteredServices.filter(s => includesByTokens(s.guestName, currentGuestTokens));
       }
 
       // Tarih filtresi
@@ -628,7 +681,12 @@ export default function SejourServicesPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [salesVoucherTokens, salesFromDate, salesToDate, costVoucherTokens, costFromDate, costToDate, activeTab, forceReload]);
+  }, [
+    appliedSalesFromDate, appliedSalesToDate, appliedCostFromDate, appliedCostToDate,
+    salesVoucherTokens, salesCustomerTokens, salesHotelTokens, salesGuestTokens,
+    costVoucherTokens, costCustomerTokens, costHotelTokens, costGuestTokens,
+    activeTab, forceReload
+  ]);
 
   // ExcelJS ile Export - Satış Tabı
   const exportSalesExcel = async () => {
@@ -785,6 +843,10 @@ export default function SejourServicesPage() {
   // Filtreleri temizleme fonksiyonu - Services sayfası için
   const clearServicesFilters = () => {
     if (activeTab === 'sales') {
+      setSalesFromDate('');
+      setSalesToDate('');
+      setAppliedSalesFromDate('');
+      setAppliedSalesToDate('');
       setSalesVoucherTokens([]);
       setSalesVoucherInput('');
       setSalesCustomerTokens([]);
@@ -793,11 +855,11 @@ export default function SejourServicesPage() {
       setSalesHotelInput('');
       setSalesGuestTokens([]);
       setSalesGuestInput('');
-      setSalesDraftFromDate('');
-      setSalesDraftToDate('');
-      setSalesFromDate('');
-      setSalesToDate('');
     } else {
+      setCostFromDate('');
+      setCostToDate('');
+      setAppliedCostFromDate('');
+      setAppliedCostToDate('');
       setCostVoucherTokens([]);
       setCostVoucherInput('');
       setCostCustomerTokens([]);
@@ -806,10 +868,6 @@ export default function SejourServicesPage() {
       setCostHotelInput('');
       setCostGuestTokens([]);
       setCostGuestInput('');
-      setCostDraftFromDate('');
-      setCostDraftToDate('');
-      setCostFromDate('');
-      setCostToDate('');
     }
     setPage(1);
     setForceReload(prev => prev + 1);
@@ -837,34 +895,39 @@ export default function SejourServicesPage() {
     setTokens(prev => prev.filter(item => item !== value));
   };
   const activeRows = activeTab === 'sales' ? sortedRows : sortedCostRows;
-  const activeVoucherTokens = activeTab === 'sales' ? salesVoucherTokens : costVoucherTokens;
-  const activeCustomerTokens = activeTab === 'sales' ? salesCustomerTokens : costCustomerTokens;
-  const activeHotelTokens = activeTab === 'sales' ? salesHotelTokens : costHotelTokens;
-  const activeGuestTokens = activeTab === 'sales' ? salesGuestTokens : costGuestTokens;
-  const visibleRows = activeRows.filter((r) => {
-    if (!includesByTokens(r.voucherNumber || '', activeVoucherTokens)) return false;
-    if (!includesByTokens(r.customerName || '', activeCustomerTokens)) return false;
-    if (!includesByTokens(r.hotelName || '', activeHotelTokens)) return false;
-    if (!includesByTokens(r.guestName || '', activeGuestTokens)) return false;
-    return true;
-  });
+  const visibleRows = activeRows;
 
   const voucherSuggestions = useMemo(
     () => Array.from(new Set(activeRows.map(r => (r.voucherNumber || '').trim()).filter(Boolean))),
     [activeRows]
   );
+
   const customerSuggestions = useMemo(
     () => Array.from(new Set(activeRows.map(r => (r.customerName || '').trim()).filter(Boolean))),
     [activeRows]
   );
+
   const hotelSuggestions = useMemo(
     () => Array.from(new Set(activeRows.map(r => (r.hotelName || '').trim()).filter(Boolean))),
     [activeRows]
   );
+
   const guestSuggestions = useMemo(
-    () => Array.from(new Set(activeRows.map(r => (r.guestName || '').trim()).filter(Boolean))),
+    () => {
+      const guests = new Set<string>();
+      activeRows.forEach(r => {
+        if (r.guestName) {
+          r.guestName.split(',').forEach(g => {
+            const trimmed = g.trim();
+            if (trimmed) guests.add(trimmed);
+          });
+        }
+      });
+      return Array.from(guests);
+    },
     [activeRows]
   );
+
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -939,58 +1002,18 @@ export default function SejourServicesPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="flex flex-nowrap gap-2 mb-4">
-          <button onClick={() => setActiveTab('sales')} className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${activeTab === 'sales' ? 'bg-blue-600 dark:bg-blue-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}>
-            <div className="flex items-center">
-              <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">Satış Hizmeti</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200">{activeTab === 'sales' ? totalCount : rows.length}</p>
-              </div>
-            </div>
-          </button>
-          <button onClick={() => setActiveTab('costs')} className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${activeTab === 'costs' ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}>
-            <div className="flex items-center">
-              <div className="p-1 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">Alış Hizmeti</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200">{activeTab === 'costs' ? totalCount : costRows.length}</p>
-              </div>
-            </div>
-          </button>
-          <div className="rounded-lg shadow p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 min-w-0">
-            <div className="flex items-center">
-              <div className="p-1 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">Filtrelenmiş Kayıt</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200">{visibleRows.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Search and Date Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-3 transition-colors duration-200 p-3">
-          <div className="grid w-full items-end gap-2 grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto]">
+          <div className="grid grid-cols-[1.2fr_1fr_1.2fr_1.2fr_1.2fr_auto] items-end gap-2">
             <DateRangeField
               label="C-IN C-OUT Tarihi"
-              startValue={activeTab === 'sales' ? salesDraftFromDate : costDraftFromDate}
-              endValue={activeTab === 'sales' ? salesDraftToDate : costDraftToDate}
-              onStartChange={activeTab === 'sales' ? setSalesDraftFromDate : setCostDraftFromDate}
-              onEndChange={activeTab === 'sales' ? setSalesDraftToDate : setCostDraftToDate}
+              startValue={activeTab === 'sales' ? salesFromDate : costFromDate}
+              endValue={activeTab === 'sales' ? salesToDate : costToDate}
+              onStartChange={activeTab === 'sales' ? setSalesFromDate : setCostFromDate}
+              onEndChange={activeTab === 'sales' ? setSalesToDate : setCostToDate}
+              onApply={activeTab === 'sales' ? handleApplySalesDates : handleApplyCostDates}
             />
             <MultiTokenFilterInput
               label="Voucher No"

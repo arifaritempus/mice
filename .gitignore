@@ -9,3 +9,4 @@ build/
 tmp/
 .gemini/
 .cursor/
+node_modules

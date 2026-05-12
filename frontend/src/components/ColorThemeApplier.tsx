@@ -4,13 +4,42 @@ import { useLayoutEffect } from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { SettingsService } from '@/lib/supabaseService';
 
+interface ThemeSettings {
+  primary_color?: string;
+  secondary_color?: string;
+  success_color?: string;
+  warning_color?: string;
+  error_color?: string;
+  info_color?: string;
+  dark_bg_primary?: string;
+  light_bg_primary?: string;
+  dark_bg_secondary?: string;
+  light_bg_secondary?: string;
+  dark_card_bg?: string;
+  light_card_bg?: string;
+  dark_sidebar_bg?: string;
+  light_sidebar_bg?: string;
+  dark_sidebar_header_bg?: string;
+  light_sidebar_header_bg?: string;
+  dark_text_color?: string;
+  light_text_color?: string;
+  dark_sidebar_border?: string;
+  light_sidebar_border?: string;
+}
+
+interface SettingsUpdateEvent extends CustomEvent {
+  detail: {
+    settings?: ThemeSettings;
+  };
+}
+
 export default function ColorThemeApplier() {
   const { isDark } = useTheme();
 
   useLayoutEffect(() => {
-    const applyColors = async (overrideSettings?: any) => {
+    const applyColors = async (overrideSettings?: ThemeSettings) => {
       try {
-        const resolvedSettings = overrideSettings || (await SettingsService.getSettings())?.general_settings;
+        const resolvedSettings = overrideSettings || (await SettingsService.getSettings())?.general_settings as ThemeSettings;
         if (!resolvedSettings) return;
 
         const settings = resolvedSettings;
@@ -33,7 +62,7 @@ export default function ColorThemeApplier() {
         const themeTextColor = isDark ? settings.dark_text_color : settings.light_text_color;
         const themeSidebarBorder = isDark ? settings.dark_sidebar_border : settings.light_sidebar_border;
         
-        // CSS Değişkenlerini root'a ekle (Böylece tailwind ile uyumlu child öğeler kullanabilir)
+        // CSS Değişkenlerini root'a ekle
         if (themeBgPrimary) root.style.setProperty('--theme-bg-primary', themeBgPrimary);
         if (themeBgSecondary) root.style.setProperty('--theme-bg-secondary', themeBgSecondary);
         if (themeCardBg) root.style.setProperty('--theme-card-bg', themeCardBg);
@@ -42,9 +71,6 @@ export default function ColorThemeApplier() {
         if (themeTextColor) root.style.setProperty('--theme-text-color', themeTextColor);
         if (themeSidebarBorder) root.style.setProperty('--theme-sidebar-border', themeSidebarBorder);
 
-        // Dinamik <style> etiketi ekle
-        // Bu yapı sayesinde querySelectorAll ile zorla stil basmak gerekmez.
-        // React component'leri mount/unmount olduğunda stiller otomatik çalışmaya devam eder.
         const styleId = 'tt-dynamic-theme-styles';
         let styleEl = document.getElementById(styleId);
         if (!styleEl) {
@@ -54,47 +80,48 @@ export default function ColorThemeApplier() {
         }
 
         let css = '';
+        
+        // Exclusion selector for elements that should NEVER be themed (like Vouchers)
+        const exclude = ':not(.no-theme-root):not(.no-theme-root *)';
 
         // Body, Main ve Container elementleri için zemin rengi
         if (themeBgPrimary) {
           css += `
-            body, main, .min-h-screen { background-color: var(--theme-bg-primary) !important; }
-            .bg-gray-50:not(button):not(input):not(select) { background-color: var(--theme-bg-primary) !important; }
+            body${exclude}, main${exclude}, .min-h-screen${exclude} { background-color: var(--theme-bg-primary) !important; }
+            .bg-gray-50:not(button):not(input):not(select)${exclude} { background-color: var(--theme-bg-primary) !important; }
           `;
-          if (isDark) css += `.dark body, .dark main, .dark .min-h-screen { background-color: var(--theme-bg-primary) !important; }\n`;
+          if (isDark) css += `.dark body${exclude}, .dark main${exclude}, .dark .min-h-screen${exclude} { background-color: var(--theme-bg-primary) !important; }\n`;
         }
         
         // Card (Kart) bileşenleri
         if (themeCardBg) {
           css += `
             .card { background-color: var(--theme-card-bg) !important; }
-            .bg-white:not(button):not(input):not(select):not(.sidebar):not(.sidebar-header) { background-color: var(--theme-card-bg) !important; }
+            .bg-white:not(button):not(input):not(select):not(.sidebar):not(.sidebar-header)${exclude} { background-color: var(--theme-card-bg) !important; }
           `;
-          if (isDark) css += `.dark .dark\\:bg-gray-800:not(button):not(input):not(select):not(.sidebar):not(.sidebar-header) { background-color: var(--theme-card-bg) !important; }\n`;
+          if (isDark) css += `.dark .dark\\:bg-gray-800:not(button):not(input):not(select):not(.sidebar):not(.sidebar-header)${exclude} { background-color: var(--theme-card-bg) !important; }\n`;
         }
 
         // Metin Renkleri
-        // Utility color class'larını (text-red-500 vb.) ezmemek için ':not' kurallarıyla seçiyoruz.
         if (themeTextColor) {
           css += `
-            body { color: var(--theme-text-color) !important; }
-            p:not([class*="text-"]), span:not([class*="text-"]):not([class*="blue"]):not([class*="red"]):not([class*="green"]):not([class*="yellow"]),
-            h1:not([class*="text-"]), h2:not([class*="text-"]), h3:not([class*="text-"]), h4:not([class*="text-"]), h5:not([class*="text-"]) {
-              color: var(--theme-text-color);
+            body${exclude} { color: var(--theme-text-color) !important; }
+            p:not([class*="text-"])${exclude}, 
+            span:not([class*="text-"]):not([class*="blue"]):not([class*="red"]):not([class*="green"]):not([class*="yellow"])${exclude},
+            h1:not([class*="text-"])${exclude}, 
+            h2:not([class*="text-"])${exclude}, 
+            h3:not([class*="text-"])${exclude}, 
+            h4:not([class*="text-"])${exclude}, 
+            h5:not([class*="text-"])${exclude} {
+              color: var(--theme-text-color) !important;
             }
           `;
         }
 
-        // Sidebar stilleri (aside etiketi veya varsayılan klaslar yakalanıyor)
-        if (themeSidebarBg) {
-          css += `aside, .sidebar, [class*="sidebar"] { background-color: var(--theme-sidebar-bg) !important; }\n`;
-        }
-        if (themeSidebarHeaderBg) {
-          css += `aside header, .sidebar-header, [class*="sidebar"] [class*="header"] { background-color: var(--theme-sidebar-header-bg) !important; }\n`;
-        }
-        if (themeSidebarBorder) {
-          css += `aside, .sidebar, [class*="sidebar"] { border-color: var(--theme-sidebar-border) !important; border-right-width: 1px; }\n`;
-        }
+        // Sidebar stilleri
+        if (themeSidebarBg) css += `aside${exclude}, .sidebar, [class*="sidebar"] { background-color: var(--theme-sidebar-bg) !important; }\n`;
+        if (themeSidebarHeaderBg) css += `aside header, .sidebar-header, [class*="sidebar"] [class*="header"] { background-color: var(--theme-sidebar-header-bg) !important; }\n`;
+        if (themeSidebarBorder) css += `aside, .sidebar, [class*="sidebar"] { border-color: var(--theme-sidebar-border) !important; border-right-width: 1px; }\n`;
 
         styleEl.innerHTML = css;
 
@@ -105,8 +132,10 @@ export default function ColorThemeApplier() {
 
     applyColors();
     
-    // Ayarlar güncellendiğinde tekrar tetikle
-    const handleSettingsUpdate = (e: any) => applyColors(e?.detail?.settings);
+    const handleSettingsUpdate = (e: Event) => {
+      const customEvent = e as SettingsUpdateEvent;
+      applyColors(customEvent?.detail?.settings);
+    };
     window.addEventListener('settingsUpdated', handleSettingsUpdate);
 
     return () => {

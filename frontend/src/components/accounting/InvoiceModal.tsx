@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { agenciesService, hotelsService, suppliersService, invoicesService, categoriesService } from '@/lib/supabaseService';
+import Modal from '../Modal';
 
 /** Fatura satırlarını kategori manuel ID düzenine göre diz (CAT_001, CAT_001_01 vb.) */
 function sortInvoiceModalItems(items: any[], categories: any[]): any[] {
@@ -297,24 +298,14 @@ export default function InvoiceModal({ isOpen, onClose, selectedItems, type, onS
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-[95vw] lg:max-w-6xl max-h-[95vh] flex flex-col border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200">
-        
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/20 rounded-t-2xl">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              {editInvoice ? '✏️ Fatura Düzenle' : (type === 'income' ? '📄 Yeni Gelir Faturası' : '🧾 Yeni Gider Faturası')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Muhasebe kayıt formunu eksiksiz doldurun</p>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition" title="Kapat (ESC)">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-8">
-          
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editInvoice ? '✏️ Fatura Düzenle' : (type === 'income' ? '📄 Yeni Gelir Faturası' : '🧾 Yeni Gider Faturası')}
+      maxWidth="max-w-6xl"
+    >
+      <div className="flex flex-col h-full">
+        <form onSubmit={handleSubmit} className="flex-1 space-y-8">
           {/* Top Section */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             <div className="md:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -542,31 +533,27 @@ export default function InvoiceModal({ isOpen, onClose, selectedItems, type, onS
               </div>
             </div>
           </div>
-        </form>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900 rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            Vazgeç
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || currentItems.length === 0}
-            className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-          >
-            {loading ? (
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-            )}
-            {editInvoice ? 'Güncellemeleri Kaydet' : 'Faturayı Kaydet'}
-          </button>
-        </div>
+          {/* Footer Actions */}
+          <div className="flex justify-end gap-3 pt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-8 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition-all"
+            >
+              Vazgeç
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading || currentItems.length === 0}
+              className="px-10 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 disabled:opacity-50 transition-all active:scale-95 flex items-center gap-2"
+            >
+              {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>}
+              {editInvoice ? 'GÜNCELLEMELERİ KAYDET' : 'FATURAYI KAYDET'}
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
+    </Modal>
   );
 }

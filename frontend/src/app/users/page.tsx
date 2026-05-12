@@ -10,6 +10,9 @@ import { ExcelUtils, ExcelImportUtils } from '@/utils/excelUtils';
 import { usersService } from '@/lib/supabaseService';
 import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
+import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
+import { UserPlus, User as UserIcon, Mail, Shield, Key } from 'lucide-react';
 
 interface User {
   id: string;
@@ -53,6 +56,7 @@ export default function UsersPage() {
   const [importing, setImporting] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   const [newUser, setNewUser] = useState<RegisterData>({
     email: '',
@@ -207,15 +211,14 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) return;
-
     try {
       await usersService.delete(userId);
       await loadUsers();
-
       setSuccess('Kullanıcı başarıyla silindi');
     } catch (error: any) {
       setError(error.message || 'Kullanıcı silinirken hata oluştu');
+    } finally {
+      setUserToDelete(null);
     }
   };
 
@@ -333,18 +336,25 @@ export default function UsersPage() {
   };
   const paginatedUsers = paginateItems(users, page, pageSize);
 
+  // 1. Yetki yükleniyor mu?
   if (permissionsLoading) {
-    return <LoadingSpinner message="Yükleniyor..." />;
+    return <LoadingSpinner message="Yetkiler kontrol ediliyor..." />;
   }
 
-  // Users görüntüleme yetkisi kontrolü
+  // 2. Yetki yok mu?
   if (!canView(Module.USERS)) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-200">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Kullanıcılar sayfasına erişim için yetkiniz bulunmuyor.</p>
-          <Link href="/" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center transition-all duration-500">
+        <div className="text-center p-8 rounded-3xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl border border-gray-200 dark:border-gray-800 shadow-2xl">
+          <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+            🛡️
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Erişim Engellendi</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-xs mx-auto">Bu sayfayı görüntülemek için gerekli yetkilere sahip değilsiniz.</p>
+          <Link 
+            href="/" 
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+          >
             Ana Sayfaya Dön
           </Link>
         </div>
@@ -352,8 +362,9 @@ export default function UsersPage() {
     );
   }
 
+  // 3. Veri yükleniyor mu?
   if (loading) {
-    return <LoadingSpinner message="Kullanıcılar yükleniyor..." />;
+    return <LoadingSpinner message="Kullanıcı verileri hazırlanıyor..." />;
   }
 
   return (
@@ -534,7 +545,7 @@ export default function UsersPage() {
                         )}
                         {canDelete(Module.USERS) && (
                           <button
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => setUserToDelete(user.id)}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
                             title="Sil"
                           >
@@ -578,229 +589,230 @@ export default function UsersPage() {
       </div>
 
       {/* Yeni Kullanıcı Modal */}
-      {showCreateModal && (
-        <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setShowCreateModal(false);
-              setNewUser({ email: '', password: '', first_name: '', last_name: '', role: 'user' });
-            }
-          }}
-        >
-          <div className="relative top-20 mx-auto p-2 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Yeni Kullanıcı Ekle</h3>
-              <form onSubmit={handleCreateUser} className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Ad *
-                  </label>
-                  <input
-                    type="text"
-                    value={newUser.first_name}
-                    onChange={(e) => {
-                      setNewUser(prev => ({ ...prev, first_name: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Soyad *
-                  </label>
-                  <input
-                    type="text"
-                    value={newUser.last_name}
-                    onChange={(e) => {
-                      setNewUser(prev => ({ ...prev, last_name: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    E-posta *
-                  </label>
-                  <input
-                    type="email"
-                    value={newUser.email}
-                    onChange={(e) => {
-                      setNewUser(prev => ({ ...prev, email: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Şifre *
-                  </label>
-                  <input
-                    type="password"
-                    value={newUser.password}
-                    onChange={(e) => {
-                      setNewUser(prev => ({ ...prev, password: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Rol *
-                  </label>
-                  <select
-                    value={newUser.role}
-                    onChange={(e) => {
-                      setNewUser(prev => ({ ...prev, role: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  >
-                    {roles && roles.length > 0 ? (
-                      roles.filter(r => r.is_active).map(r => (
-                        <option key={r.id} value={r.id}>{r.name}</option>
-                      ))
-                    ) : (
-                      <option value="user">Kullanıcı</option>
-                    )}
-                  </select>
-                </div>
-                <div className="flex justify-end space-x-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="px-3 py-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200 text-xs"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs"
-                  >
-                    Kaydet
-                  </button>
-                </div>
-              </form>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setNewUser({ email: '', password: '', first_name: '', last_name: '', role: 'user' });
+        }}
+        title="Yeni Kullanıcı Ekle"
+        maxWidth="max-w-xl"
+      >
+        <form onSubmit={handleCreateUser} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                <UserIcon size={16} className="text-blue-500" />
+                Ad *
+              </label>
+              <input
+                type="text"
+                value={newUser.first_name}
+                onChange={(e) => setNewUser(prev => ({ ...prev, first_name: e.target.value }))}
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="Ad"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                <UserIcon size={16} className="text-blue-500" />
+                Soyad *
+              </label>
+              <input
+                type="text"
+                value={newUser.last_name}
+                onChange={(e) => setNewUser(prev => ({ ...prev, last_name: e.target.value }))}
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="Soyad"
+              />
             </div>
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+              <Mail size={16} className="text-blue-500" />
+              E-posta *
+            </label>
+            <input
+              type="email"
+              value={newUser.email}
+              onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+              required
+              className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="e-posta@adresiniz.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+              <Key size={16} className="text-blue-500" />
+              Şifre *
+            </label>
+            <input
+              type="password"
+              value={newUser.password}
+              onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+              required
+              className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="••••••••"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+              <Shield size={16} className="text-blue-500" />
+              Rol *
+            </label>
+            <select
+              value={newUser.role}
+              onChange={(e) => setNewUser(prev => ({ ...prev, role: e.target.value }))}
+              required
+              className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer"
+            >
+              {roles && roles.length > 0 ? (
+                roles.filter(r => r.is_active).map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))
+              ) : (
+                <option value="user">Kullanıcı</option>
+              )}
+            </select>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+            >
+              <UserPlus size={18} />
+              Kaydet
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Edit User Modal */}
-      {showEditModal && selectedUser && (
-        <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setShowEditModal(false);
-              setSelectedUser(null);
-            }
-          }}
-        >
-          <div className="relative top-20 mx-auto p-2 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Kullanıcı Düzenle</h3>
-              <form onSubmit={handleUpdateUser} className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Ad *
-                  </label>
-                  <input
-                    type="text"
-                    value={editUser.first_name || ''}
-                    onChange={(e) => {
-                      setEditUser(prev => ({ ...prev, first_name: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Soyad *
-                  </label>
-                  <input
-                    type="text"
-                    value={editUser.last_name || ''}
-                    onChange={(e) => {
-                      setEditUser(prev => ({ ...prev, last_name: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    E-posta *
-                  </label>
-                  <input
-                    type="email"
-                    value={editUser.email || ''}
-                    onChange={(e) => {
-                      setEditUser(prev => ({ ...prev, email: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Yeni Şifre (boş bırakılırsa değişmez)
-                  </label>
-                  <input
-                    type="password"
-                    value={editUser.password || ''}
-                    onChange={(e) => {
-                      setEditUser(prev => ({ ...prev, password: e.target.value }));
-                    }}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Rol *
-                  </label>
-                  <select
-                    value={editUser.role || ''}
-                    onChange={(e) => {
-                      setEditUser(prev => ({ ...prev, role: e.target.value }));
-                    }}
-                    required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-xs"
-                  >
-                    {roles && roles.length > 0 ? (
-                      roles.filter(r => r.is_active).map(r => (
-                        <option key={r.id} value={r.id}>{r.name}</option>
-                      ))
-                    ) : (
-                      <option value="user">Kullanıcı</option>
-                    )}
-                  </select>
-                </div>
-                <div className="flex justify-end space-x-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="px-3 py-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200 text-xs"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs"
-                  >
-                    Güncelle
-                  </button>
-                </div>
-              </form>
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedUser(null);
+        }}
+        title="Kullanıcı Düzenle"
+        maxWidth="max-w-xl"
+      >
+        {selectedUser && (
+          <form onSubmit={handleUpdateUser} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                  <UserIcon size={16} className="text-blue-500" />
+                  Ad *
+                </label>
+                <input
+                  type="text"
+                  value={editUser.first_name || ''}
+                  onChange={(e) => setEditUser(prev => ({ ...prev, first_name: e.target.value }))}
+                  required
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                  <UserIcon size={16} className="text-blue-500" />
+                  Soyad *
+                </label>
+                <input
+                  type="text"
+                  value={editUser.last_name || ''}
+                  onChange={(e) => setEditUser(prev => ({ ...prev, last_name: e.target.value }))}
+                  required
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                <Mail size={16} className="text-blue-500" />
+                E-posta *
+              </label>
+              <input
+                type="email"
+                value={editUser.email || ''}
+                onChange={(e) => setEditUser(prev => ({ ...prev, email: e.target.value }))}
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                <Key size={16} className="text-blue-500" />
+                Yeni Şifre (boş bırakılırsa değişmez)
+              </label>
+              <input
+                type="password"
+                value={editUser.password || ''}
+                onChange={(e) => setEditUser(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
+                <Shield size={16} className="text-blue-500" />
+                Rol *
+              </label>
+              <select
+                value={editUser.role || ''}
+                onChange={(e) => setEditUser(prev => ({ ...prev, role: e.target.value }))}
+                required
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer"
+              >
+                {roles && roles.length > 0 ? (
+                  roles.filter(r => r.is_active).map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))
+                ) : (
+                  <option value="user">Kullanıcı</option>
+                )}
+              </select>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+              >
+                İptal
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+              >
+                <Pencil size={18} />
+                Güncelle
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Silme Onay Modal */}
+      <ConfirmModal
+        isOpen={!!userToDelete}
+        title="Kullanıcıyı Sil"
+        message="Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        onConfirm={() => userToDelete && handleDeleteUser(userToDelete)}
+        onCancel={() => setUserToDelete(null)}
+        type="danger"
+        confirmText="Evet, Sil"
+        cancelText="İptal"
+      />
     </div>
   );
 } 

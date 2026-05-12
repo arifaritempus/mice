@@ -43,6 +43,7 @@ export default function Sidebar() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -51,6 +52,17 @@ export default function Sidebar() {
       audioRef.current.volume = 0.5;
     }
   }, []);
+
+  // Browser Title Notification
+  useEffect(() => {
+    const originalTitle = document.title;
+    if (unreadCount > 0) {
+      document.title = `(${unreadCount}) ${originalTitle.replace(/^\(\d+\) /, '')}`;
+    } else {
+      document.title = originalTitle.replace(/^\(\d+\) /, '');
+    }
+    return () => { document.title = originalTitle.replace(/^\(\d+\) /, ''); };
+  }, [unreadCount]);
 
   const navigation: MenuItem[] = [
     { id: 'home', label: 'Ana Sayfa', icon: '🏠', href: '/' },
@@ -99,6 +111,13 @@ export default function Sidebar() {
       ]
     },
     {
+      id: 'marketing',
+      label: 'Pazarlama',
+      icon: '📢',
+      href: '/marketing',
+      module: Module.MARKETING
+    },
+    {
       id: 'accounting',
       label: 'Muhasebe',
       icon: '💰',
@@ -136,8 +155,8 @@ export default function Sidebar() {
         { id: 'suppliers', label: 'Tedarikçi', icon: '🏢', href: '/suppliers', module: Module.SUPPLIERS },
         { id: 'agencies', label: 'Acente', icon: '🏛️', href: '/agencies', module: Module.AGENCIES },
         { id: 'categories', label: 'Kategori', icon: '🏷️', href: '/categories', module: Module.CATEGORIES },
-        { id: 'supplier-categories', label: 'Tedarikçi Hizmet Kategorisi', icon: '🏷️', href: '/settings/service-types', module: Module.CATEGORIES },
-        { id: 'users', label: 'Kullanıcı', icon: '👥', href: '/permissions/users', module: Module.USERS },
+        { id: 'supplier-categories', label: 'Tedarikçi Hizmet Kategorisi', icon: '🏷️', href: '/suppliers/service-types', module: Module.SUPPLIERS },
+        { id: 'users', label: 'Kullanıcı', icon: '👥', href: '/users', module: Module.USERS },
         { id: 'roles', label: 'Yetkilendirme', icon: '🛡️', href: '/permissions/roles', module: Module.USERS },
       ]
     },
@@ -147,7 +166,7 @@ export default function Sidebar() {
       icon: '⚙️',
       module: Module.SETTINGS,
       children: [
-        { id: 'settings-gen', label: 'Genel Ayarlar', icon: '🔧', href: '/settings', module: Module.SETTINGS },
+        { id: 'settings-gen', label: 'Genel Ayarlar', icon: '🔧', href: '/settings/general', module: Module.SETTINGS },
         { id: 'settings-sec', label: 'Güvenlik Ayarları', icon: '🔒', href: '/settings/security', module: Module.SETTINGS },
       ]
     },
@@ -245,11 +264,37 @@ export default function Sidebar() {
     window.location.href = '/login';
   };
 
-  const toggleMenu = (id: string) => {
-    setExpandedMenus(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]);
+  const toggleMenu = (id: string, level: number) => {
+    setExpandedMenus(prev => {
+      if (prev.includes(id)) {
+        return prev.slice(0, level);
+      } else {
+        return [...prev.slice(0, level), id];
+      }
+    });
   };
 
-  const isLinkActive = (href: string) => pathname === href || (href !== '/' && pathname?.startsWith(href));
+  const navigationHrefs = useMemo(() => {
+    const hrefs = new Set<string>();
+    const extractHrefs = (items: MenuItem[]) => {
+      items.forEach(item => {
+        if (item.href) hrefs.add(item.href);
+        if (item.children) extractHrefs(item.children);
+      });
+    };
+    extractHrefs(navigation);
+    return hrefs;
+  }, [navigation]);
+
+  const isLinkActive = (href: string) => {
+    if (!href) return false;
+    if (pathname === href) return true;
+    if (href === '/') return false;
+    
+    // For deep routes (e.g. /projects/[id]), check if the pathname starts with href/
+    // but only if pathname itself is NOT another defined route
+    return pathname.startsWith(href + '/') && !navigationHrefs.has(pathname);
+  };
 
   const renderItem = (item: MenuItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -261,33 +306,35 @@ export default function Sidebar() {
       <div key={item.id} className="w-full">
         {hasChildren ? (
           <button
-            onClick={() => toggleMenu(item.id)}
-            className={`w-full flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-200 group mb-0.5 ${
-              childActive || active
-                ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20'
-                : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+            onClick={() => toggleMenu(item.id, level)}
+            className={`w-full flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all duration-200 group mb-1 ${
+              active
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                : childActive
+                  ? 'bg-white/10 text-white'
+                  : 'text-slate-100 hover:bg-white/5 hover:text-white'
             } ${isCollapsed && !isHovered ? 'justify-center px-0' : ''}`}
           >
-            <span className="text-lg flex-shrink-0">{item.icon}</span>
+            <span className="text-xl flex-shrink-0 opacity-80 group-hover:opacity-100">{item.icon}</span>
             {(!isCollapsed || isHovered) && (
               <>
-                <span className="flex-1 text-left text-xs font-bold tracking-wide whitespace-nowrap">{item.label}</span>
-                <ChevronRight size={14} className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                <span className="flex-1 text-left text-[11px] font-black uppercase tracking-wider whitespace-nowrap">{item.label}</span>
+                <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'opacity-40'}`} />
               </>
             )}
           </button>
         ) : (
           <Link
             href={item.href || '#'}
-            className={`w-full flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-200 group mb-0.5 ${
+            className={`w-full flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all duration-200 group mb-1 ${
               active
-                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
-                : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                : 'text-slate-100 hover:bg-white/5 hover:text-white'
             } ${isCollapsed && !isHovered ? 'justify-center px-0' : ''}`}
           >
-            <span className="text-lg flex-shrink-0">{item.icon}</span>
+            <span className="text-xl flex-shrink-0 opacity-80 group-hover:opacity-100">{item.icon}</span>
             {(!isCollapsed || isHovered) && (
-              <span className="flex-1 text-left text-xs font-bold tracking-wide whitespace-nowrap">{item.label}</span>
+              <span className="flex-1 text-left text-[11px] font-black uppercase tracking-wider whitespace-nowrap">{item.label}</span>
             )}
           </Link>
         )}
@@ -303,9 +350,13 @@ export default function Sidebar() {
 
   if (permissionsLoading) return null;
 
+
+
   // Get dynamic logo based on theme
   const getLogo = () => {
-    if (!generalSettings) return '/LOGO_OFFWHITE.png';
+    if (!generalSettings) {
+      return isDark ? '/LOGO_OFFWHITE.png' : '/LOGO_NAVY.png';
+    }
     
     if (isDark) {
       if (isCollapsed && !isHovered) {
@@ -340,23 +391,31 @@ export default function Sidebar() {
           className="p-6 flex flex-col items-center justify-center relative flex-shrink-0"
           style={{ backgroundColor: 'var(--theme-sidebar-header-bg, transparent)' }}
         >
-          <Link href="/" className="flex flex-col items-center gap-2 w-full">
-            <div className="relative flex items-center justify-center w-full min-h-[60px]">
+          <Link 
+            href="/" 
+            className="flex flex-col items-center gap-2 w-full active:scale-95 transition-transform"
+            onClick={() => {
+              if (pathname === '/') window.location.reload();
+            }}
+          >
+            <div className="relative flex items-center justify-center w-full min-h-[60px] transition-opacity duration-300">
               <img 
                 src={currentLogo} 
-                alt="Tempus Travel Logo" 
-                className={`object-contain transition-all duration-300 ${
+                alt="" 
+                onLoad={() => setLogoLoaded(true)}
+                className={`object-contain transition-all duration-700 ${
                   isCollapsed && !isHovered ? 'h-10 w-10' : 'h-24 w-full'
-                }`}
+                } ${logoLoaded ? 'opacity-100' : 'opacity-0'}`}
               />
             </div>
+
           </Link>
           
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="absolute top-4 right-2 p-1 rounded-md hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
+            className="absolute top-4 right-2 p-1.5 rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition-all duration-200"
           >
-            <ChevronLeft size={14} className={isCollapsed ? 'rotate-180' : ''} />
+            <ChevronLeft size={16} className={isCollapsed ? 'rotate-180' : ''} />
           </button>
         </div>
 
@@ -375,17 +434,34 @@ export default function Sidebar() {
           {/* Notifications Trigger */}
           <button
             onClick={() => setIsNotificationsOpen(true)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-slate-400 hover:bg-white/5 hover:text-white relative group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-white/70 hover:bg-white/10 hover:text-white relative group ${
               isCollapsed && !isHovered ? 'justify-center px-0' : ''
             }`}
           >
-            <span className="text-lg">🔔</span>
-            {unreadCount > 0 && (
-              <span className={`absolute ${isCollapsed && !isHovered ? 'top-1 right-1' : 'top-2 left-6'} flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-[#161d2b] animate-pulse`}>
+            <div className="relative">
+              <Bell size={20} className={unreadCount > 0 ? 'text-blue-400' : ''} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                </span>
+              )}
+            </div>
+            {unreadCount > 0 && isCollapsed && !isHovered && (
+              <span className="absolute top-1 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-[#161d2b] animate-pulse">
                 {unreadCount}
               </span>
             )}
-            {(!isCollapsed || isHovered) && <span className="text-xs font-bold tracking-wide">Bildirimler</span>}
+            {(!isCollapsed || isHovered) && (
+              <div className="flex-1 flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider">Bildirimler</span>
+                {unreadCount > 0 && (
+                  <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-lg shadow-red-600/20">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+            )}
           </button>
 
           {/* Logout */}

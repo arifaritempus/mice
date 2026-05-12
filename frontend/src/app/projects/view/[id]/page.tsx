@@ -23,6 +23,7 @@ interface Category {
   id: string;
   name: string;
   parent_id?: string;
+  code?: string | number;
 }
 
 interface Project {
@@ -422,26 +423,36 @@ export default function ProjectViewPublicPage() {
         }
       };
 
-      if (!linkData || !linkData.id) {
-        setError('Link bilgisi bulunamadı.');
-        setApproving(false);
-        return;
-      }
+      // Use Secure API route instead of direct Supabase calls
+      const response = await fetch('/api/public/projects/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          projectId,
+          approvalData
+        })
+      });
 
-      await publicLinksService.updateApproval(linkData.id, approvalData);
-      try {
-        await projectsService.update(projectId, { status: 'approved' });
-      } catch (error) {
-        console.error('⚠️ Proje durumu güncellenirken hata:', error);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'API Hatası');
       }
       
       setLinkData({ ...linkData, approval: approvalData });
       setIsApproved(true);
       setShowApprovalForm(false);
-      toast.success('Mutabakat başarıyla onaylandı! Proje durumu "Onaylandı" olarak güncellendi.');
+      
+      // Update local project status if needed
+      if (project) {
+        setProject({ ...project, status: 'approved' });
+      }
+
+      toast.success('Mutabakat başarıyla onaylandı! Bildirim ilgili yöneticilere iletildi.');
     } catch (error: any) {
       console.error('❌ Onaylama hatası:', error);
       setError(`Onaylama sırasında bir hata oluştu: ${error?.message || 'Bilinmeyen hata'}`);
+      toast.error('Onay işlemi sırasında bir hata oluştu.');
     } finally {
       setApproving(false);
     }
@@ -765,21 +776,63 @@ export default function ProjectViewPublicPage() {
   if (error && !showPasswordForm) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   if (showPasswordForm) {
+    const loginLogo = appSettings?.dark_menu_logo || appSettings?.light_menu_logo || FIXED_PUBLIC_LOGO_URL;
     return (
-      <div className="min-h-screen bg-gray-50  flex items-center justify-center p-4">
-        <form onSubmit={handlePasswordSubmit} className="bg-white  p-8 rounded-xl shadow-xl max-w-md w-full border border-gray-200 ">
-          <h2 className="text-2xl font-bold mb-6 text-center text-slate-800">Şifre Gerekli</h2>
-          <input
-            type="password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            placeholder="Şifre" 
-            className="w-full h-12 px-4 mb-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required 
-          />
-          {error && <p className="text-red-500 text-xs mb-4 text-center font-bold">⚠️ {error}</p>}
-          <button type="submit" className="w-full h-12 bg-[#232f38] text-white font-bold rounded-lg hover:bg-opacity-90 transition-colors">Görüntüle</button>
-        </form>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Dekoratif arka plan */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative w-full max-w-md">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src={loginLogo} 
+              alt="Logo" 
+              className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700" 
+            />
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="bg-white/5 backdrop-blur-2xl border border-white/10 p-10 rounded-3xl shadow-2xl w-full">
+            <div className="mb-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Güvenli Erişim</h2>
+              <p className="text-slate-400 text-sm">Devam etmek için proje şifresini giriniz</p>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <input
+                  type="password" 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)} 
+                  placeholder="Şifre" 
+                  className="w-full h-14 px-6 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  required 
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 justify-center text-red-400 text-sm font-bold bg-red-400/10 py-3 rounded-xl border border-red-400/20">
+                  <span>⚠️</span>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] text-lg"
+              >
+                Görüntüle
+              </button>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-white/5 text-center">
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
@@ -798,10 +851,10 @@ export default function ProjectViewPublicPage() {
           borderColor: appSettings?.light_sidebar_border || '#e2e8f0'
         }}
       >
-        {/* Banner - Dark Theme (Exact match with Quote link) */}
+        {/* Banner - Dark Theme */}
         <div 
           className="p-6 flex flex-wrap justify-between items-center gap-4 transition-colors duration-500"
-          style={{ backgroundColor: appSettings?.primary_color || '#232f38' }}
+          style={{ backgroundColor: '#232f38' }}
         >
           <div className="flex items-center gap-3">
             <img src={FIXED_PUBLIC_LOGO_URL} alt="Logo" className="h-10 w-auto" />

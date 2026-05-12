@@ -156,13 +156,13 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
                   }}
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hizmet / Kategori</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tarih Aralığı</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Firma / Tedarikçi & Proje</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Toplam</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Faturalanan</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bakiye</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">DVZ</th>
+              <th className="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hizmet / Kategori</th>
+              <th className="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tarih Aralığı</th>
+              <th className="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Firma / Tedarikçi & Proje</th>
+              <th className="px-4 py-3 text-right text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Toplam</th>
+              <th className="px-4 py-3 text-right text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Faturalanan</th>
+              <th className="px-4 py-3 text-right text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bakiye</th>
+              <th className="px-4 py-3 text-center text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">DVZ</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -229,7 +229,7 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${badgeCls}`}>
                         {badge}
                       </span>
-                      <span className="font-semibold text-gray-900 dark:text-white truncate">
+                      <span className="font-semibold text-gray-900 dark:text-white truncate text-[11px]">
                         {item.category_name}
                         {item.sub_category_name && <span className="text-gray-400 font-normal ml-1">({item.sub_category_name})</span>}
                       </span>
@@ -245,9 +245,9 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
                     )}
                   </td>
 
-                  <td className="px-4 py-3 min-w-[220px]">
+                  <td className="px-4 py-3 min-w-[110px]">
                     {(dateStart || dateEnd) ? (
-                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
                         {formatDate(dateStart)} → {formatDate(dateEnd)}
                       </span>
                     ) : (
@@ -257,7 +257,7 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
 
                   <td className="px-4 py-3 min-w-[220px]">
                     {/* MICE: firma adı, SEJOUR: otel adı */}
-                    <div className="font-semibold text-blue-600 dark:text-blue-400 truncate">
+                    <div className="font-medium text-blue-600 dark:text-blue-400 truncate text-[11px]">
                       {isSejour ? (hotelDisplay || companyDisplay) : companyDisplay}
                     </div>
                     {/* Voucher + C-in / C-out */}
@@ -275,15 +275,15 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
                     )}
                   </td>
 
-                  <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300 whitespace-nowrap text-[11px]">
                     {formatCurrency(item.total_price || 0, item.currency)}
                   </td>
 
-                  <td className="px-4 py-3 text-right text-green-600 dark:text-green-400 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-green-600 dark:text-green-400 whitespace-nowrap text-[11px]">
                     {formatCurrency(item.invoiced_amount || 0, item.currency)}
                   </td>
 
-                  <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white whitespace-nowrap text-base">
+                  <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white whitespace-nowrap text-[11px]">
                     {formatCurrency(item.balance || 0, item.currency)}
                   </td>
 

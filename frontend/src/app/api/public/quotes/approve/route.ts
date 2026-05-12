@@ -55,6 +55,18 @@ export async function POST(req: Request) {
 
     // 2. Perform updates using SERVICE_ROLE (bypassing RLS)
     
+    // Fetch quote details for notification
+    const { data: quote, error: quoteFetchError } = await admin
+      .from('quotes')
+      .select('*, agencies(name), hotels(name)')
+      .eq('id', quoteId)
+      .single();
+
+    if (quoteFetchError) {
+      console.error('Quote fetch error:', quoteFetchError);
+      throw quoteFetchError;
+    }
+
     // Update public_link approval
     const { error: approvalError } = await admin
       .from('public_links')
@@ -84,14 +96,86 @@ export async function POST(req: Request) {
       throw quoteError;
     }
 
-    // 3. Automatically transfer to project
+    // 3. Create Detailed Notification
+    try {
+      const creatorId = quote.created_by;
+      const agencyName = quote.agencies?.name || quote.company_name || 'Bilinmiyor';
+      const hotelName = quote.hotels?.name || 'Çoklu Otel/Belirtilmemiş';
+      const checkIn = quote.check_in_date ? new Date(quote.check_in_date).toLocaleDateString('tr-TR') : '-';
+      const checkOut = quote.check_out_date ? new Date(quote.check_out_date).toLocaleDateString('tr-TR') : '-';
+      
+      const notificationTitle = `✅ Teklif Onaylandı: ${quote.reference}`;
+      const notificationHtml = `
+        <div class="prose prose-sm max-w-none">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 m-0">Teklif Müşteri Tarafından Onaylandı</h3>
+              <p class="text-sm text-slate-500 m-0">${quote.reference} referanslı teklif onaylandı.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
+            <table class="w-full text-sm">
+              <tr><td class="py-1 font-semibold text-slate-500 w-32">Müşteri/Acente:</td><td class="py-1 font-bold text-slate-900">${agencyName}</td></tr>
+              <tr><td class="py-1 font-semibold text-slate-500">Ana Otel:</td><td class="py-1 font-bold text-slate-900">${hotelName}</td></tr>
+              <tr><td class="py-1 font-semibold text-slate-500">Tarih Aralığı:</td><td class="py-1 font-bold text-slate-900">${checkIn} - ${checkOut}</td></tr>
+              <tr><td class="py-1 font-semibold text-slate-500">Tutar:</td><td class="py-1 font-bold text-green-600">${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'EUR' }).format(quote.total_amount || 0)}</td></tr>
+            </table>
+          </div>
+
+          <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+            <h4 class="text-xs font-bold text-blue-700 uppercase mb-2">Onay Bilgileri</h4>
+            <table class="w-full text-xs">
+              <tr><td class="py-1 font-semibold text-blue-600 w-32">Onaylayan:</td><td class="py-1 font-bold text-blue-900">${approvalData.name} ${approvalData.surname}</td></tr>
+              <tr><td class="py-1 font-semibold text-blue-600">E-Posta:</td><td class="py-1 font-bold text-blue-900">${approvalData.email}</td></tr>
+              <tr><td class="py-1 font-semibold text-blue-600">IP / Konum:</td><td class="py-1 font-bold text-blue-900">${approvalData.ip_address} (${approvalData.geo_location?.city || 'Bilinmiyor'})</td></tr>
+            </table>
+          </div>
+          
+          <p class="text-[10px] text-slate-400 mt-4 italic">Not: Bu teklif otomatik olarak projeye dönüştürülmüştür. Projeler sayfasından detayları kontrol edebilirsiniz.</p>
+        </div>
+      `;
+
+      // Creator'a bildirim gönder
+      if (creatorId) {
+        await admin.from('notifications').insert({
+          user_id: creatorId,
+          title: notificationTitle,
+          message: notificationHtml,
+          type: 'success',
+          action_url: `/quotes`
+        });
+      }
+
+      // Adminlere de gönder
+      const { data: admins } = await admin.from('users').select('id').eq('role', 'super_admin');
+      if (admins) {
+        const bulk = admins
+          .filter(a => a.id !== creatorId)
+          .map(a => ({
+            user_id: a.id,
+            title: notificationTitle,
+            message: notificationHtml,
+            type: 'success',
+            action_url: `/quotes`
+          }));
+        if (bulk.length > 0) await admin.from('notifications').insert(bulk);
+      }
+
+    } catch (notifErr) {
+      console.error('Notification creation error (non-fatal):', notifErr);
+    }
+
+    // 4. Automatically transfer to project
     try {
       const { quotesService } = await import('@/lib/supabaseService');
       await quotesService.transferToProject(quoteId, admin);
       console.log(`🚀 Auto-transferred Quote ${quoteId} to Project`);
     } catch (transferErr) {
       console.error('Auto-transfer error (non-fatal):', transferErr);
-      // We don't fail the whole request because the approval was successful
     }
 
     console.log(`✅ Success: Quote ${quoteId} approved via token ${token.substring(0,8)}...`);

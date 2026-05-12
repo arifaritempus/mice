@@ -140,11 +140,13 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    console.log(`[API permissions/me] Successfully resolved for role: ${role}`, { effectivePermissions });
     return NextResponse.json(
       { role, effectivePermissions, matchedRoleIds: Array.from(matchedRoleIds) },
       { headers: { 'Cache-Control': 'private, max-age=300' } }
     );
   } catch (e: any) {
+    console.error(`[API permissions/me] ERROR:`, e);
     return NextResponse.json({ error: e?.message || 'Beklenmeyen hata' }, { status: 500 });
   }
 }

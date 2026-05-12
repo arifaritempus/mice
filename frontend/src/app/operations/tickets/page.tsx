@@ -87,6 +87,7 @@ interface DateRangeFieldProps {
   endValue: string;
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
+  onApply: (start?: string, end?: string) => void;
 }
 
 interface MultiTokenFilterInputProps {
@@ -129,7 +130,7 @@ function agencyCustomerTooltip(t: { agencyName?: string; customerName?: string }
   return parts.join(' — ');
 }
 
-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange }: DateRangeFieldProps) {
+function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const startDate = toDate(startValue);
@@ -177,7 +178,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
       if (!rect) return;
       setCalendarStyle({
         top: rect.bottom + 4,
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+        left: Math.max(6, rect.left)
       });
     };
     updatePos();
@@ -194,7 +195,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
     if (rect) {
       setCalendarStyle({
         top: rect.bottom + 4,
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+        left: Math.max(6, rect.left)
       });
     }
     setIsCalendarOpen(true);
@@ -202,14 +203,50 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
 
   const handleStartTextChange = (value: string) => {
     setStartText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onStartChange(parsed);
+    if (value === '') {
+      onStartChange('');
+      onApply('', endText.length === 10 ? parseTypedDate(endText) || '' : '');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10) {
+          const endParsed = parseTypedDate(endText);
+          if (endParsed) onApply(parsed, endParsed);
+        }
+      }
+    }
   };
 
   const handleEndTextChange = (value: string) => {
     setEndText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onEndChange(parsed);
+    if (value === '') {
+      onEndChange('');
+      onApply(startText.length === 10 ? parseTypedDate(startText) || '' : '', '');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10) {
+          const startParsed = parseTypedDate(startText);
+          if (startParsed) onApply(startParsed, parsed);
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const s = parseTypedDate(startText) || '';
+      const e_ = parseTypedDate(endText) || '';
+      onApply(s, e_);
+      setIsCalendarOpen(false);
+    }
   };
 
   const calStart = isCalendarOpen ? pickerRange[0] : startDate;
@@ -224,24 +261,25 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
         <input
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={openCalendar}
           placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
         <input
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={openCalendar}
           placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
-      {isCalendarOpen &&
-        typeof document !== 'undefined' &&
+      {isCalendarOpen && typeof document !== 'undefined' &&
         createPortal(
           <div
             ref={calendarRef}
-            className="transfer-range-datepicker-popover fixed z-[300] w-max max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl p-1.5 overflow-x-auto"
+            className="transfer-range-datepicker-popover fixed z-[9999] w-max max-w-[calc(100vw-0.75rem)] shadow-2xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 overflow-x-auto"
             style={{ top: `${calendarStyle.top}px`, left: `${calendarStyle.left}px` }}
           >
             <DatePicker
@@ -249,26 +287,42 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
               locale={tr}
               monthsShown={2}
               selectsRange
-              startDate={calStart}
-              endDate={calEnd}
+              startDate={calStart || undefined}
+              endDate={calEnd || undefined}
               onChange={(dates) => {
                 const [start, end] = dates as [Date | null, Date | null];
                 setPickerRange([start, end]);
-                if (start && end) {
+                if (start && !end) {
                   onStartChange(toIsoDate(start));
-                  onEndChange(toIsoDate(end));
+                  onEndChange('');
+                  return;
+                }
+                if (start && end) {
+                  const s = toIsoDate(start);
+                  const e = toIsoDate(end);
+                  onStartChange(s);
+                  onEndChange(e);
+                  onApply(s, e);
                   setIsCalendarOpen(false);
+                  return;
+                }
+                if (!start && !end) {
+                  onStartChange('');
+                  onEndChange('');
+                  onApply('', '');
                 }
               }}
-              openToDate={calStart || calEnd || new Date()}
-              calendarClassName="!text-xs"
+              calendarClassName="!border-none !bg-transparent dark:!text-white"
             />
           </div>,
           document.body
-        )}
+        )
+      }
     </div>
   );
 }
+
+
 
 function MultiTokenFilterInput({
   label,
@@ -405,6 +459,8 @@ export default function TicketsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | Ticket['status']>('all');
+  const [filter, setFilter] = useState<'all' | 'mice' | 'sejour'>('all');
+  const [typeCounts, setTypeCounts] = useState({ all: 0, mice: 0, sejour: 0 });
   const [sortField, setSortField] = useState<string>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
@@ -412,8 +468,12 @@ export default function TicketsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
-  const [draftTicketingStart, setDraftTicketingStart] = useState('');
+  const [filterKey, setFilterKey] = useState<number>(0);
+  const [forceReload, setForceReload] = useState<number>(0);
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [dateRange, setDateRange] = useState({ startDate: todayStr, endDate: '' });
+  const [draftTicketingStart, setDraftTicketingStart] = useState(todayStr);
   const [draftTicketingEnd, setDraftTicketingEnd] = useState('');
 
   const [flightDateRange, setFlightDateRange] = useState({ startDate: '', endDate: '' });
@@ -640,21 +700,23 @@ export default function TicketsPage() {
     link.href = url; link.download = `biletler_ozet_${new Date().toISOString().split('T')[0]}.xlsx`; link.click(); window.URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(draftTicketingStart) && Boolean(draftTicketingEnd)) || (!draftTicketingStart && !draftTicketingEnd);
-    if (!rangeCompleteOrEmpty) return;
-    setDateRange({ startDate: draftTicketingStart, endDate: draftTicketingEnd });
+  const handleApplyTicketingDates = (start?: string, end?: string) => {
+    setDateRange({
+      startDate: start !== undefined ? start : draftTicketingStart,
+      endDate: end !== undefined ? end : draftTicketingEnd
+    });
     setPage(1);
-  }, [draftTicketingStart, draftTicketingEnd]);
+    setForceReload(prev => prev + 1);
+  };
 
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(draftFlightStart) && Boolean(draftFlightEnd)) || (!draftFlightStart && !draftFlightEnd);
-    if (!rangeCompleteOrEmpty) return;
-    setFlightDateRange({ startDate: draftFlightStart, endDate: draftFlightEnd });
+  const handleApplyFlightDates = (start?: string, end?: string) => {
+    setFlightDateRange({
+      startDate: start !== undefined ? start : draftFlightStart,
+      endDate: end !== undefined ? end : draftFlightEnd
+    });
     setPage(1);
-  }, [draftFlightStart, draftFlightEnd]);
+    setForceReload(prev => prev + 1);
+  };
 
   const loadData = async () => {
     try {
@@ -664,6 +726,7 @@ export default function TicketsPage() {
         page: String(page),
         pageSize: String(pageSize),
         searchTerm: '',
+        filter,
         sortField,
         sortDirection,
         startDate: dateRange.startDate || '',
@@ -686,6 +749,9 @@ export default function TicketsPage() {
       setTickets(Array.isArray(result.data) ? result.data : []);
       setTotalCount(Number(result.total || 0));
       setTotalPages(Number(result.totalPages || 1));
+      if (result.typeCounts) {
+        setTypeCounts(result.typeCounts);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       setError('Veri yüklenirken hata oluştu');
@@ -698,7 +764,34 @@ export default function TicketsPage() {
 
   useEffect(() => {
     loadData();
-  }, [page, pageSize, scopedSearchState, sortField, sortDirection, dateRange.startDate, dateRange.endDate, flightDateRange.startDate, flightDateRange.endDate]);
+  }, [page, pageSize, scopedSearchState, filter, sortField, sortDirection, dateRange, flightDateRange, forceReload]);
+
+  // Filtreleri temizleme fonksiyonu
+  const clearFilters = () => {
+    setVoucherTokens([]);
+    setVoucherInput('');
+    setCustomerTokens([]);
+    setCustomerInput('');
+    setPnrTokens([]);
+    setPnrInput('');
+    setAirlineTokens([]);
+    setAirlineInput('');
+    setSupplierTokens([]);
+    setSupplierInput('');
+    setGuestTokens([]);
+    setGuestInput('');
+    const todayStr = new Date().toISOString().split('T')[0];
+    setDraftTicketingStart(todayStr);
+    setDraftTicketingEnd('');
+    setDateRange({ startDate: todayStr, endDate: '' });
+    setDraftFlightStart('');
+    setDraftFlightEnd('');
+    setFlightDateRange({ startDate: '', endDate: '' });
+    setFilter('all');
+    setPage(1);
+    setFilterKey(prev => prev + 1);
+    setForceReload(prev => prev + 1);
+  };
 
 
 
@@ -1001,145 +1094,128 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Bilet Yönetimi</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">Bilet Hizmetlerini Yönetin</p>
-        
-        {/* Tabs */}
-        <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
-          <div className="flex space-x-1">
+    <div className="flex flex-col h-screen p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden font-sans">
+      <div className="w-full min-w-0 flex flex-col h-full gap-2">
+        {/* Header */}
+        <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Bilet Opsiyon Takip</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Uçak biletlerinin opsiyon tarihlerini ve detaylarını yönetin</p>
+          </div>
+          <div className="flex gap-2">
             <button
-              onClick={() => setActiveTab('detail')}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                activeTab === 'detail'
-                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+              type="button"
+              onClick={async () => {
+                const enriched = tickets.map(t => ({
+                  ...t,
+                  guestNames: t.guestNames || '',
+                  ticketingProviderName: suppliers.find((sup: any) => sup.id === t.ticketingProvider || sup.code === t.ticketingProvider)?.name || t.ticketingProvider || ''
+                }));
+                await exportDetailsExcel(enriched);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm text-sm font-semibold"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Detay Excel
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                await exportSummaryExcel(summaryData, suppliers);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 shadow-sm text-sm font-semibold"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Özet Excel
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Sistemi (Source & View) */}
+        <div className="flex flex-col gap-1">
+          {/* Source Tabs */}
+          <div className="flex gap-1 bg-gray-200/50 dark:bg-gray-800/50 p-1 rounded-xl w-full font-semibold">
+            <button
+              onClick={() => { setFilter('all'); setPage(1); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm transition-all duration-200 ${
+                filter === 'all'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
               }`}
             >
-              📋 Detay
+              Tüm Biletler ({typeCounts.all})
+            </button>
+            <button
+              onClick={() => { setFilter('mice'); setPage(1); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm transition-all duration-200 ${
+                filter === 'mice'
+                  ? 'bg-orange-600 text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+              }`}
+            >
+              MICE ({typeCounts.mice})
+            </button>
+            <button
+              onClick={() => { setFilter('sejour'); setPage(1); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm transition-all duration-200 ${
+                filter === 'sejour'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+              }`}
+            >
+              Sejour ({typeCounts.sejour})
+            </button>
+          </div>
+          
+          {/* View Tabs */}
+          <div className="flex gap-1 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-100 dark:border-gray-700 w-full shadow-sm">
+            <button
+              onClick={() => setActiveTab('detail')}
+              className={`flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all duration-200 ${
+                activeTab === 'detail'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-inner'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              }`}
+            >
+              📋 Detay Verileri
             </button>
             <button
               onClick={() => setActiveTab('summary')}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+              className={`flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all duration-200 ${
                 activeTab === 'summary'
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-inner'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
               }`}
             >
-              📊 Özet
+              📊 Özet Verileri
             </button>
           </div>
         </div>
-      </div>
 
       {/* Content */}
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
-        {/* Durum kartları (bu sayfadaki kayıtlar) */}
-        <div className="flex flex-nowrap gap-2 mb-3 w-full min-w-0">
-          <button
-            type="button"
-            onClick={() => setStatusFilter('all')}
-            className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${statusFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}
-          >
-            <p className="text-xs font-medium">Tümü</p>
-            <p className="text-sm font-bold">{statusCardCounts.all}</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('pending')}
-            className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${statusFilter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}
-          >
-            <p className="text-xs font-medium">Bekleyen</p>
-            <p className="text-sm font-bold">{statusCardCounts.pending}</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('confirmed')}
-            className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${statusFilter === 'confirmed' ? 'bg-green-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}
-          >
-            <p className="text-xs font-medium">Onaylı</p>
-            <p className="text-sm font-bold">{statusCardCounts.confirmed}</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('completed')}
-            className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${statusFilter === 'completed' ? 'bg-emerald-700 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}
-          >
-            <p className="text-xs font-medium">Tamamlandı</p>
-            <p className="text-sm font-bold">{statusCardCounts.completed}</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('cancelled')}
-            className={`rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0 text-left ${statusFilter === 'cancelled' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'}`}
-          >
-            <p className="text-xs font-medium">İptal</p>
-            <p className="text-sm font-bold">{statusCardCounts.cancelled}</p>
-          </button>
-        </div>
-
         {/* Arama ve Filtreleme */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 mb-2 w-full min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Arama ve Filtreleme</h3>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  const enriched = sortedTickets.map(t => ({
-                    ...t,
-                    guestNames: t.guestNames || '',
-                    ticketingProviderName: suppliers.find((sup: any) => sup.id === t.ticketingProvider || sup.code === t.ticketingProvider)?.name || t.ticketingProvider || ''
-                  }));
-                  await exportDetailsExcel(enriched);
-                }}
-                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200"
-              >
-                Excel (Detay)
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  await exportSummaryExcel(summaryData, suppliers);
-                }}
-                className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200"
-              >
-                Excel (Özet)
-              </button>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200 shrink-0"
-                title="Filtreleri temizle"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div
-            className="grid w-full min-w-0 items-end gap-x-1 gap-y-1"
-            style={{
-              gridTemplateColumns:
-                'minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.85fr) minmax(0, 0.95fr) minmax(0, 0.72fr) minmax(0, 0.75fr) minmax(0, 0.75fr) minmax(0, 0.75fr)',
-            }}
-          >
+        <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-2 w-full min-w-0">
+          <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1" style={{ gridTemplateColumns: '2fr 2fr 1fr 1.5fr 1.5fr 1fr 1fr 1.2fr auto' }}>
             <DateRangeField
-              label="Biletleme Tarihi"
-              startValue={draftTicketingStart}
-              endValue={draftTicketingEnd}
-              onStartChange={setDraftTicketingStart}
-              onEndChange={setDraftTicketingEnd}
+              label="Opsiyon Tarihi"
+              startValue={dateRange.startDate}
+              endValue={dateRange.endDate}
+              onStartChange={(v) => setDraftTicketingStart(v)}
+              onEndChange={(v) => setDraftTicketingEnd(v)}
+              onApply={handleApplyTicketingDates}
             />
             <DateRangeField
               label="Uçuş Tarihi"
-              startValue={draftFlightStart}
-              endValue={draftFlightEnd}
-              onStartChange={setDraftFlightStart}
-              onEndChange={setDraftFlightEnd}
+              startValue={flightDateRange.startDate}
+              endValue={flightDateRange.endDate}
+              onStartChange={(v) => setDraftFlightStart(v)}
+              onEndChange={(v) => setDraftFlightEnd(v)}
+              onApply={handleApplyFlightDates}
             />
             <MultiTokenFilterInput
               label="Voucher"
@@ -1147,44 +1223,17 @@ export default function TicketsPage() {
               inputValue={voucherInput}
               suggestions={voucherSuggestions}
               onInputChange={setVoucherInput}
-              onAddToken={(value) => addToken(value, setVoucherTokens, setVoucherInput)}
-              onRemoveToken={(value) => removeToken(value, setVoucherTokens)}
+              onAddToken={(v) => addToken(v, setVoucherTokens, setVoucherInput)}
+              onRemoveToken={(v) => removeToken(v, setVoucherTokens)}
             />
             <MultiTokenFilterInput
-              label="Acente / Müşteri"
+              label="Acente / Firma"
               tokens={customerTokens}
               inputValue={customerInput}
               suggestions={customerSuggestions}
               onInputChange={setCustomerInput}
-              onAddToken={(value) => addToken(value, setCustomerTokens, setCustomerInput)}
-              onRemoveToken={(value) => removeToken(value, setCustomerTokens)}
-            />
-            <MultiTokenFilterInput
-              label="PNR"
-              tokens={pnrTokens}
-              inputValue={pnrInput}
-              suggestions={pnrSuggestions}
-              onInputChange={setPnrInput}
-              onAddToken={(value) => addToken(value, setPnrTokens, setPnrInput)}
-              onRemoveToken={(value) => removeToken(value, setPnrTokens)}
-            />
-            <MultiTokenFilterInput
-              label="Havayolu"
-              tokens={airlineTokens}
-              inputValue={airlineInput}
-              suggestions={airlineSuggestions}
-              onInputChange={setAirlineInput}
-              onAddToken={(value) => addToken(value, setAirlineTokens, setAirlineInput)}
-              onRemoveToken={(value) => removeToken(value, setAirlineTokens)}
-            />
-            <MultiTokenFilterInput
-              label="Tedarikçi"
-              tokens={supplierTokens}
-              inputValue={supplierInput}
-              suggestions={supplierSuggestions}
-              onInputChange={setSupplierInput}
-              onAddToken={(value) => addToken(value, setSupplierTokens, setSupplierInput)}
-              onRemoveToken={(value) => removeToken(value, setSupplierTokens)}
+              onAddToken={(v) => addToken(v, setCustomerTokens, setCustomerInput)}
+              onRemoveToken={(v) => removeToken(v, setCustomerTokens)}
             />
             <MultiTokenFilterInput
               label="Misafir"
@@ -1192,9 +1241,46 @@ export default function TicketsPage() {
               inputValue={guestInput}
               suggestions={guestSuggestions}
               onInputChange={setGuestInput}
-              onAddToken={(value) => addToken(value, setGuestTokens, setGuestInput)}
-              onRemoveToken={(value) => removeToken(value, setGuestTokens)}
+              onAddToken={(v) => addToken(v, setGuestTokens, setGuestInput)}
+              onRemoveToken={(v) => removeToken(v, setGuestTokens)}
             />
+            <MultiTokenFilterInput
+              label="PNR"
+              tokens={pnrTokens}
+              inputValue={pnrInput}
+              suggestions={pnrSuggestions}
+              onInputChange={setPnrInput}
+              onAddToken={(v) => addToken(v, setPnrTokens, setPnrInput)}
+              onRemoveToken={(v) => removeToken(v, setPnrTokens)}
+            />
+            <MultiTokenFilterInput
+              label="Havayolu"
+              tokens={airlineTokens}
+              inputValue={airlineInput}
+              suggestions={airlineSuggestions}
+              onInputChange={setAirlineInput}
+              onAddToken={(v) => addToken(v, setAirlineTokens, setAirlineInput)}
+              onRemoveToken={(v) => removeToken(v, setAirlineTokens)}
+            />
+            <MultiTokenFilterInput
+              label="Tedarikçi"
+              tokens={supplierTokens}
+              inputValue={supplierInput}
+              suggestions={supplierSuggestions}
+              onInputChange={setSupplierInput}
+              onAddToken={(v) => addToken(v, setSupplierTokens, setSupplierInput)}
+              onRemoveToken={(v) => removeToken(v, setSupplierTokens)}
+            />
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="h-8 w-8 flex items-center justify-center rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 shrink-0 shadow-sm"
+              title="Filtreleri Temizle"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -1826,5 +1912,6 @@ export default function TicketsPage() {
         )}
       </div>
     </div>
+  </div>
   );
-} 
+}

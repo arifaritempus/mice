@@ -663,7 +663,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (loading) return <LoadingSpinner message="Panel hazırlanıyor..." />;
+  if (loading) return <LoadingSpinner message="Analizler hazırlanıyor..." />;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full p-4 md:p-6 lg:p-8">

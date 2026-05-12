@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Fragment } from 'react';
+import { toast } from 'react-hot-toast';
 import { useParams, useSearchParams } from 'next/navigation';
 import { quotesService, quoteItemsService, agenciesService, hotelsService, categoriesService, publicLinksService, SettingsService } from '@/lib/supabaseService';
 import { formatNumber } from '@/utils/formatters';
@@ -22,6 +23,7 @@ interface Category {
   id: string;
   name: string;
   parent_id?: string;
+  sort_order?: number;
 }
 
 interface ServiceItem {
@@ -105,6 +107,7 @@ export default function QuoteViewPublicPage() {
   const [approvalForm, setApprovalForm] = useState({ name: '', surname: '', email: '' });
 
   useEffect(() => {
+    loadAppSettings();
     const loadLinkData = async () => {
       if (!token) {
         setError('Geçersiz link. Token bulunamadı.');
@@ -153,7 +156,6 @@ export default function QuoteViewPublicPage() {
 
   const loadQuote = async () => {
     try {
-      loadAppSettings();
       const q = await quotesService.getById(quoteId);
         if (q) {
           setQuote(q as any);
@@ -574,14 +576,63 @@ export default function QuoteViewPublicPage() {
   if (error && !showPasswordForm) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   if (showPasswordForm) {
+    const loginLogo = appSettings?.dark_menu_logo || appSettings?.light_menu_logo || FIXED_PUBLIC_LOGO_URL;
     return (
-      <div className="min-h-screen bg-gray-50  flex items-center justify-center p-4">
-        <form onSubmit={handlePasswordSubmit} className="bg-white  p-8 rounded-xl shadow-xl max-w-md w-full border border-gray-200 ">
-          <h2 className="text-2xl font-bold mb-6 text-center text-slate-800">Şifre Gerekli</h2>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Şifre" className="w-full h-12 px-4 mb-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
-          {error && <p className="text-red-500 text-xs mb-4 text-center font-bold">⚠️ {error}</p>}
-          <button type="submit" className="w-full h-12 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">Görüntüle</button>
-        </form>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Dekoratif arka plan */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative w-full max-w-md">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src={loginLogo} 
+              alt="Logo" 
+              className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700" 
+            />
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="bg-white/5 backdrop-blur-2xl border border-white/10 p-10 rounded-3xl shadow-2xl w-full">
+            <div className="mb-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Güvenli Erişim</h2>
+              <p className="text-slate-400 text-sm">Devam etmek için teklif şifresini giriniz</p>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <input
+                  type="password" 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)} 
+                  placeholder="Şifre" 
+                  className="w-full h-14 px-6 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  required 
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 justify-center text-red-400 text-sm font-bold bg-red-400/10 py-3 rounded-xl border border-red-400/20">
+                  <span>⚠️</span>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] text-lg"
+              >
+                Görüntüle
+              </button>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-white/5 text-center">
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
@@ -598,10 +649,10 @@ export default function QuoteViewPublicPage() {
           borderColor: appSettings?.light_sidebar_border || '#e2e8f0'
         }}
       >
-        {/* Banner */}
+        {/* Banner - Dark Theme */}
         <div 
           className="p-6 flex flex-wrap justify-between items-center gap-4 transition-colors duration-500"
-          style={{ backgroundColor: appSettings?.primary_color || '#232f38' }}
+          style={{ backgroundColor: '#232f38' }}
         >
           <div className="flex items-center gap-3">
             <img src={FIXED_PUBLIC_LOGO_URL} alt="Logo" className="h-10 w-auto" />

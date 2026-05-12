@@ -109,8 +109,14 @@ export function DateRangeFieldAccounting({
           onChange={(e) => {
             const v = e.target.value;
             setStartText(v);
-            const parsed = parseTypedDate(v);
-            if (parsed !== null) onStartChange(parsed);
+            if (v === '') {
+              onStartChange('');
+              return;
+            }
+            if (v.length === 10) {
+              const parsed = parseTypedDate(v);
+              if (parsed !== null) onStartChange(parsed);
+            }
           }}
           placeholder="gg.aa.yyyy"
           className="w-full h-8 px-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs"
@@ -121,8 +127,14 @@ export function DateRangeFieldAccounting({
           onChange={(e) => {
             const v = e.target.value;
             setEndText(v);
-            const parsed = parseTypedDate(v);
-            if (parsed !== null) onEndChange(parsed);
+            if (v === '') {
+              onEndChange('');
+              return;
+            }
+            if (v.length === 10) {
+              const parsed = parseTypedDate(v);
+              if (parsed !== null) onEndChange(parsed);
+            }
           }}
           placeholder="gg.aa.yyyy"
           className="w-full h-8 px-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs"

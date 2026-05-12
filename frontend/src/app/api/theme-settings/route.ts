@@ -25,6 +25,7 @@ export async function GET() {
       .maybeSingle();
 
     if (error) {
+      console.error('[ThemeSettingsAPI] Supabase error:', error);
       return NextResponse.json({ general_settings: null }, { status: 200 });
     }
 
@@ -38,8 +39,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ general_settings: parsed || null }, { status: 200 });
-  } catch {
+  } catch (err) {
+    console.error('[ThemeSettingsAPI] Global error:', err);
     return NextResponse.json({ general_settings: null }, { status: 200 });
   }
 }
-

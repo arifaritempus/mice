@@ -11,6 +11,9 @@ import { DEFAULT_PAGE_SIZE } from '@/types/pagination';
 import DatePicker from 'react-datepicker';
 import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import Modal from '@/components/Modal';
+import { toast } from 'react-hot-toast';
+import { Trash2, AlertCircle, CheckCircle2 } from 'lucide-react';
 // import { loadSejourlar } from '../../../../src/supabaseClient';
 
 // async function fetchData() {
@@ -213,6 +216,7 @@ interface DateRangeFieldProps {
   endValue: string;
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
+  onApply?: (start?: string, end?: string) => void;
 }
 
 const toDate = (value: string) => {
@@ -231,13 +235,36 @@ const parseTypedDate = (value: string): string | null => {
   return formatDateFns(parsed, 'yyyy-MM-dd');
 };
 
-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange }: DateRangeFieldProps) {
+function DateRangeField({ 
+  label, 
+  startValue, 
+  endValue, 
+  onStartChange, 
+  onEndChange,
+  onApply
+}: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startDate = toDate(startValue);
   const endDate = toDate(endValue);
   const [startText, setStartText] = useState(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
   const [endText, setEndText] = useState(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const handleApply = () => {
+    if (onApply) {
+      const s = startText.length === 10 ? parseTypedDate(startText) || '' : '';
+      const eVal = endText.length === 10 ? parseTypedDate(endText) || '' : '';
+      onApply(s, eVal);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleApply();
+      setIsCalendarOpen(false);
+    }
+  };
 
   useEffect(() => {
     setStartText(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
@@ -258,14 +285,32 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
 
   const handleStartTextChange = (value: string) => {
     setStartText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onStartChange(parsed);
+    if (value === '') {
+      onStartChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10 && onApply) onApply();
+      }
+    }
   };
 
   const handleEndTextChange = (value: string) => {
     setEndText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onEndChange(parsed);
+    if (value === '') {
+      onEndChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10 && onApply) onApply();
+      }
+    }
   };
 
   return (
@@ -276,6 +321,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
           onFocus={() => setIsCalendarOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
@@ -283,6 +329,7 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
           onFocus={() => setIsCalendarOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
@@ -300,7 +347,10 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
               const [start, end] = dates as [Date | null, Date | null];
               onStartChange(toIsoDate(start));
               onEndChange(toIsoDate(end));
-              if (start && end) setIsCalendarOpen(false);
+              if (start && end) {
+                setIsCalendarOpen(false);
+                handleApply();
+              }
             }}
             openToDate={startDate || endDate || new Date()}
           />
@@ -398,10 +448,17 @@ export default function SejourPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [dateStart, setDateStart] = useState('');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [dateRange, setDateRange] = useState({ startDate: todayStr, endDate: '' });
+  const [dateStart, setDateStart] = useState(todayStr);
   const [dateEnd, setDateEnd] = useState('');
-  const [draftDateStart, setDraftDateStart] = useState('');
+  const [appliedDateStart, setAppliedDateStart] = useState(todayStr);
+  const [appliedDateEnd, setAppliedDateEnd] = useState('');
+  const [draftDateStart, setDraftDateStart] = useState(todayStr);
   const [draftDateEnd, setDraftDateEnd] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [sejourToDelete, setSejourToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Detaylı verilerden toplam maliyet hesaplama
   const calculateTotalCostFromDetails = (sejour: any) => {
@@ -454,8 +511,8 @@ export default function SejourPage() {
         pageSize,
         searchTerm: '',
         statusFilter,
-        startDate: dateStart,
-        endDate: dateEnd,
+        startDate: appliedDateStart,
+        endDate: appliedDateEnd,
         sortField,
         sortDirection
       });
@@ -489,6 +546,14 @@ export default function SejourPage() {
     }
   };
 
+  useEffect(() => {
+    loadData();
+  }, [page, pageSize, statusFilter, appliedDateStart, appliedDateEnd, sortField, sortDirection]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, appliedDateStart, appliedDateEnd, sortField, sortDirection]);
+
 
   const voucherSuggestions = useMemo(
     () => Array.from(new Set(sejours.map(s => (s.voucherNumber || '').trim()).filter(Boolean))),
@@ -513,22 +578,7 @@ export default function SejourPage() {
     [sejours]
   );
   
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter, dateStart, dateEnd, sortField, sortDirection, voucherTokens, customerTokens, agencyTokens, guestTokens, statusTokens]);
-
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(draftDateStart) && Boolean(draftDateEnd)) || (!draftDateStart && !draftDateEnd);
-    if (!rangeCompleteOrEmpty) return;
-    setDateStart(draftDateStart);
-    setDateEnd(draftDateEnd);
-    setPage(1);
-  }, [draftDateStart, draftDateEnd]);
-
-  useEffect(() => {
-    loadData();
-  }, [page, pageSize, statusFilter, dateStart, dateEnd, sortField, sortDirection]);
+  // Helper fonksiyonları - Early return'lerden ÖNCE tanımlanmalı
 
   // Helper fonksiyonları - Early return'lerden ÖNCE tanımlanmalı
   const includesByTokens = (value: string, tokens: string[]) => {
@@ -623,16 +673,26 @@ export default function SejourPage() {
     }
   };
 
-  const handleDeleteSejour = async (id: string) => {
-    if (confirm('Bu sejour\'u silmek istediğinizden emin misiniz?')) {
-      try {
-        await SejourService.deleteSejour(id);
-        const updatedSejours = sejours.filter(sejour => sejour.id !== id);
-        setSejours(updatedSejours);
-      } catch (error) {
-        console.error('Error deleting sejour:', error);
-        alert('Sejour silinirken hata oluştu');
-      }
+  const handleDeleteSejour = (id: string) => {
+    setSejourToDelete(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteSejour = async () => {
+    if (!sejourToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await SejourService.deleteSejour(sejourToDelete);
+      setSejours(prev => prev.filter(s => s.id !== sejourToDelete));
+      toast.success('Sejour başarıyla silindi');
+    } catch (error) {
+      console.error('Error deleting sejour:', error);
+      toast.error('Sejour silinirken bir hata oluştu');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setSejourToDelete(null);
     }
   };
 
@@ -641,6 +701,9 @@ export default function SejourPage() {
     setStatusFilter('all');
     setDateStart('');
     setDateEnd('');
+    setAppliedDateStart('');
+    setAppliedDateEnd('');
+    setDateRange({ startDate: '', endDate: '' });
     setDraftDateStart('');
     setDraftDateEnd('');
     setVoucherTokens([]);
@@ -653,6 +716,12 @@ export default function SejourPage() {
     setGuestInput('');
     setStatusTokens([]);
     setStatusInput('');
+    setPage(1);
+  };
+
+  const handleApplyDates = (start?: string, end?: string) => {
+    setAppliedDateStart(start !== undefined ? start : dateStart);
+    setAppliedDateEnd(end !== undefined ? end : dateEnd);
     setPage(1);
   };
 
@@ -988,10 +1057,11 @@ export default function SejourPage() {
         <div className="grid w-full items-end gap-2 grid-cols-[1.7fr_1fr_1fr_1fr_1fr_1fr_auto]">
           <DateRangeField
             label="Konaklama Tarihi"
-            startValue={draftDateStart}
-            endValue={draftDateEnd}
-            onStartChange={setDraftDateStart}
-            onEndChange={setDraftDateEnd}
+            startValue={dateStart}
+            endValue={dateEnd}
+            onStartChange={setDateStart}
+            onEndChange={setDateEnd}
+            onApply={handleApplyDates}
           />
           <MultiTokenFilterInput
             label="Voucher No"
@@ -1313,9 +1383,52 @@ export default function SejourPage() {
                 </div>
               </div>
             )}
-          </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Sejour Silme Onayı"
+        maxWidth="max-w-md"
+      >
+        <div className="p-6 text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Emin misiniz?</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            Bu sejour kaydını silmek istediğinizden emin misiniz? Bu işlemle birlikte sejour ile ilişkili tüm faturalar ve kalemler de silinecektir. Bu işlem geri alınamaz.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            >
+              Vazgeç
+            </button>
+            <button
+              onClick={confirmDeleteSejour}
+              disabled={isDeleting}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Siliniyor...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  Evet, Sil
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
-  );
+  </div>
+);
 }

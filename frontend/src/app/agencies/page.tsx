@@ -9,6 +9,9 @@ import { formatDate } from '@/utils/formatters';
 import { agenciesService } from '@/lib/supabaseService';
 import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
+import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
+import { Building2, User, Phone, Mail, FileText, Plus, Pencil, MapPin } from 'lucide-react';
 
 interface Agency {
   id: string;
@@ -48,6 +51,7 @@ export default function AgenciesPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [agencyToDelete, setAgencyToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     company_name: '',
@@ -319,21 +323,16 @@ export default function AgenciesPage() {
   };
 
   const handleDelete = async (agencyId: string) => {
-    if (confirm('Bu acenteyi silmek istediğinizden emin misiniz?')) {
-      try {
-        const updatedAgencies = agencies.filter(agency => agency.id !== agencyId);
-        setAgencies(updatedAgencies);
-        try {
-          await agenciesService.delete(agencyId);
-          await loadAgencies();
-        } catch (e: any) {
-          alert(`Supabase silme hatası: ${e?.message || e}`);
-        }
-        alert('Acente başarıyla silindi!');
-      } catch (error) {
-        console.error('Acente silinirken hata:', error);
-        alert('Acente silinirken bir hata oluştu. Lütfen tekrar deneyin.');
-      }
+    try {
+      await agenciesService.delete(agencyId);
+      await loadAgencies();
+      setSuccess('Acente başarıyla silindi!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      console.error('Acente silinirken hata:', error);
+      setError('Acente silinirken bir hata oluştu.');
+    } finally {
+      setAgencyToDelete(null);
     }
   };
 
@@ -877,7 +876,7 @@ export default function AgenciesPage() {
                         )}
                         {canDelete(Module.AGENCIES) && (
                           <button
-                            onClick={() => handleDelete(agency.id)}
+                            onClick={() => setAgencyToDelete(agency.id)}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
                             title="Sil"
                           >
@@ -916,226 +915,210 @@ export default function AgenciesPage() {
           compactRight
         />
 
-        {/* Add/Edit Modal */}
-        {showAddModal && (
-          <div 
-            className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setShowAddModal(false);
-                setEditingAgency(null);
-                setFormData({ name: '', company_name: '', contact_person: '', phone: '', email: '', address: '', tax_number: '', tax_office: '', accounting_link_codes: { TL: '', EUR: '', USD: '', GBP: '' } });
-              }
-            }}
-            tabIndex={0}
-            ref={(el) => {
-              if (el) {
-                el.focus();
-              }
-            }}
-          >
-            <div className="relative top-20 mx-auto p-2 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                  {editingAgency ? 'Acente Düzenle' : 'Yeni Acente Ekle'}
-                </h3>
-              
-                <form onSubmit={handleSubmit} className="space-y-3">
+      {/* Add/Edit Agency Modal */}
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingAgency(null);
+        }}
+        title={editingAgency ? 'Acente Düzenle' : 'Yeni Acente Ekle'}
+        maxWidth="max-w-4xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                <Building2 size={16} className="text-blue-500" />
+                Acente Bilgileri
+              </h4>
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Acente Adı *
                   </label>
                   <input
                     ref={editingAgency ? editNameInputRef : newNameInputRef}
                     type="text"
-                    defaultValue=""
+                    defaultValue={editingAgency?.name || ''}
                     required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    placeholder="Acente adını girin"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    placeholder="Acente Adı"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Firma Adı *
                   </label>
                   <input
                     ref={editingAgency ? editCompanyNameInputRef : newCompanyNameInputRef}
                     type="text"
-                    defaultValue=""
+                    defaultValue={editingAgency?.company_name || ''}
                     required
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    placeholder="Firma adını girin"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    placeholder="Şirket Ünvanı"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    İletişim Kişisi
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <User size={12} /> İletişim Kişisi
                   </label>
                   <input
                     ref={editingAgency ? editContactPersonInputRef : newContactPersonInputRef}
                     type="text"
-                    defaultValue=""
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    placeholder="İletişim kişisi adı"
+                    defaultValue={editingAgency?.contact_person || ''}
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    placeholder="Yetkili Kişi"
                   />
                 </div>
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Telefon
-                  </label>
-                  <input
-                    ref={editingAgency ? editPhoneInputRef : newPhoneInputRef}
-                    type="tel"
-                    defaultValue=""
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    placeholder="+90 xxx xxx xx xx"
-                  />
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                <Phone size={16} className="text-blue-500" />
+                İletişim & Fatura
+              </h4>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                      <Phone size={12} /> Telefon
+                    </label>
+                    <input
+                      ref={editingAgency ? editPhoneInputRef : newPhoneInputRef}
+                      type="text"
+                      defaultValue={editingAgency?.phone || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      placeholder="+90..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                      <Mail size={12} /> E-posta
+                    </label>
+                    <input
+                      ref={editingAgency ? editEmailInputRef : newEmailInputRef}
+                      type="email"
+                      defaultValue={editingAgency?.email || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      placeholder="acente@eposta.com"
+                    />
+                  </div>
                 </div>
-
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    E-posta
-                  </label>
-                  <input
-                    ref={editingAgency ? editEmailInputRef : newEmailInputRef}
-                    type="email"
-                    defaultValue=""
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    placeholder="info@acente.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Adres
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <MapPin size={12} /> Adres
                   </label>
                   <textarea
                     ref={editingAgency ? editAddressInputRef : newAddressInputRef}
-                    defaultValue=""
+                    defaultValue={editingAgency?.address || ''}
                     rows={2}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    placeholder="Adres bilgisi"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm resize-none"
+                    placeholder="Tam adres..."
                   />
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Vergi Numarası
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Vergi No
                     </label>
                     <input
                       ref={editingAgency ? editTaxNumberInputRef : newTaxNumberInputRef}
                       type="text"
-                      defaultValue=""
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                      placeholder="Vergi numarası"
+                      defaultValue={editingAgency?.tax_number || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Vergi Dairesi
                     </label>
                     <input
                       ref={editingAgency ? editTaxOfficeInputRef : newTaxOfficeInputRef}
                       type="text"
-                      defaultValue=""
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                      placeholder="Vergi dairesi"
+                      defaultValue={editingAgency?.tax_office || ''}
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                     />
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Muhasebe Bağlantı Kodu (TL)
-                    </label>
-                    <input
-                      ref={editingAgency ? editTlCodeInputRef : newTlCodeInputRef}
-                      type="text"
-                      defaultValue=""
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                      placeholder="Örn: 120.01.001"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Muhasebe Bağlantı Kodu (EUR)
-                    </label>
-                    <input
-                      ref={editingAgency ? editEurCodeInputRef : newEurCodeInputRef}
-                      type="text"
-                      defaultValue=""
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                      placeholder="Örn: 120.01.002"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Muhasebe Bağlantı Kodu (USD)
-                    </label>
-                    <input
-                      ref={editingAgency ? editUsdCodeInputRef : newUsdCodeInputRef}
-                      type="text"
-                      defaultValue=""
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                      placeholder="Örn: 120.01.003"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Muhasebe Bağlantı Kodu (GBP)
-                    </label>
-                    <input
-                      ref={editingAgency ? editGbpCodeInputRef : newGbpCodeInputRef}
-                      type="text"
-                      defaultValue=""
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                      placeholder="Örn: 120.01.004"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-2 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddModal(false);
-                      setEditingAgency(null);
-                      setFormData({ name: '', company_name: '', contact_person: '', phone: '', email: '', address: '', tax_number: '', tax_office: '', accounting_link_codes: { TL: '', EUR: '', USD: '', GBP: '' } });
-                    }}
-                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 bg-white dark:bg-gray-800"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs"
-                  >
-                    {editingAgency ? 'Güncelle' : 'Kaydet'}
-                  </button>
-                </div>
-                </form>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Success/Error Messages */}
-        {success && (
-          <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-            {success}
+          <div className="space-y-4 pt-2">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <FileText size={16} className="text-blue-500" />
+              Muhasebe Bağlantı Kodları
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">TL Kodu</label>
+                <input ref={editingAgency ? editTlCodeInputRef : newTlCodeInputRef} type="text" defaultValue={editingAgency?.accounting_link_codes?.TL || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">EUR Kodu</label>
+                <input ref={editingAgency ? editEurCodeInputRef : newEurCodeInputRef} type="text" defaultValue={editingAgency?.accounting_link_codes?.EUR || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">USD Kodu</label>
+                <input ref={editingAgency ? editUsdCodeInputRef : newUsdCodeInputRef} type="text" defaultValue={editingAgency?.accounting_link_codes?.USD || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">GBP Kodu</label>
+                <input ref={editingAgency ? editGbpCodeInputRef : newGbpCodeInputRef} type="text" defaultValue={editingAgency?.accounting_link_codes?.GBP || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+              </div>
+            </div>
           </div>
-        )}
-        {error && (
-          <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-            {error}
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddModal(false);
+                setEditingAgency(null);
+              }}
+              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+            >
+              {editingAgency ? <Pencil size={18} /> : <Plus size={18} />}
+              {editingAgency ? 'Güncelle' : 'Acente Oluştur'}
+            </button>
           </div>
-        )}
-      </div>
+        </form>
+      </Modal>
+
+      {/* Silme Onay Modal */}
+      <ConfirmModal
+        isOpen={!!agencyToDelete}
+        title="Acenteyi Sil"
+        message="Bu acenteyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        onConfirm={() => agencyToDelete && handleDelete(agencyToDelete)}
+        onCancel={() => setAgencyToDelete(null)}
+        type="danger"
+        confirmText="Evet, Sil"
+        cancelText="İptal"
+      />
+
+      {/* Mesaj Bildirimleri */}
+      {(success || error) && (
+        <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-[1000] border backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          success 
+            ? 'bg-green-500/90 border-green-400 text-white' 
+            : 'bg-red-500/90 border-red-400 text-white'
+        }`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${success ? 'bg-green-400/20' : 'bg-red-400/20'}`}>
+            {success ? <Plus size={18} className="text-white" /> : <Building2 size={18} className="text-white" />}
+          </div>
+          <span className="font-bold text-sm">{success || error}</span>
+        </div>
+      )}
     </div>
+  </div>
   );
 } 

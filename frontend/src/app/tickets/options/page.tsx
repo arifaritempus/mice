@@ -11,6 +11,9 @@ import { ticketOptionsService, AgencyService, SupplierService } from '@/lib/supa
 import PaginationControls from '@/components/PaginationControls'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination'
+import { toast } from 'react-hot-toast'
+import Modal from '@/components/Modal'
+import { Trash2, AlertCircle } from 'lucide-react'
 
 interface TicketOption {
   id: string
@@ -55,6 +58,7 @@ interface DateRangeFieldProps {
   endValue: string
   onStartChange: (value: string) => void
   onEndChange: (value: string) => void
+  onApply?: (start: string, end: string) => void
 }
 
 const toDate = (value: string) => {
@@ -96,7 +100,7 @@ function toCalendarYmd(value: string | Date | null | undefined): string {
   return m ? m[1] : ''
 }
 
-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange }: DateRangeFieldProps) {
+function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const calendarRef = useRef<HTMLDivElement | null>(null)
   const startDate = toDate(startValue)
@@ -168,14 +172,52 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
 
   const handleStartTextChange = (value: string) => {
     setStartText(value)
-    const parsed = parseTypedDate(value)
-    if (parsed !== null) onStartChange(parsed)
+    if (value === '') {
+      onStartChange('')
+      if (onApply) onApply('', endText.length === 10 ? parseTypedDate(endText) || '' : '')
+      return
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value)
+      if (parsed !== null) {
+        onStartChange(parsed)
+        if (onApply) {
+          const endParsed = endText.length === 10 ? parseTypedDate(endText) : ''
+          onApply(parsed, endParsed || '')
+        }
+      }
+    }
   }
 
   const handleEndTextChange = (value: string) => {
     setEndText(value)
-    const parsed = parseTypedDate(value)
-    if (parsed !== null) onEndChange(parsed)
+    if (value === '') {
+      onEndChange('')
+      if (onApply) onApply(startText.length === 10 ? parseTypedDate(startText) || '' : '', '')
+      return
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value)
+      if (parsed !== null) {
+        onEndChange(parsed)
+        if (onApply) {
+          const startParsed = startText.length === 10 ? parseTypedDate(startText) : ''
+          onApply(startParsed || '', parsed)
+        }
+      }
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const s = parseTypedDate(startText) || ''
+      const e_ = parseTypedDate(endText) || ''
+      onStartChange(s)
+      onEndChange(e_)
+      if (onApply) onApply(s, e_)
+      setIsCalendarOpen(false)
+    }
   }
 
   const calStart = isCalendarOpen ? pickerRange[0] : startDate
@@ -191,15 +233,17 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
           onFocus={openCalendar}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
         <input
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
           onFocus={openCalendar}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
       {isCalendarOpen &&
@@ -434,8 +478,9 @@ export default function TicketOptionsPage() {
     );
   };
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expired' | 'confirmed' | 'cancelled'>('all')
-  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' })
-  const [flightDateRange, setFlightDateRange] = useState({ startDate: '', endDate: '' })
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' }) // Uçuş Tarihi
+  const [flightDateRange, setFlightDateRange] = useState({ startDate: '', endDate: '' }) // Opsiyon Tarihi
 
   const [voucherTokens, setVoucherTokens] = useState<string[]>([])
   const [voucherInput, setVoucherInput] = useState('')
@@ -494,6 +539,11 @@ export default function TicketOptionsPage() {
   const [showStatusChangeModal, setShowStatusChangeModal] = useState(false)
   const [statusChangeTicket, setStatusChangeTicket] = useState<TicketOption | null>(null)
   const [newStatus, setNewStatus] = useState<'active' | 'expired' | 'confirmed' | 'cancelled'>('active')
+  
+  // Silme Onay Modal State
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [ticketToDelete, setTicketToDelete] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   // Yeni state'ler
   const [showAddModal, setShowAddModal] = useState(false)
@@ -966,6 +1016,7 @@ export default function TicketOptionsPage() {
     setSortField('')
     setSortDirection('asc')
     setFilterKey((k) => k + 1)
+    setPage(1)
   }, [])
 
   const openAddModal = () => {
@@ -1065,22 +1116,33 @@ export default function TicketOptionsPage() {
       })
     } catch (error) {
       console.error('Bilet opsiyonu eklenirken hata:', error)
-      alert('Bilet opsiyonu eklenirken bir hata oluştu. Lütfen tekrar deneyin.')
+      toast.error('Bilet opsiyonu eklenirken bir hata oluştu. Lütfen tekrar deneyin.')
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Bu bilet opsiyonunu silmek istediğinizden emin misiniz?')) {
-      try {
-        await ticketOptionsService.delete(id)
-        
-        // State'i güncelle
-        const updatedOptions = ticketOptions.filter(option => option.id !== id)
-        setTicketOptions(updatedOptions)
-      } catch (error) {
-        console.error('Bilet opsiyonu silinirken hata:', error)
-        alert('Bilet opsiyonu silinirken bir hata oluştu. Lütfen tekrar deneyin.')
-      }
+  const handleDeleteClick = (id: string) => {
+    setTicketToDelete(id)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleDelete = async () => {
+    if (!ticketToDelete) return
+    
+    setIsDeleting(true)
+    try {
+      await ticketOptionsService.delete(ticketToDelete)
+      
+      // State'i güncelle
+      const updatedOptions = ticketOptions.filter(option => option.id !== ticketToDelete)
+      setTicketOptions(updatedOptions)
+      toast.success('Bilet opsiyonu başarıyla silindi.')
+      setShowDeleteConfirm(false)
+    } catch (error) {
+      console.error('Bilet opsiyonu silinirken hata:', error)
+      toast.error('Bilet opsiyonu silinirken bir hata oluştu. Lütfen tekrar deneyin.')
+    } finally {
+      setIsDeleting(false)
+      setTicketToDelete(null)
     }
   }
 
@@ -1163,7 +1225,7 @@ export default function TicketOptionsPage() {
       setEditingTicket(null)
     } catch (error) {
       console.error('Bilet opsiyonu güncellenirken hata:', error)
-      alert('Bilet opsiyonu güncellenirken bir hata oluştu. Lütfen tekrar deneyin.')
+      toast.error('Bilet opsiyonu güncellenirken bir hata oluştu. Lütfen tekrar deneyin.')
     }
   }
 
@@ -1227,7 +1289,7 @@ export default function TicketOptionsPage() {
       setConfirmDate('')
     } catch (error) {
       console.error('Bilet opsiyonu konfirme edilirken hata:', error)
-      alert('Bilet opsiyonu konfirme edilirken bir hata oluştu. Lütfen tekrar deneyin.')
+      toast.error('Bilet opsiyonu konfirme edilirken bir hata oluştu. Lütfen tekrar deneyin.')
     }
   }
 
@@ -1265,7 +1327,7 @@ export default function TicketOptionsPage() {
       setStatusChangeTicket(null)
     } catch (error) {
       console.error('Bilet opsiyonu durumu değiştirilirken hata:', error)
-      alert('Bilet opsiyonu durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.')
+      toast.error('Bilet opsiyonu durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.')
     }
   }
 
@@ -1288,10 +1350,20 @@ export default function TicketOptionsPage() {
               </p>
             </div>
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={exportOptionsExcel}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm text-xs font-semibold"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Excel
+              </button>
               {canCreate(Module.TICKETS) && (
                 <button 
                   onClick={openAddModal}
-                  className="bg-blue-600 dark:bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs"
+                  className="bg-blue-600 dark:bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs font-semibold"
                 >
                   Opsiyon Takip Ekle
                 </button>
@@ -1369,52 +1441,36 @@ export default function TicketOptionsPage() {
           <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">Arama ve Filtreleme</h3>
             <div className="flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                onClick={exportOptionsExcel}
-                className="rounded bg-green-600 px-2 py-1 text-xs text-white transition-colors duration-200 hover:bg-green-700"
-              >
-                Excel
-              </button>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-red-500 text-white transition-colors duration-200 hover:bg-red-600"
-                title="Filtreleri temizle"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
             </div>
           </div>
-          <div className="w-full min-w-0 overflow-x-auto pb-0.5 [scrollbar-width:thin]">
+          <div className="w-full min-w-0">
             <div
-              className="grid min-w-[960px] items-end gap-x-1 gap-y-1"
+              className="grid w-full min-w-0 items-end gap-x-1 gap-y-1"
               style={{
-                gridTemplateColumns:
-                  'minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr) minmax(0, 1fr)'
+                gridTemplateColumns: '2fr 2fr 1.2fr 1.8fr 1.8fr 1.2fr 1.2fr auto'
               }}
             >
-              <DateRangeField
-                label="Gidiş Dönüş Tarihi"
-                startValue={dateRange.startDate}
-                endValue={dateRange.endDate}
-                onStartChange={(value) => setDateRange((prev) => ({ ...prev, startDate: value }))}
-                onEndChange={(value) => setDateRange((prev) => ({ ...prev, endDate: value }))}
-              />
               <DateRangeField
                 label="Opsiyon bitiş tarihi"
                 startValue={flightDateRange.startDate}
                 endValue={flightDateRange.endDate}
                 onStartChange={(value) => setFlightDateRange((prev) => ({ ...prev, startDate: value }))}
                 onEndChange={(value) => setFlightDateRange((prev) => ({ ...prev, endDate: value }))}
+                onApply={() => setPage(1)}
+              />
+              <DateRangeField
+                label="Gidiş Dönüş Tarihi"
+                startValue={dateRange.startDate}
+                endValue={dateRange.endDate}
+                onStartChange={(value) => setDateRange((prev) => ({ ...prev, startDate: value }))}
+                onEndChange={(value) => setDateRange((prev) => ({ ...prev, endDate: value }))}
+                onApply={() => setPage(1)}
               />
               <MultiTokenFilterInput
                 label="Voucher"
                 tokens={voucherTokens}
                 inputValue={voucherInput}
-                suggestions={voucherSuggestions}
+                suggestions={[]}
                 onInputChange={setVoucherInput}
                 onAddToken={(value) => addToken(value, setVoucherTokens, setVoucherInput)}
                 onRemoveToken={(value) => removeToken(value, setVoucherTokens)}
@@ -1423,7 +1479,7 @@ export default function TicketOptionsPage() {
                 label="Acente / Firma"
                 tokens={customerTokens}
                 inputValue={customerInput}
-                suggestions={customerSuggestions}
+                suggestions={agencies.map(a => a.name)}
                 onInputChange={setCustomerInput}
                 onAddToken={(value) => addToken(value, setCustomerTokens, setCustomerInput)}
                 onRemoveToken={(value) => removeToken(value, setCustomerTokens)}
@@ -1432,7 +1488,7 @@ export default function TicketOptionsPage() {
                 label="Tedarikçi"
                 tokens={supplierTokens}
                 inputValue={supplierInput}
-                suggestions={supplierSuggestions}
+                suggestions={suppliers.map(s => s.name)}
                 onInputChange={setSupplierInput}
                 onAddToken={(value) => addToken(value, setSupplierTokens, setSupplierInput)}
                 onRemoveToken={(value) => removeToken(value, setSupplierTokens)}
@@ -1441,20 +1497,30 @@ export default function TicketOptionsPage() {
                 label="Havayolu"
                 tokens={airlineTokens}
                 inputValue={airlineInput}
-                suggestions={airlineSuggestions}
+                suggestions={[]}
                 onInputChange={setAirlineInput}
                 onAddToken={(value) => addToken(value, setAirlineTokens, setAirlineInput)}
                 onRemoveToken={(value) => removeToken(value, setAirlineTokens)}
               />
               <MultiTokenFilterInput
-                label="PNR / Grup / Güzergah"
+                label="PNR / Grup"
                 tokens={routeTokens}
                 inputValue={routeInput}
-                suggestions={routeSuggestions}
+                suggestions={[]}
                 onInputChange={setRouteInput}
                 onAddToken={(value) => addToken(value, setRouteTokens, setRouteInput)}
                 onRemoveToken={(value) => removeToken(value, setRouteTokens)}
               />
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-red-500 text-white transition-colors duration-200 hover:bg-red-600 shadow-sm mb-0.5"
+                title="Filtreleri temizle"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -1717,7 +1783,7 @@ export default function TicketOptionsPage() {
                         )}
                         {canDelete(Module.TICKETS) && (
                           <button 
-                            onClick={() => handleDelete(option.id)}
+                            onClick={() => handleDeleteClick(option.id)}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200" 
                             title="Sil"
                           >
@@ -2566,6 +2632,53 @@ export default function TicketOptionsPage() {
           </div>
         </div>
       )}
+
+      {/* MODERN SİLME ONAY MODALI */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+        title="Bilet Opsiyonunu Sil"
+      >
+        <div className="p-6 text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Emin misiniz?</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Bu bilet opsiyonunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-medium"
+            >
+              Vazgeç
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Siliniyor...
+                </>
+              ) : (
+                'Evet, Sil'
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <style jsx global>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(16px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   )
 }

@@ -498,6 +498,7 @@ router.get('/tickets', async (req, res) => {
     const airlineTerms = parseFilterTokens(req.query.airlineTerms);
     const supplierTerms = parseFilterTokens(req.query.supplierTerms);
     const guestTerms = parseFilterTokens(req.query.guestTerms);
+    const filter = String(req.query.filter || 'all').toLowerCase();
     const startDate = String(req.query.startDate || '');
     const endDate = String(req.query.endDate || '');
     const flightStartDate = String(req.query.flightStartDate || '');
@@ -661,7 +662,12 @@ router.get('/tickets', async (req, res) => {
       }))
     ];
 
-    const filtered = merged.filter((row) => {
+    const matchesTypeFilter = (row) =>
+      filter === 'all' ||
+      (filter === 'mice' && row.sejourId && row.sejourId.startsWith('project:')) ||
+      (filter === 'sejour' && row.sejourId && !row.sejourId.startsWith('project:'));
+
+    const baseFiltered = merged.filter((row) => {
       const tDate = String(row.ticketingDate || '').slice(0, 10);
       const fDate = String(row.flightDate || '').slice(0, 10);
       const ticketingRangePass = (!startDate || tDate >= startDate) && (!endDate || tDate <= endDate);
@@ -671,7 +677,6 @@ router.get('/tickets', async (req, res) => {
       const matchesFieldTerms = (terms, values) => {
         if (!Array.isArray(terms) || terms.length === 0) return true;
         const target = values.map((v) => String(v || '').toLowerCase()).join(' ');
-        // Aynı bar içinde birden fazla değer OR çalışır (barlar arası AND korunur)
         return terms.some((term) => target.includes(term));
       };
 
@@ -702,6 +707,14 @@ router.get('/tickets', async (req, res) => {
       return searchParts.every((term) => haystack.includes(term));
     });
 
+    const typeCounts = {
+      all: baseFiltered.length,
+      mice: baseFiltered.filter((r) => r.sejourId && r.sejourId.startsWith('project:')).length,
+      sejour: baseFiltered.filter((r) => r.sejourId && !r.sejourId.startsWith('project:')).length
+    };
+
+    const filtered = baseFiltered.filter(matchesTypeFilter);
+
     filtered.sort((a, b) => {
       const dir = sortDirection === 'asc' ? 1 : -1;
       const av = a[sortField] ?? '';
@@ -726,6 +739,7 @@ router.get('/tickets', async (req, res) => {
         sejour: sejourCount || 0,
         mice: projectCount || 0
       },
+      typeCounts,
       message: 'Bilet verileri başarıyla getirildi'
     });
   } catch (error) {
@@ -756,7 +770,8 @@ router.get('/guides', async (req, res) => {
     const customerTerms = parseFilterTokens(req.query.customerTerms);
     const hotelTerms = parseFilterTokens(req.query.hotelTerms);
     const supplierTerms = parseFilterTokens(req.query.supplierTerms);
-    const guideTerms = parseFilterTokens(req.query.guideTerms);
+    const employeeTerms = parseFilterTokens(req.query.employeeTerms);
+    const filter = String(req.query.filter || 'all').toLowerCase();
     const startDate = String(req.query.startDate || '');
     const endDate = String(req.query.endDate || '');
     const sortField = String(req.query.sortField || 'created_at');
@@ -901,7 +916,12 @@ router.get('/guides', async (req, res) => {
         }))
     ];
 
-    const filtered = merged.filter((row) => {
+    const matchesTypeFilter = (row) =>
+      filter === 'all' ||
+      (filter === 'mice' && row.customer_type === 'mice') ||
+      (filter === 'sejour' && row.customer_type === 'sejour');
+
+    const baseFiltered = merged.filter((row) => {
       const d = String(row.check_in_date || '').slice(0, 10);
       const rangePass = (!startDate || d >= startDate) && (!endDate || d <= endDate);
       if (!rangePass) return false;
@@ -937,6 +957,14 @@ router.get('/guides', async (req, res) => {
       return searchParts.every((term) => haystack.includes(term));
     });
 
+    const typeCounts = {
+      all: baseFiltered.length,
+      mice: baseFiltered.filter((r) => r.customer_type === 'mice').length,
+      sejour: baseFiltered.filter((r) => r.customer_type === 'sejour').length
+    };
+
+    const filtered = baseFiltered.filter(matchesTypeFilter);
+
     filtered.sort((a, b) => {
       const dir = sortDirection === 'asc' ? 1 : -1;
       const av = a[sortField] ?? '';
@@ -959,6 +987,7 @@ router.get('/guides', async (req, res) => {
         sejour: sejourCount || 0,
         mice: projectCount || 0
       },
+      typeCounts,
       message: 'Rehber verileri başarıyla getirildi'
     });
   } catch (error) {
@@ -983,6 +1012,7 @@ router.get('/part-time', async (req, res) => {
     const hotelTerms = parseFilterTokens(req.query.hotelTerms);
     const supplierTerms = parseFilterTokens(req.query.supplierTerms);
     const employeeTerms = parseFilterTokens(req.query.employeeTerms);
+    const filter = String(req.query.filter || 'all').toLowerCase();
     const startDate = String(req.query.startDate || '');
     const endDate = String(req.query.endDate || '');
     const sortField = String(req.query.sortField || 'created_at');
@@ -1129,7 +1159,12 @@ router.get('/part-time', async (req, res) => {
         }))
     ];
 
-    const filtered = merged.filter((row) => {
+    const matchesTypeFilter = (row) =>
+      filter === 'all' ||
+      (filter === 'mice' && row.customer_type === 'mice') ||
+      (filter === 'sejour' && row.customer_type === 'sejour');
+
+    const baseFiltered = merged.filter((row) => {
       const d = String(row.check_in_date || '').slice(0, 10);
       const rangePass = (!startDate || d >= startDate) && (!endDate || d <= endDate);
       if (!rangePass) return false;
@@ -1165,6 +1200,14 @@ router.get('/part-time', async (req, res) => {
       return searchParts.every((term) => haystack.includes(term));
     });
 
+    const typeCounts = {
+      all: baseFiltered.length,
+      mice: baseFiltered.filter((r) => r.customer_type === 'mice').length,
+      sejour: baseFiltered.filter((r) => r.customer_type === 'sejour').length
+    };
+
+    const filtered = baseFiltered.filter(matchesTypeFilter);
+
     filtered.sort((a, b) => {
       const dir = sortDirection === 'asc' ? 1 : -1;
       const av = a[sortField] ?? '';
@@ -1187,6 +1230,7 @@ router.get('/part-time', async (req, res) => {
         sejour: sejourCount || 0,
         mice: projectCount || 0
       },
+      typeCounts,
       message: 'Part-time verileri başarıyla getirildi'
     });
   } catch (error) {

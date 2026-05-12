@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  BarChart3, 
-  Calendar, 
   Users, 
   Hotel, 
   Plane, 
@@ -17,10 +15,10 @@ import {
   Briefcase,
   FileText,
   UserCheck,
-  LayoutDashboard,
   ArrowUpRight,
   RefreshCcw,
-  Search
+  Search,
+  FilePlus
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
@@ -40,9 +38,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
-  PieChart,
-  Pie
+  Cell
 } from 'recharts';
 
 interface Project {
@@ -54,6 +50,8 @@ interface Project {
   client_name: string;
   budget: number;
   revenue: number;
+  title?: string;
+  company_name?: string;
 }
 
 interface Sejour {
@@ -65,6 +63,17 @@ interface Sejour {
   guest_count: number;
   total_cost: number;
   status: string;
+  voucherNumber?: string;
+  voucher_number?: string;
+  customerName?: string;
+  customer_name?: string;
+  checkInDate?: string;
+  check_in_date?: string;
+  checkOutDate?: string;
+  check_out_date?: string;
+  totalAmount?: number;
+  total_amount?: number;
+  rooms?: { hotelName?: string }[];
 }
 
 interface Transfer {
@@ -76,6 +85,11 @@ interface Transfer {
   guest_count: number;
   cost: number;
   status: string;
+  service_type?: string;
+  transfer_type?: string;
+  transfer_date?: string;
+  passenger_count?: number;
+  cost_amount?: number;
 }
 
 interface Ticket {
@@ -87,6 +101,13 @@ interface Ticket {
   passenger_count: number;
   cost: number;
   status: string;
+  airline?: string;
+  flight_type?: string;
+  voucher_no?: string;
+  departure_date?: string;
+  entry_date?: string;
+  return_date?: string;
+  total_cost?: number;
 }
 
 interface Guide {
@@ -97,6 +118,13 @@ interface Guide {
   guest_count: number;
   cost: number;
   status: string;
+  description?: string;
+  date?: string;
+  created_at?: string;
+  hotel?: string;
+  amount?: number;
+  sub_category_id?: string;
+  sub_category_name?: string;
 }
 
 interface PartTime {
@@ -107,6 +135,12 @@ interface PartTime {
   hours: number;
   hourly_rate: number;
   status: string;
+  description?: string;
+  date?: string;
+  created_at?: string;
+  hotel?: string;
+  sub_category_id?: string;
+  sub_category_name?: string;
 }
 
 interface DashboardData {
@@ -121,7 +155,7 @@ interface DashboardData {
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'];
 
 export default function HomePage() {
-  const { canView, canCreate, loading: permissionsLoading } = usePermissions();
+  const { canCreate, loading: permissionsLoading } = usePermissions();
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     upcomingProjects: [],
     upcomingSejours: [],
@@ -132,71 +166,153 @@ export default function HomePage() {
   });
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
-  const [activeTab, setActiveTab] = useState<'overview' | 'activity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'activity'>('activity');
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
 
-      const [projectsData, sejoursData, ticketOptionsData, categoriesData] = await Promise.allSettled([
+      const [projectsRes, sejoursRes, ticketsRes, categoriesRes] = await Promise.allSettled([
         projectsService.getAll(),
         SejourService.getSejours(),
         ticketOptionsService.getAll(),
         categoriesService.getAll()
       ]);
 
-      const getData = (result: PromiseSettledResult<any>) => {
-        if (result.status === 'fulfilled') {
-          return result.value;
-        }
-        console.warn('Dashboard element load failed:', result.reason);
-        return [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      const filterUpcoming = <T extends Record<string, unknown>>(items: T[], dateField: string): T[] => {
+        return items.filter(item => {
+          const dateVal = item[dateField] || item.start_date || item.check_in_date || item.transfer_date || item.flight_date || item.service_date || item.date;
+          if (!dateVal) return false;
+          const itemDate = new Date(dateVal as string);
+          return itemDate >= today && itemDate <= thirtyDaysFromNow;
+        }).sort((a, b) => {
+          const aDateStr = a[dateField] || a.start_date || a.check_in_date || a.transfer_date || a.flight_date || a.service_date || a.date;
+          const bDateStr = b[dateField] || b.start_date || b.check_in_date || b.transfer_date || b.flight_date || b.service_date || b.date;
+          const aDate = new Date(aDateStr as string).getTime();
+          const bDate = new Date(bDateStr as string).getTime();
+          return aDate - bDate;
+        }).slice(0, 5);
       };
 
-      let projects = getData(projectsData);
-      if (!Array.isArray(projects)) projects = [];
-      projects = projects.map((p: any) => ({
+      const projects = projectsRes.status === 'fulfilled' ? (projectsRes.value as Project[]) : [];
+      const mappedProjects = projects.map(p => ({
         ...p,
         name: p.title || p.name || 'Untitled',
         client_name: p.company_name || p.client_name || 'Bilinmeyen Müşteri'
       }));
 
-      const sejoursRaw = getData(sejoursData);
-      let sejours = Array.isArray(sejoursRaw) ? sejoursRaw : (sejoursRaw?.data || []);
-      sejours = sejours.map((s: any) => ({
+      const sejoursRaw = sejoursRes.status === 'fulfilled' ? sejoursRes.value : [];
+      const sejours = (Array.isArray(sejoursRaw) ? sejoursRaw : ((sejoursRaw as { data?: Sejour[] }).data || [])) as any[];
+      const mappedSejours = sejours.map(s => ({
         ...s,
         name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
-        start_date: s.checkInDate || s.check_in_date,
-        end_date: s.checkOutDate || s.check_out_date,
+        start_date: s.checkInDate || s.check_in_date || '',
+        end_date: s.checkOutDate || s.check_out_date || '',
         hotel_name: s.rooms?.[0]?.hotelName || s.hotel_name || '',
         guest_count: s.rooms?.length || 0,
         total_cost: s.totalAmount || s.total_amount || 0
       }));
 
-      const activeProjects = projects.filter((p: any) => (p.status || '').toLowerCase() === 'active');
+      // Project Transfers
+      const activeProjects = mappedProjects.filter(p => (p.status || '').toLowerCase() === 'active');
       const transferBuckets = await Promise.all(
-        activeProjects.map((p: any) =>
-          projectTransfersService.getByProjectId(p.id).catch(() => [])
-        )
+        activeProjects.map(p => projectTransfersService.getByProjectId(p.id).catch(() => []))
       );
-      const transfers = transferBuckets
-        .flat()
-        .map((t: any) => ({
-          id: t.id,
-          type: t.service_type || t.transfer_type || 'Transfer',
-          pickup_location: t.pickup_location || '',
-          dropoff_location: t.dropoff_location || '',
-          date: t.date || t.transfer_date || '',
-          guest_count: t.passenger_count || 0,
-          cost: t.cost_amount || 0,
-          status: t.status || 'confirmed'
+      const projectTransfers = (transferBuckets.flat() as Transfer[]).map(t => ({
+        id: t.id,
+        type: t.service_type || t.transfer_type || 'Transfer',
+        pickup_location: t.pickup_location || '',
+        dropoff_location: t.dropoff_location || '',
+        date: t.date || t.transfer_date || '',
+        guest_count: t.passenger_count || 0,
+        cost: t.cost_amount || 0,
+        status: t.status || 'confirmed'
+      }));
+
+      // Sejour Transfers
+      const sejourTransfers = sejours.flatMap(s => (s.transfers || []).map((t: any) => ({
+        id: t.id,
+        type: t.type || t.transferType || 'Sejour Transfer',
+        pickup_location: t.direction === 'arrival' ? 'Havalimanı' : (t.routeDescription || 'Otel'),
+        dropoff_location: t.direction === 'arrival' ? (t.routeDescription || 'Otel') : 'Havalimanı',
+        date: t.date || s.check_in_date || s.checkInDate || '',
+        guest_count: s.guest_count || 0,
+        cost: t.price || 0,
+        status: 'confirmed'
+      })));
+
+      const allTransfers = [...projectTransfers, ...sejourTransfers];
+
+      // Project HR
+      const hrBuckets = await Promise.all(
+        activeProjects.map(p => projectHumanResourcesService.getByProjectId(p.id).catch(() => []))
+      );
+      const hrRows = hrBuckets.flat() as (Guide & PartTime)[];
+
+      const categories = categoriesRes.status === 'fulfilled' ? (categoriesRes.value as { id: string; name: string }[]) : [];
+      const categoryById: Record<string, { id: string; name: string }> = {};
+      categories.forEach(c => { categoryById[c.id] = c; });
+
+      const mappedGuides = hrRows
+        .filter(r => {
+          const n = (categoryById[r.sub_category_id || '']?.name || r.sub_category_name || '').toString().toLowerCase();
+          return n.includes('rehber') || n.includes('guide');
+        })
+        .map(r => ({
+          id: r.id,
+          name: r.description || 'Kokartli Rehber',
+          service_date: r.date || r.created_at || '',
+          location: r.hotel || '',
+          guest_count: 0,
+          cost: r.amount || 0,
+          status: 'confirmed'
         }));
 
-      let tickets = getData(ticketOptionsData);
-      if (!Array.isArray(tickets)) tickets = [];
-      tickets = tickets
-        .filter((t: any) => (t.status || '').toLowerCase() === 'confirmed')
-        .map((t: any) => ({
+      const mappedPartTime = hrRows
+        .filter(r => {
+          const n = (categoryById[r.sub_category_id || '']?.name || r.sub_category_name || '').toString().toLowerCase();
+          return (n.includes('part') && n.includes('time')) || n.includes('yari zamanli') || n.includes('insan kaynak');
+        })
+        .map(r => ({
+          id: r.id,
+          name: r.description || 'Part-Time',
+          service_date: r.date || r.created_at || '',
+          location: r.hotel || '',
+          hours: 0,
+          hourly_rate: 0,
+          status: 'confirmed'
+        }));
+
+      // Sejour Extras (Guides & Part-Time)
+      const sejourExtras = sejours.flatMap(s => (s.extraServices || []).map((e: any) => {
+        const n = (e.serviceTypeName || '').toLowerCase();
+        const isGuide = n.includes('rehber') || n.includes('guide');
+        const isPartTime = (n.includes('part') && n.includes('time')) || n.includes('yari zamanli') || n.includes('insan kaynak');
+
+        return {
+          id: e.id,
+          name: e.serviceName || e.serviceTypeName || 'Ek Hizmet',
+          service_date: s.checkInDate || s.check_in_date || '',
+          location: e.supplierName || '',
+          cost: e.price || 0,
+          status: 'confirmed',
+          isGuide,
+          isPartTime
+        };
+      }));
+
+      const allGuides = [...mappedGuides, ...sejourExtras.filter(e => e.isGuide)];
+      const allPartTime = [...mappedPartTime, ...sejourExtras.filter(e => e.isPartTime)];
+
+      // Tickets (Project Options + Sejour Flights)
+      const tickets = ticketsRes.status === 'fulfilled' ? (ticketsRes.value as Ticket[]) : [];
+      const mappedTickets = tickets
+        .filter(t => (t.status || '').toLowerCase() === 'confirmed')
+        .map(t => ({
           id: t.id,
           flight_number: t.airline || t.flight_type || t.voucher_no || 'Bilet',
           departure: t.departure_date || '',
@@ -207,73 +323,26 @@ export default function HomePage() {
           status: t.status || 'confirmed'
         }));
 
-      const cats = Array.isArray(getData(categoriesData)) ? getData(categoriesData) : [];
-      const categoryById: Record<string, any> = {};
-      cats.forEach((c: any) => { categoryById[c.id] = c; });
-      const hrBuckets = await Promise.all(
-        activeProjects.map((p: any) =>
-          projectHumanResourcesService.getByProjectId(p.id).catch(() => [])
-        )
-      );
-      const hrRows = hrBuckets.flat();
+      const sejourFlights = sejours.flatMap(s => (s.flights || []).map((f: any) => ({
+        id: f.id,
+        flight_number: f.flightNo || f.airline || 'Sejour Uçuş',
+        departure: f.route || '',
+        arrival: '',
+        date: f.flightDate || f.departureDate || '',
+        passenger_count: f.totalPassengers || 0,
+        cost: f.totalPrice || 0,
+        status: 'confirmed'
+      })));
 
-      const guides = hrRows
-        .filter((r: any) => {
-          const n = (categoryById[r.sub_category_id]?.name || r.sub_category_name || '').toString().toLowerCase();
-          return n.includes('rehber') || n.includes('guide');
-        })
-        .map((r: any) => ({
-          id: r.id,
-          name: r.description || 'Kokartli Rehber',
-          service_date: r.date || r.created_at || '',
-          location: r.hotel || '',
-          guest_count: 0,
-          cost: r.amount || 0,
-          status: 'confirmed'
-        }));
-
-      const partTime = hrRows
-        .filter((r: any) => {
-          const n = (categoryById[r.sub_category_id]?.name || r.sub_category_name || '').toString().toLowerCase();
-          return (n.includes('part') && n.includes('time')) || n.includes('yari zamanli') || n.includes('insan kaynak');
-        })
-        .map((r: any) => ({
-          id: r.id,
-          name: r.description || 'Part-Time',
-          service_date: r.date || r.created_at || '',
-          location: r.hotel || '',
-          hours: 0,
-          hourly_rate: 0,
-          status: 'confirmed'
-        }));
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
-
-      const filterUpcoming = <T extends any>(items: T[], dateField: string): T[] => {
-        return items.filter(item => {
-          const itemAny = item as any;
-          const dateVal = itemAny[dateField] || itemAny.start_date || itemAny.check_in_date || itemAny.transfer_date || itemAny.flight_date || itemAny.service_date;
-          if (!dateVal) return false;
-          const itemDate = new Date(dateVal);
-          return itemDate >= today && itemDate <= thirtyDaysFromNow;
-        }).sort((a, b) => {
-          const aAny = a as any;
-          const bAny = b as any;
-          const aDate = new Date(aAny[dateField] || aAny.start_date || aAny.check_in_date || aAny.transfer_date || aAny.flight_date || aAny.service_date).getTime();
-          const bDate = new Date(bAny[dateField] || bAny.start_date || bAny.check_in_date || bAny.transfer_date || bAny.flight_date || bAny.service_date).getTime();
-          return aDate - bDate;
-        }).slice(0, 5);
-      };
+      const allTickets = [...mappedTickets, ...sejourFlights];
 
       setDashboardData({
-        upcomingProjects: filterUpcoming(projects, 'start_date'),
-        upcomingSejours: filterUpcoming(sejours, 'start_date'),
-        upcomingTransfers: filterUpcoming(transfers, 'date'),
-        upcomingTickets: filterUpcoming(tickets, 'date'),
-        upcomingGuides: filterUpcoming(guides, 'service_date'),
-        upcomingPartTime: filterUpcoming(partTime, 'service_date')
+        upcomingProjects: filterUpcoming(mappedProjects, 'start_date'),
+        upcomingSejours: filterUpcoming(mappedSejours, 'start_date'),
+        upcomingTransfers: filterUpcoming(allTransfers, 'date'),
+        upcomingTickets: filterUpcoming(allTickets, 'date'),
+        upcomingGuides: filterUpcoming(allGuides, 'service_date'),
+        upcomingPartTime: filterUpcoming(allPartTime, 'service_date')
       });
 
       setLastUpdate(new Date());
@@ -297,496 +366,301 @@ export default function HomePage() {
     { name: 'Part-Time', count: dashboardData.upcomingPartTime.length, color: COLORS[5] },
   ].filter(d => d.count > 0), [dashboardData]);
 
-  const StatCard = ({ title, value, icon: Icon, color, link, delay }: { title: string; value: number; icon: any; color: string; link: string, delay: number }) => {
-    const colorMap: Record<string, string> = {
-      'text-blue-600': 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-      'text-emerald-600': 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-      'text-amber-600': 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-      'text-purple-600': 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 border-purple-200 dark:border-purple-800',
-    };
+  const stats = useMemo(() => [
+    { label: 'Aktif Projeler', value: dashboardData.upcomingProjects.length, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Bekleyen Sejourlar', value: dashboardData.upcomingSejours.length, icon: Hotel, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Bugünkü Transferler', value: dashboardData.upcomingTransfers.length, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'Personel Talepleri', value: dashboardData.upcomingPartTime.length, icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
+  ], [dashboardData]);
 
-    const colorClass = colorMap[color] || colorMap['text-blue-600'];
+  if (permissionsLoading) return <LoadingSpinner message="Sistem hazırlanıyor..." />;
 
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay }}
-        whileHover={{ scale: 1.02, y: -5 }}
-        className="relative"
-      >
-        <Link href={link} className="block h-full">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full min-h-[180px]">
-            {/* Top Row: Icon and Trend - Matching Dashboard Layout */}
-            <div className="flex items-start justify-between relative z-10">
-              <div className={`p-2.5 rounded-xl ${colorClass} border shadow-sm`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div className={`flex items-center text-[10px] font-black px-2 py-1 rounded-full ${colorClass.split(' ')[0]} ${colorClass.split(' ')[1]} border shadow-sm`}>
-                <TrendingUp className="w-3 h-3 mr-1" />
-                <span>+12%</span>
-              </div>
-            </div>
-            
-            {/* Middle Row: Value */}
-            <div className="relative z-10 mt-4">
-              <div className="flex items-baseline">
-                <p className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{value}</p>
-                <p className="text-gray-400 dark:text-gray-600 ml-2 text-xs font-bold uppercase tracking-wider">Kayıt</p>
-              </div>
-            </div>
-
-            {/* Bottom Row: Label */}
-            <div className="relative z-10">
-              <p className="text-gray-400 dark:text-gray-500 text-[10px] font-black uppercase tracking-[0.15em]">{title}</p>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-bold">Dönemsel Toplam</p>
-            </div>
+  const DashboardCard = ({ title, icon: Icon, children, link, color }: { title: string; icon: React.ElementType; children: React.ReactNode; link: string; color: string }) => (
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col h-full group hover:shadow-md transition-all duration-300">
+      <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-800 p-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
+            <Icon className={`w-4 h-4 ${color}`} />
           </div>
+          <h3 className="font-bold text-slate-900 dark:text-white uppercase text-[10px] tracking-wider">{title}</h3>
+        </div>
+        <Link href={link} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+          <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
         </Link>
-      </motion.div>
-    );
-  };
-
-  const QuickActionCard = ({ title, desc, icon: Icon, color, link, delay }: { title: string; desc: string; icon: any; color: string; link: string; delay: number }) => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, delay }}
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <Link href={link} className="group block">
-        <div className={`h-full p-4 rounded-2xl border border-transparent bg-gray-50 dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-800 hover:border-${color.split('-')[1]}-200 dark:hover:border-${color.split('-')[1]}-800 shadow-sm hover:shadow-md transition-all duration-300`}>
-          <div className="flex items-center space-x-4">
-            <div className={`p-3 rounded-xl ${color} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
-              <Icon className={`w-6 h-6 ${color}`} />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{title}</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{desc}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-400 ml-auto transition-colors" />
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-
-  const UpcomingItem = ({ item, icon: Icon, color, dateField, nameField }: any) => (
-    <div className="group flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900 transition-all duration-300">
-      <div className="flex items-center space-x-4">
-        <div className={`p-3 rounded-xl ${color} bg-opacity-10 group-hover:scale-110 transition-transform duration-300 border border-transparent group-hover:border-current`}>
-          <Icon className={`w-5 h-5 ${color}`} />
-        </div>
-        <div>
-          <p className="font-black text-gray-900 dark:text-white text-sm tracking-tight">
-            {item[nameField] || item.name || item.voucherNumber || 'İsimsiz'}
-          </p>
-          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">
-            <Calendar className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
-            {new Date(item[dateField] || item.start_date || item.check_in_date || item.transfer_date || item.flight_date || item.service_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
-          </div>
-        </div>
       </div>
-      <div className="flex flex-col items-end">
-        <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-          YAKLAŞAN
-        </span>
-        {item.hotel_name && (
-          <span className="text-[11px] text-gray-400 dark:text-gray-500 mt-1.5 font-bold truncate max-w-[120px] text-right">{item.hotel_name}</span>
-        )}
+      <div className="p-4 flex-1 space-y-2">
+        {children}
       </div>
     </div>
   );
 
-  if (loading || permissionsLoading) {
-    return <LoadingSpinner message="Ana Sayfa hazirlaniyor..." />;
-  }
-
-  const canViewProjects = canView(Module.PROJECTS);
-  const canViewSejour = canView(Module.SEJOUR);
-  const canViewOperations = canView(Module.OPERATIONS);
-  const canViewTickets = canView(Module.TICKETS);
-  const canViewHotels = canView(Module.HOTELS);
-  const canViewSuppliers = canView(Module.SUPPLIERS);
-  const canViewAgencies = canView(Module.AGENCIES);
-  const canViewCategories = canView(Module.CATEGORIES);
-  const canCreateSejour = canCreate(Module.SEJOUR);
-  const canCreateQuote = canCreate(Module.QUOTES);
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800/50 rounded-2xl flex items-center justify-center mb-3">
+        <Clock className="w-5 h-5 text-slate-300" />
+      </div>
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Yakın zamanda kayıt bulunmuyor</p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 w-full p-4 lg:p-8">
-      {/* Header / Hero Section - Left Aligned & Integrated */}
-      <header className="mb-10 relative text-left">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0f172a] p-4 md:p-6 lg:p-8 font-sans selection:bg-blue-100 selection:text-blue-900 transition-colors duration-500 flex flex-col">
+      
+      {/* Premium Header Section */}
+      <header className="w-full mb-8 flex flex-col gap-4 text-left">
         <motion.div 
-          initial={{ opacity: 0, x: -30 }}
+          initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
+          className="space-y-1"
         >
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+              <RefreshCcw className="w-2.5 h-2.5 animate-spin-slow" />
+              Son Güncelleme: {lastUpdate.toLocaleTimeString('tr-TR')}
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
             Ana Sayfa
           </h1>
-          <div className="flex flex-wrap items-center mt-3 text-gray-500 dark:text-gray-400 gap-y-2">
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-              <span className="text-sm font-bold">
-                {new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </span>
-            </div>
-            <span className="mx-3 hidden sm:inline opacity-30">|</span>
-            <div className="flex items-center">
-              <Clock className="w-4 h-4 mr-2 text-blue-500" />
-              <span className="text-sm font-bold">Son güncelleme: {lastUpdate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-          </div>
         </motion.div>
-        
+
         <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex items-center gap-3 mt-6 justify-start"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-wrap gap-2 justify-start"
         >
-          <button 
-            onClick={loadDashboardData}
-            className="flex items-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-xs font-black text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm active:scale-95"
-          >
-            <RefreshCcw className="w-4 h-4 mr-2" />
-            YENİLE
-          </button>
-          <div className="relative group">
-            <input 
-              type="text" 
-              placeholder="Hızlı ara..."
-              className="pl-11 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none w-48 md:w-72 transition-all font-bold text-gray-900 dark:text-white"
-            />
-            <Search className="w-4 h-4 text-gray-400 absolute left-4 top-3 group-focus-within:text-blue-500 transition-colors" />
-          </div>
+          {canCreate(Module.QUOTES) && (
+            <Link href="/quotes/create" className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-slate-900/10 dark:shadow-white/5">
+              <FilePlus className="w-3.5 h-3.5" />
+              Yeni Teklif
+            </Link>
+          )}
+          {canCreate(Module.SEJOUR) && (
+            <Link href="/sejour/create" className="flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-700 hover:border-blue-500 transition-all shadow-sm">
+              <Hotel className="w-3.5 h-3.5 text-blue-600" />
+              Yeni Sejour
+            </Link>
+          )}
         </motion.div>
       </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column: Stats & Charts */}
-        <div className="xl:col-span-2 space-y-8">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {canViewProjects && (
-              <StatCard 
-                title="Toplam Proje" 
-                value={dashboardData.upcomingProjects.length} 
-                icon={Briefcase} 
-                color="text-blue-600" 
-                link="/projects" 
-                delay={0.1}
-              />
-            )}
-            {canViewSejour && (
-              <StatCard 
-                title="Yaklaşan Sejour" 
-                value={dashboardData.upcomingSejours.length} 
-                icon={Hotel} 
-                color="text-emerald-600" 
-                link="/sejour" 
-                delay={0.2}
-              />
-            )}
-            {canViewOperations && (
-              <StatCard 
-                title="Aktif Transfer" 
-                value={dashboardData.upcomingTransfers.length} 
-                icon={Truck} 
-                color="text-purple-600" 
-                link="/operations/transfers" 
-                delay={0.3}
-              />
-            )}
-            {canViewTickets && (
-              <StatCard 
-                title="Bekleyen Bilet" 
-                value={dashboardData.upcomingTickets.length} 
-                icon={Plane} 
-                color="text-amber-600" 
-                link="/operations/tickets" 
-                delay={0.4}
-              />
-            )}
+      <main className="w-full flex-1 flex flex-col space-y-12">
+        {/* Loading overlay for data refresh */}
+        {loading && !dashboardData.upcomingProjects.length && (
+          <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+            <LoadingSpinner message="Veriler yükleniyor..." compact />
           </div>
+        )}
 
-          {/* Overview Section with Chart */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-md"
-          >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-              <div>
-                <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center tracking-tight">
-                  <LayoutDashboard className="w-5 h-5 mr-3 text-blue-600" />
-                  Operasyon Özeti
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">Gelecek 30 gün içindeki planlanan aktiviteler</p>
-              </div>
-              <div className="flex bg-gray-100 dark:bg-gray-900/50 p-1 rounded-xl shadow-inner">
-                <button 
-                  onClick={() => setActiveTab('overview')}
-                  className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${activeTab === 'overview' ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+        {!loading && (
+          <>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {stats.map((stat, idx) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-blue-200 dark:hover:border-slate-700 transition-all duration-300 group"
                 >
-                  GRAFİK
-                </button>
-                <button 
-                  onClick={() => setActiveTab('activity')}
-                  className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${activeTab === 'activity' ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  LİSTE
-                </button>
+                  <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-105 transition-transform duration-500`}>
+                    <stat.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{stat.label}</p>
+                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none">{stat.value}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Section 1: Aktif Akış (Cards) */}
+            <div className="space-y-6">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Aktif Akış</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Dashboard Cards for different modules */}
+                <DashboardCard title="Yaklaşan Projeler" icon={Briefcase} link="/projects" color="text-blue-600">
+                  {dashboardData.upcomingProjects.length > 0 ? dashboardData.upcomingProjects.map((p, i) => (
+                    <div key={`project-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">{p.client_name}</p>
+                      </div>
+                      <span className="text-[10px] font-black text-blue-600 whitespace-nowrap">{new Date(p.start_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )) : <EmptyState />}
+                </DashboardCard>
+
+                <DashboardCard title="Sejour & Konaklama" icon={Hotel} link="/sejour" color="text-emerald-600">
+                  {dashboardData.upcomingSejours.length > 0 ? dashboardData.upcomingSejours.map((s, i) => (
+                    <div key={`sejour-${s.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{s.name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">{s.hotel_name}</p>
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-600 whitespace-nowrap">{new Date(s.start_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )) : <EmptyState />}
+                </DashboardCard>
+
+                <DashboardCard title="Transferler" icon={Truck} link="/operations/transfers" color="text-indigo-600">
+                  {dashboardData.upcomingTransfers.length > 0 ? dashboardData.upcomingTransfers.map((t, i) => (
+                    <div key={`transfer-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.pickup_location} → {t.dropoff_location}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.type}</p>
+                      </div>
+                      <span className="text-[10px] font-black text-indigo-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )) : <EmptyState />}
+                </DashboardCard>
+
+                <DashboardCard title="Uçuş & Biletler" icon={Plane} link="/tickets/options" color="text-amber-600">
+                  {dashboardData.upcomingTickets.length > 0 ? dashboardData.upcomingTickets.map((t, i) => (
+                    <div key={`ticket-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.flight_number}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.passenger_count} Yolcu</p>
+                      </div>
+                      <span className="text-[10px] font-black text-amber-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )) : <EmptyState />}
+                </DashboardCard>
+
+                <DashboardCard title="PERSONEL PLANLAMASI" icon={Users} link="/operations/part-time" color="text-rose-600">
+                  {dashboardData.upcomingPartTime.length > 0 ? dashboardData.upcomingPartTime.map((p, i) => (
+                    <div key={`pt-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">{p.location}</p>
+                      </div>
+                      <span className="text-[10px] font-black text-rose-600 whitespace-nowrap">{new Date(p.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )) : <EmptyState />}
+                </DashboardCard>
+
+                <DashboardCard title="KOKARTLI REHBERLER" icon={UserCheck} link="/operations/guides" color="text-purple-600">
+                  {dashboardData.upcomingGuides.length > 0 ? dashboardData.upcomingGuides.map((g, i) => (
+                    <div key={`guide-${g.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{g.name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">{g.location}</p>
+                      </div>
+                      <span className="text-[10px] font-black text-purple-600 whitespace-nowrap">{new Date(g.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )) : <EmptyState />}
+                </DashboardCard>
               </div>
             </div>
 
-            <div className="h-[300px] w-full">
-              {activeTab === 'overview' ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-gray-800" opacity={0.5} />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fontSize: 11, fontWeight: 700 }} 
-                      dy={15}
-                      stroke="#94a3b8"
-                    />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fontSize: 11, fontWeight: 700 }}
-                      stroke="#94a3b8"
-                    />
-                    <Tooltip 
-                      cursor={{ fill: 'rgba(59, 130, 246, 0.03)' }}
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-xl backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
-                              <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                              <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{payload[0].value}</p>
-                                <p className="text-xs font-bold text-gray-500">adet</p>
-                              </div>
-                              <p className="text-[10px] mt-2 font-bold text-gray-400">Planlanan Operasyon</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={45}>
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.9} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[350px] pr-2 custom-scrollbar">
-                  {dashboardData.upcomingProjects.map((p, i) => (
-                    <UpcomingItem key={p.id} item={p} icon={Briefcase} color="text-blue-600" dateField="start_date" nameField="name" />
-                  ))}
-                  {dashboardData.upcomingSejours.map((s, i) => (
-                    <UpcomingItem key={s.id} item={s} icon={Hotel} color="text-emerald-600" dateField="start_date" nameField="name" />
-                  ))}
+            {/* Section 2: Genel Bakış (Overview) */}
+            <div className="space-y-6 pt-8 border-t border-slate-100 dark:border-slate-800">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Genel Bakış</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Visual Analytics */}
+                <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-fit">
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs mb-1">Operasyonel Dağılım</h2>
+                      <p className="text-[10px] text-slate-500 font-medium italic">Gelecek 30 günlük planlanan işlemler</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-emerald-500" />
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">+12% Artış</span>
+                    </div>
+                  </div>
+                  <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis 
+                          dataKey="name" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 9, fontWeight: 800, fill: '#64748b' }}
+                          dy={10}
+                        />
+                        <YAxis hide />
+                        <Tooltip 
+                          cursor={{ fill: '#f8fafc' }}
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              return (
+                                <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700">
+                                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{payload[0].payload.name}</p>
+                                  <p className="text-base font-black text-slate-900 dark:text-white">{payload[0].value} Kayıt</p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Bar dataKey="count" radius={[8, 8, 8, 8]} barSize={35}>
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.8} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              )}
-            </div>
-          </motion.div>
 
-          {/* Quick Actions Grid */}
-          <div>
-            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-6 flex items-center px-1 tracking-tight">
-              <Plus className="w-6 h-6 mr-3 text-blue-600" />
-              Hızlı İşlemler
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {canCreateSejour && (
-                <QuickActionCard 
-                  title="Yeni Sejour" 
-                  desc="Rezervasyon kaydı oluştur" 
-                  icon={Hotel} 
-                  color="text-blue-600" 
-                  link="/sejour/create" 
-                  delay={0.6}
-                />
-              )}
-              {canCreateQuote && (
-                <QuickActionCard 
-                  title="Yeni Teklif" 
-                  desc="Müşteri teklifi hazırla" 
-                  icon={FileText} 
-                  color="text-emerald-600" 
-                  link="/quotes/create" 
-                  delay={0.7}
-                />
-              )}
-              {canViewHotels && (
-                <QuickActionCard 
-                  title="Yeni Otel" 
-                  desc="Sisteme otel ekle" 
-                  icon={Hotel} 
-                  color="text-indigo-600" 
-                  link="/hotels" 
-                  delay={0.8}
-                />
-              )}
-              {canViewSuppliers && (
-                <QuickActionCard 
-                  title="Yeni Tedarikçi" 
-                  desc="Tedarikçi kaydı aç" 
-                  icon={Users} 
-                  color="text-purple-600" 
-                  link="/suppliers" 
-                  delay={0.9}
-                />
-              )}
-              {canViewAgencies && (
-                <QuickActionCard 
-                  title="Yeni Acente" 
-                  desc="Acente bilgilerini gir" 
-                  icon={Briefcase} 
-                  color="text-orange-600" 
-                  link="/agencies" 
-                  delay={1.0}
-                />
-              )}
-              {canViewCategories && (
-                <QuickActionCard 
-                  title="Yeni Kategori" 
-                  desc="Sistem kategorisi ekle" 
-                  icon={LayoutDashboard} 
-                  color="text-pink-600" 
-                  link="/categories" 
-                  delay={1.1}
-                />
-              )}
-            </div>
-          </div>
-        </div>
+                {/* Quick Actions / Shortcut Cards */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-6 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+                    <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700" />
+                    <h3 className="text-xl font-black tracking-tight mb-3 leading-tight">İşinizi <br/>Kolaylaştırın</h3>
+                    <p className="text-blue-100 text-[10px] font-medium mb-6 leading-relaxed">Hızlı işlem panelini kullanarak saniyeler içerisinde yeni kayıtlar oluşturabilirsiniz.</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {canCreate(Module.QUOTES) && (
+                        <Link href="/quotes/create" className="p-3 bg-white/10 backdrop-blur-md rounded-xl hover:bg-white/20 transition-colors flex flex-col gap-2">
+                          <Plus className="w-4 h-4" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">Teklif</span>
+                        </Link>
+                      )}
+                      {canCreate(Module.SEJOUR) && (
+                        <Link href="/sejour/create" className="p-3 bg-white/10 backdrop-blur-md rounded-xl hover:bg-white/20 transition-colors flex flex-col gap-2">
+                          <Hotel className="w-4 h-4" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">Sejour</span>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
 
-        {/* Right Column: Upcoming Activities Timeline */}
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-md overflow-hidden flex flex-col"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center tracking-tight">
-              <Calendar className="w-5 h-5 mr-3 text-blue-600" />
-              Ajanda
-            </h3>
-            <Link href="/operations" className="text-xs font-black text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800/30">
-              TÜMÜNÜ GÖR
-            </Link>
-          </div>
-
-          <div className="space-y-6 overflow-y-auto flex-1 pr-1 custom-scrollbar">
-            {/* Project Activities */}
-            <section>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Yaklaşan Projeler</h4>
-              <div className="space-y-3">
-                {dashboardData.upcomingProjects.length > 0 ? (
-                  dashboardData.upcomingProjects.map((item) => (
-                    <UpcomingItem key={item.id} item={item} icon={Briefcase} color="text-blue-500" dateField="start_date" nameField="name" />
-                  ))
-                ) : (
-                  <p className="text-xs text-gray-400 italic ml-1">Kayıt bulunamadı</p>
-                )}
-              </div>
-            </section>
-
-            {/* Transfer Activities */}
-            <section>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Yaklaşan Transferler</h4>
-              <div className="space-y-3">
-                {dashboardData.upcomingTransfers.length > 0 ? (
-                  dashboardData.upcomingTransfers.map((item) => (
-                    <UpcomingItem key={item.id} item={item} icon={Truck} color="text-indigo-500" dateField="date" nameField="type" />
-                  ))
-                ) : (
-                  <p className="text-xs text-gray-400 italic ml-1">Kayıt bulunamadı</p>
-                )}
-              </div>
-            </section>
-
-            {/* Ticket Activities */}
-            <section>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Yaklaşan Biletler</h4>
-              <div className="space-y-3">
-                {dashboardData.upcomingTickets.length > 0 ? (
-                  dashboardData.upcomingTickets.map((item) => (
-                    <UpcomingItem key={item.id} item={item} icon={Plane} color="text-orange-500" dateField="date" nameField="flight_number" />
-                  ))
-                ) : (
-                  <p className="text-xs text-gray-400 italic ml-1">Kayıt bulunamadı</p>
-                )}
-              </div>
-            </section>
-
-            {/* HR Activities */}
-            <section>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Rehber & Operasyon</h4>
-              <div className="space-y-3">
-                {dashboardData.upcomingGuides.map((item) => (
-                  <UpcomingItem key={item.id} item={item} icon={UserCheck} color="text-pink-500" dateField="service_date" nameField="name" />
-                ))}
-                {dashboardData.upcomingPartTime.map((item) => (
-                  <UpcomingItem key={item.id} item={item} icon={Clock} color="text-purple-500" dateField="service_date" nameField="name" />
-                ))}
-                {dashboardData.upcomingGuides.length === 0 && dashboardData.upcomingPartTime.length === 0 && (
-                  <p className="text-xs text-gray-400 italic ml-1">Kayıt bulunamadı</p>
-                )}
-              </div>
-            </section>
-          </div>
-
-          <div className="mt-8">
-            <div className="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-6 text-white relative overflow-hidden group shadow-2xl">
-              <div className="relative z-10">
-                <div className="bg-white/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/20">
-                  <LayoutDashboard className="w-6 h-6 text-blue-100" />
+                  <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <h3 className="font-black text-slate-900 dark:text-white tracking-tight uppercase text-[10px] mb-4">Hızlı Erişim</h3>
+                    <div className="space-y-2">
+                      <Link href="/reports" className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-blue-600 transition-all duration-300">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-3.5 h-3.5 text-blue-600 group-hover:text-white" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover:text-white">Raporlar</span>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-white" />
+                      </Link>
+                      <Link href="/users" className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-emerald-600 transition-all duration-300">
+                        <div className="flex items-center gap-3">
+                          <UserCheck className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover:text-white">Kullanıcılar</span>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-white" />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-[10px] font-black text-blue-200 uppercase tracking-[0.2em] mb-2 opacity-80">DESTEK MERKEZİ</p>
-                <h5 className="text-lg font-black mb-4 leading-tight">Sistemle ilgili yardıma mı ihtiyacınız var?</h5>
-                <button className="bg-white text-blue-700 px-6 py-2.5 rounded-xl text-xs font-black shadow-xl hover:bg-blue-50 hover:scale-105 transition-all flex items-center active:scale-95">
-                  REHBERİ GÖRÜNTÜLE <ArrowUpRight className="w-4 h-4 ml-2" />
-                </button>
               </div>
-              
-              {/* Decorative elements */}
-              <div className="absolute right-[-20px] bottom-[-20px] opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-700">
-                <LayoutDashboard size={160} />
-              </div>
-              <div className="absolute top-[-40px] left-[-40px] w-40 h-40 bg-white/5 rounded-full blur-3xl" />
             </div>
-          </div>
-        </motion.div>
-      </div>
+          </>
+        )}
+      </main>
 
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e2e8f0;
-          border-radius: 10px;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #1e293b;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #cbd5e1;
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
         }
       `}</style>
     </div>

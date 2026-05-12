@@ -65,15 +65,7 @@ const toDate = (value: string) => {
 
 const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
 
-const parseTypedDate = (value: string): string | null => {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  const parsed = parseDateFns(trimmed, 'dd.MM.yyyy', new Date());
-  if (!isValidDate(parsed)) return null;
-  return formatDateFns(parsed, 'yyyy-MM-dd');
-};
-
-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange }: DateRangeFieldProps) {
+function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps & { onApply: (s?: string, e?: string) => void }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const startDate = toDate(startValue);
@@ -113,31 +105,12 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [startValue, endValue]);
 
-  useEffect(() => {
-    if (!isCalendarOpen) return;
-    const updatePos = () => {
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      setCalendarStyle({
-        top: rect.bottom + 4,
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
-      });
-    };
-    updatePos();
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
-    return () => {
-      window.removeEventListener('scroll', updatePos, true);
-      window.removeEventListener('resize', updatePos);
-    };
-  }, [isCalendarOpen]);
-
   const openCalendar = () => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (rect) {
       setCalendarStyle({
         top: rect.bottom + 4,
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+        left: Math.max(6, rect.left)
       });
     }
     setIsCalendarOpen(true);
@@ -145,18 +118,55 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
 
   const handleStartTextChange = (value: string) => {
     setStartText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onStartChange(parsed);
+    if (value === '') {
+      onStartChange('');
+      onApply('', endText.length === 10 ? parseTypedDate(endText) || '' : '');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10) {
+          const endParsed = parseTypedDate(endText);
+          if (endParsed) onApply(parsed, endParsed);
+        }
+      }
+    }
   };
 
   const handleEndTextChange = (value: string) => {
     setEndText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onEndChange(parsed);
+    if (value === '') {
+      onEndChange('');
+      onApply(startText.length === 10 ? parseTypedDate(startText) || '' : '', '');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10) {
+          const startParsed = parseTypedDate(startText);
+          if (startParsed) onApply(startParsed, parsed);
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const s = parseTypedDate(startText) || '';
+      const e_ = parseTypedDate(endText) || '';
+      onApply(s, e_);
+      setIsCalendarOpen(false);
+    }
   };
 
   const calStart = isCalendarOpen ? pickerRange[0] : startDate;
   const calEnd = isCalendarOpen ? pickerRange[1] : endDate;
+
 
   return (
     <div className="min-w-0 relative" ref={containerRef}>
@@ -167,24 +177,25 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
         <input
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={openCalendar}
           placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
         <input
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={openCalendar}
           placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
-      {isCalendarOpen &&
-        typeof document !== 'undefined' &&
+      {isCalendarOpen && typeof document !== 'undefined' &&
         createPortal(
           <div
             ref={calendarRef}
-            className="transfer-range-datepicker-popover fixed z-[300] w-max max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl p-1.5 overflow-x-auto"
+            className="transfer-range-datepicker-popover fixed z-[9999] w-max max-w-[calc(100vw-0.75rem)] shadow-2xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 overflow-x-auto"
             style={{ top: `${calendarStyle.top}px`, left: `${calendarStyle.left}px` }}
           >
             <DatePicker
@@ -192,26 +203,48 @@ function DateRangeField({ label, startValue, endValue, onStartChange, onEndChang
               locale={tr}
               monthsShown={2}
               selectsRange
-              startDate={calStart}
-              endDate={calEnd}
+              startDate={calStart || undefined}
+              endDate={calEnd || undefined}
               onChange={(dates) => {
                 const [start, end] = dates as [Date | null, Date | null];
                 setPickerRange([start, end]);
-                if (start && end) {
+                if (start && !end) {
                   onStartChange(toIsoDate(start));
-                  onEndChange(toIsoDate(end));
+                  onEndChange('');
+                  return;
+                }
+                if (start && end) {
+                  const s = toIsoDate(start);
+                  const e = toIsoDate(end);
+                  onStartChange(s);
+                  onEndChange(e);
+                  onApply(s, e);
                   setIsCalendarOpen(false);
+                  return;
+                }
+                if (!start && !end) {
+                  onStartChange('');
+                  onEndChange('');
+                  onApply('', '');
                 }
               }}
-              openToDate={calStart || calEnd || new Date()}
-              calendarClassName="!text-xs"
+              calendarClassName="!border-none !bg-transparent dark:!text-white"
             />
           </div>,
           document.body
-        )}
+        )
+      }
     </div>
   );
 }
+
+const parseTypedDate = (value: string): string | null => {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  const parsed = parseDateFns(trimmed, 'dd.MM.yyyy', new Date());
+  if (!isValidDate(parsed)) return null;
+  return formatDateFns(parsed, 'yyyy-MM-dd');
+};
 
 function MultiTokenFilterInput({
   label,
@@ -360,8 +393,14 @@ export default function PartTimePage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
+  const [filter, setFilter] = useState<'all' | 'mice' | 'sejour'>('all');
+  const [typeCounts, setTypeCounts] = useState({ all: 0, mice: 0, sejour: 0 });
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [dateRange, setDateRange] = useState({ startDate: todayStr, endDate: '' });
+  const [draftStart, setDraftStart] = useState(todayStr);
+  const [draftEnd, setDraftEnd] = useState('');
+  
   const [filterKey, setFilterKey] = useState<number>(0);
   const [forceReload, setForceReload] = useState<number>(0);
 
@@ -387,6 +426,7 @@ export default function PartTimePage() {
         page: String(page),
         pageSize: String(pageSize),
         searchTerm: '',
+        filter,
         sortField: String(sortField),
         sortDirection,
         startDate: dateRange.startDate || '',
@@ -405,6 +445,9 @@ export default function PartTimePage() {
       setPartTimeServices(Array.isArray(result.data) ? result.data : []);
       setTotalCount(Number(result.total || 0));
       setTotalPages(Number(result.totalPages || 1));
+      if (result.typeCounts) {
+        setTypeCounts(result.typeCounts);
+      }
     } catch (error) {
       console.error('Part-Time hizmet verileri yüklenirken hata:', error);
     } finally {
@@ -416,7 +459,16 @@ export default function PartTimePage() {
 
   useEffect(() => {
     loadPartTimeServices();
-  }, [page, pageSize, scopedSearchState, sortField, sortDirection, dateRange.startDate, dateRange.endDate, forceReload]);
+  }, [page, pageSize, scopedSearchState, filter, sortField, sortDirection, dateRange, forceReload]);
+
+  const handleApplyDates = (start?: string, end?: string) => {
+    setDateRange({
+      startDate: start !== undefined ? start : draftStart,
+      endDate: end !== undefined ? end : draftEnd
+    });
+    setPage(1);
+    setForceReload(prev => prev + 1);
+  };
 
   // Filtreleri temizleme fonksiyonu - Part-Time sayfası için
   const clearPartTimeFilters = () => {
@@ -430,7 +482,12 @@ export default function PartTimePage() {
     setSupplierInput('');
     setEmployeeTokens([]);
     setEmployeeInput('');
-    setDateRange({ startDate: '', endDate: '' });
+    const todayStr = new Date().toISOString().split('T')[0];
+    setDraftStart(todayStr);
+    setDraftEnd('');
+    setDateRange({ startDate: todayStr, endDate: '' });
+    setFilter('all');
+    setPage(1);
     setFilterKey((prev) => prev + 1);
     setForceReload((prev) => prev + 1);
   };
@@ -651,39 +708,80 @@ export default function PartTimePage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      <div className="w-full min-w-0 flex flex-col flex-1">
-        <div className="mb-4 flex justify-between items-start">
+    <div className="flex flex-col h-screen p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden font-sans">
+      <div className="w-full min-w-0 flex flex-col h-full gap-2">
+        {/* Header */}
+        <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Yarı Zamanlı Çalışan Yönetimi</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">MICE ve Sejour part-time operasyonlarını yönetin</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Yarı Zamanlı Çalışan Yönetimi</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin</p>
           </div>
+          <button
+            type="button"
+            onClick={exportPartTimeToExcel}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm text-sm font-semibold"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel
+          </button>
         </div>
 
-        <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 mb-2 w-full min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Arama ve Filtreleme</h3>
-            <div className="flex shrink-0 gap-2">
-              <button
-                type="button"
-                onClick={exportPartTimeToExcel}
-                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200"
-              >
-                📥 Excel Export
-              </button>
-              <button
-                type="button"
-                onClick={clearPartTimeFilters}
-                className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200 shrink-0"
-                title="Filtreleri temizle"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1 md:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(14rem,1fr)]">
+        {/* Tab Sistemi */}
+        <div className="flex gap-1 bg-gray-200/50 dark:bg-gray-800/50 p-1 rounded-xl w-full">
+          <button
+            onClick={() => { setFilter('all'); setPage(1); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              filter === 'all'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Tüm Çalışanlar ({typeCounts.all})
+          </button>
+          <button
+            onClick={() => { setFilter('mice'); setPage(1); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              filter === 'mice'
+                ? 'bg-orange-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            MICE ({typeCounts.mice})
+          </button>
+          <button
+            onClick={() => { setFilter('sejour'); setPage(1); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              filter === 'sejour'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Sejour ({typeCounts.sejour})
+          </button>
+        </div>
+
+        {/* Arama ve Filtreleme */}
+        <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-2 w-full min-w-0">
+          <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1fr 1fr auto' }}>
+            <DateRangeField
+              label="Hizmet Tarihi"
+              startValue={dateRange.startDate}
+              endValue={dateRange.endDate}
+              onStartChange={(v) => setDraftStart(v)}
+              onEndChange={(v) => setDraftEnd(v)}
+              onApply={handleApplyDates}
+            />
             <MultiTokenFilterInput
               label="Voucher"
               tokens={voucherTokens}
@@ -692,13 +790,6 @@ export default function PartTimePage() {
               onInputChange={setVoucherInput}
               onAddToken={(value) => addToken(value, setVoucherTokens, setVoucherInput)}
               onRemoveToken={(value) => removeToken(value, setVoucherTokens)}
-            />
-            <DateRangeField
-              label="Hizmet Tarihi"
-              startValue={dateRange.startDate}
-              endValue={dateRange.endDate}
-              onStartChange={(value) => setDateRange((prev) => ({ ...prev, startDate: value }))}
-              onEndChange={(value) => setDateRange((prev) => ({ ...prev, endDate: value }))}
             />
             <MultiTokenFilterInput
               label="Acente / Müşteri"
@@ -736,6 +827,16 @@ export default function PartTimePage() {
               onAddToken={(value) => addToken(value, setEmployeeTokens, setEmployeeInput)}
               onRemoveToken={(value) => removeToken(value, setEmployeeTokens)}
             />
+            <button
+              type="button"
+              onClick={clearPartTimeFilters}
+              className="h-8 w-8 flex items-center justify-center rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 shrink-0 shadow-sm"
+              title="Filtreleri Temizle"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
         </div>
 

@@ -11,6 +11,9 @@ import { ExcelUtils } from '@/utils/excelUtils';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/types/pagination';
+import Modal from '@/components/Modal';
+import { toast } from 'react-hot-toast';
+import { Trash2, AlertCircle, CheckCircle2, Lock, Unlock } from 'lucide-react';
 // import { loadProjeler } from '../../../../src/supabaseClient';
 
 // async function fetchData() {
@@ -64,6 +67,7 @@ interface DateRangeFieldProps {
   endValue: string;
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
+  onApply?: (start?: string, end?: string) => void;
 }
 
 const toDate = (value: string) => {
@@ -87,7 +91,8 @@ function DateRangeField({
   startValue,
   endValue,
   onStartChange,
-  onEndChange
+  onEndChange,
+  onApply
 }: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startDate = toDate(startValue);
@@ -113,16 +118,50 @@ function DateRangeField({
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  const handleApply = () => {
+    if (onApply) {
+      const s = startText.length === 10 ? parseTypedDate(startText) || '' : '';
+      const eVal = endText.length === 10 ? parseTypedDate(endText) || '' : '';
+      onApply(s, eVal);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleApply();
+      setIsCalendarOpen(false);
+    }
+  };
+
   const handleStartTextChange = (value: string) => {
     setStartText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onStartChange(parsed);
+    if (value === '') {
+      onStartChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onStartChange(parsed);
+        if (endText.length === 10 && onApply) onApply();
+      }
+    }
   };
 
   const handleEndTextChange = (value: string) => {
     setEndText(value);
-    const parsed = parseTypedDate(value);
-    if (parsed !== null) onEndChange(parsed);
+    if (value === '') {
+      onEndChange('');
+      return;
+    }
+    if (value.length === 10) {
+      const parsed = parseTypedDate(value);
+      if (parsed !== null) {
+        onEndChange(parsed);
+        if (startText.length === 10 && onApply) onApply();
+      }
+    }
   };
 
   return (
@@ -133,6 +172,7 @@ function DateRangeField({
           value={startText}
           onChange={(e) => handleStartTextChange(e.target.value)}
           onFocus={() => setIsCalendarOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
@@ -140,6 +180,7 @@ function DateRangeField({
           value={endText}
           onChange={(e) => handleEndTextChange(e.target.value)}
           onFocus={() => setIsCalendarOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="gg.aa.yyyy"
           className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
@@ -157,7 +198,10 @@ function DateRangeField({
               const [start, end] = dates as [Date | null, Date | null];
               onStartChange(toIsoDate(start));
               onEndChange(toIsoDate(end));
-              if (start && end) setIsCalendarOpen(false);
+              if (start && end) {
+                setIsCalendarOpen(false);
+                handleApply();
+              }
             }}
             openToDate={startDate || endDate || new Date()}
           />
@@ -245,6 +289,7 @@ const getTodayIsoDate = () => {
 };
 
 export default function ProjectsPage() {
+  const todayStr = new Date().toISOString().split('T')[0];
   const { canView, canCreate, canEdit, canDelete, userRole, loading: permissionsLoading } = usePermissions();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -253,11 +298,17 @@ export default function ProjectsPage() {
   const [searchTerm] = useState('');
   const [dateStart, setDateStart] = useState('');
   const [dateEnd, setDateEnd] = useState('');
+  const [dateRange, setDateRange] = useState({ 
+    startDate: '', 
+    endDate: '' 
+  });
   const [draftDateStart, setDraftDateStart] = useState('');
   const [draftDateEnd, setDraftDateEnd] = useState('');
-  const [orgDateStart, setOrgDateStart] = useState('');
+  const [orgDateStart, setOrgDateStart] = useState(todayStr);
   const [orgDateEnd, setOrgDateEnd] = useState('');
-  const [draftOrgDateStart, setDraftOrgDateStart] = useState('');
+  const [appliedOrgDateStart, setAppliedOrgDateStart] = useState(todayStr);
+  const [appliedOrgDateEnd, setAppliedOrgDateEnd] = useState('');
+  const [draftOrgDateStart, setDraftOrgDateStart] = useState(todayStr);
   const [draftOrgDateEnd, setDraftOrgDateEnd] = useState('');
   const [referenceTokens, setReferenceTokens] = useState<string[]>([]);
   const [referenceInput, setReferenceInput] = useState('');
@@ -294,14 +345,12 @@ export default function ProjectsPage() {
         pageSize,
         filter,
         searchTerm,
-        dateStart: orgDateStart,
-        dateEnd: orgDateEnd,
+        dateStart: appliedOrgDateStart,
+        dateEnd: appliedOrgDateEnd,
         sortField,
         sortDirection
       });
       setProjects(response.data);
-      // locked kolonu şemada yoksa bu alan response objelerinde bulunmaz.
-      // Bu durumda kilit özelliğini tamamen kapat.
       if (response.data.length > 0) {
         const hasLockedColumn = Object.prototype.hasOwnProperty.call(response.data[0], 'locked');
         if (!hasLockedColumn) {
@@ -312,7 +361,7 @@ export default function ProjectsPage() {
       setTotalPages(response.totalPages);
     } catch (error) {
       console.error('Error loading projects from Supabase:', error);
-      alert('Projeler yüklenirken bir hata oluştu.');
+      toast.error('Projeler yüklenirken bir hata oluştu.');
       setProjects([]);
     } finally {
       setLoading(false);
@@ -370,11 +419,11 @@ export default function ProjectsPage() {
         setApprovalData(approvedLink.approval);
         setShowApprovalModal(true);
       } else {
-        alert('Bu proje için onay bilgisi bulunamadı.');
+        toast.error('Bu proje için onay bilgisi bulunamadı.');
       }
     } catch (error) {
       console.error('Error loading approval data:', error);
-      alert('Onay bilgileri yüklenirken bir hata oluştu.');
+      toast.error('Onay bilgileri yüklenirken bir hata oluştu.');
     } finally {
       setLoadingApproval(false);
     }
@@ -453,7 +502,7 @@ export default function ProjectsPage() {
     // Şemada locked kolonu yoksa hiç API çağrısı yapma
     if (!Object.prototype.hasOwnProperty.call(project, 'locked')) {
       setLockFeatureAvailable(false);
-      alert('Projelerde kilit özelliği bu veritabanında aktif değil (locked kolonu yok).');
+      toast.error('Projelerde kilit özelliği bu veritabanında aktif değil.');
       return;
     }
     if (userRole !== 'super_admin') return;
@@ -468,10 +517,10 @@ export default function ProjectsPage() {
       console.error('Proje kilitleme/kilidi açma hatası:', error);
       if (String((error as any)?.message || '').includes("Could not find the 'locked' column")) {
         setLockFeatureAvailable(false);
-        alert('Projelerde kilit özelliği bu veritabanında aktif değil (locked kolonu yok).');
+        toast.error('Projelerde kilit özelliği aktif değil.');
         return;
       }
-      alert('Proje kilidi güncellenirken bir hata oluştu.');
+      toast.error('Proje kilidi güncellenirken bir hata oluştu.');
     } finally {
       setLockUpdatingId(null);
     }
@@ -505,15 +554,15 @@ export default function ProjectsPage() {
           if (projectQuoteDate > dateEnd) return false;
         }
 
-        if (orgDateStart) {
+        if (appliedOrgDateStart) {
           const projectStartDate = new Date(project.start_date);
-          const filterStartDate = new Date(orgDateStart);
+          const filterStartDate = new Date(appliedOrgDateStart);
           if (projectStartDate < filterStartDate) return false;
         }
 
-        if (orgDateEnd) {
+        if (appliedOrgDateEnd) {
           const projectEndDate = new Date(project.end_date);
-          const filterEndDate = new Date(orgDateEnd);
+          const filterEndDate = new Date(appliedOrgDateEnd);
           if (projectEndDate > filterEndDate) return false;
         }
 
@@ -549,18 +598,18 @@ export default function ProjectsPage() {
         searchTerm,
         quoteDateStart: dateStart,
         quoteDateEnd: dateEnd,
-        orgDateStart,
-        orgDateEnd,
+        appliedOrgDateStart,
+        appliedOrgDateEnd,
         sortField,
         sortDirection
       });
 
       // ExcelUtils.exportProjects fonksiyonunu çağır
       await ExcelUtils.exportProjects(sortedProjects, agencies, hotels);
-      alert(`Excel dosyası başarıyla indirildi! (${sortedProjects.length} proje)`);
+      toast.success(`Excel dosyası başarıyla indirildi! (${sortedProjects.length} proje)`);
     } catch (error) {
       console.error('Excel export hatası:', error);
-      alert('Excel dosyası oluşturulurken bir hata oluştu.');
+      toast.error('Excel dosyası oluşturulurken bir hata oluştu.');
     } finally {
       setExporting(false);
     }
@@ -577,26 +626,11 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     loadProjects();
-  }, [page, pageSize, filter, orgDateStart, orgDateEnd, sortField, sortDirection]);
-
-  useEffect(() => {
-    setOrgDateStart(dateStart);
-    setOrgDateEnd(dateEnd);
-  }, [dateStart, dateEnd]);
+  }, [page, pageSize, filter, appliedOrgDateStart, appliedOrgDateEnd, sortField, sortDirection]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filter, orgDateStart, orgDateEnd, sortField, sortDirection]);
-
-
-
-
-
-
-
-
-
-
+  }, [searchTerm, filter, appliedOrgDateStart, appliedOrgDateEnd, sortField, sortDirection]);
 
   const handleDeleteProject = (project: Project) => {
     setDeleteModal({ open: true, project });
@@ -609,9 +643,10 @@ export default function ProjectsPage() {
       await projectsService.delete(deleteModal.project.id);
       setProjects(prev => prev.filter(p => p.id !== deleteModal.project!.id));
       setDeleteModal({ open: false, project: null });
+      toast.success('Proje başarıyla silindi');
     } catch (error) {
       console.error('Error deleting project:', error);
-      alert('Proje silinirken bir hata oluştu. Lütfen tekrar deneyin.');
+      toast.error('Proje silinirken bir hata oluştu.');
     } finally {
       setDeleting(false);
     }
@@ -728,8 +763,8 @@ export default function ProjectsPage() {
 
     if (dateStart && quoteDate && quoteDate < dateStart) return false;
     if (dateEnd && quoteDate && quoteDate > dateEnd) return false;
-    if (orgDateStart && organizationStartDate && organizationStartDate < orgDateStart) return false;
-    if (orgDateEnd && organizationEndDate && organizationEndDate > orgDateEnd) return false;
+    if (appliedOrgDateStart && organizationStartDate && organizationStartDate < appliedOrgDateStart) return false;
+    if (appliedOrgDateEnd && organizationEndDate && organizationEndDate > appliedOrgDateEnd) return false;
 
     if (!includesByTokens(reference, referenceTokens)) return false;
     if (!includesByTokens(company, companyTokens)) return false;
@@ -737,30 +772,6 @@ export default function ProjectsPage() {
     if (!includesByTokens(status, statusTokens)) return false;
     return true;
   });
-
-  useEffect(() => {
-    setPage(1);
-  }, [filter, dateStart, dateEnd, orgDateStart, orgDateEnd, sortField, sortDirection]);
-
-  // Tarih aralığı yalnızca başlangıç+bitiş birlikte seçilince uygulanır
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(draftDateStart) && Boolean(draftDateEnd)) || (!draftDateStart && !draftDateEnd);
-    if (!rangeCompleteOrEmpty) return;
-    setDateStart(draftDateStart);
-    setDateEnd(draftDateEnd);
-    setPage(1);
-  }, [draftDateStart, draftDateEnd]);
-
-  // Organizasyon tarih aralığı da yalnızca başlangıç+bitiş birlikte seçilince uygulanır
-  useEffect(() => {
-    const rangeCompleteOrEmpty =
-      (Boolean(draftOrgDateStart) && Boolean(draftOrgDateEnd)) || (!draftOrgDateStart && !draftOrgDateEnd);
-    if (!rangeCompleteOrEmpty) return;
-    setOrgDateStart(draftOrgDateStart);
-    setOrgDateEnd(draftOrgDateEnd);
-    setPage(1);
-  }, [draftOrgDateStart, draftOrgDateEnd]);
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -881,7 +892,7 @@ export default function ProjectsPage() {
           >
             <div className="flex items-center">
               <div className="p-1 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-purple-600 dark:purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
@@ -936,6 +947,11 @@ export default function ProjectsPage() {
               endValue={draftDateEnd}
               onStartChange={setDraftDateStart}
               onEndChange={setDraftDateEnd}
+              onApply={(s, e) => {
+                setDateStart(s !== undefined ? s : draftDateStart);
+                setDateEnd(e !== undefined ? e : draftDateEnd);
+                setPage(1);
+              }}
             />
             <MultiTokenFilterInput
               label="Referans"
@@ -952,6 +968,13 @@ export default function ProjectsPage() {
               endValue={draftOrgDateEnd}
               onStartChange={setDraftOrgDateStart}
               onEndChange={setDraftOrgDateEnd}
+              onApply={(s, e) => {
+                setOrgDateStart(s !== undefined ? s : draftOrgDateStart);
+                setOrgDateEnd(e !== undefined ? e : draftOrgDateEnd);
+                setAppliedOrgDateStart(s !== undefined ? s : draftOrgDateStart);
+                setAppliedOrgDateEnd(e !== undefined ? e : draftOrgDateEnd);
+                setPage(1);
+              }}
             />
             <MultiTokenFilterInput
               label="Firma Adı"
@@ -984,14 +1007,17 @@ export default function ProjectsPage() {
               <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 opacity-0">Temizle</label>
               <button
                 onClick={() => {
+                  setFilter('all');
                   setDraftDateStart('');
                   setDraftDateEnd('');
                   setDateStart('');
                   setDateEnd('');
-                  setDraftOrgDateStart('');
-                  setDraftOrgDateEnd('');
                   setOrgDateStart('');
                   setOrgDateEnd('');
+                  setAppliedOrgDateStart('');
+                  setAppliedOrgDateEnd('');
+                  setDraftOrgDateStart('');
+                  setDraftOrgDateEnd('');
                   setReferenceTokens([]);
                   setReferenceInput('');
                   setCompanyTokens([]);
@@ -1001,6 +1027,11 @@ export default function ProjectsPage() {
                   setStatusTokens([]);
                   setStatusInput('');
                   setFilter('all');
+                  setDateStart('');
+                  setDateEnd('');
+                  setDateRange({ startDate: '', endDate: '' });
+                  setOrgDateStart('');
+                  setOrgDateEnd('');
                 }}
                 className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
                 title="Filtreleri Temizle"
@@ -1336,92 +1367,71 @@ export default function ProjectsPage() {
           </div>
         </div>
       )}
-      {/* === MODERN SİLME ONAY MODALI === */}
-      {deleteModal.open && deleteModal.project && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-          onClick={() => !deleting && setDeleteModal({ open: false, project: null })}
-        >
-          <div
-            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-red-200 dark:border-red-900/50 overflow-hidden"
-            style={{ animation: 'slideUp 0.2s ease-out' }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Kırmızı ust bar */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-red-500 via-rose-500 to-red-600" />
-
-            <div className="p-6">
-              {/* İkon + Başlık */}
-              <div className="flex items-start gap-4 mb-5">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Projeyi Sil</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Bu işlem geri alınamaz</p>
-                </div>
-              </div>
-
-              {/* Proje bilgisi */}
-              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-4 mb-5">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                  {deleteModal.project.title}
-                </p>
-                {deleteModal.project.company_name && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{deleteModal.project.company_name}</p>
-                )}
-              </div>
-
-              {/* Uyarı */}
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-6 space-y-1">
-                <p className="font-medium text-gray-800 dark:text-gray-200">Silinecek veriler:</p>
-                <ul className="list-disc list-inside space-y-0.5 text-xs">
-                  <li>Konaklama, etkinlik ve transfer kalemleri</li>
-                  <li>Satış ve alış kalemleri</li>
-                  <li>Tahsilat ve ödeme planları</li>
-                  <li>Fatura kalemleri ve bağlantılı tüm veriler</li>
-                </ul>
-              </div>
-
-              {/* Butonlar */}
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setDeleteModal({ open: false, project: null })}
-                  disabled={deleting}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors disabled:opacity-50"
-                >
-                  Vazgeç
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  disabled={deleting}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-60 flex items-center gap-2"
-                >
-                  {deleting ? (
-                    <>
-                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Siliniyor...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Evet, Sil
-                    </>
-                  )}
-                </button>
-              </div>
+      {/* MODERN SİLME ONAY MODALI */}
+      <Modal
+        isOpen={deleteModal.open}
+        onClose={() => !deleting && setDeleteModal({ open: false, project: null })}
+        title="Projeyi Sil"
+        maxWidth="max-w-md"
+      >
+        <div className="p-6">
+          <div className="flex items-start gap-4 mb-5">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+              <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Projeyi Sil</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Bu işlem geri alınamaz</p>
             </div>
           </div>
+
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-4 mb-5">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              {deleteModal.project?.title}
+            </p>
+            {deleteModal.project?.company_name && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{deleteModal.project.company_name}</p>
+            )}
+          </div>
+
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-6 space-y-1">
+            <p className="font-medium text-gray-800 dark:text-gray-200">Silinecek veriler:</p>
+            <ul className="list-disc list-inside space-y-0.5 text-xs">
+              <li>Konaklama, etkinlik ve transfer kalemleri</li>
+              <li>Satış ve alış kalemleri</li>
+              <li>Tahsilat ve ödeme planları</li>
+              <li>Fatura kalemleri ve bağlantılı tüm veriler</li>
+            </ul>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={() => setDeleteModal({ open: false, project: null })}
+              disabled={deleting}
+              className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors disabled:opacity-50"
+            >
+              Vazgeç
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-60 flex items-center gap-2 shadow-lg shadow-red-500/20"
+            >
+              {deleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Siliniyor...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  Evet, Sil
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
 
       <style jsx global>{`
         @keyframes slideUp {
@@ -1430,5 +1440,5 @@ export default function ProjectsPage() {
         }
       `}</style>
     </div>
-  );
+);
 } 

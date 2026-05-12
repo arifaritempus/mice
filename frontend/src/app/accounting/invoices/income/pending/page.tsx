@@ -146,22 +146,19 @@ export default function IncomePendingPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-start gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             📥 Bekleyen Gelir Faturaları
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-            Faturası kesilmemiş veya eksik kesilmiş satış kalemlerini listeleyin
-          </p>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsModalOpen(true)}
             disabled={selectedItems.length === 0}
-            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:shadow-none transition-all flex items-center gap-2 h-fit"
+            className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-[11px] shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:shadow-none transition-all flex items-center gap-2 h-fit"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
             Fatura Oluştur ({selectedItems.length})
           </button>
         </div>
@@ -191,7 +188,7 @@ export default function IncomePendingPage() {
             x
           </button>
         </div>
-        <div className="grid w-full min-w-0 items-end gap-2" style={{ gridTemplateColumns: 'minmax(0,1.25fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr)' }}>
+        <div className="grid w-full min-w-0 items-end gap-2" style={{ gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr' }}>
           <DateRangeFieldAccounting
             label="Fatura Tarihi Aralığı"
             startValue={dateRange.start}
@@ -338,7 +335,7 @@ export default function IncomePendingPage() {
                   return acc;
                 }, {} as Record<string, number>)
               ).map(([curr, total]) => (
-                <p key={curr} className="text-xl font-black text-slate-900 dark:text-slate-100 leading-none">
+                <p key={curr} className="text-lg font-black text-slate-900 dark:text-slate-100 leading-none">
                   {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: curr }).format(total)}
                 </p>
               ))}

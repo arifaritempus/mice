@@ -64,9 +64,11 @@ class ReminderService {
         .insert([{
           user_id: targetId,
           title: title,
-          message: message, // Bu alan artık HTML içeriği taşıyor
+          message: message,
           type: type,
           is_read: false,
+          related_type: relatedType,
+          related_id: relatedId,
           created_at: new Date().toISOString()
         }]);
 
@@ -107,7 +109,7 @@ class ReminderService {
 
   async getProject(projectId) {
     if (!projectId) return null;
-    const { data } = await supabaseAdmin.from('projects').select('id, title, manager_id').eq('id', projectId).single();
+    const { data } = await supabaseAdmin.from('projects').select('id, name, title, manager_id').eq('id', projectId).single();
     return data;
   }
 
@@ -115,7 +117,13 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-      const { data: quotes } = await supabaseAdmin.from('quotes').select('*').or(`valid_until.eq.${today},valid_until.eq.${tomorrow},option_date.eq.${today},option_date.eq.${tomorrow}`).in('status', ['draft', 'sent']);
+      
+      const { data: quotes } = await supabaseAdmin
+        .from('quotes')
+        .select('*')
+        .or(`valid_until.eq.${today},valid_until.eq.${tomorrow},option_date.eq.${today},option_date.eq.${tomorrow}`)
+        .in('status', ['draft', 'sent']);
+        
       if (!quotes) return;
 
       for (const quote of quotes) {
@@ -124,19 +132,21 @@ class ReminderService {
           const date = quote.valid_until || quote.option_date;
           const isToday = date === today;
           const subject = `${isToday ? 'ACİL: ' : '' }Opsiyon Hatırlatması: Teklif #${quote.quote_number}`;
+          
           const html = `
-            <div style="font-family: sans-serif; padding: 20px; color: #333;">
-              <h2 style="color: ${isToday ? '#dc2626' : '#2563eb'}; border-bottom: 2px solid #eee; padding-bottom: 10px;">Teklif Opsiyon Hatırlatması</h2>
+            <div style="font-family: sans-serif; color: #333;">
+              <h3 style="color: ${isToday ? '#dc2626' : '#2563eb'}; margin-bottom: 15px;">Teklif Opsiyon Hatırlatması</h3>
               <p>Aşağıdaki teklifin opsiyon süresi <strong>${isToday ? 'BUGÜN' : 'YARIN'}</strong> doluyor:</p>
-              <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                <tr style="background: #f9fafb;"><td style="padding: 10px; border: 1px solid #eee;"><strong>Teklif No:</strong></td><td style="padding: 10px; border: 1px solid #eee;">${quote.quote_number}</td></tr>
-                <tr><td style="padding: 10px; border: 1px solid #eee;"><strong>Müşteri:</strong></td><td style="padding: 10px; border: 1px solid #eee;">${quote.client_name}</td></tr>
-                <tr style="background: #f9fafb;"><td style="padding: 10px; border: 1px solid #eee;"><strong>Tarih:</strong></td><td style="padding: 10px; border: 1px solid #eee;">${moment(date).format('DD.MM.YYYY')}</td></tr>
+              <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+                <tr><td style="padding: 10px; border: 1px solid #eee; background: #f9fafb;"><strong>Teklif No</strong></td><td style="padding: 10px; border: 1px solid #eee;">${quote.quote_number}</td></tr>
+                <tr><td style="padding: 10px; border: 1px solid #eee; background: #f9fafb;"><strong>Müşteri</strong></td><td style="padding: 10px; border: 1px solid #eee;">${quote.client_name}</td></tr>
+                <tr><td style="padding: 10px; border: 1px solid #eee; background: #f9fafb;"><strong>Opsiyon Tarihi</strong></td><td style="padding: 10px; border: 1px solid #eee;">${moment(date).format('DD.MM.YYYY')}</td></tr>
+                <tr><td style="padding: 10px; border: 1px solid #eee; background: #f9fafb;"><strong>Durum</strong></td><td style="padding: 10px; border: 1px solid #eee;">${quote.status}</td></tr>
               </table>
-              <p>Lütfen teklif durumunu kontrol ediniz.</p>
-              <a href="${process.env.FRONTEND_URL}/quotes/${quote.id}" style="display: inline-block; background: ${isToday ? '#dc2626' : '#2563eb'}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Teklifi Görüntüle</a>
+              <p>Lütfen teklif durumunu kontrol ederek gerekli aksiyonu alınız.</p>
             </div>
           `;
+          
           try { await emailService.sendEmail(user.email, subject, html); } catch (e) { logger.error('Email error:', e.message); }
           await this.createNotification(user.id, subject, html, isToday ? 'error' : 'warning', 'quote', quote.id);
         }
@@ -148,28 +158,49 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-      const { data: plans } = await supabaseAdmin.from('project_collection_plans').select('*').or(`date.eq.${today},date.eq.${tomorrow}`);
+      
+      const { data: plans } = await supabaseAdmin
+        .from('project_collection_plans')
+        .select('*, projects(*, agencies(name), hotels(name))')
+        .or(`date.eq.${today},date.eq.${tomorrow}`)
+        .eq('status', 'pending');
+        
       if (!plans) return;
 
       for (const plan of plans) {
-        const project = await this.getProject(plan.project_id);
+        const project = plan.projects;
         if (project) {
           const user = await this.getUser(project.manager_id);
           if (user && user.email) {
             const isToday = plan.date === today;
-            const subject = `${isToday ? 'BUGÜN: ' : ''}Tahsilat Hatırlatması: ${project.title}`;
+            const agencyName = project.agencies?.name || project.company_name || '-';
+            const hotelName = project.hotels?.name || '-';
+            const dateRange = project.start_date ? `${moment(project.start_date).format('DD.MM.YYYY')} - ${moment(project.end_date).format('DD.MM.YYYY')}` : '-';
+            
+            const subject = `${isToday ? 'BUGÜN: ' : ''}Tahsilat Hatırlatması: ${project.reference || project.title}`;
+            
             const html = `
-              <div style="font-family: sans-serif; padding: 20px; color: #333;">
-                <h2 style="color: #059669; border-bottom: 2px solid #eee; padding-bottom: 10px;">Tahsilat Hatırlatması</h2>
+              <div style="font-family: sans-serif; color: #333;">
+                <h3 style="color: #059669; margin-bottom: 15px;">Tahsilat Hatırlatması</h3>
                 <p>Aşağıdaki projenin planlanmış bir tahsilatı <strong>${isToday ? 'BUGÜN' : 'YARIN'}</strong> gerçekleşecektir:</p>
-                <div style="background: #ecfdf5; padding: 20px; border-radius: 12px; border-left: 5px solid #10b981; margin: 20px 0;">
-                  <p style="margin: 5px 0;"><strong>Proje:</strong> ${project.title}</p>
-                  <p style="margin: 5px 0;"><strong>Tutar:</strong> <span style="font-size: 18px; color: #059669; font-weight: bold;">${plan.amount} ${plan.currency}</span></p>
-                  <p style="margin: 5px 0;"><strong>Açıklama:</strong> ${plan.description || '-'}</p>
+                
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border-left: 5px solid #10b981; margin: 20px 0;">
+                  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <tr><td style="padding: 5px 0; color: #666; width: 120px;"><strong>Proje Ref:</strong></td><td style="font-weight: bold;">${project.reference || '-'}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Müşteri:</strong></td><td style="font-weight: bold;">${agencyName}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Otel:</strong></td><td>${hotelName}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Tarih:</strong></td><td>${dateRange}</td></tr>
+                    <tr><td style="padding: 10px 0 5px 0; border-top: 1px solid #d1fae5; margin-top: 5px;" colspan="2"></td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Tahsilat Tutarı:</strong></td><td style="font-size: 18px; color: #059669; font-weight: bold;">${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: plan.currency }).format(plan.amount)}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Vade Tarihi:</strong></td><td style="font-weight: bold; color: ${isToday ? '#dc2626' : 'inherit'}">${moment(plan.date).format('DD.MM.YYYY')}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Açıklama:</strong></td><td>${plan.description || '-'}</td></tr>
+                  </table>
                 </div>
-                <a href="${process.env.FRONTEND_URL}/projects/view/${project.id}?tab=financial" style="display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Projeyi Görüntüle</a>
+                
+                <p style="font-size: 13px; color: #666;">Tahsilatın gerçekleştiğini teyit ederek sisteme girişini yapınız.</p>
               </div>
             `;
+            
             try { await emailService.sendEmail(user.email, subject, html); } catch (e) { logger.error('Email error:', e.message); }
             await this.createNotification(user.id, subject, html, isToday ? 'success' : 'info', 'project', project.id);
           }
@@ -182,28 +213,49 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-      const { data: plans } = await supabaseAdmin.from('project_payment_plans').select('*').or(`date.eq.${today},date.eq.${tomorrow}`);
+      
+      const { data: plans } = await supabaseAdmin
+        .from('project_payment_plans')
+        .select('*, projects(*, agencies(name), hotels(name))')
+        .or(`date.eq.${today},date.eq.${tomorrow}`)
+        .eq('status', 'pending');
+        
       if (!plans) return;
 
       for (const plan of plans) {
-        const project = await this.getProject(plan.project_id);
+        const project = plan.projects;
         if (project) {
           const user = await this.getUser(project.manager_id);
           if (user && user.email) {
             const isToday = plan.date === today;
-            const subject = `${isToday ? 'ACİL: ' : ''}Ödeme Hatırlatması: ${project.title}`;
+            const agencyName = project.agencies?.name || project.company_name || '-';
+            const hotelName = project.hotels?.name || '-';
+            const dateRange = project.start_date ? `${moment(project.start_date).format('DD.MM.YYYY')} - ${moment(project.end_date).format('DD.MM.YYYY')}` : '-';
+            
+            const subject = `${isToday ? 'ACİL: ' : ''}Ödeme Hatırlatması: ${project.reference || project.title}`;
+            
             const html = `
-              <div style="font-family: sans-serif; padding: 20px; color: #333;">
-                <h2 style="color: #dc2626; border-bottom: 2px solid #eee; padding-bottom: 10px;">Ödeme Hatırlatması</h2>
+              <div style="font-family: sans-serif; color: #333;">
+                <h3 style="color: #dc2626; margin-bottom: 15px;">Ödeme Hatırlatması</h3>
                 <p>Aşağıdaki projenin planlanmış bir ödemesi <strong>${isToday ? 'BUGÜN' : 'YARIN'}</strong> gerçekleşecektir:</p>
+                
                 <div style="background: #fef2f2; padding: 20px; border-radius: 12px; border-left: 5px solid #ef4444; margin: 20px 0;">
-                  <p style="margin: 5px 0;"><strong>Proje:</strong> ${project.title}</p>
-                  <p style="margin: 5px 0;"><strong>Alacaklı:</strong> ${plan.hotel || '-'}</p>
-                  <p style="margin: 5px 0;"><strong>Tutar:</strong> <span style="font-size: 18px; color: #dc2626; font-weight: bold;">${plan.amount} ${plan.currency}</span></p>
+                  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <tr><td style="padding: 5px 0; color: #666; width: 120px;"><strong>Proje Ref:</strong></td><td style="font-weight: bold;">${project.reference || '-'}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Müşteri:</strong></td><td>${agencyName}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Otel:</strong></td><td>${hotelName}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Tarih:</strong></td><td>${dateRange}</td></tr>
+                    <tr><td style="padding: 10px 0 5px 0; border-top: 1px solid #fee2e2; margin-top: 5px;" colspan="2"></td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Alacaklı:</strong></td><td style="font-weight: bold;">${plan.hotel || plan.supplier || '-'}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Ödeme Tutarı:</strong></td><td style="font-size: 18px; color: #dc2626; font-weight: bold;">${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: plan.currency }).format(plan.amount)}</td></tr>
+                    <tr><td style="padding: 5px 0; color: #666;"><strong>Vade Tarihi:</strong></td><td style="font-weight: bold; color: #dc2626;">${moment(plan.date).format('DD.MM.YYYY')}</td></tr>
+                  </table>
                 </div>
-                <a href="${process.env.FRONTEND_URL}/projects/view/${project.id}?tab=financial" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Projeyi Görüntüle</a>
+                
+                <p style="font-size: 13px; color: #666;">Ödemenin planlanan tarihte yapılması operasyonel sürdürülebilirlik için önem arz etmektedir.</p>
               </div>
             `;
+            
             try { await emailService.sendEmail(user.email, subject, html); } catch (e) { logger.error('Email error:', e.message); }
             await this.createNotification(user.id, subject, html, isToday ? 'error' : 'warning', 'project', project.id);
           }
@@ -216,31 +268,50 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-      const { data: options } = await supabaseAdmin.from('ticket_options').select('*').or(`option_end_date.eq.${today},option_end_date.eq.${tomorrow}`).eq('status', 'active');
+      
+      const { data: options } = await supabaseAdmin
+        .from('ticket_options')
+        .select('*')
+        .or(`option_end_date.eq.${today},option_end_date.eq.${tomorrow}`)
+        .eq('status', 'active');
+        
       if (!options || options.length === 0) return;
 
       const subject = `Bilet Opsiyon Hatırlatması (${options.length} Bilet)`;
       let tableRows = '';
       for (const opt of options) {
         const isToday = opt.option_end_date === today;
-        tableRows += `<tr style="border-bottom: 1px solid #eee; background: ${isToday ? '#fff1f2' : 'transparent'};">
-          <td style="padding: 12px;">${opt.pnr || '-'}</td>
-          <td style="padding: 12px;">${opt.airline || '-'}</td>
-          <td style="padding: 12px;">${opt.route || '-'}</td>
-          <td style="padding: 12px; color: ${isToday ? '#be123c' : 'inherit'}; font-weight: bold;">${isToday ? 'BUGÜN' : 'YARIN'}</td>
-        </tr>`;
+        tableRows += `
+          <tr style="border-bottom: 1px solid #eee; background: ${isToday ? '#fff1f2' : 'transparent'};">
+            <td style="padding: 12px; font-size: 13px;">${opt.pnr || '-'}</td>
+            <td style="padding: 12px; font-size: 13px;">${opt.airline || '-'}</td>
+            <td style="padding: 12px; font-size: 13px;">${opt.route || '-'}</td>
+            <td style="padding: 12px; font-size: 13px;">${opt.passenger_count || 0}</td>
+            <td style="padding: 12px; font-size: 13px; color: ${isToday ? '#be123c' : 'inherit'}; font-weight: bold;">
+              ${moment(opt.option_end_date).format('DD.MM')} ${opt.option_end_time || ''}
+            </td>
+          </tr>
+        `;
       }
 
       const html = `
-        <div style="font-family: sans-serif; padding: 20px;">
-          <h2 style="color: #2563eb;">Bilet Opsiyon Hatırlatması</h2>
+        <div style="font-family: sans-serif; color: #333;">
+          <h3 style="color: #2563eb; margin-bottom: 15px;">Uçak Bileti Opsiyon Hatırlatması</h3>
+          <p>Aşağıdaki biletlerin opsiyon süreleri dolmak üzeredir:</p>
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #eee;">
-            <tr style="background: #f3f4f6;"><th>PNR</th><th>Havayolu</th><th>Güzergah</th><th>Vade</th></tr>
+            <tr style="background: #f3f4f6;">
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">PNR</th>
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Havayolu</th>
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Güzergah</th>
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Kişi</th>
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Vade</th>
+            </tr>
             ${tableRows}
           </table>
-          <a href="${process.env.FRONTEND_URL}/tickets/options" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 20px;">Yönet</a>
+          <p style="margin-top: 15px; font-size: 13px; color: #666;">Lütfen opsiyonları kontrol ederek biletleme veya iptal işlemlerini yapınız.</p>
         </div>
       `;
+      
       try { await emailService.sendEmail(adminEmail, subject, html); } catch (e) { logger.error('Email error:', e.message); }
       await this.createNotification(adminEmail, subject, html, 'warning', 'tickets');
     } catch (error) { logger.error('checkTicketOptions error:', error); }
@@ -250,40 +321,78 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-      const { data: plans } = await supabaseAdmin.from('ticket_payment_plans').select('*').eq('status', 'active');
+      
+      const { data: plans } = await supabaseAdmin
+        .from('ticket_payment_plans')
+        .select('*')
+        .eq('status', 'active');
+        
       if (!plans) return;
 
       let reminders = [];
       for (const plan of plans) {
         const due = plan.installments?.filter(inst => inst.date === today || inst.date === tomorrow);
         if (due?.length > 0) {
-          const { data: opt } = await supabaseAdmin.from('ticket_options').select('pnr, airline').eq('id', plan.ticket_id).single();
-          due.forEach(inst => reminders.push({ ...inst, pnr: opt?.pnr, airline: opt?.airline }));
+          const { data: opt } = await supabaseAdmin
+            .from('ticket_options')
+            .select('pnr, airline, supplier, company_name, passenger_count')
+            .eq('id', plan.ticket_id)
+            .single();
+            
+          due.forEach(inst => reminders.push({ 
+            ...inst, 
+            pnr: opt?.pnr, 
+            airline: opt?.airline,
+            supplier: opt?.supplier,
+            company: opt?.company_name,
+            passengers: opt?.passenger_count
+          }));
         }
       }
+      
       if (reminders.length === 0) return;
 
       const subject = `Bilet Ödeme Hatırlatması (${reminders.length} Ödeme)`;
       let rows = '';
       for (const rem of reminders) {
         const isToday = rem.date === today;
-        rows += `<tr style="border-bottom: 1px solid #eee; background: ${isToday ? '#fff1f2' : 'transparent'};">
-          <td style="padding: 12px;">${rem.pnr}</td>
-          <td style="padding: 12px;">${rem.airline}</td>
-          <td style="padding: 12px; color: ${isToday ? '#be123c' : 'inherit'}; font-weight: bold;">${isToday ? 'BUGÜN' : 'YARIN'}</td>
-          <td style="padding: 12px; font-weight: bold;">${rem.amount} ${rem.currency}</td>
-        </tr>`;
+        rows += `
+          <tr style="border-bottom: 1px solid #eee; background: ${isToday ? '#fff1f2' : 'transparent'};">
+            <td style="padding: 12px; font-size: 13px;">
+              <div style="font-weight: bold;">${rem.pnr || '-'}</div>
+              <div style="font-size: 11px; color: #666;">${rem.airline || '-'}</div>
+            </td>
+            <td style="padding: 12px; font-size: 13px;">
+              <div>${rem.company || '-'}</div>
+              <div style="font-size: 11px; color: #666;">${rem.supplier || '-'}</div>
+            </td>
+            <td style="padding: 12px; font-size: 13px; color: ${isToday ? '#be123c' : 'inherit'}; font-weight: bold;">
+              ${isToday ? 'BUGÜN' : 'YARIN'}
+            </td>
+            <td style="padding: 12px; font-size: 13px; font-weight: bold; text-align: right;">
+              ${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: rem.currency || 'TRY' }).format(rem.amount)}
+            </td>
+          </tr>
+        `;
       }
+      
       const html = `
-        <div style="font-family: sans-serif; padding: 20px;">
-          <h2 style="color: #dc2626;">Bilet Ödeme Hatırlatması</h2>
-          <table style="width: 100%; border-collapse: collapse; border: 1px solid #eee;">
-            <tr style="background: #fef2f2;"><th>PNR</th><th>Havayolu</th><th>Vade</th><th>Tutar</th></tr>
+        <div style="font-family: sans-serif; color: #333;">
+          <h3 style="color: #dc2626; margin-bottom: 15px;">Uçak Bileti Ödeme Hatırlatması</h3>
+          <p>Bugün ve yarın yapılması gereken bilet ödemeleri aşağıdadır:</p>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #eee; margin-top: 15px;">
+            <tr style="background: #fef2f2;">
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">PNR / Havayolu</th>
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Müşteri / Tedarikçi</th>
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Vade</th>
+              <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Tutar</th>
+            </tr>
             ${rows}
           </table>
-          <a href="${process.env.FRONTEND_URL}/tickets/payments" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 20px;">Yönet</a>
+          <p style="margin-top: 15px; font-size: 13px; color: #666;">Lütfen ödemelerin zamanında yapıldığından emin olunuz.</p>
         </div>
       `;
+      
       try { await emailService.sendEmail(adminEmail, subject, html); } catch (e) { logger.error('Email error:', e.message); }
       await this.createNotification(adminEmail, subject, html, 'error', 'tickets');
     } catch (error) { logger.error('checkTicketPayments error:', error); }
@@ -293,26 +402,58 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-      const fetch = async (d) => {
-        const { data: tr } = await supabaseAdmin.from('project_transfer_tour').select('*').eq('date', d);
-        const { data: op } = await supabaseAdmin.from('operations').select('*').eq('start_date', d);
-        return { tr: tr || [], op: op || [] };
+      
+      const fetchOps = async (d) => {
+        const { data: transfers } = await supabaseAdmin
+          .from('project_transfer_tour')
+          .select('*, projects(title)')
+          .eq('date', d);
+          
+        const { data: operations } = await supabaseAdmin
+          .from('operations')
+          .select('*')
+          .eq('start_date', d);
+          
+        return { transfers: transfers || [], operations: operations || [] };
       };
-      const t = await fetch(today);
-      const m = await fetch(tomorrow);
+      
+      const todayOps = await fetchOps(today);
+      const tomorrowOps = await fetchOps(tomorrow);
 
-      if (t.tr.length || t.op.length || m.tr.length || m.op.length) {
-        const subject = `Operasyon Özeti (${moment(today).format('DD.MM')})`;
-        const render = (o, label) => {
-          let s = `<h3 style="background: #f3f4f6; padding: 10px; border-radius: 8px;">${label}</h3><ul>`;
-          o.tr.forEach(x => s += `<li><strong>Transfer:</strong> ${x.route} (${x.time})</li>`);
-          o.op.forEach(x => s += `<li><strong>Hizmet:</strong> ${x.title}</li>`);
+      if (todayOps.transfers.length || todayOps.operations.length || tomorrowOps.transfers.length || tomorrowOps.operations.length) {
+        const subject = `Günlük Operasyon Özeti (${moment(today).format('DD.MM.YYYY')})`;
+        
+        const renderSection = (ops, label) => {
+          if (!ops.transfers.length && !ops.operations.length) return '';
+          
+          let s = `<h4 style="background: #f3f4f6; padding: 10px; border-radius: 8px; margin-top: 20px;">${label}</h4><ul style="padding-left: 20px;">`;
+          
+          ops.transfers.forEach(x => {
+            s += `<li style="margin-bottom: 8px;">
+              <strong>Transfer:</strong> ${x.route} (${x.time})<br/>
+              <span style="font-size: 12px; color: #666;">Proje: ${x.projects?.title || '-'}</span>
+            </li>`;
+          });
+          
+          ops.operations.forEach(x => {
+            s += `<li style="margin-bottom: 8px;">
+              <strong>Hizmet:</strong> ${x.title}<br/>
+              <span style="font-size: 12px; color: #666;">Açıklama: ${x.description || '-'}</span>
+            </li>`;
+          });
+          
           return s + '</ul>';
         };
-        const html = `<div style="font-family: sans-serif; padding: 20px;">
-          <h2 style="color: #2563eb;">Günlük Operasyon Özeti</h2>
-          ${render(t, 'Bugün')} ${render(m, 'Yarın')}
-        </div>`;
+        
+        const html = `
+          <div style="font-family: sans-serif; color: #333;">
+            <h3 style="color: #2563eb; margin-bottom: 10px;">Günlük Operasyon Özeti</h3>
+            <p>Bugün ve yarın için planlanan operasyon detayları:</p>
+            ${renderSection(todayOps, 'Bugün')}
+            ${renderSection(tomorrowOps, 'Yarın')}
+          </div>
+        `;
+        
         try { await emailService.sendEmail(adminEmail, subject, html); } catch (e) { logger.error('Email error:', e.message); }
         await this.createNotification(adminEmail, subject, html, 'info', 'operations');
       }

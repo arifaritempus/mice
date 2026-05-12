@@ -125,9 +125,10 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
   const contactTaxOffice = contactInfo?.tax_office || '';
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
+    <div className="fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
       <div
-        className="mx-auto bg-white text-black flex flex-col relative w-[210mm] min-h-[297mm] shadow-2xl rounded-sm"
+        className="mx-auto light !bg-white !text-slate-900 flex flex-col relative w-[210mm] min-h-[297mm] shadow-[0_0_50px_rgba(0,0,0,0.3)] rounded-sm"
+        style={{ colorScheme: 'light' }}
         id="printable-invoice"
       >
 
@@ -179,8 +180,8 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
 
             {/* TEMPUS TRAVEL */}
             <div className="text-right">
-              <div className="text-[28px] tracking-[0.2em] font-normal leading-none uppercase text-black">TEMPUS</div>
-              <div className="text-[10px] tracking-[0.3em] font-medium mt-1.5 uppercase text-black">TRAVEL</div>
+              <div className="text-[28px] tracking-[0.2em] font-normal leading-none uppercase text-slate-900">TEMPUS</div>
+              <div className="text-[10px] tracking-[0.3em] font-medium mt-1.5 uppercase text-slate-900">TRAVEL</div>
             </div>
           </div>
 
@@ -204,10 +205,10 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
 
           {/* Company Info & Fatura Title - Matbu */}
           <div className="flex justify-between items-start relative mt-4">
-            <div className="text-[13px] font-black tracking-widest uppercase mt-4 text-black">
+            <div className="text-[13px] font-black tracking-widest uppercase mt-4 text-slate-900">
               FATURA | INVOICE
             </div>
-            <div className="text-right text-[8px] leading-[1.65] font-bold uppercase tracking-wider text-black">
+            <div className="text-right text-[8px] leading-[1.65] font-bold uppercase tracking-wider text-slate-900">
               <p>TEMPUS TURIZM LIMITED</p>
               <p>DR. BURHAN NALBANTOĞLU CAD.</p>
               <p>No: 18/1 ORTAKÖY, LEFKOŞA / KKTC</p>
@@ -229,22 +230,22 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
           {/* ═══════════════ SİSTEMDEN GELEN BİLGİLER ═══════════════ */}
 
           {/* Customer Info Box - Sistemden */}
-          <div className="mt-[18mm] text-[10px] w-full text-black">
+          <div className="mt-[18mm] text-[10px] w-full text-slate-900">
             <div className="flex justify-between items-start">
               {/* Left customer block - Sistemden */}
               <div className="space-y-4">
                 <div className="flex">
-                  <span className="w-36 uppercase font-bold text-black">MÜŞTERİ ADI:</span>
+                  <span className="w-36 uppercase font-bold text-slate-900">MÜŞTERİ ADI:</span>
                   <span className="font-extrabold uppercase text-[11px]">{contactName}</span>
                 </div>
                 <div className="flex">
-                  <span className="w-36 uppercase font-bold text-black">ADRES:</span>
+                  <span className="w-36 uppercase font-bold text-slate-900">ADRES:</span>
                   <span className="font-bold uppercase text-[10px] leading-snug w-[250px] whitespace-pre-wrap">
                     {contactAddress || invoice?.notes || ''}
                   </span>
                 </div>
                 <div className="flex pt-4">
-                  <span className="w-36 uppercase font-bold text-black">
+                  <span className="w-36 uppercase font-bold text-slate-900">
                     {contactTaxOffice ? contactTaxOffice : 'VERGİ DAİRESİ'}
                   </span>
                   <span className="font-bold uppercase tracking-wider">{contactTaxNo || ''}</span>
@@ -254,11 +255,11 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
               {/* Right Invoice Info Block - Sistemden */}
               <div className="flex flex-col items-end gap-5">
                 <div className="flex items-center gap-6">
-                  <span className="uppercase font-bold text-black text-[10px]">FATURA NO:</span>
+                  <span className="uppercase font-bold text-slate-900 text-[10px]">FATURA NO:</span>
                   <span className="text-xl font-normal leading-none tracking-wider">{invoice?.invoice_no || '0000'}</span>
                 </div>
                 <div className="flex items-center gap-6">
-                  <span className="uppercase font-bold text-black text-[10px]">TARİH:</span>
+                  <span className="uppercase font-bold text-slate-900 text-[10px]">TARİH:</span>
                   <span className="font-black text-[10px]">{invoice?.date ? formatDate(invoice.date) : ''}</span>
                 </div>
               </div>
@@ -267,13 +268,13 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
 
           {/* Table Header & Rows - Sistemden */}
           <div className="mt-8">
-            <div className="flex justify-between border-b-[1.5px] border-black pb-2 mb-3 text-[10px] font-extrabold uppercase tracking-widest text-black">
+            <div className="flex justify-between border-b-[1.5px] border-slate-900 pb-2 mb-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-900">
               <div className="w-[65%] text-left">AÇIKLAMA / KATEGORİ</div>
               <div className="w-[10%] text-right">KDV %</div>
               <div className="w-[10%] text-right">DÖVİZ</div>
               <div className="w-[15%] text-right">TOPLAM</div>
             </div>
-            <div className="min-h-[100mm] space-y-2 text-black">
+            <div className="min-h-[100mm] space-y-2 text-slate-900">
               {items.map((item, idx) => (
                 <div key={idx} className="flex justify-between text-[9.5px] uppercase font-bold items-start py-0.5">
                   <div className="w-[65%] pr-4 leading-relaxed tracking-wide">
@@ -299,7 +300,7 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
           </div>
 
           {/* Totals Box - Sistemden */}
-          <div className="grid grid-cols-12 gap-8 text-[10px] text-black">
+          <div className="grid grid-cols-12 gap-8 text-[10px] text-slate-900">
             {/* Left - VAT Lines */}
             <div className="col-span-7 flex flex-col justify-end pb-8 pl-[10%]">
               <div className="w-full">
@@ -352,12 +353,12 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
           </div>
 
           {/* Spell check / Number to Text */}
-          <div className="mt-4 font-black text-[10.5px] tracking-wide text-black pb-4 border-b border-gray-100">
+          <div className="mt-4 font-black text-[10.5px] tracking-wide text-slate-900 pb-4 border-b border-gray-100">
             Yalnız <span className="ml-1 tracking-wider">{numberToTextTR(genelToplam)}{items[0]?.currency || 'TL'}</span>
           </div>
 
           {/* Footer - Banks and Matbaa Details - Matbu */}
-          <div className="mt-8 pb-2 w-full grid grid-cols-2 gap-12 text-[7.5px] font-extrabold uppercase leading-[1.65] text-black tracking-wide">
+          <div className="mt-8 pb-2 w-full grid grid-cols-2 gap-12 text-[7.5px] font-extrabold uppercase leading-[1.65] text-slate-900 tracking-wide">
             <div className="space-y-0.5">
               <div className="mb-2 font-black text-[8px] border-b border-gray-200 pb-0.5 inline-block">GARANTİ BANK</div>
               <div className="flex"><span className="w-[30%] opacity-80">TL</span><span className="w-[70%]">TR82 0006 2000 4930 0006 2935 35</span></div>
@@ -377,7 +378,7 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
             </div>
           </div>
 
-          <div className="mt-auto pt-2 text-[6.5px] font-black uppercase tracking-widest text-black flex items-center gap-1.5 opacity-80 pb-2">
+          <div className="mt-auto pt-2 text-[6.5px] font-black uppercase tracking-widest text-slate-900 flex items-center gap-1.5 opacity-80 pb-2">
             <span className="text-[8px]">||</span>
             <span>BASKI: OKMAN PRINTING LTD. MŞ: 2012 TEL: 225 4247</span>
           </div>
