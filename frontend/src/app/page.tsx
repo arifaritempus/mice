@@ -333,78 +333,73 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
     }
   ];
 
-  useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
-
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-2xl animate-in fade-in duration-500">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+        initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 w-full max-w-6xl h-[90vh] rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row relative"
+        className="bg-white dark:bg-slate-900 w-full max-w-7xl h-[85vh] rounded-[3.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden flex flex-col lg:flex-row relative"
       >
-        {/* Close Button X */}
+        {/* Close Button - Premium Floating X */}
         <button 
           onClick={onClose}
-          className="absolute top-8 right-8 z-[210] p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all hover:rotate-90"
+          className="absolute top-10 right-10 z-[220] p-4 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 rounded-full transition-all hover:scale-110 active:scale-90 hover:rotate-90 shadow-lg"
         >
           <X className="w-6 h-6" />
         </button>
 
-        {/* Sidebar Menu */}
-        <div className="w-full md:w-72 bg-slate-50 dark:bg-slate-950/50 border-r border-slate-100 dark:border-slate-800 p-8 flex flex-col">
-          <div className="flex items-center gap-3 mb-12 px-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-              <BookOpen className="w-5 h-5" />
+        {/* Premium Sidebar */}
+        <div className="w-full lg:w-[320px] bg-slate-50 dark:bg-slate-950/40 border-r border-slate-200 dark:border-slate-800 p-10 flex flex-col shrink-0">
+          <div className="flex items-center gap-4 mb-14">
+            <div className="w-14 h-14 bg-blue-600 rounded-[1.25rem] flex items-center justify-center text-white shadow-2xl shadow-blue-500/40 rotate-3">
+              <BookOpen className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">ANSİKLOPEDİ</h2>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">v3.0 Ultimate</p>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">ANSİKLOPEDİ</h2>
+              <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mt-1">v4.0 Ultimate</p>
             </div>
           </div>
           
-          <nav className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
+          <nav className="flex-1 space-y-3 overflow-y-auto pr-4 custom-scrollbar">
             {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setActiveTab(section.id)}
-                className={`w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-left transition-all duration-300 ${
+                className={`w-full flex items-center gap-5 px-6 py-5 rounded-3xl text-left transition-all duration-400 group ${
                   activeTab === section.id 
-                    ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-md border border-slate-100 dark:border-slate-700 scale-[1.02]' 
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                    ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/30 translate-x-2' 
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-700'
                 }`}
               >
-                <div className={`p-2 rounded-xl ${activeTab === section.id ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-transparent'}`}>
-                  <section.icon className={`w-5 h-5 ${activeTab === section.id ? 'text-blue-600' : 'text-slate-400'}`} />
+                <div className={`p-2.5 rounded-xl transition-colors ${activeTab === section.id ? 'bg-white/20' : 'bg-slate-200/50 dark:bg-slate-800 group-hover:bg-blue-50'}`}>
+                  <section.icon className={`w-5 h-5 ${activeTab === section.id ? 'text-white' : 'text-slate-500'}`} />
                 </div>
-                <span className="text-[12px] font-black uppercase tracking-tight">{section.title}</span>
+                <span className="text-[13px] font-black uppercase tracking-tight">{section.title}</span>
               </button>
             ))}
           </nav>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar relative">
+        {/* Content Area - Light Background for Readability */}
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0f172a] p-10 lg:p-20 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.5, ease: "circOut" }}
+              className="max-w-4xl"
             >
-              <div className="flex items-center gap-4 mb-10">
-                 <div className="w-2 h-12 bg-blue-600 rounded-full" />
-                 <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+              <div className="flex flex-col gap-6 mb-16">
+                 <div className="w-16 h-2 bg-blue-600 rounded-full" />
+                 <h1 className="text-5xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-[ -0.05em] leading-[0.9]">
                    {sections.find(s => s.id === activeTab)?.title}
                  </h1>
+                 <p className="text-slate-400 font-medium text-lg lg:text-xl uppercase tracking-widest">Ayrıntılı Modül Rehberi</p>
               </div>
-              <div className="max-w-4xl">
+              
+              <div className="prose prose-slate dark:prose-invert max-w-none">
                 {sections.find(s => s.id === activeTab)?.content}
               </div>
             </motion.div>
