@@ -209,7 +209,8 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
             </section>
           </div>
         </div>
-      )
+      ),
+    },
     {
       id: 'sejour',
       title: 'Sejour & Voucher Otomasyonu',
