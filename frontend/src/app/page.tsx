@@ -157,6 +157,40 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
 
   const sections: ManualSection[] = [
     {
+      id: 'navigation',
+      title: 'Gezinme & Kısayollar',
+      icon: Layout,
+      content: (
+        <div className="space-y-6">
+          <div className="p-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h4 className="text-sm font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <RefreshCcw className="w-4 h-4 text-blue-600" /> Ekranlar Arası Geçiş
+            </h4>
+            <div className="space-y-3">
+               <div className="flex items-start gap-3">
+                 <div className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold">SOL MENÜ</div>
+                 <p className="text-[11px] text-slate-500">Tüm ana modüllere sol taraftaki daraltılabilir menüden ulaşabilirsiniz. Üst kısımdaki ikonlar hızlı erişim sağlar.</p>
+               </div>
+               <div className="flex items-start gap-3">
+                 <div className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold">GERİ DÖNÜŞ</div>
+                 <p className="text-[11px] text-slate-500">Düzenleme veya detay sayfalarından çıkmak için sol üstteki "GERİ" butonunu veya sayfa altındaki "İPTAL" butonunu kullanın.</p>
+               </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/20">
+              <h5 className="text-[10px] font-black uppercase mb-1">Hızlı Arama</h5>
+              <p className="text-[11px] opacity-80 leading-relaxed">Projeler veya Teklifler listesinde <kbd className="bg-white/20 px-1 rounded">CTRL+F</kbd> yerine sistemin üstündeki arama çubuğunu kullanın; bu özellik veritabanında anlık filtreleme yapar.</p>
+            </div>
+            <div className="p-4 bg-slate-900 text-white rounded-2xl">
+              <h5 className="text-[10px] font-black uppercase mb-1">Döviz Kontrolü</h5>
+              <p className="text-[11px] opacity-80 leading-relaxed">Fiyatların doğru yansıması için kalem bazında kur (FX) seçeneğini "EUR/USD/TL" olarak doğru set ettiğinizden emin olun.</p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
       id: 'mice',
       title: 'MICE Yönetimi',
       icon: Target,
@@ -169,23 +203,22 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
               Her otel için ayrı tarihler, oda sayıları ve konseptler belirleyebilirsiniz.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-              <h5 className="text-[10px] font-black uppercase text-slate-400 mb-2">Çoklu Otel Yönetimi</h5>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400">Yeni otel sekmeleri ekleyerek tek teklif içinde birden fazla opsiyon sunabilirsiniz. Kayıt sırasında her kalemin hangi otele ait olduğu sistem tarafından otomatik etiketlenir.</p>
+          <div className="space-y-4">
+            <h5 className="text-xs font-black uppercase text-slate-400">Detaylı Özellikler</h5>
+            <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+               <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600"><Plus className="w-4 h-4"/></div>
+               <div>
+                 <p className="text-[11px] font-bold text-slate-900 dark:text-white">Alt Satır Ekleme</p>
+                 <p className="text-[10px] text-slate-500">Her kalemin yanındaki "+" butonuyla araya yeni satır ekleyebilirsiniz. Bu özellik sıralı operasyonel listeler için kritiktir.</p>
+               </div>
             </div>
-            <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-              <h5 className="text-[10px] font-black uppercase text-slate-400 mb-2">Proje Aktarımı</h5>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400">Teklif durumu "KONFİRME" olarak güncellendiğinde, sistem otomatik olarak bir Proje oluşturur ve tüm bütçe kalemlerini operasyonun kullanımına açar.</p>
+            <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+               <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600"><RefreshCcw className="w-4 h-4"/></div>
+               <div>
+                 <p className="text-[11px] font-bold text-slate-900 dark:text-white">Otomatik Etiketleme</p>
+                 <p className="text-[10px] text-slate-500">Sistem, "Otel 1, Otel 2" sekmeleri arasındaki geçişleri algılar ve her bütçe kalemine gizli [T:id] etiketini basarak raporları ayırır.</p>
+               </div>
             </div>
-          </div>
-          <div className="space-y-2">
-             <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase">Kritik İpuçları</h5>
-             <ul className="list-disc list-inside text-[11px] text-slate-500 space-y-1">
-               <li>Teklif kalemlerini eklerken "Otel Etiketi"nin doğru seçildiğinden emin olun.</li>
-               <li>"Genel Hizmetler" sekmesi, tüm otellerden bağımsız uçak, transfer gibi kalemler içindir.</li>
-               <li>Raporların doğru çalışması için teklifi kaydederken etiketlerin oluşmasını bekleyin.</li>
-             </ul>
           </div>
         </div>
       )
@@ -286,6 +319,34 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
               <h6 className="text-xs font-bold text-slate-900 dark:text-white">Proje Maliyet Raporu</h6>
               <p className="text-[11px] text-slate-500 mt-1">Her proje kaleminin gerçek maliyeti ile satış fiyatını karşılaştırarak otel bazlı karlılık analizi yapmanızı sağlar.</p>
             </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'faq',
+      title: 'Sıkça Sorulan Sorular (SSS)',
+      icon: HelpCircle,
+      content: (
+        <div className="space-y-6">
+          <div className="space-y-4">
+             {[
+               { q: 'Otel detaylı rapor boş geliyor, neden?', a: 'Teklif kalemlerinde ana kategori olarak "OTEL | KONAKLAMA" veya "OTEL | DİĞER HİZMETLER" seçili olduğundan emin olun. Diğer kategoriler bu rapora yansımaz.' },
+               { q: 'Hatalı fiyat girişi yaptım, nasıl düzeltirim?', a: 'Teklif listesinden ilgili kaydı seçip "Düzenle" diyerek bütçe kalemlerini güncelleyebilir ve "Kaydet" diyerek veritabanını senkronize edebilirsiniz.' },
+               { q: 'Otel durumu (İptal/Konfirme) neden raporda yanlış?', a: 'Otel sekmelerindeki "Otel Durumu" seçeneğini güncellediğinizden emin olun. Rapor, teklifin genel durumundan ziyade her otelin kendi "hotel_status" verisini okur.' },
+               { q: 'Yeni bir acente veya otel ekleyebilir miyim?', a: 'Sol menüdeki "Acenteler" veya "Oteller" modüllerinden yetkiniz dahilinde yeni tanımlamalar yapabilirsiniz.' }
+             ].map((item, i) => (
+               <div key={i} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                 <h6 className="text-xs font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> {item.q}
+                 </h6>
+                 <p className="text-[11px] text-slate-500 leading-relaxed">{item.a}</p>
+               </div>
+             ))}
+          </div>
+          <div className="p-4 bg-indigo-600 text-white rounded-2xl text-center shadow-lg shadow-indigo-500/20">
+             <p className="text-[10px] font-black uppercase tracking-widest mb-1">Hala Sorun Mu Yaşıyorsunuz?</p>
+             <p className="text-[11px] opacity-90">Sistem yöneticinizle veya teknik destek ekibiyle "Destek Hattı" üzerinden iletişime geçin.</p>
           </div>
         </div>
       )
