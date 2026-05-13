@@ -10078,9 +10078,7 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (d: string): 'png' | 'jpeg' => (d || '').includes('image/png') ? 'png' : 'jpeg';
-
-      const projectName = project?.project_name || 'Proje';
-      const fileName = `${projectName}_Tam_Rapor_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
+      const fileName = `${project?.project_name || 'Proje'}_Tam_Rapor_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
 
       // TÜM MODÜL VERİLERİNİ ÇEK
       const [
@@ -10111,47 +10109,29 @@ export default function ProjectDetailPage() {
         }
       } catch (e) { console.error('Flight fetch error', e); }
 
-      const createBrandedSheet = (name: string, hotelData: any, isGlobal: boolean = false) => {
+      const createBrandedSheet = (name: string, hData: any) => {
         const safeName = name.replace(/[\\\/\?\*\[\]]/g, '').substring(0, 31);
         const sheet = workbook.addWorksheet(safeName);
-        sheet.pageSetup = { 
-          orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, 
-          horizontalCentered: true, paperSize: 9,
-          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
-        } as any;
-        
-        // ÜST BANT (Dark Theme)
-        const topBandRow = sheet.addRow([]); topBandRow.height = 70; sheet.mergeCells('A1:H1');
+        sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9, margins: { left: 0.2, right: 0.2, top: 0.3, bottom: 0.3 } } as any;
+        const topBand = sheet.addRow([]); topBand.height = 70; sheet.mergeCells('A1:H1');
         for (let c = 1; c <= 8; c++) sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
-        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
-        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 7.90, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
-
-        // PROJE BİLGİ KUTULARI
-        const hInfo = [
-          ['REFERANS', project.reference || '', 'ODA | PAX', isGlobal ? '-' : `${hotelData?.room_count || 0} | ${hotelData?.pax_count || 0}`],
-          ['ACENTE | FİRMA', `${getAgencyName(project.agency_id)} | ${project.company_name || ''}`, 'KONSEPT', isGlobal ? '-' : (hotelData?.hotel_concept || '')],
-          ['C/IN - C/OUT', !isGlobal && hotelData?.check_in_date ? `${new Date(hotelData.check_in_date).toLocaleDateString('tr-TR')} - ${new Date(hotelData.check_out_date).toLocaleDateString('tr-TR')}` : '-', 'OPSİYON', isGlobal ? '-' : (hotelData?.option || '')],
-          ['OTEL', isGlobal ? 'TÜM PROJE VERİSİ' : (getHotelName(hotelData?.hotel_id || hotelData?.id)), 'DURUM', project.status || ''],
-          ['TARİH', new Date().toLocaleDateString('tr-TR'), 'BÜTÇE', formatCurrency(project.budget || 0, 'USD')]
+        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.2), height: inchToPx(0.7) } });
+        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 7.9, row: 0.2 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
+        const info = [
+          ['REFERANS', project.reference || '', 'ODA | PAX', hData?.room_count ? `${hData.room_count} | ${hData.pax_count || 0}` : '-'],
+          ['ACENTE | FİRMA', `${getAgencyName(project.agency_id)} | ${project.company_name || ''}`, 'KONSEPT', hData?.hotel_concept || '-'],
+          ['OTEL', hData?.hotel_id || hData?.id ? getHotelName(hData.hotel_id || hData.id) : 'GENEL HİZMETLER', 'TARİH', new Date().toLocaleDateString('tr-TR')],
+          ['DURUM', project.status || '', 'BÜTÇE', formatCurrency(project.budget || 0, 'EUR')]
         ];
-
         let rIdx = 2;
-        hInfo.forEach(([lL, lV, rL, rV]) => {
-          const rowValues: any[] = new Array(8);
-          rowValues[0] = lL; rowValues[1] = lV; rowValues[5] = rL; rowValues[6] = rV;
-          const row = sheet.addRow(rowValues);
-          row.height = 24;
-          row.getCell(1).font = { bold: true, size: 11 }; row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
-          row.getCell(2).font = { size: 11 }; row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
-          row.getCell(6).font = { bold: true, size: 11 }; row.getCell(6).alignment = { horizontal: 'left', vertical: 'middle' };
-          row.getCell(7).font = { size: 11 }; row.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
-          sheet.mergeCells(`G${rIdx}:H${rIdx}`);
+        info.forEach(([lL, lV, rL, rV]) => {
+          const row = sheet.addRow([lL, lV, '', '', '', rL, rV, '']); row.height = 22;
           for (let c = 1; c <= 8; c++) row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3CBBE' } };
-          rIdx++;
+          row.getCell(1).font = { bold: true, size: 10 }; row.getCell(6).font = { bold: true, size: 10 };
+          sheet.mergeCells(`G${rIdx}:H${rIdx}`); rIdx++;
         });
         sheet.addRow([]); rIdx++;
         sheet.columns = [{ width: 45 }, { width: 12 }, { width: 12 }, { width: 15 }, { width: 18 }, { width: 12 }, { width: 18 }, { width: 45 }];
-        sheet.views = [{ state: 'normal', showGridLines: false }];
         return { sheet, rIdx };
       };
 
@@ -10249,84 +10229,67 @@ export default function ProjectDetailPage() {
         return r;
       };
 
-      // 1. GENEL DURUM
-      const { sheet: sSummary, rIdx: rSummary } = createBrandedSheet('GENEL DURUM', {}, true);
-      addFlatTable(sSummary, rSummary, 'PROJE GENEL BİLGİLERİ', ['ALAN', 'DEĞER'], [
-        ['PROJE ADI', project.project_name],
-        ['REFERANS', project.reference],
-        ['ACENTE', getAgencyName(project.agency_id)],
-        ['DURUM', project.status],
-        ['TOPLAM BÜTÇE', formatCurrency(project.budget || 0, 'USD')],
-        ['NOTLAR', project.notes || '-']
-      ], it => it);
+      // 1. OTEL BAZLI GRUPLAMA
+      project?.hotels_data?.forEach((h: any) => {
+        const hId = h.hotel_id || h.id; const hName = getHotelName(hId); const prefix = hName.substring(0, 15);
+        const hSales = allSales.filter(it => it.hotel_id === hId);
+        const hPurchase = allPurchase.filter(it => it.hotel_id === hId);
+        const hAcc = allAcc.filter(it => it.hotel_id === hId);
+        const hExtras = allExtras.filter(it => it.hotel_id === hId);
+        const hOther = [
+          ...allTransfers.filter(it => it.hotel_id === hId),
+          ...allEvents.filter(it => it.hotel_id === hId),
+          ...allHr.filter(it => it.hotel_id === hId),
+          ...allOther.filter(it => it.hotel_id === hId),
+          ...allFinancial.filter(it => it.hotel_id === hId)
+        ];
 
-      // 2. TÜM KONAKLAMA
-      if (allAcc.length > 0) {
-        const { sheet: sAcc, rIdx: rAcc } = createBrandedSheet('KONAKLAMA', {}, true);
-        addFlatTable(sAcc, rAcc, 'TÜM KONAKLAMA LİSTESİ', ['ODA NO', 'İSİM', 'SOYİSİM', 'ODA TİPİ', 'GİRİŞ', 'ÇIKIŞ', 'OTEL'], allAcc, it => [it.room_number, it.first_name, it.last_name, it.room_type, it.check_in_date, it.check_out_date, it.hotel]);
-      }
-
-      // 3. OTEL BAZLI SAYFALAR
-      project?.hotels_data?.forEach((h: any, i: number) => {
-        const hName = getHotelName(h.hotel_id || h.id);
-        const prefix = `${i + 1}. ${hName.substring(0, 15)}`;
-        
-        const hSales = allSales.filter(it => it.hotel_id === h.id);
-        const hPurchase = allPurchase.filter(it => it.hotel_id === h.id);
-        const hExtras = allExtras.filter(it => it.hotel_id === h.id);
-
-        if (hSales.length > 0) {
-          const { sheet: sS, rIdx: rS } = createBrandedSheet(`${prefix}-Satış`, h);
-          addCategorizedTable(sS, rS, `${hName} SATIŞLAR`, hSales);
+        if (hSales.length > 0) { const { sheet, rIdx } = createBrandedSheet(`${prefix} | SATIŞ`, h); addCategorizedTable(sheet, rIdx, `${hName} SATIŞLAR`, hSales); }
+        if (hPurchase.length > 0) { const { sheet, rIdx } = createBrandedSheet(`${prefix} | ALIŞ`, h); addCategorizedTable(sheet, rIdx, `${hName} ALIŞLAR`, hPurchase); }
+        if (hAcc.length > 0) {
+          const { sheet, rIdx } = createBrandedSheet(`${prefix} | KONAKLAMA`, h);
+          sheet.mergeCells(`A${rIdx}:H${rIdx}`); const tCell = sheet.getCell(`A${rIdx}`); tCell.value = 'KONAKLAMA LİSTESİ';
+          tCell.font = { size: 16, bold: true }; tCell.alignment = { horizontal: 'center' }; sheet.getRow(rIdx).height = 30;
+          for (let c = 1; c <= 8; c++) sheet.getRow(rIdx).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+          const hR = sheet.addRow(['ODA NO', 'İSİM', 'SOYİSİM', 'ODA TİPİ', 'GİRİŞ', 'ÇIKIŞ', 'GÜN', 'NOTLAR']);
+          hR.font = { bold: true }; hR.height = 20; for (let c = 1; c <= 8; c++) hR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+          hAcc.forEach(it => sheet.addRow([it.room_number, it.first_name, it.last_name, it.room_type, it.check_in_date, it.check_out_date, it.nights, it.room_note]));
         }
-        if (hPurchase.length > 0) {
-          const { sheet: sA, rIdx: rA } = createBrandedSheet(`${prefix}-Alış`, h);
-          addCategorizedTable(sA, rA, `${hName} ALIŞLAR`, hPurchase);
-        }
-        if (hExtras.length > 0) {
-          const { sheet: sE, rIdx: rE } = createBrandedSheet(`${prefix}-Ekstra`, h);
-          addCategorizedTable(sE, rE, `${hName} OTEL EKSTRALAR`, hExtras);
-        }
+        if (hExtras.length > 0) { const { sheet, rIdx } = createBrandedSheet(`${prefix} | EKSTRALAR`, h); addCategorizedTable(sheet, rIdx, `${hName} OTEL EKSTRALAR`, hExtras); }
+        if (hOther.length > 0) { const { sheet, rIdx } = createBrandedSheet(`${prefix} | DİĞER`, h); addCategorizedTable(sheet, rIdx, `${hName} DİĞER HİZMETLER`, hOther); }
       });
 
-      // 4. DİĞER MODÜLLER (GLOBAL)
+      // 2. KÜRESEL (OTEL BAĞIMSIZ) KALEMLER
+      const gTransfers = allTransfers.filter(it => !it.hotel_id);
+      const gEvents = allEvents.filter(it => !it.hotel_id);
+      const gHr = allHr.filter(it => !it.hotel_id);
+      const gOther = allOther.filter(it => !it.hotel_id);
+      const gFinancial = allFinancial.filter(it => !it.hotel_id);
+
+      if (gTransfers.length > 0) { const { sheet, rIdx } = createBrandedSheet('GENEL | TRANSFER', {}); addCategorizedTable(sheet, rIdx, 'GENEL TRANSFER VE TURLAR', gTransfers); }
+      if (gEvents.length > 0) { const { sheet, rIdx } = createBrandedSheet('GENEL | ETKİNLİK', {}); addCategorizedTable(sheet, rIdx, 'GENEL ETKİNLİK VE AKTİVİTELER', gEvents); }
+      if (gHr.length > 0) { const { sheet, rIdx } = createBrandedSheet('GENEL | İK', {}); addCategorizedTable(sheet, rIdx, 'GENEL İNSAN KAYNAKLARI', gHr); }
+      if (gOther.length > 0) { const { sheet, rIdx } = createBrandedSheet('GENEL | DİĞER', {}); addCategorizedTable(sheet, rIdx, 'GENEL DİĞER SERVİSLER', gOther); }
+      if (gFinancial.length > 0) { const { sheet, rIdx } = createBrandedSheet('GENEL | FİNANS', {}); addCategorizedTable(sheet, rIdx, 'GENEL FİNANSAL HİZMETLER', gFinancial); }
+
+      // 3. UÇAK BİLETİ (EN SON)
       if (allFlights.length > 0) {
-        const { sheet: sF, rIdx: rF } = createBrandedSheet('UÇAK BİLETİ', {}, true);
-        addFlatTable(sF, rF, 'UÇAK BİLETLERİ', ['PNR', 'HAVAYOLU', 'GİDİŞ', 'DÖNÜŞ', 'KİŞİ', 'TOPLAM TL'], allFlights, it => [it.pnr, it.havayolu, it.gidisTarihi, it.donusTarihi, it.kisiSayisi, it.toplamTl]);
-      }
-      if (allTransfers.length > 0) {
-        const { sheet: sT, rIdx: rT } = createBrandedSheet('TRANSFER & TUR', {}, true);
-        addCategorizedTable(sT, rT, 'TRANSFER VE TURLAR', allTransfers);
-      }
-      if (allEvents.length > 0) {
-        const { sheet: sEv, rIdx: rEv } = createBrandedSheet('ETKİNLİK & AKTİVİTE', {}, true);
-        addCategorizedTable(sEv, rEv, 'ETKİNLİK VE AKTİVİTELER', allEvents);
-      }
-      if (allHr.length > 0) {
-        const { sheet: sHr, rIdx: rHr } = createBrandedSheet('İNSAN KAYNAKLARI', {}, true);
-        addCategorizedTable(sHr, rHr, 'İNSAN KAYNAKLARI', allHr);
-      }
-      if (allOther.length > 0) {
-        const { sheet: sOth, rIdx: rOth } = createBrandedSheet('DİĞER SERVİSLER', {}, true);
-        addCategorizedTable(sOth, rOth, 'DİĞER SERVİSLER', allOther);
-      }
-      if (allFinancial.length > 0) {
-        const { sheet: sFin, rIdx: rFin } = createBrandedSheet('FİNANSAL', {}, true);
-        addCategorizedTable(sFin, rFin, 'FİNANSAL HİZMETLER', allFinancial);
+        const { sheet, rIdx } = createBrandedSheet('UÇAK BİLETLERİ', {});
+        sheet.mergeCells(`A${rIdx}:H${rIdx}`); const tCell = sheet.getCell(`A${rIdx}`); tCell.value = 'UÇAK BİLETLERİ';
+        tCell.font = { size: 16, bold: true }; tCell.alignment = { horizontal: 'center' }; sheet.getRow(rIdx).height = 30;
+        for (let c = 1; c <= 8; c++) sheet.getRow(rIdx).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+        const hR = sheet.addRow(['PNR', 'HAVAYOLU', 'GİDİŞ', 'DÖNÜŞ', 'KİŞİ', 'TOPLAM TL', 'DÖVİZ', 'AÇIKLAMA']);
+        hR.font = { bold: true }; hR.height = 20; for (let c = 1; c <= 8; c++) hR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        allFlights.forEach(it => sheet.addRow([it.pnr, it.havayolu, it.gidisTarihi, it.donusTarihi, it.kisiSayisi, it.toplamTl, it.doviz, it.misafirler]));
       }
 
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url; anchor.download = fileName; anchor.click();
+      const anchor = document.createElement('a'); anchor.href = url; anchor.download = fileName; anchor.click();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Full Excel error:', error);
-      alert('Rapor oluşturulurken bir hata oluştu.');
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error('Full Excel error:', error); alert('Rapor oluşturulurken bir hata oluştu.'); }
+    finally { setLoading(false); }
   };
 
   const handleHotelExcelExport = async () => {
@@ -10343,7 +10306,7 @@ export default function ProjectDetailPage() {
       const hotelName = isAll ? 'Tümü' : getHotelName(activeHotelId);
       const fileName = `${project?.project_name || 'Proje'}_${hotelName}_Raporu_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
 
-      // TÜM VERİLERİ ÇEK (Filtrelemek üzere)
+      // VERİLERİ ÇEK
       const [
         allSales, allPurchase, allAcc, allExtras, allTransfers, 
         allEvents, allHr, allOther, allFinancial
@@ -10359,39 +10322,24 @@ export default function ProjectDetailPage() {
         projectFinancialServicesService.getByProjectId(projectId)
       ]);
 
-      // Uçak biletleri
-      let allFlights: any[] = [];
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`/api/flight-tickets/${projectId}`, {
-          headers: { 'Authorization': `Bearer ${session?.access_token || ''}` }
-        });
-        if (res.ok) {
-          const rawFlights = await res.json();
-          allFlights = Array.isArray(rawFlights) ? rawFlights.map(t => migrateFlightTicket(t)) : [];
-        }
-      } catch (e) { console.error('Flight fetch error', e); }
-
-      const createBrandedSheet = (name: string, hData: any, isGlobal: boolean = false) => {
+      const createBrandedSheet = (name: string, hData: any) => {
         const safeName = name.replace(/[\\\/\?\*\[\]]/g, '').substring(0, 31);
         const sheet = workbook.addWorksheet(safeName);
         sheet.pageSetup = { 
-          orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, 
-          horizontalCentered: true, paperSize: 9,
-          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+          orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9,
+          margins: { left: 0.2, right: 0.2, top: 0.3, bottom: 0.3 }
         } as any;
         
         const topBand = sheet.addRow([]); topBand.height = 70; sheet.mergeCells('A1:H1');
         for (let c = 1; c <= 8; c++) sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
-        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
-        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 7.9, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
+        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.2), height: inchToPx(0.7) } });
+        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 7.9, row: 0.2 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
 
         const info = [
-          ['REFERANS', project.reference || '', 'ODA | PAX', isGlobal ? '-' : `${hData?.room_count || 0} | ${hData?.pax_count || 0}`],
-          ['ACENTE | FİRMA', `${getAgencyName(project.agency_id)} | ${project.company_name || ''}`, 'KONSEPT', isGlobal ? '-' : (hData?.hotel_concept || '')],
-          ['C/IN - C/OUT', !isGlobal && hData?.check_in_date ? `${new Date(hData.check_in_date).toLocaleDateString('tr-TR')} - ${new Date(hData.check_out_date).toLocaleDateString('tr-TR')}` : '-', 'OPSİYON', isGlobal ? '-' : (hData?.option || '')],
-          ['OTEL', isGlobal ? 'GENEL HİZMETLER' : hotelName, 'DURUM', project.status || ''],
-          ['TARİH', new Date().toLocaleDateString('tr-TR'), 'BÜTÇE', formatCurrency(project.budget || 0, 'USD')]
+          ['REFERANS', project.reference || '', 'ODA | PAX', isAll ? '-' : `${hData?.room_count || 0} | ${hData?.pax_count || 0}`],
+          ['ACENTE | FİRMA', `${getAgencyName(project.agency_id)} | ${project.company_name || ''}`, 'KONSEPT', isAll ? '-' : (hData?.hotel_concept || '')],
+          ['OTEL', isAll ? 'Tümü' : hotelName, 'TARİH', new Date().toLocaleDateString('tr-TR')],
+          ['DURUM', project.status || '', 'BÜTÇE', formatCurrency(project.budget || 0, 'EUR')]
         ];
 
         let r = 2;
@@ -10399,18 +10347,14 @@ export default function ProjectDetailPage() {
           const rowVals: any[] = new Array(8);
           rowVals[0] = lL; rowVals[1] = lV; rowVals[5] = rL; rowVals[6] = rV;
           const row = sheet.addRow(rowVals);
-          row.height = 24;
-          row.getCell(1).font = { bold: true, size: 11 }; row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
-          row.getCell(2).font = { size: 11 }; row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
-          row.getCell(6).font = { bold: true, size: 11 }; row.getCell(6).alignment = { horizontal: 'left', vertical: 'middle' };
-          row.getCell(7).font = { size: 11 }; row.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.height = 22;
+          row.getCell(1).font = { bold: true, size: 10 }; row.getCell(6).font = { bold: true, size: 10 };
           sheet.mergeCells(`G${r}:H${r}`);
           for (let c = 1; c <= 8; c++) row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3CBBE' } };
           r++;
         });
         sheet.addRow([]); r++;
         sheet.columns = [{ width: 45 }, { width: 12 }, { width: 12 }, { width: 15 }, { width: 18 }, { width: 12 }, { width: 18 }, { width: 45 }];
-        sheet.views = [{ state: 'normal', showGridLines: false }];
         return { sheet, rIdx: r };
       };
 
@@ -10419,35 +10363,44 @@ export default function ProjectDetailPage() {
         sheet.mergeCells(`A${r}:H${r}`);
         const tCell = sheet.getCell(`A${r}`);
         tCell.value = title.toUpperCase();
-        tCell.font = { size: 18, bold: true }; tCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        sheet.getRow(r).height = 35;
+        tCell.font = { size: 16, bold: true }; tCell.alignment = { horizontal: 'center' };
+        sheet.getRow(r).height = 30;
         for (let c = 1; c <= 8; c++) sheet.getRow(r).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
         r++;
 
         const grouped: Record<string, any[]> = {};
-        items.forEach(it => { const k = getCategoryName(it.main_category || it.category || '') || 'Hizmetler'; if (!grouped[k]) grouped[k] = []; grouped[k].push(it); });
+        items.forEach(it => { 
+          const k = getCategoryName(it.main_category || it.category || '') || 'Hizmetler'; 
+          if (!grouped[k]) grouped[k] = []; 
+          grouped[k].push(it); 
+        });
         
         const totalsE: number[] = [];
         const totalsG: number[] = [];
 
         Object.entries(grouped).forEach(([cat, cItems], idx) => {
           const catR = sheet.addRow([`${idx + 1}. ${cat.toUpperCase()}`]);
-          catR.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } }; catR.height = 25;
+          catR.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } }; catR.height = 22;
           for (let c = 1; c <= 8; c++) catR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
           sheet.mergeCells(`A${r}:H${r}`); r++;
 
-          const hR = sheet.addRow(['DETAY/AÇIKLAMA', 'BİRİM/ADET', 'SEFER/TEKRAR', 'BİRİM/FİYAT', 'TOPLAM EUR', 'KUR', 'TOPLAM TL', 'AÇIKLAMA']);
-          hR.font = { bold: true, size: 11 }; hR.height = 22;
+          const hR = sheet.addRow(['HİZMET DETAYI', 'ADET', 'TEKRAR', 'FİYAT', 'TOPLAM EUR', 'KUR', 'TOPLAM TL', 'AÇIKLAMA']);
+          hR.font = { bold: true, size: 10 }; hR.height = 20;
           for (let c = 1; c <= 8; c++) hR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
           r++;
 
           let startR = r;
           cItems.forEach(it => {
+            const subCatId = it.sub_category_id || '';
+            const subCatName = getCategoryName(subCatId);
+            // UUID ise ve map'te yoksa it.sub_category stringini kullan
+            const displaySubCat = (subCatName === subCatId) ? (it.sub_category || it.description || '-') : subCatName;
+            
             const q = it.quantity || it.unit_quantity || it.qty || 1;
             const re = it.repeat || it.sefer || 1;
             const pr = it.unit_price || 0;
             const fx = it.exchange_rate || it.fx || 1;
-            const row = sheet.addRow([getCategoryName(it.sub_category || it.sub_category_id || ''), q, re, pr, 0, fx, 0, it.description || '']);
+            const row = sheet.addRow([displaySubCat, q, re, pr, 0, fx, 0, it.description || '']);
             const curR = row.number;
             row.getCell(5).value = { formula: `B${curR}*C${curR}*D${curR}`, result: q * re * pr } as any;
             row.getCell(7).value = { formula: `E${curR}*F${curR}`, result: q * re * pr * fx } as any;
@@ -10458,7 +10411,7 @@ export default function ProjectDetailPage() {
           });
 
           const araR = sheet.addRow(['ARA TOPLAM', '', '', '', 0, '', 0, '']);
-          araR.font = { bold: true, size: 12 }; araR.height = 22;
+          araR.font = { bold: true }; araR.height = 20;
           for (let c = 1; c <= 8; c++) araR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD0D0D0' } };
           araR.getCell(5).value = { formula: `SUM(E${startR}:E${r - 1})` } as any;
           araR.getCell(7).value = { formula: `SUM(G${startR}:G${r - 1})` } as any;
@@ -10468,7 +10421,7 @@ export default function ProjectDetailPage() {
         });
 
         const gRow = sheet.addRow([`GENEL TOPLAM`, '', '', '', 0, '', 0, '']);
-        gRow.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } }; gRow.height = 30;
+        gRow.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } }; gRow.height = 28;
         for (let c = 1; c <= 8; c++) gRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF333333' } };
         if (totalsE.length > 0) {
           gRow.getCell(5).value = { formula: `SUM(${totalsE.map(idx => `E${idx}`).join(',')})` } as any;
@@ -10478,51 +10431,52 @@ export default function ProjectDetailPage() {
         return r;
       };
 
-      const addFlatTable = (sheet: any, r: number, title: string, headers: string[], items: any[], mapper: (it: any) => any[]) => {
-        if (!items || items.length === 0) return r;
-        sheet.mergeCells(`A${r}:${String.fromCharCode(64 + Math.min(headers.length, 26))}${r}`);
-        const tCell = sheet.getCell(`A${r}`);
-        tCell.value = title.toUpperCase();
-        tCell.font = { size: 18, bold: true }; tCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        sheet.getRow(r).height = 35;
-        for (let c = 1; c <= headers.length; c++) sheet.getRow(r).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
-        r++;
-        const hR = sheet.addRow(headers); hR.font = { bold: true, size: 11 }; hR.height = 22;
-        for (let c = 1; c <= headers.length; c++) hR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
-        r++;
-        items.forEach(it => { const row = sheet.addRow(mapper(it)); row.height = 18; r++; });
-        return r;
-      };
-
-      // Filter data for the specific hotel
       const hSales = isAll ? allSales : allSales.filter(it => it.hotel_id === activeHotelId);
       const hPurchase = isAll ? allPurchase : allPurchase.filter(it => it.hotel_id === activeHotelId);
-      const hAcc = isAll ? allAcc : allAcc.filter(it => it.hotel_id === activeHotelId);
       const hExtras = isAll ? allExtras : allExtras.filter(it => it.hotel_id === activeHotelId);
+      const hAcc = isAll ? allAcc : allAcc.filter(it => it.hotel_id === activeHotelId);
+      
+      const hOtherServices = [
+        ...allTransfers.filter(it => it.hotel_id === activeHotelId),
+        ...allEvents.filter(it => it.hotel_id === activeHotelId),
+        ...allHr.filter(it => it.hotel_id === activeHotelId),
+        ...allOther.filter(it => it.hotel_id === activeHotelId),
+        ...allFinancial.filter(it => it.hotel_id === activeHotelId)
+      ];
 
+      // SIRALAMA VE İSİMLENDİRME
       if (hSales.length > 0) {
-        const { sheet: s, rIdx: rr } = createBrandedSheet('Satış', hotelData);
-        addCategorizedTable(s, rr, `${hotelName} SATIŞLAR`, hSales);
+        const { sheet, rIdx } = createBrandedSheet(`${hotelName.substring(0, 15)} | SATIŞ`, hotelData);
+        addCategorizedTable(sheet, rIdx, `${hotelName} SATIŞ LİSTESİ`, hSales);
       }
       if (hPurchase.length > 0) {
-        const { sheet: s, rIdx: rr } = createBrandedSheet('Alış', hotelData);
-        addCategorizedTable(s, rr, `${hotelName} ALIŞLAR`, hPurchase);
-      }
-      if (hExtras.length > 0) {
-        const { sheet: s, rIdx: rr } = createBrandedSheet('Ekstra', hotelData);
-        addCategorizedTable(s, rr, `${hotelName} OTEL EKSTRALAR`, hExtras);
+        const { sheet, rIdx } = createBrandedSheet(`${hotelName.substring(0, 15)} | ALIŞ`, hotelData);
+        addCategorizedTable(sheet, rIdx, `${hotelName} ALIŞ LİSTESİ`, hPurchase);
       }
       if (hAcc.length > 0) {
-        const { sheet: s, rIdx: rr } = createBrandedSheet('Konaklama', hotelData);
-        addFlatTable(s, rr, `${hotelName} KONAKLAMA LİSTESİ`, ['ODA NO', 'İSİM', 'SOYİSİM', 'ODA TİPİ', 'GİRİŞ', 'ÇIKIŞ'], hAcc, it => [it.room_number, it.first_name, it.last_name, it.room_type, it.check_in_date, it.check_out_date]);
+        const { sheet, rIdx } = createBrandedSheet(`${hotelName.substring(0, 15)} | KONAKLAMA`, hotelData);
+        sheet.mergeCells(`A${rIdx}:H${rIdx}`);
+        const tCell = sheet.getCell(`A${rIdx}`); tCell.value = 'KONAKLAMA LİSTESİ';
+        tCell.font = { size: 16, bold: true }; tCell.alignment = { horizontal: 'center' };
+        sheet.getRow(rIdx).height = 30;
+        for (let c = 1; c <= 8; c++) sheet.getRow(rIdx).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+        let curR = rIdx + 1;
+        const hR = sheet.addRow(['ODA NO', 'İSİM', 'SOYİSİM', 'ODA TİPİ', 'GİRİŞ', 'ÇIKIŞ', 'GÜN', 'NOTLAR']);
+        hR.font = { bold: true }; hR.height = 20;
+        for (let c = 1; c <= 8; c++) hR.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        curR++;
+        hAcc.forEach(it => {
+          sheet.addRow([it.room_number, it.first_name, it.last_name, it.room_type, it.check_in_date, it.check_out_date, it.nights, it.room_note]);
+          curR++;
+        });
       }
-
-      // Add Global modules too? The user said "o otele ait tüm sheetleri verecek". 
-      // Usually flight tickets etc are project-wide, but maybe we should include them too?
-      // I will include them to be safe as "all project sheets" might be what they mean.
-      if (allFlights.length > 0) {
-        const { sheet: sF, rIdx: rF } = createBrandedSheet('UÇAK BİLETİ', {}, true);
-        addFlatTable(sF, rF, 'UÇAK BİLETLERİ', ['PNR', 'HAVAYOLU', 'GİDİŞ', 'DÖNÜŞ', 'KİŞİ', 'TOPLAM TL'], allFlights, it => [it.pnr, it.havayolu, it.gidisTarihi, it.donusTarihi, it.kisiSayisi, it.toplamTl]);
+      if (hExtras.length > 0) {
+        const { sheet, rIdx } = createBrandedSheet(`${hotelName.substring(0, 15)} | EKSTRALAR`, hotelData);
+        addCategorizedTable(sheet, rIdx, `${hotelName} OTEL EKSTRALAR`, hExtras);
+      }
+      if (hOtherServices.length > 0) {
+        const { sheet, rIdx } = createBrandedSheet(`${hotelName.substring(0, 15)} | DİĞER`, hotelData);
+        addCategorizedTable(sheet, rIdx, `${hotelName} DİĞER HİZMETLER`, hOtherServices);
       }
 
       const buffer = await workbook.xlsx.writeBuffer();
@@ -10532,7 +10486,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (e) {
       console.error(e);
-      alert('Hata oluştu.');
+      alert('Rapor oluşturulurken bir hata oluştu.');
     } finally { setLoading(false); }
   };
 
