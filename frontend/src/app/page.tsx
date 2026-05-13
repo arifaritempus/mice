@@ -26,6 +26,7 @@ import {
   Settings,
   CreditCard,
   PieChart,
+  ArrowLeft,
   X
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -153,6 +154,7 @@ interface ManualSection {
 }
 
 function UserManualModal({ onClose }: { onClose: () => void }) {
+  const [view, setView] = useState<'grid' | 'detail'>('grid');
   const [activeTab, setActiveTab] = useState('mice');
 
   const sections: ManualSection[] = [
@@ -236,44 +238,60 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
     },
     {
       id: 'operation',
-      title: 'Operasyon Planlama',
+      title: 'Operasyon & Saha Yönetimi',
       icon: Truck,
       content: (
-        <div className="space-y-6">
-          <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800">
-            <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-100 mb-2">Lojistik ve Personel</h4>
-            <p className="text-xs text-indigo-800 dark:text-indigo-200 leading-relaxed">
-              Operasyon menüsü altındaki Transfer, Rehber ve Part-time modülleri, konfirme olan projelerin ve sejourların saha yönetimini sağlar.
-            </p>
+        <div className="space-y-12 pb-20">
+          <div className="p-8 bg-gradient-to-br from-indigo-600 to-purple-800 rounded-[3rem] text-white shadow-2xl shadow-indigo-500/20">
+            <h4 className="text-3xl font-black mb-4 tracking-tighter">Saha Operasyon Merkezi</h4>
+            <p className="text-base opacity-90 leading-relaxed italic">Transfer, rehber ve personel süreçlerini anlık yönetin.</p>
           </div>
-          <div className="grid grid-cols-1 gap-3">
-             {['Transfer Listesi: Tüm geliş/gidiş hareketlerini tek ekranda yönetin.', 
-               'Rehber Atamaları: Kokartlı rehberlerin müsaitlik ve görev takibini yapın.', 
-               'Personel Talepleri: Organizasyonlar için gerekli part-time ekip ihtiyacını planlayın.'].map((text, i) => (
-               <div key={i} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                 <ChevronRight className="w-3 h-3 text-indigo-500" /> {text}
-               </div>
-             ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 hover:border-blue-500/50 transition-colors">
+               <h6 className="text-sm font-black text-slate-900 dark:text-white uppercase mb-4 tracking-widest text-blue-600">Rehber & Personel Atama</h6>
+               <p className="text-xs text-slate-500 leading-relaxed">Projeye atanan rehberlerin kokart bilgileri, dilleri ve iletişim detayları sistemde hazırdır. Tek tıkla atama yapılır.</p>
+            </div>
+            <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 hover:border-blue-500/50 transition-colors">
+               <h6 className="text-sm font-black text-slate-900 dark:text-white uppercase mb-4 tracking-widest text-emerald-600">Transfer Akış Listesi</h6>
+               <p className="text-xs text-slate-500 leading-relaxed">Tüm uçuş verileri günlük operasyon listesine akar. Araç tipi ve plaka atamaları buradan yapılır.</p>
+            </div>
+          </div>
+          <div className="p-8 bg-slate-900 text-white rounded-[2.5rem]">
+             <h6 className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Operasyonel Kritikler</h6>
+             <ul className="space-y-2">
+                {['Araç plakası girilmeden transfer fişi basılamaz.', 'Rehber ataması yapıldığında rehberin telefonuna anlık SMS/Bildirim gider.'].map((t, i) => (
+                  <li key={i} className="text-xs flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" /> {t}
+                  </li>
+                ))}
+             </ul>
           </div>
         </div>
       )
     },
     {
-      id: 'finance',
+      id: 'accounting',
       title: 'Muhasebe & Faturalar',
       icon: CreditCard,
       content: (
-        <div className="space-y-6">
-          <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-800">
-            <h4 className="text-sm font-black text-rose-900 dark:text-rose-100 mb-2">Finansal Kontrol</h4>
-            <p className="text-xs text-rose-800 dark:text-rose-200 leading-relaxed">
-              Fatura bekleyen ve tamamlanan tüm işlemlerin finansal statüsünü bu modülden takip edebilirsiniz.
-            </p>
+        <div className="space-y-12 pb-20">
+          <div className="p-8 bg-gradient-to-br from-rose-600 to-pink-800 rounded-[3rem] text-white shadow-2xl shadow-rose-500/20">
+            <h4 className="text-3xl font-black mb-4 tracking-tighter">Finansal Takip Merkezi</h4>
+            <p className="text-base opacity-90 leading-relaxed italic">Faturalar, ödemeler ve nakit akışı kontrolünüz altında.</p>
           </div>
-          <div className="bg-slate-900 text-white p-5 rounded-2xl relative overflow-hidden group">
-            <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-            <h6 className="text-[10px] font-black uppercase tracking-widest text-rose-400 mb-2">Önemli Hatırlatma</h6>
-            <p className="text-[11px] text-slate-300 leading-relaxed">Projeler tamamlandığında "Muhasebe" sayfasına düşer. Burada fatura girişi yapılmayan kalemler "Bekleyen" listesinde kırmızı alarm olarak görünür.</p>
+          <div className="space-y-6">
+             <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
+                <p className="text-sm font-black text-slate-900 dark:text-white mb-2">Fatura Kesme Süreci</p>
+                <p className="text-xs text-slate-500 leading-relaxed">Konfirme olan projelerin bütçeleri otomatik olarak "Fatura Bekleyenler" listesine düşer. Kısmi veya tam fatura kesebilirsiniz.</p>
+             </div>
+             <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
+                <p className="text-sm font-black text-slate-900 dark:text-white mb-2">Banka & Kasa Entegrasyonu</p>
+                <p className="text-xs text-slate-500 leading-relaxed">Yapılan tahsilatlar doğrudan banka/kasa bakiyelerinize işlenir ve mali raporlara yansır.</p>
+             </div>
+          </div>
+          <div className="p-8 bg-rose-50 dark:bg-rose-950/40 rounded-[2.5rem] border border-rose-100 dark:border-rose-900/50">
+             <h6 className="text-[11px] font-black uppercase tracking-widest mb-4 text-rose-600">Nakit Akış Otomasyonu</h6>
+             <p className="text-xs text-slate-600 dark:text-slate-400">Teklif kalemlerine girdiğiniz her tahsilat/ödeme tarihi, Muhasebe modülündeki "Nakit Akış" takvimine anlık olarak düşer. Bu sayede ay sonunda kasanızda ne kadar nakit olacağını bugünden görebilirsiniz.</p>
           </div>
         </div>
       )
@@ -334,77 +352,100 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-2xl animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-3xl animate-in fade-in duration-500">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 40 }}
+        initial={{ opacity: 0, scale: 0.9, y: 50 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 w-full max-w-7xl h-[85vh] rounded-[3.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden flex flex-col lg:flex-row relative"
+        className="bg-white dark:bg-slate-900 w-full max-w-7xl h-[90vh] rounded-[4rem] shadow-[0_40px_120px_rgba(0,0,0,0.6)] border border-white/10 overflow-hidden flex flex-col relative"
       >
         {/* Close Button - Premium Floating X */}
         <button 
           onClick={onClose}
-          className="absolute top-10 right-10 z-[220] p-4 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 rounded-full transition-all hover:scale-110 active:scale-90 hover:rotate-90 shadow-lg"
+          className="absolute top-12 right-12 z-[250] p-5 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 rounded-full transition-all hover:scale-110 active:scale-90 hover:rotate-90 shadow-2xl"
         >
-          <X className="w-6 h-6" />
+          <X className="w-7 h-7" />
         </button>
 
-        {/* Premium Sidebar */}
-        <div className="w-full lg:w-[320px] bg-slate-50 dark:bg-slate-950/40 border-r border-slate-200 dark:border-slate-800 p-10 flex flex-col shrink-0">
-          <div className="flex items-center gap-4 mb-14">
-            <div className="w-14 h-14 bg-blue-600 rounded-[1.25rem] flex items-center justify-center text-white shadow-2xl shadow-blue-500/40 rotate-3">
-              <BookOpen className="w-7 h-7" />
-            </div>
-            <div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">ANSİKLOPEDİ</h2>
-              <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mt-1">v4.0 Ultimate</p>
-            </div>
-          </div>
-          
-          <nav className="flex-1 space-y-3 overflow-y-auto pr-4 custom-scrollbar">
-            {sections.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveTab(section.id)}
-                className={`w-full flex items-center gap-5 px-6 py-5 rounded-3xl text-left transition-all duration-400 group ${
-                  activeTab === section.id 
-                    ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/30 translate-x-2' 
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-700'
-                }`}
-              >
-                <div className={`p-2.5 rounded-xl transition-colors ${activeTab === section.id ? 'bg-white/20' : 'bg-slate-200/50 dark:bg-slate-800 group-hover:bg-blue-50'}`}>
-                  <section.icon className={`w-5 h-5 ${activeTab === section.id ? 'text-white' : 'text-slate-500'}`} />
-                </div>
-                <span className="text-[13px] font-black uppercase tracking-tight">{section.title}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Content Area - Light Background for Readability */}
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0f172a] p-10 lg:p-20 custom-scrollbar">
-          <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
+          {view === 'grid' ? (
             <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.5, ease: "circOut" }}
-              className="max-w-4xl"
+              key="grid"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="flex-1 p-16 lg:p-24 overflow-y-auto custom-scrollbar"
             >
-              <div className="flex flex-col gap-6 mb-16">
-                 <div className="w-16 h-2 bg-blue-600 rounded-full" />
-                 <h1 className="text-5xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-[ -0.05em] leading-[0.9]">
-                   {sections.find(s => s.id === activeTab)?.title}
-                 </h1>
-                 <p className="text-slate-400 font-medium text-lg lg:text-xl uppercase tracking-widest">Ayrıntılı Modül Rehberi</p>
+              <div className="text-center mb-20">
+                <div className="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-blue-500/40 mx-auto mb-8">
+                  <BookOpen className="w-10 h-10" />
+                </div>
+                <h1 className="text-6xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">SİSTEM ANSİKLOPEDİSİ</h1>
+                <p className="text-slate-400 font-bold uppercase tracking-[0.3em]">Hangi modülü öğrenmek istersiniz?</p>
               </div>
-              
-              <div className="prose prose-slate dark:prose-invert max-w-none">
-                {sections.find(s => s.id === activeTab)?.content}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {sections.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setActiveTab(section.id);
+                      setView('detail');
+                    }}
+                    className="group relative p-10 bg-slate-50 dark:bg-slate-800/50 rounded-[3rem] border border-slate-100 dark:border-slate-700 text-left transition-all duration-500 hover:scale-[1.05] hover:bg-white dark:hover:bg-slate-800 hover:shadow-2xl hover:shadow-blue-500/20 active:scale-95"
+                  >
+                    <div className="w-16 h-16 rounded-[1.5rem] bg-white dark:bg-slate-900 flex items-center justify-center mb-8 shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                      <section.icon className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">{section.title}</h3>
+                    <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Modülün tüm detaylarını, otomasyon süreçlerini ve kritik özelliklerini keşfedin.</p>
+                    <div className="absolute top-10 right-10 opacity-0 group-hover:opacity-100 transition-all">
+                      <ChevronRight className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </button>
+                ))}
               </div>
             </motion.div>
-          </AnimatePresence>
-        </div>
+          ) : (
+            <motion.div
+              key="detail"
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              className="flex-1 flex flex-col h-full bg-white dark:bg-[#0f172a]"
+            >
+              {/* Detail Header */}
+              <div className="h-32 border-b border-slate-100 dark:border-slate-800 px-16 flex items-center shrink-0">
+                <button 
+                  onClick={() => setView('grid')}
+                  className="flex items-center gap-3 text-slate-500 hover:text-blue-600 font-black uppercase text-xs tracking-widest group"
+                >
+                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform" /> ANA MENÜYE DÖN
+                </button>
+              </div>
+
+              {/* Detail Content */}
+              <div className="flex-1 overflow-y-auto p-16 lg:p-24 custom-scrollbar">
+                <div className="max-w-5xl">
+                   <div className="flex items-center gap-6 mb-16">
+                      <div className="w-20 h-20 rounded-3xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
+                        {React.createElement(sections.find(s => s.id === activeTab)?.icon || Target, { className: "w-10 h-10" })}
+                      </div>
+                      <div>
+                        <h1 className="text-6xl lg:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-none mb-2 uppercase">
+                          {sections.find(s => s.id === activeTab)?.title}
+                        </h1>
+                        <p className="text-blue-600 font-black uppercase tracking-[0.4em] text-sm">Kapsamlı Kullanım Klavuzu</p>
+                      </div>
+                   </div>
+
+                   <div className="prose prose-2xl prose-slate dark:prose-invert max-w-none">
+                     {sections.find(s => s.id === activeTab)?.content}
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
