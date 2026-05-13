@@ -160,7 +160,6 @@ export default function CreateQuotePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showOperationManagersDropdown, setShowOperationManagersDropdown] = useState(false);
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [loading, setLoading] = useState(true);
   const [agencySearch, setAgencySearch] = useState('');
   const [hotelSearch, setHotelSearch] = useState('');
@@ -180,7 +179,7 @@ OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ G�
 OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ EKSTRA OLARAK ÜCRETLENDİRİLİR.`
   });
 
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const [activeHotelId, setActiveHotelId] = useState<string | null>(null);
   const [selectedHotels, setSelectedHotels] = useState<SelectedHotel[]>([]);
