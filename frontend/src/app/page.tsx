@@ -575,7 +575,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
         className="bg-white dark:bg-slate-900 w-full max-w-screen-2xl h-full md:h-[90vh] md:rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,0.7)] flex overflow-hidden relative"
       >
         {/* Left Sidebar - Navigation */}
-        <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} fixed md:relative inset-y-0 left-0 w-80 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-100 dark:border-slate-800 z-50 transition-transform duration-500`}>
+        <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} fixed md:static inset-y-0 left-0 w-80 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-100 dark:border-slate-800 z-50 shrink-0 transition-transform duration-500`}>
           <div className="h-full flex flex-col">
             <div className="p-8 border-b border-slate-100 dark:border-slate-800">
                <div className="flex items-center gap-3 mb-8">
@@ -634,7 +634,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-[#0f172a] overflow-hidden">
+        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-[#0f172a] overflow-hidden">
           {/* Top Bar - Breadcrumbs & Actions */}
           <header className="h-20 border-b border-slate-100 dark:border-slate-800 px-8 flex items-center justify-between shrink-0 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-40">
              <div className="flex items-center gap-4">
