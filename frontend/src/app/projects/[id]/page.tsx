@@ -11658,49 +11658,8 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Financial Summary Cards - Dashboard Style */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-blue-500">
-          <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-            <TrendingUp size={18} />
-          </div>
-          <div>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">TOPLAM SATIŞ</p>
-            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{formatTRY(salesTotals.totalTRY)}</p>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-red-500">
-          <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-            <TrendingDown size={18} />
-          </div>
-          <div>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">TOPLAM ALIŞ</p>
-            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{formatTRY(purchaseTotals.totalTRY)}</p>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-purple-500">
-          <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
-            <DollarSign size={18} />
-          </div>
-          <div>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">NET KAR/ZARAR</p>
-            <p className={`text-sm font-black leading-none ${(salesTotals.totalTRY - purchaseTotals.totalTRY) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-              {formatTRY(salesTotals.totalTRY - purchaseTotals.totalTRY)}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex items-center gap-3 border-l-4 border-l-emerald-500">
-          <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
-            <Percent size={18} />
-          </div>
-          <div>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">KAR MARJI</p>
-            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">
-              {salesTotals.totalTRY > 0 ? `${(( (salesTotals.totalTRY - purchaseTotals.totalTRY) / salesTotals.totalTRY ) * 100).toFixed(2)} %` : '0.00 %'}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Financial Summary Cards removed for privacy - visible in dashboard only if needed */}
+
 
       {/* Otel Sekmeleri (Çoklu Otel Desteği) - Premium Quote Style */}
       {project?.hotels_data && project.hotels_data.length > 0 && (
