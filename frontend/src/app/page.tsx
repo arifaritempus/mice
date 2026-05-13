@@ -363,7 +363,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
                   </div>
                   <div>
                     <h5 className="font-black uppercase tracking-tight mb-1">Nakit Akışa Akış</h5>
-                    <p className="text-[11px] opacity-70 leading-relaxed">Girdiğiniz her tahsilat ve ödeme vadesi, Muhasebe > Nakit Akış tablosuna anlık olarak işlenir. Ay sonu kasanızı bugünden görebilirsiniz.</p>
+                    <p className="text-[11px] opacity-70 leading-relaxed">Girdiğiniz her tahsilat ve ödeme vadesi, Muhasebe &gt; Nakit Akış tablosuna anlık olarak işlenir. Ay sonu kasanızı bugünden görebilirsiniz.</p>
                   </div>
                </div>
             </div>
