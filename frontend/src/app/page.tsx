@@ -195,6 +195,10 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
     <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{caption}</p>
   </div>
 );
+function UserManualModal({ onClose }: { onClose: () => void }) {
+  const [activeTab, setActiveTab] = useState('mice-teklif');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -255,6 +259,14 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
       ]
     }
   ];
+
+  const filteredNavigation = navigation.map(group => ({
+    ...group,
+    items: group.items.filter(item => 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(group => group.items.length > 0);
 
   const getContent = () => {
     switch(activeTab) {
