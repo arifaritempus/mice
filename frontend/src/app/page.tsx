@@ -157,99 +157,81 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
 
   const sections: ManualSection[] = [
     {
-      id: 'navigation',
-      title: 'Gezinme & Kısayollar',
-      icon: Layout,
-      content: (
-        <div className="space-y-6">
-          <div className="p-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h4 className="text-sm font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-              <RefreshCcw className="w-4 h-4 text-blue-600" /> Ekranlar Arası Geçiş
-            </h4>
-            <div className="space-y-3">
-               <div className="flex items-start gap-3">
-                 <div className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold">SOL MENÜ</div>
-                 <p className="text-[11px] text-slate-500">Tüm ana modüllere sol taraftaki daraltılabilir menüden ulaşabilirsiniz. Üst kısımdaki ikonlar hızlı erişim sağlar.</p>
-               </div>
-               <div className="flex items-start gap-3">
-                 <div className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold">GERİ DÖNÜŞ</div>
-                 <p className="text-[11px] text-slate-500">Düzenleme veya detay sayfalarından çıkmak için sol üstteki "GERİ" butonunu veya sayfa altındaki "İPTAL" butonunu kullanın.</p>
-               </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/20">
-              <h5 className="text-[10px] font-black uppercase mb-1">Hızlı Arama</h5>
-              <p className="text-[11px] opacity-80 leading-relaxed">Projeler veya Teklifler listesinde <kbd className="bg-white/20 px-1 rounded">CTRL+F</kbd> yerine sistemin üstündeki arama çubuğunu kullanın; bu özellik veritabanında anlık filtreleme yapar.</p>
-            </div>
-            <div className="p-4 bg-slate-900 text-white rounded-2xl">
-              <h5 className="text-[10px] font-black uppercase mb-1">Döviz Kontrolü</h5>
-              <p className="text-[11px] opacity-80 leading-relaxed">Fiyatların doğru yansıması için kalem bazında kur (FX) seçeneğini "EUR/USD/TL" olarak doğru set ettiğinizden emin olun.</p>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
       id: 'mice',
-      title: 'MICE Yönetimi',
+      title: 'MICE & Proje Yönetimi',
       icon: Target,
       content: (
-        <div className="space-y-6">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800">
-            <h4 className="text-sm font-black text-blue-900 dark:text-blue-100 mb-2">Teklif Hazırlama Stratejisi</h4>
-            <p className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
-              Teklifler modülü, çoklu otel seçeneği ve karmaşık bütçe kalemlerini yönetmek için optimize edilmiştir. 
-              Her otel için ayrı tarihler, oda sayıları ve konseptler belirleyebilirsiniz.
-            </p>
+        <div className="space-y-8 pb-10">
+          <div className="p-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] text-white shadow-xl shadow-blue-500/20">
+            <h4 className="text-lg font-black mb-3">Uçtan Uca Proje Döngüsü</h4>
+            <p className="text-xs opacity-90 leading-relaxed italic">Teklif hazırlığından nakit akışına kadar tüm süreçlerin kalbi burasıdır.</p>
           </div>
-          <div className="space-y-4">
-            <h5 className="text-xs font-black uppercase text-slate-400">Detaylı Özellikler</h5>
-            <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-               <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600"><Plus className="w-4 h-4"/></div>
-               <div>
-                 <p className="text-[11px] font-bold text-slate-900 dark:text-white">Alt Satır Ekleme</p>
-                 <p className="text-[10px] text-slate-500">Her kalemin yanındaki "+" butonuyla araya yeni satır ekleyebilirsiniz. Bu özellik sıralı operasyonel listeler için kritiktir.</p>
-               </div>
-            </div>
-            <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-               <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600"><RefreshCcw className="w-4 h-4"/></div>
-               <div>
-                 <p className="text-[11px] font-bold text-slate-900 dark:text-white">Otomatik Etiketleme</p>
-                 <p className="text-[10px] text-slate-500">Sistem, "Otel 1, Otel 2" sekmeleri arasındaki geçişleri algılar ve her bütçe kalemine gizli [T:id] etiketini basarak raporları ayırır.</p>
-               </div>
-            </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <section className="space-y-3">
+              <h5 className="text-[10px] font-black uppercase text-blue-600 tracking-widest border-b border-blue-100 pb-2">1. Satış & Paylaşım</h5>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Link ile Satış (Online Teklif)</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Oluşturduğunuz teklifleri "Link Oluştur" butonuyla müşteriye özel bir URL olarak gönderebilirsiniz. Müşteri linke tıkladığında profesyonel bir arayüzle karşılaşır.</p>
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white mt-4">Excel Entegrasyonu</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Mevcut bütçelerinizi Excel'den import edebilir veya hazırladığınız teklifi tek tıkla Excel formatında indirebilirsiniz.</p>
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h5 className="text-[10px] font-black uppercase text-emerald-600 tracking-widest border-b border-emerald-100 pb-2">2. Operasyonel Dönüşüm</h5>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Konaklamadan Transfer Oluşturma</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Konaklama listesindeki misafirlerin uçuş detaylarını girdiğinizde, sistem otomatik olarak geliş/gidiş transfer kayıtlarını oluşturur. Manuel veri girişine son!</p>
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white mt-4">Excel Misafir Import</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Yüzlerce kişilik misafir listelerini şablon Excel ile saniyeler içinde projeye dahil edebilirsiniz.</p>
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h5 className="text-[10px] font-black uppercase text-amber-600 tracking-widest border-b border-amber-100 pb-2">3. Mutabakat & Bildirimler</h5>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Link ile Mutabakat</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Tedarikçilere veya müşterilere gönderilen mutabakat linkleri sayesinde taraflar onay verdiğinde bildirimler panelinize anlık düşer.</p>
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white mt-4">Sistem Bildirimleri</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Opsiyonu dolan teklifler, onay bekleyen mutabakatlar ve yaklaşan ödemeler için sağ üstteki bildirim zili sizi uyarır.</p>
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h5 className="text-[10px] font-black uppercase text-rose-600 tracking-widest border-b border-rose-100 pb-2">4. Finans & Nakit Akış</h5>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Tahsilat & Ödeme Planı</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Proje bütçesindeki her kalem için vade ve ödeme tipi belirleyebilirsiniz. Bu veriler anlık olarak "Nakit Akış" tablonuza yansır.</p>
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white mt-4">KDV & Kur Farkı Yönetimi</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Dövizli işlemlerde kur farkı faturalarını sistem otomatik hesaplar ve muhasebe modülüne hazır veri olarak sunar.</p>
+              </div>
+            </section>
           </div>
         </div>
       )
     },
+  const sections: ManualSection[] = [
+    // ... mice was here ...
     {
       id: 'sejour',
-      title: 'Sejour & Voucher',
+      title: 'Sejour & Voucher Otomasyonu',
       icon: Hotel,
       content: (
-        <div className="space-y-6">
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800">
-            <h4 className="text-sm font-black text-emerald-900 dark:text-emerald-100 mb-2">Bireysel Rezervasyon Takibi</h4>
-            <p className="text-xs text-emerald-800 dark:text-emerald-200 leading-relaxed">
-              Sejour modülü, münferit misafirlerin uçuş, konaklama ve transfer detaylarını tek bir Voucher altında toplar.
-            </p>
+        <div className="space-y-8 pb-10">
+          <div className="p-6 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2rem] text-white shadow-xl shadow-emerald-500/20">
+            <h4 className="text-lg font-black mb-3">Misafir Deneyimi Yönetimi</h4>
+            <p className="text-xs opacity-90 leading-relaxed italic">Münferit misafirlerin tüm uçuş, otel ve transfer akışını saniyeler içinde planlayın.</p>
           </div>
           <div className="space-y-4">
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 flex-shrink-0 flex items-center justify-center font-black text-emerald-600 italic">1</div>
-              <div>
-                <h6 className="text-xs font-bold text-slate-900 dark:text-white">Uçuş Detayları</h6>
-                <p className="text-[11px] text-slate-500">Misafirin geliş ve dönüş uçuşlarını sisteme girerek operasyonel listelere otomatik veri aktarımı sağlayın.</p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 flex-shrink-0 flex items-center justify-center font-black text-emerald-600 italic">2</div>
-              <div>
-                <h6 className="text-xs font-bold text-slate-900 dark:text-white">Transfer & Rehber</h6>
-                <p className="text-[11px] text-slate-500">Voucher içindeki transfer ve rehber talepleri, ana sayfadaki "Aktif Akış" panelinde tarih bazlı listelenir.</p>
-              </div>
-            </div>
+             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Voucher Link Paylaşımı</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Misafirlerinize özel oluşturulan online Voucher linki sayesinde, misafirler kendi telefonlarından tüm detayları anlık görebilir.</p>
+             </div>
+             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Otel Tahsisat (Allotment) Takibi</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Anlaşmalı olduğunuz otellerdeki oda kontenjanlarınızı sisteme girerek doluluk oranlarını anlık izleyebilirsiniz.</p>
+             </div>
           </div>
         </div>
       )
@@ -353,61 +335,80 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
     }
   ];
 
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row"
+        className="bg-white dark:bg-slate-900 w-full max-w-6xl h-[90vh] rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row relative"
       >
+        {/* Close Button X */}
+        <button 
+          onClick={onClose}
+          className="absolute top-8 right-8 z-[210] p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all hover:rotate-90"
+        >
+          <X className="w-6 h-6" />
+        </button>
+
         {/* Sidebar Menu */}
-        <div className="w-full md:w-64 bg-slate-50 dark:bg-slate-950/50 border-r border-slate-100 dark:border-slate-800 p-6 flex flex-col">
-          <div className="flex items-center gap-3 mb-10 px-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white">
-              <BookOpen className="w-4 h-4" />
+        <div className="w-full md:w-72 bg-slate-50 dark:bg-slate-950/50 border-r border-slate-100 dark:border-slate-800 p-8 flex flex-col">
+          <div className="flex items-center gap-3 mb-12 px-2">
+            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+              <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Kılavuz</h2>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">v2.0 Premium</p>
+              <h2 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">ANSİKLOPEDİ</h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">v3.0 Ultimate</p>
             </div>
           </div>
           
-          <nav className="flex-1 space-y-1">
+          <nav className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
             {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setActiveTab(section.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all duration-300 ${
+                className={`w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-left transition-all duration-300 ${
                   activeTab === section.id 
-                    ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-sm border border-slate-100 dark:border-slate-700' 
+                    ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-md border border-slate-100 dark:border-slate-700 scale-[1.02]' 
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
                 }`}
               >
-                <section.icon className={`w-4 h-4 ${activeTab === section.id ? 'text-blue-600' : 'text-slate-400'}`} />
-                <span className="text-[11px] font-black uppercase tracking-tight">{section.title}</span>
+                <div className={`p-2 rounded-xl ${activeTab === section.id ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-transparent'}`}>
+                  <section.icon className={`w-5 h-5 ${activeTab === section.id ? 'text-blue-600' : 'text-slate-400'}`} />
+                </div>
+                <span className="text-[12px] font-black uppercase tracking-tight">{section.title}</span>
               </button>
             ))}
           </nav>
-
-          <button onClick={onClose} className="mt-auto w-full flex items-center justify-center gap-2 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all">
-            <X className="w-3 h-3" /> Kapat
-          </button>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-12">
+        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-8">
-                {sections.find(s => s.id === activeTab)?.title}
-              </h1>
-              {sections.find(s => s.id === activeTab)?.content}
+              <div className="flex items-center gap-4 mb-10">
+                 <div className="w-2 h-12 bg-blue-600 rounded-full" />
+                 <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+                   {sections.find(s => s.id === activeTab)?.title}
+                 </h1>
+              </div>
+              <div className="max-w-4xl">
+                {sections.find(s => s.id === activeTab)?.content}
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
