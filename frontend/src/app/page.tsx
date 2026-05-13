@@ -211,8 +211,10 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
       icon: Target,
       items: [
         { id: 'mice-teklif', title: 'Teklif & Bütçe Yönetimi' },
+        { id: 'mice-link', title: 'Link ile Gönderim & Onay' },
         { id: 'mice-proje', title: 'Projeye Dönüştürme' },
         { id: 'mice-detay', title: 'Operasyonel Detaylar' },
+        { id: 'mice-bilet', title: 'Uçak Bileti Yönetimi' },
         { id: 'mice-finans', title: 'Finansal Takip' }
       ]
     },
@@ -240,6 +242,7 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
       icon: CreditCard,
       items: [
         { id: 'acc-invoice', title: 'Fatura Takibi' },
+        { id: 'acc-mutabakat', title: 'Link ile Mutabakat' },
         { id: 'acc-cash', title: 'Kasa & Banka Yönetimi' }
       ]
     }
@@ -270,6 +273,28 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
             </div>
 
             <ScreenshotFrame caption="Teklif Düzenleme Paneli" />
+          </div>
+        );
+      case 'mice-link':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Link ile Gönderim & Onay</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Tekliflerinizi interaktif bir web linki olarak müşterinize sunun.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                <h6 className="text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Hızlı Paylaşım</h6>
+                <p className="text-xs text-slate-500 leading-relaxed">"Link Oluştur" butonu ile teklife özel URL üretin ve WhatsApp/Email üzerinden gönderin.</p>
+              </div>
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                <h6 className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-2">Anlık Bildirim</h6>
+                <p className="text-xs text-slate-500 leading-relaxed">Müşteri teklifi onayladığında veya reddettiğinde sisteminize anlık bildirim düşer.</p>
+              </div>
+            </div>
+
+            <AlertBox type="warning" title="Durum Kontrolü">
+              Müşteri link üzerinden onay verdiğinde teklif statüsü otomatik olarak "Onaylandı" olur ve proje aşamasına geçmeye hazır hale gelir.
+            </AlertBox>
           </div>
         );
       case 'mice-proje':
@@ -310,6 +335,29 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
             <AlertBox type="tip" title="Hızlı Liste">
                Konaklama listesindeki verileri topluca Excel'den içeri aktarabilirsiniz.
             </AlertBox>
+          </div>
+        );
+      case 'mice-bilet':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Uçak Bileti Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Projelerinizdeki uçuş ve biletleme süreçlerini kontrol edin.</p>
+
+            <div className="space-y-4">
+               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">PNR & Yolcu Takibi</h6>
+                  <p className="text-xs text-slate-500 leading-relaxed">Yolcu isim listelerini, PNR kodlarını ve uçuş saatlerini proje bazlı listeleyebilir, grup biletlemelerini yönetebilirsiniz.</p>
+               </div>
+            </div>
+
+            <div className="space-y-0">
+              <StepCard number="01" title="Rezervasyon Girişi">
+                Havayolu ve parkur bilgilerini girerek ön rezervasyonları oluşturun.
+              </StepCard>
+              <StepCard number="02" title="Biletleme & Opsiyon">
+                Biletleme zaman limitlerini (TL) takip edin ve bilet kesim işlemlerini gerçekleştirin.
+              </StepCard>
+            </div>
           </div>
         );
       case 'mice-finans':
@@ -397,6 +445,26 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
               </StepCard>
               <StepCard number="02" title="Giriş ve Çıkış">
                 Gelen ve giden fatura bilgilerini sisteme kaydedin.
+              </StepCard>
+            </div>
+          </div>
+        );
+      case 'acc-mutabakat':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Link ile Mutabakat</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Tedarikçilerinizle rakamsal doğrulamaları online yapın.</p>
+
+            <AlertBox type="tip" title="Hızlı Doğrulama">
+              Tedarikçiye gönderilen mutabakat linki üzerinden kalem bazlı onay alınabilir, bu sayede fatura öncesi hataların önüne geçilir.
+            </AlertBox>
+
+            <div className="space-y-0">
+              <StepCard number="01" title="Mutabakat Linki Oluşturma">
+                İlgili proje kalemleri için tedarikçiye özel mutabakat URL'si hazırlayın.
+              </StepCard>
+              <StepCard number="02" title="Tedarikçi Onayı">
+                Tedarikçi link üzerinden tutarları onayladığında kalem "Mutabık" statüsüne geçer.
               </StepCard>
             </div>
           </div>
