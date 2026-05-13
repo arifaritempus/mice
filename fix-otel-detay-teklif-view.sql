@@ -25,25 +25,23 @@ BEGIN
     END LOOP;
 END $$;
 
--- 1. GÜNCEL RAPOR GÖRÜNÜMÜ (v6 - ULTIMATE)
--- Bu sürüm hotels_data dizisini genişletir ve her kalemi etiketiyle doğru otele bağlar.
+-- 1. GÜNCEL RAPOR GÖRÜNÜMÜ (v7.1 - ULTIMATE)
+-- Bu sürüm hem otelleri ayırır hem de her otelin kendi durumunu (Konfirme/İptal) gösterir.
 DROP VIEW IF EXISTS public.vw_rp_otel_detay_teklif CASCADE;
 
 CREATE VIEW public.vw_rp_otel_detay_teklif AS
 WITH exploded_hotels AS (
-    -- Her teklif için hotels_data içindeki otel sekmelerini tek tek satırlara dök
     SELECT 
         q.id as quote_id,
         (h_data->>'id') as tab_id,
         (h_data->>'hotel_id')::uuid as hotel_id,
         (h_data->>'check_in_date')::date as cin_tarihi,
         (h_data->>'check_out_date')::date as cout_tarihi,
-        (h_data->>'hotel_concept') as concept
+        (h_data->>'hotel_status') as hotel_status -- Sekme bazlı durum (İptal/Konfirme)
     FROM public.quotes q,
     jsonb_array_elements(CASE WHEN jsonb_typeof(q.hotels_data) = 'array' THEN q.hotels_data ELSE '[]'::jsonb END) h_data
 ),
 items_with_tags AS (
-    -- Kalemleri ve açıklamalarındaki gizli etiketleri ayıkla
     SELECT 
         qi.*,
         substring(qi.description from '\[T:([^\]]+)\]') as extracted_tab_id
@@ -61,17 +59,20 @@ SELECT
     iwt.sefer AS sefer,
     iwt.unit_price AS birim_satis,
     iwt.currency AS para_birimi,
-    q.status AS teklif_durumu
+    COALESCE(eh.hotel_status, q.status) AS teklif_durumu -- ANA DÜZELTME: Sekme durumunu kullan
 FROM items_with_tags iwt
 JOIN public.quotes q ON q.id = iwt.quote_id
 LEFT JOIN public.agencies a ON a.id = q.agency_id
--- BURASI KRİTİK: Kalemi doğru otel sekmesine bağla
-LEFT JOIN exploded_hotels eh ON eh.quote_id = q.id 
-    AND (
-        (iwt.extracted_tab_id IS NOT NULL AND eh.tab_id = iwt.extracted_tab_id)
-        OR 
-        (iwt.extracted_tab_id IS NULL AND (eh.hotel_id = iwt.hotel_id OR iwt.hotel_id IS NULL))
-    )
+LEFT JOIN LATERAL (
+    SELECT exh.*
+    FROM exploded_hotels exh
+    WHERE exh.quote_id = q.id
+    ORDER BY 
+        (exh.tab_id = iwt.extracted_tab_id) DESC,
+        (exh.hotel_id = iwt.hotel_id) DESC,
+        exh.tab_id ASC
+    LIMIT 1
+) eh ON TRUE
 LEFT JOIN public.hotels h ON h.id = COALESCE(eh.hotel_id, iwt.hotel_id)
 LEFT JOIN public.categories cat ON cat.id::text = iwt.sub_category::text
 WHERE iwt.main_category::text IN ('OTEL | KONAKLAMA', 'OTEL | DİĞER HİZMETLER', '1', '2') 

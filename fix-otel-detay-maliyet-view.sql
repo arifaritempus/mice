@@ -1,5 +1,5 @@
 -- =============================================================================
--- vw_rp_otel_detay_proje_maliyet — Otel Detaylı Proje Maliyet Raporu (v6 - ULTIMATE)
+-- vw_rp_otel_detay_proje_maliyet — Otel Detaylı Proje Maliyet Raporu (v7.1 - ULTIMATE)
 -- =============================================================================
 
 -- 1. AGRESİF VERİ ONARICI: project_sales_items tablosundaki hatalı hotel_id'leri düzeltir
@@ -23,7 +23,7 @@ BEGIN
     END LOOP;
 END $$;
 
--- 2. GÜNCEL RAPOR GÖRÜNÜMÜ
+-- 2. GÜNCEL RAPOR GÖRÜNÜMÜ (v7.1 - ULTIMATE RESILIENCE)
 DROP VIEW IF EXISTS public.vw_rp_otel_detay_proje_maliyet CASCADE;
 
 CREATE VIEW public.vw_rp_otel_detay_proje_maliyet AS
@@ -33,7 +33,8 @@ WITH exploded_hotels AS (
         (h_data->>'id') as tab_id,
         (h_data->>'hotel_id')::uuid as hotel_id,
         (h_data->>'check_in_date')::date as cin_tarihi,
-        (h_data->>'check_out_date')::date as cout_tarihi
+        (h_data->>'check_out_date')::date as cout_tarihi,
+        (h_data->>'hotel_status') as hotel_status
     FROM public.projects p,
     jsonb_array_elements(CASE WHEN jsonb_typeof(p.hotels_data) = 'array' THEN p.hotels_data ELSE '[]'::jsonb END) h_data
 ),
@@ -41,27 +42,13 @@ sales AS (
   SELECT 
     psi.*,
     substring(psi.description from '\[T:([^\]]+)\]') as extracted_tab_id,
-    ROW_NUMBER() OVER (
-      PARTITION BY 
-        psi.project_id, 
-        COALESCE(psi.hotel_id::text, ''), 
-        COALESCE(psi.category, ''), 
-        COALESCE(psi.sub_category, '') 
-      ORDER BY psi.id
-    ) as pair_rn
+    ROW_NUMBER() OVER (PARTITION BY psi.project_id, psi.hotel_id, psi.category, psi.sub_category ORDER BY psi.id) as pair_rn
   FROM public.project_sales_items psi
 ),
 purch AS (
   SELECT 
     ppi.*,
-    ROW_NUMBER() OVER (
-      PARTITION BY 
-        ppi.project_id, 
-        COALESCE(ppi.hotel_id::text, ''), 
-        COALESCE(ppi.category, ''), 
-        COALESCE(ppi.sub_category, '') 
-      ORDER BY ppi.id
-    ) as pair_rn
+    ROW_NUMBER() OVER (PARTITION BY ppi.project_id, ppi.hotel_id, ppi.category, ppi.sub_category ORDER BY ppi.id) as pair_rn
   FROM public.project_purchase_items ppi
 )
 SELECT
@@ -81,13 +68,16 @@ SELECT
 FROM sales psi
 INNER JOIN public.projects p ON p.id = psi.project_id
 LEFT JOIN public.agencies a ON a.id = p.agency_id
--- Sekme eşleşmesi (ULTIMATE MATCH)
-LEFT JOIN exploded_hotels eh ON eh.project_id = p.id 
-    AND (
-        (psi.extracted_tab_id IS NOT NULL AND eh.tab_id = psi.extracted_tab_id)
-        OR 
-        (psi.extracted_tab_id IS NULL AND (eh.hotel_id = psi.hotel_id OR psi.hotel_id IS NULL))
-    )
+LEFT JOIN LATERAL (
+    SELECT exh.*
+    FROM exploded_hotels exh
+    WHERE exh.project_id = p.id
+    ORDER BY 
+        (exh.tab_id = psi.extracted_tab_id) DESC,
+        (exh.hotel_id = psi.hotel_id) DESC,
+        exh.tab_id ASC
+    LIMIT 1
+) eh ON TRUE
 LEFT JOIN public.hotels h ON h.id = COALESCE(eh.hotel_id, psi.hotel_id)
 LEFT JOIN public.categories cat ON cat.id::text = psi.sub_category::text
 LEFT JOIN purch ppi
