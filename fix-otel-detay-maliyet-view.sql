@@ -81,7 +81,7 @@ SELECT
   LEFT(COALESCE(NULLIF(TRIM(p.company_name), ''), '-'), 255)::varchar AS firma_adi,
   LEFT(COALESCE(NULLIF(TRIM(a.name), ''), '-'), 255)::varchar AS acente,
   LEFT(COALESCE(NULLIF(TRIM(h.name), ''), 'BELİRSİZ OTEL'), 255)::varchar AS otel,
-  LEFT(COALESCE(NULLIF(TRIM(psi.sub_category), ''), NULLIF(TRIM(psi.description), ''), '-'), 255)::varchar AS alt_kategori,
+  LEFT(COALESCE(NULLIF(TRIM(cat.name), ''), NULLIF(TRIM(psi.sub_category), ''), NULLIF(TRIM(psi.description), ''), '-'), 255)::varchar AS alt_kategori,
   ROUND(COALESCE(psi.unit_quantity, 0))::int4 AS adet,
   COALESCE(psi.sefer, 1)::numeric AS sefer,
   COALESCE(psi.unit_price, 0)::numeric AS birim_satis,
@@ -92,6 +92,7 @@ FROM sales psi
 INNER JOIN public.projects p ON p.id = psi.project_id
 LEFT JOIN public.agencies a ON a.id = p.agency_id
 LEFT JOIN public.hotels h ON h.id = psi.hotel_id
+LEFT JOIN public.categories cat ON cat.id::text = psi.sub_category::text
 LEFT JOIN project_dates pd ON pd.project_id = p.id AND pd.hotel_id = psi.hotel_id
 LEFT JOIN purch ppi
   ON ppi.project_id = psi.project_id

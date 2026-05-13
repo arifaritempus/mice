@@ -41,8 +41,8 @@ SELECT
     COALESCE(qd.cout_tarihi, q.check_out_date) AS cout_tarihi,
     q.company_name AS firma_adi,
     a.name AS acente,
-    COALESCE(h.name, 'BELİRSİZ OTEL (Düzenleyip Kaydedin)') AS otel,
-    qi.sub_category AS alt_kategori,
+    COALESCE(h.name, 'BELİRSİZ OTEL') AS otel,
+    COALESCE(cat.name, qi.sub_category, '-') AS alt_kategori,
     qi.unit_quantity AS adet,
     qi.sefer AS sefer,
     qi.unit_price AS birim_satis,
@@ -52,6 +52,7 @@ FROM public.quote_items qi
 JOIN public.quotes q ON q.id = qi.quote_id
 LEFT JOIN public.agencies a ON a.id = q.agency_id
 LEFT JOIN public.hotels h ON h.id = qi.hotel_id
+LEFT JOIN public.categories cat ON cat.id::text = qi.sub_category::text
 LEFT JOIN quote_dates qd ON qd.quote_id = q.id AND qd.hotel_id = qi.hotel_id
 WHERE qi.main_category::text IN ('OTEL | KONAKLAMA', 'OTEL | DİĞER HİZMETLER', '1', '2') 
    OR qi.hotel_id IS NOT NULL;
