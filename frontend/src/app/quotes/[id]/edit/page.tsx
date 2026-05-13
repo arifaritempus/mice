@@ -18,6 +18,49 @@ import QuoteServiceEditor from '@/components/QuoteServiceEditor';
 import { usePermissions, Module } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
+// ─── NotificationModal ────────────────────────────────────────────────────────
+interface NotificationModalProps {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  onClose: () => void;
+}
+
+function NotificationModal({ message, type, onClose }: NotificationModalProps) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-6 text-center">
+          <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+            type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+            type === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+            'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+          }`}>
+            {type === 'success' && <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+            {type === 'error' && <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>}
+            {type === 'info' && <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+            {type === 'success' ? 'Başarılı' : type === 'error' ? 'Hata' : 'Bilgi'}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+            {message}
+          </p>
+          <button
+            onClick={onClose}
+            className={`w-full py-3 rounded-xl font-semibold text-white transition-all active:scale-95 shadow-lg ${
+              type === 'success' ? 'bg-green-600 hover:bg-green-700 shadow-green-500/20' :
+              type === 'error' ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' :
+              'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
+            }`}
+          >
+            Tamam
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Agency { id: string; name: string; company_name: string; }
 interface Hotel { id: string; name: string; concept: string; }
 interface Category { id: string; name: string; parent_id?: string; description?: string; }
@@ -116,6 +159,8 @@ export default function QuoteEditPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showOperationManagersDropdown, setShowOperationManagersDropdown] = useState(false);
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
+  const [selectedHotels, setSelectedHotels] = useState<SelectedHotel[]>([]);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddServiceRow, setShowAddServiceRow] = useState(false);
 
@@ -130,15 +175,12 @@ export default function QuoteEditPage() {
   });
 
   const [activeHotelId, setActiveHotelId] = useState<string | null>(null);
-  const [selectedHotels, setSelectedHotels] = useState<SelectedHotel[]>([]);
 
   const [newServiceItem, setNewServiceItem] = useState<ServiceItem>({
     id: '', main_category: '', sub_category: '', unit_quantity: 1,
     sefer: 1, unit_price: 0, currency: 'EUR', total: 0, total_try: 0,
     description: '', vat: 0, fx: 1, isEditing: false
   });
-
-
 
   // Dropdown close-on-outside-click
   useEffect(() => {
@@ -463,7 +505,7 @@ export default function QuoteEditPage() {
     try {
       const activeHotels = selectedHotels.filter(h => h.hotel_id && h.check_in_date && h.check_out_date);
       if (activeHotels.length === 0) {
-        alert('Lütfen en az bir otel seçiniz ve tarihlerini doldurunuz.');
+        setNotification({ message: 'Lütfen en az bir otel seçiniz ve tarihlerini doldurunuz.', type: 'error' });
         return;
       }
 
@@ -523,8 +565,6 @@ export default function QuoteEditPage() {
         } as any);
       }
 
-      // Alert removed to prevent duplicate message
-
       // Sadece KONFİRME ise ve proje yoksa aktar
       if (formData.status === 'KONFİRME') {
         try {
@@ -539,20 +579,20 @@ export default function QuoteEditPage() {
             }
 
             await createProjectFromQuote(quoteId, confirmedHotels, serviceItems);
-            alert('Teklif güncellendi ve proje oluşturuldu.');
+            setNotification({ message: 'Teklif güncellendi ve proje oluşturuldu.', type: 'success' });
           }
         } catch (err: any) {
           console.error('Proje aktarım hatası:', err);
-          alert(`Proje aktarımı sırasında bir hata oluştu: ${err.message || 'Bilinmeyen hata'}`);
+          setNotification({ message: `Proje aktarımı sırasında bir hata oluştu: ${err.message || 'Bilinmeyen hata'}`, type: 'error' });
         }
       } else {
-        alert('Teklif başarıyla güncellendi!');
+        setNotification({ message: 'Teklif başarıyla güncellendi!', type: 'success' });
       }
 
       router.push('/quotes');
     } catch (error: any) {
       console.error('Error updating quote:', error);
-      alert(`Hata: ${error?.message || 'Bilinmeyen hata'}`);
+      setNotification({ message: `Hata: ${error?.message || 'Bilinmeyen hata'}`, type: 'error' });
     }
   };
   if (permissionsLoading) {

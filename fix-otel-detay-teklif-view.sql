@@ -75,5 +75,4 @@ LEFT JOIN LATERAL (
 ) eh ON TRUE
 LEFT JOIN public.hotels h ON h.id = COALESCE(eh.hotel_id, iwt.hotel_id)
 LEFT JOIN public.categories cat ON cat.id::text = iwt.sub_category::text
-WHERE iwt.main_category::text IN ('OTEL | KONAKLAMA', 'OTEL | DİĞER HİZMETLER', '1', '2') 
-   OR iwt.hotel_id IS NOT NULL;
+WHERE iwt.main_category::text IN ('OTEL | KONAKLAMA', 'OTEL | DİĞER HİZMETLER');

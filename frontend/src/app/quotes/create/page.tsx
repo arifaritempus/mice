@@ -21,6 +21,49 @@ import QuoteServiceEditor from '@/components/QuoteServiceEditor';
 import { usePermissions, Module } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
+// ─── NotificationModal ────────────────────────────────────────────────────────
+interface NotificationModalProps {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  onClose: () => void;
+}
+
+function NotificationModal({ message, type, onClose }: NotificationModalProps) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-6 text-center">
+          <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+            type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+            type === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+            'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+          }`}>
+            {type === 'success' && <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+            {type === 'error' && <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>}
+            {type === 'info' && <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+            {type === 'success' ? 'Başarılı' : type === 'error' ? 'Hata' : 'Bilgi'}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+            {message}
+          </p>
+          <button
+            onClick={onClose}
+            className={`w-full py-3 rounded-xl font-semibold text-white transition-all active:scale-95 shadow-lg ${
+              type === 'success' ? 'bg-green-600 hover:bg-green-700 shadow-green-500/20' :
+              type === 'error' ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20' :
+              'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
+            }`}
+          >
+            Tamam
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Agency {
   id: string;
   name: string;
@@ -117,6 +160,7 @@ export default function CreateQuotePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showOperationManagersDropdown, setShowOperationManagersDropdown] = useState(false);
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [loading, setLoading] = useState(true);
   const [agencySearch, setAgencySearch] = useState('');
   const [hotelSearch, setHotelSearch] = useState('');
@@ -136,8 +180,7 @@ OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ G�
 OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ EKSTRA OLARAK ÜCRETLENDİRİLİR.`
   });
 
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [activeHotelId, setActiveHotelId] = useState<string | null>(null);
   const [selectedHotels, setSelectedHotels] = useState<SelectedHotel[]>([]);
@@ -631,13 +674,13 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       const totalAmount = serviceItems.reduce((sum, item) => sum + (item.total || 0), 0);
 
       if (!formData.reference || !formData.agency_id || !formData.company_name) {
-        alert('Lütfen zorunlu alanları doldurunuz (Reference, Acente, Firma).');
+        setNotification({ message: 'Lütfen zorunlu alanları doldurunuz (Reference, Acente, Firma).', type: 'error' });
         return;
       }
 
       const activeHotels = selectedHotels.filter(h => h.hotel_id && h.check_in_date && h.check_out_date);
       if (activeHotels.length === 0) {
-        alert('Lütfen en az bir otel seçiniz ve C/IN, C/OUT tarihlerini doldurunuz.');
+        setNotification({ message: 'Lütfen en az bir otel seçiniz ve C/IN, C/OUT tarihlerini doldurunuz.', type: 'error' });
         return;
       }
 
@@ -695,19 +738,17 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       if (formData.status === 'KONFİRME') {
         try {
           await createProjectFromQuote(createdQuote.id, activeHotels);
-          setSuccessMessage('Teklif oluşturuldu ve projelere aktarıldı.');
-          setIsSuccessModalOpen(true);
+          setNotification({ message: 'Teklif oluşturuldu ve projelere aktarıldı.', type: 'success' });
         } catch (err) {
           console.error('Proje aktarım hatası:', err);
-          alert('Teklif oluşturuldu ancak projelere aktarılırken hata oluştu.');
+          setNotification({ message: 'Teklif oluşturuldu ancak projelere aktarılırken hata oluştu.', type: 'error' });
         }
       } else {
-        setSuccessMessage('Teklif başarıyla oluşturuldu!');
-        setIsSuccessModalOpen(true);
+        setNotification({ message: 'Teklif başarıyla oluşturuldu!', type: 'success' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating quote:', error);
-      alert(`Teklif oluşturulurken bir hata oluştu: ${error?.message || 'Bilinmeyen hata'}`);
+      setNotification({ message: `Teklif oluşturulurken bir hata oluştu: ${error?.message || 'Bilinmeyen hata'}`, type: 'error' });
     }
   };
 
@@ -1322,9 +1363,9 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
           </div>
         </form>
 
-        {/* Success Modal */}
+        {/* Notification Modal */}
         <AnimatePresence>
-          {isSuccessModalOpen && (
+          {notification && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1332,18 +1373,40 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl border border-gray-200 dark:border-gray-800"
               >
-                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+                  notification.type === 'success' 
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' 
+                    : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                }`}>
+                  {notification.type === 'success' ? (
+                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
                 </div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Başarılı!</h3>
-                <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">{successMessage}</p>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">
+                  {notification.type === 'success' ? 'Başarılı!' : 'Hata!'}
+                </h3>
+                <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+                  {notification.message}
+                </p>
                 <button
-                  onClick={() => router.push('/quotes')}
-                  className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
+                  onClick={() => {
+                    const isSuccess = notification.type === 'success';
+                    setNotification(null);
+                    if (isSuccess) router.push('/quotes');
+                  }}
+                  className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl ${
+                    notification.type === 'success'
+                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-gray-900/20 dark:shadow-white/10'
+                      : 'bg-red-600 text-white shadow-red-500/20'
+                  }`}
                 >
-                  TAMAM
+                  {notification.type === 'success' ? 'TAMAM' : 'KAPAT'}
                 </button>
               </motion.div>
             </div>
