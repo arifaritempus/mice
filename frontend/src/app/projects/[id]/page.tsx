@@ -7484,7 +7484,6 @@ export default function ProjectDetailPage() {
       alert('Kayıt verisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
       return;
     }
-    try {
 
       // Input değerlerini parse et
       const amountInput = parseTurkishNumber(hrAmountInput || '0');
@@ -17711,5 +17710,4 @@ export default function ProjectDetailPage() {
       )}
     </div>
   );
-}
 }
