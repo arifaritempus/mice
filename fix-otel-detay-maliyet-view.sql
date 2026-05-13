@@ -1,5 +1,5 @@
 -- =============================================================================
--- vw_rp_otel_detay_proje_maliyet — Otel Detaylı Proje Maliyet Raporu (v3 - GÜNCEL)
+-- vw_rp_otel_detay_proje_maliyet — Otel Detaylı Proje Maliyet Raporu (v6 - ULTIMATE)
 -- =============================================================================
 
 -- 1. AGRESİF VERİ ONARICI: project_sales_items tablosundaki hatalı hotel_id'leri düzeltir
@@ -27,9 +27,10 @@ END $$;
 DROP VIEW IF EXISTS public.vw_rp_otel_detay_proje_maliyet CASCADE;
 
 CREATE VIEW public.vw_rp_otel_detay_proje_maliyet AS
-WITH project_dates AS (
+WITH exploded_hotels AS (
     SELECT 
         p.id as project_id,
+        (h_data->>'id') as tab_id,
         (h_data->>'hotel_id')::uuid as hotel_id,
         (h_data->>'check_in_date')::date as cin_tarihi,
         (h_data->>'check_out_date')::date as cout_tarihi
@@ -37,49 +38,36 @@ WITH project_dates AS (
     jsonb_array_elements(CASE WHEN jsonb_typeof(p.hotels_data) = 'array' THEN p.hotels_data ELSE '[]'::jsonb END) h_data
 ),
 sales AS (
-  SELECT
-    psi.id,
-    psi.project_id,
-    psi.hotel_id,
-    psi.category,
-    psi.sub_category,
-    psi.description,
-    psi.unit_quantity::numeric AS unit_quantity,
-    COALESCE(psi.sefer, 1)::numeric AS sefer,
-    COALESCE(psi.unit_price, 0)::numeric AS unit_price,
-    NULLIF(TRIM(psi.currency), '') AS currency,
+  SELECT 
+    psi.*,
+    substring(psi.description from '\[T:([^\]]+)\]') as extracted_tab_id,
     ROW_NUMBER() OVER (
-      PARTITION BY
-        psi.project_id,
-        COALESCE(psi.hotel_id::text, ''),
-        COALESCE(psi.category, ''),
-        COALESCE(psi.sub_category, '')
-      ORDER BY psi.created_at NULLS LAST, psi.id
-    ) AS pair_rn
+      PARTITION BY 
+        psi.project_id, 
+        COALESCE(psi.hotel_id::text, ''), 
+        COALESCE(psi.category, ''), 
+        COALESCE(psi.sub_category, '') 
+      ORDER BY psi.id
+    ) as pair_rn
   FROM public.project_sales_items psi
 ),
 purch AS (
-  SELECT
-    ppi.id,
-    ppi.project_id,
-    ppi.hotel_id,
-    ppi.category,
-    ppi.sub_category,
-    COALESCE(ppi.unit_price, 0)::numeric AS unit_price,
+  SELECT 
+    ppi.*,
     ROW_NUMBER() OVER (
-      PARTITION BY
-        ppi.project_id,
-        COALESCE(ppi.hotel_id::text, ''),
-        COALESCE(ppi.category, ''),
-        COALESCE(ppi.sub_category, '')
-      ORDER BY ppi.created_at NULLS LAST, ppi.id
-    ) AS pair_rn
+      PARTITION BY 
+        ppi.project_id, 
+        COALESCE(ppi.hotel_id::text, ''), 
+        COALESCE(ppi.category, ''), 
+        COALESCE(ppi.sub_category, '') 
+      ORDER BY ppi.id
+    ) as pair_rn
   FROM public.project_purchase_items ppi
 )
 SELECT
-  LEFT(COALESCE(NULLIF(TRIM(p.reference), ''), p.title, p.id::text), 255)::character varying(255) AS proje_referans,
-  COALESCE(pd.cin_tarihi, p.start_date)::date AS organizasyon_tarihi,
-  COALESCE(pd.cout_tarihi, p.end_date)::date AS cikis_tarihi,
+  p.reference AS proje_referans,
+  COALESCE(eh.cin_tarihi, p.start_date) AS organizasyon_tarihi,
+  COALESCE(eh.cout_tarihi, p.end_date) AS cikis_tarihi,
   LEFT(COALESCE(NULLIF(TRIM(p.company_name), ''), '-'), 255)::varchar AS firma_adi,
   LEFT(COALESCE(NULLIF(TRIM(a.name), ''), '-'), 255)::varchar AS acente,
   LEFT(COALESCE(NULLIF(TRIM(h.name), ''), 'BELİRSİZ OTEL'), 255)::varchar AS otel,
@@ -93,9 +81,15 @@ SELECT
 FROM sales psi
 INNER JOIN public.projects p ON p.id = psi.project_id
 LEFT JOIN public.agencies a ON a.id = p.agency_id
-LEFT JOIN public.hotels h ON h.id = psi.hotel_id
+-- Sekme eşleşmesi (ULTIMATE MATCH)
+LEFT JOIN exploded_hotels eh ON eh.project_id = p.id 
+    AND (
+        (psi.extracted_tab_id IS NOT NULL AND eh.tab_id = psi.extracted_tab_id)
+        OR 
+        (psi.extracted_tab_id IS NULL AND (eh.hotel_id = psi.hotel_id OR psi.hotel_id IS NULL))
+    )
+LEFT JOIN public.hotels h ON h.id = COALESCE(eh.hotel_id, psi.hotel_id)
 LEFT JOIN public.categories cat ON cat.id::text = psi.sub_category::text
-LEFT JOIN project_dates pd ON pd.project_id = p.id AND pd.hotel_id = psi.hotel_id
 LEFT JOIN purch ppi
   ON ppi.project_id = psi.project_id
   AND COALESCE(ppi.hotel_id::text, '') = COALESCE(psi.hotel_id::text, '')
