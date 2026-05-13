@@ -210,9 +210,6 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       )
-    },
-  const sections: ManualSection[] = [
-    // ... mice was here ...
     {
       id: 'sejour',
       title: 'Sejour & Voucher Otomasyonu',
