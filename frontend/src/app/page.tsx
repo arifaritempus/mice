@@ -245,6 +245,14 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
         { id: 'acc-mutabakat', title: 'Link ile Mutabakat' },
         { id: 'acc-cash', title: 'Kasa & Banka Yönetimi' }
       ]
+    },
+    {
+      id: 'system',
+      title: 'Genel Sistem',
+      icon: Settings,
+      items: [
+        { id: 'sys-notify', title: 'Bildirim & Görev Takibi' }
+      ]
     }
   ];
 
@@ -408,27 +416,51 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
       case 'ops-transfer':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Transfer Planlama</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Saha araç hareketlerinin kontrolü.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Transfer Planlama & Araç Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Saha hareketliliğini hatasız ve maliyet odaklı yönetin.</p>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Liste Takibi</h6>
-                  <p className="text-xs text-slate-500 leading-relaxed">Günlük geliş ve gidiş listeleri üzerinden araç statülerini güncelleyin.</p>
+                  <h6 className="text-xs font-black text-blue-600 uppercase mb-2">Araç Atama & Plaka</h6>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">Transfer listesindeki her bir hareket için araç tipini belirleyin ve tedarikçi plakalarını sisteme işleyin.</p>
                </div>
+               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-xs font-black text-emerald-600 uppercase mb-2">Transfer Gruplandırma</h6>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">Aynı saatteki ve yöndeki misafirleri tek araçta toplayarak operasyonel verimliliği artırın.</p>
+               </div>
+            </div>
+
+            <div className="space-y-0">
+              <StepCard number="01" title="Liste Oluşturma">
+                MICE veya Sejour modüllerinden gelen transfer taleplerini günlük liste halinde görüntüleyin.
+              </StepCard>
+              <StepCard number="02" title="Tedarikçi Bildirimi">
+                Atanan araç ve saat detaylarını tedarikçilerle paylaşarak konfirme alın.
+              </StepCard>
             </div>
           </div>
         );
       case 'ops-guide':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Rehber & Personel</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Saha kadrosunun yönetimi.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Rehber & Saha Personeli</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Saha kadrosunun yetkinlik ve müsaitlik takibi.</p>
             
+            <div className="space-y-4">
+               <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border border-amber-100 dark:border-amber-800">
+                  <h6 className="text-xs font-black text-amber-900 dark:text-amber-100 uppercase mb-2">Müsaitlik Takibi</h6>
+                  <p className="text-[11px] text-amber-800 dark:text-amber-200 leading-relaxed">Personelin hangi tarihlerde hangi projede olduğunu takvim üzerinden izleyin, çakışmaları önleyin.</p>
+               </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800">
-                  <h6 className="text-xs font-black text-blue-900 dark:text-blue-100 uppercase mb-2">Görevlendirme</h6>
-                  <p className="text-[10px] text-blue-800 dark:text-blue-200">Rehberleri projelerle eşleştirin ve iletişim bilgilerini takip edin.</p>
+               <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">Döküman Arşivi</h6>
+                  <p className="text-[10px] text-slate-500">Rehberlerin kokart ve kimlik bilgilerini dijital olarak saklayın.</p>
+               </div>
+               <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">Görev Atama</h6>
+                  <p className="text-[10px] text-slate-500">Transfer veya tur bazlı personel görevlendirmelerini yapın.</p>
                </div>
             </div>
           </div>
@@ -479,6 +511,28 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
                <h5 className="text-xl font-black mb-4">Finansal Bakiyeler</h5>
                <p className="text-sm opacity-70 leading-relaxed mb-6">Şirket kasalarınızın ve banka hesaplarınızın bakiye durumlarını sistem üzerinden takip edebilirsiniz.</p>
             </div>
+          </div>
+        );
+      case 'sys-notify':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Bildirim & Görev Takibi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Sistemdeki kritik gelişmeleri anlık olarak takip edin.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-xs font-black text-blue-600 uppercase mb-2">Anlık Bildirimler</h6>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">Yeni teklif onayı, mutabakat yanıtı veya iptal işlemlerinde sağ üst panelde anlık uyarılar alırsınız.</p>
+               </div>
+               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-xs font-black text-emerald-600 uppercase mb-2">Görev Hatırlatıcıları</h6>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">Vadesi yaklaşan ödemeler veya biletleme opsiyon süreleri için sistem otomatik hatırlatmalar yapar.</p>
+               </div>
+            </div>
+
+            <AlertBox type="tip" title="Bildirim Merkezi">
+              Tüm geçmiş bildirimlerinize sağ üstteki zil ikonuna tıklayarak ulaşabilir, okundu olarak işaretleyebilirsiniz.
+            </AlertBox>
           </div>
         );
       default:
