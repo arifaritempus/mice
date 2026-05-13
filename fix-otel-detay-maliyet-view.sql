@@ -58,7 +58,7 @@ SELECT
   LEFT(COALESCE(NULLIF(TRIM(p.company_name), ''), '-'), 255)::varchar AS firma_adi,
   LEFT(COALESCE(NULLIF(TRIM(a.name), ''), '-'), 255)::varchar AS acente,
   LEFT(COALESCE(NULLIF(TRIM(h.name), ''), 'BELİRSİZ OTEL'), 255)::varchar AS otel,
-  LEFT(COALESCE(NULLIF(TRIM(cat.name), ''), NULLIF(TRIM(psi.sub_category), ''), NULLIF(TRIM(psi.description), ''), '-'), 255)::varchar AS alt_kategori,
+  LEFT(COALESCE(NULLIF(TRIM(cat.name), ''), NULLIF(TRIM(psi.sub_category::text), ''), NULLIF(TRIM(psi.description), ''), '-'), 255)::varchar AS alt_kategori,
   ROUND(COALESCE(psi.unit_quantity, 0))::int4 AS adet,
   COALESCE(psi.sefer, 1)::numeric AS sefer,
   COALESCE(psi.unit_price, 0)::numeric AS birim_satis,

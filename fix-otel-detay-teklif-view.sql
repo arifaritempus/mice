@@ -54,7 +54,7 @@ SELECT
     q.company_name AS firma_adi,
     a.name AS acente,
     COALESCE(h.name, 'BELİRSİZ OTEL') AS otel,
-    COALESCE(cat.name, iwt.sub_category, '-') AS alt_kategori,
+    COALESCE(cat.name, iwt.sub_category::text, '-') AS alt_kategori,
     iwt.unit_quantity AS adet,
     iwt.sefer AS sefer,
     iwt.unit_price AS birim_satis,
