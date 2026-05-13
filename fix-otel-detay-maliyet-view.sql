@@ -99,5 +99,5 @@ LEFT JOIN purch ppi
   AND COALESCE(ppi.category, '') = COALESCE(psi.category, '')
   AND COALESCE(ppi.sub_category, '') = COALESCE(psi.sub_category, '')
   AND ppi.pair_rn = psi.pair_rn
-WHERE psi.category IN ('CAT_001', 'CAT_002', '1', '2') 
+WHERE psi.category::text IN ('CAT_001', 'CAT_002', '1', '2') 
    OR psi.hotel_id IS NOT NULL;

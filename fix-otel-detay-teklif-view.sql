@@ -53,5 +53,5 @@ JOIN public.quotes q ON q.id = qi.quote_id
 LEFT JOIN public.agencies a ON a.id = q.agency_id
 LEFT JOIN public.hotels h ON h.id = qi.hotel_id
 LEFT JOIN quote_dates qd ON qd.quote_id = q.id AND qd.hotel_id = qi.hotel_id
-WHERE qi.main_category IN ('OTEL | KONAKLAMA', 'OTEL | DİĞER HİZMETLER', '1', '2') 
+WHERE qi.main_category::text IN ('OTEL | KONAKLAMA', 'OTEL | DİĞER HİZMETLER', '1', '2') 
    OR qi.hotel_id IS NOT NULL;
