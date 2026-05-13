@@ -190,21 +190,19 @@ const StepCard = ({ number, title, children }: { number: string, title: string, 
 const ScreenshotFrame = ({ caption, children }: { caption: string, children?: React.ReactNode }) => (
   <div className="my-8 space-y-3">
     <div className="rounded-2xl border-4 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 aspect-video flex items-center justify-center relative overflow-hidden group">
-      {children || <div className="text-[10px] font-black uppercase tracking-widest opacity-20">Sistem Ekran Görüntüsü</div>}
-      <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-         <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            <Search className="w-6 h-6" />
-         </div>
-      </div>
+      {children}
     </div>
     <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{caption}</p>
   </div>
 );
 
-function UserManualModal({ onClose }: { onClose: () => void }) {
-  const [activeTab, setActiveTab] = useState('mice-teklif');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const navigation = [
     {
@@ -212,20 +210,19 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       title: 'MICE & Proje Yönetimi',
       icon: Target,
       items: [
-        { id: 'mice-teklif', title: 'Teklif Oluşturma' },
-        { id: 'mice-link', title: 'Link ile Gönderim & Onay' },
+        { id: 'mice-teklif', title: 'Teklif & Bütçe Yönetimi' },
         { id: 'mice-proje', title: 'Projeye Dönüştürme' },
-        { id: 'mice-detay', title: 'Proje Detay Yönetimi' },
-        { id: 'mice-finans', title: 'Finansal & Nakit Akış' }
+        { id: 'mice-detay', title: 'Operasyonel Detaylar' },
+        { id: 'mice-finans', title: 'Finansal Takip' }
       ]
     },
     {
       id: 'sejour',
-      title: 'Sejour & Voucher',
+      title: 'Sejour & Rezervasyon',
       icon: Hotel,
       items: [
         { id: 'sejour-ops', title: 'Operasyon Akışı' },
-        { id: 'sejour-voucher', title: 'Online Voucher' }
+        { id: 'sejour-voucher', title: 'Voucher Yönetimi' }
       ]
     },
     {
@@ -233,7 +230,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       title: 'Saha Operasyonu',
       icon: Truck,
       items: [
-        { id: 'ops-transfer', title: 'Transfer Listeleri' },
+        { id: 'ops-transfer', title: 'Transfer Planlama' },
         { id: 'ops-guide', title: 'Rehber & Personel' }
       ]
     },
@@ -242,84 +239,51 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       title: 'Muhasebe',
       icon: CreditCard,
       items: [
-        { id: 'acc-invoice', title: 'Fatura Yönetimi' },
-        { id: 'acc-cash', title: 'Kasa & Banka' }
+        { id: 'acc-invoice', title: 'Fatura Takibi' },
+        { id: 'acc-cash', title: 'Kasa & Banka Yönetimi' }
       ]
     }
   ];
-
-  const filteredNavigation = navigation.map(group => ({
-    ...group,
-    items: group.items.filter(item => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      group.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(group => group.items.length > 0);
 
   const getContent = () => {
     switch(activeTab) {
       case 'mice-teklif':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Teklif Oluşturma Rehberi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">MICE departmanının ilk adımı, profesyonel ve hatasız bir teklif hazırlamaktır.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Teklif & Bütçe Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Projeleriniz için maliyet ve satış kalemlerini detaylıca planlayın.</p>
             
-            <AlertBox type="tip" title="Hızlı Başlangıç">
-              Daha önceki bir teklifi kopyalayarak saniyeler içinde yeni bir versiyon oluşturabilirsiniz.
+            <AlertBox type="tip" title="Bütçe Esnekliği">
+              Teklif aşamasında her kalem için farklı döviz birimleri (USD, EUR, TRY) kullanabilir, sistemin otomatik kur çevirisiyle genel bütçeyi görebilirsiniz.
             </AlertBox>
 
             <div className="space-y-0">
-              <StepCard number="01" title="Temel Bilgileri Girin">
-                Acente, Müşteri, Proje Adı ve tarih aralıklarını belirleyin. Bu aşamada seçilen döviz tipi tüm bütçeyi etkiler.
+              <StepCard number="01" title="Teklif Kartı Oluşturma">
+                Müşteri ve acente bilgilerini seçerek projenin ana çerçevesini çizin.
               </StepCard>
-              <StepCard number="02" title="Bütçe Kalemlerini Ekleyin">
-                Otel, Transfer, Uçak Bileti gibi kategorilerden hizmetleri seçin. Maliyet ve Satış fiyatlarını girerken sistem anlık kar marjını gösterir.
+              <StepCard number="02" title="Kalem Girişi">
+                Konaklama, transfer ve diğer servis kalemlerini maliyet/satış fiyatlarıyla birlikte ekleyin.
               </StepCard>
-              <StepCard number="03" title="Gruplandırma Yapın">
-                Bütçe kalemlerini 'Otel Konaklama', 'Transferler' gibi gruplara ayırarak müşteriye daha derli toplu bir sunum yapın.
+              <StepCard number="03" title="Revizyon Takibi">
+                Teklifinizi PDF olarak dışa aktarabilir veya sistem üzerinden güncellemeler yapabilirsiniz.
               </StepCard>
             </div>
 
-            <ScreenshotFrame caption="Teklif Düzenleme Paneli Görünümü" />
-          </div>
-        );
-      case 'mice-link':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Link ile Gönderim & Onay</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Tekliflerinizi PDF yerine interaktif bir link olarak müşteriye sunun.</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                <h6 className="text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Gönderim Süreci</h6>
-                <p className="text-xs text-slate-500 leading-relaxed">"Link Oluştur" butonuna bastığınızda, o teklife özel bir URL üretilir. Bu linki WhatsApp veya E-posta ile paylaşabilirsiniz.</p>
-              </div>
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                <h6 className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-2">Müşteri Onayı</h6>
-                <p className="text-xs text-slate-500 leading-relaxed">Müşteri linke girdiğinde 'Onayla' veya 'İptal' butonlarını görür. Bir işlem yaptığında panelinize anlık bildirim düşer.</p>
-              </div>
-            </div>
-
-            <AlertBox type="warning" title="Güvenlik Uyarısı">
-              Onaylanan bir teklif üzerinde fiyat değişikliği yapılamaz. Değişiklik için teklifi tekrar 'Taslak' durumuna çekmeniz gerekir.
-            </AlertBox>
+            <ScreenshotFrame caption="Teklif Düzenleme Paneli" />
           </div>
         );
       case 'mice-proje':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Projeye Dönüştürme</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Onaylanan teklifleri operasyonel sürece dahil etmek için tek tıkla projeye dönüştürün.</p>
+            <p className="text-lg text-slate-500 leading-relaxed">Onaylanan teklifleri operasyonel listelere aktarın.</p>
 
             <div className="space-y-0">
-              <StepCard number="01" title="Onay Durumunu Kontrol Edin">
-                Müşteri link üzerinden veya manuel olarak teklifi onayladığında "Projeye Dönüştür" butonu aktifleşir.
+              <StepCard number="01" title="Statü Güncelleme">
+                Teklif konfirme olduğunda statüsünü değiştirerek projeye dönüştürün.
               </StepCard>
-              <StepCard number="02" title="Operasyonel Filtreleme">
-                Projeye dönüştürürken hangi kalemlerin operasyona aktarılacağını seçebilirsiniz (Örn: Sadece Konaklama ve Transfer).
-              </StepCard>
-              <StepCard number="03" title="Referans Numarası">
-                Sistem projeye otomatik bir referans numarası atar ve bu numara tüm fatura/operasyon süreçlerinde ana takip kodu olur.
+              <StepCard number="02" title="Operasyonel Aktarım">
+                Projeye dönüşen her kalem, ilgili departmanların (Transfer, HR, Otel) çalışma listesine düşer.
               </StepCard>
             </div>
           </div>
@@ -327,16 +291,14 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       case 'mice-detay':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Proje Detay Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Proje içinde her departman kendi sekmesini yönetir.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Operasyonel Detaylar</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Proje sekmeleri üzerinden tüm saha yönetimini gerçekleştirin.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                {[
-                 { t: 'Konaklama & Otel', d: 'Otel giriş-çıkış tarihleri, oda tipleri ve opsiyon takibi yapılır.' },
-                 { t: 'Uçak Bileti', d: 'Pazarlama departmanından gelen opsiyonlu uçuşlar burada listelenir.' },
-                 { t: 'Transfer & Tur', d: 'Konaklama listesinden otomatik transfer üretme motoru burada çalışır.' },
-                 { t: 'Etkinlik & Aktivite', d: 'Gala yemekleri, dış mekan aktiviteleri ve ekipman talepleri yönetilir.' },
-                 { t: 'İnsan Kaynakları', d: 'Rehber, Hostes ve part-time personel atamaları bu sekmededir.' }
+                 { t: 'Konaklama', d: 'Otel oda dağılım listelerini ve check-in detaylarını yönetin.' },
+                 { t: 'Transfer', d: 'Araç tipi ve kapasitesine göre transfer planlamalarını yapın.' },
+                 { t: 'Personel', d: 'Projeye rehber ve saha personeli ataması gerçekleştirin.' }
                ].map((item, i) => (
                  <div key={i} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
                     <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">{item.t}</h6>
@@ -345,60 +307,41 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
                ))}
             </div>
 
-            <AlertBox type="tip" title="Otomatik Transfer">
-               Konaklama sekmesindeki misafirlerin uçuş saatlerini girdiğinizde, sistem otomatik olarak "Transfer" sekmesine kayıt atar ve araç ataması için operasyonu uyarır.
+            <AlertBox type="tip" title="Hızlı Liste">
+               Konaklama listesindeki verileri topluca Excel'den içeri aktarabilirsiniz.
             </AlertBox>
           </div>
         );
       case 'mice-finans':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Finansal & Nakit Akış</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Operasyonel başarınızı finansal verilere dönüştürün.</p>
-
-            <div className="space-y-4">
-               <div className="flex items-start gap-4 p-6 bg-slate-900 text-white rounded-[2rem] shadow-xl">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h5 className="font-black uppercase tracking-tight mb-1">Nakit Akışa Akış</h5>
-                    <p className="text-[11px] opacity-70 leading-relaxed">Girdiğiniz her tahsilat ve ödeme vadesi, Muhasebe &gt; Nakit Akış tablosuna anlık olarak işlenir. Ay sonu kasanızı bugünden görebilirsiniz.</p>
-                  </div>
-               </div>
-            </div>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Finansal Takip</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Projenin mali durumunu ve bakiye takibini yapın.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-100 dark:border-emerald-800">
-                  <h6 className="text-xs font-black text-emerald-900 dark:text-emerald-100 uppercase mb-2">Tahsilatlar</h6>
-                  <p className="text-[10px] text-emerald-800 dark:text-emerald-200">Müşteriden gelecek ödemeleri proje kalemlerine göre vadelendirin.</p>
+                  <h6 className="text-xs font-black text-emerald-900 dark:text-emerald-100 uppercase mb-2">Tahsilat Takibi</h6>
+                  <p className="text-[10px] text-emerald-800 dark:text-emerald-200">Müşteriden gelen ödemeleri proje bazlı kaydedin.</p>
                </div>
                <div className="p-6 bg-rose-50 dark:bg-rose-900/20 rounded-3xl border border-rose-100 dark:border-rose-800">
-                  <h6 className="text-xs font-black text-rose-900 dark:text-rose-100 uppercase mb-2">Ödemeler</h6>
-                  <p className="text-[10px] text-rose-800 dark:text-rose-200">Tedarikçilere yapılacak ödemeleri bütçe bazlı takip edin.</p>
+                  <h6 className="text-xs font-black text-rose-900 dark:text-rose-100 uppercase mb-2">Ödeme Takibi</h6>
+                  <p className="text-[10px] text-rose-800 dark:text-rose-200">Tedarikçi ödemelerini ve bakiyelerini izleyin.</p>
                </div>
             </div>
-
-            <AlertBox type="critical" title="Kritik Veri">
-               Vadesi girilmeyen tahsilatlar Nakit Akış tablosunda görünmez. Her kalem için mutlaka bir ödeme tarihi belirleyin.
-            </AlertBox>
           </div>
         );
       case 'sejour-ops':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Sejour Operasyon Akışı</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Münferit misafirlerin uçtan uca yönetimi.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Operasyon Akışı</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Münferit rezervasyonların yönetim süreci.</p>
             
             <div className="space-y-0">
-              <StepCard number="01" title="Rezervasyon Girişi">
-                Misafir isimleri, uçuş kodları ve otel tercihlerini sisteme kaydedin.
+              <StepCard number="01" title="Kayıt Girişi">
+                Otel, uçuş ve transfer detaylarını sisteme işleyin.
               </StepCard>
-              <StepCard number="02" title="Dinamik Fiyatlandırma">
-                Sezonluk otel fiyatlarını ve transfer maliyetlerini sistem otomatik hesaplar.
-              </StepCard>
-              <StepCard number="03" title="Voucher Üretimi">
-                Tüm servisler onaylandığında tek tıkla Voucher dökümanını hazırlayın.
+              <StepCard number="02" title="Maliyetlendirme">
+                Hizmet bazlı maliyet ve satış rakamlarını belirleyin.
               </StepCard>
             </div>
           </div>
@@ -406,26 +349,24 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       case 'sejour-voucher':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Online Voucher Rehberi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Misafirinize profesyonel bir karşılama deneyimi sunun.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Voucher Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Rezervasyon dökümanlarının hazırlanması.</p>
             
-            <AlertBox type="tip" title="Temassız Deneyim">
-              Misafirinize Voucher'ı PDF olarak göndermek yerine link olarak gönderin. Misafir link üzerinden transfer aracının plakasını ve rehberinin fotoğrafını anlık görebilir.
+            <AlertBox type="tip" title="Döküman Yazdırma">
+              Hazırlanan tüm voucherları tek tıkla PDF olarak indirebilir ve paylaşabilirsiniz.
             </AlertBox>
-
-            <ScreenshotFrame caption="Misafir Online Voucher Ekranı" />
           </div>
         );
       case 'ops-transfer':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Transfer Listeleri & Planlama</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Saha operasyonunun kalbi burasıdır.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Transfer Planlama</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Saha araç hareketlerinin kontrolü.</p>
 
             <div className="space-y-4">
                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Araç Atama & Gruplandırma</h6>
-                  <p className="text-xs text-slate-500 leading-relaxed">Aynı saatteki transferleri birleştirerek araç maliyetlerini minimize edin. Atanan araç plakaları anlık olarak misafirlerin Voucher linklerine yansır.</p>
+                  <h6 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Liste Takibi</h6>
+                  <p className="text-xs text-slate-500 leading-relaxed">Günlük geliş ve gidiş listeleri üzerinden araç statülerini güncelleyin.</p>
                </div>
             </div>
           </div>
@@ -433,17 +374,13 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       case 'ops-guide':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Rehber & Personel Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Doğru personeli doğru göreve atayın.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Rehber & Personel</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Saha kadrosunun yönetimi.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800">
-                  <h6 className="text-xs font-black text-blue-900 dark:text-blue-100 uppercase mb-2">Kokartlı Rehberler</h6>
-                  <p className="text-[10px] text-blue-800 dark:text-blue-200">Rehberlerin dil yetkinliklerine ve müsaitlik durumlarına göre atama yapın.</p>
-               </div>
-               <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border border-amber-100 dark:border-amber-800">
-                  <h6 className="text-xs font-black text-amber-900 dark:text-amber-100 uppercase mb-2">Part-Time Personel</h6>
-                  <p className="text-[10px] text-amber-800 dark:text-amber-200">Karşılama ekipleri ve etkinlik personeli için insan kaynakları talebi oluşturun.</p>
+                  <h6 className="text-xs font-black text-blue-900 dark:text-blue-100 uppercase mb-2">Görevlendirme</h6>
+                  <p className="text-[10px] text-blue-800 dark:text-blue-200">Rehberleri projelerle eşleştirin ve iletişim bilgilerini takip edin.</p>
                </div>
             </div>
           </div>
@@ -451,19 +388,15 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       case 'acc-invoice':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Fatura Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Hataya yer bırakmayan fatura döngüsü.</p>
-
-            <AlertBox type="warning" title="Mutabakat Zorunluluğu">
-              Bir kalem için fatura kesilmeden önce tedarikçi ile mutabakatın (Link üzerinden veya manuel) tamamlanmış olması önerilir.
-            </AlertBox>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Fatura Takibi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Finansal döküman yönetimi.</p>
 
             <div className="space-y-0">
               <StepCard number="01" title="Fatura Bekleyenler">
-                Konfirme olan projeler otomatik olarak bu listeye düşer.
+                Konfirme olan projelerin fatura durumlarını bu listeden izleyin.
               </StepCard>
-              <StepCard number="02" title="E-Fatura Entegrasyonu">
-                Sistemden oluşturulan faturalar tek tıkla e-fatura portalına aktarılabilir.
+              <StepCard number="02" title="Giriş ve Çıkış">
+                Gelen ve giden fatura bilgilerini sisteme kaydedin.
               </StepCard>
             </div>
           </div>
@@ -471,17 +404,12 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       case 'acc-cash':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Kasa & Banka Entegrasyonu</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Gerçek zamanlı nakit kontrolü.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Kasa & Banka Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Bakiye kontrolleri.</p>
 
-            <div className="p-8 bg-gradient-to-br from-slate-800 to-slate-950 text-white rounded-[3rem] shadow-2xl">
-               <h5 className="text-xl font-black mb-4">Anlık Bakiye Takibi</h5>
-               <p className="text-sm opacity-70 leading-relaxed mb-6">Tüm banka hesaplarınız ve şirket kasalarınız tek ekranda. Yapılan her tahsilat ilgili kasaya anlık işlenir.</p>
-               <div className="flex gap-2">
-                  <div className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-bold">USD Kasası</div>
-                  <div className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-bold">EUR Kasası</div>
-                  <div className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-bold">TRY Kasası</div>
-               </div>
+            <div className="p-8 bg-slate-100 dark:bg-slate-800 rounded-[3rem]">
+               <h5 className="text-xl font-black mb-4">Finansal Bakiyeler</h5>
+               <p className="text-sm opacity-70 leading-relaxed mb-6">Şirket kasalarınızın ve banka hesaplarınızın bakiye durumlarını sistem üzerinden takip edebilirsiniz.</p>
             </div>
           </div>
         );
@@ -491,8 +419,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
             <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center mb-6">
               <BookOpen className="w-12 h-12 text-slate-300" />
             </div>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tighter">Henüz Hazırlanıyor</h3>
-            <p className="text-sm text-slate-500 max-w-xs">Bu bölümdeki dokümantasyon çalışmaları devam etmektedir. Lütfen diğer modülleri inceleyin.</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tighter">İçerik Bulunamadı</h3>
           </div>
         );
     }
@@ -569,13 +496,6 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
                 </div>
               ))}
             </nav>
-
-            <div className="p-6 border-t border-slate-100 dark:border-slate-800">
-               <button className="w-full p-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl flex items-center justify-between group">
-                  <span className="text-[10px] font-black uppercase tracking-widest">Destek Al</span>
-                  <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-               </button>
-            </div>
           </div>
         </aside>
 
