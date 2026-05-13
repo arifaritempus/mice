@@ -234,7 +234,7 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-32 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[180px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                   onClick={() => handleFlightSort('tedarikci')}
                 >
                   <div className="flex items-center">
@@ -247,7 +247,7 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[140px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                   onClick={() => handleFlightSort('havayolu')}
                 >
                   <div className="flex items-center">
@@ -259,15 +259,15 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">PNR</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">UÇUŞ TİPİ</th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px]">PNR</th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px]">UÇUŞ TİPİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">GİDİŞ TARİHİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">GİDİŞ SAATİ</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">GİDİŞ UÇUŞ KODU</th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px]">GİDİŞ UÇUŞ KODU</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">DÖNÜŞ TARİHİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">DÖNÜŞ SAATİ</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">DÖNÜŞ UÇUŞ KODU</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-32 whitespace-nowrap">GÜZERGAH</th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px]">DÖNÜŞ UÇUŞ KODU</th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[200px] whitespace-nowrap">GÜZERGAH</th>
                 <th
                   className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort('kisiSayisi')}
@@ -310,7 +310,7 @@ export default function UcakBiletiTab({
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-12 whitespace-nowrap">DÖVİZ</th>
                 <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white w-16 whitespace-nowrap">KUR</th>
                 <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white w-28 whitespace-nowrap">TOPLAM TL</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-48">MİSAFİRLER</th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[300px]">MİSAFİRLER</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20">DURUM</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-24">İŞLEMLER</th>
               </tr>
@@ -332,7 +332,7 @@ export default function UcakBiletiTab({
                             type="date"
                             value={tempFlightItem?.biletlemeTarihi || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, biletlemeTarihi: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2 relative">
@@ -360,7 +360,7 @@ export default function UcakBiletiTab({
                                   }
                                 }
                               }}
-                              className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
                               readOnly
                             />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
@@ -392,7 +392,7 @@ export default function UcakBiletiTab({
                             type="text"
                             value={tempFlightItem?.havayolu || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, havayolu: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -400,14 +400,14 @@ export default function UcakBiletiTab({
                             type="text"
                             value={tempFlightItem?.pnr || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, pnr: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
                           <select
                             value={tempFlightItem?.ucusTipi || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, ucusTipi: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           >
                             <option value="GRUP">GRUP</option>
                             <option value="MÜNFERİT">MÜNFERİT</option>
@@ -418,7 +418,7 @@ export default function UcakBiletiTab({
                             type="date"
                             value={tempFlightItem?.gidisTarihi || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, gidisTarihi: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -426,7 +426,7 @@ export default function UcakBiletiTab({
                             type="time"
                             value={tempFlightItem?.gidisSaati || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, gidisSaati: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -434,7 +434,7 @@ export default function UcakBiletiTab({
                             type="text"
                             value={tempFlightItem?.gidisUcusKodu || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, gidisUcusKodu: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -442,7 +442,7 @@ export default function UcakBiletiTab({
                             type="date"
                             value={tempFlightItem?.donusTarihi || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, donusTarihi: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -450,7 +450,7 @@ export default function UcakBiletiTab({
                             type="time"
                             value={tempFlightItem?.donusSaati || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, donusSaati: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -458,7 +458,7 @@ export default function UcakBiletiTab({
                             type="text"
                             value={tempFlightItem?.donusUcusKodu || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, donusUcusKodu: e.target.value })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
@@ -479,7 +479,7 @@ export default function UcakBiletiTab({
                               const toplamMaliyet = kisiSayisi * ppMaliyet;
                               setTempFlightItem({ ...tempFlightItem!, kisiSayisi, toplamMaliyet });
                             }}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center resize-none"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center resize-none"
                           />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
@@ -493,7 +493,7 @@ export default function UcakBiletiTab({
                               const toplamMaliyet = kisiSayisi * ppMaliyet;
                               setTempFlightItem({ ...tempFlightItem!, ppMaliyet, toplamMaliyet });
                             }}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
@@ -507,7 +507,7 @@ export default function UcakBiletiTab({
                               const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
                               setTempFlightItem({ ...tempFlightItem!, toplamMaliyet, ppMaliyet });
                             }}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -520,7 +520,7 @@ export default function UcakBiletiTab({
                               const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
                               setTempFlightItem({ ...tempFlightItem!, doviz, toplamTl });
                             }}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           >
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
@@ -539,7 +539,7 @@ export default function UcakBiletiTab({
                               const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
                               setTempFlightItem({ ...tempFlightItem!, kur, toplamTl });
                             }}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
@@ -554,7 +554,7 @@ export default function UcakBiletiTab({
                               const kur = doviz === 'TL' ? 1 : (toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1);
                               setTempFlightItem({ ...tempFlightItem!, toplamTl, kur });
                             }}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
                         </td>
                         <td className="px-2 py-2 w-48 max-w-48">
@@ -569,7 +569,7 @@ export default function UcakBiletiTab({
                           <select
                             value={tempFlightItem?.durum || 'aktif'}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, durum: e.target.value as any })}
-                            className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           >
                             <option value="aktif">Aktif</option>
                             <option value="iptal">İptal</option>
@@ -620,7 +620,7 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 text-gray-900 dark:text-white text-center">{ticket.doviz || '-'}</td>
                         <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">{formatNumberForDisplay(ticket.kur)}</td>
                         <td className="px-2 py-2 text-gray-900 dark:text-white text-right font-semibold whitespace-nowrap">{formatNumberForDisplay(ticket.toplamTl)} TL</td>
-                        <td className="px-2 py-2 w-48 max-w-48">
+                        <td className="px-2 py-2 min-w-[300px]">
                           <div className="flex items-center gap-1">
                             <div className="flex-1 min-w-0 max-w-full">
                               {expandedMisafirler[ticket.id] ? (
@@ -742,7 +742,7 @@ export default function UcakBiletiTab({
                             }
                           }
                         }}
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
+                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
                         readOnly
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
