@@ -9592,6 +9592,7 @@ export default function ProjectDetailPage() {
     };
     return vehicleTypeMap[vehicleTypeCode] || vehicleTypeCode || '-';
   };
+
   const exportTransfersToExcel = async () => {
     try {
       const ExcelJS = (await import('exceljs')).default;
@@ -9912,7 +9913,7 @@ export default function ProjectDetailPage() {
         // Çıkış başlık satırı
         const headersRow = worksheet.addRow([
           'Transfer Tipi', 'Tarih', 'Saat', 'Uçuş Kodu', 'Güzergah', 'Yolcu Sayısı',
-          'Transfer Tipi', 'Araç Tipi', 'Tedarikçi', 'Misafirler', 'Durum'
+          'Transfer Tipi', 'Araç Tipi', 'Tedarikçi', 'Misafirler', 'Durüum'
         ]);
         // Başlık satırı hücrelerini tek tek düzenle
         for (let i = 1; i <= 11; i++) {
@@ -10000,231 +10001,298 @@ export default function ProjectDetailPage() {
         });
       }
 
-      // Sütun genişliklerini ayarla
-      worksheet.columns = [
-        { width: 15 }, { width: 12 }, { width: 8 }, { width: 12 }, { width: 25 },
-        { width: 15 }, { width: 15 }, { width: 15 }, { width: 20 }, { width: 35 }, { width: 15 }
+      // ÖZET BİLGİLER
+      worksheet.addRow(['']);
+      const summaryRow = worksheet.addRow(['ÖZET BİLGİLER']);
+      summaryRow.getCell(1).font = { size: 12, bold: true };
+      summaryRow.height = 20;
+      currentRow += 2;
+
+      // Araç tipine göre sayım
+      const vehicleCounts = {
+        vito: { giris: 0, ara: 0, cikis: 0 },
+        sprinter: { giris: 0, ara: 0, cikis: 0 },
+        otobus: { giris: 0, ara: 0, cikis: 0 },
+        binek: { giris: 0, ara: 0, cikis: 0 },
+        sClass: { giris: 0, ara: 0, cikis: 0 }
+      };
+
+      // Giriş transferlerini say
+      arrivalTransfers.forEach(transfer => {
+        const vehicleType = transfer.vehicleType?.toLowerCase();
+        if (vehicleType === 'vito') vehicleCounts.vito.giris++;
+        else if (vehicleType === 'sprinter') vehicleCounts.sprinter.giris++;
+        else if (vehicleType === 'otobus') vehicleCounts.otobus.giris++;
+        else if (vehicleType === 'binek') vehicleCounts.binek.giris++;
+        else if (vehicleType === 's-class') vehicleCounts.sClass.giris++;
+      });
+
+      // Ara transferlerini say
+      intermediateTransfers.forEach(transfer => {
+        const vehicleType = transfer.vehicleType?.toLowerCase();
+        if (vehicleType === 'vito') vehicleCounts.vito.ara++;
+        else if (vehicleType === 'sprinter') vehicleCounts.sprinter.ara++;
+        else if (vehicleType === 'otobus') vehicleCounts.otobus.ara++;
+        else if (vehicleType === 'binek') vehicleCounts.binek.ara++;
+        else if (vehicleType === 's-class') vehicleCounts.sClass.ara++;
+      });
+
+      // Çıkış transferlerini say
+      departureTransfers.forEach(transfer => {
+        const vehicleType = transfer.vehicleType?.toLowerCase();
+        if (vehicleType === 'vito') vehicleCounts.vito.cikis++;
+        else if (vehicleType === 'sprinter') vehicleCounts.sprinter.cikis++;
+        else if (vehicleType === 'otobus') vehicleCounts.otobus.cikis++;
+        else if (vehicleType === 'binek') vehicleCounts.binek.cikis++;
+        else if (vehicleType === 's-class') vehicleCounts.sClass.cikis++;
+      });
+
+      // Toplam araç sayıları
+      const totalVito = vehicleCounts.vito.giris + vehicleCounts.vito.ara + vehicleCounts.vito.cikis;
+      const totalSprinter = vehicleCounts.sprinter.giris + vehicleCounts.sprinter.ara + vehicleCounts.sprinter.cikis;
+      const totalOtobus = vehicleCounts.otobus.giris + vehicleCounts.otobus.ara + vehicleCounts.otobus.cikis;
+      const totalBinek = vehicleCounts.binek.giris + vehicleCounts.binek.ara + vehicleCounts.binek.cikis;
+      const totalSClass = vehicleCounts.sClass.giris + vehicleCounts.sClass.ara + vehicleCounts.sClass.cikis;
+
+      // Özet tablosu
+      const summaryData = [
+        ['Toplam Vito Giriş:', vehicleCounts.vito.giris],
+        ['Toplam Sprinter Giriş:', vehicleCounts.sprinter.giris],
+        ['Toplam Otobüs Giriş:', vehicleCounts.otobus.giris],
+        ['Toplam Binek Giriş:', vehicleCounts.binek.giris],
+        ['Toplam S-Class Giriş:', vehicleCounts.sClass.giris],
+        ['Toplam Giriş:', arrivalTransfers.length],
+        ['Toplam Vito Ara:', vehicleCounts.vito.ara],
+        ['Toplam Sprinter Ara:', vehicleCounts.sprinter.ara],
+        ['Toplam Otobüs Ara:', vehicleCounts.otobus.ara],
+        ['Toplam Binek Ara:', vehicleCounts.binek.ara],
+        ['Toplam S-Class Ara:', vehicleCounts.sClass.ara],
+        ['Toplam Ara:', intermediateTransfers.length],
+        ['Toplam Vito Çıkış:', vehicleCounts.vito.cikis],
+        ['Toplam Sprinter Çıkış:', vehicleCounts.sprinter.cikis],
+        ['Toplam Otobüs Çıkış:', vehicleCounts.otobus.cikis],
+        ['Toplam Binek Çıkış:', vehicleCounts.binek.cikis],
+        ['Toplam S-Class Çıkış:', vehicleCounts.sClass.cikis],
+        ['Toplam Çıkış:', departureTransfers.length],
+        ['Toplam Vito:', totalVito],
+        ['Toplam Sprinter:', totalSprinter],
+        ['Toplam Otobüs:', totalOtobus],
+        ['Toplam Binek:', totalBinek],
+        ['Toplam S-Class:', totalSClass],
+        ['TOPLAM:', arrivalTransfers.length + intermediateTransfers.length + departureTransfers.length]
       ];
 
+      summaryData.forEach(([label, value]) => {
+        const row = worksheet.addRow([label, value]);
+        row.getCell(1).font = { size: 10 };
+        row.getCell(2).font = { size: 10 };
+        currentRow++;
+      });
+
+      // Sütun genişliklerini ayarla
+      worksheet.columns = [
+        { width: 20 }, // Transfer Tipi
+        { width: 12 }, // Tarih
+        { width: 10 }, // Saat
+        { width: 15 }, // Uçuş Kodu
+        { width: 25 }, // Güzergah
+        { width: 12 }, // Yolcu Sayısı
+        { width: 15 }, // Transfer Tipi
+        { width: 15 }, // Araç Tipi
+        { width: 20 }, // Tedarikçi
+        { width: 35 }, // Misafirler
+        { width: 20 }  // Durum/Grup Detayı
+      ];
+
+      // Excel dosyasını indir
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `Transfer_Listesi_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
-      anchor.click();
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Transfer_Listesi_${project?.name || 'Proje'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Transfer Excel error:', error);
-      alert('Transfer listesi oluşturulurken hata oluştu.');
+      console.error('Excel export hatası:', error);
     }
   };
 
   const exportProjectFullToExcel = async () => {
     try {
-      setLoading(true);
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
       const inchToPx = (inch: number) => Math.round(inch * 96);
-      const fileName = `${project?.project_name || 'Proje'}_Tam_Rapor_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
+      const guessExt = (d: string): 'png' | 'jpeg' => (d || '').includes('image/png') ? 'png' : 'jpeg';
 
-      const [
-        allSales, allPurchase, allAcc, allExtras, allTransfers, 
-        allEvents, allHr, allOther, allFinancial
-      ] = await Promise.all([
-        projectSalesItemsService.getByProjectId(projectId),
-        projectPurchaseItemsService.getByProjectId(projectId),
-        projectAccommodationItemsService.getByProjectId(projectId),
-        projectHotelExtrasService.getByProjectId(projectId),
-        projectTransfersService.getByProjectId(projectId),
-        projectEventsActivitiesService.getByProjectId(projectId),
-        projectHumanResourcesService.getByProjectId(projectId),
-        projectOtherServicesService.getByProjectId(projectId),
-        projectFinancialServicesService.getByProjectId(projectId)
-      ]);
+      const hotelsData = (project as any)?.hotels_data || [];
+      const allSales = itemsSales;
+      const allPurchase = itemsPurchase;
 
-      const addSheet = (name: string, title: string, items: any[], hData: any = {}) => {
-        if (!items || items.length === 0) return;
-        const safeName = name.replace(/[\\\/\?\*\[\]]/g, '').substring(0, 31);
-        const sheet = workbook.addWorksheet(safeName);
-        sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 };
+      // Helper to add a sheet for a specific hotel/set of items
+      const addSheetForHotel = (sheetName: string, h: any, sItems: any[], pItems: any[]) => {
+        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
+        sheet.pageSetup = { 
+          orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, 
+          horizontalCentered: true, paperSize: 9, 
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } 
+        } as any;
 
-        // HEADER
-        const top = sheet.addRow([]); top.height = 65; sheet.mergeCells('A1:H1');
-        sheet.getRow(1).getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
-        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: 'png' }), { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.2), height: inchToPx(0.7) } });
-        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' }), { tl: { col: 7.9, row: 0.2 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
+        // Top Band
+        const topBandRow = sheet.addRow([]);
+        topBandRow.height = 70;
+        sheet.mergeCells('A1:H1');
+        for (let c = 1; c <= 8; c++) {
+          sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
+        }
+        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
+        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 7.90, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
 
-        const info = [
-          ['PROJE', project.project_name, 'REFERANS', project.reference || '-'],
-          ['ACENTE', getAgencyName(project.agency_id), 'TARİH', new Date().toLocaleDateString('tr-TR')],
-          ['OTEL', hData?.hotel_id || hData?.id ? getHotelName(hData.hotel_id || hData.id) : 'GENEL', 'BÜTÇE', formatCurrency(project.budget || 0, 'EUR')]
+        const isGeneral = sheetName.includes('GENEL');
+        const headerInfo = [
+          ['REFERANS', project.reference || '', 'ODA | PAX', isGeneral ? '-' : `${h.room_count || 0} | ${h.pax_count || 0}`],
+          ['ACENTE | FİRMA', `${getAgencyName(project.agency_id)} | ${project.company_name || ''}`, 'KONSEPT', isGeneral ? '-' : (h.hotel_concept || '')],
+          ['C/IN - C/OUT', !isGeneral && h.check_in_date ? `${new Date(h.check_in_date).toLocaleDateString('tr-TR')} - ${new Date(h.check_out_date).toLocaleDateString('tr-TR')}` : '-', 'OPSİYON', isGeneral ? '-' : (h.option || '')],
+          ['OTEL', isGeneral ? 'GENEL HİZMETLER' : (hotels.find(ht => ht.id === h.hotel_id)?.name || ''), 'DURUM', project.status || ''],
+          ['TARİH', new Date().toLocaleDateString('tr-TR'), 'BÜTÇE', formatCurrency(project.budget || 0, 'USD')]
         ];
-        info.forEach((rowVals, idx) => {
-          const r = sheet.addRow([rowVals[0], rowVals[1], '', '', '', rowVals[2], rowVals[3], '']); r.height = 22;
-          for (let c = 1; c <= 8; c++) r.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3CBBE' } };
-          r.getCell(1).font = { bold: true, size: 10 }; r.getCell(6).font = { bold: true, size: 10 };
-        });
-        sheet.addRow([]);
-        
-        // TABLE TITLE
-        const tRow = sheet.addRow([title.toUpperCase()]); tRow.height = 28; sheet.mergeCells(`A${tRow.number}:H${tRow.number}`);
-        tRow.getCell(1).font = { bold: true, size: 14 }; tRow.getCell(1).alignment = { horizontal: 'center' };
-        tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
-        sheet.addRow([]);
 
-        // GROUP BY CATEGORY
-        const grouped: Record<string, any[]> = {};
-        items.forEach(it => {
-          const k = getCategoryName(it.main_category || it.category || '') || 'DİĞER HİZMETLER';
-          if (!grouped[k]) grouped[k] = []; grouped[k].push(it);
+        let rowIndex = 2;
+        headerInfo.forEach(([lLabel, lVal, rLabel, rVal]) => {
+          const rowValues: any[] = new Array(8);
+          rowValues[0] = lLabel; rowValues[1] = lVal; rowValues[5] = rLabel; rowValues[6] = rVal;
+          const row = sheet.addRow(rowValues);
+          row.height = 24;
+          row.getCell(1).font = { bold: true, size: 12 }; row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.getCell(2).font = { size: 12 }; row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.getCell(6).font = { bold: true, size: 12 }; row.getCell(6).alignment = { horizontal: 'left', vertical: 'middle' };
+          row.getCell(7).font = { size: 12 }; row.getCell(7).alignment = { horizontal: 'left', vertical: 'middle' };
+
+          rowIndex++;
         });
 
-        Object.entries(grouped).forEach(([cat, cItems]) => {
-          const cRow = sheet.addRow([cat.toUpperCase()]); cRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-          for (let c = 1; c <= 8; c++) cRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
-          
-          const hRow = sheet.addRow(['HİZMET DETAYI', 'ADET', 'TEKRAR', 'FİYAT', 'TOPLAM', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
-          hRow.font = { bold: true }; for (let c = 1; c <= 8; c++) hRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        const addItemsSection = (title: string, items: any[]) => {
+          sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+          const titleCell = sheet.getCell(`A${rowIndex}`);
+          titleCell.value = title;
+          titleCell.font = { size: 20, bold: true };
+          titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+          sheet.getRow(rowIndex).height = 35;
+          for (let c = 1; c <= 8; c++) sheet.getRow(rowIndex).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+          rowIndex++;
 
-          cItems.forEach(it => {
-            const subName = getCategoryName(it.sub_category_id || it.sub_category || '');
-            const displaySub = (subName && subName.length > 20 && subName.includes('-')) ? (it.description || it.sub_category || subName) : (subName || it.description || '-');
-            const q = it.quantity || it.qty || 1; const re = it.repeat || 1; const pr = it.unit_price || 0; const fx = it.exchange_rate || it.fx || 1;
-            sheet.addRow([displaySub, q, re, pr, q * re * pr, it.currency || 'EUR', fx, q * re * pr * fx]);
+          const grouped: Record<string, any[]> = {};
+          items.forEach(it => {
+            const key = getCategoryName(it.main_category || '') || 'Diğer';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(it);
           });
-          sheet.addRow([]);
-        });
 
-        sheet.columns = [{ width: 40 }, { width: 10 }, { width: 10 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 10 }, { width: 18 }];
+          const sectionSubtotalsE: number[] = [];
+          const sectionSubtotalsG: number[] = [];
+
+          Object.entries(grouped).forEach(([mainCat, catItems], i) => {
+            const catRow = sheet.addRow([`${i + 1}. ${mainCat}`]);
+            catRow.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+            for (let c = 1; c <= 8; c++) catRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
+            catRow.height = 25;
+            sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+            rowIndex++;
+
+            const hRow = sheet.addRow(['DETAY/AÇIKLAMA', 'BİRİM/ADET', 'SEFER/TEKRAR', 'BİRİM/FİYAT', 'TOPLAM EUR', 'KUR', 'TOPLAM TL', 'AÇIKLAMA']);
+            hRow.font = { bold: true, size: 11 };
+            hRow.height = 22;
+            for (let c = 1; c <= 8; c++) hRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+            rowIndex++;
+
+            let firstItemRow: number | null = null;
+            catItems.forEach(it => {
+              const itemQty = it.qty || it.unit_quantity || 0;
+              const itemRepeat = it.repeat || it.sefer || 1;
+              const sRow = sheet.addRow([getCategoryName(it.sub_category || ''), itemQty, itemRepeat, it.unit_price || 0, 0, it.fx || 0, 0, it.description || '']);
+              if (!firstItemRow) firstItemRow = sRow.number;
+              const r = sRow.number;
+              sRow.getCell(4).numFmt = '€ #,##0.00'; sRow.getCell(5).numFmt = '€ #,##0.00';
+              sRow.getCell(6).numFmt = '₺#,##0.00'; sRow.getCell(7).numFmt = '₺#,##0.00';
+              // Calculate totals
+              const tEur = itemQty * itemRepeat * (it.unit_price || 0);
+              const tTry = tEur * (it.fx || 1);
+              sRow.getCell(5).value = { formula: `B${r}*C${r}*D${r}`, result: tEur } as any;
+              sRow.getCell(7).value = { formula: `E${r}*F${r}`, result: tTry } as any;
+              sRow.height = 18;
+              rowIndex++;
+            });
+
+            const lastItemRow = rowIndex - 1;
+            const araRow = sheet.addRow(['ARA TOPLAM', '', '', '', 0, '', 0, '']);
+            araRow.font = { bold: true, size: 12 };
+            for (let c = 1; c <= 8; c++) araRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD0D0D0' } };
+            if (firstItemRow) {
+              araRow.getCell(5).value = { formula: `SUM(E${firstItemRow}:E${lastItemRow})`, result: catItems.reduce((s, it) => s + ((it.qty || it.unit_quantity || 0) * (it.repeat || it.sefer || 1) * (it.unit_price || 0)), 0) } as any;
+              araRow.getCell(7).value = { formula: `SUM(G${firstItemRow}:G${lastItemRow})`, result: catItems.reduce((s, it) => s + ((it.qty || it.unit_quantity || 0) * (it.repeat || it.sefer || 1) * (it.unit_price || 0) * (it.fx || 1)), 0) } as any;
+            }
+            araRow.getCell(5).numFmt = '€ #,##0.00'; araRow.getCell(7).numFmt = '₺#,##0.00';
+            araRow.height = 22;
+            sectionSubtotalsE.push(araRow.number); sectionSubtotalsG.push(araRow.number);
+            rowIndex++;
+            sheet.addRow([]); rowIndex++;
+          });
+
+          const totalRow = sheet.addRow([`${title} GENEL TOPLAMLAR`, '', '', '', 0, '', 0, '']);
+          totalRow.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+          for (let c = 1; c <= 8; c++) totalRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF333333' } };
+          if (sectionSubtotalsE.length > 0) {
+            totalRow.getCell(5).value = { formula: `SUM(${sectionSubtotalsE.map(rw => `E${rw}`).join(',')})` } as any;
+            totalRow.getCell(7).value = { formula: `SUM(${sectionSubtotalsG.map(rw => `G${rw}`).join(',')})` } as any;
+          }
+          totalRow.getCell(5).numFmt = '€ #,##0.00'; totalRow.getCell(7).numFmt = '₺#,##0.00';
+          totalRow.height = 30;
+          rowIndex++;
+          sheet.addRow([]); rowIndex++;
+        };
+
+        addItemsSection('SATIŞLAR', sItems);
+        addItemsSection('ALIŞLAR', pItems);
+
+        sheet.columns = [
+          { width: 45 }, { width: 12 }, { width: 12 }, { width: 15 }, 
+          { width: 18 }, { width: 10 }, { width: 18 }, { width: 45 }
+        ];
+        sheet.views = [{ state: 'normal', showGridLines: false }];
       };
 
-      // OTEL BAZLI SHEETLER
-      project?.hotels_data?.forEach((h: any) => {
-        const hId = h.hotel_id || h.id; const hName = getHotelName(hId); const prefix = hName.substring(0, 15);
-        addSheet(`${prefix} | SATIŞ`, `${hName} SATIŞLAR`, allSales.filter(it => it.hotel_id === hId), h);
-        addSheet(`${prefix} | ALIŞ`, `${hName} ALIŞLAR`, allPurchase.filter(it => it.hotel_id === hId), h);
-        
-        const hAcc = allAcc.filter(it => it.hotel_id === hId);
-        if (hAcc.length > 0) {
-          const sheet = workbook.addWorksheet(`${prefix} | KONAKLAMA`);
-          sheet.addRow(['ODA NO', 'İSİM', 'SOYİSİM', 'ODA TİPİ', 'GİRİŞ', 'ÇIKIŞ', 'GÜN', 'NOTLAR']).font = { bold: true };
-          hAcc.forEach(it => sheet.addRow([it.room_number, it.first_name, it.last_name, it.room_type, it.check_in_date, it.check_out_date, it.nights, it.room_note]));
-          sheet.columns = [{ width: 12 }, { width: 20 }, { width: 20 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 30 }];
-        }
-
-        addSheet(`${prefix} | EKSTRALAR`, `${hName} EKSTRALAR`, allExtras.filter(it => it.hotel_id === hId), h);
-        addSheet(`${prefix} | DİĞER`, `${hName} DİĞER HİZMETLER`, [
-          ...allTransfers.filter(it => it.hotel_id === hId),
-          ...allEvents.filter(it => it.hotel_id === hId),
-          ...allHr.filter(it => it.hotel_id === hId),
-          ...allOther.filter(it => it.hotel_id === hId),
-          ...allFinancial.filter(it => it.hotel_id === hId)
-        ], h);
+      // Hotels
+      hotelsData.forEach((h: any, idx: number) => {
+        const hSales = allSales.filter(it => it.hotel_id === h.id);
+        const hPurchase = allPurchase.filter(it => it.hotel_id === h.id);
+        const hName = hotels.find(ht => ht.id === h.hotel_id)?.name || 'OTEL';
+        addSheetForHotel(`${idx + 1}. ${hName}`, h, hSales, hPurchase);
       });
 
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a'); anchor.href = url; anchor.download = fileName; anchor.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) { console.error('Full Excel error:', error); alert('Rapor oluşturulurken bir hata oluştu.'); }
-    finally { setLoading(false); }
-  };
-
-  const handleHotelExcelExport = async () => {
-    try {
-      setLoading(true);
-      const ExcelJS = (await import('exceljs')).default;
-      const workbook = new ExcelJS.Workbook();
-      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
-      const inchToPx = (inch: number) => Math.round(inch * 96);
-      
-      const hotelName = activeHotelId === 'all' ? 'Tümü' : getHotelName(activeHotelId);
-      const fileName = `${project?.project_name || 'Proje'}_${hotelName}_Raporu_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
-
-      const [
-        allSales, allPurchase, allAcc, allExtras, allTransfers, 
-        allEvents, allHr, allOther, allFinancial
-      ] = await Promise.all([
-        projectSalesItemsService.getByProjectId(projectId),
-        projectPurchaseItemsService.getByProjectId(projectId),
-        projectAccommodationItemsService.getByProjectId(projectId),
-        projectHotelExtrasService.getByProjectId(projectId),
-        projectTransfersService.getByProjectId(projectId),
-        projectEventsActivitiesService.getByProjectId(projectId),
-        projectHumanResourcesService.getByProjectId(projectId),
-        projectOtherServicesService.getByProjectId(projectId),
-        projectFinancialServicesService.getByProjectId(projectId)
-      ]);
-
-      const addSheet = (name: string, title: string, items: any[]) => {
-        if (!items || items.length === 0) return;
-        const safeName = name.replace(/[\\\/\?\*\[\]]/g, '').substring(0, 31);
-        const sheet = workbook.addWorksheet(safeName);
-        sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 };
-
-        const top = sheet.addRow([]); top.height = 65; sheet.mergeCells('A1:H1');
-        sheet.getRow(1).getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
-        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: 'png' }), { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.2), height: inchToPx(0.7) } });
-        if (wordmarkLogoBase64) sheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' }), { tl: { col: 7.9, row: 0.2 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } });
-
-        const info = [['OTEL', hotelName, 'REFERANS', project.reference || '-'], ['ACENTE', getAgencyName(project.agency_id), 'TARİH', new Date().toLocaleDateString('tr-TR')]];
-        info.forEach((rowVals) => {
-          const r = sheet.addRow([rowVals[0], rowVals[1], '', '', '', rowVals[2], rowVals[3], '']); r.height = 22;
-          for (let c = 1; c <= 8; c++) r.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3CBBE' } };
-          r.getCell(1).font = { bold: true }; r.getCell(6).font = { bold: true };
-        });
-        sheet.addRow([]);
-
-        const grouped: Record<string, any[]> = {};
-        items.forEach(it => {
-          const k = getCategoryName(it.main_category || it.category || '') || 'Hizmetler';
-          if (!grouped[k]) grouped[k] = []; grouped[k].push(it);
-        });
-
-        Object.entries(grouped).forEach(([cat, cItems]) => {
-          const cRow = sheet.addRow([cat.toUpperCase()]); cRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-          for (let c = 1; c <= 8; c++) cRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
-          const hRow = sheet.addRow(['HİZMET DETAYI', 'ADET', 'TEKRAR', 'FİYAT', 'TOPLAM', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
-          hRow.font = { bold: true }; for (let c = 1; c <= 8; c++) hRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
-          cItems.forEach(it => {
-            const subName = getCategoryName(it.sub_category_id || it.sub_category || '');
-            const displaySub = (subName && subName.length > 20 && subName.includes('-')) ? (it.description || it.sub_category || subName) : (subName || it.description || '-');
-            const q = it.quantity || it.qty || 1; const re = it.repeat || 1; const pr = it.unit_price || 0; const fx = it.exchange_rate || it.fx || 1;
-            sheet.addRow([displaySub, q, re, pr, q * re * pr, it.currency || 'EUR', fx, q * re * pr * fx]);
-          });
-          sheet.addRow([]);
-        });
-        sheet.columns = [{ width: 40 }, { width: 10 }, { width: 10 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 10 }, { width: 18 }];
-      };
-
-      const filterById = (list: any[]) => activeHotelId === 'all' ? list : list.filter(it => it.hotel_id === activeHotelId);
-
-      addSheet('Satış', 'SATIŞ LİSTESİ', filterById(allSales));
-      addSheet('Alış', 'ALIŞ LİSTESİ', filterById(allPurchase));
-      
-      const hAcc = filterById(allAcc);
-      if (hAcc.length > 0) {
-        const sheet = workbook.addWorksheet('Konaklama');
-        sheet.addRow(['ODA NO', 'İSİM', 'SOYİSİM', 'ODA TİPİ', 'GİRİŞ', 'ÇIKIŞ', 'GÜN', 'NOTLAR']).font = { bold: true };
-        hAcc.forEach(it => sheet.addRow([it.room_number, it.first_name, it.last_name, it.room_type, it.check_in_date, it.check_out_date, it.nights, it.room_note]));
-        sheet.columns = [{ width: 12 }, { width: 20 }, { width: 20 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 30 }];
+      // General
+      const gSales = allSales.filter(it => !it.hotel_id || it.hotel_id === 'general');
+      const gPurchase = allPurchase.filter(it => !it.hotel_id || it.hotel_id === 'general');
+      if (gSales.length > 0 || gPurchase.length > 0) {
+        addSheetForHotel('GENEL HİZMETLER', {}, gSales, gPurchase);
       }
 
-      addSheet('Ekstralar', 'OTEL EKSTRALAR', filterById(allExtras));
-      addSheet('Diğer', 'DİĞER HİZMETLER', [
-        ...filterById(allTransfers), ...filterById(allEvents), ...filterById(allHr), ...filterById(allOther), ...filterById(allFinancial)
-      ]);
-
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([buffer], { type: 'application/octet-stream' });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = fileName; a.click();
-    } catch (e) { console.error(e); alert('Hata oluştu.'); }
-    finally { setLoading(false); }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Proje_${project.reference || projectId}_Genel_Rapor.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Excel export hatası:', error);
+      alert('Excel export sırasında bir hata oluştu.');
+    }
   };
+
+
+
 
 
 
@@ -11763,7 +11831,7 @@ export default function ProjectDetailPage() {
                   mainCategories={mainCategories}
                   subCategoriesByMain={subCategoriesByMain}
                   groupedSalesItems={groupedSalesItems}
-                  exportSalesToExcel={handleHotelExcelExport}
+                  exportSalesToExcel={exportProjectFullToExcel}
                   exportSalesToPDF={() => alert('PDF export çoklu otel desteği için yakında güncellenecektir. Lütfen Excel raporunu kullanın.')}
                   handleCreateLink={handleCreateSalesLink}
                   saveItems={saveItems}
@@ -11804,7 +11872,7 @@ export default function ProjectDetailPage() {
                   mainCategories={mainCategories}
                   subCategoriesByMain={subCategoriesByMain}
                   groupedPurchaseItems={groupedPurchaseItems}
-                  exportPurchaseToExcel={handleHotelExcelExport}
+                  exportPurchaseToExcel={exportProjectFullToExcel}
                   exportPurchaseToPDF={() => alert('PDF export çoklu otel desteği için yakında güncellenecektir. Lütfen Excel raporunu kullanın.')}
                   importQuoteItemsToPurchase={importQuoteItemsToPurchase}
                   importSalesItemsToPurchase={importSalesItemsToPurchase}
