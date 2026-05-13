@@ -12,7 +12,7 @@ import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
-import { UserPlus, User as UserIcon, Mail, Shield, Key } from 'lucide-react';
+import { UserPlus, User as UserIcon, Mail, Shield, Key, Pencil } from 'lucide-react';
 
 interface User {
   id: string;

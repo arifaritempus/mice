@@ -336,7 +336,10 @@ export default function IncomePendingPage() {
                 }, {} as Record<string, number>)
               ).map(([curr, total]) => (
                 <p key={curr} className="text-lg font-black text-slate-900 dark:text-slate-100 leading-none">
-                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: curr }).format(total)}
+                  {new Intl.NumberFormat('tr-TR', { 
+                    style: 'currency', 
+                    currency: (curr && curr.length === 3) ? curr : 'TRY' 
+                  }).format(total as number)}
                 </p>
               ))}
             </div>

@@ -427,6 +427,7 @@ interface Ticket {
   created_at: string;
   checkInDate?: string;
   checkOutDate?: string;
+  checkInOut?: string;
   guestNames?: string;
   // MICE için ek alanlar
   returnDate?: string;
@@ -1035,7 +1036,7 @@ export default function TicketsPage() {
       if (returnDates.size === 0) {
         const uniqueSorted = [...new Set(item.flightDates.filter((d: any) => typeof d === 'string'))].sort();
         if (uniqueSorted.length > 1) {
-          returnDates.add(uniqueSorted[uniqueSorted.length - 1]);
+          returnDates.add(uniqueSorted[uniqueSorted.length - 1] as string);
         }
       }
       

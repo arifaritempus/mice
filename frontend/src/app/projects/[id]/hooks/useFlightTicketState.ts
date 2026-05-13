@@ -23,6 +23,7 @@ export interface FlightTicket {
   misafirler: string;
   durum: 'aktif' | 'iptal' | 'iade' | 'degistirildi';
   islemler?: string;
+  hotel_id?: string;
 }
 
 export function useFlightTicketState() {

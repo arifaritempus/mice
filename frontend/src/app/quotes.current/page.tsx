@@ -33,6 +33,8 @@ interface QuoteItem {
   currency: string;
   total: number;
   description?: string;
+  vat?: number;
+  fx?: number;
   created_at: string;
   // Backward compatibility fields
   category_id?: string;
@@ -215,6 +217,8 @@ export default function QuotesPage() {
                 unit_price: item.unit_price,
                 currency: item.currency,
                 total: item.total || item.total_price,
+                vat: item.vat || 0,
+                fx: item.fx || 1,
                 description: item.description || item.detail_description || ''
               });
             }

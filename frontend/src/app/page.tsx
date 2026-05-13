@@ -29,6 +29,14 @@ import {
   projectHumanResourcesService,
   categoriesService
 } from '@/lib/supabaseService';
+import { 
+  Project, 
+  Quote as Sejour, 
+  ProjectSalesItem as Transfer, 
+  QuoteItem as Ticket,
+  User as Guide,
+  Category
+} from '@/lib/supabase';
 import { Module, usePermissions } from '@/lib/permissions';
 import {
   BarChart,
@@ -41,42 +49,41 @@ import {
   Cell
 } from 'recharts';
 
-interface Project {
+interface PartTime extends Guide {}
+interface ProjectHumanResource {
   id: string;
-  name: string;
-  status: string;
-  start_date: string;
-  end_date: string;
-  client_name: string;
-  budget: number;
-  revenue: number;
-  title?: string;
-  company_name?: string;
+  sub_category_id?: string;
+  sub_category_name?: string;
+  description?: string;
+  date?: string;
+  created_at?: string;
+  hotel?: string;
+  amount?: number;
 }
 
-interface Sejour {
+interface MappedProject extends Project {
+  id: string;
+  name: string;
+  client_name: string;
+  start_date: string;
+  status: string;
+  reference: string;
+  budget: number;
+}
+
+interface MappedSejour extends Sejour {
   id: string;
   name: string;
   hotel_name: string;
-  start_date: string;
-  end_date: string;
   guest_count: number;
   total_cost: number;
+  start_date: string;
+  end_date: string;
   status: string;
-  voucherNumber?: string;
-  voucher_number?: string;
-  customerName?: string;
-  customer_name?: string;
-  checkInDate?: string;
-  check_in_date?: string;
-  checkOutDate?: string;
-  check_out_date?: string;
-  totalAmount?: number;
-  total_amount?: number;
-  rooms?: { hotelName?: string }[];
+  reference: string;
 }
 
-interface Transfer {
+interface MappedTransfer {
   id: string;
   type: string;
   pickup_location: string;
@@ -85,14 +92,9 @@ interface Transfer {
   guest_count: number;
   cost: number;
   status: string;
-  service_type?: string;
-  transfer_type?: string;
-  transfer_date?: string;
-  passenger_count?: number;
-  cost_amount?: number;
 }
 
-interface Ticket {
+interface MappedTicket {
   id: string;
   flight_number: string;
   departure: string;
@@ -101,16 +103,9 @@ interface Ticket {
   passenger_count: number;
   cost: number;
   status: string;
-  airline?: string;
-  flight_type?: string;
-  voucher_no?: string;
-  departure_date?: string;
-  entry_date?: string;
-  return_date?: string;
-  total_cost?: number;
 }
 
-interface Guide {
+interface MappedGuide {
   id: string;
   name: string;
   service_date: string;
@@ -118,16 +113,9 @@ interface Guide {
   guest_count: number;
   cost: number;
   status: string;
-  description?: string;
-  date?: string;
-  created_at?: string;
-  hotel?: string;
-  amount?: number;
-  sub_category_id?: string;
-  sub_category_name?: string;
 }
 
-interface PartTime {
+interface MappedPartTime {
   id: string;
   name: string;
   service_date: string;
@@ -135,21 +123,15 @@ interface PartTime {
   hours: number;
   hourly_rate: number;
   status: string;
-  description?: string;
-  date?: string;
-  created_at?: string;
-  hotel?: string;
-  sub_category_id?: string;
-  sub_category_name?: string;
 }
 
 interface DashboardData {
-  upcomingProjects: Project[];
-  upcomingSejours: Sejour[];
-  upcomingTransfers: Transfer[];
-  upcomingTickets: Ticket[];
-  upcomingGuides: Guide[];
-  upcomingPartTime: PartTime[];
+  upcomingProjects: MappedProject[];
+  upcomingSejours: MappedSejour[];
+  upcomingTransfers: MappedTransfer[];
+  upcomingTickets: MappedTicket[];
+  upcomingGuides: MappedGuide[];
+  upcomingPartTime: MappedPartTime[];
 }
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'];
@@ -183,31 +165,39 @@ export default function HomePage() {
       today.setHours(0, 0, 0, 0);
       const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
 
-      const filterUpcoming = <T extends Record<string, unknown>>(items: T[], dateField: string): T[] => {
+      const filterUpcoming = <T,>(items: T[], dateField: string): T[] => {
         return items.filter(item => {
-          const dateVal = item[dateField] || item.start_date || item.check_in_date || item.transfer_date || item.flight_date || item.service_date || item.date;
+          const i = item as any;
+          const dateVal = (i[dateField] || i['start_date'] || i['check_in_date'] || i['transfer_date'] || i['flight_date'] || i['service_date'] || i['date']) as string;
           if (!dateVal) return false;
-          const itemDate = new Date(dateVal as string);
+          const itemDate = new Date(dateVal);
           return itemDate >= today && itemDate <= thirtyDaysFromNow;
         }).sort((a, b) => {
-          const aDateStr = a[dateField] || a.start_date || a.check_in_date || a.transfer_date || a.flight_date || a.service_date || a.date;
-          const bDateStr = b[dateField] || b.start_date || b.check_in_date || b.transfer_date || b.flight_date || b.service_date || b.date;
-          const aDate = new Date(aDateStr as string).getTime();
-          const bDate = new Date(bDateStr as string).getTime();
+          const ai = a as any;
+          const bi = b as any;
+          const aDateStr = (ai[dateField] || ai['start_date'] || ai['check_in_date'] || ai['transfer_date'] || ai['flight_date'] || ai['service_date'] || ai['date']) as string;
+          const bDateStr = (bi[dateField] || bi['start_date'] || bi['check_in_date'] || bi['transfer_date'] || bi['flight_date'] || bi['service_date'] || bi['date']) as string;
+          const aDate = new Date(aDateStr).getTime();
+          const bDate = new Date(bDateStr).getTime();
           return aDate - bDate;
         }).slice(0, 5);
       };
 
       const projects = projectsRes.status === 'fulfilled' ? (projectsRes.value as Project[]) : [];
-      const mappedProjects = projects.map(p => ({
+      const mappedProjects: MappedProject[] = projects.map(p => ({
         ...p,
-        name: p.title || p.name || 'Untitled',
-        client_name: p.company_name || p.client_name || 'Bilinmeyen Müşteri'
+        name: p.title || 'Proje',
+        client_name: p.description?.slice(0, 20) || 'Müşteri',
+        id: p.id,
+        status: p.status || 'active',
+        reference: p.reference || '',
+        budget: p.budget || 0,
+        start_date: p.start_date || ''
       }));
 
       const sejoursRaw = sejoursRes.status === 'fulfilled' ? sejoursRes.value : [];
       const sejours = (Array.isArray(sejoursRaw) ? sejoursRaw : ((sejoursRaw as { data?: Sejour[] }).data || [])) as any[];
-      const mappedSejours = sejours.map(s => ({
+      const mappedSejours: MappedSejour[] = sejours.map(s => ({
         ...s,
         name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
         start_date: s.checkInDate || s.check_in_date || '',
@@ -222,36 +212,39 @@ export default function HomePage() {
       const transferBuckets = await Promise.all(
         activeProjects.map(p => projectTransfersService.getByProjectId(p.id).catch(() => []))
       );
-      const projectTransfers = (transferBuckets.flat() as Transfer[]).map(t => ({
-        id: t.id,
-        type: t.service_type || t.transfer_type || 'Transfer',
-        pickup_location: t.pickup_location || '',
-        dropoff_location: t.dropoff_location || '',
-        date: t.date || t.transfer_date || '',
-        guest_count: t.passenger_count || 0,
-        cost: t.cost_amount || 0,
-        status: t.status || 'confirmed'
-      }));
+      const projectTransfers: MappedTransfer[] = (transferBuckets.flat() as Transfer[]).map(t => {
+        const item = t as any;
+        return {
+          id: item.id,
+          type: item.service_type || item.transfer_type || 'Transfer',
+          pickup_location: item.pickup_location || '',
+          dropoff_location: item.dropoff_location || '',
+          date: item.date || item.transfer_date || '',
+          guest_count: item.passenger_count || 0,
+          cost: item.cost_amount || 0,
+          status: item.status || 'confirmed'
+        };
+      });
 
       // Sejour Transfers
-      const sejourTransfers = sejours.flatMap(s => (s.transfers || []).map((t: any) => ({
+      const sejourTransfers: MappedTransfer[] = sejours.flatMap(s => (s.transfers || []).map((t: any) => ({
         id: t.id,
         type: t.type || t.transferType || 'Sejour Transfer',
         pickup_location: t.direction === 'arrival' ? 'Havalimanı' : (t.routeDescription || 'Otel'),
         dropoff_location: t.direction === 'arrival' ? (t.routeDescription || 'Otel') : 'Havalimanı',
         date: t.date || s.check_in_date || s.checkInDate || '',
-        guest_count: s.guest_count || 0,
+        guest_count: t.paxCount || 0,
         cost: t.price || 0,
         status: 'confirmed'
       })));
 
-      const allTransfers = [...projectTransfers, ...sejourTransfers];
+      const allTransfers: MappedTransfer[] = [...projectTransfers, ...sejourTransfers];
 
       // Project HR
       const hrBuckets = await Promise.all(
         activeProjects.map(p => projectHumanResourcesService.getByProjectId(p.id).catch(() => []))
       );
-      const hrRows = hrBuckets.flat() as (Guide & PartTime)[];
+      const hrRows = hrBuckets.flat() as ProjectHumanResource[];
 
       const categories = categoriesRes.status === 'fulfilled' ? (categoriesRes.value as { id: string; name: string }[]) : [];
       const categoryById: Record<string, { id: string; name: string }> = {};
@@ -285,7 +278,7 @@ export default function HomePage() {
           hours: 0,
           hourly_rate: 0,
           status: 'confirmed'
-        }));
+        } as MappedPartTime));
 
       // Sejour Extras (Guides & Part-Time)
       const sejourExtras = sejours.flatMap(s => (s.extraServices || []).map((e: any) => {
@@ -305,36 +298,51 @@ export default function HomePage() {
         };
       }));
 
-      const allGuides = [...mappedGuides, ...sejourExtras.filter(e => e.isGuide)];
-      const allPartTime = [...mappedPartTime, ...sejourExtras.filter(e => e.isPartTime)];
+      const allGuides: MappedGuide[] = [...mappedGuides, ...sejourExtras.filter(e => e.isGuide).map(e => ({
+        id: e.id,
+        name: e.name,
+        service_date: (e as any).date || '',
+        location: (e as any).hotel || '',
+        guest_count: 0,
+        cost: (e as any).amount || 0,
+        status: e.status
+      }))];
+
+      const allPartTime: MappedPartTime[] = [...mappedPartTime, ...sejourExtras.filter(e => e.isPartTime).map(e => ({
+        id: e.id,
+        name: e.name,
+        service_date: (e as any).date || '',
+        location: (e as any).hotel || '',
+        hours: 0,
+        hourly_rate: 0,
+        status: e.status
+      }))];
 
       // Tickets (Project Options + Sejour Flights)
       const tickets = ticketsRes.status === 'fulfilled' ? (ticketsRes.value as Ticket[]) : [];
-      const mappedTickets = tickets
-        .filter(t => (t.status || '').toLowerCase() === 'confirmed')
-        .map(t => ({
-          id: t.id,
-          flight_number: t.airline || t.flight_type || t.voucher_no || 'Bilet',
-          departure: t.departure_date || '',
-          arrival: t.return_date || '',
-          date: t.departure_date || t.entry_date || '',
-          passenger_count: t.passenger_count || 0,
-          cost: t.total_cost || 0,
-          status: t.status || 'confirmed'
-        }));
+      const mappedTickets: MappedTicket[] = tickets.map(t => ({
+        id: t.id,
+        flight_number: (t as any).flight_number || (t as any).flight_no || '',
+        departure: (t as any).departure || '',
+        arrival: (t as any).arrival || '',
+        date: (t as any).service_date || (t as any).date || '',
+        passenger_count: (t as any).unit_quantity || 1,
+        cost: (t as any).total_price || 0,
+        status: 'confirmed'
+      }));
 
-      const sejourFlights = sejours.flatMap(s => (s.flights || []).map((f: any) => ({
+      const sejourFlights: MappedTicket[] = sejours.flatMap(s => (s.flights || []).map((f: any) => ({
         id: f.id,
-        flight_number: f.flightNo || f.airline || 'Sejour Uçuş',
-        departure: f.route || '',
-        arrival: '',
-        date: f.flightDate || f.departureDate || '',
-        passenger_count: f.totalPassengers || 0,
-        cost: f.totalPrice || 0,
+        flight_number: f.flightNo || '',
+        departure: f.departurePort || '',
+        arrival: f.arrivalPort || '',
+        date: f.date || s.check_in_date || s.checkInDate || '',
+        passenger_count: f.paxCount || 0,
+        cost: f.price || 0,
         status: 'confirmed'
       })));
 
-      const allTickets = [...mappedTickets, ...sejourFlights];
+      const allTickets: MappedTicket[] = [...mappedTickets, ...sejourFlights];
 
       setDashboardData({
         upcomingProjects: filterUpcoming(mappedProjects, 'start_date'),
@@ -653,16 +661,6 @@ export default function HomePage() {
           </>
         )}
       </main>
-
-      <style jsx global>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-      `}</style>
     </div>
   );
 }

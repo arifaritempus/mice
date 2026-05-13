@@ -8,6 +8,7 @@ import Modal from '@/components/Modal';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { usePermissions, Module } from '@/lib/permissions';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatNumber, formatDate, formatCurrency } from '@/utils/formatters';
 import { DateRangeFieldAccounting } from '@/components/accounting/DateRangeFieldAccounting';
 import { getLogosForExcel } from '@/utils/logoUtils';
 
@@ -718,8 +719,9 @@ export default function CashFlowPage() {
   };
 
   // Tarih formatı
-  const formatDate = (dateString: string) => {
-    const parsed = parseCalendarDate(dateString);
+  const formatDate = (dateValue: string | Date) => {
+    if (dateValue instanceof Date) return dateValue.toLocaleDateString('tr-TR');
+    const parsed = parseCalendarDate(dateValue);
     return parsed ? parsed.toLocaleDateString('tr-TR') : '-';
   };
 
@@ -1330,7 +1332,7 @@ export default function CashFlowPage() {
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">DÖNEM TARİHİ</p>
                 <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-                  {formatDate(selectedPeriod.startDate)}
+                  {selectedPeriod.startDate ? formatDate(selectedPeriod.startDate) : '-'}
                 </p>
               </div>
             </div>

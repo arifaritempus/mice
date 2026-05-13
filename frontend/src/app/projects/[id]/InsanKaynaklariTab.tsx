@@ -669,7 +669,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                             filteredHrExtras.map((extra, index) => (
                               <tr key={extra.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td className="px-2 py-2 text-gray-900 dark:text-white">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <input
                                       type="date"
                                       value={tempHrItem?.date || ''}
@@ -690,7 +690,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2 text-gray-900 dark:text-white">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <input
                                       ref={setHrSupplierInputRef}
                                       type="text"
@@ -752,7 +752,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   </div>
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <select
                                       value={tempHrItem?.subCategory || ''}
                                       onChange={(e) => {
@@ -791,7 +791,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <input
                                       type="text"
                                       value={tempHrItem?.description || ''}
@@ -825,7 +825,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <input
                                       type="text"
                                       value={hrAmountInput || ''}
@@ -878,7 +878,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <select
                                       value={tempHrItem?.currency || 'TRY'}
                                       onChange={(e) => {
@@ -913,7 +913,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <input
                                       type="text"
                                       value={hrFxInput || ''}
@@ -964,7 +964,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <input
                                       type="text"
                                       value={hrTotalTRYInput}
@@ -1024,7 +1024,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   )}
                                 </td>
                                 <td className="px-2 py-2">
-                                  {editingHrIndex === originalIndex ? (
+                                  {editingHrIndex === extra.originalIndex ? (
                                     <div className="flex space-x-2">
                                       <button
                                         onClick={() => handleHrSave(tempHrItem)}
@@ -1055,7 +1055,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                   ) : (
                                     <div className="flex space-x-2">
                                       <button
-                                        onClick={() => handleHrEdit(originalIndex)}
+                                        onClick={() => handleHrEdit(extra.originalIndex)}
                                         className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
                                         title="Düzenle"
                                       >
@@ -1064,7 +1064,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                         </svg>
                                       </button>
                                       <button
-                                        onClick={() => handleHrDelete(originalIndex)}
+                                        onClick={() => handleHrDelete(extra.originalIndex)}
                                         className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
                                         title="Sil"
                                       >

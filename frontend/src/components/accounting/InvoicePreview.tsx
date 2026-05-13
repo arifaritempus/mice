@@ -60,7 +60,8 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
   };
 
   // KDV Breakdown
-  const vatBreakdown = items.reduce((acc: any, item: any) => {
+  interface VatEntry { matrah: number; kdv: number; gross: number; }
+  const vatBreakdown = (items || []).reduce((acc: Record<number, VatEntry>, item: any) => {
     const rate = Number(item.vat_rate || 0);
     const grossAmount = Number(item.amount || 0);
     const matrah = grossAmount / (1 + (rate / 100));
@@ -72,11 +73,11 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
     return acc;
   }, {});
 
-  const araToplamMatrah = Object.values(vatBreakdown).reduce((sum: number, b: any) => sum + b.matrah, 0);
-  const toplamKdv = Object.values(vatBreakdown).reduce((sum: number, b: any) => sum + b.kdv, 0);
-  const genelToplam = araToplamMatrah + toplamKdv;
+  const araToplamMatrah = Object.values(vatBreakdown).reduce((sum: number, b) => sum + (b as VatEntry).matrah, 0);
+  const toplamKdv = Object.values(vatBreakdown).reduce((sum: number, b) => sum + (b as VatEntry).kdv, 0);
+  const genelToplam = Number(araToplamMatrah || 0) + Number(toplamKdv || 0);
 
-  const mainCurrency = items[0]?.currency || invoice?.currency || 'TRY';
+  const mainCurrency = items?.[0]?.currency || invoice?.currency || 'TRY';
 
   // Number to text (TR)
   const numberToTextTR = (num: number): string => {
@@ -324,7 +325,7 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
                   <span className="w-24">MATRAH</span>
                   <span className="w-24 flex-1"></span>
                   <span className="w-12 text-right ml-4">KDV</span>
-                  <span className="w-24 text-right tracking-wider">{formatCurrency(toplamKdv)} {items[0]?.currency || 'TL'}</span>
+                  <span className="w-24 text-right tracking-wider">{formatCurrency(toplamKdv as number)} {mainCurrency}</span>
                 </div>
               </div>
             </div>
@@ -334,19 +335,19 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
               <div className="border-b-[1px] border-black py-[11px]">
                 <div className="flex justify-between font-extrabold text-[10.5px]">
                   <span className="uppercase tracking-[0.15em] text-black">ARA TOPLAM</span>
-                  <span className="tracking-wider">{formatCurrency(araToplamMatrah)} {items[0]?.currency || 'TL'}</span>
+                  <span className="tracking-wider">{formatCurrency(araToplamMatrah as number)} {mainCurrency}</span>
                 </div>
               </div>
               <div className="border-b-[1px] border-black py-[11px] mb-[15px]">
                 <div className="flex justify-between font-extrabold text-[10.5px]">
                   <span className="uppercase tracking-[0.15em] text-black">KDV</span>
-                  <span className="tracking-wider">{formatCurrency(toplamKdv)} {items[0]?.currency || 'TL'}</span>
+                  <span className="tracking-wider">{formatCurrency(toplamKdv as number)} {mainCurrency}</span>
                 </div>
               </div>
               <div className="py-[10px]">
                 <div className="flex justify-between font-extrabold text-[11px]">
                   <span className="uppercase tracking-[0.15em] text-black">GENEL TOPLAM</span>
-                  <span className="tracking-wider text-[11.5px]">{formatCurrency(genelToplam)} {items[0]?.currency || 'TL'}</span>
+                  <span className="tracking-wider text-[11.5px]">{formatCurrency(genelToplam as number)} {mainCurrency}</span>
                 </div>
               </div>
             </div>
@@ -354,7 +355,7 @@ export default function InvoicePreview({ isOpen, onClose, invoice, items }: Invo
 
           {/* Spell check / Number to Text */}
           <div className="mt-4 font-black text-[10.5px] tracking-wide text-slate-900 pb-4 border-b border-gray-100">
-            Yalnız <span className="ml-1 tracking-wider">{numberToTextTR(genelToplam)}{items[0]?.currency || 'TL'}</span>
+            Yalnız <span className="ml-1 tracking-wider">{numberToTextTR(genelToplam as number)} {mainCurrency}</span>
           </div>
 
           {/* Footer - Banks and Matbaa Details - Matbu */}

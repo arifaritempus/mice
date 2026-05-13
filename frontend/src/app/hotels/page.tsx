@@ -11,7 +11,7 @@ import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
-import { Building2, MapPin, Star, Phone, Mail, FileText, Plus, Pencil, Save } from 'lucide-react';
+import { Building2, MapPin, Star, Phone, Mail, FileText, Plus, Pencil, Save, AlertCircle } from 'lucide-react';
 
 interface Hotel {
   id: string;

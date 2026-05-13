@@ -121,6 +121,7 @@ interface Room {
   // Alış maliyeti için yeni alanlar
   costPrice?: number;
   costCurrency?: string;
+  hotelName?: string;
 }
 
 interface FlightInfo {

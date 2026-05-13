@@ -14,6 +14,7 @@ import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination'
 import { toast } from 'react-hot-toast'
 import Modal from '@/components/Modal'
 import { Trash2, AlertCircle } from 'lucide-react'
+import { getLogosForExcel } from '@/utils/logoUtils'
 
 interface TicketOption {
   id: string

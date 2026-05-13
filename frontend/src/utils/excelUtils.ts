@@ -668,6 +668,51 @@ export class ExcelUtils {
     return [];
   }
 
+  // Users Export
+  static async exportUsers(users: any[]) {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Kullanıcılar');
+
+      sheet.columns = [
+        { header: 'Ad Soyad', key: 'full_name', width: 25 },
+        { header: 'E-posta', key: 'email', width: 30 },
+        { header: 'Rol', key: 'role', width: 15 },
+        { header: 'Durum', key: 'status', width: 12 },
+        { header: 'Oluşturma Tarihi', key: 'created_at', width: 18 }
+      ];
+
+      const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } } as any;
+      });
+
+      for (const u of users) {
+        sheet.addRow({
+          full_name: u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim(),
+          email: u.email || '',
+          role: u.role || '',
+          status: u.is_active ? 'Aktif' : 'Pasif',
+          created_at: u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR') : ''
+        });
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `kullanicilar_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
+    } catch (error) {
+      console.error('Kullanıcı export hatası:', error);
+      alert('Kullanıcı listesi dışa aktarılırken bir hata oluştu.');
+    }
+  }
+
   // Validate Excel File - Geçici olarak devre dışı
   static validateExcelFile(file: File): { isValid: boolean; error?: string } {
     return { isValid: false, error: 'Excel import özelliği geçici olarak devre dışı bırakılmıştır.' };

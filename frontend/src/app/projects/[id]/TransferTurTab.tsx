@@ -627,7 +627,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                               <td className="px-2 py-2 relative">
                                 <div className="relative">
                                   <input
-                                    ref={(el) => (supplierInputRefs.current[transfer.id] = el)}
+                                    ref={(el) => { supplierInputRefs.current[transfer.id] = el; }}
                                     type="text"
                                     value={transfer.supplierName || ''}
                                     placeholder="Tedarikçi Seçiniz"

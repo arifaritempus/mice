@@ -452,6 +452,68 @@ export default function QuotesPage() {
     setQuotes(updatedQuotes);
   };
 
+  const searchQuotes = (items: Quote[], term: string) => {
+    if (!term.trim()) return items;
+    const s = term.toLowerCase().trim();
+    return items.filter(q => 
+      (q.reference || '').toLowerCase().includes(s) ||
+      (q.company_name || '').toLowerCase().includes(s) ||
+      (q.status || '').toLowerCase().includes(s) ||
+      (q.quote_type || '').toLowerCase().includes(s) ||
+      (q.option || '').toLowerCase().includes(s) ||
+      (q.room_pax || '').toLowerCase().includes(s) ||
+      (q.notes || '').toLowerCase().includes(s)
+    );
+  };
+
+  const filterQuotesByDatesAndOptions = (items: Quote[]) => {
+    return items.filter(q => {
+      // Status filter already applied before
+      if (optionFilter !== 'all' && q.option !== optionFilter) return false;
+      
+      if (appliedQuoteDateStart && q.created_at < appliedQuoteDateStart) return false;
+      if (appliedQuoteDateEnd && q.created_at > `${appliedQuoteDateEnd}T23:59:59`) return false;
+      
+      if (appliedCheckInDate && q.check_in_date < appliedCheckInDate) return false;
+      if (appliedCheckOutDate && q.check_out_date > appliedCheckOutDate) return false;
+      
+      if (appliedOptionStart && (q as any).option_date < appliedOptionStart) return false;
+      if (appliedOptionEnd && (q as any).option_date > appliedOptionEnd) return false;
+      
+      return true;
+    });
+  };
+
+  const sortQuotes = (items: Quote[], field: string, direction: 'asc' | 'desc') => {
+    const sorted = [...items].sort((a, b) => {
+      let aVal: any = (a as any)[field];
+      let bVal: any = (b as any)[field];
+      
+      if (field === 'date') {
+        aVal = a.check_in_date;
+        bVal = b.check_in_date;
+      } else if (field === 'agency') {
+        aVal = getAgencyName(a.agency_id);
+        bVal = getAgencyName(b.agency_id);
+      } else if (field === 'hotel') {
+        aVal = getHotelName(a.hotel_id);
+        bVal = getHotelName(b.hotel_id);
+      }
+      
+      if (!aVal) return 1;
+      if (!bVal) return -1;
+      
+      if (typeof aVal === 'string') {
+        return direction === 'asc' 
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+      
+      return direction === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+    return sorted;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'KONFİRME':

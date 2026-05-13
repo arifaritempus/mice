@@ -247,6 +247,157 @@ export const quotesService = {
       throw error;
     }
     return data;
+  },
+
+  // Teklifi projeye aktar
+  async transferToProject(quoteId: string, customClient?: any): Promise<any> {
+    const client = customClient || supabase;
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    
+    // 1. Teklifi ve verilerini getir
+    const { data: quote, error: qErr } = await client.from('quotes').select('*').eq('id', quoteId).single();
+    if (qErr || !quote) throw new Error('Teklif bulunamadı');
+
+    const { data: quoteItems, error: itemsErr } = await client.from('quote_items').select('*').eq('quote_id', quoteId);
+    if (itemsErr) throw itemsErr;
+
+    const hotelsData = (quote as any).hotels_data || [];
+    const confirmedHotels = Array.isArray(hotelsData) 
+      ? hotelsData.filter((h: any) => h.is_confirmed === true)
+      : [];
+
+    let hotelsToProcess = confirmedHotels;
+    if (confirmedHotels.length === 0 && quote.hotel_id) {
+      hotelsToProcess = [{
+        id: Math.random().toString(36).substring(2, 11),
+        hotel_id: quote.hotel_id,
+        room_count: quote.room_count,
+        pax_count: quote.pax_count,
+        check_in_date: quote.check_in_date,
+        check_out_date: quote.check_out_date,
+        is_confirmed: true
+      }];
+    }
+
+    const normalizedHotels: any[] = hotelsToProcess.map((h: any) => ({
+      ...h,
+      id: h.id && isUUID(h.id) ? h.id : (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15))
+    }));
+
+    const firstH = normalizedHotels.length > 0 ? normalizedHotels[0] : null;
+    const hotelId = firstH?.hotel_id || quote.hotel_id;
+    
+    const title = normalizedHotels.length > 1
+      ? `${quote.reference} - Çoklu Konaklama`
+      : `${quote.reference} - MICE Projesi`;
+      
+    const description = `Konfirme edilen teklif: ${quote.reference}`;
+    const start_date = firstH?.check_in_date || quote.check_in_date || quote.created_at || new Date().toISOString().slice(0, 10);
+    const end_date = firstH?.check_out_date || quote.check_out_date || start_date;
+
+    const confirmedHotelIds = normalizedHotels.map((h: any) => h.hotel_id);
+    const confirmedTabIds = normalizedHotels.map((h: any) => h.id);
+    
+    const relevantItemsRaw = normalizedHotels.length > 0
+      ? (quoteItems || []).filter(item =>
+          confirmedTabIds.includes(item.hotel_id || '') ||
+          confirmedHotelIds.includes(item.hotel_id || '') ||
+          !item.hotel_id || item.hotel_id === 'general'
+        )
+      : (quoteItems || []);
+
+    const seen = new Set<string>();
+    const relevantItems = relevantItemsRaw.filter(it => {
+      const key = `${it.main_category}|${it.sub_category}|${it.description}|${it.hotel_id}|${it.unit_price}|${it.unit_quantity}|${it.sefer}|${it.vat}|${it.fx}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const withTabTag = (desc: string, tabId: string | null) => {
+      const cleanDesc = String(desc || '').replace(/\s*\[T:[^\]]+\]\s*/g, ' ').trim();
+      if (!tabId) return cleanDesc;
+      return `${cleanDesc}${cleanDesc ? ' ' : ''}[T:${tabId}]`;
+    };
+
+    const budget = relevantItems.reduce((sum, it) => sum + (Number(it.total) || 0), 0);
+
+    const { data: project, error: pErr } = await client.from('projects').insert([{
+      title,
+      description,
+      status: 'active',
+      priority: 'medium',
+      start_date,
+      end_date,
+      budget,
+      progress: 0,
+      quote_id: quote.id,
+      reference: quote.reference,
+      company_name: quote.company_name,
+      agency_id: quote.agency_id || null,
+      hotel_id: hotelId || null,
+      quote_type: quote.quote_type,
+      room_count: firstH?.room_count || quote.room_count || 0,
+      pax_count: firstH?.pax_count || quote.pax_count || 0,
+      room_pax: `${firstH?.room_count || 0} | ${firstH?.pax_count || 0}`,
+      confirmed_at: new Date().toISOString(),
+      hotels_data: normalizedHotels
+    }]).select().single();
+
+    if (pErr) throw pErr;
+
+    const salesInserts = relevantItems.map(item => {
+      const originalIndex = hotelsToProcess.findIndex((h: any) => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
+      const realHotelId = originalIndex !== -1 ? (normalizedHotels[originalIndex].hotel_id || null) : null;
+      const tabUUID = originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
+      
+      return {
+        project_id: project.id,
+        reference: project.reference,
+        category: item.main_category || '',
+        sub_category: item.sub_category || '',
+        description: withTabTag(item.description || '', tabUUID),
+        unit_quantity: item.unit_quantity || 1,
+        sefer: item.sefer || 1,
+        unit_price: item.unit_price || 0,
+        total_price: item.total || 0,
+        currency: item.currency || 'EUR',
+        vat: item.vat || 0,
+        fx: item.fx || 1,
+        hotel_id: realHotelId
+      };
+    });
+
+    const purchaseInserts = relevantItems.map(item => {
+      const originalIndex = hotelsToProcess.findIndex((h: any) => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
+      const realHotelId = originalIndex !== -1 ? (normalizedHotels[originalIndex].hotel_id || null) : null;
+      const tabUUID = originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
+      
+      return {
+        project_id: project.id,
+        reference: project.reference,
+        category: item.main_category || '',
+        sub_category: item.sub_category || '',
+        description: withTabTag(item.description || '', tabUUID),
+        unit_quantity: item.unit_quantity || 1,
+        sefer: item.sefer || 1,
+        unit_price: 0,
+        total_price: 0,
+        currency: item.currency || 'EUR',
+        vat: item.vat || 0,
+        fx: item.fx || 1,
+        hotel_id: realHotelId
+      };
+    });
+
+    if (salesInserts.length > 0) {
+      await client.from('project_sales_items').insert(salesInserts);
+    }
+    if (purchaseInserts.length > 0) {
+      await client.from('project_purchase_items').insert(purchaseInserts);
+    }
+
+    return project;
   }
 };
 
@@ -3674,156 +3825,6 @@ export const publicLinksService = {
     if (error) throw error;
   },
 
-  // Teklifi projeye aktar
-  async transferToProject(quoteId: string, customClient?: any): Promise<any> {
-    const client = customClient || supabase;
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-    
-    // 1. Teklifi ve verilerini getir
-    const { data: quote, error: qErr } = await client.from('quotes').select('*').eq('id', quoteId).single();
-    if (qErr || !quote) throw new Error('Teklif bulunamadı');
-
-    const { data: quoteItems, error: itemsErr } = await client.from('quote_items').select('*').eq('quote_id', quoteId);
-    if (itemsErr) throw itemsErr;
-
-    const hotelsData = (quote as any).hotels_data || [];
-    const confirmedHotels = Array.isArray(hotelsData) 
-      ? hotelsData.filter(h => h.is_confirmed === true)
-      : [];
-
-    let hotelsToProcess = confirmedHotels;
-    if (confirmedHotels.length === 0 && quote.hotel_id) {
-      hotelsToProcess = [{
-        id: Math.random().toString(36).substring(2, 11),
-        hotel_id: quote.hotel_id,
-        room_count: quote.room_count,
-        pax_count: quote.pax_count,
-        check_in_date: quote.check_in_date,
-        check_out_date: quote.check_out_date,
-        is_confirmed: true
-      }];
-    }
-
-    const normalizedHotels = hotelsToProcess.map(h => ({
-      ...h,
-      id: h.id && isUUID(h.id) ? h.id : (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15))
-    }));
-
-    const firstH = normalizedHotels.length > 0 ? normalizedHotels[0] : null;
-    const hotelId = firstH?.hotel_id || quote.hotel_id;
-    
-    const title = normalizedHotels.length > 1
-      ? `${quote.reference} - Çoklu Konaklama`
-      : `${quote.reference} - MICE Projesi`;
-      
-    const description = `Konfirme edilen teklif: ${quote.reference}`;
-    const start_date = firstH?.check_in_date || quote.check_in_date || quote.created_at || new Date().toISOString().slice(0, 10);
-    const end_date = firstH?.check_out_date || quote.check_out_date || start_date;
-
-    const confirmedHotelIds = normalizedHotels.map(h => h.hotel_id);
-    const confirmedTabIds = normalizedHotels.map(h => h.id);
-    
-    const relevantItemsRaw = normalizedHotels.length > 0
-      ? (quoteItems || []).filter(item =>
-          confirmedTabIds.includes(item.hotel_id || '') ||
-          confirmedHotelIds.includes(item.hotel_id || '') ||
-          !item.hotel_id || item.hotel_id === 'general'
-        )
-      : (quoteItems || []);
-
-    const seen = new Set<string>();
-    const relevantItems = relevantItemsRaw.filter(it => {
-      const key = `${it.main_category}|${it.sub_category}|${it.description}|${it.hotel_id}|${it.unit_price}|${it.unit_quantity}|${it.sefer}|${it.vat}|${it.fx}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    const withTabTag = (desc: string, tabId: string | null) => {
-      const cleanDesc = String(desc || '').replace(/\s*\[T:[^\]]+\]\s*/g, ' ').trim();
-      if (!tabId) return cleanDesc;
-      return `${cleanDesc}${cleanDesc ? ' ' : ''}[T:${tabId}]`;
-    };
-
-    const budget = relevantItems.reduce((sum, it) => sum + (Number(it.total) || 0), 0);
-
-    const { data: project, error: pErr } = await client.from('projects').insert([{
-      title,
-      description,
-      status: 'active',
-      priority: 'medium',
-      start_date,
-      end_date,
-      budget,
-      progress: 0,
-      quote_id: quote.id,
-      reference: quote.reference,
-      company_name: quote.company_name,
-      agency_id: quote.agency_id || null,
-      hotel_id: hotelId || null,
-      quote_type: quote.quote_type,
-      room_count: firstH?.room_count || quote.room_count || 0,
-      pax_count: firstH?.pax_count || quote.pax_count || 0,
-      room_pax: `${firstH?.room_count || 0} | ${firstH?.pax_count || 0}`,
-      confirmed_at: new Date().toISOString(),
-      hotels_data: normalizedHotels
-    }]).select().single();
-
-    if (pErr) throw pErr;
-
-    const salesInserts = relevantItems.map(item => {
-      const originalIndex = hotelsToProcess.findIndex(h => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
-      const realHotelId = originalIndex !== -1 ? (normalizedHotels[originalIndex].hotel_id || null) : null;
-      const tabUUID = originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
-      
-      return {
-        project_id: project.id,
-        reference: project.reference,
-        category: item.main_category || '',
-        sub_category: item.sub_category || '',
-        description: withTabTag(item.description || '', tabUUID),
-        unit_quantity: item.unit_quantity || 1,
-        sefer: item.sefer || 1,
-        unit_price: item.unit_price || 0,
-        total_price: item.total || 0,
-        currency: item.currency || 'EUR',
-        vat: item.vat || 0,
-        fx: item.fx || 1,
-        hotel_id: realHotelId
-      };
-    });
-
-    const purchaseInserts = relevantItems.map(item => {
-      const originalIndex = hotelsToProcess.findIndex(h => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
-      const realHotelId = originalIndex !== -1 ? (normalizedHotels[originalIndex].hotel_id || null) : null;
-      const tabUUID = originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
-      
-      return {
-        project_id: project.id,
-        reference: project.reference,
-        category: item.main_category || '',
-        sub_category: item.sub_category || '',
-        description: withTabTag(item.description || '', tabUUID),
-        unit_quantity: item.unit_quantity || 1,
-        sefer: item.sefer || 1,
-        unit_price: 0,
-        total_price: 0,
-        currency: item.currency || 'EUR',
-        vat: item.vat || 0,
-        fx: item.fx || 1,
-        hotel_id: realHotelId
-      };
-    });
-
-    if (salesInserts.length > 0) {
-      await client.from('project_sales_items').insert(salesInserts);
-    }
-    if (purchaseInserts.length > 0) {
-      await client.from('project_purchase_items').insert(purchaseInserts);
-    }
-
-    return project;
-  },
 
   // Link aktif/pasif durumunu değiştir
   async toggleActive(id: string, isActive: boolean): Promise<PublicLink> {

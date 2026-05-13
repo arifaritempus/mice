@@ -5122,7 +5122,7 @@ export default function ProjectDetailPage() {
   }, [otherServices, otherServiceSearch, otherServiceSortField, otherServiceSortDirection, activeHotelId, project?.hotels_data]);
 
   const filteredHrExtras = useMemo(() => {
-    let filtered = hrExtras;
+    let filtered = hrExtras.map((item, index) => ({ ...item, originalIndex: index }));
 
     if (activeHotelId !== 'all') {
       const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);

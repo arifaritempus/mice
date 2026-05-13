@@ -52,8 +52,8 @@ export default function QuoteViewPage() {
   const [generatedLink, setGeneratedLink] = useState('');
   const [quoteLinks, setQuoteLinks] = useState<any[]>([]);
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
-  const [confirmModal, setConfirmModal] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; }>({
-    open: false,
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; }>({
+    isOpen: false,
     title: '',
     message: '',
     onConfirm: () => {},
@@ -153,21 +153,21 @@ export default function QuoteViewPage() {
   // Linki sil
   const handleDeleteLink = async (linkId: string) => {
     setConfirmModal({
-      open: true,
+      isOpen: true,
       title: 'Linki Sil',
       message: 'Bu linki silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
       onConfirm: async () => {
         try {
           await publicLinksService.delete(linkId);
           await loadQuoteLinks();
-          setConfirmModal(prev => ({ ...prev, open: false }));
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
           toast.success('Link başarıyla silindi!');
         } catch (error) {
           console.error('Link silme hatası:', error);
           toast.error('Link silinirken bir hata oluştu.');
         }
       },
-      onCancel: () => setConfirmModal(prev => ({ ...prev, open: false }))
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
     });
   };
 
@@ -830,7 +830,7 @@ export default function QuoteViewPage() {
         </div>
       </div>
       <ConfirmModal
-        open={confirmModal.open}
+        isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         message={confirmModal.message}
         onConfirm={confirmModal.onConfirm}
