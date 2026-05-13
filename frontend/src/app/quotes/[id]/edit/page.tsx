@@ -609,7 +609,7 @@ export default function QuoteEditPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Reference */}
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">REFERENCE *</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">KOD *</label>
                 <input
                   type="text"
                   value={formData.reference}

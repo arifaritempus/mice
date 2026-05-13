@@ -188,25 +188,38 @@ export default function Sidebar() {
     return filterItems(JSON.parse(JSON.stringify(navigation)));
   }, [canView]);
 
+  // Initial Data Fetching
   useEffect(() => {
-    const fetchNotifications = async () => {
+    const fetchInitialData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (!error && data) {
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.is_read).length);
-      }
-    };
-    fetchNotifications();
-    
-    // Fetch General Settings for Logo
-    const fetchSettings = async () => {
+
+      // 1. Fetch Notifications
+      const fetchNotifications = async () => {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        
+        if (!error && data) {
+          setNotifications(data);
+          setUnreadCount(data.filter(n => !n.is_read).length);
+        }
+      };
+      
+      fetchNotifications();
+
+      // Refresh notifications when tab becomes visible
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          fetchNotifications();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      // 2. Fetch General Settings
       try {
         const { SettingsService } = await import('../lib/supabaseService');
         const settings = await SettingsService.getSettings();
@@ -216,10 +229,15 @@ export default function Sidebar() {
       } catch (err) {
         console.error('Error fetching sidebar settings:', err);
       }
-    };
-    fetchSettings();
 
-    // Listen for settings updates
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+    };
+
+    let cleanup: any;
+    fetchInitialData().then(c => cleanup = c);
+
     const handleSettingsUpdate = (e: any) => {
       if (e?.detail?.settings) {
         setGeneralSettings(e.detail.settings);
@@ -227,23 +245,60 @@ export default function Sidebar() {
     };
     window.addEventListener('settingsUpdated', handleSettingsUpdate);
 
+    return () => {
+      if (cleanup) cleanup();
+      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
+
+  // Real-time Notification Subscription
+  useEffect(() => {
+    let channel: any;
+
     const setupSubscription = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      return supabase.channel('notifications_sidebar')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, 
+
+      // Unsubscribe from existing if any
+      if (channel) {
+        await supabase.removeChannel(channel);
+      }
+
+      channel = supabase.channel(`sidebar-notifications-${user.id}`)
+        .on(
+          'postgres_changes', 
+          { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'notifications', 
+            filter: `user_id=eq.${user.id}` 
+          }, 
           (payload) => {
+            console.log('New notification received:', payload.new);
             setNotifications(prev => [payload.new, ...prev].slice(0, 20));
             setUnreadCount(prev => prev + 1);
-            audioRef.current?.play().catch(() => {});
-          })
-        .subscribe();
+            
+            // Play sound
+            if (audioRef.current) {
+              audioRef.current.play().catch(err => console.log('Audio play blocked:', err));
+            }
+            
+            // Optional: Show a toast or update title (already handled by useEffect)
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('Real-time notification subscription active');
+          }
+        });
     };
-    let channel: any;
-    setupSubscription().then(c => channel = c);
-    return () => { 
-      if (channel) supabase.removeChannel(channel); 
-      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+
+    setupSubscription();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, []);
 

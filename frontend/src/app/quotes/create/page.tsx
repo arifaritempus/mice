@@ -130,9 +130,6 @@ export default function CreateQuotePage() {
     status: 'TEKLİF',
     quote_type: 'BİRİM',
     operation_managers: [] as string[], // Operasyon sorumluları
-    voucher_no: '',
-    project_code: '',
-    reference_code: '',
     notes: `FİYATLAR, NET & KOMİSYONSUZ & KDV DAHİLDİR.
 ALINMASI HENÜZ KESİNLEŞMEYEN SERVİSLER İÇİN BİRİM/ ADET veya SEFER/TEKRAR ÇARPANI "0" (SIFIR) OLARAK GÜNCELLENMİŞTİR.
 OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ GÜNÜ KONAKLAMA SABAH KAHVALTISI İLE SON BULUR.
@@ -667,9 +664,6 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         status: formData.status,
         quote_type: formData.quote_type,
         operation_managers: validOperationManagers,
-        voucher_no: formData.voucher_no,
-        project_code: formData.project_code,
-        reference_code: formData.reference_code,
         notes: formData.notes,
         total_amount: totalAmount,
         currency: currency
@@ -847,44 +841,15 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Reference & Custom Codes */}
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">REFERENCE *</label>
+                <div className="md:col-span-4">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">KOD *</label>
                   <input
                     type="text"
                     name="reference"
                     value={formData.reference}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">VOUCHER NO</label>
-                  <input
-                    type="text"
-                    name="voucher_no"
-                    value={formData.voucher_no}
-                    onChange={handleInputChange}
-                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">PROJE KODU</label>
-                  <input
-                    type="text"
-                    name="project_code"
-                    value={formData.project_code}
-                    onChange={handleInputChange}
-                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">REFERANS KODU</label>
-                  <input
-                    type="text"
-                    name="reference_code"
-                    value={formData.reference_code}
-                    onChange={handleInputChange}
+                    placeholder="Teklif kodu giriniz..."
                     className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                   />
                 </div>
