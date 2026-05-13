@@ -597,6 +597,11 @@ export default function ProjectDetailPage() {
   const [showPaymentHotelSupplierDropdown, setShowPaymentHotelSupplierDropdown] = useState<boolean>(false);
   const [selectedPaymentSupplierIndex, setSelectedPaymentSupplierIndex] = useState<number>(-1);
 
+  // Mükerrer kaydı önlemek için kilit state'leri (Ref kullanımı re-render'ı engeller ve en güncel değeri tutar)
+  const isHrSaving = useRef(false);
+  const isOtherServiceSaving = useRef(false);
+  const isFinancialSaving = useRef(false);
+
   // Formül hesaplama fonksiyonları projectUtils.ts'den import ediliyor
   const calculateTotalTRY = projectUtils.calculateTotalTRY;
   const calculateAmount = projectUtils.calculateAmount;
@@ -3379,55 +3384,8 @@ export default function ProjectDetailPage() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [editingFlightIndex, handleFlightSave, handleFlightCancel]);
 
-  // Global keyboard shortcuts for HR, Other Services and Financial (Enter=Save, Esc=Cancel)
-  useEffect(() => {
-    const handleGlobalEditKeys = (event: KeyboardEvent) => {
-      // İnsan Kaynakları
-      if (activeTab === 'insan-kaynaklari' && editingHrIndex !== null) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          handleHrSave();
-          return;
-        }
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          handleHrCancel();
-          return;
-        }
-      }
-
-      // Diğer Servisler
-      if (activeTab === 'diger-servisler' && editingOtherServiceIndex !== null) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          handleOtherServiceSave();
-          return;
-        }
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          handleOtherServiceCancel();
-          return;
-        }
-      }
-
-      // Finansal
-      if (activeTab === 'finansal' && editingFinancialServiceIndex !== null) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          handleFinancialSave();
-          return;
-        }
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          handleFinancialCancel();
-          return;
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleGlobalEditKeys);
-    return () => document.removeEventListener('keydown', handleGlobalEditKeys);
-  }, [activeTab, editingHrIndex, editingOtherServiceIndex, editingFinancialServiceIndex]);
+  // Global keydown dinleyicisi kaldırıldı - bileşen seviyesinde (InsanKaynaklariTab vb.) e.stopPropagation() ile yönetiliyor.
+  // Bu dinleyici bayat closure'lar nedeniyle mükerrer kayıtlara ve hatalı veri gönderimine yol açıyordu.
 
   // Otel Ekstra verilerini yükle
   useEffect(() => {
@@ -5078,8 +5036,18 @@ export default function ProjectDetailPage() {
       
       filtered = filtered.filter((item: any) => {
         if (activeHotelId === 'general') {
-          return !item.hotel_id && !item.hotel;
+          // Genel hizmetler: hotel_id yoksa VE description içinde başka bir [T:...] tag'i yoksa
+          const desc = item.description || '';
+          const hasTabTag = /\[T:.*?\]/.test(desc);
+          return (!item.hotel_id && !item.hotel) || (!hasTabTag && activeHotelId === 'general');
         }
+        
+        // Tag ile filtrele (en güvenli yöntem)
+        if (item.description && item.description.includes(`[T:${activeHotelId}]`)) {
+          return true;
+        }
+
+        // Fallback: hotel_id (DB'deki gerçek ID veya bizim Tab UUID)
         const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
         return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
       });
@@ -5993,11 +5961,17 @@ export default function ProjectDetailPage() {
   };
 
   const handleOtherServiceSave = async (overrideSupplierSearch?: string) => {
+    if (isOtherServiceSaving.current) {
+      console.warn('⚠️ handleOtherServiceSave zaten çalışıyor, istek engellendi.');
+      return;
+    }
+
     if (!tempOtherServiceItem) {
       console.error('❌ tempOtherServiceItem boş!');
       return;
     }
 
+    isOtherServiceSaving.current = true;
     try {
       // Validasyon kontrolleri kaldırıldı - kullanıcı input'a yazdığında değerler zaten tempOtherServiceItem'a kaydedilmiş olmalı
       // Eğer gerçekten boşsa, boş kayıt oluşturulur ama bu nadir bir durum
@@ -6071,6 +6045,19 @@ export default function ProjectDetailPage() {
         }
       }
 
+      // Description tagging
+      const finalDescription = tempOtherServiceItem.description || '';
+      let finalDescriptionWithTab = finalDescription;
+      if (activeHotelId !== 'all' && activeHotelId !== 'general') {
+        if (!finalDescription.includes(`[T:${activeHotelId}]`)) {
+          finalDescriptionWithTab = `${finalDescription}${finalDescription ? ' ' : ''}[T:${activeHotelId}]`;
+        }
+      }
+
+      // Bulunulan tab bir otel tabı ise, gerçek hotel_id'yi bul
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelIdForDb = currentTab?.hotel_id || null;
+
       const otherServiceData = {
         project_id: projectId,
         date: tempOtherServiceItem.date || new Date().toISOString().split('T')[0],
@@ -6079,8 +6066,8 @@ export default function ProjectDetailPage() {
         sub_category: tempOtherServiceItem.subCategory || '',
         sub_category_id: selectedSubCategory?.id || null,
         supplier_id: supplierId,
-        hotel_id: hotelId || (activeHotelId !== 'all' && activeHotelId !== 'general' ? activeHotelId : null),
-        description: tempOtherServiceItem.description || '',
+        hotel_id: hotelId || realHotelIdForDb,
+        description: finalDescriptionWithTab,
         amount: amount,
         currency: tempOtherServiceItem.currency || 'TRY',
         exchange_rate: exchangeRate,
@@ -6147,9 +6134,11 @@ export default function ProjectDetailPage() {
       setOtherServiceTotalTRYInput('');
       setOtherServiceFxInput('');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Diğer Servisler kaydedilirken hata:', error);
       showNotification('Diğer Servisler kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'danger');
+    } finally {
+      isOtherServiceSaving.current = false;
     }
   };
 
@@ -7218,8 +7207,14 @@ export default function ProjectDetailPage() {
   };
 
   const handleFinancialSave = async () => {
+    if (isFinancialSaving.current) {
+      console.warn('⚠️ handleFinancialSave zaten çalışıyor, istek engellendi.');
+      return;
+    }
+
     if (!tempFinancialServiceItem) return;
 
+    isFinancialSaving.current = true;
     try {
       const supplierValue = (tempFinancialServiceItem?.supplier || tempFinancialServiceItem?.hotel || hotelSupplierSearch || '').trim();
 
@@ -7264,6 +7259,19 @@ export default function ProjectDetailPage() {
         }
       }
 
+      // Description tagging
+      const finalDescription = tempFinancialServiceItem.description || '';
+      let finalDescriptionWithTab = finalDescription;
+      if (activeHotelId !== 'all' && activeHotelId !== 'general') {
+        if (!finalDescription.includes(`[T:${activeHotelId}]`)) {
+          finalDescriptionWithTab = `${finalDescription}${finalDescription ? ' ' : ''}[T:${activeHotelId}]`;
+        }
+      }
+
+      // Bulunulan tab bir otel tabı ise, gerçek hotel_id'yi bul
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelIdForDb = currentTab?.hotel_id || null;
+
       const financialData = {
         project_id: projectId,
         date: tempFinancialServiceItem.date || new Date().toISOString().split('T')[0],
@@ -7272,8 +7280,8 @@ export default function ProjectDetailPage() {
         sub_category: tempFinancialServiceItem.subCategory || '',
         sub_category_id: selectedSubCategory?.id || null,
         supplier_id: supplierId,
-        hotel_id: hotelId,
-        description: tempFinancialServiceItem.description || '',
+        hotel_id: hotelId || realHotelIdForDb,
+        description: finalDescriptionWithTab,
         amount: amount,
         currency: currency,
         exchange_rate: exchangeRate,
@@ -7316,9 +7324,11 @@ export default function ProjectDetailPage() {
       setFinancialAmountInput('');
       setFinancialTotalTRYInput('');
       setHotelSupplierSearch('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Finansal servis kaydedilirken hata:', error);
-      showNotification('Finansal servis kaydedilirken hata oluştu: ' + ((error as any).message || 'Bilinmeyen hata'), 'danger');
+      showNotification('Finansal servis kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'danger');
+    } finally {
+      isFinancialSaving.current = false;
     }
   };
 
@@ -7446,8 +7456,15 @@ export default function ProjectDetailPage() {
   };
 
   const handleHrSave = async (overrideTempHrItem?: any) => {
-    // ÖNEMLİ: Önce state'ten al, çünkü state her zaman güncel olmalı
-    // overrideTempHrItem sadece bir fallback olarak kullan
+    if (isHrSaving.current) {
+      console.warn('⚠️ handleHrSave zaten çalışıyor, istek engellendi.');
+      return;
+    }
+
+    isHrSaving.current = true;
+    try {
+      // ÖNEMLİ: Önce state'ten al, çünkü state her zaman güncel olmalı
+      // overrideTempHrItem sadece bir fallback olarak kullan
     let currentTempHrItem = tempHrItem;
 
     // State'ten alınan değeri kontrol et
@@ -7634,6 +7651,8 @@ export default function ProjectDetailPage() {
         code: error.code
       });
       alert('HR kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'));
+    } finally {
+      isHrSaving.current = false;
     }
   };
 

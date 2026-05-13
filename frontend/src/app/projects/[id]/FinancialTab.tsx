@@ -106,8 +106,18 @@ export default function FinancialTab({
       
       filtered = filtered.filter((item: any) => {
         if (activeHotelId === 'general') {
-          return !item.hotel_id && !item.hotel;
+          // Genel hizmetler: hotel_id yoksa VE description içinde başka bir [T:...] tag'i yoksa
+          const desc = item.description || '';
+          const hasTabTag = /\[T:.*?\]/.test(desc);
+          return (!item.hotel_id && !item.hotel) || (!hasTabTag && activeHotelId === 'general');
         }
+        
+        // Tag ile filtrele (en güvenli yöntem)
+        if (item.description && item.description.includes(`[T:${activeHotelId}]`)) {
+          return true;
+        }
+
+        // Fallback: hotel_id (DB'deki gerçek ID veya bizim Tab UUID)
         return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId);
       });
     }
@@ -185,7 +195,7 @@ export default function FinancialTab({
                         type="date"
                         value={tempFinancialServiceItem?.date || ''}
                         onChange={(e) => setTempFinancialServiceItem(prev => ({ ...prev, date: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                       />
                     </td>
@@ -247,7 +257,7 @@ export default function FinancialTab({
                       <select
                         value={tempFinancialServiceItem?.subCategory || ''}
                         onChange={(e) => setTempFinancialServiceItem(prev => ({ ...prev, subCategory: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                       >
                         <option value="">Alt Kategori Seçin</option>
@@ -261,7 +271,7 @@ export default function FinancialTab({
                         type="text"
                         value={tempFinancialServiceItem?.description || ''}
                         onChange={(e) => setTempFinancialServiceItem(prev => ({ ...prev, description: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                         placeholder="Açıklama"
                       />
@@ -288,7 +298,7 @@ export default function FinancialTab({
                           setFinancialAmountInput(formatNumberForDisplay(value));
                           setTempFinancialServiceItem(prev => ({ ...prev, amount: value }));
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
                         placeholder="0,00"
                         inputMode="decimal"
@@ -307,7 +317,7 @@ export default function FinancialTab({
                             setFinancialTotalTRYInput(formatNumberForDisplay(total));
                           }
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                       >
                         <option value="TRY">TRY</option>
@@ -331,7 +341,7 @@ export default function FinancialTab({
                             setFinancialTotalTRYInput(formatNumberForDisplay(total));
                           }
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
                         placeholder="1.00"
                       />
@@ -356,7 +366,7 @@ export default function FinancialTab({
                           const value = parseFloat(formatNumberForInput(e.target.value)) || 0;
                           setFinancialTotalTRYInput(formatNumberForDisplay(value));
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleFinancialCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleFinancialSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleFinancialCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
                         placeholder="0,00"
                         inputMode="decimal"

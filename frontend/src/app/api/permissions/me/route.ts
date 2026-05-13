@@ -111,11 +111,11 @@ export async function GET(req: NextRequest) {
 
     const roleById = new Map<string, any>(roleRows.map((r: any) => [r.id, r]));
     const permissionById = new Map<string, any>(permissionRows.map((p: any) => [p.id, p]));
-
+    
     const matchedRoleIds = new Set<string>();
     for (const r of roleRows) {
-      // Hem ID üzerinden hem de normalize edilmiş isim üzerinden eşleştirme yap
-      if (r.id === role || normalizeRole(r.id) === clientNormalizedUserRole || normalizeRole(r.name) === clientNormalizedUserRole) {
+      // Sadece veritabanındaki role ile eşleştirme yap
+      if (r.id === role || normalizeRole(r.id) === normalizeRole(role) || normalizeRole(r.name) === normalizeRole(role)) {
         matchedRoleIds.add(r.id);
       }
     }
@@ -140,10 +140,15 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    console.log(`[API permissions/me] Successfully resolved for role: ${role}`, { effectivePermissions });
     return NextResponse.json(
       { role, effectivePermissions, matchedRoleIds: Array.from(matchedRoleIds) },
-      { headers: { 'Cache-Control': 'private, max-age=300' } }
+      { 
+        headers: { 
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        } 
+      }
     );
   } catch (e: any) {
     console.error(`[API permissions/me] ERROR:`, e);

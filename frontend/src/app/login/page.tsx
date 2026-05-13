@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService, LoginCredentials } from '@/lib/auth';
+import { permissionService } from '@/lib/permissions';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { SettingsService } from '@/lib/supabaseService';
 
@@ -58,6 +59,9 @@ export default function LoginPage() {
     setError('');
 
     try {
+      // Önce eski cache'i temizle
+      permissionService.clearCache();
+      
       const result = await authService.login(credentials);
 
       if (!result || !result.user) {

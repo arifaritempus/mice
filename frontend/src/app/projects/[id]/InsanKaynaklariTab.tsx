@@ -370,10 +370,12 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault();
-                                      handleHrSave(tempHrItem);
+                                        e.stopPropagation();
+                                        handleHrSave();
                                       } else if (e.key === 'Escape') {
                                         e.preventDefault();
-                                      handleHrCancel();
+                                        e.stopPropagation();
+                                        handleHrCancel();
                                       }
                                     }}
                                   className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"

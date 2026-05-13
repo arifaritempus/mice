@@ -12,6 +12,11 @@ const setCookie = (name: string, value: string) => {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
 };
 
+const deleteCookie = (name: string) => {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+};
+
 export enum Permission {
   VIEW = 'view',
   EDIT = 'edit',
@@ -369,6 +374,15 @@ export const permissionService = {
       [Permission.DELETE]: 'Silme'
     };
     return map[permission];
+  },
+  clearCache(): void {
+    snapshotCache = null;
+    permissionCache = {};
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(SS_KEY);
+    }
+    deleteCookie('currentUserRole');
+    console.debug('[Permissions] Cache cleared');
   }
 };
 
@@ -428,10 +442,15 @@ export const usePermissions = (explicitRole?: string) => {
   useEffect(() => {
     if (!loading) {
       const isSuper = isSuperAdminRole(resolvedRole);
-      console.log(`%c🛡️ PERMISSION SYSTEM: Role identified as "${resolvedRole}" ${isSuper ? '(SUPER ADMIN)' : ''}`, 
+      const permsCount = Object.keys(grantMap[normalizeRole(resolvedRole)] || {}).length;
+      console.log(`%c🛡️ PERMISSION SYSTEM: Role: "${resolvedRole}" ${isSuper ? '(SUPER ADMIN)' : `(${permsCount} modules)`}`, 
         `color: ${isSuper ? '#8b5cf6' : '#3b82f6'}; font-weight: bold; font-size: 10px;`);
+      
+      if (!isSuper && permsCount === 0 && !loading) {
+        console.warn('[Permissions] WARNING: No permissions found for non-super-admin role. This might be a sync issue.');
+      }
     }
-  }, [resolvedRole, loading]);
+  }, [resolvedRole, loading, grantMap]);
 
   return useMemo(() => ({
     canView: (module: Module) => {

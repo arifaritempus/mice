@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { permissionService } from './permissions';
 
 export interface User {
   id: string;
@@ -163,6 +164,10 @@ export const authService = {
       } else {
         console.log('🔴 Supabase signOut başarılı');
       }
+
+      // Yetki cache'ini temizle
+      permissionService.clearCache();
+      console.log('🔴 Yetki cache\'i temizlendi');
       
       // Global cache'i de temizle (HMR için)
       if (typeof window !== 'undefined') {

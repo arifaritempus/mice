@@ -186,7 +186,7 @@ export default function OtherServicesTab({
                         type="date"
                         value={tempOtherServiceItem?.date || ''}
                         onChange={(e) => setTempOtherServiceItem(prev => ({ ...prev, date: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                       />
                     </td>
@@ -249,7 +249,7 @@ export default function OtherServicesTab({
                       <select
                         value={tempOtherServiceItem?.subCategory || ''}
                         onChange={(e) => setTempOtherServiceItem(prev => ({ ...prev, subCategory: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                       >
                         <option value="">Alt Kategori Seçin</option>
@@ -263,7 +263,7 @@ export default function OtherServicesTab({
                         type="text"
                         value={tempOtherServiceItem?.description || ''}
                         onChange={(e) => setTempOtherServiceItem(prev => ({ ...prev, description: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                         placeholder="Açıklama"
                       />
@@ -286,7 +286,7 @@ export default function OtherServicesTab({
                           setOtherServiceTotalTRYInput(formatNumberForDisplay(total));
                           setTempOtherServiceItem(prev => ({ ...prev, amount, totalTRY: total, exchangeRate: rate, fx: rate }));
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
                         placeholder="0,00"
                         inputMode="decimal"
@@ -304,7 +304,7 @@ export default function OtherServicesTab({
                           setTempOtherServiceItem(prev => ({ ...prev, currency: newCur, totalTRY: total }));
                           setOtherServiceTotalTRYInput(formatNumberForDisplay(total));
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
                       >
                         <option value="TRY">TRY</option>
@@ -339,7 +339,7 @@ export default function OtherServicesTab({
                           setOtherServiceTotalTRYInput(formatNumberForDisplay(total));
                           setTempOtherServiceItem(prev => ({ ...prev, exchangeRate: rate, fx: rate, amount: amountInput, totalTRY: total }));
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
                         placeholder="1,0000"
                       />
@@ -363,7 +363,7 @@ export default function OtherServicesTab({
                           setTempOtherServiceItem(prev => ({ ...prev, totalTRY: tl, amount: newAmount, exchangeRate: rate, fx: rate }));
                           setOtherServiceTotalTRYInput(formatNumberForDisplay(tl));
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); handleOtherServiceCancel(); } }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleOtherServiceSave(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleOtherServiceCancel(); } }}
                         className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
                         placeholder="0,00"
                         inputMode="decimal"
