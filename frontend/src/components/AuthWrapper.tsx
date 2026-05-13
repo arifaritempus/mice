@@ -164,29 +164,45 @@ export default function AuthWrapper({
 
   // Loading durumu
   if (loading) {
-    return <LoadingSpinner message="Yukleniyor..." />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <LoadingSpinner message="Oturum kontrol ediliyor..." />
+      </div>
+    );
   }
 
   // Yetki kontrolü başarısızsa uyarı göster
   if (!hasAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200/80 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 shadow-xl backdrop-blur-sm p-6 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300">
-            <span aria-hidden="true">🔒</span>
+        <div className="w-full max-w-md rounded-3xl border border-slate-200/80 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 shadow-2xl backdrop-blur-md p-10 text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400 shadow-inner">
+            <span className="text-3xl">🔒</span>
           </div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Bu sayfaya erisim yetkiniz yok</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Hesabinizda bu bolumu goruntuleme izni tanimli degil. Gerekli ise yoneticinizden erisim talep edebilirsiniz.
+          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Erişim Sınırlandırıldı</h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-gray-400 leading-relaxed">
+            Bu bölüme erişmek için gerekli yetki seviyesine sahip değilsiniz. <br/>Lütfen bir yönetici ile iletişime geçin.
           </p>
-          <p className="text-xs text-slate-400 mt-4">Debug: Role: {debugInfo.role}, Module: {debugInfo.module}</p>
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="mt-5 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white transition-colors"
-          >
-            Ana sayfaya don
-          </button>
+          
+          <div className="mt-8 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="w-full inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3.5 text-xs font-black text-white uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-blue-600/20"
+            >
+              Ana Sayfaya Dön
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                authService.supabase.auth.signOut();
+                router.push('/login');
+              }}
+              className="w-full inline-flex items-center justify-center rounded-2xl bg-white dark:bg-gray-800 px-6 py-3.5 text-xs font-black text-slate-600 dark:text-gray-300 uppercase tracking-widest border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all"
+            >
+              Farklı Hesapla Giriş Yap
+            </button>
+          </div>
         </div>
       </div>
     );

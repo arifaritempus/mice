@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatNumber } from '@/utils/formatters';
+import { createPortal } from 'react-dom';
 import { 
   agenciesService, 
   hotelsService, 
@@ -1356,32 +1357,25 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         </form>
 
         {/* Success Modal */}
-        <AnimatePresence>
-          {isSuccessModalOpen && (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl border border-gray-200 dark:border-gray-800"
+        {isSuccessModalOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl border border-gray-200 dark:border-gray-800">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Başarılı!</h3>
+              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">{successMessage}</p>
+              <button
+                onClick={() => router.push('/quotes')}
+                className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
               >
-                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Başarılı!</h3>
-                <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">{successMessage}</p>
-                <button
-                  onClick={() => router.push('/quotes')}
-                  className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
-                >
-                  TAMAM
-                </button>
-              </motion.div>
+                TAMAM
+              </button>
             </div>
-          )}
-        </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );
