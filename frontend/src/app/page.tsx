@@ -27,7 +27,16 @@ import {
   CreditCard,
   PieChart,
   ArrowLeft,
-  X
+  X,
+  Menu,
+  Info,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  ChevronDown,
+  Hash
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
@@ -145,277 +154,507 @@ interface DashboardData {
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'];
 
-// âââ UserManualModal âââââââââââââââââââââââââââââââââââââââââââââââââââinterface SubSection {
-  id: string;
-  title: string;
-  content: React.ReactNode;
-}
+// ─── Documentation UI Components ──────────────────────────────────────────
 
-interface DocSection {
-  id: string;
-  title: string;
-  icon: any;
-  subSections: SubSection[];
-}
+const AlertBox = ({ type, title, children }: { type: 'tip' | 'warning' | 'critical', title: string, children: React.ReactNode }) => {
+  const styles = {
+    tip: { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-900 dark:text-blue-100', icon: Info, iconColor: 'text-blue-500' },
+    warning: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-900 dark:text-amber-100', icon: AlertTriangle, iconColor: 'text-amber-500' },
+    critical: { bg: 'bg-rose-50 dark:bg-rose-900/20', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-900 dark:text-rose-100', icon: AlertCircle, iconColor: 'text-rose-500' }
+  };
+  const s = styles[type];
+  return (
+    <div className={`${s.bg} ${s.border} border-l-4 p-4 rounded-xl my-6 flex gap-4 animate-in slide-in-from-left duration-500`}>
+      <s.icon className={`w-6 h-6 shrink-0 ${s.iconColor}`} />
+      <div>
+        <h6 className={`text-sm font-black uppercase tracking-widest mb-1 ${s.text}`}>{title}</h6>
+        <div className={`text-xs leading-relaxed opacity-90 ${s.text}`}>{children}</div>
+      </div>
+    </div>
+  );
+};
+
+const StepCard = ({ number, title, children }: { number: string, title: string, children: React.ReactNode }) => (
+  <div className="relative pl-12 pb-12 last:pb-0 group">
+    <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-black text-xs z-10 shadow-lg group-hover:scale-110 transition-transform">
+      {number}
+    </div>
+    <div className="absolute left-4 top-8 bottom-0 w-px bg-slate-200 dark:bg-slate-800 group-last:hidden" />
+    <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm group-hover:border-blue-500/50 transition-colors">
+      <h5 className="text-sm font-black text-slate-900 dark:text-white mb-3 uppercase tracking-tight">{title}</h5>
+      <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{children}</div>
+    </div>
+  </div>
+);
+
+const ScreenshotFrame = ({ caption, children }: { caption: string, children?: React.ReactNode }) => (
+  <div className="my-8 space-y-3">
+    <div className="rounded-2xl border-4 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 aspect-video flex items-center justify-center relative overflow-hidden group">
+      {children || <div className="text-[10px] font-black uppercase tracking-widest opacity-20">Sistem Ekran Görüntüsü</div>}
+      <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+         <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+            <Search className="w-6 h-6" />
+         </div>
+      </div>
+    </div>
+    <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{caption}</p>
+  </div>
+);
 
 function UserManualModal({ onClose }: { onClose: () => void }) {
-  const [activeSection, setActiveSection] = useState('mice');
-  const [activeSub, setActiveSub] = useState('teklif-olusturma');
+  const [activeTab, setActiveTab] = useState('mice-teklif');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const docData: DocSection[] = [
+  const navigation = [
     {
       id: 'mice',
       title: 'MICE & Proje Yönetimi',
       icon: Target,
-      subSections: [
-        {
-          id: 'teklif-olusturma',
-          title: 'Teklif Oluşturma',
-          content: (
-            <div className="space-y-10 pb-20">
-              <div className="flex items-center gap-3 text-[11px] font-black text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-2xl w-fit border border-blue-100 dark:border-blue-800">
-                <Layout className="w-4 h-4" /> Ana Sayfa &gt; MICE &gt; Teklif Oluşturma
-              </div>
-              
-              <h1 className="text-6xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9]">MICE Teklif <br/>Oluşturma Rehberi</h1>
-              
-              <div className="p-8 bg-blue-600 rounded-[3rem] text-white shadow-2xl shadow-blue-500/20 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:scale-125 transition-transform duration-700"><Target className="w-20 h-20" /></div>
-                <h4 className="text-xl font-black mb-4">Süreç Özeti</h4>
-                <p className="text-sm opacity-90 leading-relaxed font-medium">MICE teklifleri, operasyonun tüm maliyet ve satış kalemlerini tek bir çatı altında topladığınız esnek bir yapıdır. Her teklif, potansiyel bir projedir.</p>
-              </div>
-
-              <div className="space-y-8">
-                 <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Adım Adım Teklif Süreci</h2>
-                 <div className="space-y-4">
-                    {[
-                      { step: '01', title: 'Temel Bilgiler', desc: 'Acente, Grup İsmi ve Tarih aralığını belirleyin. Bu bilgiler projeye dönüştüğünde ana kimliği oluşturur.' },
-                      { step: '02', title: 'Otel Opsiyonları', desc: 'Aynı teklifte birden fazla otel opsiyonu sunmak için "Yeni Otel Ekle" butonunu kullanın.' },
-                      { step: '03', title: 'Hizmet Girişleri', desc: 'Konaklama, transfer, uçak bileti ve etkinlik kalemlerini "Ekle" butonuyla sekmelere dahil edin.' },
-                      { step: '04', title: 'Maliyet & Kar Analizi', desc: 'Her kalemin maliyetini ve satışını girin. Sistem otomatik olarak karlılığı % bazında hesaplar.' }
-                    ].map((item, i) => (
-                      <div key={i} className="flex gap-8 p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 items-start hover:bg-white dark:hover:bg-slate-800 transition-all group">
-                        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 shadow-lg flex items-center justify-center text-xl font-black text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">{item.step}</div>
-                        <div>
-                          <h4 className="text-lg font-black text-slate-900 dark:text-white mb-2">{item.title}</h4>
-                          <p className="text-xs text-slate-500 leading-relaxed font-medium">{item.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-
-                 </div>
-              </div>
-            </div>
-          )
-        }
+      items: [
+        { id: 'mice-teklif', title: 'Teklif Oluşturma' },
+        { id: 'mice-link', title: 'Link ile Gönderim & Onay' },
+        { id: 'mice-proje', title: 'Projeye Dönüştürme' },
+        { id: 'mice-detay', title: 'Proje Detay Yönetimi' },
+        { id: 'mice-finans', title: 'Finansal & Nakit Akış' }
       ]
     },
     {
       id: 'sejour',
       title: 'Sejour & Voucher',
       icon: Hotel,
-      subSections: [
-        {
-          id: 'voucher-yonetimi',
-          title: 'Voucher & Rezervasyon',
-          content: (
-            <div className="space-y-10 pb-20">
-              <div className="flex items-center gap-3 text-[11px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-2xl w-fit border border-indigo-100 dark:border-indigo-800">
-                <Layout className="w-4 h-4" /> Ana Sayfa &gt; Sejour &gt; Voucher Yönetimi
-              </div>
-              <h1 className="text-6xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9]">Dijital Voucher <br/>& Misafir Kaydı</h1>
-              
-              <div className="p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] border border-slate-100 dark:border-slate-800">
-                 <p className="text-sm text-slate-500 leading-relaxed font-medium italic">"Münferit misafirlerin tüm konaklama, uçuş ve transfer detaylarını tek bir dijital belge altında toplayıp misafire link olarak gönderebilirsiniz."</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div className="p-8 bg-indigo-600 rounded-[2.5rem] text-white">
-                    <h4 className="font-black mb-4">Otel Tahsisat</h4>
-                    <p className="text-xs opacity-90 leading-relaxed">Anlaşmalı otellerdeki oda kontenjanlarınızı (Allotment) sisteme girerek doluluk oranlarını saniye saniye izleyin.</p>
-                 </div>
-                 <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white">
-                    <h4 className="font-black mb-4">Anlık Rezervasyon</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">Misafir bilgilerini girerken sistem otomatik olarak müsaitlik kontrolü yapar ve çakışmaları önler.</p>
-                 </div>
-              </div>
-            </div>
-          )
-        }
+      items: [
+        { id: 'sejour-ops', title: 'Operasyon Akışı' },
+        { id: 'sejour-voucher', title: 'Online Voucher' }
+      ]
+    },
+    {
+      id: 'operation',
+      title: 'Saha Operasyonu',
+      icon: Truck,
+      items: [
+        { id: 'ops-transfer', title: 'Transfer Listeleri' },
+        { id: 'ops-guide', title: 'Rehber & Personel' }
       ]
     },
     {
       id: 'accounting',
-      title: 'Muhasebe & Finans',
+      title: 'Muhasebe',
       icon: CreditCard,
-      subSections: [
-        {
-          id: 'tahsilat-yonetimi',
-          title: 'Tahsilat & Ödeme',
-          content: (
-            <div className="space-y-10 pb-20">
-              <div className="flex items-center gap-3 text-[11px] font-black text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-4 py-2 rounded-2xl w-fit border border-rose-100 dark:border-rose-800">
-                <Layout className="w-4 h-4" /> Ana Sayfa &gt; Muhasebe &gt; Tahsilat
-              </div>
-              <h1 className="text-6xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9]">Finansal Takip <br/>& Nakit Akışı</h1>
-              
-              <div className="p-8 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-[2.5rem] flex gap-6 items-start">
-                 <div className="p-3 bg-rose-600 rounded-2xl text-white shadow-lg"><HelpCircle className="w-6 h-6" /></div>
-                 <div>
-                    <p className="text-xs font-black text-rose-900 dark:text-rose-100 uppercase mb-2 tracking-widest">Kritik Bilgi</p>
-                    <p className="text-[13px] text-rose-800 dark:text-rose-200 font-medium leading-relaxed">Muhasebeleşen bir faturayı silmek, vergi ve beyanname süreçlerini etkiler. Bu işlem geri alınamaz.</p>
-                 </div>
-              </div>
-
-              <div className="space-y-6">
-                 <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700">
-                    <h5 className="font-black text-slate-900 dark:text-white mb-2">Nakit Akışına Aktarım</h5>
-                    <p className="text-xs text-slate-500 leading-relaxed font-medium">Teklif kalemlerine girdiğiniz her tahsilat/ödeme tarihi, Muhasebe modülündeki "Nakit Akış" takvimine anlık olarak düşer.</p>
-                 </div>
-              </div>
-            </div>
-          )
-        }
+      items: [
+        { id: 'acc-invoice', title: 'Fatura Yönetimi' },
+        { id: 'acc-cash', title: 'Kasa & Banka' }
       ]
     }
   ];
 
-  const filteredData = docData.filter(s => 
-    s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.subSections.some(sub => sub.title.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredNavigation = navigation.map(group => ({
+    ...group,
+    items: group.items.filter(item => 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(group => group.items.length > 0);
 
-  const currentSection = docData.find(s => s.id === activeSection);
-  const currentSub = currentSection?.subSections.find(sub => sub.id === activeSub);
+  const getContent = () => {
+    switch(activeTab) {
+      case 'mice-teklif':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Teklif Oluşturma Rehberi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">MICE departmanının ilk adımı, profesyonel ve hatasız bir teklif hazırlamaktır.</p>
+            
+            <AlertBox type="tip" title="Hızlı Başlangıç">
+              Daha önceki bir teklifi kopyalayarak saniyeler içinde yeni bir versiyon oluşturabilirsiniz.
+            </AlertBox>
 
-  useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
+            <div className="space-y-0">
+              <StepCard number="01" title="Temel Bilgileri Girin">
+                Acente, Müşteri, Proje Adı ve tarih aralıklarını belirleyin. Bu aşamada seçilen döviz tipi tüm bütçeyi etkiler.
+              </StepCard>
+              <StepCard number="02" title="Bütçe Kalemlerini Ekleyin">
+                Otel, Transfer, Uçak Bileti gibi kategorilerden hizmetleri seçin. Maliyet ve Satış fiyatlarını girerken sistem anlık kar marjını gösterir.
+              </StepCard>
+              <StepCard number="03" title="Gruplandırma Yapın">
+                Bütçe kalemlerini 'Otel Konaklama', 'Transferler' gibi gruplara ayırarak müşteriye daha derli toplu bir sunum yapın.
+              </StepCard>
+            </div>
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-6 bg-slate-950/80 backdrop-blur-3xl animate-in fade-in duration-500">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 30 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white dark:bg-slate-950 w-full h-full md:max-w-[95vw] md:h-[90vh] md:rounded-[4rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col relative"
-      >
-        {/* Top Navigation Bar */}
-        <div className="h-20 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-10 bg-white/50 dark:bg-slate-950/50 backdrop-blur-md shrink-0 z-50">
-           <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                <BookOpen className="w-5 h-5" />
+            <ScreenshotFrame caption="Teklif Düzenleme Paneli Görünümü" />
+          </div>
+        );
+      case 'mice-link':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Link ile Gönderim & Onay</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Tekliflerinizi PDF yerine interaktif bir link olarak müşteriye sunun.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                <h6 className="text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Gönderim Süreci</h6>
+                <p className="text-xs text-slate-500 leading-relaxed">"Link Oluştur" butonuna bastığınızda, o teklife özel bir URL üretilir. Bu linki WhatsApp veya E-posta ile paylaşabilirsiniz.</p>
               </div>
-              <div className="hidden md:block">
-                <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">KILAVUZ MERKEZİ</h2>
-                <p className="text-[9px] text-blue-600 font-black tracking-[0.2em] uppercase">Enterprise Edition</p>
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                <h6 className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-2">Müşteri Onayı</h6>
+                <p className="text-xs text-slate-500 leading-relaxed">Müşteri linke girdiğinde 'Onayla' veya 'İptal' butonlarını görür. Bir işlem yaptığında panelinize anlık bildirim düşer.</p>
               </div>
-           </div>
+            </div>
 
-           <div className="flex-1 max-w-xl px-10 relative hidden md:block">
-              <Search className="absolute left-14 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Nasıl yardımcı olabilirim? (Ãrn: Mice Teklif...)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 bg-slate-100 dark:bg-slate-900 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
-              />
-           </div>
+            <AlertBox type="warning" title="Güvenlik Uyarısı">
+              Onaylanan bir teklif üzerinde fiyat değişikliği yapılamaz. Değişiklik için teklifi tekrar 'Taslak' durumuna çekmeniz gerekir.
+            </AlertBox>
+          </div>
+        );
+      case 'mice-proje':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Projeye Dönüştürme</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Onaylanan teklifleri operasyonel sürece dahil etmek için tek tıkla projeye dönüştürün.</p>
 
-           <button onClick={onClose} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-rose-500 transition-all hover:rotate-90">
-             <X className="w-5 h-5" />
-           </button>
-        </div>
+            <div className="space-y-0">
+              <StepCard number="01" title="Onay Durumunu Kontrol Edin">
+                Müşteri link üzerinden veya manuel olarak teklifi onayladığında "Projeye Dönüştür" butonu aktifleşir.
+              </StepCard>
+              <StepCard number="02" title="Operasyonel Filtreleme">
+                Projeye dönüştürürken hangi kalemlerin operasyona aktarılacağını seçebilirsiniz (Örn: Sadece Konaklama ve Transfer).
+              </StepCard>
+              <StepCard number="03" title="Referans Numarası">
+                Sistem projeye otomatik bir referans numarası atar ve bu numara tüm fatura/operasyon süreçlerinde ana takip kodu olur.
+              </StepCard>
+            </div>
+          </div>
+        );
+      case 'mice-detay':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Proje Detay Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Proje içinde her departman kendi sekmesini yönetir.</p>
 
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left Navigation Menu */}
-          <motion.div 
-            animate={{ width: isSidebarOpen ? 320 : 0 }}
-            className="hidden md:flex flex-col bg-slate-50 dark:bg-slate-950/80 border-r border-slate-100 dark:border-slate-800 overflow-hidden"
-          >
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-               {filteredData.map((section) => (
-                 <div key={section.id} className="space-y-2">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 flex items-center gap-2">
-                       <section.icon className="w-3 h-3" /> {section.title}
-                    </h3>
-                    <div className="space-y-1">
-                       {section.subSections.map((sub) => (
-                         <button
-                           key={sub.id}
-                           onClick={() => {
-                             setActiveSection(section.id);
-                             setActiveSub(sub.id);
-                           }}
-                           className={`w-full text-left px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all ${
-                             activeSub === sub.id 
-                               ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                               : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                           }`}
-                         >
-                           {sub.title}
-                         </button>
-                       ))}
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {[
+                 { t: 'Konaklama & Otel', d: 'Otel giriş-çıkış tarihleri, oda tipleri ve opsiyon takibi yapılır.' },
+                 { t: 'Uçak Bileti', d: 'Pazarlama departmanından gelen opsiyonlu uçuşlar burada listelenir.' },
+                 { t: 'Transfer & Tur', d: 'Konaklama listesinden otomatik transfer üretme motoru burada çalışır.' },
+                 { t: 'Etkinlik & Aktivite', d: 'Gala yemekleri, dış mekan aktiviteleri ve ekipman talepleri yönetilir.' },
+                 { t: 'İnsan Kaynakları', d: 'Rehber, Hostes ve part-time personel atamaları bu sekmededir.' }
+               ].map((item, i) => (
+                 <div key={i} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">{item.t}</h6>
+                    <p className="text-[10px] text-slate-500 leading-relaxed">{item.d}</p>
                  </div>
                ))}
             </div>
-          </motion.div>
 
-          {/* Main Reading Area */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0f172a] p-10 lg:p-20 custom-scrollbar relative">
-             <div className="max-w-4xl mx-auto">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeSub}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {currentSub?.content}
-                    
-                    <div className="mt-20 pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                       <p className="text-[11px] font-bold text-slate-400 italic">Son gÃ¼ncelleme: 13 MayÄ±s 2026</p>
-                       <div className="flex items-center gap-4">
-                          <p className="text-[11px] font-black text-slate-500 uppercase">FaydalÄ± oldu mu?</p>
-                          <div className="flex gap-2">
-                             <button className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-[10px] font-black hover:bg-emerald-100 hover:text-emerald-700 transition-all">EVET</button>
-                             <button className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-[10px] font-black hover:bg-rose-100 hover:text-rose-700 transition-all">HAYIR</button>
-                          </div>
-                       </div>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-             </div>
+            <AlertBox type="tip" title="Otomatik Transfer">
+               Konaklama sekmesindeki misafirlerin uçuş saatlerini girdiğinizde, sistem otomatik olarak "Transfer" sekmesine kayıt atar ve araç ataması için operasyonu uyarır.
+            </AlertBox>
           </div>
+        );
+      case 'mice-finans':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Finansal & Nakit Akış</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Operasyonel başarınızı finansal verilere dönüştürün.</p>
 
-          {/* Right Sticky TOC */}
-          <div className="hidden lg:block w-72 p-10 border-l border-slate-100 dark:border-slate-800 shrink-0">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">BU SAYFADA</h4>
-             <div className="space-y-4">
-                <div className="w-1 h-12 bg-blue-600 rounded-full" />
-                <p className="text-[12px] font-bold text-slate-900 dark:text-white leading-relaxed">Sayfa iÃ§eriÄi otomatik taranÄ±yor...</p>
-                <div className="space-y-3 pl-4 border-l border-slate-200 dark:border-slate-800">
-                   <p className="text-[11px] text-slate-500 hover:text-blue-600 cursor-pointer transition-colors">SÃ¼reÃ§ BaÅlangÄ±cÄ±</p>
-                   <p className="text-[11px] text-slate-500 hover:text-blue-600 cursor-pointer transition-colors">Dikkat Edilecekler</p>
-                   <p className="text-[11px] text-slate-500 hover:text-blue-600 cursor-pointer transition-colors">Finansal Detaylar</p>
+            <div className="space-y-4">
+               <div className="flex items-start gap-4 p-6 bg-slate-900 text-white rounded-[2rem] shadow-xl">
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h5 className="font-black uppercase tracking-tight mb-1">Nakit Akışa Akış</h5>
+                    <p className="text-[11px] opacity-70 leading-relaxed">Girdiğiniz her tahsilat ve ödeme vadesi, Muhasebe > Nakit Akış tablosuna anlık olarak işlenir. Ay sonu kasanızı bugünden görebilirsiniz.</p>
+                  </div>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-100 dark:border-emerald-800">
+                  <h6 className="text-xs font-black text-emerald-900 dark:text-emerald-100 uppercase mb-2">Tahsilatlar</h6>
+                  <p className="text-[10px] text-emerald-800 dark:text-emerald-200">Müşteriden gelecek ödemeleri proje kalemlerine göre vadelendirin.</p>
+               </div>
+               <div className="p-6 bg-rose-50 dark:bg-rose-900/20 rounded-3xl border border-rose-100 dark:border-rose-800">
+                  <h6 className="text-xs font-black text-rose-900 dark:text-rose-100 uppercase mb-2">Ödemeler</h6>
+                  <p className="text-[10px] text-rose-800 dark:text-rose-200">Tedarikçilere yapılacak ödemeleri bütçe bazlı takip edin.</p>
+               </div>
+            </div>
+
+            <AlertBox type="critical" title="Kritik Veri">
+               Vadesi girilmeyen tahsilatlar Nakit Akış tablosunda görünmez. Her kalem için mutlaka bir ödeme tarihi belirleyin.
+            </AlertBox>
+          </div>
+        );
+      case 'sejour-ops':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Sejour Operasyon Akışı</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Münferit misafirlerin uçtan uca yönetimi.</p>
+            
+            <div className="space-y-0">
+              <StepCard number="01" title="Rezervasyon Girişi">
+                Misafir isimleri, uçuş kodları ve otel tercihlerini sisteme kaydedin.
+              </StepCard>
+              <StepCard number="02" title="Dinamik Fiyatlandırma">
+                Sezonluk otel fiyatlarını ve transfer maliyetlerini sistem otomatik hesaplar.
+              </StepCard>
+              <StepCard number="03" title="Voucher Üretimi">
+                Tüm servisler onaylandığında tek tıkla Voucher dökümanını hazırlayın.
+              </StepCard>
+            </div>
+          </div>
+        );
+      case 'sejour-voucher':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Online Voucher Rehberi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Misafirinize profesyonel bir karşılama deneyimi sunun.</p>
+            
+            <AlertBox type="tip" title="Temassız Deneyim">
+              Misafirinize Voucher'ı PDF olarak göndermek yerine link olarak gönderin. Misafir link üzerinden transfer aracının plakasını ve rehberinin fotoğrafını anlık görebilir.
+            </AlertBox>
+
+            <ScreenshotFrame caption="Misafir Online Voucher Ekranı" />
+          </div>
+        );
+      case 'ops-transfer':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Transfer Listeleri & Planlama</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Saha operasyonunun kalbi burasıdır.</p>
+
+            <div className="space-y-4">
+               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <h6 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Araç Atama & Gruplandırma</h6>
+                  <p className="text-xs text-slate-500 leading-relaxed">Aynı saatteki transferleri birleştirerek araç maliyetlerini minimize edin. Atanan araç plakaları anlık olarak misafirlerin Voucher linklerine yansır.</p>
+               </div>
+            </div>
+          </div>
+        );
+      case 'ops-guide':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Rehber & Personel Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Doğru personeli doğru göreve atayın.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800">
+                  <h6 className="text-xs font-black text-blue-900 dark:text-blue-100 uppercase mb-2">Kokartlı Rehberler</h6>
+                  <p className="text-[10px] text-blue-800 dark:text-blue-200">Rehberlerin dil yetkinliklerine ve müsaitlik durumlarına göre atama yapın.</p>
+               </div>
+               <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border border-amber-100 dark:border-amber-800">
+                  <h6 className="text-xs font-black text-amber-900 dark:text-amber-100 uppercase mb-2">Part-Time Personel</h6>
+                  <p className="text-[10px] text-amber-800 dark:text-amber-200">Karşılama ekipleri ve etkinlik personeli için insan kaynakları talebi oluşturun.</p>
+               </div>
+            </div>
+          </div>
+        );
+      case 'acc-invoice':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Fatura Yönetimi</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Hataya yer bırakmayan fatura döngüsü.</p>
+
+            <AlertBox type="warning" title="Mutabakat Zorunluluğu">
+              Bir kalem için fatura kesilmeden önce tedarikçi ile mutabakatın (Link üzerinden veya manuel) tamamlanmış olması önerilir.
+            </AlertBox>
+
+            <div className="space-y-0">
+              <StepCard number="01" title="Fatura Bekleyenler">
+                Konfirme olan projeler otomatik olarak bu listeye düşer.
+              </StepCard>
+              <StepCard number="02" title="E-Fatura Entegrasyonu">
+                Sistemden oluşturulan faturalar tek tıkla e-fatura portalına aktarılabilir.
+              </StepCard>
+            </div>
+          </div>
+        );
+      case 'acc-cash':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Kasa & Banka Entegrasyonu</h1>
+            <p className="text-lg text-slate-500 leading-relaxed">Gerçek zamanlı nakit kontrolü.</p>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800 to-slate-950 text-white rounded-[3rem] shadow-2xl">
+               <h5 className="text-xl font-black mb-4">Anlık Bakiye Takibi</h5>
+               <p className="text-sm opacity-70 leading-relaxed mb-6">Tüm banka hesaplarınız ve şirket kasalarınız tek ekranda. Yapılan her tahsilat ilgili kasaya anlık işlenir.</p>
+               <div className="flex gap-2">
+                  <div className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-bold">USD Kasası</div>
+                  <div className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-bold">EUR Kasası</div>
+                  <div className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-bold">TRY Kasası</div>
+               </div>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center p-12">
+            <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center mb-6">
+              <BookOpen className="w-12 h-12 text-slate-300" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tighter">Henüz Hazırlanıyor</h3>
+            <p className="text-sm text-slate-500 max-w-xs">Bu bölümdeki dokümantasyon çalışmaları devam etmektedir. Lütfen diğer modülleri inceleyin.</p>
+          </div>
+        );
+    }
+  };
+
+  const currentPath = () => {
+    for (const group of navigation) {
+      const item = group.items.find(i => i.id === activeTab);
+      if (item) return [group.title, item.title];
+    }
+    return ['Genel', 'Rehber'];
+  };
+
+  return (
+    <div className="fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-3xl animate-in fade-in duration-500 flex items-center justify-center p-0 md:p-6">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-white dark:bg-slate-900 w-full max-w-screen-2xl h-full md:h-[90vh] md:rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,0.7)] flex overflow-hidden relative"
+      >
+        {/* Left Sidebar - Navigation */}
+        <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} fixed md:relative inset-y-0 left-0 w-80 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-100 dark:border-slate-800 z-50 transition-transform duration-500`}>
+          <div className="h-full flex flex-col">
+            <div className="p-8 border-b border-slate-100 dark:border-slate-800">
+               <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">SİSTEM REHBERİ</h3>
+                    <p className="text-[10px] text-slate-400 font-bold tracking-widest">v4.0 Ultimate</p>
+                  </div>
+               </div>
+
+               {/* Search Bar */}
+               <div className="relative group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                  <input 
+                    type="text"
+                    placeholder="Dokümanlarda ara..."
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-[11px] font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+               </div>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+              {filteredNavigation.map((group) => (
+                <div key={group.id} className="space-y-2">
+                  <div className="px-4 flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-4">
+                    <group.icon className="w-4 h-4" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{group.title}</span>
+                  </div>
+                  <div className="space-y-1">
+                    {group.items.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-between group ${
+                          activeTab === item.id 
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        {item.title}
+                        <ChevronRight className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ${activeTab === item.id ? 'opacity-100' : ''}`} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              ))}
+            </nav>
+
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800">
+               <button className="w-full p-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl flex items-center justify-between group">
+                  <span className="text-[10px] font-black uppercase tracking-widest">Destek Al</span>
+                  <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+               </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col bg-white dark:bg-[#0f172a] overflow-hidden">
+          {/* Top Bar - Breadcrumbs & Actions */}
+          <header className="h-20 border-b border-slate-100 dark:border-slate-800 px-8 flex items-center justify-between shrink-0 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-40">
+             <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="p-2 md:hidden bg-slate-100 dark:bg-slate-800 rounded-lg"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+                {/* Breadcrumbs */}
+                <nav className="hidden md:flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                   <span>Ana Sayfa</span>
+                   <ChevronRight className="w-3 h-3" />
+                   {currentPath().map((p, i) => (
+                     <React.Fragment key={i}>
+                       <span className={i === currentPath().length - 1 ? 'text-blue-600' : ''}>{p}</span>
+                       {i < currentPath().length - 1 && <ChevronRight className="w-3 h-3" />}
+                     </React.Fragment>
+                   ))}
+                </nav>
              </div>
+
+             <button 
+               onClick={onClose}
+               className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl transition-all hover:rotate-90"
+             >
+               <X className="w-5 h-5" />
+             </button>
+          </header>
+
+          <div className="flex-1 flex overflow-hidden">
+             {/* Center Scrollable Content */}
+             <main className="flex-1 overflow-y-auto p-8 md:p-16 lg:p-24 custom-scrollbar">
+                <div className="max-w-4xl mx-auto">
+                   {getContent()}
+
+                   {/* Helpful Rating */}
+                   <div className="mt-24 pt-12 border-t border-slate-100 dark:border-slate-800 flex flex-col items-center gap-6">
+                      <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">Bu makale yardımcı oldu mu?</p>
+                      <div className="flex gap-4">
+                         <button className="px-8 py-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[11px] font-bold hover:bg-emerald-500 hover:text-white transition-all">EVET, YARDIMCI OLDU</button>
+                         <button className="px-8 py-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[11px] font-bold hover:bg-rose-500 hover:text-white transition-all">HAYIR, GELİŞTİRİLMELİ</button>
+                      </div>
+                   </div>
+                </div>
+             </main>
+
+             {/* Right Sidebar - TOC (On This Page) */}
+             <aside className="hidden xl:block w-72 p-12 border-l border-slate-100 dark:border-slate-800">
+                <div className="sticky top-0">
+                   <h5 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-6">BU SAYFADA</h5>
+                   <ul className="space-y-4">
+                      {['Genel Bakış', 'Adım Adım Süreç', 'Kritik Uyarılar', 'Görsel Rehber'].map((t, i) => (
+                        <li key={i} className="flex items-center gap-3 text-[11px] font-bold text-slate-500 hover:text-blue-600 cursor-pointer transition-colors group">
+                           <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 group-hover:bg-blue-600" />
+                           {t}
+                        </li>
+                      ))}
+                   </ul>
+
+                   <div className="mt-16 p-6 bg-blue-50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+                      <p className="text-[10px] font-black text-blue-600 uppercase mb-2">Hızlı Erişim</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-4">MICE tekliflerinde %20 daha hızlı olmak için klavye kısayollarını öğrenin.</p>
+                      <button className="text-[10px] font-black text-blue-600 underline">GÖZ AT</button>
+                   </div>
+                </div>
+             </aside>
           </div>
         </div>
       </motion.div>
     </div>
   );
 }
+
 export default function HomePage() {
   const { canCreate, loading: permissionsLoading } = usePermissions();
   const [dashboardData, setDashboardData] = useState<DashboardData>({
@@ -468,7 +707,7 @@ export default function HomePage() {
       const mappedProjects: MappedProject[] = projects.map(p => ({
         ...p,
         name: p.title || 'Proje',
-        client_name: p.description?.slice(0, 20) || 'MÃ¼Återi',
+        client_name: p.description?.slice(0, 20) || 'Müşteri',
         id: p.id,
         status: p.status || 'active',
         reference: p.reference || '',
@@ -511,8 +750,8 @@ export default function HomePage() {
       const sejourTransfers: MappedTransfer[] = sejours.flatMap(s => (s.transfers || []).map((t: any) => ({
         id: t.id,
         type: t.type || t.transferType || 'Sejour Transfer',
-        pickup_location: t.direction === 'arrival' ? 'HavalimanÄ±' : (t.routeDescription || 'Otel'),
-        dropoff_location: t.direction === 'arrival' ? (t.routeDescription || 'Otel') : 'HavalimanÄ±',
+        pickup_location: t.direction === 'arrival' ? 'Havalimanı' : (t.routeDescription || 'Otel'),
+        dropoff_location: t.direction === 'arrival' ? (t.routeDescription || 'Otel') : 'Havalimanı',
         date: t.date || s.check_in_date || s.checkInDate || '',
         guest_count: t.paxCount || 0,
         cost: t.price || 0,
@@ -636,7 +875,7 @@ export default function HomePage() {
 
       setLastUpdate(new Date());
     } catch (error) {
-      console.error('Dashboard data yÃ¼klenirken hata:', error);
+      console.error('Dashboard data yüklenirken hata:', error);
     } finally {
       setLoading(false);
     }
@@ -658,11 +897,11 @@ export default function HomePage() {
   const stats = useMemo(() => [
     { label: 'Aktif Projeler', value: dashboardData.upcomingProjects.length, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Bekleyen Sejourlar', value: dashboardData.upcomingSejours.length, icon: Hotel, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'BugÃ¼nkÃ¼ Transferler', value: dashboardData.upcomingTransfers.length, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'Bugünkü Transferler', value: dashboardData.upcomingTransfers.length, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { label: 'Personel Talepleri', value: dashboardData.upcomingPartTime.length, icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
   ], [dashboardData]);
 
-  if (permissionsLoading) return <LoadingSpinner message="Sistem hazÄ±rlanÄ±yor..." />;
+  if (permissionsLoading) return <LoadingSpinner message="Sistem hazırlanıyor..." />;
 
   const DashboardCard = ({ title, icon: Icon, children, link, color }: { title: string; icon: React.ElementType; children: React.ReactNode; link: string; color: string }) => (
     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col h-full group hover:shadow-md transition-all duration-300">
@@ -688,7 +927,7 @@ export default function HomePage() {
       <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800/50 rounded-2xl flex items-center justify-center mb-3">
         <Clock className="w-5 h-5 text-slate-300" />
       </div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">YakÄ±n zamanda kayÄ±t bulunmuyor</p>
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Yakın zamanda kayıt bulunmuyor</p>
     </div>
   );
 
@@ -705,7 +944,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3 mb-1">
             <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5">
               <RefreshCcw className="w-2.5 h-2.5 animate-spin-slow" />
-              Son GÃ¼ncelleme: {lastUpdate.toLocaleTimeString('tr-TR')}
+              Son Güncelleme: {lastUpdate.toLocaleTimeString('tr-TR')}
             </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
@@ -737,7 +976,7 @@ export default function HomePage() {
         {/* Loading overlay for data refresh */}
         {loading && !dashboardData.upcomingProjects.length && (
           <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-            <LoadingSpinner message="Veriler yÃ¼kleniyor..." compact />
+            <LoadingSpinner message="Veriler yükleniyor..." compact />
           </div>
         )}
 
@@ -764,12 +1003,12 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Section 1: Aktif AkÄ±Å (Cards) */}
+            {/* Section 1: Aktif Akış (Cards) */}
             <div className="space-y-6">
-              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Aktif AkÄ±Å</h2>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Aktif Akış</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Dashboard Cards for different modules */}
-                <DashboardCard title="YaklaÅan Projeler" icon={Briefcase} link="/projects" color="text-blue-600">
+                <DashboardCard title="Yaklaşan Projeler" icon={Briefcase} link="/projects" color="text-blue-600">
                   {dashboardData.upcomingProjects.length > 0 ? dashboardData.upcomingProjects.map((p, i) => (
                     <div key={`project-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
                       <div className="min-w-0">
@@ -797,7 +1036,7 @@ export default function HomePage() {
                   {dashboardData.upcomingTransfers.length > 0 ? dashboardData.upcomingTransfers.map((t, i) => (
                     <div key={`transfer-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
                       <div className="min-w-0">
-                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.pickup_location} â {t.dropoff_location}</p>
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.pickup_location} → {t.dropoff_location}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase">{t.type}</p>
                       </div>
                       <span className="text-[10px] font-black text-indigo-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
@@ -805,7 +1044,7 @@ export default function HomePage() {
                   )) : <EmptyState />}
                 </DashboardCard>
 
-                <DashboardCard title="UÃ§uÅ & Biletler" icon={Plane} link="/tickets/options" color="text-amber-600">
+                <DashboardCard title="Uçuş & Biletler" icon={Plane} link="/tickets/options" color="text-amber-600">
                   {dashboardData.upcomingTickets.length > 0 ? dashboardData.upcomingTickets.map((t, i) => (
                     <div key={`ticket-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
                       <div className="min-w-0">
@@ -843,20 +1082,20 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Section 2: Genel BakÄ±Å (Overview) */}
+            {/* Section 2: Genel Bakış (Overview) */}
             <div className="space-y-6 pt-8 border-t border-slate-100 dark:border-slate-800">
-              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Genel BakÄ±Å</h2>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Genel Bakış</h2>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Visual Analytics */}
                 <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-fit">
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs mb-1">Operasyonel DaÄÄ±lÄ±m</h2>
-                      <p className="text-[10px] text-slate-500 font-medium italic">Gelecek 30 gÃ¼nlÃ¼k planlanan iÅlemler</p>
+                      <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs mb-1">Operasyonel Dağılım</h2>
+                      <p className="text-[10px] text-slate-500 font-medium italic">Gelecek 30 günlük planlanan işlemler</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-emerald-500" />
-                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">+12% ArtÄ±Å</span>
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">+12% Artış</span>
                     </div>
                   </div>
                   <div className="h-[350px] w-full">
@@ -878,7 +1117,7 @@ export default function HomePage() {
                               return (
                                 <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700">
                                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{payload[0].payload.name}</p>
-                                  <p className="text-base font-black text-slate-900 dark:text-white">{payload[0].value} KayÄ±t</p>
+                                  <p className="text-base font-black text-slate-900 dark:text-white">{payload[0].value} Kayıt</p>
                                 </div>
                               );
                             }
@@ -899,8 +1138,8 @@ export default function HomePage() {
                 <div className="lg:col-span-4 space-y-6">
                   <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-6 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700" />
-                    <h3 className="text-xl font-black tracking-tight mb-3 leading-tight">Ä°Åinizi <br/>KolaylaÅtÄ±rÄ±n</h3>
-                    <p className="text-blue-100 text-[10px] font-medium mb-6 leading-relaxed">HÄ±zlÄ± iÅlem panelini kullanarak saniyeler iÃ§erisinde yeni kayÄ±tlar oluÅturabilirsiniz.</p>
+                    <h3 className="text-xl font-black tracking-tight mb-3 leading-tight">İşinizi <br/>Kolaylaştırın</h3>
+                    <p className="text-blue-100 text-[10px] font-medium mb-6 leading-relaxed">Hızlı işlem panelini kullanarak saniyeler içerisinde yeni kayıtlar oluşturabilirsiniz.</p>
                     <div className="grid grid-cols-2 gap-2">
                       {canCreate(Module.QUOTES) && (
                         <Link href="/quotes/create" className="p-3 bg-white/10 backdrop-blur-md rounded-xl hover:bg-white/20 transition-colors flex flex-col gap-2">
@@ -918,7 +1157,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
-                    <h3 className="font-black text-slate-900 dark:text-white tracking-tight uppercase text-[10px] mb-4">HÄ±zlÄ± EriÅim</h3>
+                    <h3 className="font-black text-slate-900 dark:text-white tracking-tight uppercase text-[10px] mb-4">Hızlı Erişim</h3>
                     <div className="space-y-2">
                       <Link href="/reports" className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-blue-600 transition-all duration-300">
                         <div className="flex items-center gap-3">
@@ -930,7 +1169,7 @@ export default function HomePage() {
                       <Link href="/users" className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-emerald-600 transition-all duration-300">
                         <div className="flex items-center gap-3">
                           <UserCheck className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover:text-white">KullanÄ±cÄ±lar</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover:text-white">Kullanıcılar</span>
                         </div>
                         <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-white" />
                       </Link>
@@ -966,18 +1205,18 @@ export default function HomePage() {
               <HelpCircle className="w-4 h-4" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-0.5">SÄ°STEM KILAVUZU</p>
-              <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">NasÄ±l KullanÄ±lÄ±r?</p>
+              <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-0.5">SİSTEM KILAVUZU</p>
+              <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Nasıl Kullanılır?</p>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
         <div className="flex items-center gap-8 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-          <span className="hover:text-blue-600 transition-colors cursor-pointer">Gizlilik PolitikasÄ±</span>
-          <span className="hover:text-blue-600 transition-colors cursor-pointer">Destek HattÄ±</span>
+          <span className="hover:text-blue-600 transition-colors cursor-pointer">Gizlilik Politikası</span>
+          <span className="hover:text-blue-600 transition-colors cursor-pointer">Destek Hattı</span>
           <span className="text-slate-200 dark:text-slate-800">|</span>
-          <span className="text-slate-500">Â© 2024 TEMPUS</span>
+          <span className="text-slate-500">© 2024 TEMPUS</span>
         </div>
       </footer>
 
