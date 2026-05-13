@@ -2,20 +2,22 @@
 -- vw_rp_otel_detay_proje_maliyet — Otel Detaylı Proje Maliyet Raporu (v3 - GÜNCEL)
 -- =============================================================================
 
--- 1. VERİ ONARICI: project_sales_items tablosundaki boş hotel_id'leri hotels_data üzerinden onarır
+-- 1. AGRESİF VERİ ONARICI: project_sales_items tablosundaki hatalı hotel_id'leri düzeltir
 DO $$
 DECLARE
     r RECORD;
     v_tab_id TEXT;
     v_hotel_id UUID;
 BEGIN
-    FOR r IN SELECT id, project_id, description FROM public.project_sales_items WHERE description LIKE '%[T:%' AND hotel_id IS NULL LOOP
+    FOR r IN SELECT id, project_id, description, hotel_id FROM public.project_sales_items WHERE description LIKE '%[T:%' LOOP
         v_tab_id := substring(r.description from '\[T:([^\]]+)\]');
+        
         SELECT (h_data->>'hotel_id')::uuid INTO v_hotel_id
         FROM public.projects p,
         jsonb_array_elements(CASE WHEN jsonb_typeof(p.hotels_data) = 'array' THEN p.hotels_data ELSE '[]'::jsonb END) h_data
         WHERE p.id = r.project_id AND h_data->>'id' = v_tab_id;
-        IF v_hotel_id IS NOT NULL THEN
+        
+        IF v_hotel_id IS NOT NULL AND (r.hotel_id IS NULL OR r.hotel_id <> v_hotel_id) THEN
             UPDATE public.project_sales_items SET hotel_id = v_hotel_id WHERE id = r.id;
         END IF;
     END LOOP;

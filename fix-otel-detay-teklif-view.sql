@@ -2,21 +2,24 @@
 -- vw_rp_otel_detay_teklif — Otel Detaylı Teklif Raporu (v3 - GÜNCEL)
 -- =============================================================================
 
--- 1. VERİ ONARICI: quote_items tablosundaki boş hotel_id'leri hotels_data üzerinden onarır
--- Bu blok her çalıştırıldığında mevcut hatalı kayıtları temizler.
+-- 1. AGRESİF VERİ ONARICI: [T:...] etiketi varsa hotel_id'yi MUTLAKA günceller
 DO $$
 DECLARE
     r RECORD;
     v_tab_id TEXT;
     v_hotel_id UUID;
 BEGIN
-    FOR r IN SELECT id, quote_id, description FROM public.quote_items WHERE description LIKE '%[T:%' AND hotel_id IS NULL LOOP
+    -- Etiketi olan tüm kalemleri tara (NULL olsun olmasın, yanlış atanmışları düzeltmek için)
+    FOR r IN SELECT id, quote_id, description, hotel_id FROM public.quote_items WHERE description LIKE '%[T:%' LOOP
         v_tab_id := substring(r.description from '\[T:([^\]]+)\]');
+        
         SELECT (h_data->>'hotel_id')::uuid INTO v_hotel_id
         FROM public.quotes q,
         jsonb_array_elements(CASE WHEN jsonb_typeof(q.hotels_data) = 'array' THEN q.hotels_data ELSE '[]'::jsonb END) h_data
         WHERE q.id = r.quote_id AND h_data->>'id' = v_tab_id;
-        IF v_hotel_id IS NOT NULL THEN
+        
+        -- Eğer etiketteki otel mevcut hotel_id'den farklıysa düzelt
+        IF v_hotel_id IS NOT NULL AND (r.hotel_id IS NULL OR r.hotel_id <> v_hotel_id) THEN
             UPDATE public.quote_items SET hotel_id = v_hotel_id WHERE id = r.id;
         END IF;
     END LOOP;
