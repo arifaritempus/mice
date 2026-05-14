@@ -1629,19 +1629,34 @@ export default function ProjectDetailPage() {
         }
       } catch (error: any) {
         console.error('saveItems hatası:', error?.message);
+        toast.error('Kaydedilirken hata oluştu.');
       }
     }
 
-    if (idMap.size > 0) {
-      if (side === 'sales') {
-        setItemsSales(prev => prev.map(item => 
-          idMap.has(item.id) ? { ...item, id: idMap.get(item.id)!, isEditing: false } : item
-        ));
-      } else {
-        setItemsPurchase(prev => prev.map(item => 
-          idMap.has(item.id) ? { ...item, id: idMap.get(item.id)!, isEditing: false } : item
-        ));
-      }
+    // Her durumda isEditing: false olanları ana state'e yansıt
+    if (side === 'sales') {
+      setItemsSales(prev => prev.map(p => {
+        const found = nextItems.find(n => n.id === p.id);
+        if (found) {
+          // idMap'ten gelen yeni ID varsa onu kullan, yoksa veriyi güncelle ve isEditing'i kapat
+          const newId = idMap.get(p.id) || p.id;
+          return { ...p, ...found, id: newId, isEditing: false };
+        }
+        return p;
+      }));
+    } else {
+      setItemsPurchase(prev => prev.map(p => {
+        const found = nextItems.find(n => n.id === p.id);
+        if (found) {
+          const newId = idMap.get(p.id) || p.id;
+          return { ...p, ...found, id: newId, isEditing: false };
+        }
+        return p;
+      }));
+    }
+
+    if (idMap.size > 0 || nextItems.length > 0) {
+      toast.success('Değişiklikler kaydedildi.');
     }
   }, [projectId, project?.hotels_data]);
 
