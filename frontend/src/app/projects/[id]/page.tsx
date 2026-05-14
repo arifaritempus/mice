@@ -4670,10 +4670,68 @@ export default function ProjectDetailPage() {
     });
   }, [itemsPurchase, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
 
-  // Satış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
+  // Diğer Servisler için filtreleme ve sıralama
+  const filteredOtherServices = useMemo(() => {
+    let filtered = otherServices;
 
-  // Alış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      
+      filtered = filtered.filter((item: any) => {
+        if (activeHotelId === 'general') {
+          // Genel hizmetler: hotel_id yoksa VE description içinde başka bir [T:...] tag'i yoksa
+          const desc = item.description || '';
+          const hasTabTag = /\[T:.*?\]/.test(desc);
+          return (!item.hotel_id && !item.hotel) || (!hasTabTag && activeHotelId === 'general');
+        }
+        
+        // Tag ile filtrele (en güvenli yöntem)
+        if (item.description && item.description.includes(`[T:${activeHotelId}]`)) {
+          return true;
+        }
 
+        // Fallback: hotel_id (DB'deki gerçek ID veya bizim Tab UUID)
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+
+    if (otherServiceSearch.trim()) {
+      const searchLower = otherServiceSearch.toLowerCase();
+      filtered = filtered.filter(item =>
+        (item.supplier || item.hotel || '').toLowerCase().includes(searchLower) ||
+        (item.subCategory || item.sub_category || '').toLowerCase().includes(searchLower) ||
+        (item.description || '').toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (otherServiceSortField) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue = a[otherServiceSortField];
+        let bValue = b[otherServiceSortField];
+
+        if (otherServiceSortField === 'date') {
+          aValue = new Date(aValue || 0).getTime();
+          bValue = new Date(bValue || 0).getTime();
+        } else if (['amount', 'totalTRY', 'total_try', 'exchangeRate', 'exchange_rate', 'fx'].includes(otherServiceSortField)) {
+          aValue = parseFloat(aValue) || 0;
+          bValue = parseFloat(bValue) || 0;
+        } else {
+          aValue = (aValue || '').toString().toLowerCase();
+          bValue = (bValue || '').toString().toLowerCase();
+        }
+
+        if (otherServiceSortDirection === 'asc') {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+        } else {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [otherServices, activeHotelId, project?.hotels_data, otherServiceSearch, otherServiceSortField, otherServiceSortDirection]);
 
   // Satış kalemlerini kategorilere göre grupla (cache'lenmiş)
   const groupedSalesItems = useMemo(() => {
@@ -4800,69 +4858,6 @@ export default function ProjectDetailPage() {
       currencyText: 'MIX',
     };
   };
-  // Diğer Servisler için filtreleme ve sıralama
-  const filteredOtherServices = useMemo(() => {
-    let filtered = otherServices;
-
-    if (activeHotelId !== 'all') {
-      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
-      const realHotelId = currentTab?.hotel_id;
-      
-      filtered = filtered.filter((item: any) => {
-        if (activeHotelId === 'general') {
-          // Genel hizmetler: hotel_id yoksa VE description içinde başka bir [T:...] tag'i yoksa
-          const desc = item.description || '';
-          const hasTabTag = /\[T:.*?\]/.test(desc);
-          return (!item.hotel_id && !item.hotel) || (!hasTabTag && activeHotelId === 'general');
-        }
-        
-        // Tag ile filtrele (en güvenli yöntem)
-        if (item.description && item.description.includes(`[T:${activeHotelId}]`)) {
-          return true;
-        }
-
-        // Fallback: hotel_id (DB'deki gerçek ID veya bizim Tab UUID)
-        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
-        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
-      });
-    }
-
-    if (otherServiceSearch.trim()) {
-      const searchLower = otherServiceSearch.toLowerCase();
-      filtered = filtered.filter(item =>
-        (item.supplier || item.hotel || '').toLowerCase().includes(searchLower) ||
-        (item.subCategory || item.sub_category || '').toLowerCase().includes(searchLower) ||
-        (item.description || '').toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (otherServiceSortField) {
-      filtered = [...filtered].sort((a, b) => {
-        let aValue = a[otherServiceSortField];
-        let bValue = b[otherServiceSortField];
-
-        if (otherServiceSortField === 'date') {
-          aValue = new Date(aValue || 0).getTime();
-          bValue = new Date(bValue || 0).getTime();
-        } else if (['amount', 'totalTRY', 'total_try', 'exchangeRate', 'exchange_rate', 'fx'].includes(otherServiceSortField)) {
-          aValue = parseFloat(aValue) || 0;
-          bValue = parseFloat(bValue) || 0;
-        } else {
-          aValue = String(aValue || '').toLowerCase();
-          bValue = String(bValue || '').toLowerCase();
-        }
-
-        if (otherServiceSortDirection === 'asc') {
-          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-        } else {
-          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-        }
-      });
-    }
-
-    return filtered;
-  }, [otherServices, otherServiceSearch, otherServiceSortField, otherServiceSortDirection, activeHotelId, project?.hotels_data]);
-
   const filteredHrExtras = useMemo(() => {
     let filtered = hrExtras.map((item, index) => ({ ...item, originalIndex: index }));
 
