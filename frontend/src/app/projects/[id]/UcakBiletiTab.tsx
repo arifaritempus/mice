@@ -217,7 +217,7 @@ export default function UcakBiletiTab({
       {/* Uçak Bileti Tablosu */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="min-w-full w-max text-xs">
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
                 <th
@@ -307,9 +307,9 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white min-w-[140px] whitespace-nowrap">DÖVİZ</th>
-                <th className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[160px] whitespace-nowrap">KUR</th>
-                <th className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[200px] whitespace-nowrap">TOPLAM TL</th>
+                <th style={{ minWidth: '150px' }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">DÖVİZ</th>
+                <th style={{ minWidth: '160px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">KUR</th>
+                <th style={{ minWidth: '200px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">TOPLAM TL</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[300px]">MİSAFİRLER</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20">DURUM</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-24">İŞLEMLER</th>
@@ -416,6 +416,7 @@ export default function UcakBiletiTab({
                         </td>
                         <td className="px-2 py-2">
                           <select
+                            style={{ minWidth: '130px' }}
                             value={tempFlightItem?.ucusTipi || ''}
                             onChange={(e) => setTempFlightItem({ ...tempFlightItem!, ucusTipi: e.target.value })}
                             className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -531,51 +532,54 @@ export default function UcakBiletiTab({
                           />
                         </td>
                         <td className="px-2 py-2">
-                          <select
-                            value={tempFlightItem?.doviz || ''}
-                            onChange={(e) => {
-                              const doviz = e.target.value;
-                              const kur = tempFlightItem?.kur || 1;
-                              const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                              const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
-                              setTempFlightItem({ ...tempFlightItem!, doviz, toplamTl });
-                            }}
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                          >
+                           <select
+                             style={{ minWidth: '130px' }}
+                             value={tempFlightItem?.doviz || ''}
+                             onChange={(e) => {
+                               const doviz = e.target.value;
+                               const kur = tempFlightItem?.kur || 1;
+                               const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                               const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                               setTempFlightItem({ ...tempFlightItem!, doviz, toplamTl });
+                             }}
+                             className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                           >
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
                             <option value="TL">TL</option>
                           </select>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
-                          <input
-                            type="number"
-                            step="0.0001"
-                            value={tempFlightItem?.kur || 1}
-                            onChange={(e) => {
-                              const kur = Number(e.target.value);
-                              const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                              const doviz = tempFlightItem?.doviz || 'TL';
-                              const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
-                              setTempFlightItem({ ...tempFlightItem!, kur, toplamTl });
-                            }}
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
-                          />
+                           <input
+                             style={{ minWidth: '140px' }}
+                             type="number"
+                             step="0.0001"
+                             value={tempFlightItem?.kur || 1}
+                             onChange={(e) => {
+                               const kur = Number(e.target.value);
+                               const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                               const doviz = tempFlightItem?.doviz || 'TL';
+                               const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                               setTempFlightItem({ ...tempFlightItem!, kur, toplamTl });
+                             }}
+                             className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
+                           />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={tempFlightItem?.toplamTl || 0}
-                            onChange={(e) => {
-                              const toplamTl = Number(e.target.value);
-                              const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                              const doviz = tempFlightItem?.doviz || 'TL';
-                              const kur = doviz === 'TL' ? 1 : (toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1);
-                              setTempFlightItem({ ...tempFlightItem!, toplamTl, kur });
-                            }}
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
-                          />
+                           <input
+                             style={{ minWidth: '180px' }}
+                             type="number"
+                             step="0.01"
+                             value={tempFlightItem?.toplamTl || 0}
+                             onChange={(e) => {
+                               const toplamTl = Number(e.target.value);
+                               const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                               const doviz = tempFlightItem?.doviz || 'TL';
+                               const kur = doviz === 'TL' ? 1 : (toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1);
+                               setTempFlightItem({ ...tempFlightItem!, toplamTl, kur });
+                             }}
+                             className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
+                           />
                         </td>
                         <td className="px-2 py-2 w-48 max-w-48">
                           <input
@@ -807,6 +811,7 @@ export default function UcakBiletiTab({
                   </td>
                   <td className="px-2 py-2">
                     <select
+                      style={{ minWidth: '130px' }}
                       value={tempFlightItem?.ucusTipi || ''}
                       onChange={(e) => setTempFlightItem({ ...tempFlightItem!, ucusTipi: e.target.value })}
                       className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -923,6 +928,7 @@ export default function UcakBiletiTab({
                   </td>
                   <td className="px-2 py-2">
                     <select
+                      style={{ minWidth: '130px' }}
                       value={tempFlightItem?.doviz || ''}
                       onChange={(e) => {
                         const doviz = e.target.value;
@@ -940,6 +946,7 @@ export default function UcakBiletiTab({
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap">
                     <input
+                      style={{ minWidth: '140px' }}
                       type="number"
                       step="0.0001"
                       value={tempFlightItem?.kur || 1}
@@ -955,6 +962,7 @@ export default function UcakBiletiTab({
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap">
                     <input
+                      style={{ minWidth: '180px' }}
                       type="number"
                       step="0.01"
                       value={tempFlightItem?.toplamTl || 0}
