@@ -16306,6 +16306,7 @@ export default function ProjectDetailPage() {
                   handleFinancialExport={handleFinancialExport}
                   activeHotelId={activeHotelId}
                   project={project}
+                  allSuppliers={allSuppliers}
                 />
               )}
               {activeTab === 'tahsilat' && (
