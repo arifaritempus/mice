@@ -471,11 +471,6 @@ export default function SalesTab({
                       const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
                       setItemsSales(list); 
                     }} 
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
-                    }}
                     className="w-44 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     <option value="">Alt Kategori</option>
@@ -504,11 +499,6 @@ export default function SalesTab({
                         setItemsSales(list); // Just exit, don't save to DB (saveItems in page.tsx skips isEditing:true)
                       }
                     }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
-                    }}
                     type="number"
                     step="1"
                     className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -535,11 +525,6 @@ export default function SalesTab({
                         setItemsSales(list);
                       }
                     }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
-                    }}
                     type="number"
                     step="1"
                     className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -565,11 +550,6 @@ export default function SalesTab({
                         setItemsSales(list);
                       }
                     }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
-                    }}
                     type="number"
                     step="0.01"
                     className="w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -582,11 +562,6 @@ export default function SalesTab({
                       const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
                       setItemsSales(list); 
                     }} 
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
-                    }}
                     className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     <option>EUR</option>
@@ -612,11 +587,6 @@ export default function SalesTab({
                         const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
                         setItemsSales(list);
                       }
-                    }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
                     }}
                     type="number"
                     step="1"
@@ -645,11 +615,6 @@ export default function SalesTab({
                         const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
                         setItemsSales(list);
                       }
-                    }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
                     }}
                     type="number"
                     step="0.0001"
@@ -683,11 +648,6 @@ export default function SalesTab({
                         setItemsSales(list);
                       }
                     }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
-                    }}
                     type="number"
                     step="0.01"
                     className="w-32 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -711,11 +671,6 @@ export default function SalesTab({
                         const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
                         setItemsSales(list);
                       }
-                    }}
-                    onBlur={() => {
-                      const updated = {...it, isEditing: false};
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      saveItems('sales', list);
                     }}
                     className="flex-1 min-w-[10rem] px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     placeholder="Açıklama"

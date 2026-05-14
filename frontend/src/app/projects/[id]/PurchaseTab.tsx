@@ -525,11 +525,7 @@ export default function PurchaseTab({
                         const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                         setItemsPurchase(list); 
                       }} 
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
-                      }}
+
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     >
                       <option value="">Alt Kategori</option>
@@ -560,11 +556,6 @@ export default function PurchaseTab({
                           setItemsPurchase(list);
                         }
                       }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
-                      }}
                       type="number"
                       step="1"
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -593,11 +584,6 @@ export default function PurchaseTab({
                           setItemsPurchase(list);
                         }
                       }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
-                      }}
                       type="number"
                       step="1"
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -625,11 +611,6 @@ export default function PurchaseTab({
                           setItemsPurchase(list);
                         }
                       }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
-                      }}
                       type="number"
                       step="0.01"
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -644,11 +625,7 @@ export default function PurchaseTab({
                         const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                         setItemsPurchase(list); 
                       }} 
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
-                      }}
+
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     >
                       <option>EUR</option>
@@ -676,11 +653,6 @@ export default function PurchaseTab({
                           const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           setItemsPurchase(list);
                         }
-                      }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="1"
@@ -711,11 +683,6 @@ export default function PurchaseTab({
                           const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           setItemsPurchase(list);
                         }
-                      }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="0.0001"
@@ -751,11 +718,6 @@ export default function PurchaseTab({
                           setItemsPurchase(list);
                         }
                       }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
-                      }}
                       type="number"
                       step="0.01"
                       className="w-full min-w-0 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -781,11 +743,6 @@ export default function PurchaseTab({
                           const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           setItemsPurchase(list);
                         }
-                      }}
-                      onBlur={() => {
-                        const updated = {...it, isEditing: false};
-                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('purchase', list);
                       }}
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       placeholder="Açıklama"
