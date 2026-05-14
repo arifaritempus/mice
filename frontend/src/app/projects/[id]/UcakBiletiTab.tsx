@@ -217,7 +217,7 @@ export default function UcakBiletiTab({
       {/* Uçak Bileti Tablosu */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full w-max text-xs">
+          <table className="min-w-full text-xs">
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
                 <th
@@ -263,10 +263,10 @@ export default function UcakBiletiTab({
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px]">UÇUŞ TİPİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">GİDİŞ TARİHİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">GİDİŞ SAATİ</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px]">GİDİŞ UÇUŞ KODU</th>
+                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white">GİDİŞ UÇUŞ KODU</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">DÖNÜŞ TARİHİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">DÖNÜŞ SAATİ</th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px]">DÖNÜŞ UÇUŞ KODU</th>
+                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white">DÖNÜŞ UÇUŞ KODU</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[200px] whitespace-nowrap">GÜZERGAH</th>
                 <th
                   className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
@@ -282,7 +282,8 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
+                  style={{ minWidth: '70px', width: '70px' }}
+                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort('ppMaliyet')}
                 >
                   <div className="flex items-center justify-end">
@@ -307,8 +308,8 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th style={{ minWidth: '150px' }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">DÖVİZ</th>
-                <th style={{ minWidth: '160px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">KUR</th>
+                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">DÖVİZ</th>
+                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">KUR</th>
                 <th style={{ minWidth: '200px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">TOPLAM TL</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[300px]">MİSAFİRLER</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20">DURUM</th>
@@ -533,7 +534,7 @@ export default function UcakBiletiTab({
                         </td>
                         <td className="px-2 py-2">
                            <select
-                             style={{ minWidth: '130px' }}
+                             style={{ minWidth: '100%' }}
                              value={tempFlightItem?.doviz || ''}
                              onChange={(e) => {
                                const doviz = e.target.value;
@@ -551,7 +552,7 @@ export default function UcakBiletiTab({
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                            <input
-                             style={{ minWidth: '140px' }}
+                             style={{ minWidth: '100%' }}
                              type="number"
                              step="0.0001"
                              value={tempFlightItem?.kur || 1}
@@ -928,7 +929,7 @@ export default function UcakBiletiTab({
                   </td>
                   <td className="px-2 py-2">
                     <select
-                      style={{ minWidth: '130px' }}
+                      style={{ minWidth: '100%' }}
                       value={tempFlightItem?.doviz || ''}
                       onChange={(e) => {
                         const doviz = e.target.value;
@@ -946,7 +947,7 @@ export default function UcakBiletiTab({
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap">
                     <input
-                      style={{ minWidth: '140px' }}
+                      style={{ minWidth: '100%' }}
                       type="number"
                       step="0.0001"
                       value={tempFlightItem?.kur || 1}
