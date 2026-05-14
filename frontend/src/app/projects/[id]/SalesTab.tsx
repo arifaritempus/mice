@@ -464,12 +464,9 @@ export default function SalesTab({
               {it.isEditing ? (
                 // Düzenleme modu
                 <>
-                  <select 
-                    value={it.sub_category} 
                     onChange={(e)=>{ 
                       const updated = {...it, sub_category: e.target.value}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }} 
                     className="w-44 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
@@ -483,20 +480,16 @@ export default function SalesTab({
                     onChange={(e)=>{ 
                       const qty = Number(e.target.value);
                       const updated = {...it, qty, total: qty * it.repeat * it.unit_price, total_try: qty * it.repeat * it.unit_price * it.fx}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]); 
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list); // Just exit, don't save to DB (saveItems in page.tsx skips isEditing:true)
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     type="number"
@@ -509,20 +502,16 @@ export default function SalesTab({
                     onChange={(e)=>{ 
                       const repeat = Number(e.target.value);
                       const updated = {...it, repeat, total: it.qty * repeat * it.unit_price, total_try: it.qty * repeat * it.unit_price * it.fx}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]);
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list);
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     type="number"
@@ -534,20 +523,16 @@ export default function SalesTab({
                     onChange={(e)=>{ 
                       const unit_price = Number(e.target.value);
                       const updated = {...it, unit_price, total: it.qty * it.repeat * unit_price, total_try: it.qty * it.repeat * unit_price * it.fx}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]);
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list);
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     type="number"
@@ -559,8 +544,7 @@ export default function SalesTab({
                     value={it.currency} 
                     onChange={(e)=>{ 
                       const updated = {...it, currency: e.target.value}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }} 
                     className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
@@ -600,20 +584,16 @@ export default function SalesTab({
                     onChange={(e)=>{ 
                       const fx = Number(e.target.value);
                       const updated = {...it, fx, total_try: it.qty * it.repeat * it.unit_price * fx}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]);
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list);
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     type="number"
@@ -632,20 +612,16 @@ export default function SalesTab({
                       } 
                       const newTotal = qtyTimesRepeat * newUnitPrice; 
                       const updated = { ...it, unit_price: newUnitPrice, total: newTotal, total_try: newTotalTRY }; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]);
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list);
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     type="number"
@@ -656,20 +632,16 @@ export default function SalesTab({
                     value={it.description ?? ''}
                     onChange={(e)=>{ 
                       const updated = {...it, description: e.target.value}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]);
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list);
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     className="flex-1 min-w-[10rem] px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -679,8 +651,7 @@ export default function SalesTab({
                     <button 
                       onClick={()=>{ 
                         const updated = {...it, isEditing: false}; 
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list); 
+                        saveItems('sales', [updated]); 
                       }} 
                       className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" 
                       title="Kaydet"
