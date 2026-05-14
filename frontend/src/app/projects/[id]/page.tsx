@@ -1560,113 +1560,106 @@ export default function ProjectDetailPage() {
   }, [projectId, activeHotelId, refetchAccommodation, formatDateToSupabase]);
 
   const saveItems = useCallback(async (side: 'sales' | 'purchase', nextItems: any[]) => {
-    const prevItems = side === 'sales' ? itemsSales : itemsPurchase;
     const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
 
-    // Önce state'i güncelle (UI hızı için)
-    if (side === 'sales') setItemsSales(nextItems);
-    else setItemsPurchase(nextItems);
+    // Önce state'i güncelle (UI hızı için) - Diğer sekmelerdeki verileri korumak için merging yapıyoruz
+    if (side === 'sales') {
+      setItemsSales(prev => {
+        const updated = prev.map(p => nextItems.find(n => n.id === p.id) || p);
+        const brandNew = nextItems.filter(n => String(n.id).startsWith('new_') && !prev.some(p => p.id === n.id));
+        return [...updated, ...brandNew];
+      });
+    } else {
+      setItemsPurchase(prev => {
+        const updated = prev.map(p => nextItems.find(n => n.id === p.id) || p);
+        const brandNew = nextItems.filter(n => String(n.id).startsWith('new_') && !prev.some(p => p.id === n.id));
+        return [...updated, ...brandNew];
+      });
+    }
 
-    // new_xxx → gerçek DB ID eşlemesi (tüm create'ler bitmeden state güncelleme yapma)
     const idMap = new Map<string, string>(); // old tempId → new realId
 
     for (const next of nextItems) {
-      const prev = prevItems.find(it => it.id === next.id);
-
       const isNew = String(next.id).startsWith('new_');
-      const hasContent = next.sub_category || next.description;
-      const editingFinished = prev?.isEditing && !next.isEditing;
+      
+      // Düzenleme devam ediyorsa DB'ye gitme, sadece isEditing false olduğunda kaydet
+      if (next.isEditing) continue;
 
-      if (editingFinished || (isNew && hasContent)) {
-        // hotel_id mapping
-        const tabId = next.hotel_id;
-        const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-        let masterHotelId: string | null = null;
+      const tabId = next.hotel_id;
+      const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+      let masterHotelId: string | null = null;
 
-        if (next._masterHotelId !== undefined) {
-          masterHotelId = next._masterHotelId;
-        } else if (tabId && isUUID(tabId)) {
-          const hTabEntry = project?.hotels_data?.find((h: any) => h.id === tabId);
-          masterHotelId = hTabEntry ? hTabEntry.hotel_id : null;
+      if (next._masterHotelId !== undefined) {
+        masterHotelId = next._masterHotelId;
+      } else if (tabId && isUUID(tabId)) {
+        const hTabEntry = project?.hotels_data?.find((h: any) => h.id === tabId);
+        masterHotelId = hTabEntry ? hTabEntry.hotel_id : null;
+      }
+
+      let finalDescription = (next.description || '')
+        .replace(/ \[T:.*?\]/g, '')
+        .replace(/ \[S:.*?\]/g, '')
+        .replace(/ \[R:.*?\]/g, '')
+        .trim();
+
+      if (side === 'purchase' && next.vendorId) finalDescription += ` [S:${next.vendorId}]`;
+      if (tabId && isUUID(tabId)) finalDescription += ` [T:${tabId}]`;
+      if (next.repeat && next.repeat > 1) finalDescription += ` [R:${next.repeat}]`;
+
+      const dataToSave: any = {
+        project_id: projectId,
+        category: next.main_category,
+        sub_category: next.sub_category,
+        description: finalDescription,
+        unit_quantity: next.qty,
+        unit_price: next.unit_price,
+        total_price: next.total,
+        currency: next.currency,
+        vat: next.vat,
+        fx: next.fx,
+        hotel_id: masterHotelId
+      };
+
+      try {
+        if (isNew) {
+          const created = await service.create(dataToSave);
+          idMap.set(next.id, created.id);
+        } else {
+          await service.update(next.id as string, dataToSave);
         }
-
-        let finalDescription = (next.description || '')
-          .replace(/ \[T:.*?\]/g, '')
-          .replace(/ \[S:.*?\]/g, '')
-          .replace(/ \[R:.*?\]/g, '')
-          .trim();
-
-        if (side === 'purchase' && next.vendorId) finalDescription += ` [S:${next.vendorId}]`;
-        if (tabId && isUUID(tabId)) finalDescription += ` [T:${tabId}]`;
-        if (next.repeat && next.repeat > 1) finalDescription += ` [R:${next.repeat}]`;
-
-        const dataToSave: any = {
-          project_id: projectId,
-          category: next.main_category,
-          sub_category: next.sub_category,
-          description: finalDescription,
-          unit_quantity: next.qty,
-          unit_price: next.unit_price,
-          total_price: next.total,
-          currency: next.currency,
-          vat: next.vat,
-          fx: next.fx,
-          hotel_id: masterHotelId
-          // supplier kolonu DB'de yok; vendor bilgisi description içinde [S:vendorId] olarak saklanıyor
-        };
-
-        try {
-          if (isNew) {
-            const created = await service.create(dataToSave);
-            // Geçici ID → gerçek ID eşlemesini kaydet; state'i döngü içinde güncelleme
-            idMap.set(next.id, created.id);
-          } else {
-            await service.update(next.id as string, dataToSave);
-          }
-        } catch (error: any) {
-          console.error('=== KAYIT HATASI ===');
-          console.error('Kaydedilmeye çalışılan veri:', JSON.stringify(dataToSave, null, 2));
-          console.error('next.id:', next.id, '| isNew:', isNew, '| side:', side);
-          console.error('tabId (hotel_id):', tabId, '| masterHotelId:', masterHotelId);
-          console.error('Hata mesajı:', error?.message);
-          console.error('Hata kodu:', error?.code);
-          console.error('Hata detayı:', error?.details);
-          console.error('Hata ipucu:', error?.hint);
-          console.error('Tam hata:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
-        }
+      } catch (error: any) {
+        console.error('saveItems hatası:', error?.message);
       }
     }
 
-    // Tüm create'ler bitti — tek seferde ID'leri gerçek değerleriyle değiştir
     if (idMap.size > 0) {
-      const finalList = nextItems.map(item =>
-        idMap.has(item.id) ? { ...item, id: idMap.get(item.id)!, isEditing: false } : item
-      );
-      if (side === 'sales') setItemsSales(finalList);
-      else setItemsPurchase(finalList);
+      if (side === 'sales') {
+        setItemsSales(prev => prev.map(item => 
+          idMap.has(item.id) ? { ...item, id: idMap.get(item.id)!, isEditing: false } : item
+        ));
+      } else {
+        setItemsPurchase(prev => prev.map(item => 
+          idMap.has(item.id) ? { ...item, id: idMap.get(item.id)!, isEditing: false } : item
+        ));
+      }
     }
+  }, [projectId, project?.hotels_data]);
 
-    // localStorage kullanimi kaldirildi
-  }, [projectId, itemsSales, itemsPurchase, project?.hotels_data]);
 
   const addItem = useCallback(async (side: 'sales' | 'purchase') => {
     if (!newItem.main_category) return;
     
     // Aktif otel ID'sini belirle (Eğer 'all' ise null, değilse seçili otel)
     const effectiveHotelId = activeHotelId === 'all' ? null : (activeHotelId === 'general' ? 'general' : activeHotelId);
-
     const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
     
     try {
-      // UUID validation for effectiveHotelId
       const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-      
       const tabId = effectiveHotelId;
       let masterHotelId: string | null = null;
 
       if (tabId && isUUID(tabId)) {
         const hTabEntry = project?.hotels_data?.find((h: any) => h.id === tabId);
-        // hTabEntry bulunamazsa tabId'yi (tab UUID) degil null gonder — FK hatasi önle
         masterHotelId = hTabEntry ? hTabEntry.hotel_id : null;
       }
 
@@ -1681,28 +1674,29 @@ export default function ProjectDetailPage() {
         currency: 'EUR',
         vat: 0,
         fx: 1,
-        hotel_id: masterHotelId // DB'ye GERÇEK OTEL ID'si gidiyor
-        // supplier kolonu DB'de yok
+        hotel_id: masterHotelId
       });
 
       const item = {
         ...createdItem,
-        main_category: createdItem.category, qty: createdItem.unit_quantity, repeat: createdItem.sefer || createdItem.repeat || 1,
+        main_category: createdItem.category, 
+        qty: createdItem.unit_quantity, 
+        repeat: createdItem.sefer || createdItem.repeat || 1,
         total: createdItem.total_price,
+        hotel_id: tabId, 
         isEditing: true
       };
 
-      const currentItems = side === 'sales' ? itemsSales : itemsPurchase;
-      const next = [...currentItems, item];
-      
-      if (side === 'sales') setItemsSales(next);
-      else setItemsPurchase(next);
+      if (side === 'sales') setItemsSales(prev => [...prev, item]);
+      else setItemsPurchase(prev => [...prev, item]);
 
       setNewItem({ main_category: '', sub_category: '', description: '', qty: 1, repeat: 1, unit_price: 0, currency: 'EUR', vat: 0, fx: 1, supplier: '' });
+      toast.success('Kalem eklendi.');
     } catch (error: any) {
-      console.error('addItem hatası:', error?.message, error?.code, error?.details);
+      console.error('addItem hatası:', error?.message);
+      toast.error('Kalem eklenirken hata oluştu.');
     }
-  }, [newItem, itemsSales, itemsPurchase, projectId, activeHotelId, project?.hotels_data]);
+  }, [newItem, projectId, activeHotelId, project?.hotels_data]);
 
   const removeItem = useCallback((side: 'sales' | 'purchase', id: string) => {
     setConfirmModal({
@@ -2888,19 +2882,18 @@ export default function ProjectDetailPage() {
   const formatCurrency = projectUtils.formatCurrency;
 
   const addBelow = useCallback(async (side: 'sales' | 'purchase', itemId: string) => {
-    const list = side === 'sales' ? itemsSales : itemsPurchase;
-    const originalItem = list.find(item => item.id === itemId);
+    // Note: We need a snapshot of the current list to find the originalItem
+    // Use functional updater for the actual state update to be safe
+    let originalItem: any = null;
+    if (side === 'sales') originalItem = itemsSales.find(i => i.id === itemId);
+    else originalItem = itemsPurchase.find(i => i.id === itemId);
 
     if (!originalItem) return;
 
     const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
 
     try {
-      const isUUID = (str: string) =>
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-
-      // UI'da satırlarda hotel_id bazen "tab id" tutuluyor olabilir.
-      // DB kaydı için gerçek otel id (master hotel id) gönderilmeli.
+      const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
       const sourceHotelId = originalItem.hotel_id || '';
       let dbHotelId: string | null = null;
       if (sourceHotelId) {
@@ -2912,7 +2905,6 @@ export default function ProjectDetailPage() {
         }
       }
 
-      // Orijinal açıklamadaki sekme etiketini ([T:...]) bul ve yeni satıra ekle
       const tabTagMatch = (originalItem.description || '').match(/\[T:.*?\]/);
       const tabTag = tabTagMatch ? ` ${tabTagMatch[0]}` : '';
 
@@ -2936,29 +2928,26 @@ export default function ProjectDetailPage() {
         qty: createdItem.unit_quantity, 
         repeat: createdItem.sefer || createdItem.repeat || 1,
         total: createdItem.total_price,
-        // UI tarafında satırı aynı sekmede göstermek için mevcut tab kimliğini koru
         hotel_id: originalItem.hotel_id,
         isEditing: true
       };
 
-      const next = [...list, item];
-      if (side === 'sales') setItemsSales(next);
-      else setItemsPurchase(next);
+      if (side === 'sales') setItemsSales(prev => [...prev, item]);
+      else setItemsPurchase(prev => [...prev, item]);
       toast.success('Yeni satır eklendi.');
     } catch (error: any) {
-      console.error('addBelow hatası:', error?.message, error?.code, error?.details);
+      console.error('addBelow hatası:', error?.message);
       toast.error('Satır eklenirken bir hata oluştu.');
     }
   }, [itemsSales, itemsPurchase, projectId, project?.hotels_data]);
 
   const editRow = useCallback(async (side: 'sales' | 'purchase', id: string) => {
-    const list = side === 'sales' ? itemsSales : itemsPurchase;
-    const updatedList = list.map((item: any) =>
-      item.id === id ? { ...item, isEditing: true } : item
-    );
-    if (side === 'sales') setItemsSales(updatedList);
-    else setItemsPurchase(updatedList);
-  }, [itemsSales, itemsPurchase]);
+    if (side === 'sales') {
+      setItemsSales(prev => prev.map(item => item.id === id ? { ...item, isEditing: true } : item));
+    } else {
+      setItemsPurchase(prev => prev.map(item => item.id === id ? { ...item, isEditing: true } : item));
+    }
+  }, []);
 
   // Konaklama Excel Import
   const handleAccommodationImport = async (event: React.ChangeEvent<HTMLInputElement>) => {

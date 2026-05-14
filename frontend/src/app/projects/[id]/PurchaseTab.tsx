@@ -231,7 +231,7 @@ export default function PurchaseTab({
                   } 
                   if(e.key==='Escape'){ 
                     e.preventDefault();
-                    setNewItem({}); 
+                    setNewItem({ main_category: '', sub_category: '', description: '', qty: 1, repeat: 1, unit_price: 0, currency: 'EUR', vat: 0, fx: 1, supplier: '' }); 
                     setShowAddRowPurchase(false);
                   } 
                 }}
@@ -518,7 +518,20 @@ export default function PurchaseTab({
               {it.isEditing ? (
                 <>
                   <div className="w-44">
-                    <select value={it.sub_category} onChange={(e)=>{ const updated = {...it, sub_category: e.target.value}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }} className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                    <select 
+                      value={it.sub_category} 
+                      onChange={(e)=>{ 
+                        const updated = {...it, sub_category: e.target.value}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }} 
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
+                      }}
+                      className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    >
                       <option value="">Alt Kategori</option>
                       {categories.filter((c:any)=>c.parent_id===it.main_category).map((c:any)=> (
                         <option key={c.id} value={c.id}>{c.name}</option>
@@ -528,21 +541,29 @@ export default function PurchaseTab({
                   <div className="w-16">
                     <input
                       value={it.qty ?? 0}
-                      onChange={(e)=>{ const updated = {...it, qty: Number(e.target.value), total: Number(e.target.value) * it.repeat * it.unit_price, total_try: Number(e.target.value) * it.repeat * it.unit_price * it.fx}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const qty = Number(e.target.value);
+                        const updated = {...it, qty, total: qty * it.repeat * it.unit_price, total_try: qty * it.repeat * it.unit_price * it.fx}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="1"
@@ -553,21 +574,29 @@ export default function PurchaseTab({
                   <div className="w-20">
                     <input
                       value={it.repeat ?? 0}
-                      onChange={(e)=>{ const updated = {...it, repeat: Number(e.target.value), total: it.qty * Number(e.target.value) * it.unit_price, total_try: it.qty * Number(e.target.value) * it.unit_price * it.fx}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const repeat = Number(e.target.value);
+                        const updated = {...it, repeat, total: it.qty * repeat * it.unit_price, total_try: it.qty * repeat * it.unit_price * it.fx}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="1"
@@ -577,21 +606,29 @@ export default function PurchaseTab({
                   <div className="w-24">
                     <input
                       value={it.unit_price ?? 0}
-                      onChange={(e)=>{ const updated = {...it, unit_price: Number(e.target.value), total: it.qty * it.repeat * Number(e.target.value), total_try: it.qty * it.repeat * Number(e.target.value) * it.fx}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const unit_price = Number(e.target.value);
+                        const updated = {...it, unit_price, total: it.qty * it.repeat * unit_price, total_try: it.qty * it.repeat * unit_price * it.fx}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="0.01"
@@ -600,7 +637,20 @@ export default function PurchaseTab({
                   </div>
                   <div className="w-28 px-2 py-1 text-xs text-right text-gray-700 dark:text-gray-200">{formatNumber(it.total)}</div>
                   <div className="w-16">
-                    <select value={it.currency} onChange={(e)=>{ const updated = {...it, currency: e.target.value}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }} className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                    <select 
+                      value={it.currency} 
+                      onChange={(e)=>{ 
+                        const updated = {...it, currency: e.target.value}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }} 
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
+                      }}
+                      className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    >
                       <option>EUR</option>
                       <option>USD</option>
                       <option>TL</option>
@@ -609,21 +659,28 @@ export default function PurchaseTab({
                   <div className="w-16">
                     <input
                       value={it.vat ?? 0}
-                      onChange={(e)=>{ const updated = {...it, vat: Number(e.target.value)}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const updated = {...it, vat: Number(e.target.value)}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="1"
@@ -636,21 +693,29 @@ export default function PurchaseTab({
                   <div className="w-16">
                     <input
                       value={it.fx ?? 0}
-                      onChange={(e)=>{ const updated = {...it, fx: Number(e.target.value), total_try: it.qty * it.repeat * it.unit_price * Number(e.target.value)}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const fx = Number(e.target.value);
+                        const updated = {...it, fx, total_try: it.qty * it.repeat * it.unit_price * fx}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="0.0001"
@@ -660,21 +725,36 @@ export default function PurchaseTab({
                   <div className="w-32">
                     <input
                       value={it.total_try ?? 0}
-                      onChange={(e)=>{ const newTotalTRY = Number(e.target.value) || 0; const qtyTimesRepeat = (Number(it.qty)||0) * (Number(it.repeat)||0); const fxVal = Number(it.fx)||0; let newUnitPrice = Number(it.unit_price)||0; if (fxVal > 0 && qtyTimesRepeat > 0) { newUnitPrice = newTotalTRY / fxVal / qtyTimesRepeat; } const newTotal = qtyTimesRepeat * newUnitPrice; const updated = { ...it, unit_price: newUnitPrice, total: newTotal, total_try: newTotalTRY }; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const newTotalTRY = Number(e.target.value) || 0; 
+                        const qtyTimesRepeat = (Number(it.qty)||0) * (Number(it.repeat)||0); 
+                        const fxVal = Number(it.fx)||0; 
+                        let newUnitPrice = Number(it.unit_price)||0; 
+                        if (fxVal > 0 && qtyTimesRepeat > 0) { 
+                          newUnitPrice = newTotalTRY / fxVal / qtyTimesRepeat; 
+                        } 
+                        const newTotal = qtyTimesRepeat * newUnitPrice; 
+                        const updated = { ...it, unit_price: newUnitPrice, total: newTotal, total_try: newTotalTRY }; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       type="number"
                       step="0.01"
@@ -684,21 +764,28 @@ export default function PurchaseTab({
                   <div className="flex-1 min-w-[10rem]">
                     <input
                       value={it.description ?? ''}
-                      onChange={(e)=>{ const updated = {...it, description: e.target.value}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }}
+                      onChange={(e)=>{ 
+                        const updated = {...it, description: e.target.value}; 
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        setItemsPurchase(list); 
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
                           saveItems('purchase', list);
                         } else if (e.key === 'Escape') {
+                          e.preventDefault();
                           const updated = {...it, isEditing: false};
-                          const list = [...itemsPurchase];
-                          const index = list.findIndex((item: any) => item.id === it.id);
-                          list[index] = updated;
-                          saveItems('purchase', list);
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          setItemsPurchase(list);
                         }
+                      }}
+                      onBlur={() => {
+                        const updated = {...it, isEditing: false};
+                        const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                        saveItems('purchase', list);
                       }}
                       className="w-full min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       placeholder="Açıklama"
@@ -743,7 +830,15 @@ export default function PurchaseTab({
                   </div>
                   <div className="w-24 flex items-center gap-1 justify-end pr-1">
                     {canEdit && (
-                      <button onClick={()=>{ const updated = {...it, isEditing: false}; const list = [...itemsPurchase]; const index = list.findIndex((item: any) => item.id === it.id); list[index] = updated; saveItems('purchase', list); }} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                      <button 
+                        onClick={()=>{ 
+                          const updated = {...it, isEditing: false}; 
+                          const list = itemsPurchase.map((item: any) => item.id === it.id ? updated : item);
+                          saveItems('purchase', list); 
+                        }} 
+                        className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" 
+                        title="Kaydet"
+                      >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
                       </button>
                     )}
