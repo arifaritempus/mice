@@ -3279,7 +3279,7 @@ export default function ProjectDetailPage() {
       tedarikci: '',
       havayolu: '',
       pnr: '',
-      ucusTipi: '',
+      ucusTipi: 'GRUP',
       gidisTarihi: '',
       gidisSaati: '',
       gidisUcusKodu: '',
