@@ -4606,27 +4606,6 @@ export default function ProjectDetailPage() {
     return totalsByCurrency;
   }, [hotelExtras]);
 
-  // Diğer Servisler döviz cinsine göre toplam hesaplamaları
-  const otherServicesTotals = useMemo(() => {
-    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
-    otherServices.forEach(item => {
-      const cur = item.currency || 'TRY';
-      if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
-      totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount) || 0;
-    });
-    return totalsByCurrency;
-  }, [otherServices]);
-
-  // Finansal döviz cinsine göre toplam hesaplamaları
-  const financialTotals = useMemo(() => {
-    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
-    financialServices.forEach(item => {
-      const cur = item.currency || 'TRY';
-      if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
-      totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount) || 0;
-    });
-    return totalsByCurrency;
-  }, [financialServices]);
 
   // Etkinlik & Aktivite döviz cinsine göre toplam hesaplamaları
   const eventTotals = useMemo(() => {
@@ -4671,26 +4650,8 @@ export default function ProjectDetailPage() {
   }, [itemsPurchase, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
 
   // Satış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
-  const salesTotals = useMemo(() => {
-    const totalTRY = filteredSalesItems.reduce((sum: number, it: any) => sum + (Number(it.total_try) || 0), 0);
-    const totalByCurrency: Record<string, number> = {};
-    filteredSalesItems.forEach((it: any) => {
-      const cur = it.currency || 'EUR';
-      totalByCurrency[cur] = (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
-    });
-    return { totalTRY, totalByCurrency };
-  }, [filteredSalesItems]);
 
   // Alış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
-  const purchaseTotals = useMemo(() => {
-    const totalTRY = filteredPurchaseItems.reduce((sum: number, it: any) => sum + (Number(it.total_try) || 0), 0);
-    const totalByCurrency: Record<string, number> = {};
-    filteredPurchaseItems.forEach((it: any) => {
-      const cur = it.currency || 'EUR';
-      totalByCurrency[cur] = (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
-    });
-    return { totalTRY, totalByCurrency };
-  }, [filteredPurchaseItems]);
 
 
   // Satış kalemlerini kategorilere göre grupla (cache'lenmiş)
@@ -4759,7 +4720,16 @@ export default function ProjectDetailPage() {
       const categoryTotal = categoryItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
       const categoryTotalTRY = categoryItems.reduce((sum: number, item: any) => sum + (item.total_try || 0), 0);
       result.push({
- 
+        type: 'subtotal',
+        category: mainCategory,
+        total: categoryTotal,
+        totalTRY: categoryTotalTRY,
+        items: categoryItems
+      });
+    });
+    return result;
+  }, [filteredPurchaseItems, getCategoryName]);
+
   const {
     salesTotals,
     purchaseTotals,
@@ -4809,52 +4779,6 @@ export default function ProjectDetailPage() {
       currencyText: 'MIX',
     };
   };
-nPlans.forEach((p: any) => {
-      const cur = p.currency || 'TRY';
-      byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
-    });
-    return byCur;
-  }, [collectionPlans]);
-
-  const collectedByCurrency = useMemo(() => {
-    const byCur: Record<string, number> = {};
-    collections.forEach((c: any) => {
-      const cur = c.currency || 'TRY';
-      byCur[cur] = (byCur[cur] || 0) + (Number(c.amount) || 0);
-    });
-    return byCur;
-  }, [collections]);
-
-  // Ödeme döviz bazında plan/ödeme/bakiye
-  const paymentPlanByCurrency = useMemo(() => {
-    const byCur: Record<string, number> = {};
-    paymentPlans.forEach((p: any) => {
-      const cur = p.currency || 'TRY';
-      byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
-    });
-    return byCur;
-  }, [paymentPlans]);
-
-  const paidByCurrency = useMemo(() => {
-    const byCur: Record<string, number> = {};
-    payments.forEach((p: any) => {
-      const cur = p.currency || 'TRY';
-      byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
-    });
-    return byCur;
-  }, [payments]);
-
-  const balanceByCurrency = useMemo(() => {
-    const salesByCurrency = salesTotals.totalByCurrency || {};
-    const keys = new Set<string>([...Object.keys(salesByCurrency), ...Object.keys(collectedByCurrency)]);
-    const res: Record<string, number> = {};
-    keys.forEach((k) => {
-      res[k] = (Number(salesByCurrency[k] || 0)) - (collectedByCurrency[k] || 0);
-    });
-    return res;
-  }, [salesTotals.totalByCurrency, collectedByCurrency]);
-
-  // İnsan Kaynakları filtreleme ve sıralama
   // Diğer Servisler için filtreleme ve sıralama
   const filteredOtherServices = useMemo(() => {
     let filtered = otherServices;
@@ -5025,21 +4949,6 @@ nPlans.forEach((p: any) => {
     });
   }, [filteredHr, hrSortField, hrSortDirection]);
 
-  // İnsan Kaynakları toplam hesaplaması
-  const hrTotals = useMemo(() => {
-    const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
-
-    hrExtras.forEach(extra => {
-      const doviz = extra.currency || 'TRY';
-      if (!totalsByCurrency[doviz]) {
-        totalsByCurrency[doviz] = { toplamMaliyet: 0 };
-      }
-
-      totalsByCurrency[doviz].toplamMaliyet += parseFloat(extra.amount) || 0;
-    });
-
-    return totalsByCurrency;
-  }, [hrExtras]);
 
   // Tedarikçi arama ve filtreleme
   // Filtrelenmiş tedarikçiler (hem suppliers hem de hotels)
