@@ -4639,10 +4639,6 @@ export default function ProjectDetailPage() {
         const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
         const subList = subCategoriesByMain[item.main_category] || [];
         const subIdx = subList.findIndex(c => c.id === item.sub_category);
-        return (mainIdx + 1) * 10
-
-        const subList = subCategoriesByMain[item.main_category] || [];
-        const subIdx = subList.findIndex(c => c.id === item.sub_category);
         return (mainIdx + 1) * 1000 + (subIdx + 1);
       };
       return getSortOrder(a) - getSortOrder(b);
