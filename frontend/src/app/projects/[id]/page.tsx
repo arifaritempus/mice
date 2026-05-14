@@ -1721,14 +1721,18 @@ export default function ProjectDetailPage() {
       onConfirm: async () => {
         const service = side === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
         try {
-          await service.delete(id);
-          // Functional updater kullan — stale closure itemsSales/itemsPurchase sorunundan kaçın
-          if (side === 'sales') setItemsSales(prev => prev.filter(i => i.id !== id));
-          else setItemsPurchase(prev => prev.filter(i => i.id !== id));
+          // Eğer ID 'new_' ile başlıyorsa henüz DB'ye yazılmamıştır, sadece state'den sil
+          if (!String(id).startsWith('new_')) {
+            await service.delete(id);
+          }
+          
+          if (side === 'sales') setItemsSales(prev => prev.filter(i => String(i.id) !== String(id)));
+          else setItemsPurchase(prev => prev.filter(i => String(i.id) !== String(id)));
+          
           setConfirmModal(prev => ({ ...prev, open: false }));
           toast.success('Kalem silindi.');
         } catch (error: any) {
-          console.error('Silme hatası:', error?.message, error?.code, error?.details);
+          console.error('Silme hatası:', error?.message);
           toast.error('Silinirken bir hata oluştu.');
         }
       }
@@ -2066,57 +2070,14 @@ export default function ProjectDetailPage() {
     if (side === 'sales') {
       setItemsSales(prev => [...prev, ...tempSalesItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
       setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
-    } else {
-      setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
-    }
-
-    // DB'ye yaz ve gerçek ID'leri al
-    const descriptionTag = targetHotelId && isUUID(targetHotelId) ? ` [T:${targetHotelId}]` : '';
-
-    const saveToDb = async (items: typeof tempSalesItems, dbSide: 'sales' | 'purchase') => {
-      const service = dbSide === 'sales' ? projectSalesItemsService : projectPurchaseItemsService;
-      const idMap = new Map<string, string>(); // tempId → realId
-
-      for (const item of items) {
-        try {
-          const created = await service.create({
-            project_id: projectId,
-            category: item.main_category,
-            sub_category: item.sub_category,
-            description: (item.description || '').trim() + descriptionTag,
-            unit_quantity: 1,
-            unit_price: 0,
-            total_price: 0,
-            currency: 'EUR',
-            vat: item.vat,
-            fx: 1,
-            hotel_id: masterHotelId
-          });
-          idMap.set(item.id, created.id);
-        } catch (err: any) {
-          console.error(`[handleAddSelectedCategories] DB kayıt hatası (${dbSide}):`, err?.message, err?.code, err?.details);
-        }
-      }
-
-      // Temp ID'leri gerçek ID'lerle swap et — functional updater
-      if (idMap.size > 0) {
-        const setter = dbSide === 'sales' ? setItemsSales : setItemsPurchase;
-        setter(prev => prev.map(it => idMap.has(String(it.id)) ? { ...it, id: idMap.get(String(it.id))!, isEditing: false } : it));
-      }
-    };
-
-    if (side === 'sales') {
-      await Promise.all([
-        saveToDb(tempSalesItems, 'sales'),
-        saveToDb(tempPurchaseItems, 'purchase')
-      ]);
       setShowCategoryModalSales(false);
       setSelectedCategoriesSales(new Set());
-      toast.success('Kategoriler Satış ve Alış tablolarına sıralı şekilde eklendi.');
+      toast.success('Kategoriler Satış ve Alış tablolarına eklendi. Düzenleyip kaydedebilirsiniz.');
     } else {
-      await saveToDb(tempPurchaseItems, 'purchase');
+      setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
       setShowCategoryModalPurchase(false);
       setSelectedCategoriesPurchase(new Set());
+      toast.success('Kategoriler Alış tablosuna eklendi. Düzenleyip kaydedebilirsiniz.');
     }
   }, [selectedCategoriesSales, selectedCategoriesPurchase, categories, mainCategories, subCategoriesByMain, activeHotelId, project?.hotels_data, projectId]);
 
