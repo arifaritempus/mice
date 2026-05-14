@@ -338,6 +338,11 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 relative">
                           <div className="relative">
                             <input
+                              ref={(el) => {
+                                if (tempFlightItem?.id) {
+                                  supplierInputRefs.current[tempFlightItem.id] = el;
+                                }
+                              }}
                               type="text"
                               value={tempFlightItem?.tedarikci || ''}
                               placeholder="Tedarikçi Seçiniz"
@@ -345,11 +350,17 @@ export default function UcakBiletiTab({
                                 e.preventDefault();
                                 if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
                                   toggleSupplierDropdown(tempFlightItem?.id || '');
+                                  if (tempFlightItem?.id) {
+                                    updateDropdownPosition(tempFlightItem.id);
+                                  }
                                 }
                               }}
                               onFocus={() => {
                                 if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
                                   toggleSupplierDropdown(tempFlightItem?.id || '');
+                                  if (tempFlightItem?.id) {
+                                    updateDropdownPosition(tempFlightItem.id);
+                                  }
                                 }
                               }}
                               onKeyDown={(e) => {
@@ -477,7 +488,10 @@ export default function UcakBiletiTab({
                               const kisiSayisi = Number(e.target.value);
                               const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
                               const toplamMaliyet = kisiSayisi * ppMaliyet;
-                              setTempFlightItem({ ...tempFlightItem!, kisiSayisi, toplamMaliyet });
+                              const kur = tempFlightItem?.kur || 1;
+                              const doviz = tempFlightItem?.doviz || 'TL';
+                              const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                              setTempFlightItem({ ...tempFlightItem!, kisiSayisi, toplamMaliyet, toplamTl });
                             }}
                             className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center resize-none"
                           />
@@ -491,7 +505,10 @@ export default function UcakBiletiTab({
                               const ppMaliyet = Number(e.target.value);
                               const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                               const toplamMaliyet = kisiSayisi * ppMaliyet;
-                              setTempFlightItem({ ...tempFlightItem!, ppMaliyet, toplamMaliyet });
+                              const kur = tempFlightItem?.kur || 1;
+                              const doviz = tempFlightItem?.doviz || 'TL';
+                              const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                              setTempFlightItem({ ...tempFlightItem!, ppMaliyet, toplamMaliyet, toplamTl });
                             }}
                             className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
@@ -505,7 +522,10 @@ export default function UcakBiletiTab({
                               const toplamMaliyet = Number(e.target.value);
                               const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                               const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
-                              setTempFlightItem({ ...tempFlightItem!, toplamMaliyet, ppMaliyet });
+                              const kur = tempFlightItem?.kur || 1;
+                              const doviz = tempFlightItem?.doviz || 'TL';
+                              const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                              setTempFlightItem({ ...tempFlightItem!, toplamMaliyet, ppMaliyet, toplamTl });
                             }}
                             className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
@@ -859,7 +879,10 @@ export default function UcakBiletiTab({
                         const kisiSayisi = Number(e.target.value);
                         const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
                         const toplamMaliyet = kisiSayisi * ppMaliyet;
-                        setTempFlightItem({ ...tempFlightItem!, kisiSayisi, toplamMaliyet });
+                        const kur = tempFlightItem?.kur || 1;
+                        const doviz = tempFlightItem?.doviz || 'TL';
+                        const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                        setTempFlightItem({ ...tempFlightItem!, kisiSayisi, toplamMaliyet, toplamTl });
                       }}
                       className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center resize-none"
                     />
@@ -873,7 +896,10 @@ export default function UcakBiletiTab({
                         const ppMaliyet = Number(e.target.value);
                         const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                         const toplamMaliyet = kisiSayisi * ppMaliyet;
-                        setTempFlightItem({ ...tempFlightItem!, ppMaliyet, toplamMaliyet });
+                        const kur = tempFlightItem?.kur || 1;
+                        const doviz = tempFlightItem?.doviz || 'TL';
+                        const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                        setTempFlightItem({ ...tempFlightItem!, ppMaliyet, toplamMaliyet, toplamTl });
                       }}
                       className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                     />
@@ -887,7 +913,10 @@ export default function UcakBiletiTab({
                         const toplamMaliyet = Number(e.target.value);
                         const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                         const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
-                        setTempFlightItem({ ...tempFlightItem!, toplamMaliyet, ppMaliyet });
+                        const kur = tempFlightItem?.kur || 1;
+                        const doviz = tempFlightItem?.doviz || 'TL';
+                        const toplamTl = doviz === 'TL' ? toplamMaliyet : toplamMaliyet * kur;
+                        setTempFlightItem({ ...tempFlightItem!, toplamMaliyet, ppMaliyet, toplamTl });
                       }}
                       className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                     />

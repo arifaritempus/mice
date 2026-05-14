@@ -3736,12 +3736,12 @@ export default function ProjectDetailPage() {
       ...suppliers.map(supplier => ({
         ...supplier,
         type: 'supplier',
-        displayName: supplier.name
+        displayName: supplier.name || supplier.title || ''
       })),
       ...hotels.map(hotel => ({
         ...hotel,
         type: 'hotel',
-        displayName: hotel.name || hotel.title
+        displayName: hotel.name || hotel.title || ''
       }))
     ];
     setAllSuppliers(combinedSuppliers);
