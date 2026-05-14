@@ -1726,11 +1726,12 @@ export default function ProjectDetailPage() {
             await service.delete(id);
           }
           
+          console.log('removeItem matched ID, filtering from state:', id);
           if (side === 'sales') setItemsSales(prev => prev.filter(i => String(i.id) !== String(id)));
           else setItemsPurchase(prev => prev.filter(i => String(i.id) !== String(id)));
           
           setConfirmModal(prev => ({ ...prev, open: false }));
-          toast.success('Kalem silindi.');
+          toast.success('Kalem silindi (V2).');
         } catch (error: any) {
           console.error('Silme hatası:', error?.message);
           toast.error('Silinirken bir hata oluştu.');
@@ -2072,12 +2073,12 @@ export default function ProjectDetailPage() {
       setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
       setShowCategoryModalSales(false);
       setSelectedCategoriesSales(new Set());
-      toast.success('Kategoriler Satış ve Alış tablolarına eklendi. Düzenleyip kaydedebilirsiniz.');
+      toast.success('Kategoriler Satış ve Alış tablolarına eklendi (V2). Düzenleyip kaydedebilirsiniz.');
     } else {
       setItemsPurchase(prev => [...prev, ...tempPurchaseItems].sort((a, b) => getSortOrder(a) - getSortOrder(b)));
       setShowCategoryModalPurchase(false);
       setSelectedCategoriesPurchase(new Set());
-      toast.success('Kategoriler Alış tablosuna eklendi. Düzenleyip kaydedebilirsiniz.');
+      toast.success('Kategoriler Alış tablosuna eklendi (V2). Düzenleyip kaydedebilirsiniz.');
     }
   }, [selectedCategoriesSales, selectedCategoriesPurchase, categories, mainCategories, subCategoriesByMain, activeHotelId, project?.hotels_data, projectId]);
 
