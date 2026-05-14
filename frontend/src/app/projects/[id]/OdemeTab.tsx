@@ -402,7 +402,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                         setShowPaymentPlanHotelSupplierDropdown(true);
                         updateDropdownPosition();
                       }}
-                      onFocus={() => {
+                      onClick={() => {
                         setShowPaymentPlanHotelSupplierDropdown(true);
                         updateDropdownPosition();
                       }}
@@ -459,7 +459,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                           setShowPaymentPlanHotelSupplierDropdown(true);
                           updateDropdownPosition();
                         }}
-                        onFocus={() => {
+                        onClick={() => {
                           if (editingPaymentPlanIndex === idx) {
                             setPaymentPlanHotelSupplierSearch(p.hotel || '');
                             setShowPaymentPlanHotelSupplierDropdown(true);
@@ -602,7 +602,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                         setShowPaymentHotelSupplierDropdown(true);
                         updateDropdownPosition();
                       }}
-                      onFocus={() => {
+                      onClick={() => {
                         setShowPaymentHotelSupplierDropdown(true);
                         updateDropdownPosition();
                       }}
@@ -659,7 +659,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                           setShowPaymentHotelSupplierDropdown(true);
                           updateDropdownPosition();
                         }}
-                        onFocus={() => {
+                        onClick={() => {
                           if (editingPaymentIndex === idx) {
                             setPaymentHotelSupplierSearch(pay.hotel || '');
                             setShowPaymentHotelSupplierDropdown(true);
@@ -805,8 +805,9 @@ export default function OdemeTab(props: OdemeTabProps) {
           className="hotel-supplier-dropdown payment-plan-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-60 overflow-y-auto"
           style={dropdownPosition ? { top: dropdownPosition.top, left: dropdownPosition.left, width: dropdownPosition.width } : { display: 'none' }}
         >
-          {filteredPaymentPlanSuppliers.length > 0 ? (
-            filteredPaymentPlanSuppliers.map((supplier, index) => (
+          {allSuppliers
+            .filter(s => (s.displayName || s.name || '').toLowerCase().includes(paymentPlanHotelSupplierSearch?.toLowerCase() || ''))
+            .map((supplier, index) => (
               <div
                 key={`payment-plan-supplier-${supplier.id}-${supplier.type}-${index}`}
                 onClick={(e) => {
@@ -821,13 +822,10 @@ export default function OdemeTab(props: OdemeTabProps) {
                     : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
-                <div className="text-xs font-medium">{supplier.name}</div>
+                <div className="text-xs font-medium">{supplier.displayName || supplier.name}</div>
                 {supplier.title && <div className="text-[10px] text-gray-500 dark:text-gray-400">{supplier.title}</div>}
               </div>
-            ))
-          ) : (
-            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">Sonuç bulunamadı</div>
-          )}
+            ))}
         </div>,
         document.body
       )}
@@ -838,8 +836,9 @@ export default function OdemeTab(props: OdemeTabProps) {
           className="hotel-supplier-dropdown payment-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-60 overflow-y-auto"
           style={dropdownPosition ? { top: dropdownPosition.top, left: dropdownPosition.left, width: dropdownPosition.width } : { display: 'none' }}
         >
-          {filteredPaymentPlanSuppliers.length > 0 ? (
-            filteredPaymentPlanSuppliers.map((supplier, index) => (
+          {allSuppliers
+            .filter(s => (s.displayName || s.name || '').toLowerCase().includes(paymentHotelSupplierSearch?.toLowerCase() || ''))
+            .map((supplier, index) => (
               <div
                 key={`payment-supplier-${supplier.id}-${supplier.type}-${index}`}
                 onClick={(e) => {
@@ -854,13 +853,10 @@ export default function OdemeTab(props: OdemeTabProps) {
                     : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
-                <div className="text-xs font-medium">{supplier.name}</div>
+                <div className="text-xs font-medium">{supplier.displayName || supplier.name}</div>
                 {supplier.title && <div className="text-[10px] text-gray-500 dark:text-gray-400">{supplier.title}</div>}
               </div>
-            ))
-          ) : (
-            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">Sonuç bulunamadı</div>
-          )}
+            ))}
         </div>,
         document.body
       )}

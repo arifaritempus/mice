@@ -54,6 +54,7 @@ interface InsanKaynaklariTabProps {
   setHrFxInput: (value: string) => void;
   hrTotalTRYInput: string;
   setHrTotalTRYInput: (value: string) => void;
+  allSuppliers: any[];
   [key: string]: any;
 }
 
@@ -109,6 +110,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
     setHrFxInput,
     hrTotalTRYInput,
     setHrTotalTRYInput,
+    allSuppliers,
   } = props;
 
   const hrSupplierInputRef = useRef<HTMLInputElement | null>(null);
@@ -317,11 +319,10 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                     setTempHrItem(prev => ({ ...prev, hotel: value }));
                                     console.log('🔍 hrSupplierSearch güncellendi:', value);
                                     }}
-                                    onFocus={() => {
+                                    onClick={() => {
                                       setTimeout(() => updateDropdownPosition(), 0);
-                                    setShowHrSupplierDropdown(true);
-                                      updateDropdownPosition();
-                                    setSelectedHrSupplierIndex(-1);
+                                      setShowHrSupplierDropdown(true);
+                                      setSelectedHrSupplierIndex(-1);
                                     }}
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
@@ -707,7 +708,7 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                                         // tempHrItem'ı da güncelle
                                         setTempHrItem(prev => ({ ...prev, hotel: value }));
                                       }}
-                                      onFocus={() => {
+                                      onClick={() => {
                                         setShowHrSupplierDropdown(true);
                                         setTimeout(() => updateDropdownPosition(), 0);
                                         setSelectedHrSupplierIndex(-1);
@@ -1112,7 +1113,9 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                         minWidth: '300px'
                       }}
                     >
-                      {filteredHrSuppliers.map((supplier, index) => (
+                      {allSuppliers
+                        .filter(s => (s.displayName || s.name || '').toLowerCase().includes(hrSupplierSearch?.toLowerCase() || ''))
+                        .map((supplier, index) => (
                         <div
                           key={`hr-supplier-${supplier.id}-${supplier.type}-${index}`}
                           className={`px-3 py-2 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 ${
@@ -1121,9 +1124,9 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                           onClick={() => handleHrSupplierSelect(supplier, tempHrItem?.id || '')}
                           onMouseEnter={() => setSelectedHrSupplierIndex(index)}
                         >
-                          <div className="font-medium">{supplier.name}</div>
+                          <div className="font-medium">{supplier.displayName || supplier.name}</div>
                           <div className="text-gray-500 dark:text-gray-400 text-xs">
-                            {supplier.type === 'hotel' ? 'Otel' : supplier.type === 'supplier' ? 'Tedarikçi' : supplier.type}
+                            {supplier.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
                           </div>
                         </div>
                       ))}

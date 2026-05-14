@@ -345,8 +345,17 @@ export default function UcakBiletiTab({
                                 }
                               }}
                               type="text"
-                              value={tempFlightItem?.tedarikci || ''}
+                              value={supplierDropdowns[tempFlightItem?.id || '']?.isOpen ? (supplierDropdowns[tempFlightItem?.id || '']?.searchTerm ?? '') : (tempFlightItem?.tedarikci || '')}
                               placeholder="Tedarikçi Seçiniz"
+                              onChange={(e) => {
+                                if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
+                                  toggleSupplierDropdown(tempFlightItem?.id || '');
+                                }
+                                updateSupplierSearch(tempFlightItem?.id || '', e.target.value);
+                                if (tempFlightItem?.id) {
+                                  updateDropdownPosition(tempFlightItem.id);
+                                }
+                              }}
                               onClick={() => {
                                 if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
                                   toggleSupplierDropdown(tempFlightItem?.id || '');
@@ -364,7 +373,6 @@ export default function UcakBiletiTab({
                                 }
                               }}
                               className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
-                              readOnly
                             />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
                               {tempFlightItem?.tedarikci && (
@@ -1048,21 +1056,6 @@ export default function UcakBiletiTab({
             minWidth: '300px'
           }}
         >
-          <input
-            type="text"
-            data-supplier-search={tempFlightItem.id}
-            value={supplierDropdowns[tempFlightItem.id]?.searchTerm || ''}
-            onChange={(e) => updateSupplierSearch(tempFlightItem.id, e.target.value)}
-            onKeyDown={(e) => {
-              handleSupplierKeyDown(e, tempFlightItem.id);
-              if (e.key === 'Enter' || e.key === 'Escape') {
-                e.stopPropagation();
-              }
-            }}
-            placeholder="Tedarikçi ara..."
-            className="w-full px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none"
-            autoFocus
-          />
           {allSuppliers
             .filter((item: any) =>
               (item.displayName || item.name || item.title || '').toLowerCase().includes(

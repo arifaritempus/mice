@@ -47,6 +47,7 @@ interface FinancialTabProps {
   handleFinancialExport: () => void;
   activeHotelId: string;
   project: any;
+  allSuppliers: any[];
 }
 
 export default function FinancialTab({
@@ -93,6 +94,7 @@ export default function FinancialTab({
   handleFinancialExport,
   activeHotelId,
   project,
+  allSuppliers,
 }: FinancialTabProps) {
   // Kullanıcı Toplam TL alanını elle düzenliyor mu?
   const [isEditingFinancialTotal, setIsEditingFinancialTotal] = useState(false);
@@ -212,7 +214,7 @@ export default function FinancialTab({
                           setSelectedSupplierIndex(-1);
                           setTempFinancialServiceItem(prev => ({ ...prev, supplier: value, hotel: value }));
                         }}
-                        onFocus={() => {
+                        onClick={() => {
                           setShowHotelSupplierDropdown(true);
                           setTimeout(() => updateDropdownPosition(), 0);
                           setSelectedSupplierIndex(-1);
@@ -415,7 +417,7 @@ export default function FinancialTab({
                                 setSelectedSupplierIndex(-1);
                                 setTempFinancialServiceItem(prev => ({ ...prev, supplier: value, hotel: value }));
                               }}
-                              onFocus={() => {
+                              onClick={() => {
                                 setShowHotelSupplierDropdown(true);
                                 setTimeout(() => updateDropdownPosition(), 0);
                                 setSelectedSupplierIndex(-1);
@@ -596,29 +598,27 @@ export default function FinancialTab({
           className="hotel-supplier-dropdown financial-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-60 overflow-y-auto"
           style={dropdownPosition ? { top: dropdownPosition.top, left: dropdownPosition.left, width: dropdownPosition.width } : { display: 'none' }}
         >
-          {filteredHotelSuppliers.length > 0 ? (
-            filteredHotelSuppliers.map((supplier, index) => (
-              <div
-                key={`financial-supplier-${supplier.id}-${supplier.type}-${index}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleFinancialSupplierSelect(supplier);
-                }}
-                onMouseEnter={() => setSelectedSupplierIndex(index)}
-                className={`px-3 py-2 text-xs cursor-pointer transition-colors duration-150 ${
-                  index === selectedSupplierIndex 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
-                    : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <div className="text-xs font-medium">{supplier.name}</div>
-                {supplier.title && <div className="text-[10px] text-gray-500 dark:text-gray-400">{supplier.title}</div>}
-              </div>
-            ))
-          ) : (
-            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">Sonuç bulunamadı</div>
-          )}
+           {allSuppliers
+             .filter(s => (s.displayName || s.name || '').toLowerCase().includes(hotelSupplierSearch?.toLowerCase() || ''))
+             .map((supplier, index) => (
+               <div
+                 key={`financial-supplier-${supplier.id}-${supplier.type}-${index}`}
+                 onClick={(e) => {
+                   e.preventDefault();
+                   e.stopPropagation();
+                   handleFinancialSupplierSelect(supplier);
+                 }}
+                 onMouseEnter={() => setSelectedSupplierIndex(index)}
+                 className={`px-3 py-2 text-xs cursor-pointer transition-colors duration-150 ${
+                   index === selectedSupplierIndex 
+                     ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                     : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                 }`}
+               >
+                 <div className="text-xs font-medium">{supplier.displayName || supplier.name}</div>
+                 {supplier.title && <div className="text-[10px] text-gray-500 dark:text-gray-400">{supplier.title}</div>}
+               </div>
+             ))}
         </div>,
         document.body
       )}

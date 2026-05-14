@@ -12758,6 +12758,7 @@ export default function ProjectDetailPage() {
                   setIsNewHotelExtraItem={setIsNewHotelExtraItem}
                   updateDropdownPosition={updateDropdownPosition}
                   dropdownPosition={dropdownPosition}
+                  allSuppliers={allSuppliers}
                   hotelSupplierInputRef={hotelSupplierInputRef}
                 />
               )}
@@ -14670,6 +14671,7 @@ export default function ProjectDetailPage() {
                   suppliers={suppliers}
                   eventTotals={eventTotals}
                   formatNumber={formatNumber}
+                  allSuppliers={allSuppliers}
                 />
               )}
               {activeTab === 'etkinlik-aktivite_old' && (

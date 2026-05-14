@@ -49,6 +49,7 @@ interface OtelEkstraTabProps {
   updateDropdownPosition: () => void;
   dropdownPosition: { top: number; left: number; width: number } | null;
   hotelSupplierInputRef: React.RefObject<HTMLInputElement>;
+  allSuppliers: any[];
 }
 
 export default function OtelEkstraTab({
@@ -97,6 +98,7 @@ export default function OtelEkstraTab({
   updateDropdownPosition,
   dropdownPosition,
   hotelSupplierInputRef,
+  allSuppliers,
 }: OtelEkstraTabProps) {
 
   return (
@@ -236,7 +238,7 @@ export default function OtelEkstraTab({
                                       updateDropdownPosition();
                                       setSelectedSupplierIndex(-1);
                                     }}
-                                    onFocus={() => {
+                                    onClick={() => {
                                       setShowHotelSupplierDropdown(true);
                                       updateDropdownPosition();
                                       setSelectedSupplierIndex(-1);
@@ -611,6 +613,11 @@ export default function OtelEkstraTab({
                                           setSelectedSupplierIndex(-1);
                                         }}
                                         onFocus={() => {
+                                          setShowHotelSupplierDropdown(true);
+                                          updateDropdownPosition();
+                                          setSelectedSupplierIndex(-1);
+                                        }}
+                                        onClick={() => {
                                           setShowHotelSupplierDropdown(true);
                                           updateDropdownPosition();
                                           setSelectedSupplierIndex(-1);
@@ -1008,8 +1015,12 @@ export default function OtelEkstraTab({
                         width: dropdownPosition.width
                       }}
                     >
-                      {filteredHotelSuppliers.length > 0 ? (
-                        filteredHotelSuppliers.map((supplier, index) => (
+                      {allSuppliers
+                         .filter(s => s.displayName?.toLowerCase().includes(hotelSupplierSearch?.toLowerCase() || ''))
+                         .length > 0 ? (
+                         allSuppliers
+                           .filter(s => s.displayName?.toLowerCase().includes(hotelSupplierSearch?.toLowerCase() || ''))
+                           .map((supplier, index) => (
                           <div
                             key={`hotel-supplier-${supplier.id}-${supplier.type}-${index}`}
                             onClick={(e) => {

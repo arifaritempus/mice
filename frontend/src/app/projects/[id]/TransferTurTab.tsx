@@ -629,16 +629,16 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                   <input
                                     ref={(el) => { supplierInputRefs.current[transfer.id] = el; }}
                                     type="text"
-                                    value={transfer.supplierName || ''}
+                                    value={supplierDropdowns[transfer.id]?.isOpen ? (supplierDropdowns[transfer.id]?.searchTerm ?? '') : (transfer.supplierName || '')}
                                     placeholder="Tedarikçi Seçiniz"
-                                    onMouseDown={(e) => {
-                                      e.preventDefault();
+                                    onChange={(e) => {
                                       if (!supplierDropdowns[transfer.id]?.isOpen) {
                                         toggleSupplierDropdown(transfer.id);
-                                        updateDropdownPosition(transfer.id);
                                       }
+                                      updateSupplierSearch(transfer.id, e.target.value);
+                                      updateDropdownPosition(transfer.id);
                                     }}
-                                    onFocus={() => {
+                                    onClick={() => {
                                       if (!supplierDropdowns[transfer.id]?.isOpen) {
                                         toggleSupplierDropdown(transfer.id);
                                         updateDropdownPosition(transfer.id);
@@ -653,7 +653,6 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       }
                                     }}
                                     className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 cursor-pointer"
-                                    readOnly
                                   />
                                   <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
                                     {transfer.supplierName && (
@@ -690,22 +689,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                         minWidth: '300px'
                                       }}
                                     >
-                                      <input
-                                        type="text"
-                                        data-supplier-search={transfer.id}
-                                        value={supplierDropdowns[transfer.id]?.searchTerm || ''}
-                                        onChange={(e) => updateSupplierSearch(transfer.id, e.target.value)}
-                                        onKeyDown={(e) => {
-                                          handleSupplierKeyDown(e, transfer.id);
-                                          if (e.key === 'Enter' || e.key === 'Escape') {
-                                            e.stopPropagation();
-                                          }
-                                        }}
-                                        placeholder="Tedarikçi ara..."
-                                        className="w-full px-2 py-1.5 text-xs border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none sticky top-0"
-                                        autoFocus
-                                      />
-                                      {filteredHotelSuppliers
+                                      {allSuppliers
                                         .filter((item: any) =>
                                           (item.displayName || item.name || item.title || '').toLowerCase().includes((supplierDropdowns[transfer.id]?.searchTerm || '').toLowerCase())
                                         )

@@ -204,7 +204,7 @@ export default function OtherServicesTab({
                           // tempOtherServiceItem'ı da güncelle
                           setTempOtherServiceItem(prev => ({ ...prev, supplier: value, hotel: value }));
                         }}
-                        onFocus={() => {
+                        onClick={() => {
                           setShowOtherServiceSupplierDropdown(true);
                           setTimeout(() => updateDropdownPosition(), 0);
                           setSelectedOtherServiceSupplierIndex(-1);
@@ -423,7 +423,7 @@ export default function OtherServicesTab({
                                 setSelectedOtherServiceSupplierIndex(-1);
                                 setTempOtherServiceItem(prev => ({ ...prev, supplier: value, hotel: value }));
                               }}
-                              onFocus={() => {
+                              onClick={() => {
                                 setShowOtherServiceSupplierDropdown(true);
                                 setTimeout(() => updateDropdownPosition(), 0);
                                 setSelectedOtherServiceSupplierIndex(-1);

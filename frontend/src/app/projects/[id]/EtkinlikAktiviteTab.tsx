@@ -46,6 +46,7 @@ interface EtkinlikAktiviteTabProps {
   suppliers: any[];
   eventTotals: any;
   formatNumber: (value: number | string) => string;
+  allSuppliers: any[];
   [key: string]: any;
 }
 
@@ -92,6 +93,7 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
     suppliers,
     eventTotals,
     formatNumber,
+    allSuppliers,
   } = props;
 
   const eventSupplierInputRef = useRef<HTMLInputElement | null>(null);
@@ -255,7 +257,7 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
                                       setShowEventSupplierDropdown(true);
                                       setTimeout(() => updateEventSupplierDropdownPosition(), 0);
                                     }}
-                                    onFocus={() => {
+                                    onClick={() => {
                                       setShowEventSupplierDropdown(true);
                                       setTimeout(() => updateEventSupplierDropdownPosition(), 0);
                                     }}
@@ -274,40 +276,34 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
                                             }}
                                           >
                                             <div className="py-1">
-                                              {(() => {
-                                                console.log('🔍 Yeni ekleme - Hotels:', hotels);
-                                                console.log('🔍 Yeni ekleme - Suppliers:', suppliers);
-                                                const allItems = [...hotels.map(h => ({ id: h.id, name: h.name, type: 'hotel' })), ...suppliers.map(s => ({ id: s.id, name: s.name, type: 'supplier' }))];
-                                                console.log('🔍 Yeni ekleme - All items:', allItems);
-                                                return allItems;
-                                              })()
-                                                .filter(s => s.name?.toLowerCase().includes(eventSupplierSearch?.toLowerCase() || ''))
-                                                .map((s, idx) => (
-                                                  <div
-                                                    key={`${s.type}-${s.id}`}
-                                                    onMouseEnter={() => setSelectedEventSupplierIndex(idx)}
-                                                    className={`px-3 py-2 cursor-pointer transition-colors duration-150 text-xs flex items-center justify-between ${
-                                                      selectedEventSupplierIndex === idx 
-                                                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
-                                                        : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                    }`}
-                                                    onClick={() => {
-                                                      setTempEventItem({
-                                                        ...tempEventItem,
-                                                        supplier_id: s.type === 'supplier' ? s.id : null,
-                                                        hotel_id: s.type === 'hotel' ? s.id : null,
-                                                        supplier_type: s.type
-                                                      });
-                                                      setEventSupplierSearch(s.name);
-                                                      setShowEventSupplierDropdown(false);
-                                                    }}
-                                                  >
-                                                    <span>{s.name}</span>
-                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-2">
-                                                      {s.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
-                                                    </span>
-                                                  </div>
-                                                ))}
+                                            {allSuppliers
+                                                 .filter(s => (s.displayName || s.name || '').toLowerCase().includes(eventSupplierSearch?.toLowerCase() || ''))
+                                                 .map((s, idx) => (
+                                                   <div
+                                                     key={`${s.type || 'supplier'}-${s.id}`}
+                                                     onMouseEnter={() => setSelectedEventSupplierIndex(idx)}
+                                                     className={`px-3 py-2 cursor-pointer transition-colors duration-150 text-xs flex items-center justify-between ${
+                                                       selectedEventSupplierIndex === idx 
+                                                         ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                                                         : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                     }`}
+                                                     onClick={() => {
+                                                       setTempEventItem({
+                                                         ...tempEventItem,
+                                                         supplier_id: s.type === 'supplier' || !s.type ? s.id : null,
+                                                         hotel_id: s.type === 'hotel' ? s.id : null,
+                                                         supplier_type: s.type || 'supplier'
+                                                       });
+                                                       setEventSupplierSearch(s.displayName || s.name);
+                                                       setShowEventSupplierDropdown(false);
+                                                     }}
+                                                   >
+                                                     <span>{s.displayName || s.name}</span>
+                                                     <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-2">
+                                                       {s.type === 'hotel' ? 'Otel' : 'Tedarikçi'}
+                                                     </span>
+                                                   </div>
+                                                 ))}
                                       </div>
                                     </div>,
                                     document.body
