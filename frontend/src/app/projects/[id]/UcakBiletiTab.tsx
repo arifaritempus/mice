@@ -307,9 +307,9 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-12 whitespace-nowrap">DÖVİZ</th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white w-24 whitespace-nowrap">KUR</th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white w-28 whitespace-nowrap">TOPLAM TL</th>
+                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-24 whitespace-nowrap">DÖVİZ</th>
+                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white w-32 whitespace-nowrap">KUR</th>
+                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white w-40 whitespace-nowrap">TOPLAM TL</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[300px]">MİSAFİRLER</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20">DURUM</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-24">İŞLEMLER</th>

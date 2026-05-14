@@ -3327,7 +3327,7 @@ export default function ProjectDetailPage() {
           tedarikci: tempFlightItem.tedarikci,
           havayolu: tempFlightItem.havayolu,
           pnr: tempFlightItem.pnr,
-          ucus_tipi: tempFlightItem.ucusTipi || '',
+          ucus_tipi: tempFlightItem.ucusTipi === 'GRUP' ? 'gidis-donus' : (tempFlightItem.ucusTipi === 'MÜNFERİT' ? 'tek-yon' : (tempFlightItem.ucusTipi || '')),
           gidis_tarihi: tempFlightItem.gidisTarihi,
           gidis_saati: tempFlightItem.gidisSaati,
           gidis_ucus_kodu: tempFlightItem.gidisUcusKodu,
