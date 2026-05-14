@@ -464,6 +464,8 @@ export default function SalesTab({
               {it.isEditing ? (
                 // Düzenleme modu
                 <>
+                  <select 
+                    value={it.sub_category} 
                     onChange={(e)=>{ 
                       const updated = {...it, sub_category: e.target.value}; 
                       setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
@@ -556,20 +558,16 @@ export default function SalesTab({
                     value={it.vat ?? 0}
                     onChange={(e)=>{ 
                       const updated = {...it, vat: Number(e.target.value)}; 
-                      const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                      setItemsSales(list); 
+                      setItemsSales(prev => prev.map(p => p.id === it.id ? updated : p));
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        saveItems('sales', list);
+                        saveItems('sales', [updated]);
                       } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        const updated = {...it, isEditing: false};
-                        const list = itemsSales.map((item: any) => item.id === it.id ? updated : item);
-                        setItemsSales(list);
+                        setItemsSales(prev => prev.map(p => p.id === it.id ? { ...p, isEditing: false } : p));
                       }
                     }}
                     type="number"
