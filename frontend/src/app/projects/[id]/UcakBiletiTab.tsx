@@ -263,10 +263,10 @@ export default function UcakBiletiTab({
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px]">UÇUŞ TİPİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">GİDİŞ TARİHİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">GİDİŞ SAATİ</th>
-                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white">GİDİŞ UÇUŞ KODU</th>
+                <th style={{ minWidth: '100px', width: '100px' }} className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white">GİDİŞ UÇUŞ KODU</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">DÖNÜŞ TARİHİ</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">DÖNÜŞ SAATİ</th>
-                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white">DÖNÜŞ UÇUŞ KODU</th>
+                <th style={{ minWidth: '100px', width: '100px' }} className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white">DÖNÜŞ UÇUŞ KODU</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[200px] whitespace-nowrap">GÜZERGAH</th>
                 <th
                   className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
@@ -282,7 +282,7 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  style={{ minWidth: '70px', width: '70px' }}
+                  style={{ minWidth: '100px', width: '100px' }}
                   className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort('ppMaliyet')}
                 >
@@ -308,8 +308,8 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">DÖVİZ</th>
-                <th style={{ minWidth: '70px', width: '70px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">KUR</th>
+                <th style={{ minWidth: '100px', width: '100px' }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">DÖVİZ</th>
+                <th style={{ minWidth: '100px', width: '100px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">KUR</th>
                 <th style={{ minWidth: '200px' }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">TOPLAM TL</th>
                 <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[300px]">MİSAFİRLER</th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20">DURUM</th>
@@ -1081,7 +1081,7 @@ export default function UcakBiletiTab({
             className="w-full px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none"
             autoFocus
           />
-          {filteredHotelSuppliers
+          {allSuppliers
             .filter((item: any) =>
               (item.displayName || item.name || item.title || '').toLowerCase().includes(
                 (supplierDropdowns[tempFlightItem.id]?.searchTerm || '').toLowerCase()
