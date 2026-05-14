@@ -492,7 +492,7 @@ export default function ReportsPage() {
           cell.alignment = { vertical: 'middle', horizontal: colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl') ? 'right' : 'left' };
 
           if (colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl')) {
-            cell.numFmt = '#,##0.00 "₺"';
+            cell.numFmt = '#,##0.00';
           } else if (colKey === 'kar_marj_yuzde') {
             cell.numFmt = '0.00%';
           } else if (colKey.includes('adet') || colKey.includes('sefer') || colKey.includes('proje_sayisi') || colKey.includes('voucher_sayisi')) {
