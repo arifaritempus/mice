@@ -347,16 +347,7 @@ export default function UcakBiletiTab({
                               type="text"
                               value={tempFlightItem?.tedarikci || ''}
                               placeholder="Tedarikçi Seçiniz"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
-                                  toggleSupplierDropdown(tempFlightItem?.id || '');
-                                  if (tempFlightItem?.id) {
-                                    updateDropdownPosition(tempFlightItem.id);
-                                  }
-                                }
-                              }}
-                              onFocus={() => {
+                              onClick={() => {
                                 if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
                                   toggleSupplierDropdown(tempFlightItem?.id || '');
                                   if (tempFlightItem?.id) {
@@ -742,16 +733,7 @@ export default function UcakBiletiTab({
                         type="text"
                         value={tempFlightItem?.tedarikci || ''}
                         placeholder="Tedarikçi Seçiniz"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
-                            toggleSupplierDropdown(tempFlightItem?.id || '');
-                            if (tempFlightItem?.id) {
-                              updateDropdownPosition(tempFlightItem.id);
-                            }
-                          }
-                        }}
-                        onFocus={() => {
+                        onClick={() => {
                           if (!supplierDropdowns[tempFlightItem?.id || '']?.isOpen) {
                             toggleSupplierDropdown(tempFlightItem?.id || '');
                             if (tempFlightItem?.id) {
