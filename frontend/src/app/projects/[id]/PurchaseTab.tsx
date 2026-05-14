@@ -4,7 +4,7 @@ import { useRef } from 'react';
 
 interface PurchaseTabProps {
   itemsPurchase: any[];
-  setItemsPurchase: (items: any[]) => void;
+  setItemsPurchase: (items: any[] | ((prev: any[]) => any[])) => void;
   showAddRowPurchase: boolean;
   setShowAddRowPurchase: (show: boolean) => void;
   showCategoryModalPurchase: boolean;

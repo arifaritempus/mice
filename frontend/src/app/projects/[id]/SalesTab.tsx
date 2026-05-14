@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 
 interface SalesTabProps {
   itemsSales: any[];
-  setItemsSales: (items: any[]) => void;
+  setItemsSales: (items: any[] | ((prev: any[]) => any[])) => void;
   showAddRowSales: boolean;
   setShowAddRowSales: (show: boolean) => void;
   showCategoryModalSales: boolean;
