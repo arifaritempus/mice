@@ -4643,6 +4643,31 @@ export default function ProjectDetailPage() {
       };
       return getSortOrder(a) - getSortOrder(b);
     });
+  }, [itemsSales, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
+
+  const filteredPurchaseItems = useMemo(() => {
+    let items = itemsPurchase;
+    if (activeHotelId !== 'all') {
+      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
+      const realHotelId = currentTab?.hotel_id;
+      items = items.filter(item => {
+        if (activeHotelId === 'general') {
+          return !item.hotel_id || item.hotel_id === 'general';
+        }
+        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
+        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
+      });
+    }
+    
+    return items.sort((a, b) => {
+      const getSortOrder = (item: any) => {
+        const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
+        const subList = subCategoriesByMain[item.main_category] || [];
+        const subIdx = subList.findIndex(c => c.id === item.sub_category);
+        return (mainIdx + 1) * 1000 + (subIdx + 1);
+      };
+      return getSortOrder(a) - getSortOrder(b);
+    });
   }, [itemsPurchase, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
 
   // Satış genel toplamları (TL ve döviz toplamı sadeleştirilmiş)
