@@ -15408,6 +15408,7 @@ export default function ProjectDetailPage() {
                   hrExtras={hrExtras}
                   setHrExtras={setHrExtras}
                   hrTotals={hrTotals}
+                  allSuppliers={allSuppliers}
                 />
               )}
               {activeTab === 'insan-kaynaklari_old' && (
