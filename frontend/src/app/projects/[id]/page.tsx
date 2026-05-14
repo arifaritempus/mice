@@ -11665,7 +11665,7 @@ export default function ProjectDetailPage() {
               )}
               {activeTab === 'konaklama' && (
                 <AccommodationTabOptimized
-                  accommodationItems={filteredAccommodationItems}
+                  accommodationItems={accommodationItems}
                   setAccommodationItems={setAccommodationItems}
                   projectId={projectId}
                   accommodationSearch={accommodationSearch}
@@ -16712,7 +16712,7 @@ export default function ProjectDetailPage() {
                   profitLossData={profitLossData}
                   salesTotals={salesTotals}
                   purchaseTotals={purchaseTotals}
-                  groupedProfitLossData={groupedProfitLossData}
+                  groupedProfitLossData={profitLossData.groupedProfitLossData}
                   formatNumber={formatNumber}
                   formatByCurrencySummary={formatByCurrencySummary}
                 />
