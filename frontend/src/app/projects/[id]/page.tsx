@@ -1577,7 +1577,7 @@ export default function ProjectDetailPage() {
       });
     }
 
-    const idMap = new Map<string, string>(); // old tempId → new realId
+    const idMap = new Map<string | number, string>(); // old tempId → new realId
 
     for (const next of nextItems) {
       const isNew = String(next.id).startsWith('new_');
