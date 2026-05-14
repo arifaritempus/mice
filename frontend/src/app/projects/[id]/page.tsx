@@ -32,6 +32,7 @@ import { useTransferState } from './hooks/useTransferState';
 import { useHotelExtraState } from './hooks/useHotelExtraState';
 import { useEventActivityState } from './hooks/useEventActivityState';
 import { getLogosForExcel } from '@/utils/logoUtils';
+import { useFinancialData } from './hooks/useFinancialData';
 import ConfirmModal from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 
@@ -913,7 +914,25 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.agency-dropdown') && !target.closest('.hotel-dropdown') && !target.closest('.user-dropdown') && !target.closest('.purchase-supplier-dropdown') && !target.closest('.hotel-action-menu')) {
+      
+      // Standart dropdown sınıfları
+      const dropdownClasses = [
+        '.agency-dropdown', 
+        '.hotel-dropdown', 
+        '.user-dropdown', 
+        '.purchase-supplier-dropdown', 
+        '.hotel-action-menu',
+        '.flight-supplier-dropdown',
+        '.transfer-supplier-dropdown',
+        '.other-service-supplier-dropdown',
+        '.event-supplier-dropdown',
+        '.hr-supplier-dropdown',
+        '.hotel-supplier-dropdown'
+      ];
+      
+      const isClickInside = dropdownClasses.some(cls => target.closest(cls));
+      
+      if (!isClickInside) {
         setShowAgencyDropdown(false);
         setShowHotelDropdown(false);
         setShowUserDropdown(false);
@@ -923,12 +942,55 @@ export default function ProjectDetailPage() {
         setSelectedHotelIndex(-1);
         setSelectedUserIndex(-1);
         setSelectedPurchaseSupplierIndex(-1);
+        
+        // Tüm supplierDropdowns'ları kapat
+        setSupplierDropdowns(prev => {
+          const newState = { ...prev };
+          let changed = false;
+          Object.keys(newState).forEach(key => {
+            if (newState[key].isOpen) {
+              newState[key] = { ...newState[key], isOpen: false };
+              changed = true;
+            }
+          });
+          return changed ? newState : prev;
+        });
+
+        // Diğer spesifik dropdown'ları da kapat
+        setShowOtherServiceSupplierDropdown(false);
+        setShowHrSupplierDropdown(false);
+        // Etkinlik/Aktivite dropdown'ı varsa onu da buraya ekleyebiliriz
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+    // Global Escape key handler
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowAgencyDropdown(false);
+        setShowHotelDropdown(false);
+        setShowUserDropdown(false);
+        setShowPurchaseSupplierDropdown(false);
+        setShowOtherServiceSupplierDropdown(false);
+        setShowHrSupplierDropdown(false);
+        setSupplierDropdowns(prev => {
+          const newState = { ...prev };
+          let changed = false;
+          Object.keys(newState).forEach(key => {
+            if (newState[key].isOpen) {
+              newState[key] = { ...newState[key], isOpen: false };
+              changed = true;
+            }
+          });
+          return changed ? newState : prev;
+        });
+      }
+    };
+    document.addEventListener('keydown', handleGlobalKeyDown);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, []);
 
@@ -3911,49 +3973,15 @@ export default function ProjectDetailPage() {
     if (inputRef) {
       const rect = inputRef.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width
+        top: rect.bottom, // fixed için scroll eklenmemeli
+        left: rect.left,
+        width: Math.max(rect.width, 300) // Minimum 300px genişlik
       });
     }
   }, []);
 
 
-  // Otel/Tedarikçi dropdown'ını kapat ve pozisyonu güncelle
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showHotelSupplierDropdown) {
-        const target = event.target as HTMLElement;
-        if (!target.closest('.hotel-supplier-dropdown') && !target.closest('input[placeholder="Otel/Tedarikçi ara..."]')) {
-          setShowHotelSupplierDropdown(false);
-          setSelectedSupplierIndex(-1);
-        }
-      }
-      if (showOtherServiceSupplierDropdown) {
-        const target = event.target as HTMLElement;
-        if (!target.closest('.other-service-supplier-dropdown') && !target.closest('input[placeholder="Otel/Tedarikçi ara..."]')) {
-          setShowOtherServiceSupplierDropdown(false);
-          setSelectedOtherServiceSupplierIndex(-1);
-        }
-      }
-    };
-
-    const handleScroll = () => {
-      if (showHotelSupplierDropdown || showOtherServiceSupplierDropdown) {
-        updateDropdownPosition();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, [showHotelSupplierDropdown, showOtherServiceSupplierDropdown, updateDropdownPosition]);
+  // Mükerrer click-outside ve scroll handler'ları kaldırıldı (merkezi ve tab-spesifik handler'lar mevcut)
 
   const handleFlightDelete = useCallback(async (index: number) => {
     const ticketToDelete = flightTickets[index];
@@ -4632,29 +4660,8 @@ export default function ProjectDetailPage() {
         const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
         const subList = subCategoriesByMain[item.main_category] || [];
         const subIdx = subList.findIndex(c => c.id === item.sub_category);
-        return (mainIdx + 1) * 1000 + (subIdx + 1);
-      };
-      return getSortOrder(a) - getSortOrder(b);
-    });
-  }, [itemsSales, activeHotelId, project?.hotels_data, mainCategories, subCategoriesByMain]);
+        return (mainIdx + 1) * 10
 
-  const filteredPurchaseItems = useMemo(() => {
-    let items = itemsPurchase;
-    if (activeHotelId !== 'all') {
-      const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
-      const realHotelId = currentTab?.hotel_id;
-      items = items.filter(item => {
-        if (activeHotelId === 'general') {
-          return !item.hotel_id || item.hotel_id === 'general';
-        }
-        const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
-        return item.hotel_id === activeHotelId || (realHotelId && item.hotel_id === realHotelId) || (activeHotelId === 'all' && (item.hotel_id === 'general' || validTabIds.includes(item.hotel_id)));
-      });
-    }
-    
-    return items.sort((a, b) => {
-      const getSortOrder = (item: any) => {
-        const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
         const subList = subCategoriesByMain[item.main_category] || [];
         const subIdx = subList.findIndex(c => c.id === item.sub_category);
         return (mainIdx + 1) * 1000 + (subIdx + 1);
@@ -4752,192 +4759,34 @@ export default function ProjectDetailPage() {
       const categoryTotal = categoryItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
       const categoryTotalTRY = categoryItems.reduce((sum: number, item: any) => sum + (item.total_try || 0), 0);
       result.push({
-        type: 'subtotal',
-        category: mainCategory,
-        total: categoryTotal,
-        totalTRY: categoryTotalTRY,
-        items: categoryItems
-      });
-    });
-    return result;
-  }, [filteredPurchaseItems, getCategoryName]);
-
-
-  // Konaklama kalemlerini filtrele
-  const filteredAccommodationItems = useMemo(() => {
-    // 1. Önce ID bazlı tekilleştir (State'de kopyalar kalsa bile gösterme)
-    const uniqueItemsMap = new Map();
-    accommodationItems.forEach(item => {
-      if (item.id) {
-        uniqueItemsMap.set(String(item.id), item);
-      }
-    });
-    const uniqueItems = Array.from(uniqueItemsMap.values());
-
-    if (activeHotelId === 'all') return uniqueItems;
-    
-    const currentTab = (project?.hotels_data || []).find((h: any) => h.id === activeHotelId);
-    const realHotelId = currentTab?.hotel_id;
-
-    return uniqueItems.filter(item => {
-      const hObj = hotels.find(ht => ht.id === activeHotelId);
-      const isHotelNameMatch = hObj?.name && (item.hotel === hObj.name || item.otel === hObj.name);
-      
-      const validTabIds = (project?.hotels_data || []).map((h: any) => h.id);
-      return item.hotel_id === activeHotelId || 
-             (realHotelId && item.hotel_id === realHotelId) ||
-             isHotelNameMatch ||
-             (activeHotelId === 'general' && !item.hotel_id && !item.hotel && !item.otel);
-    });
-  }, [accommodationItems, activeHotelId, hotels, project?.hotels_data]);
-
-  // Kar/Zarar hesapları (ana/alt kategori bazında, döviz ve TL)
-  const profitLossData = useMemo(() => {
-    type CurrencyMap = Record<string, number>;
-    type Row = {
-      mainCategoryId: string;
-      mainCategoryName: string;
-      subCategoryId: string;
-      subCategoryName: string;
-      salesByCurrency: CurrencyMap;
-      salesTRY: number;
-      purchaseByCurrency: CurrencyMap;
-      purchaseTRY: number;
-      profitByCurrency: CurrencyMap;
-      profitTRY: number;
-      marginPercent: number;
-    };
-
-    const ensure = (map: Record<string, Row>, key: string, mainId: string, subId: string) => {
-      if (!map[key]) {
-        map[key] = {
-          mainCategoryId: mainId,
-          mainCategoryName: getCategoryName(mainId) || 'Diğer',
-          subCategoryId: subId,
-          subCategoryName: getCategoryName(subId) || '—',
-          salesByCurrency: {},
-          salesTRY: 0,
-          purchaseByCurrency: {},
-          purchaseTRY: 0,
-          profitByCurrency: {},
-          profitTRY: 0,
-          marginPercent: 0,
-        };
-      }
-      return map[key];
-    };
-
-    const rowsByKey: Record<string, Row> = {};
-
-    // Satışlar
-    filteredSalesItems.forEach((it: any) => {
-      const mainId = it.main_category || '';
-      const subId = it.sub_category || '';
-      const key = `${mainId}|${subId}`;
-      const row = ensure(rowsByKey, key, mainId, subId);
-      const cur = it.currency || 'EUR';
-      const total = Number(it.total) || 0;
-      const totalTRY = Number(it.total_try) || 0;
-      row.salesByCurrency[cur] = (row.salesByCurrency[cur] || 0) + total;
-      row.salesTRY += totalTRY;
-    });
-
-    // Alışlar
-    filteredPurchaseItems.forEach((it: any) => {
-      const mainId = it.main_category || '';
-      const subId = it.sub_category || '';
-      const key = `${mainId}|${subId}`;
-      const row = ensure(rowsByKey, key, mainId, subId);
-      const cur = it.currency || 'EUR';
-      const total = Number(it.total) || 0;
-      const totalTRY = Number(it.total_try) || 0;
-      row.purchaseByCurrency[cur] = (row.purchaseByCurrency[cur] || 0) + total;
-      row.purchaseTRY += totalTRY;
-    });
-
-    // Kar/Zarar ve marj
-    Object.values(rowsByKey).forEach((row) => {
-      const currencies = new Set<string>([
-        ...Object.keys(row.salesByCurrency),
-        ...Object.keys(row.purchaseByCurrency),
-      ]);
-      currencies.forEach((c) => {
-        const s = row.salesByCurrency[c] || 0;
-        const p = row.purchaseByCurrency[c] || 0;
-        row.profitByCurrency[c] = s - p;
-      });
-      row.profitTRY = row.salesTRY - row.purchaseTRY;
-      row.marginPercent = row.salesTRY > 0 ? (row.profitTRY / row.salesTRY) * 100 : 0;
-    });
-
-    // Sıralama: Kategoriler sayfasındaki sıralama mantığına göre
-    // Ana kategori sırası (mainCategories'deki index - zaten sıralanmış)
-    const mainOrder: Record<string, number> = {};
-    mainCategories.forEach((c: any, idx: number) => {
-      mainOrder[c.id] = idx;
-    });
-
-    const rows: Row[] = Object.values(rowsByKey).sort((a, b) => {
-      const aMainIdx = mainOrder[a.mainCategoryId] ?? Number.MAX_SAFE_INTEGER;
-      const bMainIdx = mainOrder[b.mainCategoryId] ?? Number.MAX_SAFE_INTEGER;
-      if (aMainIdx !== bMainIdx) return aMainIdx - bMainIdx;
-
-      // Alt kategori sırası: subCategoriesByMain'deki sıraya göre (zaten sıralanmış)
-      const subList = subCategoriesByMain[a.mainCategoryId] || [];
-      const subOrder: Record<string, number> = {};
-      subList.forEach((c: any, idx: number) => { subOrder[c.id] = idx; });
-      const aSubIdx = subOrder[a.subCategoryId] ?? Number.MAX_SAFE_INTEGER;
-      const bSubIdx = subOrder[b.subCategoryId] ?? Number.MAX_SAFE_INTEGER;
-      if (aSubIdx !== bSubIdx) return aSubIdx - bSubIdx;
-
-      // Yedek: Türkçe ad karşılaştırması
-      const trCompare = (x: string, y: string) => x.localeCompare(y, 'tr', { sensitivity: 'base' });
-      if (a.mainCategoryName !== b.mainCategoryName) return trCompare(a.mainCategoryName, b.mainCategoryName);
-      return trCompare(a.subCategoryName, b.subCategoryName);
-    });
-
-    // Genel toplamlar
-    const totals = rows.reduce(
-      (acc, r) => {
-        // döviz toplamları
-        Object.entries(r.salesByCurrency).forEach(([c, v]) => {
-          acc.salesByCurrency[c] = (acc.salesByCurrency[c] || 0) + (v || 0);
-        });
-        Object.entries(r.purchaseByCurrency).forEach(([c, v]) => {
-          acc.purchaseByCurrency[c] = (acc.purchaseByCurrency[c] || 0) + (v || 0);
-        });
-        Object.entries(r.profitByCurrency).forEach(([c, v]) => {
-          acc.profitByCurrency[c] = (acc.profitByCurrency[c] || 0) + (v || 0);
-        });
-        // TL toplamları
-        acc.salesTRY += r.salesTRY;
-        acc.purchaseTRY += r.purchaseTRY;
-        acc.profitTRY += r.profitTRY;
-        return acc;
-      },
-      {
-        salesByCurrency: {} as CurrencyMap,
-        salesTRY: 0,
-        purchaseByCurrency: {} as CurrencyMap,
-        purchaseTRY: 0,
-        profitByCurrency: {} as CurrencyMap,
-        profitTRY: 0,
-      }
-    );
-
-    return { rows, totals };
-  }, [filteredSalesItems, filteredPurchaseItems, getCategoryName, mainCategories, subCategoriesByMain]);
-
-  // Kar/Zarar tabı için gruplanmış veriler (cache'lenmiş)
-  const groupedProfitLossData = useMemo(() => {
-    const groups: Record<string, typeof profitLossData.rows> = {};
-    profitLossData.rows.forEach((r) => {
-      groups[r.mainCategoryName] = groups[r.mainCategoryName] || [];
-      groups[r.mainCategoryName].push(r);
-    });
-    const mainNames = Object.keys(groups);
-    return { groups, mainNames };
-  }, [profitLossData.rows]);
+ 
+  const {
+    salesTotals,
+    purchaseTotals,
+    profitLossData,
+    otherServicesTotals,
+    financialTotals,
+    hrTotals,
+    collectionSummary,
+    planByCurrency,
+    collectedByCurrency,
+    balanceByCurrency,
+    paymentSummary,
+    paymentPlanByCurrency,
+    paidByCurrency,
+    paymentBalanceByCurrency
+  } = useFinancialData({
+    itemsSales: filteredSalesItems,
+    itemsPurchase: filteredPurchaseItems,
+    categories,
+    otherServices: filteredOtherServices,
+    financialServices,
+    hrExtras,
+    collectionPlans,
+    collections,
+    paymentPlans,
+    payments
+  });
 
   const formatByCurrencySummary = (byCur: Record<string, number>) => {
     const keys = Object.keys(byCur).sort();
@@ -4960,27 +4809,7 @@ export default function ProjectDetailPage() {
       currencyText: 'MIX',
     };
   };
-
-  // Tahsilat bakiyesi = Plan toplam TL - Tahsil edilen toplam TL
-  const collectionSummary = useMemo(() => {
-    const planTRY = Number(salesTotals.totalTRY || 0);
-    const collectedTRY = collections.reduce((sum: number, c: any) => sum + (c.totalTRY || (Number(c.amount) || 0) * (Number(c.exchangeRate || 1))), 0);
-    const balanceTRY = planTRY - collectedTRY;
-    return { planTRY, collectedTRY, balanceTRY };
-  }, [collections, salesTotals.totalTRY]);
-
-  // Ödeme bakiyesi = Plan toplam TL - Yapılan ödemeler toplam TL
-  const paymentSummary = useMemo(() => {
-    const planTRY = paymentPlans.reduce((sum: number, p: any) => sum + (p.totalTRY || p.amount || 0), 0);
-    const paidTRY = payments.reduce((sum: number, p: any) => sum + (p.totalTRY || p.amount || 0), 0);
-    const balanceTRY = planTRY - paidTRY;
-    return { planTRY, paidTRY, balanceTRY };
-  }, [paymentPlans, payments]);
-
-  // Döviz bazında plan/tahsil/bakiye
-  const planByCurrency = useMemo(() => {
-    const byCur: Record<string, number> = {};
-    collectionPlans.forEach((p: any) => {
+nPlans.forEach((p: any) => {
       const cur = p.currency || 'TRY';
       byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
     });

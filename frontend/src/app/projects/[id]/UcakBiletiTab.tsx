@@ -120,9 +120,9 @@ export default function UcakBiletiTab({
     if (input) {
       const rect = input.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom, // fixed pozisyon için scrollY'ye gerek yok
-        left: rect.left, // fixed pozisyon için scrollX'ye gerek yok
-        width: rect.width
+        top: rect.bottom, 
+        left: rect.left, 
+        width: Math.max(rect.width, 300) // Minimum 300px genişlik
       });
     }
   };
@@ -1020,11 +1020,12 @@ export default function UcakBiletiTab({
       {/* Portal ile render edilen supplier dropdown */}
       {tempFlightItem?.id && supplierDropdowns[tempFlightItem.id]?.isOpen && dropdownPosition && createPortal(
         <div
-          className="flight-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-40 overflow-y-auto"
+          className="flight-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-80 overflow-y-auto"
           style={{
             top: dropdownPosition.top,
             left: dropdownPosition.left,
-            width: dropdownPosition.width
+            width: dropdownPosition.width,
+            minWidth: '300px'
           }}
         >
           <input

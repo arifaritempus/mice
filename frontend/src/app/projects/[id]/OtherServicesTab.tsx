@@ -600,8 +600,13 @@ export default function OtherServicesTab({
       {/* Portal ile render edilen dropdown - Diğer Servisler */}
       {showOtherServiceSupplierDropdown && createPortal(
         <div
-          className="other-service-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-60 overflow-y-auto"
-          style={dropdownPosition ? { top: dropdownPosition.top, left: dropdownPosition.left, width: dropdownPosition.width } : { display: 'none' }}
+          className="other-service-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-80 overflow-y-auto"
+          style={dropdownPosition ? { 
+            top: dropdownPosition.top, 
+            left: dropdownPosition.left, 
+            width: dropdownPosition.width,
+            minWidth: '300px'
+          } : { display: 'none' }}
         >
           {filteredOtherServiceSuppliers.length > 0 ? (
             filteredOtherServiceSuppliers.map((supplier, index) => (

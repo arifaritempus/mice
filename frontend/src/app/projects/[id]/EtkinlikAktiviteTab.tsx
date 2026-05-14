@@ -101,9 +101,9 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
     if (eventSupplierInputRef.current) {
       const rect = eventSupplierInputRef.current.getBoundingClientRect();
       setEventSupplierDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: rect.width
+        top: rect.bottom, // fixed için scroll eklenmemeli
+        left: rect.left,
+        width: Math.max(rect.width, 300) // Minimum 300px genişlik
       });
     }
   };
@@ -265,11 +265,12 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
                                         {showEventSupplierDropdown && eventSupplierDropdownPosition && createPortal(
                                           <div 
                                             data-event-supplier-dropdown
-                                            className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                            className="event-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-80 overflow-y-auto"
                                             style={{
                                               top: eventSupplierDropdownPosition.top,
                                               left: eventSupplierDropdownPosition.left,
-                                              width: eventSupplierDropdownPosition.width
+                                              width: eventSupplierDropdownPosition.width,
+                                              minWidth: '300px'
                                             }}
                                           >
                                             <div className="py-1">
@@ -477,11 +478,12 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
                                         {showEventSupplierDropdown && eventSupplierDropdownPosition && createPortal(
                                           <div 
                                             data-event-supplier-dropdown
-                                            className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                            className="event-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-80 overflow-y-auto"
                                             style={{
                                               top: eventSupplierDropdownPosition.top,
                                               left: eventSupplierDropdownPosition.left,
-                                              width: eventSupplierDropdownPosition.width
+                                              width: eventSupplierDropdownPosition.width,
+                                              minWidth: '300px'
                                             }}
                                           >
                                             <div className="py-1">

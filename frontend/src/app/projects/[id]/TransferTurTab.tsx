@@ -166,9 +166,9 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     if (input) {
       const rect = input.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: Math.max(rect.width, 220) // Minimum 220px genişlik
+        top: rect.bottom, // fixed için scroll eklenmemeli
+        left: rect.left,
+        width: Math.max(rect.width, 300) // Minimum 300px genişlik
       });
     }
   };
@@ -682,11 +682,12 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                   {supplierDropdowns[transfer.id]?.isOpen && dropdownPosition && createPortal(
                                     <div 
                                       id={`supplier-dropdown-${transfer.id}`}
-                                      className="fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-60 overflow-y-auto"
+                                      className="transfer-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-80 overflow-y-auto"
                                       style={{
                                         top: dropdownPosition.top,
                                         left: dropdownPosition.left,
-                                        width: dropdownPosition.width
+                                        width: dropdownPosition.width,
+                                        minWidth: '300px'
                                       }}
                                     >
                                       <input

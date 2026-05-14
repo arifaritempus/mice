@@ -118,9 +118,9 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
     if (hrSupplierInputRef.current) {
       const rect = hrSupplierInputRef.current.getBoundingClientRect();
       setHrSupplierDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: rect.width
+        top: rect.bottom, // fixed için scroll eklenmemeli
+        left: rect.left,
+        width: Math.max(rect.width, 300) // Minimum 300px genişlik
       });
     }
   };
@@ -1104,11 +1104,12 @@ export default function InsanKaynaklariTab(props: InsanKaynaklariTabProps) {
                   {/* Portal ile render edilen dropdown */}
                   {showHrSupplierDropdown && hrSupplierDropdownPosition && createPortal(
                     <div
-                      className="hr-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-xl max-h-40 overflow-y-auto"
+                      className="hr-supplier-dropdown fixed z-[9999] bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-2xl max-h-80 overflow-y-auto"
                       style={{
                         top: hrSupplierDropdownPosition.top,
                         left: hrSupplierDropdownPosition.left,
-                        width: hrSupplierDropdownPosition.width
+                        width: hrSupplierDropdownPosition.width,
+                        minWidth: '300px'
                       }}
                     >
                       {filteredHrSuppliers.map((supplier, index) => (
