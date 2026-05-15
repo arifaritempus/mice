@@ -10188,6 +10188,7 @@ export default function ProjectDetailPage() {
             row.getCell(2).value = it.qty;
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
+            row.getCell(4).numFmt = '#,##0.00';
             row.getCell(5).value = it.totalEur;
             row.getCell(5).numFmt = '€#,##0.00';
             row.getCell(6).value = it.fx;
@@ -10220,7 +10221,7 @@ export default function ProjectDetailPage() {
         // 1. OTEL | KONAKLAMA
         const hotelId = h.id || h.hotel_id;
         const accItems = accommodationItems.filter(it => it.hotel_id === hotelId).map(it => ({
-          desc: `${it.category_name || 'Oda'}`,
+          desc: it.category_name || 'KONAKLAMA',
           qty: it.rooms || 1,
           repeat: it.nights || 1,
           price: it.pp_price || 0,
@@ -10231,21 +10232,28 @@ export default function ProjectDetailPage() {
         }));
         addCategory('1. OTEL | KONAKLAMA', accItems);
 
-        // 2. OTEL | DİĞER HİZMETLER
-        const otherItems = sItems.map(it => ({
-          desc: it.description || '-',
-          qty: it.qty || 1,
-          repeat: it.repeat || 1,
-          price: it.unit_price || 0,
-          totalEur: it.total || 0,
-          fx: it.fx || 1,
-          totalTl: (it.total || 0) * (it.fx || 1),
-          notes: ''
-        }));
-        addCategory('2. OTEL | DİĞER HİZMETLER', otherItems);
+        // Dinamik Kategoriler (Teklifler Sayfası Mantığı)
+        const grouped: Record<string, any[]> = {};
+        sItems.forEach(it => {
+          const mainCat = getCategoryName(it.main_category) || 'DİĞER HİZMETLER';
+          if (!grouped[mainCat]) grouped[mainCat] = [];
+          grouped[mainCat].push({
+            desc: getCategoryName(it.sub_category) || it.description || '-',
+            qty: it.qty || 1,
+            repeat: it.repeat || 1,
+            price: it.unit_price || 0,
+            totalEur: it.total || 0,
+            fx: it.fx || 1,
+            totalTl: (it.total || 0) * (it.fx || 1),
+            notes: it.description || ''
+          });
+        });
 
-        // 3. UÇAK BİLETİ (Optional: only if project has tickets and they aren't listed elsewhere)
-        // For now, let's just group by sItems if they are flight tickets
+        let catIndex = 2;
+        Object.entries(grouped).forEach(([catName, items]) => {
+          addCategory(`${catIndex}. ${catName.toUpperCase()}`, items);
+          catIndex++;
+        });
         
         // Final Grand Total
         const gRow = sheet.getRow(currentRow);
