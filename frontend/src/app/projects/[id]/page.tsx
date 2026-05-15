@@ -9779,7 +9779,6 @@ export default function ProjectDetailPage() {
         else if (vehicleType === 'binek') vehicleCounts.binek.cikis++;
         else if (vehicleType === 's-class') vehicleCounts.sClass.cikis++;
       });
-
       // Toplam araç sayıları
       const totalVito = vehicleCounts.vito.giris + vehicleCounts.vito.ara + vehicleCounts.vito.cikis;
       const totalSprinter = vehicleCounts.sprinter.giris + vehicleCounts.sprinter.ara + vehicleCounts.sprinter.cikis;
@@ -9857,31 +9856,70 @@ export default function ProjectDetailPage() {
       setLoading(true);
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const { iconLogoBase64 } = await getLogosForExcel(true);
-      
-      const addHeader = (sheet: any, title: string) => {
-        sheet.mergeCells('A1:H1');
-        const headerRow = sheet.getRow(1);
-        headerRow.height = 40;
-        const cell = headerRow.getCell(1);
-        cell.value = title;
-        cell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        for(let i=1; i<=8; i++) headerRow.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
-        
-        const infoRow = sheet.addRow(['Proje:', project.name || '', 'Referans:', project.reference || '', 'Tarih:', new Date().toLocaleDateString('tr-TR')]);
-        infoRow.font = { bold: true };
+      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+
+      const createStyledSheet = (sheetName: string, title: string) => {
+        const sheet = workbook.addWorksheet(sheetName, {
+          pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
+        });
+
+        // Üst Band
+        const topBandRow = sheet.getRow(1);
+        topBandRow.height = 70;
+        sheet.mergeCells('A1:I1');
+        const bandCell = topBandRow.getCell(1);
+        bandCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
+
+        // Logo
+        if (iconLogoBase64) {
+          const iconId = workbook.addImage({ base64: iconLogoBase64, extension: 'png' });
+          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 55, height: 55 } });
+        }
+        if (wordmarkLogoBase64) {
+          const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
+          sheet.addImage(wordmarkId, { tl: { col: 1.1, row: 0.2 }, ext: { width: 140, height: 40 } });
+        }
+
+        // Başlık
+        sheet.mergeCells('A3:I3');
+        const titleRow = sheet.getRow(3);
+        titleRow.height = 35;
+        const titleCell = titleRow.getCell(1);
+        titleCell.value = title;
+        titleCell.font = { bold: true, size: 20, color: { argb: 'FF232F38' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Proje Bilgileri
+        const infoRow1 = sheet.addRow(['MÜŞTERİ', project.company_name || '-', 'REFERANS', project.reference || '-', 'TARİH', new Date().toLocaleDateString('tr-TR')]);
+        infoRow1.font = { bold: true };
+        infoRow1.height = 20;
+        const infoRow2 = sheet.addRow(['PROJE', project.name || '-', 'ACENTE', project.agency_name || '-', 'DURUM', project.status || '-']);
+        infoRow2.font = { bold: true };
+        infoRow2.height = 20;
         sheet.addRow([]); // Spacer
+
+        return sheet;
+      };
+
+      const addTableHeader = (sheet: any, columns: string[]) => {
+        const hRow = sheet.addRow(columns);
+        hRow.height = 25;
+        hRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        columns.forEach((_, i) => {
+          const cell = hRow.getCell(i + 1);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF546E7A' } };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        });
+        return hRow;
       };
 
       // 1. Satış Sayfası
       if (itemsSales.length > 0) {
-        const sheet = workbook.addWorksheet('Satış');
-        addHeader(sheet, 'PROJE SATIŞ KALEMLERİ');
-        const hRow = sheet.addRow(['Kategori', 'Alt Kategori', 'Açıklama', 'Adet', 'Tekrar', 'Birim Fiyat', 'Döviz', 'Toplam TL']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('SATIŞ', 'PROJE SATIŞ KALEMLERİ');
+        addTableHeader(sheet, ['KATEGORİ', 'ALT KATEGORİ', 'AÇIKLAMA', 'ADET', 'TEKRAR', 'BİRİM FİYAT', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
         itemsSales.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             getCategoryName(it.main_category),
             getCategoryName(it.sub_category),
             it.description,
@@ -9889,20 +9927,21 @@ export default function ProjectDetailPage() {
             it.repeat,
             it.unit_price,
             it.currency,
+            it.fx,
             (it.total || 0) * (it.fx || 1)
           ]);
+          row.getCell(6).numFmt = '#,##0.00';
+          row.getCell(9).numFmt = '₺#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [25, 25, 40, 10, 10, 15, 10, 15][i]);
+        sheet.columns = [{width:20}, {width:20}, {width:35}, {width:10}, {width:10}, {width:15}, {width:10}, {width:10}, {width:18}];
       }
 
       // 2. Alış Sayfası
       if (itemsPurchase.length > 0) {
-        const sheet = workbook.addWorksheet('Alış');
-        addHeader(sheet, 'PROJE ALIŞ KALEMLERİ');
-        const hRow = sheet.addRow(['Kategori', 'Alt Kategori', 'Açıklama', 'Tedarikçi', 'Adet', 'Tekrar', 'Birim Fiyat', 'Toplam TL']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('ALIŞ', 'PROJE ALIŞ KALEMLERİ');
+        addTableHeader(sheet, ['KATEGORİ', 'ALT KATEGORİ', 'AÇIKLAMA', 'TEDARİKÇİ', 'ADET', 'TEKRAR', 'BİRİM FİYAT', 'DÖVİZ', 'TOPLAM TL']);
         itemsPurchase.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             getCategoryName(it.main_category),
             getCategoryName(it.sub_category),
             it.description,
@@ -9910,41 +9949,43 @@ export default function ProjectDetailPage() {
             it.qty,
             it.repeat,
             it.unit_price,
+            it.currency,
             (it.total || 0) * (it.fx || 1)
           ]);
+          row.getCell(7).numFmt = '#,##0.00';
+          row.getCell(9).numFmt = '₺#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [25, 25, 40, 25, 10, 10, 15, 15][i]);
+        sheet.columns = [{width:20}, {width:20}, {width:30}, {width:25}, {width:10}, {width:10}, {width:15}, {width:10}, {width:18}];
       }
 
-      // 3. Konaklama Sayfası
+      // 3. Konaklama
       if (accommodationItems.length > 0) {
-        const sheet = workbook.addWorksheet('Konaklama');
-        addHeader(sheet, 'KONAKLAMA LİSTESİ');
-        const hRow = sheet.addRow(['Otel', 'İsim Soyisim', 'Giriş', 'Çıkış', 'Gece', 'Oda Tipi', 'Yatak', 'Not']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('KONAKLAMA', 'KONAKLAMA DETAYLARI');
+        addTableHeader(sheet, ['OTEL', 'KATEGORİ', 'GİRİŞ', 'ÇIKIŞ', 'GECE', 'ODA', 'PAX', 'PP FİYAT', 'TOPLAM']);
         accommodationItems.forEach(it => {
-          sheet.addRow([
-            it.otel,
-            `${it.isim} ${it.soyisim}`,
-            it.gelis_tarihi,
-            it.cikis_tarihi,
-            it.geceleme,
-            it.oda_tipi,
-            it.yatak_tipi,
-            it.oda_notu
+          const row = sheet.addRow([
+            hotels.find(h => h.id === it.hotel_id)?.name || '-',
+            it.category_name || '-',
+            it.checkin_date,
+            it.checkout_date,
+            it.nights,
+            it.rooms,
+            it.pax,
+            it.pp_price,
+            it.total_price
           ]);
+          row.getCell(8).numFmt = '#,##0.00';
+          row.getCell(9).numFmt = '#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [25, 25, 15, 15, 10, 15, 15, 30][i]);
+        sheet.columns = [{width:25}, {width:20}, {width:15}, {width:15}, {width:10}, {width:10}, {width:10}, {width:15}, {width:15}];
       }
 
       // 4. Uçak Bileti
       if (flightTickets.length > 0) {
-        const sheet = workbook.addWorksheet('Uçak Bileti');
-        addHeader(sheet, 'UÇAK BİLETİ LİSTESİ');
-        const hRow = sheet.addRow(['Tedarikçi', 'Havayolu', 'Güzergah', 'Tarih', 'PNR', 'Misafirler', 'Birim Fiyat', 'Toplam']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('UÇAK BİLETİ', 'UÇAK BİLETİ LİSTESİ');
+        addTableHeader(sheet, ['TEDARİKÇİ', 'HAVAYOLU', 'GÜZERGAH', 'TARİH', 'PNR', 'MİSAFİRLER', 'BİRİM MALİYET', 'TOPLAM']);
         flightTickets.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             it.tedarikci,
             it.havayolu,
             it.guzergah,
@@ -9954,18 +9995,18 @@ export default function ProjectDetailPage() {
             it.ppMaliyet,
             it.toplamMaliyet
           ]);
+          row.getCell(7).numFmt = '#,##0.00';
+          row.getCell(8).numFmt = '#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [20, 20, 25, 15, 15, 30, 15, 15][i]);
+        sheet.columns = [{width:20}, {width:20}, {width:25}, {width:15}, {width:15}, {width:30}, {width:15}, {width:15}];
       }
 
       // 5. Transfer & Tur
       if (transfers.length > 0) {
-        const sheet = workbook.addWorksheet('Transfer & Tur');
-        addHeader(sheet, 'TRANSFER VE TUR LİSTESİ');
-        const hRow = sheet.addRow(['Tarih', 'Saat', 'Güzergah', 'Araç Tipi', 'Açıklama', 'Adet', 'Birim Fiyat', 'Toplam']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('TRANSFER', 'TRANSFER VE TUR LİSTESİ');
+        addTableHeader(sheet, ['TARİH', 'SAAT', 'GÜZERGAH', 'ARAÇ TİPİ', 'AÇIKLAMA', 'KİŞİ', 'BİRİM', 'TOPLAM']);
         transfers.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             it.date,
             it.time,
             it.route,
@@ -9973,40 +10014,40 @@ export default function ProjectDetailPage() {
             it.transferType,
             it.passengerCount,
             it.costAmount,
-            it.costAmount // Assuming single amount for now
+            it.costAmount
           ]);
+          row.getCell(7).numFmt = '#,##0.00';
+          row.getCell(8).numFmt = '#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [15, 10, 25, 20, 30, 10, 15, 15][i]);
+        sheet.columns = [{width:15}, {width:10}, {width:25}, {width:20}, {width:30}, {width:10}, {width:15}, {width:15}];
       }
 
-      // 6. Etkinlik & Aktivite
+      // 6. Etkinlik
       if (eventsActivities.length > 0) {
-        const sheet = workbook.addWorksheet('Etkinlik');
-        addHeader(sheet, 'ETKİNLİK VE AKTİVİTE LİSTESİ');
-        const hRow = sheet.addRow(['Tarih', 'Saat', 'Etkinlik Adı', 'Mekan', 'Kişi Sayısı', 'Birim Fiyat', 'Toplam']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('ETKİNLİK', 'ETKİNLİK VE AKTİVİTE LİSTESİ');
+        addTableHeader(sheet, ['TARİH', 'ETKİNLİK ADI', 'MEKAN', 'KİŞİ', 'TUTAR', 'DÖVİZ', 'TOPLAM TL']);
         eventsActivities.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             it.event_date,
-            '', // Saat alanı yoksa boş
             it.sub_category?.name || 'Etkinlik',
             it.hotel?.name || it.supplier?.name || '-',
-            '', // Kişi sayısı yoksa boş
+            it.pax || '-',
             it.amount,
+            it.currency,
             it.total_tl
           ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(7).numFmt = '₺#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [15, 10, 25, 25, 15, 15, 15][i]);
+        sheet.columns = [{width:15}, {width:30}, {width:30}, {width:10}, {width:15}, {width:10}, {width:15}];
       }
 
       // 7. Otel Ekstra
       if (hotelExtras.length > 0) {
-        const sheet = workbook.addWorksheet('Otel Ekstra');
-        addHeader(sheet, 'OTEL EKSTRA LİSTESİ');
-        const hRow = sheet.addRow(['Kategori', 'Alt Kategori', 'Açıklama', 'Adet', 'Birim Fiyat', 'Toplam TL']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('OTEL EKSTRA', 'OTEL EKSTRA HARCAMALARI');
+        addTableHeader(sheet, ['KATEGORİ', 'ALT KATEGORİ', 'AÇIKLAMA', 'ADET', 'BİRİM FİYAT', 'TOPLAM TL']);
         hotelExtras.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             getCategoryName(it.main_category),
             getCategoryName(it.sub_category),
             it.description,
@@ -10014,18 +10055,18 @@ export default function ProjectDetailPage() {
             it.unit_price,
             (it.total || 0) * (it.fx || 1)
           ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(6).numFmt = '₺#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [25, 25, 40, 10, 15, 15][i]);
+        sheet.columns = [{width:25}, {width:25}, {width:40}, {width:10}, {width:15}, {width:15}];
       }
 
       // 8. İnsan Kaynakları
       if (humanResources.length > 0) {
-        const sheet = workbook.addWorksheet('İnsan Kaynakları');
-        addHeader(sheet, 'İNSAN KAYNAKLARI LİSTESİ');
-        const hRow = sheet.addRow(['Personel/Grup', 'Görev', 'Adet', 'Gün', 'Birim Fiyat', 'Toplam']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('İNSAN KAYNAKLARI', 'İNSAN KAYNAKLARI LİSTESİ');
+        addTableHeader(sheet, ['PERSONEL/GRUP', 'GÖREV', 'ADET', 'GÜN', 'BİRİM FİYAT', 'TOPLAM']);
         humanResources.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             it.personel,
             it.gorev,
             it.adet,
@@ -10033,26 +10074,109 @@ export default function ProjectDetailPage() {
             it.birim_fiyat,
             it.toplam_fiyat
           ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(6).numFmt = '#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [30, 25, 10, 10, 15, 15][i]);
+        sheet.columns = [{width:30}, {width:25}, {width:10}, {width:10}, {width:15}, {width:15}];
       }
 
       // 9. Diğer Servisler
       if (otherServices.length > 0) {
-        const sheet = workbook.addWorksheet('Diğer Servisler');
-        addHeader(sheet, 'DİĞER SERVİSLER LİSTESİ');
-        const hRow = sheet.addRow(['Servis Adı', 'Tedarikçi', 'Adet', 'Birim Fiyat', 'Toplam']);
-        hRow.font = { bold: true };
+        const sheet = createStyledSheet('DİĞER SERVİSLER', 'DİĞER HİZMET VE SERVİSLER');
+        addTableHeader(sheet, ['SERVİS ADI', 'TEDARİKÇİ', 'ADET', 'BİRİM FİYAT', 'TOPLAM']);
         otherServices.forEach(it => {
-          sheet.addRow([
+          const row = sheet.addRow([
             it.servis_adi,
             it.tedarikci,
             it.adet,
             it.birim_fiyat,
             it.toplam_fiyat
           ]);
+          row.getCell(4).numFmt = '#,##0.00';
+          row.getCell(5).numFmt = '#,##0.00';
         });
-        sheet.columns.forEach((col, i) => col.width = [30, 30, 10, 15, 15][i]);
+        sheet.columns = [{width:30}, {width:30}, {width:10}, {width:15}, {width:15}];
+      }
+
+      // 10. Tahsilat
+      if (collectionPlans.length > 0 || collections.length > 0) {
+        const sheet = createStyledSheet('TAHSİLAT', 'TAHSİLAT PLANI VE GERÇEKLEŞENLER');
+        
+        addTableHeader(sheet, ['TİP', 'TARİH', 'YÖNTEM', 'AÇIKLAMA', 'TUTAR', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
+        
+        sheet.addRow(['TAHSİLAT PLANI']).font = { bold: true, size: 14 };
+        collectionPlans.forEach(it => {
+          const row = sheet.addRow([
+            'PLAN',
+            it.date,
+            it.collectionType,
+            it.description,
+            it.amount,
+            it.currency,
+            it.exchangeRate,
+            it.totalTRY
+          ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(8).numFmt = '₺#,##0.00';
+        });
+
+        sheet.addRow([]);
+        sheet.addRow(['GERÇEKLEŞEN TAHSİLATLAR']).font = { bold: true, size: 14 };
+        collections.forEach(it => {
+          const row = sheet.addRow([
+            'GERÇEKLEŞEN',
+            it.date,
+            it.collection_type,
+            it.description,
+            it.amount,
+            it.currency,
+            it.exchange_rate,
+            it.total_try
+          ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(8).numFmt = '₺#,##0.00';
+        });
+        sheet.columns = [{width:15}, {width:15}, {width:20}, {width:35}, {width:15}, {width:10}, {width:10}, {width:18}];
+      }
+
+      // 11. Ödeme
+      if (paymentPlans.length > 0 || payments.length > 0) {
+        const sheet = createStyledSheet('ÖDEME', 'ÖDEME PLANI VE GERÇEKLEŞENLER');
+        addTableHeader(sheet, ['TİP', 'TARİH', 'TEDARİKÇİ', 'AÇIKLAMA', 'TUTAR', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
+        
+        sheet.addRow(['ÖDEME PLANI']).font = { bold: true, size: 14 };
+        paymentPlans.forEach(it => {
+          const row = sheet.addRow([
+            'PLAN',
+            it.date,
+            it.vendor_name,
+            it.description,
+            it.amount,
+            it.currency,
+            it.exchange_rate,
+            it.total_try
+          ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(8).numFmt = '₺#,##0.00';
+        });
+
+        sheet.addRow([]);
+        sheet.addRow(['GERÇEKLEŞEN ÖDEMELER']).font = { bold: true, size: 14 };
+        payments.forEach(it => {
+          const row = sheet.addRow([
+            'GERÇEKLEŞEN',
+            it.date,
+            it.vendor_name,
+            it.description,
+            it.amount,
+            it.currency,
+            it.exchange_rate,
+            it.total_try
+          ]);
+          row.getCell(5).numFmt = '#,##0.00';
+          row.getCell(8).numFmt = '₺#,##0.00';
+        });
+        sheet.columns = [{width:15}, {width:15}, {width:30}, {width:35}, {width:15}, {width:10}, {width:10}, {width:18}];
       }
 
       const buffer = await workbook.xlsx.writeBuffer();
@@ -10064,74 +10188,95 @@ export default function ProjectDetailPage() {
       anchor.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Tam rapor Excel hatası:', error);
-      toast('Excel raporu oluşturulurken bir hata oluştu.');
+      console.error('Tam Rapor Excel hatası:', error);
+      toast('Excel oluşturulurken bir hata oluştu.');
     } finally {
       setLoading(false);
     }
   };
 
-  // "Otel Otel Satış" - Her oteli ayrı bir satış sheet'i olarak verir
+  // Otel bazlı satış raporu
   const exportSalesOnlyByHotelToExcel = async () => {
     try {
       setLoading(true);
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
-      const inchToPx = (inch: number) => Math.round(inch * 96);
-      const guessExt = (d: string): 'png' | 'jpeg' => (d || '').includes('image/png') ? 'png' : 'jpeg';
-
-      const hotelsData = (project as any)?.hotels_data || [];
       const allSales = itemsSales;
 
-      const addSheetForHotelSales = (sheetName: string, h: any, sItems: any[]) => {
-        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
-        sheet.pageSetup = { orientation: 'landscape', fitToPage: true };
-
-        // Header section (Original style)
-        const topBandRow = sheet.addRow([]);
-        topBandRow.height = 60;
-        sheet.mergeCells('A1:H1');
-        for (let c = 1; c <= 8; c++) sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
-        
-        if (iconLogoBase64) sheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.1, row: 0.1 }, ext: { width: 100, height: 50 } });
-
-        const headerInfo = [
-          ['REFERANS', project.reference || '', 'OTEL', hotels.find(ht => ht.id === h.hotel_id)?.name || ''],
-          ['MÜŞTERİ', project.company_name || '', 'TARİH', new Date().toLocaleDateString('tr-TR')]
-        ];
-
-        headerInfo.forEach(([l, lv, r, rv]) => {
-          const row = sheet.addRow([l, lv, '', '', '', r, rv]);
-          row.font = { bold: true };
-          row.height = 20;
+      const createStyledSheet = (sheetName: string, h: any) => {
+        const sheet = workbook.addWorksheet(sheetName, {
+          pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
         });
 
-        sheet.addRow([]); // Spacer
+        // Üst Band
+        const topBandRow = sheet.getRow(1);
+        topBandRow.height = 70;
+        sheet.mergeCells('A1:I1');
+        const bandCell = topBandRow.getCell(1);
+        bandCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
 
-        // Items Table
-        const hRow = sheet.addRow(['KATEGORİ', 'ADET', 'TEKRAR', 'BİRİM FİYAT', 'TOPLAM EUR', 'KUR', 'TOPLAM TL', 'AÇIKLAMA']);
-        hRow.font = { bold: true };
+        // Logo
+        if (iconLogoBase64) {
+          const iconId = workbook.addImage({ base64: iconLogoBase64, extension: 'png' });
+          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 55, height: 55 } });
+        }
+        if (wordmarkLogoBase64) {
+          const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
+          sheet.addImage(wordmarkId, { tl: { col: 1.1, row: 0.2 }, ext: { width: 140, height: 40 } });
+        }
+
+        // Başlık
+        sheet.mergeCells('A3:I3');
+        const titleRow = sheet.getRow(3);
+        titleRow.height = 35;
+        const titleCell = titleRow.getCell(1);
+        titleCell.value = 'SATIŞ RAPORU';
+        titleCell.font = { bold: true, size: 20, color: { argb: 'FF232F38' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Proje & Otel Bilgileri
+        const hName = hotels.find(ht => ht.id === h.hotel_id)?.name || 'GENEL';
+        const infoRow1 = sheet.addRow(['MÜŞTERİ', project.company_name || '-', 'REFERANS', project.reference || '-', 'TARİH', new Date().toLocaleDateString('tr-TR')]);
+        infoRow1.font = { bold: true };
+        const infoRow2 = sheet.addRow(['PROJE', project.name || '-', 'OTEL', hName, 'DURUM', project.status || '-']);
+        infoRow2.font = { bold: true };
+        sheet.addRow([]);
+
+        return sheet;
+      };
+
+      const addSheetForHotelSales = (sheetName: string, h: any, sItems: any[]) => {
+        const sheet = createStyledSheet(sheetName, h);
+
+        // Header
+        const hRow = sheet.addRow(['KATEGORİ', 'ALT KATEGORİ', 'AÇIKLAMA', 'ADET', 'TEKRAR', 'BİRİM FİYAT', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
         hRow.height = 25;
-        for (let c = 1; c <= 8; c++) hRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+        hRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        for (let i = 1; i <= 9; i++) {
+          const cell = hRow.getCell(i);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF546E7A' } };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        }
 
         sItems.forEach(it => {
           const row = sheet.addRow([
+            getCategoryName(it.main_category),
             getCategoryName(it.sub_category),
+            it.description,
             it.qty,
             it.repeat,
             it.unit_price,
-            it.total,
+            it.currency,
             it.fx,
-            (it.total || 0) * (it.fx || 1),
-            it.description
+            (it.total || 0) * (it.fx || 1)
           ]);
-          row.getCell(4).numFmt = '€ #,##0.00';
-          row.getCell(5).numFmt = '€ #,##0.00';
-          row.getCell(7).numFmt = '₺#,##0.00';
+          row.getCell(6).numFmt = '#,##0.00';
+          row.getCell(9).numFmt = '₺#,##0.00';
         });
 
-        sheet.columns = [{width: 30}, {width: 10}, {width: 10}, {width: 15}, {width: 15}, {width: 10}, {width: 15}, {width: 40}];
+        sheet.columns = [{width:20}, {width:20}, {width:35}, {width:10}, {width:10}, {width:15}, {width:10}, {width:10}, {width:18}];
       };
 
       hotelsData.forEach((h: any, idx: number) => {
