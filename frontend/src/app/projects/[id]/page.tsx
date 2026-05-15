@@ -1098,15 +1098,15 @@ export default function ProjectDetailPage() {
 
         const parseDescriptionTags = (desc: string) => {
           if (!desc) return { cleanDesc: '', tabTag: null, supplierTag: null, repeatTag: null, orderTag: null };
-          const tabMatch = desc.match(/ \[T:(.*?)\]/);
-          const supplierMatch = desc.match(/ \[S:(.*?)\]/);
-          const repeatMatch = desc.match(/ \[R:(.*?)\]/);
-          const orderMatch = desc.match(/ \[O:(.*?)\]/);
+          const tabMatch = desc.match(/\[T:(.*?)\]/);
+          const supplierMatch = desc.match(/\[S:(.*?)\]/);
+          const repeatMatch = desc.match(/\[R:(.*?)\]/);
+          const orderMatch = desc.match(/\[O:(.*?)\]/);
           let cleanDesc = desc
-            .replace(/ \[T:.*?\]/g, '')
-            .replace(/ \[S:.*?\]/g, '')
-            .replace(/ \[R:.*?\]/g, '')
-            .replace(/ \[O:.*?\]/g, '')
+            .replace(/\s?\[T:.*?\]/g, '')
+            .replace(/\s?\[S:.*?\]/g, '')
+            .replace(/\s?\[R:.*?\]/g, '')
+            .replace(/\s?\[O:.*?\]/g, '')
             .trim();
           return { 
             cleanDesc, 
@@ -1597,9 +1597,9 @@ export default function ProjectDetailPage() {
       }
 
       let finalDescription = (next.description || '')
-        .replace(/ \[T:.*?\]/g, '')
-        .replace(/ \[S:.*?\]/g, '')
-        .replace(/ \[R:.*?\]/g, '')
+        .replace(/\s?\[T:.*?\]/g, '')
+        .replace(/\s?\[S:.*?\]/g, '')
+        .replace(/\s?\[R:.*?\]/g, '')
         .trim();
 
       if (side === 'purchase' && next.vendorId) finalDescription += ` [S:${next.vendorId}]`;
@@ -2682,13 +2682,20 @@ export default function ProjectDetailPage() {
         const fx = it.fx || 1;
 
         // Açıklama alanını belirle: UUID ise kullanma, yoksa description, yoksa sub_category, yoksa main_category, yoksa boş
-        let desc = '';
-        if (it.description && !isUUID(it.description)) {
-          desc = it.description;
-        } else if (it.sub_category && !isUUID(it.sub_category)) {
-          desc = it.sub_category;
-        } else if (it.main_category && !isUUID(it.main_category)) {
-          desc = it.main_category;
+        let desc = (it.description || '').trim();
+        if (!desc || isUUID(desc)) {
+          // Eğer açıklama yoksa veya UUID ise, kategori isimlerini fallback olarak kullan
+          const subName = getCategoryName(it.sub_category);
+          const mainName = getCategoryName(it.main_category);
+          
+          // isUUID kontrolü ile gerçek isim gelip gelmediğini doğrula
+          if (subName && !isUUID(subName)) {
+            desc = subName;
+          } else if (mainName && !isUUID(mainName)) {
+            desc = mainName;
+          } else {
+            desc = '';
+          }
         }
 
         const { tabId, masterHotelId } = resolveHotelRefsForImport(it.hotel_id, it.description || '');
