@@ -9846,7 +9846,7 @@ export default function ProjectDetailPage() {
       const workbook = new ExcelJS.Workbook();
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
 
-      const createStyledSheet = (sheetName: string, title: string, subtitle?: string) => {
+      const createStyledSheet = (sheetName: string, title: string, meta?: any) => {
         const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
         sheet.pageSetup = { 
           paperSize: 9, 
@@ -9877,11 +9877,11 @@ export default function ProjectDetailPage() {
         // 2. Bilgi Paneli (Beige #D3CBBE)
         const beigeColor = 'FFD3CBBE';
         const headerInfo = [
-          ['REFERANS', project.reference || '-', 'ODA | PAX', '-'],
-          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', '-'],
-          ['C/IN - C/OUT', `${project.start_date || '-'} - ${project.end_date || '-'}`, 'OPSİYON', '-'],
-          ['OTEL', subtitle || '-', 'DURUM', project.status || '-'],
-          ['TEKLİF TÜRÜ', 'BİRİM', 'NOT', project.notes || '']
+          ['REFERANS', project.reference || '-', 'ODA | PAX', meta?.pax || '-'],
+          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', meta?.concept || '-'],
+          ['C/IN - C/OUT', `${meta?.checkin || project.start_date || '-'} - ${meta?.checkout || project.end_date || '-'}`, 'OPSİYON', meta?.option || '-'],
+          ['OTEL', meta?.hotelName || '-', 'DURUM', project.status || '-'],
+          ['TEKLİF TÜRÜ', project.quote_type || 'BİRİM', 'NOT', project.notes || '']
         ];
 
         headerInfo.forEach((rowInfo, idx) => {
@@ -9938,7 +9938,7 @@ export default function ProjectDetailPage() {
       };
 
       // 1. Satış
-      const sSheet = createStyledSheet('SATIŞ', 'PROJE SATIŞ KALEMLERİ');
+      const sSheet = createStyledSheet('SATIŞ', 'PROJE SATIŞ KALEMLERİ', { hotelName: 'TÜM OTELLER' });
       addTableHeader(sSheet, ['KATEGORİ', 'ALT KATEGORİ', 'AÇIKLAMA', 'ADET', 'TEKRAR', 'BİRİM FİYAT', 'DÖVİZ', 'KUR', 'TOPLAM TL']);
       itemsSales.forEach(it => {
         const row = sSheet.addRow([getCategoryName(it.main_category), getCategoryName(it.sub_category), it.description, it.qty, it.repeat, it.unit_price, it.currency, it.fx, (it.total || 0) * (it.fx || 1)]);
@@ -10068,7 +10068,7 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
       const allSales = itemsSales;
 
-      const createStyledSheet = (sheetName: string, h: any) => {
+      const createStyledSheet = (sheetName: string, title: string, meta?: any) => {
         const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
         sheet.pageSetup = { 
           paperSize: 9, 
@@ -10079,7 +10079,7 @@ export default function ProjectDetailPage() {
           margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
         };
 
-        // Üst Band
+        // 1. Üst Band
         sheet.getRow(1).height = 70;
         sheet.mergeCells('A1:I1');
         const bandCell = sheet.getCell('A1');
@@ -10096,15 +10096,14 @@ export default function ProjectDetailPage() {
           sheet.addImage(wordmarkId, { tl: { col: 6.8, row: 0.15 }, ext: { width: 180, height: 45 } });
         }
 
-        // Bilgi Paneli (Beige #D3CBBE)
+        // 2. Bilgi Paneli (Beige #D3CBBE)
         const beigeColor = 'FFD3CBBE';
-        const hName = hotels.find(ht => ht.id === h.hotel_id)?.name || 'GENEL';
         const headerInfo = [
-          ['REFERANS', project.reference || '-', 'ODA | PAX', '-'],
-          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', '-'],
-          ['C/IN - C/OUT', `${project.start_date || '-'} - ${project.end_date || '-'}`, 'OPSİYON', '-'],
-          ['OTEL', hName, 'DURUM', project.status || '-'],
-          ['TEKLİF TÜRÜ', 'BİRİM', 'NOT', project.notes || '']
+          ['REFERANS', project.reference || '-', 'ODA | PAX', meta?.pax || '-'],
+          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', meta?.concept || '-'],
+          ['C/IN - C/OUT', `${meta?.checkin || project.start_date || '-'} - ${meta?.checkout || project.end_date || '-'}`, 'OPSİYON', meta?.option || '-'],
+          ['OTEL', meta?.hotelName || '-', 'DURUM', project.status || '-'],
+          ['TEKLİF TÜRÜ', project.quote_type || 'BİRİM', 'NOT', project.notes || '']
         ];
 
         headerInfo.forEach((rowInfo, idx) => {
@@ -10133,12 +10132,12 @@ export default function ProjectDetailPage() {
           }
         });
 
-        // Başlık
+        // 3. Başlık
         const rowIndex = 7;
         sheet.mergeCells(`A${rowIndex}:I${rowIndex}`);
         const headerRow = sheet.getRow(rowIndex);
         headerRow.height = 35;
-        headerRow.getCell(1).value = 'SATIŞLAR';
+        headerRow.getCell(1).value = title.toUpperCase();
         headerRow.getCell(1).font = { bold: true, size: 20 };
         headerRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
         headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
@@ -10148,11 +10147,19 @@ export default function ProjectDetailPage() {
       };
 
       const addSheetForHotelSales = (sheetName: string, h: any, sItems: any[]) => {
-        const sheet = createStyledSheet(sheetName, h);
+        const meta = {
+          hotelName: hotels.find(ht => ht.id === h.hotel_id)?.name || 'GENEL',
+          pax: h.pax_count && h.room_count ? `${h.room_count} | ${h.pax_count}` : (project.room_pax || '-'),
+          concept: h.hotel_concept || h.concept || '-',
+          option: h.option || '-',
+          checkin: h.check_in_date || null,
+          checkout: h.check_out_date || null
+        };
+        const sheet = createStyledSheet(sheetName, 'SATIŞLAR', meta);
         
         let currentRow = 8;
-        let grandTotalEur = 0;
-        let grandTotalTl = 0;
+        let subtotalRows: number[] = [];
+        let catIndex = 1;
 
         const addCategory = (title: string, items: any[]) => {
           if (items.length === 0) return;
@@ -10160,28 +10167,27 @@ export default function ProjectDetailPage() {
           // Category Header
           const catRow = sheet.getRow(currentRow);
           catRow.height = 25;
-          catRow.getCell(1).value = title;
+          catRow.getCell(1).value = `${catIndex}. ${title.toUpperCase()}`;
           catRow.getCell(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
           sheet.mergeCells(`A${currentRow}:I${currentRow}`);
           for (let c = 1; c <= 9; c++) catRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF444444' } };
           currentRow++;
+          catIndex++;
 
           // Table Header
           const hRow = sheet.getRow(currentRow);
           hRow.height = 22;
           const headers = ['DETAY/AÇIKLAMA', 'BİRİM/ADET', 'SEFER/TEKRAR', 'BİRİM/FİYAT', 'TOPLAM EUR', 'KUR', 'TOPLAM TL', 'AÇIKLAMA'];
-          headers.forEach((h, i) => {
-            const cell = hRow.getCell(i + 1);
-            cell.value = h;
+          for (let i = 1; i <= 9; i++) {
+            const cell = hRow.getCell(i);
+            if (i <= 8) cell.value = headers[i-1];
             cell.font = { bold: true, size: 10 };
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
             cell.alignment = { horizontal: 'center' };
-          });
+          }
           currentRow++;
 
-          let catTotalEur = 0;
-          let catTotalTl = 0;
-
+          const startDataRow = currentRow;
           items.forEach(it => {
             const row = sheet.getRow(currentRow);
             row.getCell(1).value = it.desc;
@@ -10189,32 +10195,40 @@ export default function ProjectDetailPage() {
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
             row.getCell(4).numFmt = '#,##0.00';
-            row.getCell(5).value = it.totalEur;
-            row.getCell(5).numFmt = '€#,##0.00';
-            row.getCell(6).value = it.fx;
-            row.getCell(7).value = it.totalTl;
-            row.getCell(7).numFmt = '₺#,##0.00';
-            row.getCell(8).value = it.notes;
             
-            catTotalEur += it.totalEur;
-            catTotalTl += it.totalTl;
+            // Formula for TOPLAM EUR: Qty * Repeat * Price
+            row.getCell(5).value = { formula: `B${currentRow}*C${currentRow}*D${currentRow}`, result: it.totalEur };
+            row.getCell(5).numFmt = '€#,##0.00';
+            
+            row.getCell(6).value = it.fx;
+            
+            // Formula for TOPLAM TL: TOPLAM EUR * FX
+            row.getCell(7).value = { formula: `E${currentRow}*F${currentRow}`, result: it.totalTl };
+            row.getCell(7).numFmt = '₺#,##0.00';
+            
+            row.getCell(8).value = it.notes;
             currentRow++;
           });
+          const endDataRow = currentRow - 1;
 
           // Subtotal Row
           const subRow = sheet.getRow(currentRow);
           subRow.getCell(1).value = 'ARA TOPLAM';
           subRow.getCell(1).font = { bold: true };
-          subRow.getCell(5).value = catTotalEur;
+          
+          // Formula for Subtotal EUR
+          subRow.getCell(5).value = { formula: `SUM(E${startDataRow}:E${endDataRow})`, result: items.reduce((acc, i) => acc + i.totalEur, 0) };
           subRow.getCell(5).numFmt = '€#,##0.00';
           subRow.getCell(5).font = { bold: true };
-          subRow.getCell(7).value = catTotalTl;
+          
+          // Formula for Subtotal TL
+          subRow.getCell(7).value = { formula: `SUM(G${startDataRow}:G${endDataRow})`, result: items.reduce((acc, i) => acc + i.totalTl, 0) };
           subRow.getCell(7).numFmt = '₺#,##0.00';
           subRow.getCell(7).font = { bold: true };
+          
           for (let c = 1; c <= 9; c++) subRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
           
-          grandTotalEur += catTotalEur;
-          grandTotalTl += catTotalTl;
+          subtotalRows.push(currentRow);
           currentRow += 2;
         };
 
@@ -10230,9 +10244,9 @@ export default function ProjectDetailPage() {
           totalTl: (it.total_price || 0) * (it.fx || 1),
           notes: ''
         }));
-        addCategory('1. OTEL | KONAKLAMA', accItems);
+        addCategory('OTEL | KONAKLAMA', accItems);
 
-        // Dinamik Kategoriler (Teklifler Sayfası Mantığı)
+        // Dinamik Kategoriler
         const grouped: Record<string, any[]> = {};
         sItems.forEach(it => {
           const mainCat = getCategoryName(it.main_category) || 'DİĞER HİZMETLER';
@@ -10249,10 +10263,8 @@ export default function ProjectDetailPage() {
           });
         });
 
-        let catIndex = 2;
         Object.entries(grouped).forEach(([catName, items]) => {
-          addCategory(`${catIndex}. ${catName.toUpperCase()}`, items);
-          catIndex++;
+          addCategory(catName, items);
         });
         
         // Final Grand Total
@@ -10260,10 +10272,16 @@ export default function ProjectDetailPage() {
         gRow.height = 30;
         gRow.getCell(1).value = 'SATIŞ GENEL TOPLAMLAR';
         gRow.getCell(1).font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
-        gRow.getCell(5).value = grandTotalEur;
+        
+        if (subtotalRows.length > 0) {
+          const eurSumFormula = subtotalRows.map(r => `E${r}`).join('+');
+          const tlSumFormula = subtotalRows.map(r => `G${r}`).join('+');
+          gRow.getCell(5).value = { formula: eurSumFormula, result: 0 };
+          gRow.getCell(7).value = { formula: tlSumFormula, result: 0 };
+        }
+        
         gRow.getCell(5).numFmt = '€#,##0.00';
         gRow.getCell(5).font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
-        gRow.getCell(7).value = grandTotalTl;
         gRow.getCell(7).numFmt = '₺#,##0.00';
         gRow.getCell(7).font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
         for (let c = 1; c <= 9; c++) gRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF222222' } };
