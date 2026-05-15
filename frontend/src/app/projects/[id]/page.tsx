@@ -9871,7 +9871,7 @@ export default function ProjectDetailPage() {
         }
         if (wordmarkLogoBase64) {
           const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
-          sheet.addImage(wordmarkId, { tl: { col: 6.8, row: 0.15 }, ext: { width: 180, height: 45 } });
+          sheet.addImage(wordmarkId, { tl: { col: 7.4, row: 0.15 }, ext: { width: 180, height: 45 } });
         }
 
         // 2. Bilgi Paneli (Beige #D3CBBE)
@@ -9925,15 +9925,16 @@ export default function ProjectDetailPage() {
       };
 
       const addTableHeader = (sheet: any, columns: string[]) => {
-        const hRow = sheet.addRow(columns);
+        const hRow = sheet.getRow(8); // Always start table header at row 8
         hRow.height = 25;
-        hRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        columns.forEach((_, i) => {
-          const cell = hRow.getCell(i + 1);
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF546E7A' } };
+        for (let i = 1; i <= 9; i++) {
+          const cell = hRow.getCell(i);
+          if (i <= columns.length) cell.value = columns[i - 1];
+          cell.font = { bold: true, size: 10 };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-        });
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        }
         return hRow;
       };
 
