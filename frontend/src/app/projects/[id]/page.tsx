@@ -9948,11 +9948,11 @@ export default function ProjectDetailPage() {
             it.tedarikci,
             it.havayolu,
             it.guzergah,
-            it.tarih,
+            it.biletlemeTarihi,
             it.pnr,
             it.misafirler,
-            it.birim_fiyat,
-            it.toplam_fiyat
+            it.ppMaliyet,
+            it.toplamMaliyet
           ]);
         });
         sheet.columns.forEach((col, i) => col.width = [20, 20, 25, 15, 15, 30, 15, 15][i]);
@@ -9966,14 +9966,14 @@ export default function ProjectDetailPage() {
         hRow.font = { bold: true };
         transfers.forEach(it => {
           sheet.addRow([
-            it.tarih,
-            it.saat,
-            it.guzergah,
-            it.arac_tipi,
-            it.aciklama,
-            it.adet,
-            it.birim_fiyat,
-            it.toplam_fiyat
+            it.date,
+            it.time,
+            it.route,
+            it.vehicleType,
+            it.transferType,
+            it.passengerCount,
+            it.costAmount,
+            it.costAmount // Assuming single amount for now
           ]);
         });
         sheet.columns.forEach((col, i) => col.width = [15, 10, 25, 20, 30, 10, 15, 15][i]);
@@ -9987,13 +9987,13 @@ export default function ProjectDetailPage() {
         hRow.font = { bold: true };
         eventsActivities.forEach(it => {
           sheet.addRow([
-            it.tarih,
-            it.saat,
-            it.etkinlik_adi,
-            it.mekan,
-            it.kisi_sayisi,
-            it.birim_fiyat,
-            it.toplam_fiyat
+            it.event_date,
+            '', // Saat alanı yoksa boş
+            it.sub_category?.name || 'Etkinlik',
+            it.hotel?.name || it.supplier?.name || '-',
+            '', // Kişi sayısı yoksa boş
+            it.amount,
+            it.total_tl
           ]);
         });
         sheet.columns.forEach((col, i) => col.width = [15, 10, 25, 25, 15, 15, 15][i]);
