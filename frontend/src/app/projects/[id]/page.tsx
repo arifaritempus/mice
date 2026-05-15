@@ -10068,6 +10068,85 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
       const allSales = itemsSales;
 
+      const createStyledSheet = (sheetName: string, h: any) => {
+        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
+        sheet.pageSetup = { 
+          paperSize: 9, 
+          orientation: 'landscape', 
+          fitToPage: true, 
+          fitToWidth: 1, 
+          fitToHeight: 0,
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+        };
+
+        // Üst Band
+        sheet.getRow(1).height = 70;
+        sheet.mergeCells('A1:I1');
+        const bandCell = sheet.getCell('A1');
+        bandCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
+
+        // Logo
+        const inchToPx = (inch: number) => Math.round(inch * 96);
+        if (iconLogoBase64) {
+          const iconId = workbook.addImage({ base64: iconLogoBase64, extension: 'png' });
+          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
+        }
+        if (wordmarkLogoBase64) {
+          const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
+          sheet.addImage(wordmarkId, { tl: { col: 6.8, row: 0.15 }, ext: { width: 180, height: 45 } });
+        }
+
+        // Bilgi Paneli (Beige #D3CBBE)
+        const beigeColor = 'FFD3CBBE';
+        const hName = hotels.find(ht => ht.id === h.hotel_id)?.name || 'GENEL';
+        const headerInfo = [
+          ['REFERANS', project.reference || '-', 'ODA | PAX', '-'],
+          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', '-'],
+          ['C/IN - C/OUT', `${project.start_date || '-'} - ${project.end_date || '-'}`, 'OPSİYON', '-'],
+          ['OTEL', hName, 'DURUM', project.status || '-'],
+          ['TEKLİF TÜRÜ', 'BİRİM', 'NOT', project.notes || '']
+        ];
+
+        headerInfo.forEach((rowInfo, idx) => {
+          const rowIndex = idx + 2;
+          const row = sheet.getRow(rowIndex);
+          row.height = 24;
+          row.getCell(1).value = rowInfo[0];
+          row.getCell(2).value = rowInfo[1];
+          row.getCell(7).value = rowInfo[2];
+          row.getCell(8).value = rowInfo[3];
+
+          [1, 7].forEach(col => {
+            const cell = row.getCell(col);
+            cell.font = { bold: true, size: 12 };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          });
+          [2, 8].forEach(col => {
+            const cell = row.getCell(col);
+            cell.font = { size: 12 };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          });
+          sheet.mergeCells(`B${rowIndex}:F${rowIndex}`);
+          sheet.mergeCells(`H${rowIndex}:I${rowIndex}`);
+          for (let c = 1; c <= 9; c++) {
+            row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: beigeColor } };
+          }
+        });
+
+        // Başlık
+        const rowIndex = 7;
+        sheet.mergeCells(`A${rowIndex}:I${rowIndex}`);
+        const headerRow = sheet.getRow(rowIndex);
+        headerRow.height = 35;
+        headerRow.getCell(1).value = 'SATIŞLAR';
+        headerRow.getCell(1).font = { bold: true, size: 20 };
+        headerRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
+
+        sheet.views = [{ showGridLines: false }];
+        return sheet;
+      };
+
       const addSheetForHotelSales = (sheetName: string, h: any, sItems: any[]) => {
         const sheet = createStyledSheet(sheetName, h);
         
