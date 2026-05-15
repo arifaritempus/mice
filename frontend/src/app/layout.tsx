@@ -91,7 +91,7 @@ export default function RootLayout({
         suppressHydrationWarning={true}
         className="antialiased text-slate-900 dark:text-slate-100 transition-colors duration-200"
         style={{
-          backgroundColor: 'var(--theme-bg-primary, #020617)'
+          backgroundColor: 'var(--theme-bg-primary)'
         }}
       >
         <ThemeProvider>

@@ -38,6 +38,10 @@ interface SalesTabProps {
   toggleAllSubCategories: (mainCategoryId: string, checked: boolean, side: 'sales' | 'purchase') => void;
   CheckboxWithIndeterminate: React.ComponentType<{ checked: boolean; indeterminate: boolean; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }>;
   handleCreateLink?: () => void;
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  isLocked?: boolean;
   hotelsData: any[];
   hotels: any[];
 }
@@ -78,6 +82,10 @@ export default function SalesTab({
   toggleAllSubCategories,
   CheckboxWithIndeterminate,
   handleCreateLink,
+  canCreate = true,
+  canEdit = true,
+  canDelete = true,
+  isLocked = false,
   hotelsData = [],
   hotels = [],
 }: SalesTabProps) {
@@ -106,20 +114,28 @@ export default function SalesTab({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">Satış</h2>
         <div className="flex items-center gap-2">
-          {handleCreateLink && (
+          {handleCreateLink && !isLocked && (
             <button 
-              onClick={handleCreateLink} 
-              className="px-2 py-1 text-xs rounded bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1"
-              title="Link Oluştur"
+              onClick={() => {
+                console.log('Başlık ekleme ikonuna tıklandı - kategori seçim modalı açılmalı');
+                setShowCategoryModalSales(true);
+              }} 
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Link Oluştur
+              Yeni Satış Kalemi
             </button>
           )}
-          <button onClick={exportSalesToExcel} className="px-2 py-1 text-xs rounded bg-green-500 text-white hover:bg-green-600">
-            Excel'e Aktar
+          <button
+            onClick={exportSalesToExcel}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600/10 text-green-600 hover:bg-green-600 hover:text-white text-xs font-bold rounded-lg transition-all border border-green-600/20"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel Dışa Aktar
           </button>
         </div>
       </div>
@@ -459,7 +475,7 @@ export default function SalesTab({
           return (
             <div
               key={it.id}
-              className={`rounded-md p-2 flex flex-wrap md:flex-nowrap items-center gap-2 ${it.isEditing ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200'}`}
+              className={`rounded-md p-2 flex flex-wrap md:flex-nowrap items-center gap-2 group ${it.isEditing ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200'}`}
             >
               {it.isEditing ? (
                 // Düzenleme modu
@@ -675,16 +691,22 @@ export default function SalesTab({
                   <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">{formatTRY(it.total_try)}</div>
                   <div className="flex-1 min-w-[10rem] text-xs text-gray-900 dark:text-white truncate">{it.description || '-'}</div>
                   <div className="w-36 text-xs text-gray-900 dark:text-white truncate">{getHotelNameFromData(it.hotel_id)}</div>
-                  <div className="w-24 flex items-center gap-1 justify-end pr-1">
-                    <button onClick={()=>addBelow('sales', it.id)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Satır Ekle">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                    </button>
-                    <button onClick={()=>editRow('sales', it.id)} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30" title="Düzenle">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    </button>
-                    <button onClick={()=>removeItem('sales', it.id)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
+                  <div className="w-24 flex items-center gap-1 justify-end pr-1 group-hover:opacity-100 transition-opacity">
+                    {canCreate && !isLocked && (
+                      <button onClick={()=>addBelow('sales', it.id)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Satır Ekle">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                      </button>
+                    )}
+                    {canEdit && !isLocked && (
+                      <button onClick={()=>editRow('sales', it.id)} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30" title="Düzenle">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      </button>
+                    )}
+                    {canDelete && !isLocked && (
+                      <button onClick={()=>removeItem('sales', it.id)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    )}
                   </div>
                 </>
               )}

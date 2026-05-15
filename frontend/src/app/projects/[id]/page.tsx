@@ -1898,7 +1898,7 @@ export default function ProjectDetailPage() {
           return aSubIndex - bSubIndex;
         }
 
-        return a.id.localeCompare(b.id);
+        return String(a.id || '').localeCompare(String(b.id || ''));
       });
     };
 
@@ -4600,7 +4600,8 @@ export default function ProjectDetailPage() {
       });
     }
     
-    return items.sort((a, b) => {
+    // Mutation fix: sort a copy
+    return [...items].sort((a, b) => {
       const getSortOrder = (item: any) => {
         const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
         const subList = subCategoriesByMain[item.main_category] || [];
@@ -4625,7 +4626,8 @@ export default function ProjectDetailPage() {
       });
     }
     
-    return items.sort((a, b) => {
+    // Mutation fix: sort a copy
+    return [...items].sort((a, b) => {
       const getSortOrder = (item: any) => {
         const mainIdx = mainCategories.findIndex(c => c.id === item.main_category);
         const subList = subCategoriesByMain[item.main_category] || [];
@@ -11570,6 +11572,10 @@ export default function ProjectDetailPage() {
                   handleAddSelectedCategories={handleAddSelectedCategories}
                   toggleAllSubCategories={toggleAllSubCategories}
                   CheckboxWithIndeterminate={CheckboxWithIndeterminate}
+                  canCreate={canCreate(Module.PROJECTS)}
+                  canEdit={canEdit(Module.PROJECTS)}
+                  canDelete={canDelete(Module.PROJECTS)}
+                  isLocked={project?.is_locked || false}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />
@@ -11625,6 +11631,10 @@ export default function ProjectDetailPage() {
                   filteredPurchaseSuppliers={filteredPurchaseSuppliers}
                   handlePurchaseSupplierKeyDown={handlePurchaseSupplierKeyDown}
                   handlePurchaseSupplierSelect={handlePurchaseSupplierSelect}
+                  canCreate={canCreate(Module.PROJECTS)}
+                  canEdit={canEdit(Module.PROJECTS)}
+                  canDelete={canDelete(Module.PROJECTS)}
+                  isLocked={project?.is_locked || false}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />

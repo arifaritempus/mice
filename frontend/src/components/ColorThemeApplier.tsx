@@ -88,9 +88,16 @@ export default function ColorThemeApplier() {
         if (themeBgPrimary) {
           css += `
             body${exclude}, main${exclude}, .min-h-screen${exclude} { background-color: var(--theme-bg-primary) !important; }
-            .bg-gray-50:not(button):not(input):not(select)${exclude} { background-color: var(--theme-bg-primary) !important; }
+            .bg-gray-50:not(button):not(input):not(select)${exclude}, 
+            .bg-slate-50:not(button):not(input):not(select)${exclude},
+            .bg-zinc-50:not(button):not(input):not(select)${exclude} { background-color: var(--theme-bg-primary) !important; }
           `;
-          if (isDark) css += `.dark body${exclude}, .dark main${exclude}, .dark .min-h-screen${exclude} { background-color: var(--theme-bg-primary) !important; }\n`;
+          if (isDark) {
+            css += `
+              .dark body${exclude}, .dark main${exclude}, .dark .min-h-screen${exclude} { background-color: var(--theme-bg-primary) !important; }
+              .dark .dark\\:bg-gray-950${exclude}, .dark .dark\\:bg-slate-950${exclude}, .dark .dark\\:bg-zinc-950${exclude} { background-color: var(--theme-bg-primary) !important; }
+            \n`;
+          }
         }
         
         // Card (Kart) bileşenleri
@@ -99,7 +106,14 @@ export default function ColorThemeApplier() {
             .card { background-color: var(--theme-card-bg) !important; }
             .bg-white:not(button):not(input):not(select):not(.sidebar):not(.sidebar-header)${exclude} { background-color: var(--theme-card-bg) !important; }
           `;
-          if (isDark) css += `.dark .dark\\:bg-gray-800:not(button):not(input):not(select):not(.sidebar):not(.sidebar-header)${exclude} { background-color: var(--theme-card-bg) !important; }\n`;
+          if (isDark) {
+            css += `
+              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-slate-900${exclude}, .dark .dark\\:bg-zinc-900${exclude},
+              .dark .dark\\:bg-gray-800${exclude}, .dark .dark\\:bg-slate-800${exclude}, .dark .dark\\:bg-zinc-800${exclude} { 
+                background-color: var(--theme-card-bg) !important; 
+              }
+            \n`;
+          }
         }
 
         // Metin Renkleri

@@ -366,15 +366,15 @@ export default function Sidebar() {
               active
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
                 : childActive
-                  ? 'bg-white/10 text-white'
-                  : 'text-slate-100 hover:bg-white/5 hover:text-white'
+                  ? (isDark ? 'bg-white/10 text-white' : 'bg-slate-200 text-slate-900')
+                  : (isDark ? 'text-slate-100 hover:bg-white/5 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')
             } ${isCollapsed && !isHovered ? 'justify-center px-0' : ''}`}
           >
             <span className="text-xl flex-shrink-0 opacity-80 group-hover:opacity-100">{item.icon}</span>
             {(!isCollapsed || isHovered) && (
               <>
                 <span className="flex-1 text-left text-[11px] font-black uppercase tracking-wider whitespace-nowrap">{item.label}</span>
-                <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'opacity-40'}`} />
+                <ChevronRight size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : isDark ? 'opacity-40' : 'text-slate-400'}`} />
               </>
             )}
           </button>
@@ -384,7 +384,9 @@ export default function Sidebar() {
             className={`w-full flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all duration-200 group mb-1 ${
               active
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                : 'text-slate-100 hover:bg-white/5 hover:text-white'
+                : isDark 
+                  ? 'text-slate-100 hover:bg-white/5 hover:text-white'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             } ${isCollapsed && !isHovered ? 'justify-center px-0' : ''}`}
           >
             <span className="text-xl flex-shrink-0 opacity-80 group-hover:opacity-100">{item.icon}</span>
@@ -468,7 +470,9 @@ export default function Sidebar() {
           
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="absolute top-4 right-2 p-1.5 rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition-all duration-200"
+            className={`absolute top-4 right-2 p-1.5 rounded-xl transition-all duration-200 ${
+              isDark ? 'hover:bg-white/10 text-white/50 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'
+            }`}
           >
             <ChevronLeft size={16} className={isCollapsed ? 'rotate-180' : ''} />
           </button>
@@ -489,7 +493,11 @@ export default function Sidebar() {
           {/* Notifications Trigger */}
           <button
             onClick={() => setIsNotificationsOpen(true)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-white/70 hover:bg-white/10 hover:text-white relative group ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group ${
+              isDark 
+                ? 'text-white/70 hover:bg-white/10 hover:text-white' 
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            } ${
               isCollapsed && !isHovered ? 'justify-center px-0' : ''
             }`}
           >
@@ -503,7 +511,9 @@ export default function Sidebar() {
               )}
             </div>
             {unreadCount > 0 && isCollapsed && !isHovered && (
-              <span className="absolute top-1 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-[#161d2b] animate-pulse">
+              <span className={`absolute top-1 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 animate-pulse ${
+                isDark ? 'ring-[#161d2b]' : 'ring-white'
+              }`}>
                 {unreadCount}
               </span>
             )}
@@ -544,19 +554,23 @@ export default function Sidebar() {
             <motion.div
               initial={{ x: -400 }} animate={{ x: 0 }} exit={{ x: -400 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 w-full max-w-sm bg-[#1a2233] z-[1000] shadow-2xl flex flex-col border-r border-white/5"
+              className={`fixed left-0 top-0 bottom-0 w-full max-w-sm z-[1000] shadow-2xl flex flex-col border-r ${
+                isDark ? 'bg-[#1a2233] border-white/5' : 'bg-white border-slate-200'
+              }`}
             >
-              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-[#161d2b]">
+              <div className={`p-6 border-b flex items-center justify-between ${
+                isDark ? 'bg-[#161d2b] border-white/5' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
                     <Bell size={20} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Bildirimler</h3>
+                    <h3 className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Bildirimler</h3>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sistem Mesajları</p>
                   </div>
                 </div>
-                <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-white/5 rounded-lg text-slate-400">
+                <button onClick={() => setIsNotificationsOpen(false)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-white/5 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}>
                   <X size={20} />
                 </button>
               </div>
@@ -568,13 +582,17 @@ export default function Sidebar() {
                       <button
                         key={n.id}
                         onClick={() => handleNotificationClick(n)}
-                        className={`w-full p-5 text-left hover:bg-white/5 transition-all flex gap-4 relative ${!n.is_read ? 'bg-blue-500/5' : ''}`}
+                        className={`w-full p-5 text-left transition-all flex gap-4 relative ${
+                          isDark 
+                            ? `hover:bg-white/5 ${!n.is_read ? 'bg-blue-500/5' : ''}` 
+                            : `hover:bg-slate-50 ${!n.is_read ? 'bg-blue-50/50' : ''}`
+                        }`}
                       >
                         {!n.is_read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />}
                         <div className="text-2xl mt-1">{n.type === 'error' ? '🚫' : n.type === 'warning' ? '⚠️' : n.type === 'success' ? '✅' : 'ℹ️'}</div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
-                            <h4 className={`text-sm ${!n.is_read ? 'font-bold text-white' : 'font-medium text-slate-400'}`}>{n.title}</h4>
+                            <h4 className={`text-sm ${!n.is_read ? `font-bold ${isDark ? 'text-white' : 'text-slate-900'}` : 'font-medium text-slate-400'}`}>{n.title}</h4>
                             <span className="text-[10px] text-slate-500">{moment(n.created_at).fromNow()}</span>
                           </div>
                           <p className="text-xs text-slate-500 line-clamp-2">{n.message.replace(/<[^>]*>?/gm, '')}</p>

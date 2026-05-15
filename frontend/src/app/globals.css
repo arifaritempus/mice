@@ -8,6 +8,8 @@
   --theme-bg-secondary: #eef2ff;
   --theme-card-bg: #ffffff;
   --theme-text-color: #0f172a;
+  --theme-sidebar-bg: #ffffff;
+  --theme-sidebar-header-bg: #ffffff;
   --theme-sidebar-border: rgba(15, 23, 42, 0.12);
 }
 
@@ -16,6 +18,8 @@
   --theme-bg-secondary: #0f172a;
   --theme-card-bg: #111827;
   --theme-text-color: #ffffff;
+  --theme-sidebar-bg: #0f172a;
+  --theme-sidebar-header-bg: #0f172a;
   --theme-sidebar-border: rgba(148, 163, 184, 0.35);
 }
 
