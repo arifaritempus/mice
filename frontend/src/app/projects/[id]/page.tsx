@@ -1140,7 +1140,7 @@ export default function ProjectDetailPage() {
             repeat: Number(repeatTag || it.sefer || it.repeat || 1), 
             total: it.total_price, 
             total_try: (it.total_price || 0) * (it.fx || 1),
-            description: cleanDesc,
+            description: cleanDesc || getCategoryName(it.sub_category) || getCategoryName(it.category) || '',
             hotel_id: resolveHotelTabId(it.hotel_id, tabTag),
             source_order: orderTag !== null ? Number(orderTag) : null
           };
@@ -1155,7 +1155,7 @@ export default function ProjectDetailPage() {
             repeat: Number(repeatTag || it.sefer || it.repeat || 1), 
             total: it.total_price, 
             total_try: (it.total_price || 0) * (it.fx || 1),
-            description: cleanDesc,
+            description: cleanDesc || getCategoryName(it.sub_category) || getCategoryName(it.category) || '',
             hotel_id: resolveHotelTabId(it.hotel_id, tabTag),
             vendorId: supplierTag || null,
             source_order: orderTag !== null ? Number(orderTag) : null
