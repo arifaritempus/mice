@@ -10160,26 +10160,7 @@ export default function ProjectDetailPage() {
       setLoading(false);
     }
   };
-      // General
-      const gSales = allSales.filter(it => !it.hotel_id || it.hotel_id === 'general');
-      const gPurchase = allPurchase.filter(it => !it.hotel_id || it.hotel_id === 'general');
-      if (gSales.length > 0 || gPurchase.length > 0) {
-        addSheetForHotel('GENEL HİZMETLER', {}, gSales, gPurchase);
-      }
 
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/octet-stream' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Proje_${project.reference || projectId}_Genel_Rapor.xlsx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Excel export hatası:', error);
-      alert('Excel export sırasında bir hata oluştu.');
-    }
-  };
 
 
 
