@@ -9847,9 +9847,15 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
 
       const createStyledSheet = (sheetName: string, title: string, subtitle?: string) => {
-        const sheet = workbook.addWorksheet(sheetName.substring(0, 31), {
-          pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
-        });
+        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
+        sheet.pageSetup = { 
+          paperSize: 9, 
+          orientation: 'landscape', 
+          fitToPage: true, 
+          fitToWidth: 1, 
+          fitToHeight: 0,
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+        };
 
         // 1. Üst Band (Band)
         sheet.getRow(1).height = 70;
@@ -9858,60 +9864,70 @@ export default function ProjectDetailPage() {
         bandCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
 
         // Logo Yerleşimi
+        const inchToPx = (inch: number) => Math.round(inch * 96);
         if (iconLogoBase64) {
           const iconId = workbook.addImage({ base64: iconLogoBase64, extension: 'png' });
-          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 60, height: 60 } });
+          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
         }
         if (wordmarkLogoBase64) {
           const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
           sheet.addImage(wordmarkId, { tl: { col: 6.8, row: 0.15 }, ext: { width: 180, height: 45 } });
         }
 
-        // 2. Bilgi Paneli (Beige Background)
-        const beigeColor = 'FFDED5C8';
-        for (let r = 2; r <= 6; r++) {
-          sheet.getRow(r).height = 18;
+        // 2. Bilgi Paneli (Beige Background #D3CBBE)
+        const beigeColor = 'FFD3CBBE';
+        const headerInfo = [
+          ['REFERANS', project.reference || '-', 'ODA | PAX', '-'],
+          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', '-'],
+          ['C/IN - C/OUT', `${project.start_date || '-'} - ${project.end_date || '-'}`, 'OPSİYON', '-'],
+          ['OTEL', subtitle || '-', 'DURUM', project.status || '-'],
+          ['TEKLİF TÜRÜ', 'BİRİM', 'TARİH', new Date().toLocaleDateString('tr-TR')]
+        ];
+
+        headerInfo.forEach((rowInfo, idx) => {
+          const rowIndex = idx + 2;
+          const row = sheet.getRow(rowIndex);
+          row.height = 24;
+          
+          row.getCell(1).value = rowInfo[0];
+          row.getCell(2).value = rowInfo[1];
+          row.getCell(7).value = rowInfo[2];
+          row.getCell(8).value = rowInfo[3];
+
+          // Styling
+          [1, 7].forEach(col => {
+            const cell = row.getCell(col);
+            cell.font = { bold: true, size: 12 };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          });
+          [2, 8].forEach(col => {
+            const cell = row.getCell(col);
+            cell.font = { size: 12 };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          });
+
+          // Merge values
+          sheet.mergeCells(`B${rowIndex}:F${rowIndex}`);
+          sheet.mergeCells(`H${rowIndex}:I${rowIndex}`);
+
+          // Background
           for (let c = 1; c <= 9; c++) {
-            const cell = sheet.getRow(r).getCell(c);
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: beigeColor } };
-            cell.font = { size: 9, bold: true };
+            row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: beigeColor } };
           }
-        }
-
-        // Sol Sütun
-        sheet.getCell('A2').value = 'REFERANS';
-        sheet.getCell('B2').value = project.reference || '-';
-        sheet.getCell('A3').value = 'ACENTE | FİRMA';
-        sheet.getCell('B3').value = project.agency_name || project.company_name || '-';
-        sheet.getCell('A4').value = 'C/IN - C/OUT';
-        sheet.getCell('B4').value = `${project.start_date || '-'} - ${project.end_date || '-'}`;
-        sheet.getCell('A5').value = 'OTEL';
-        sheet.getCell('B5').value = subtitle || '-';
-        sheet.getCell('A6').value = 'TEKLİF TÜRÜ';
-        sheet.getCell('B6').value = project.status || '-';
-
-        // Sağ Sütun
-        sheet.getCell('G2').value = 'ODA | PAX';
-        sheet.getCell('H2').value = '-';
-        sheet.getCell('G3').value = 'KONSEPT';
-        sheet.getCell('H3').value = '-';
-        sheet.getCell('G4').value = 'OPSİYON';
-        sheet.getCell('H4').value = '-';
-        sheet.getCell('G5').value = 'DURUM';
-        sheet.getCell('H5').value = project.status || '-';
-        sheet.getCell('G6').value = 'TARİH';
-        sheet.getCell('H6').value = new Date().toLocaleDateString('tr-TR');
+        });
 
         // 3. Ana Başlık Çubuğu
-        sheet.mergeCells('A7:I7');
-        const headerRow = sheet.getRow(7);
-        headerRow.height = 25;
+        const rowIndex = 7;
+        sheet.mergeCells(`A${rowIndex}:I${rowIndex}`);
+        const headerRow = sheet.getRow(rowIndex);
+        headerRow.height = 35;
         const headerCell = headerRow.getCell(1);
         headerCell.value = title.toUpperCase();
-        headerCell.font = { bold: true, size: 14 };
+        headerCell.font = { bold: true, size: 20 };
         headerCell.alignment = { horizontal: 'center', vertical: 'middle' };
         headerCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
 
+        sheet.views = [{ showGridLines: false }];
         return sheet;
       };
 
@@ -10060,9 +10076,15 @@ export default function ProjectDetailPage() {
       const allSales = itemsSales;
 
       const createStyledSheet = (sheetName: string, h: any) => {
-        const sheet = workbook.addWorksheet(sheetName.substring(0, 31), {
-          pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
-        });
+        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
+        sheet.pageSetup = { 
+          paperSize: 9, 
+          orientation: 'landscape', 
+          fitToPage: true, 
+          fitToWidth: 1, 
+          fitToHeight: 0,
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
+        };
 
         // Üst Band
         sheet.getRow(1).height = 70;
@@ -10071,47 +10093,70 @@ export default function ProjectDetailPage() {
         bandCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
 
         // Logo
+        const inchToPx = (inch: number) => Math.round(inch * 96);
         if (iconLogoBase64) {
           const iconId = workbook.addImage({ base64: iconLogoBase64, extension: 'png' });
-          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 60, height: 60 } });
+          sheet.addImage(iconId, { tl: { col: 0.1, row: 0.1 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } });
         }
         if (wordmarkLogoBase64) {
           const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
           sheet.addImage(wordmarkId, { tl: { col: 6.8, row: 0.15 }, ext: { width: 180, height: 45 } });
         }
 
-        // Bilgi Paneli (Beige Background)
-        const beigeColor = 'FFDED5C8';
-        for (let r = 2; r <= 6; r++) {
-          sheet.getRow(r).height = 18;
-          for (let c = 1; c <= 9; c++) {
-            const cell = sheet.getRow(r).getCell(c);
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: beigeColor } };
-            cell.font = { size: 9, bold: true };
-          }
-        }
-
-        // Metadata
+        // Bilgi Paneli (Beige Background #D3CBBE)
+        const beigeColor = 'FFD3CBBE';
         const hName = hotels.find(ht => ht.id === h.hotel_id)?.name || 'GENEL';
-        sheet.getCell('A2').value = 'REFERANS'; sheet.getCell('B2').value = project.reference || '-';
-        sheet.getCell('A3').value = 'ACENTE | FİRMA'; sheet.getCell('B3').value = project.agency_name || project.company_name || '-';
-        sheet.getCell('A4').value = 'C/IN - C/OUT'; sheet.getCell('B4').value = `${project.start_date || '-'} - ${project.end_date || '-'}`;
-        sheet.getCell('A5').value = 'OTEL'; sheet.getCell('B5').value = hName;
-        sheet.getCell('A6').value = 'TEKLİF TÜRÜ'; sheet.getCell('B6').value = project.status || '-';
-        sheet.getCell('G2').value = 'ODA | PAX'; sheet.getCell('H2').value = '-';
-        sheet.getCell('G3').value = 'KONSEPT'; sheet.getCell('H3').value = '-';
-        sheet.getCell('G4').value = 'OPSİYON'; sheet.getCell('H4').value = '-';
-        sheet.getCell('G5').value = 'DURUM'; sheet.getCell('H5').value = project.status || '-';
-        sheet.getCell('G6').value = 'TARİH'; sheet.getCell('H6').value = new Date().toLocaleDateString('tr-TR');
+        const headerInfo = [
+          ['REFERANS', project.reference || '-', 'ODA | PAX', '-'],
+          ['ACENTE | FİRMA', project.agency_name || project.company_name || '-', 'KONSEPT', '-'],
+          ['C/IN - C/OUT', `${project.start_date || '-'} - ${project.end_date || '-'}`, 'OPSİYON', '-'],
+          ['OTEL', hName, 'DURUM', project.status || '-'],
+          ['TEKLİF TÜRÜ', 'BİRİM', 'TARİH', new Date().toLocaleDateString('tr-TR')]
+        ];
 
-        sheet.mergeCells('A7:I7');
-        const headerRow = sheet.getRow(7);
-        headerRow.height = 25;
+        headerInfo.forEach((rowInfo, idx) => {
+          const rowIndex = idx + 2;
+          const row = sheet.getRow(rowIndex);
+          row.height = 24;
+          
+          row.getCell(1).value = rowInfo[0];
+          row.getCell(2).value = rowInfo[1];
+          row.getCell(7).value = rowInfo[2];
+          row.getCell(8).value = rowInfo[3];
+
+          // Styling
+          [1, 7].forEach(col => {
+            const cell = row.getCell(col);
+            cell.font = { bold: true, size: 12 };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          });
+          [2, 8].forEach(col => {
+            const cell = row.getCell(col);
+            cell.font = { size: 12 };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          });
+
+          // Merge values
+          sheet.mergeCells(`B${rowIndex}:F${rowIndex}`);
+          sheet.mergeCells(`H${rowIndex}:I${rowIndex}`);
+
+          // Background
+          for (let c = 1; c <= 9; c++) {
+            row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: beigeColor } };
+          }
+        });
+
+        // Başlık
+        const rowIndex = 7;
+        sheet.mergeCells(`A${rowIndex}:I${rowIndex}`);
+        const headerRow = sheet.getRow(rowIndex);
+        headerRow.height = 35;
         headerRow.getCell(1).value = 'SATIŞLAR';
-        headerRow.getCell(1).font = { bold: true, size: 14 };
+        headerRow.getCell(1).font = { bold: true, size: 20 };
         headerRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
         headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
 
+        sheet.views = [{ showGridLines: false }];
         return sheet;
       };
 
