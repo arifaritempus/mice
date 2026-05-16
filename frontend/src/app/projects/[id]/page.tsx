@@ -10061,6 +10061,7 @@ export default function ProjectDetailPage() {
         sheet.columns = [
           { width: 45 }, { width: 12 }, { width: 12 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 20 }, { width: 35 }, { width: 5 }
         ];
+        sheet.views = [{ showGridLines: false }];
       };
 
       // 1. Satış
@@ -10136,7 +10137,7 @@ export default function ProjectDetailPage() {
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `TAM_RAPOR_${project.name || 'PROJE'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      anchor.download = `TAM_RAPOR_${(project.name || 'PROJE').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
       anchor.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -10181,7 +10182,7 @@ export default function ProjectDetailPage() {
         }
         if (wordmarkLogoBase64) {
           const wordmarkId = workbook.addImage({ base64: wordmarkLogoBase64, extension: 'png' });
-          sheet.addImage(wordmarkId, { tl: { col: 6.8, row: 0.15 }, ext: { width: 180, height: 45 } });
+          sheet.addImage(wordmarkId, { tl: { col: 7.4, row: 0.15 }, ext: { width: 180, height: 45 } });
         }
 
         // 2. Bilgi Paneli (Beige #D3CBBE)
