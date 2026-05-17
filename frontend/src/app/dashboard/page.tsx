@@ -447,8 +447,8 @@ export default function DashboardPage() {
         suppliersService.getAll(),
         fetchView('vw_rp_proje_satis_maliyet'),
         fetchView('vw_rp_sejour_kar_zarar'),
-        supabase.from('project_sales_items').select('project_id, hotel_id, total_price, fx'),
-        supabase.from('project_purchase_items').select('project_id, hotel_id, total_price, fx')
+        supabase.from('project_sales_items').select('project_id, hotel_id, total_price, fx, total_try'),
+        supabase.from('project_purchase_items').select('project_id, hotel_id, total_price, fx, total_try')
       ]);
 
       const safe = (r: PromiseSettledResult<any>) => (r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []);
@@ -619,7 +619,7 @@ export default function DashboardPage() {
       // Distribute sales ciro
       if (projSales.length > 0) {
         projSales.forEach((item: any) => {
-          const itemVal = toNumber(item.total_price) * toNumber(item.fx || 1);
+          const itemVal = toNumber(item.total_try) || (toNumber(item.total_price) * toNumber(item.fx || 1));
           const resolvedHotel = getHotelNameForItem(item);
           if (resolvedHotel && uniqueHotels.includes(resolvedHotel)) {
             byHotel[resolvedHotel].revenue += itemVal;
@@ -642,7 +642,7 @@ export default function DashboardPage() {
       // Distribute purchase cost
       if (projPurchases.length > 0) {
         projPurchases.forEach((item: any) => {
-          const itemVal = toNumber(item.total_price) * toNumber(item.fx || 1);
+          const itemVal = toNumber(item.total_try) || (toNumber(item.total_price) * toNumber(item.fx || 1));
           const resolvedHotel = getHotelNameForItem(item);
           if (resolvedHotel && uniqueHotels.includes(resolvedHotel)) {
             byHotel[resolvedHotel].cost += itemVal;
