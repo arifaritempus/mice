@@ -512,6 +512,7 @@ export default function DashboardPage() {
       hrRows,
       categoryById,
       supplierById,
+      hotelById,
       rpProjectRows,
       rpSejourRows,
       collectionPlans,
@@ -556,15 +557,36 @@ export default function DashboardPage() {
     const byHotel: Record<string, { count: number; revenue: number; cost: number }> = {};
     filteredRpProjects.forEach((p) => {
       const agency = p.acente || 'Belirtilmemiş';
-      const hotel = p.otel || 'Belirtilmemiş';
       if (!byAgency[agency]) byAgency[agency] = { count: 0, revenue: 0, cost: 0 };
-      if (!byHotel[hotel]) byHotel[hotel] = { count: 0, revenue: 0, cost: 0 };
       byAgency[agency].count += 1;
       byAgency[agency].revenue += toNumber(p.satis_tl);
       byAgency[agency].cost += toNumber(p.maliyet_tl);
-      byHotel[hotel].count += 1;
-      byHotel[hotel].revenue += toNumber(p.satis_tl);
-      byHotel[hotel].cost += toNumber(p.maliyet_tl);
+
+      // Otel bazlı verilerde projeye ait tüm otelleri (hotels_data) ayrı ayrı çek
+      let projectHotels: string[] = [];
+      const fullProj = projects.find((proj) => proj.id === p.project_id);
+      if (fullProj && Array.isArray(fullProj.hotels_data) && fullProj.hotels_data.length > 0) {
+        projectHotels = fullProj.hotels_data
+          .map((h: any) => {
+            const hId = h.hotel_id;
+            return hId ? hotelById[hId] : null;
+          })
+          .filter(Boolean) as string[];
+      }
+
+      const uniqueHotels = Array.from(new Set(projectHotels));
+      if (uniqueHotels.length === 0) {
+        uniqueHotels.push(p.otel || 'Belirtilmemiş');
+      }
+
+      const N = uniqueHotels.length;
+      uniqueHotels.forEach((hotelName) => {
+        if (!byHotel[hotelName]) byHotel[hotelName] = { count: 0, revenue: 0, cost: 0 };
+        byHotel[hotelName].count += 1;
+        // Ciro ve maliyeti otel sayısına bölerek dağıtıyoruz
+        byHotel[hotelName].revenue += toNumber(p.satis_tl) / N;
+        byHotel[hotelName].cost += toNumber(p.maliyet_tl) / N;
+      });
     });
 
     const airlineRevenue: Record<string, number> = {};
