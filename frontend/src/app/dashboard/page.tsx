@@ -97,6 +97,8 @@ type DashboardState = {
   rpProjectRows: any[];
   rpSejourRows: any[];
   reportWarnings: string[];
+  salesItems?: any[];
+  purchaseItems?: any[];
 };
 
 const toNumber = (value: any) => Number(value || 0);
@@ -417,7 +419,9 @@ export default function DashboardPage() {
     supplierById: {},
     rpProjectRows: [],
     rpSejourRows: [],
-    reportWarnings: []
+    reportWarnings: [],
+    salesItems: [],
+    purchaseItems: []
   });
 
   const loadDashboard = async () => {
@@ -429,7 +433,7 @@ export default function DashboardPage() {
         return Array.isArray(viewData) ? viewData : [];
       };
 
-      const [projectsRes, quotesRes, sejoursRes, ticketsRes, categoriesRes, collectionPlanRes, paymentPlanRes, ticketPlanRes, agenciesRes, hotelsRes, suppliersRes, rpProjectRes, rpSejourRes] = await Promise.allSettled([
+      const [projectsRes, quotesRes, sejoursRes, ticketsRes, categoriesRes, collectionPlanRes, paymentPlanRes, ticketPlanRes, agenciesRes, hotelsRes, suppliersRes, rpProjectRes, rpSejourRes, salesItemsRes, purchaseItemsRes] = await Promise.allSettled([
         projectsService.getAll(),
         quotesService.getAll(),
         SejourService.getSejours(),
@@ -442,10 +446,13 @@ export default function DashboardPage() {
         hotelsService.getAll(),
         suppliersService.getAll(),
         fetchView('vw_rp_proje_satis_maliyet'),
-        fetchView('vw_rp_sejour_kar_zarar')
+        fetchView('vw_rp_sejour_kar_zarar'),
+        supabase.from('project_sales_items').select('project_id, hotel_id, total_price, fx'),
+        supabase.from('project_purchase_items').select('project_id, hotel_id, total_price, fx')
       ]);
 
       const safe = (r: PromiseSettledResult<any>) => (r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []);
+      const safeSupabase = (r: PromiseSettledResult<any>) => (r.status === 'fulfilled' && r.value && Array.isArray(r.value.data) ? r.value.data : []);
       const projects = safe(projectsRes);
       const quotes = safe(quotesRes);
       const sejours = safe(sejoursRes);
@@ -456,6 +463,8 @@ export default function DashboardPage() {
       const suppliers = safe(suppliersRes);
       const rpProjectRows = safe(rpProjectRes);
       const rpSejourRows = safe(rpSejourRes);
+      const salesItems = safeSupabase(salesItemsRes);
+      const purchaseItems = safeSupabase(purchaseItemsRes);
 
       const categoryById: Record<string, string> = {};
       const agencyById: Record<string, string> = {};
@@ -488,7 +497,9 @@ export default function DashboardPage() {
         supplierById,
         rpProjectRows,
         rpSejourRows,
-        reportWarnings: []
+        reportWarnings: [],
+        salesItems,
+        purchaseItems
       });
       setLastUpdate(new Date());
     } catch (error) {
@@ -517,7 +528,9 @@ export default function DashboardPage() {
       rpSejourRows,
       collectionPlans,
       paymentPlans,
-      ticketPlans
+      ticketPlans,
+      salesItems,
+      purchaseItems
     } = data;
 
     const hasCustomRange = period !== 'custom' || (customStartDate && customEndDate);
@@ -579,14 +592,75 @@ export default function DashboardPage() {
         uniqueHotels.push(p.otel || 'Belirtilmemiş');
       }
 
-      const N = uniqueHotels.length;
+      // Helper to resolve hotel name for a sales/purchase item
+      const getHotelNameForItem = (item: any) => {
+        if (!item.hotel_id) return null;
+        if (fullProj && Array.isArray(fullProj.hotels_data)) {
+          const matchedTab = fullProj.hotels_data.find(
+            (h: any) => h.id === item.hotel_id || h.hotel_id === item.hotel_id
+          );
+          if (matchedTab && matchedTab.hotel_id) {
+            return hotelById[matchedTab.hotel_id] || null;
+          }
+        }
+        return hotelById[item.hotel_id] || null;
+      };
+
+      // Filter sales and purchase items for this project
+      const projSales = (salesItems || []).filter((item: any) => item.project_id === p.project_id);
+      const projPurchases = (purchaseItems || []).filter((item: any) => item.project_id === p.project_id);
+
+      // Increment count for all hotels of this project
       uniqueHotels.forEach((hotelName) => {
         if (!byHotel[hotelName]) byHotel[hotelName] = { count: 0, revenue: 0, cost: 0 };
         byHotel[hotelName].count += 1;
-        // Ciro ve maliyeti otel sayısına bölerek dağıtıyoruz
-        byHotel[hotelName].revenue += toNumber(p.satis_tl) / N;
-        byHotel[hotelName].cost += toNumber(p.maliyet_tl) / N;
       });
+
+      // Distribute sales ciro
+      if (projSales.length > 0) {
+        projSales.forEach((item: any) => {
+          const itemVal = toNumber(item.total_price) * toNumber(item.fx || 1);
+          const resolvedHotel = getHotelNameForItem(item);
+          if (resolvedHotel && uniqueHotels.includes(resolvedHotel)) {
+            byHotel[resolvedHotel].revenue += itemVal;
+          } else {
+            // General/Unassigned item: distribute equally among all hotels of the project
+            const share = itemVal / uniqueHotels.length;
+            uniqueHotels.forEach((hotelName) => {
+              byHotel[hotelName].revenue += share;
+            });
+          }
+        });
+      } else if (toNumber(p.satis_tl) > 0) {
+        // Fallback: divide overall satis_tl equally
+        const share = toNumber(p.satis_tl) / uniqueHotels.length;
+        uniqueHotels.forEach((hotelName) => {
+          byHotel[hotelName].revenue += share;
+        });
+      }
+
+      // Distribute purchase cost
+      if (projPurchases.length > 0) {
+        projPurchases.forEach((item: any) => {
+          const itemVal = toNumber(item.total_price) * toNumber(item.fx || 1);
+          const resolvedHotel = getHotelNameForItem(item);
+          if (resolvedHotel && uniqueHotels.includes(resolvedHotel)) {
+            byHotel[resolvedHotel].cost += itemVal;
+          } else {
+            // General/Unassigned item: distribute equally among all hotels of the project
+            const share = itemVal / uniqueHotels.length;
+            uniqueHotels.forEach((hotelName) => {
+              byHotel[hotelName].cost += share;
+            });
+          }
+        });
+      } else if (toNumber(p.maliyet_tl) > 0) {
+        // Fallback: divide overall maliyet_tl equally
+        const share = toNumber(p.maliyet_tl) / uniqueHotels.length;
+        uniqueHotels.forEach((hotelName) => {
+          byHotel[hotelName].cost += share;
+        });
+      }
     });
 
     const airlineRevenue: Record<string, number> = {};
