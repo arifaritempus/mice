@@ -82,6 +82,7 @@ const COLUMN_LABELS: Record<string, string> = {
   teklif_no: 'TEKLIF NO',
   cin_tarihi: 'C/IN TARIHI',
   cout_tarihi: 'C/OUT TARIHI',
+  cin_cout_tarihi: 'C/IN - C/OUT TARIHI',
   firma_adi: 'FIRMA ADI',
   acente: 'ACENTE',
   otel: 'OTEL',
@@ -105,6 +106,7 @@ const COLUMN_LABELS: Record<string, string> = {
   referans_no: 'REFERANS NO',
   organizasyon_tarihi: 'ORGANIZASYON TARIHI',
   cikis_tarihi: 'CIKIS TARIHI',
+  organizasyon_cikis_tarihi: 'ORGANIZASYON TARIHI',
   firma: 'FIRMA',
   durum: 'DURUM',
   satis_tl: 'SATIS (TL)',
@@ -128,6 +130,24 @@ const COLUMN_LABELS: Record<string, string> = {
   ekim: 'EKIM',
   kasim: 'KASIM',
   aralik: 'ARALIK'
+};
+
+const formatDateWithDay = (dateVal: unknown): string => {
+  if (!dateVal) return '-';
+  const str = String(dateVal).split('T')[0];
+  const parts = str.split('-');
+  if (parts.length !== 3) return String(dateVal);
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  
+  const date = new Date(year, month, day);
+  if (isNaN(date.getTime())) return String(dateVal);
+
+  const formattedDate = `${parts[2].padStart(2, '0')}.${parts[1].padStart(2, '0')}.${parts[0]}`;
+  const dayName = date.toLocaleDateString('tr-TR', { weekday: 'long' });
+  
+  return `${formattedDate}, ${dayName}`;
 };
 
 const statusBadgeClass = (value: unknown) => {
@@ -221,13 +241,13 @@ export default function ReportsPage() {
 
   const columns = useMemo(() => {
     if (activeReport.id === 'opsiyon_takip') {
-      return ['teklif_no', 'cin_tarihi', 'cout_tarihi', 'firma_adi', 'acente', 'otel', 'opsiyon_tarihi', 'opsiyon_durumu', 'otel_durumu', 'kalan_gun', 'toplam_tutar', 'doviz_birimi'];
+      return ['teklif_no', 'cin_cout_tarihi', 'firma_adi', 'acente', 'otel', 'opsiyon_tarihi', 'opsiyon_durumu', 'otel_durumu', 'kalan_gun', 'toplam_tutar', 'doviz_birimi'];
     }
     if (activeReport.id === 'otel_detay_teklif') {
-      return ['teklif_no', 'cin_tarihi', 'cout_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'para_birimi', 'teklif_durumu'];
+      return ['teklif_no', 'cin_cout_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'para_birimi', 'teklif_durumu'];
     }
     if (activeReport.id === 'otel_detay_proje_maliyet') {
-      return ['proje_referans', 'organizasyon_tarihi', 'cikis_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'birim_maliyet', 'para_birimi'];
+      return ['proje_referans', 'organizasyon_cikis_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'birim_maliyet', 'para_birimi'];
     }
     if (activeReport.id === 'acente_kar_zarar' || activeReport.id === 'acente_marj') {
       return ['acente', 'proje_sayisi', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
@@ -236,7 +256,7 @@ export default function ReportsPage() {
       return ['otel', 'proje_sayisi', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
     }
     if (activeReport.id === 'kar_zarar_detay') {
-      return ['referans_no', 'organizasyon_tarihi', 'cikis_tarihi', 'firma', 'acente', 'otel', 'durum', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
+      return ['referans_no', 'organizasyon_cikis_tarihi', 'firma', 'acente', 'otel', 'durum', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
     }
     return rows[0] ? Object.keys(rows[0]).filter((k) => k !== 'project_id') : [];
   }, [rows, activeReport.id]);
@@ -464,6 +484,12 @@ export default function ReportsPage() {
       // 4. DATA ROWS
       rows.forEach((row, index) => {
         const rowData = columns.map(col => {
+          if (col === 'cin_cout_tarihi') {
+            return `${formatDateWithDay(row.cin_tarihi)}\n${formatDateWithDay(row.cout_tarihi)}`;
+          }
+          if (col === 'organizasyon_cikis_tarihi') {
+            return `${formatDateWithDay(row.organizasyon_tarihi)}\n${formatDateWithDay(row.cikis_tarihi)}`;
+          }
           const val = row[col];
           // Money/Number formatting
           if (col.includes('tutar') || col.includes('satis') || col.includes('maliyet') || col.includes('tl') || col.includes('adet') || col.includes('sefer') || col.includes('proje_sayisi') || col.includes('voucher_sayisi')) {
@@ -474,12 +500,12 @@ export default function ReportsPage() {
         });
         
         const r = worksheet.addRow(rowData);
-        r.height = 22;
+        r.height = 32; // Taller row to elegantly accommodate wrapped line dates
         
         // Striped rows
         const isEven = index % 2 === 0;
         const rowFill = isEven ? { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF8FAFC' } } : undefined;
-
+ 
         r.eachCell((cell, colNumber) => {
           const colKey = columns[colNumber - 1];
           cell.fill = rowFill || { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
@@ -489,8 +515,12 @@ export default function ReportsPage() {
             bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
             right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
           };
-          cell.alignment = { vertical: 'middle', horizontal: colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl') ? 'right' : 'left' };
-
+          cell.alignment = { 
+            vertical: 'middle', 
+            horizontal: colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl') ? 'right' : 'left',
+            wrapText: colKey === 'cin_cout_tarihi' || colKey === 'organizasyon_cikis_tarihi'
+          };
+ 
           if (colKey.includes('tutar') || colKey.includes('satis') || colKey.includes('maliyet') || colKey.includes('tl')) {
             cell.numFmt = '#,##0.00';
           } else if (colKey === 'kar_marj_yuzde') {
@@ -774,7 +804,17 @@ export default function ReportsPage() {
 
                       return (
                         <td key={`${idx}-${col}`} className="px-6 py-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                          {isStatus ? (
+                          {col === 'cin_cout_tarihi' ? (
+                            <div className="flex flex-col gap-0.5">
+                              <div>{formatDateWithDay(row.cin_tarihi)}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-slate-500">{formatDateWithDay(row.cout_tarihi)}</div>
+                            </div>
+                          ) : col === 'organizasyon_cikis_tarihi' ? (
+                            <div className="flex flex-col gap-0.5">
+                              <div>{formatDateWithDay(row.organizasyon_tarihi)}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-slate-500">{formatDateWithDay(row.cikis_tarihi)}</div>
+                            </div>
+                          ) : isStatus ? (
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass(cellValue)}`}>
                               {formatCell(cellValue, col)}
                             </span>
