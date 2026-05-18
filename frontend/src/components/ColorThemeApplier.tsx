@@ -99,6 +99,20 @@ export default function ColorThemeApplier() {
             \n`;
           }
         }
+
+        // İkincil zemin rengi (bg-secondary)
+        if (themeBgSecondary) {
+          css += `
+            .bg-gray-100:not(button):not(input):not(select)${exclude}, 
+            .bg-slate-100:not(button):not(input):not(select)${exclude},
+            .bg-zinc-100:not(button):not(input):not(select)${exclude} { background-color: var(--theme-bg-secondary) !important; }
+          `;
+          if (isDark) {
+            css += `
+              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-slate-900${exclude}, .dark .dark\\:bg-zinc-900${exclude} { background-color: var(--theme-bg-secondary) !important; }
+            \n`;
+          }
+        }
         
         // Card (Kart) bileşenleri
         if (themeCardBg) {
@@ -108,7 +122,6 @@ export default function ColorThemeApplier() {
           `;
           if (isDark) {
             css += `
-              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-slate-900${exclude}, .dark .dark\\:bg-zinc-900${exclude},
               .dark .dark\\:bg-gray-800${exclude}, .dark .dark\\:bg-slate-800${exclude}, .dark .dark\\:bg-zinc-800${exclude} { 
                 background-color: var(--theme-card-bg) !important; 
               }
