@@ -84,6 +84,10 @@ export default function CategoriesPage() {
   };
 
   const compareByCategoryId = (a: Category, b: Category) => {
+    const aOrder = a.sort_order ?? 9999;
+    const bOrder = b.sort_order ?? 9999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
     const wa = getCategorySortWeight(a);
     const wb = getCategorySortWeight(b);
     if (wa !== wb) return wa - wb;
@@ -302,7 +306,7 @@ export default function CategoriesPage() {
   };
 
   // Yukarı/Aşağı taşıma fonksiyonları
-  const moveSubCategoryUp = (categoryId: string, parentId: string) => {
+  const moveSubCategoryUp = async (categoryId: string, parentId: string) => {
     console.log('moveSubCategoryUp called:', { categoryId, parentId });
     
     // Önce sıralanmış alt kategorileri al
@@ -333,23 +337,25 @@ export default function CategoriesPage() {
         updated_at: new Date().toISOString()
       }));
 
-      const updatedCategories = categories.map(cat => {
-        if (cat.parent_id === parentId) {
-          const updated = updatedSubCategories.find(updated => updated.id === cat.id);
-          return updated || cat;
+      // Yeni sıraları Supabase'e yaz
+      try {
+        setLoading(true);
+        for (const cat of updatedSubCategories) {
+          await categoriesService.update(cat.id, { sort_order: cat.sort_order } as any);
         }
-        return cat;
-      });
-
-      console.log('Updated categories:', updatedCategories.filter(c => c.parent_id === parentId).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
-      setCategories(updatedCategories);
-      
+        setSuccess('Kategori sırası güncellendi');
+      } catch (err) {
+        console.error('Supabase update failed:', err);
+        setError('Sıralama güncellenirken hata oluştu');
+      } finally {
+        await loadCategories();
+      }
     } else {
       console.log('Cannot move up - already at top');
     }
   };
 
-  const moveSubCategoryDown = (categoryId: string, parentId: string) => {
+  const moveSubCategoryDown = async (categoryId: string, parentId: string) => {
     console.log('moveSubCategoryDown called:', { categoryId, parentId });
     
     // Önce sıralanmış alt kategorileri al
@@ -380,17 +386,19 @@ export default function CategoriesPage() {
         updated_at: new Date().toISOString()
       }));
 
-      const updatedCategories = categories.map(cat => {
-        if (cat.parent_id === parentId) {
-          const updated = updatedSubCategories.find(updated => updated.id === cat.id);
-          return updated || cat;
+      // Yeni sıraları Supabase'e yaz
+      try {
+        setLoading(true);
+        for (const cat of updatedSubCategories) {
+          await categoriesService.update(cat.id, { sort_order: cat.sort_order } as any);
         }
-        return cat;
-      });
-
-      console.log('Updated categories:', updatedCategories.filter(c => c.parent_id === parentId).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
-      setCategories(updatedCategories);
-      
+        setSuccess('Kategori sırası güncellendi');
+      } catch (err) {
+        console.error('Supabase update failed:', err);
+        setError('Sıralama güncellenirken hata oluştu');
+      } finally {
+        await loadCategories();
+      }
     } else {
       console.log('Cannot move down - already at bottom');
     }
