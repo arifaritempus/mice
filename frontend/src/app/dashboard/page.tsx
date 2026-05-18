@@ -1,5 +1,6 @@
 'use client';
 
+// MICE Management System - Optimized hotel-based financial metrics calculation
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
