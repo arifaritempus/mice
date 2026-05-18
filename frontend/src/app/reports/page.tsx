@@ -807,12 +807,12 @@ export default function ReportsPage() {
                           {col === 'cin_cout_tarihi' ? (
                             <div className="flex flex-col gap-0.5">
                               <div>{formatDateWithDay(row.cin_tarihi)}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-slate-500">{formatDateWithDay(row.cout_tarihi)}</div>
+                              <div>{formatDateWithDay(row.cout_tarihi)}</div>
                             </div>
                           ) : col === 'organizasyon_cikis_tarihi' ? (
                             <div className="flex flex-col gap-0.5">
                               <div>{formatDateWithDay(row.organizasyon_tarihi)}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-slate-500">{formatDateWithDay(row.cikis_tarihi)}</div>
+                              <div>{formatDateWithDay(row.cikis_tarihi)}</div>
                             </div>
                           ) : isStatus ? (
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass(cellValue)}`}>
