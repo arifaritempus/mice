@@ -98,11 +98,12 @@ interface SelectedHotel {
 }
 
 // ─── SearchableSelect ─────────────────────────────────────────────────────────
-function SearchableSelect({ options, value, onChange, placeholder }: {
+function SearchableSelect({ options, value, onChange, placeholder, disabled }: {
   options: { id: string; name: string }[];
   value: string;
   onChange: (id: string) => void;
   placeholder: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -115,10 +116,12 @@ function SearchableSelect({ options, value, onChange, placeholder }: {
     <div className="relative">
       <input
         type="text"
+        disabled={disabled}
         value={display}
-        onChange={e => { setQuery(e.target.value); setOpen(true); setHighlight(0); }}
-        onFocus={() => { setQuery(''); setOpen(true); setHighlight(0); }}
+        onChange={e => { if (disabled) return; setQuery(e.target.value); setOpen(true); setHighlight(0); }}
+        onFocus={() => { if (disabled) return; setQuery(''); setOpen(true); setHighlight(0); }}
         onKeyDown={e => {
+          if (disabled) return;
           if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { setOpen(true); e.preventDefault(); return; }
           if (!open) return;
           if (e.key === 'ArrowDown') { setHighlight(h => Math.min(h + 1, Math.max(filtered.length - 1, 0))); e.preventDefault(); }
@@ -128,7 +131,7 @@ function SearchableSelect({ options, value, onChange, placeholder }: {
         }}
         onBlur={() => { setTimeout(() => setOpen(false), 150); }}
         placeholder={placeholder}
-        className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+        className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800"
       />
       {open && (
         <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
@@ -163,6 +166,7 @@ export default function QuoteEditPage() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddServiceRow, setShowAddServiceRow] = useState(false);
+  const [hasLinkedProject, setHasLinkedProject] = useState(false);
 
   const [formData, setFormData] = useState({
     reference: '',
@@ -198,11 +202,12 @@ export default function QuoteEditPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [agList, htList, catList, uList] = await Promise.all([
+      const [agList, htList, catList, uList, projList] = await Promise.all([
         agenciesService.getAll(),
         hotelsService.getAll(),
         categoriesService.getAll(),
-        usersService.getAll()
+        usersService.getAll(),
+        projectsService.getAll()
       ]);
 
       setAgencies(agList as any || []);
@@ -219,6 +224,9 @@ export default function QuoteEditPage() {
       });
       setCategories(sortedCats);
       setUsers((uList as any[] || []).filter(u => u.is_active));
+
+      const linkedProjectExists = (projList || []).some((p: any) => p.quote_id === quoteId);
+      setHasLinkedProject(linkedProjectExists);
 
       // Load quote
       const q = await quotesService.getById(quoteId);
@@ -502,6 +510,11 @@ export default function QuoteEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (hasLinkedProject) {
+      setNotification({ message: 'Bu teklif kilitlidir. Bağlı proje silinmeden güncellenemez.', type: 'error' });
+      return;
+    }
+
     try {
       const activeHotels = selectedHotels.filter(h => h.hotel_id && h.check_in_date && h.check_out_date);
       if (activeHotels.length === 0) {
@@ -641,6 +654,22 @@ export default function QuoteEditPage() {
           </Link>
         </div>
 
+        {hasLinkedProject && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-4 flex items-start gap-3 shadow-lg shadow-amber-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
+              <svg className="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-amber-800 dark:text-amber-200 uppercase tracking-wider">TEKLİF KİLİTLİ</h4>
+              <p className="text-[10px] font-medium text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
+                Bu teklif konfirme edilip projeye aktarılmıştır. Teklif üzerinde düzenleme yapabilmek için önce bağlı olan projeyi silmelisiniz.
+              </p>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Teklif Bilgileri */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
@@ -653,9 +682,10 @@ export default function QuoteEditPage() {
                 <input
                   type="text"
                   value={formData.reference}
+                  disabled={hasLinkedProject}
                   onChange={e => setFormData(prev => ({ ...prev, reference: e.target.value }))}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
                 />
               </div>
 
@@ -665,6 +695,7 @@ export default function QuoteEditPage() {
                 <SearchableSelect
                   options={agencies}
                   value={formData.agency_id}
+                  disabled={hasLinkedProject}
                   onChange={id => setFormData(prev => ({ ...prev, agency_id: id }))}
                   placeholder="Acente seç / ara..."
                 />
@@ -676,9 +707,10 @@ export default function QuoteEditPage() {
                 <input
                   type="text"
                   value={formData.company_name}
+                  disabled={hasLinkedProject}
                   onChange={e => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
                 />
               </div>
 
@@ -687,9 +719,10 @@ export default function QuoteEditPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">DURUM *</label>
                 <select
                   value={formData.status}
+                  disabled={hasLinkedProject}
                   onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-bold"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
                 >
                   <option value="BEKLEMEDE">BEKLEMEDE</option>
                   <option value="KONFİRME">KONFİRME</option>
@@ -702,9 +735,10 @@ export default function QuoteEditPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">TEKLİF TÜRÜ *</label>
                 <select
                   value={formData.quote_type}
+                  disabled={hasLinkedProject}
                   onChange={e => setFormData(prev => ({ ...prev, quote_type: e.target.value }))}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
                 >
                   <option value="BİRİM">BİRİM</option>
                   <option value="PAKET">PAKET</option>
@@ -717,8 +751,9 @@ export default function QuoteEditPage() {
                 <div className="relative operation-managers-dropdown">
                   <button
                     type="button"
-                    onClick={() => setShowOperationManagersDropdown(!showOperationManagersDropdown)}
-                    className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-left flex justify-between items-center text-xs"
+                    disabled={hasLinkedProject}
+                    onClick={() => !hasLinkedProject && setShowOperationManagersDropdown(!showOperationManagersDropdown)}
+                    className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-left flex justify-between items-center text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400"
                   >
                     <span>{formData.operation_managers.length > 0 ? `${formData.operation_managers.length} kullanıcı seçildi` : 'Kullanıcı seçin...'}</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -751,7 +786,9 @@ export default function QuoteEditPage() {
                       return (
                         <span key={managerId} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
                           {user ? `${user.first_name} ${user.last_name}` : managerId}
-                          <button type="button" onClick={() => setFormData(prev => ({ ...prev, operation_managers: prev.operation_managers.filter(id => id !== managerId) }))} className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                          {!hasLinkedProject && (
+                            <button type="button" onClick={() => setFormData(prev => ({ ...prev, operation_managers: prev.operation_managers.filter(id => id !== managerId) }))} className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                          )}
                         </span>
                       );
                     })}
@@ -764,9 +801,10 @@ export default function QuoteEditPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">NOTLAR</label>
                 <textarea
                   value={formData.notes}
+                  disabled={hasLinkedProject}
                   onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   rows={4}
-                  className="w-full px-3 h-24 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                  className="w-full px-3 h-24 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800"
                   placeholder="Teklif notlarını buraya yazın..."
                 />
               </div>
@@ -775,9 +813,11 @@ export default function QuoteEditPage() {
               <div className="md:col-span-2 space-y-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Otel &amp; Konaklama Seçimleri</h3>
-                  <button type="button" onClick={addHotelRow} className="text-xs font-medium bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded transition-colors">
-                    + OTEL EKLE
-                  </button>
+                  {!hasLinkedProject && (
+                    <button type="button" onClick={addHotelRow} className="text-xs font-medium bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded transition-colors">
+                      + OTEL EKLE
+                    </button>
+                  )}
                 </div>
 
                 {/* Tab Bar */}
@@ -796,16 +836,18 @@ export default function QuoteEditPage() {
                       <span className="text-[10px] opacity-80 max-w-[100px] truncate">
                         {hotels.find(x => x.id === h.hotel_id)?.name || 'Otel Seçin'}
                       </span>
-                      <div className="flex items-center ml-3 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button type="button" onClick={e => { e.stopPropagation(); copyHotel(h); }} className="p-1 hover:bg-white/20 rounded" title="Kopyala">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
-                        </button>
-                        {selectedHotels.length > 1 && (
-                          <button type="button" onClick={e => { e.stopPropagation(); removeHotelRow(h.id); }} className="p-1 hover:bg-red-500 rounded" title="Sil">
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      {!hasLinkedProject && (
+                        <div className="flex items-center ml-3 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button type="button" onClick={e => { e.stopPropagation(); copyHotel(h); }} className="p-1 hover:bg-white/20 rounded" title="Kopyala">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
                           </button>
-                        )}
-                      </div>
+                          {selectedHotels.length > 1 && (
+                            <button type="button" onClick={e => { e.stopPropagation(); removeHotelRow(h.id); }} className="p-1 hover:bg-red-500 rounded" title="Sil">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
 
@@ -820,15 +862,17 @@ export default function QuoteEditPage() {
                     <span className="text-xs font-semibold">GENEL HİZMETLER</span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={addHotelRow}
-                    className="flex items-center px-3 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
-                    title="Yeni Otel Ekle"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" /></svg>
-                    <span className="ml-1 text-xs font-bold uppercase">Yeni Otel</span>
-                  </button>
+                  {!hasLinkedProject && (
+                    <button
+                      type="button"
+                      onClick={addHotelRow}
+                      className="flex items-center px-3 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
+                      title="Yeni Otel Ekle"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" /></svg>
+                      <span className="ml-1 text-xs font-bold uppercase">Yeni Otel</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Tab Content – Hotel */}
@@ -837,34 +881,34 @@ export default function QuoteEditPage() {
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                       <div className="md:col-span-4">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Otel *</label>
-                        <SearchableSelect options={hotels} value={h.hotel_id} onChange={val => handleHotelListChange(h.id, 'hotel_id', val)} placeholder="Otel seç..." />
+                        <SearchableSelect options={hotels} value={h.hotel_id} disabled={hasLinkedProject} onChange={val => handleHotelListChange(h.id, 'hotel_id', val)} placeholder="Otel seç..." />
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Otel Konsepti</label>
-                        <input type="text" value={h.hotel_concept} onChange={e => handleHotelListChange(h.id, 'hotel_concept', e.target.value)} className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Konsept..." />
+                        <input type="text" value={h.hotel_concept} disabled={hasLinkedProject} onChange={e => handleHotelListChange(h.id, 'hotel_concept', e.target.value)} className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" placeholder="Konsept..." />
                       </div>
                       <div className="md:col-span-3">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">C/IN Tarihi *</label>
-                        <input type="date" value={h.check_in_date} onChange={e => handleHotelListChange(h.id, 'check_in_date', e.target.value)} required className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="date" value={h.check_in_date} disabled={hasLinkedProject} onChange={e => handleHotelListChange(h.id, 'check_in_date', e.target.value)} required className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" />
                       </div>
                       <div className="md:col-span-3">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">C/OUT Tarihi *</label>
-                        <input type="date" value={h.check_out_date} onChange={e => handleHotelListChange(h.id, 'check_out_date', e.target.value)} required className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="date" value={h.check_out_date} disabled={hasLinkedProject} onChange={e => handleHotelListChange(h.id, 'check_out_date', e.target.value)} required className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border-t border-gray-50 dark:border-gray-700/50 pt-3">
                       <div className="md:col-span-2">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Oda Sayısı</label>
-                        <input type="number" value={h.room_count} onChange={e => handleHotelListChange(h.id, 'room_count', parseInt(e.target.value) || 0)} min="1" className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="number" value={h.room_count} disabled={hasLinkedProject} onChange={e => handleHotelListChange(h.id, 'room_count', parseInt(e.target.value) || 0)} min="1" className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" />
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Pax Sayısı</label>
-                        <input type="number" value={h.pax_count} onChange={e => handleHotelListChange(h.id, 'pax_count', parseInt(e.target.value) || 0)} min="1" className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="number" value={h.pax_count} disabled={hasLinkedProject} onChange={e => handleHotelListChange(h.id, 'pax_count', parseInt(e.target.value) || 0)} min="1" className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" />
                       </div>
                       <div className="md:col-span-3">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Opsiyon</label>
-                        <select value={h.option} onChange={e => handleHotelListChange(h.id, 'option', e.target.value)} className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <select value={h.option} disabled={hasLinkedProject} onChange={e => handleHotelListChange(h.id, 'option', e.target.value)} className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800">
                           <option value="1. OPSİYON">1. OPSİYON</option>
                           <option value="2. OPSİYON">2. OPSİYON</option>
                           <option value="SOR-SAT">SOR-SAT</option>
@@ -872,14 +916,15 @@ export default function QuoteEditPage() {
                       </div>
                       <div className="md:col-span-3">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Opsiyon Tarihi</label>
-                        <input type="date" value={h.option_date} onChange={e => handleHotelListChange(h.id, 'option_date', e.target.value)} disabled={h.option === 'SOR-SAT'} className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" />
+                        <input type="date" value={h.option_date} onChange={e => handleHotelListChange(h.id, 'option_date', e.target.value)} disabled={h.option === 'SOR-SAT' || hasLinkedProject} className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800" />
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">Durum</label>
                         <select
                           value={h.hotel_status || (h.is_confirmed ? 'KONFİRME' : 'BEKLEMEDE')}
+                          disabled={hasLinkedProject}
                           onChange={(e) => handleHotelListChange(h.id, 'hotel_status' as any, e.target.value)}
-                          className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-bold"
+                          className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
                         >
                           <option value="BEKLEMEDE">BEKLEMEDE</option>
                           <option value="KONFİRME">KONFİRME</option>
@@ -895,6 +940,7 @@ export default function QuoteEditPage() {
                       </h3>
                       <QuoteServiceEditor
                         items={serviceItems.filter(item => item.hotel_id === h.id)}
+                        disabled={hasLinkedProject}
                         onAdd={() => handleAddItem(h.id)}
                         onEdit={handleEditItem}
                         onDelete={handleDeleteItem}
@@ -929,6 +975,7 @@ export default function QuoteEditPage() {
                     </h3>
                     <QuoteServiceEditor
                       items={serviceItems.filter(item => !item.hotel_id || item.hotel_id === 'general')}
+                      disabled={hasLinkedProject}
                       onAdd={() => handleAddItem('general')}
                       onEdit={handleEditItem}
                       onDelete={handleDeleteItem}
@@ -959,11 +1006,13 @@ export default function QuoteEditPage() {
           {/* Submit */}
           <div className="flex justify-end space-x-4 p-4">
             <Link href="/quotes" className="bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors">
-              İptal
+              İptal / Geri Dön
             </Link>
-            <button type="submit" className="bg-green-600 dark:bg-green-700 text-white px-2 py-1 rounded text-xs hover:bg-green-700 dark:hover:bg-green-800 transition-colors">
-              Teklifi Güncelle
-            </button>
+            {!hasLinkedProject && (
+              <button type="submit" className="bg-green-600 dark:bg-green-700 text-white px-2 py-1 rounded text-xs hover:bg-green-700 dark:hover:bg-green-800 transition-colors">
+                Teklifi Güncelle
+              </button>
+            )}
           </div>
         </form>
       </div>
