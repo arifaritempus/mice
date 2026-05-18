@@ -1139,9 +1139,9 @@ export default function HomePage() {
             {/* Section 2: Genel Bakış (Overview) */}
             <div className="space-y-6 pt-8 border-t border-slate-100 dark:border-slate-800">
               <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Genel Bakış</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="grid grid-cols-1 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Visual Analytics */}
-                <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-fit">
+                <div className="w-full bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-fit">
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs mb-1">Operasyonel Dağılım</h2>
@@ -1187,91 +1187,27 @@ export default function HomePage() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-
-                {/* Quick Actions / Shortcut Cards */}
-                <div className="lg:col-span-4 space-y-6">
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-6 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden group">
-                    <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700" />
-                    <h3 className="text-xl font-black tracking-tight mb-3 leading-tight">İşinizi <br/>Kolaylaştırın</h3>
-                    <p className="text-blue-100 text-[10px] font-medium mb-6 leading-relaxed">Hızlı işlem panelini kullanarak saniyeler içerisinde yeni kayıtlar oluşturabilirsiniz.</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {canCreate(Module.QUOTES) && (
-                        <Link href="/quotes/create" className="p-3 bg-white/10 backdrop-blur-md rounded-xl hover:bg-white/20 transition-colors flex flex-col gap-2">
-                          <Plus className="w-4 h-4" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">Teklif</span>
-                        </Link>
-                      )}
-                      {canCreate(Module.SEJOUR) && (
-                        <Link href="/sejour/create" className="p-3 bg-white/10 backdrop-blur-md rounded-xl hover:bg-white/20 transition-colors flex flex-col gap-2">
-                          <Hotel className="w-4 h-4" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">Sejour</span>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
-                    <h3 className="font-black text-slate-900 dark:text-white tracking-tight uppercase text-[10px] mb-4">Hızlı Erişim</h3>
-                    <div className="space-y-2">
-                      <Link href="/reports" className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-blue-600 transition-all duration-300">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-3.5 h-3.5 text-blue-600 group-hover:text-white" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover:text-white">Raporlar</span>
-                        </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-white" />
-                      </Link>
-                      <Link href="/users" className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-emerald-600 transition-all duration-300">
-                        <div className="flex items-center gap-3">
-                          <UserCheck className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 group-hover:text-white">Kullanıcılar</span>
-                        </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-white" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </>
         )}
       </main>
 
-      {/* Modern Footer with Help Button */}
-      <footer className="w-full mt-20 pt-12 pb-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-slate-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-slate-900 shadow-xl">
-               <Settings className="w-5 h-5 animate-spin-slow" />
-             </div>
-             <div>
-               <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tighter">TEMPUS MICE SYSTEM</p>
-               <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Management Portal v3.5</p>
-             </div>
+      {/* Modern Footer with Help Button Only */}
+      <footer className="w-full mt-20 pt-12 pb-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center">
+        <button 
+          onClick={() => setShowManual(true)}
+          className="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-6 py-4 rounded-3xl hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500"
+        >
+          <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform duration-500">
+            <HelpCircle className="w-4 h-4" />
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setShowManual(true)}
-            className="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-6 py-4 rounded-3xl hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500"
-          >
-            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform duration-500">
-              <HelpCircle className="w-4 h-4" />
-            </div>
-            <div className="text-left">
-              <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-0.5">SİSTEM KILAVUZU</p>
-              <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Nasıl Kullanılır?</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-8 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-          <span className="hover:text-blue-600 transition-colors cursor-pointer">Gizlilik Politikası</span>
-          <span className="hover:text-blue-600 transition-colors cursor-pointer">Destek Hattı</span>
-          <span className="text-slate-200 dark:text-slate-800">|</span>
-          <span className="text-slate-500">© 2024 TEMPUS</span>
-        </div>
+          <div className="text-left">
+            <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-0.5">SİSTEM KILAVUZU</p>
+            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Nasıl Kullanılır?</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+        </button>
       </footer>
 
       {/* Manual Modal Overlay */}
