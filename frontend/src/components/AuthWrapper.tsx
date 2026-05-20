@@ -162,6 +162,52 @@ export default function AuthWrapper({
     };
   }, [pathname, router]);
 
+  // Idle Timeout (30 dakika) - Oturum zaman aşımı kontrolü
+  useEffect(() => {
+    const isPublic =
+      publicPages.includes(pathname) ||
+      publicPages.some((p) => p.endsWith('/') && pathname.startsWith(p));
+    
+    if (isPublic || loading || !hasAccess) return;
+
+    let idleTimer: NodeJS.Timeout;
+
+    const logoutUser = async () => {
+      try {
+        console.log('[AuthWrapper] Kullanıcı 30 dakika boyunca işlem yapmadı, oturum kapatılıyor...');
+        await authService.supabase.auth.signOut();
+        router.push('/login');
+      } catch (error) {
+        console.error('Oturum kapatılırken hata oluştu:', error);
+      }
+    };
+
+    const resetTimer = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      // 30 dakika = 30 * 60 * 1000 = 1800000 ms
+      idleTimer = setTimeout(logoutUser, 1800000);
+    };
+
+    // Kullanıcı etkileşimlerini dinle
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    // İlk zamanlayıcıyı başlat
+    resetTimer();
+
+    // Event listener'ları ekle
+    events.forEach(event => {
+      window.addEventListener(event, resetTimer, { passive: true });
+    });
+
+    // Temizlik (Cleanup)
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [pathname, loading, hasAccess, router]);
+
   // Loading durumu
   if (loading) {
     return (
