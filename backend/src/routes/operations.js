@@ -264,6 +264,7 @@ router.get('/transfers', async (req, res) => {
           hotels(name)
         )
       `, { count: 'exact' })
+      .eq('sejours.status', 'KONFIRME')
       .order('date', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
@@ -538,6 +539,7 @@ router.get('/tickets', async (req, res) => {
           sejour_rooms(guest_info)
         )
       `, { count: 'exact' })
+      .eq('sejours.status', 'KONFIRME')
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
 
@@ -803,6 +805,7 @@ router.get('/guides', async (req, res) => {
           hotels(name)
         )
       `, { count: 'exact' })
+      .eq('sejours.status', 'KONFIRME')
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
 
@@ -1047,6 +1050,7 @@ router.get('/part-time', async (req, res) => {
           hotels(name)
         )
       `, { count: 'exact' })
+      .eq('sejours.status', 'KONFIRME')
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
 
