@@ -663,13 +663,15 @@ export default function SejourPage() {
   const getStatusColor = (status: string) => {
     switch ((status || '').toLowerCase()) {
       case 'konfirme':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50';
       case 'bekleyen':
-        return 'bg-yellow-100 text-yellow-800';
+      case 'beklemede':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50';
       case 'iptal':
-        return 'bg-red-100 text-red-800';
+      case 'i̇ptal':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700/50';
     }
   };
 

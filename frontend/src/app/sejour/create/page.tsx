@@ -732,7 +732,7 @@ export default function CreateSejourPage() {
         flights: flights,
         transfers: transfers,
         extraServices: extraServices,
-        totalAmount: calculateTotalAmount().EUR || 0,
+        totalAmount: calculateTotalAmount()[salesData.currency as keyof ReturnType<typeof calculateTotalAmount>] || calculateTotalAmount().TRY || 0,
         currency: salesData.currency || 'TRY',
         status: salesData.status || 'BEKLEMEDE',
         notes: salesData.notes,

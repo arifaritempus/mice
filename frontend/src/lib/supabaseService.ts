@@ -1460,7 +1460,7 @@ export class SejourService {
       check_out_date: sejour.check_out_date,
       totalAmount: sejour.total_amount || sejour.totalAmount || 0,
       total_amount: sejour.total_amount,
-      currency: sejour.currency || 'EUR',
+      currency: sejour.currency || 'TRY',
       status: sejour.status || 'BEKLEMEDE',
       notes: sejour.notes || '',
       costs: sejour.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
@@ -1482,13 +1482,25 @@ export class SejourService {
         pricePerNight: room.price_per_night || room.pricePerNight || 0,
         totalNights: room.total_nights || room.totalNights || 1,
         totalPrice: room.total_price || room.totalPrice || 0,
-        currency: room.currency || 'EUR',
+        currency: room.currency || 'TRY',
         costPrice: room.cost_price || room.costPrice || 0,
-        costCurrency: room.cost_currency || room.costCurrency || room.currency || 'EUR'
+        costCurrency: room.cost_currency || room.costCurrency || room.currency || 'TRY'
       })),
-      flights: sejour.sejour_flights || [],
-      transfers: sejour.sejour_transfers || [],
-      extraServices: sejour.sejour_extra_services || [],
+      flights: (sejour.sejour_flights || []).map((flight: any) => ({
+        ...flight,
+        costPrice: flight.cost_price || flight.costPrice || 0,
+        costCurrency: flight.cost_currency || flight.costCurrency || flight.currency || 'TRY'
+      })),
+      transfers: (sejour.sejour_transfers || []).map((transfer: any) => ({
+        ...transfer,
+        costPrice: transfer.cost_price || transfer.costPrice || 0,
+        costCurrency: transfer.cost_currency || transfer.costCurrency || transfer.currency || 'TRY'
+      })),
+      extraServices: (sejour.sejour_extra_services || []).map((service: any) => ({
+        ...service,
+        costPrice: service.cost_price || service.costPrice || 0,
+        costCurrency: service.cost_currency || service.costCurrency || service.currency || 'TRY'
+      })),
       collections: (sejour.sejour_collections || []).map((collection: any) => ({
         id: collection.id,
         type: normalizeCollectionType(collection.payment_method || collection.type),
@@ -1550,7 +1562,7 @@ export class SejourService {
       check_out_date: sejour.check_out_date,
       totalAmount: sejour.total_amount || sejour.totalAmount || 0,
       total_amount: sejour.total_amount,
-      currency: sejour.currency || 'EUR',
+      currency: sejour.currency || 'TRY',
       status: sejour.status || 'BEKLEMEDE',
       notes: sejour.notes || '',
       costs: sejour.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
@@ -1574,10 +1586,10 @@ export class SejourService {
         pricePerNight: room.price_per_night || room.pricePerNight || 0,
         totalNights: room.total_nights || room.totalNights || 1,
         totalPrice: room.total_price || room.totalPrice || 0,
-        currency: room.currency || 'EUR',
+        currency: room.currency || 'TRY',
         // Maliyet bilgileri
         costPrice: room.cost_price || room.costPrice || 0,
-        costCurrency: room.cost_currency || room.costCurrency || room.currency || 'EUR'
+        costCurrency: room.cost_currency || room.costCurrency || room.currency || 'TRY'
       })),
       flights: (sejour.sejour_flights || []).map((flight: any) => ({
         id: flight.id,
@@ -1590,10 +1602,10 @@ export class SejourService {
         departureTime: flight.departure_time || '',
         arrivalTime: flight.arrival_time || '',
         price: flight.total_price || flight.price || 0,
-        currency: flight.currency || 'EUR',
+        currency: flight.currency || 'TRY',
         // Maliyet bilgileri
         costPrice: flight.cost_price || flight.costPrice || 0,
-        costCurrency: flight.cost_currency || flight.costCurrency || flight.currency || 'EUR',
+        costCurrency: flight.cost_currency || flight.costCurrency || flight.currency || 'TRY',
         ticketingProvider: flight.ticketing_provider || '',
         ticketingDate: flight.ticketing_date || '',
         pnr: flight.pnr || '',
@@ -1622,10 +1634,10 @@ export class SejourService {
         time: transfer.time || '',
         routeDescription: transfer.route_description || transfer.routeDescription || '',
         price: transfer.price || 0,
-        currency: transfer.currency || 'EUR',
+        currency: transfer.currency || 'TRY',
         // Maliyet bilgileri
         costPrice: transfer.cost_price || transfer.costPrice || 0,
-        costCurrency: transfer.cost_currency || transfer.costCurrency || transfer.currency || 'EUR'
+        costCurrency: transfer.cost_currency || transfer.costCurrency || transfer.currency || 'TRY'
       })),
       extraServices: (sejour.sejour_extra_services || []).map((service: any) => ({
         id: service.id,
@@ -1639,10 +1651,10 @@ export class SejourService {
         description: service.service_description || service.description || '',
         serviceDescription: service.service_description,
         price: service.price || 0,
-        currency: service.currency || 'EUR',
+        currency: service.currency || 'TRY',
         // Maliyet bilgileri
         costPrice: service.cost_price || service.costPrice || 0,
-        costCurrency: service.cost_currency || service.costCurrency || service.currency || 'EUR'
+        costCurrency: service.cost_currency || service.costCurrency || service.currency || 'TRY'
       })),
       collections: (sejour.sejour_collections || []).map((collection: any) => ({
         id: collection.id,
@@ -1696,7 +1708,7 @@ export class SejourService {
       checkInDate: data.check_in_date || data.checkInDate,
       checkOutDate: data.check_out_date || data.checkOutDate,
       totalAmount: data.total_amount || data.totalAmount || 0,
-      currency: data.currency || 'EUR',
+      currency: data.currency || 'TRY',
       status: data.status || 'BEKLEMEDE',
       notes: data.notes || '',
       costs: data.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
@@ -1720,13 +1732,13 @@ export class SejourService {
         pricePerNight: room.price_per_night || room.pricePerNight || 0,
         totalNights: room.total_nights || room.totalNights || 1,
         totalPrice: room.total_price || room.totalPrice || 0,
-        currency: room.currency || 'EUR',
+        currency: room.currency || 'TRY',
         // Maliyet bilgileri
         costPrice:
           room.cost_price !== undefined && room.cost_price !== null
             ? Number(room.cost_price)
             : (room.costPrice !== undefined && room.costPrice !== null ? Number(room.costPrice) : 0),
-        costCurrency: room.cost_currency ?? room.costCurrency ?? room.currency ?? 'EUR'
+        costCurrency: room.cost_currency ?? room.costCurrency ?? room.currency ?? 'TRY'
       })),
       flights: (data.sejour_flights || []).map((flight: any) => {
         // Yeni yapı: Her kayıt tek bir uçuş (gidiş veya dönüş)
@@ -1744,7 +1756,7 @@ export class SejourService {
           totalPassengers: flight.total_passengers || flight.totalPassengers || 1,
           totalPrice: flight.total_price || flight.totalPrice || flight.price || 0,
           price: flight.total_price || flight.totalPrice || flight.price || 0,
-          currency: flight.currency || 'EUR',
+          currency: flight.currency || 'TRY',
           ticketingProvider: flight.ticketing_provider || '',
           ticketingDate: flight.ticketing_date || '',
           pnr: flight.pnr || '',
@@ -1753,7 +1765,7 @@ export class SejourService {
             flight.cost_price !== undefined && flight.cost_price !== null
               ? Number(flight.cost_price)
               : (flight.costPrice !== undefined && flight.costPrice !== null ? Number(flight.costPrice) : 0),
-          costCurrency: flight.cost_currency ?? flight.costCurrency ?? flight.currency ?? 'EUR',
+          costCurrency: flight.cost_currency ?? flight.costCurrency ?? flight.currency ?? 'TRY',
           // Geriye dönük uyumluluk için
           departureAirline: flight.airline || flight.departure_airline,
           departureFlightNumber: flight.flight_number || flight.departure_flight_number,
@@ -1794,13 +1806,13 @@ export class SejourService {
           time: transfer.time || '',
           routeDescription: transfer.route_description || transfer.routeDescription || '',
           price: transfer.price || 0,
-          currency: transfer.currency || 'EUR',
+          currency: transfer.currency || 'TRY',
           // Maliyet bilgileri
           costPrice:
             transfer.cost_price !== undefined && transfer.cost_price !== null
               ? Number(transfer.cost_price)
               : (transfer.costPrice !== undefined && transfer.costPrice !== null ? Number(transfer.costPrice) : 0),
-          costCurrency: transfer.cost_currency ?? transfer.costCurrency ?? transfer.currency ?? 'EUR'
+          costCurrency: transfer.cost_currency ?? transfer.costCurrency ?? transfer.currency ?? 'TRY'
         };
       }),
       extraServices: (data.sejour_extra_services || []).map((service: any) => ({
@@ -1817,13 +1829,13 @@ export class SejourService {
         description: service.service_description || service.description || '',
         serviceDescription: service.service_description || service.description || '',
         price: service.price || 0,
-        currency: service.currency || 'EUR',
+        currency: service.currency || 'TRY',
         // Maliyet bilgileri
         costPrice:
           service.cost_price !== undefined && service.cost_price !== null
             ? Number(service.cost_price)
             : (service.costPrice !== undefined && service.costPrice !== null ? Number(service.costPrice) : 0),
-        costCurrency: service.cost_currency ?? service.costCurrency ?? service.currency ?? 'EUR'
+        costCurrency: service.cost_currency ?? service.costCurrency ?? service.currency ?? 'TRY'
       })),
       collections: (data.sejour_collections || []).map((collection: any) => ({
         id: collection.id,
@@ -1851,7 +1863,7 @@ export class SejourService {
         status: sejourData.status || 'BEKLEMEDE',
         notes: sejourData.notes,
         total_amount: sejourData.totalAmount || 0,
-        currency: sejourData.currency || 'EUR',
+        currency: sejourData.currency || 'TRY',
         costs: sejourData.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
         totals: sejourData.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
         profits: sejourData.profits || { EUR: 0, USD: 0, TRY: 0, GBP: 0 }
@@ -1886,7 +1898,7 @@ export class SejourService {
           total_price: room.totalPrice || room.price || 0,
           total_nights: room.totalNights || 1,
           price_per_night: room.pricePerNight || (room.totalNights > 0 && (room.totalPrice || room.price) ? (room.totalPrice || room.price) / room.totalNights : (room.totalPrice || room.price || 0)),
-          currency: room.currency || 'EUR'
+          currency: room.currency || 'TRY'
         };
 
         // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -1896,7 +1908,7 @@ export class SejourService {
           data.cost_price = room.costPrice;
         }
         if (room.costCurrency || (room.costPrice !== undefined && room.costPrice !== null)) {
-          data.cost_currency = room.costCurrency || room.currency || 'EUR';
+          data.cost_currency = room.costCurrency || room.currency || 'TRY';
         }
 
         return data;
@@ -1963,7 +1975,7 @@ export class SejourService {
           price_per_person: flight.pricePerPerson || 0,
           total_passengers: flight.totalPassengers || 1,
           total_price: flight.totalPrice || flight.price || 0,
-          currency: flight.currency || 'EUR'
+          currency: flight.currency || 'TRY'
         };
 
         // Maliyet bilgileri (kolonlar varsa ekle - sadece değer varsa)
@@ -1971,7 +1983,7 @@ export class SejourService {
           flightData.cost_price = flight.costPrice;
         }
         if (flight.costCurrency || (flight.costPrice !== undefined && flight.costPrice !== null)) {
-          flightData.cost_currency = flight.costCurrency || flight.currency || 'EUR';
+          flightData.cost_currency = flight.costCurrency || flight.currency || 'TRY';
         }
 
         return flightData;
@@ -2019,7 +2031,7 @@ export class SejourService {
           vehicle_type: transfer.vehicle || transfer.vehicleType || null,
           route_description: transfer.routeDescription || null,
           price: transfer.price || 0,
-          currency: transfer.currency || 'EUR'
+          currency: transfer.currency || 'TRY'
         };
 
         // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2027,7 +2039,7 @@ export class SejourService {
           data.cost_price = transfer.costPrice;
         }
         if (transfer.costCurrency || (transfer.costPrice !== undefined && transfer.costPrice !== null)) {
-          data.cost_currency = transfer.costCurrency || transfer.currency || 'EUR';
+          data.cost_currency = transfer.costCurrency || transfer.currency || 'TRY';
         }
 
         // Transfer tarihi: UI'dan gelen date değerini kullan
@@ -2089,7 +2101,7 @@ export class SejourService {
           service_name: service.serviceName || service.service_types?.name || service.serviceTypeName || null,
           service_description: service.description || service.serviceDescription || null,
           price: service.price || 0,
-          currency: service.currency || 'EUR'
+          currency: service.currency || 'TRY'
         };
 
         // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2097,7 +2109,7 @@ export class SejourService {
           data.cost_price = service.costPrice;
         }
         if (service.costCurrency || (service.costPrice !== undefined && service.costPrice !== null)) {
-          data.cost_currency = service.costCurrency || service.currency || 'EUR';
+          data.cost_currency = service.costCurrency || service.currency || 'TRY';
         }
 
         return data;
@@ -2216,7 +2228,7 @@ export class SejourService {
             price_per_night: pricePerNight,
             total_nights: totalNights,
             total_price: totalPrice,
-            currency: room.currency || 'EUR'
+            currency: room.currency || 'TRY'
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2224,7 +2236,7 @@ export class SejourService {
             data.cost_price = room.costPrice;
           }
           if (room.costCurrency || (room.costPrice !== undefined && room.costPrice !== null)) {
-            data.cost_currency = room.costCurrency || room.currency || 'EUR';
+            data.cost_currency = room.costCurrency || room.currency || 'TRY';
           }
 
           return data;
@@ -2286,7 +2298,7 @@ export class SejourService {
             price_per_person: flight.pricePerPerson || 0,
             total_passengers: flight.totalPassengers || 1,
             total_price: flight.totalPrice || flight.price || 0,
-            currency: flight.currency || 'EUR'
+            currency: flight.currency || 'TRY'
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2294,7 +2306,7 @@ export class SejourService {
             flightData.cost_price = flight.costPrice;
           }
           if (flight.costCurrency || (flight.costPrice !== undefined && flight.costPrice !== null)) {
-            flightData.cost_currency = flight.costCurrency || flight.currency || 'EUR';
+            flightData.cost_currency = flight.costCurrency || flight.currency || 'TRY';
           }
 
           return flightData;
@@ -2344,7 +2356,7 @@ export class SejourService {
             vehicle_type: transfer.vehicle || transfer.vehicleType || null,
             route_description: transfer.routeDescription || null,
             price: transfer.price || 0,
-            currency: transfer.currency || 'EUR'
+            currency: transfer.currency || 'TRY'
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2352,7 +2364,7 @@ export class SejourService {
             data.cost_price = transfer.costPrice;
           }
           if (transfer.costCurrency || (transfer.costPrice !== undefined && transfer.costPrice !== null)) {
-            data.cost_currency = transfer.costCurrency || transfer.currency || 'EUR';
+            data.cost_currency = transfer.costCurrency || transfer.currency || 'TRY';
           }
 
           // Transfer tarihi: UI'dan gelen date değerini kullan
@@ -2412,7 +2424,7 @@ export class SejourService {
             service_name: service.serviceName || null,
             service_description: service.description || service.serviceDescription || null,
             price: service.price || 0,
-            currency: service.currency || 'EUR'
+            currency: service.currency || 'TRY'
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2420,7 +2432,7 @@ export class SejourService {
             data.cost_price = service.costPrice;
           }
           if (service.costCurrency || (service.costPrice !== undefined && service.costPrice !== null)) {
-            data.cost_currency = service.costCurrency || service.currency || 'EUR';
+            data.cost_currency = service.costCurrency || service.currency || 'TRY';
           }
 
           return data;

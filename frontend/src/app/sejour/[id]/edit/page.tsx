@@ -734,6 +734,7 @@ export default function EditSejourPage() {
         flights: flights,
         transfers: transfers,
         extraServices: extraServices,
+        totalAmount: calculateTotalAmount()[salesData.currency as keyof ReturnType<typeof calculateTotalAmount>] || calculateTotalAmount().TRY || 0,
         totals: calculateTotalAmount(),
         costs: calculateTotalCost(),
         profits: {
