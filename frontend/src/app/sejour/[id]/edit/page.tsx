@@ -771,6 +771,7 @@ export default function EditSejourPage() {
       
       // Redirect after 2 seconds
       setTimeout(() => {
+        router.refresh();
         router.push('/sejour');
       }, 2000);
 
