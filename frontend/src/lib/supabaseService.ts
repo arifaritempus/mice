@@ -2210,7 +2210,7 @@ export class SejourService {
       if (sejourData.rooms.length > 0) {
         const roomData = sejourData.rooms.map((room: any) => {
           // UI'da room.price satış tutarını (total_price) temsil eder
-          const totalPrice = room.totalPrice || room.price || 0;
+          const totalPrice = room.price !== undefined ? room.price : (room.totalPrice || 0);
           const totalNights = room.totalNights || 1;
           const pricePerNight = totalNights > 0 ? totalPrice / totalNights : totalPrice;
 
@@ -2297,7 +2297,7 @@ export class SejourService {
             // Fiyat bilgileri
             price_per_person: flight.pricePerPerson || 0,
             total_passengers: flight.totalPassengers || 1,
-            total_price: flight.totalPrice || flight.price || 0,
+            total_price: flight.price !== undefined ? flight.price : (flight.totalPrice || 0),
             currency: flight.currency || 'TRY'
           };
 
@@ -2355,7 +2355,7 @@ export class SejourService {
             transfer_type: transfer.type || transfer.transferType || 'private', // NOT NULL constraint için varsayılan
             vehicle_type: transfer.vehicle || transfer.vehicleType || null,
             route_description: transfer.routeDescription || null,
-            price: transfer.price || 0,
+            price: transfer.price !== undefined ? transfer.price : 0,
             currency: transfer.currency || 'TRY'
           };
 
@@ -2423,7 +2423,7 @@ export class SejourService {
             supplier_id: service.provider || service.supplierId || null,
             service_name: service.serviceName || null,
             service_description: service.description || service.serviceDescription || null,
-            price: service.price || 0,
+            price: service.price !== undefined ? service.price : 0,
             currency: service.currency || 'TRY'
           };
 
