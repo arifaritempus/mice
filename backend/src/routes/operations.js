@@ -836,9 +836,12 @@ router.get('/guides', async (req, res) => {
       categoryMap = (categories || []).reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {});
     }
 
-    const isGuide = (value) => {
-      const text = String(value || '').toLowerCase();
-      return text.includes('kokart') && text.includes('rehber');
+    const isGuide = (...values) => {
+      return values.some(value => {
+        if (!value) return false;
+        const text = String(value).toLowerCase().replace(/i̇/g, 'i').replace(/ı/g, 'i');
+        return (text.includes('kokart') || text.includes('rehber') || text.includes('guide'));
+      });
     };
 
     const projectLookup = await loadProjectLookup((projectHr || []).map((row) => row.project_id));
@@ -849,7 +852,7 @@ router.get('/guides', async (req, res) => {
 
     const merged = [
       ...(sejourExtras || [])
-        .filter((row) => isGuide(row.service_types?.name))
+        .filter((row) => isGuide(row.service_types?.name, row.service_description))
         .map((row) => ({
           id: `sejour:${row.id}`,
           sejour_id: String(row.sejour_id || ''),
@@ -881,7 +884,7 @@ router.get('/guides', async (req, res) => {
           created_at: row.created_at || ''
         })),
       ...(projectHr || [])
-        .filter((row) => isGuide(categoryMap[row.sub_category_id]))
+        .filter((row) => isGuide(categoryMap[row.sub_category_id], row.description))
         .map((row) => ({
           id: `project:${row.id}`,
           sejour_id: `project:${row.project_id}`,
