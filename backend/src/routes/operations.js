@@ -1080,9 +1080,12 @@ router.get('/part-time', async (req, res) => {
       categoryMap = (categories || []).reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {});
     }
 
-    const isPartTime = (value) => {
-      const text = String(value || '').toLowerCase();
-      return (text.includes('part') && text.includes('time')) || text.includes('yarı zamanlı') || text.includes('insan kaynakları');
+    const isPartTime = (...values) => {
+      return values.some(value => {
+        if (!value) return false;
+        const text = String(value).toLowerCase().replace(/i̇/g, 'i').replace(/ı/g, 'i');
+        return (text.includes('part') && text.includes('time')) || text.includes('yari zamanli') || text.includes('insan kaynaklari') || text.includes('part-time');
+      });
     };
 
     const projectLookup = await loadProjectLookup((projectHr || []).map((row) => row.project_id));
@@ -1093,7 +1096,7 @@ router.get('/part-time', async (req, res) => {
 
     const merged = [
       ...(sejourExtras || [])
-        .filter((row) => isPartTime(row.service_types?.name))
+        .filter((row) => isPartTime(row.service_types?.name, row.service_description))
         .map((row) => ({
           id: `sejour:${row.id}`,
           sejour_id: String(row.sejour_id || ''),
@@ -1126,7 +1129,7 @@ router.get('/part-time', async (req, res) => {
           created_at: row.created_at || ''
         })),
       ...(projectHr || [])
-        .filter((row) => isPartTime(categoryMap[row.sub_category_id]))
+        .filter((row) => isPartTime(categoryMap[row.sub_category_id], row.description))
         .map((row) => ({
           id: `project:${row.id}`,
           sejour_id: `project:${row.project_id}`,
