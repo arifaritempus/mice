@@ -481,7 +481,7 @@ export default function TicketOptionsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expired' | 'confirmed' | 'cancelled'>('all')
   const todayStr = new Date().toISOString().split('T')[0];
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' }) // Uçuş Tarihi
-  const [flightDateRange, setFlightDateRange] = useState({ startDate: '', endDate: '' }) // Opsiyon Tarihi
+  const [flightDateRange, setFlightDateRange] = useState({ startDate: todayStr, endDate: '' }) // Opsiyon Tarihi
 
   const [voucherTokens, setVoucherTokens] = useState<string[]>([])
   const [voucherInput, setVoucherInput] = useState('')

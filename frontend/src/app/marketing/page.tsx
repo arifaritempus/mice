@@ -72,7 +72,7 @@ export default function MarketingPage() {
   const [allContacts, setAllContacts] = useState<any[]>([]);
   
   // Header Filters
-  const [period, setPeriod] = useState<PeriodFilter>('year');
+  const [period, setPeriod] = useState<PeriodFilter>('month');
   const [globalSearchTerm, setGlobalSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -83,6 +83,40 @@ export default function MarketingPage() {
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, type: 'client' | 'interaction' } | null>(null);
+
+  useEffect(() => {
+    if (period === 'custom') return;
+
+    const now = new Date();
+    let start = new Date(now);
+    let end = new Date(now);
+
+    if (period === 'today') {
+      // already set to now
+    } else if (period === 'week') {
+      const day = now.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      start.setDate(now.getDate() + diff);
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+    } else if (period === 'month') {
+      start.setDate(1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    } else if (period === 'year') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear(), 11, 31);
+    }
+
+    const formatDate = (d: Date) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    setStartDate(formatDate(start));
+    setEndDate(formatDate(end));
+  }, [period]);
   
   // Edit States
   const [selectedClient, setSelectedClient] = useState<any>(null);

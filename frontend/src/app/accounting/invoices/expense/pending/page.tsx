@@ -20,7 +20,7 @@ export default function ExpensePendingPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [dateRange, setDateRange] = useState({ start: new Date().toISOString().split('T')[0], end: '' });
   const [voucherTokens, setVoucherTokens] = useState<string[]>([]);
   const [voucherInput, setVoucherInput] = useState('');
   const [companyTokens, setCompanyTokens] = useState<string[]>([]);

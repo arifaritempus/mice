@@ -15,7 +15,7 @@ export default function IncomeCompletedPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [allInvoices, setAllInvoices] = useState<any[]>([]);
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [dateRange, setDateRange] = useState({ start: new Date().toISOString().split('T')[0], end: '' });
   const [voucherTokens, setVoucherTokens] = useState<string[]>([]);
   const [voucherInput, setVoucherInput] = useState('');
   const [companyTokens, setCompanyTokens] = useState<string[]>([]);
