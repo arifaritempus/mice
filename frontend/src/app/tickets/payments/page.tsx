@@ -1168,12 +1168,11 @@ export default function TicketPaymentsPage() {
           <button
             type="button"
             onClick={() => {
-              const todayStr = new Date().toISOString().split('T')[0];
               setCompanyFilter('')
               setAgencyFilter('')
               setPnrFilter('')
               setDepartureDateRange({ startDate: '', endDate: '' })
-              setPaymentDateRange({ startDate: todayStr, endDate: '' })
+              setPaymentDateRange({ startDate: '', endDate: '' })
               setSortBy('flight')
               setPage(1)
               setFilterKey(k => k + 1)
