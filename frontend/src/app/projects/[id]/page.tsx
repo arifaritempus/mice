@@ -696,12 +696,14 @@ export default function ProjectDetailPage() {
       status: project?.status || 'active'
     });
     // Acente ve otel arama alanlarını mevcut değerlerle doldur
-    setAgencySearch(getAgencyName(project?.agency_id) || '');
-    setHotelSearch(getHotelName(project?.hotel_id) || '');
+    const agencyName = agencies.find((x: any) => x.id === project?.agency_id)?.name || '';
+    setAgencySearch(agencyName);
+    const hotelName = hotels.find((x: any) => x.id === project?.hotel_id)?.name || '';
+    setHotelSearch(hotelName);
     // Mevcut proje sorumlularını yükle
     const currentManagers = projectUsersMap[projectId] || [];
     setSelectedUsers(currentManagers);
-  }, [project]);
+  }, [project, agencies, hotels, projectUsersMap, projectId]);
 
   const handleSaveProject = useCallback(async () => {
     try {
@@ -1049,7 +1051,7 @@ export default function ProjectDetailPage() {
         suppliersService.getAll(),
         agenciesService.getAll(),
         hotelsService.getAll(),
-        Promise.resolve([]),
+        usersService.getAll(),
         projectUsersService.getByProjectId(projectId)
       ]);
 
