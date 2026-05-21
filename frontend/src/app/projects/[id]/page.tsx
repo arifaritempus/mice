@@ -10027,25 +10027,38 @@ export default function ProjectDetailPage() {
         }
 
         // Dinamik Gruplama
+        
         const grouped: Record<string, any[]> = {};
         mainItems.forEach(it => {
-          const mainCat = getCategoryName(it.main_category) || 'DİĞER HİZMETLER';
-          if (!grouped[mainCat]) grouped[mainCat] = [];
-          grouped[mainCat].push({
-            desc: getCategoryName(it.sub_category) || it.description || '-',
+          const key = it.main_category || "other";
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push({
+            desc: getCategoryName(it.sub_category) || it.description || "-",
             qty: it.qty || 1,
             repeat: it.repeat || 1,
             price: it.unit_price || 0,
             totalEur: it.total || 0,
-            fxOrSupplier: sheetType === 'SATIŞ' ? (it.fx || 1) : (getVendorName(it.vendorId) || '-'),
+            fxOrSupplier: sheetType === "SATIŞ" ? (it.fx || 1) : (getVendorName(it.vendorId) || "-"),
             totalTl: (it.total || 0) * (it.fx || 1),
-            notes: it.description || ''
+            notes: it.description || ""
           });
         });
 
-        Object.entries(grouped).forEach(([catName, items]) => {
-          addCategory(catName, items);
+        const sortedCatIds = Object.keys(grouped).sort((a, b) => {
+          if (a === "other") return 1;
+          if (b === "other") return -1;
+          const catA = categories.find(c => c.id === a);
+          const catB = categories.find(c => c.id === b);
+          const aKey = (catA?.code || catA?.name || a).toString();
+          const bKey = (catB?.code || catB?.name || b).toString();
+          return aKey.localeCompare(bKey, "tr", { numeric: true, sensitivity: "base" });
         });
+
+        sortedCatIds.forEach((catId) => {
+          const catName = getCategoryName(catId) || "DİĞER HİZMETLER";
+          addCategory(catName, grouped[catId]);
+        });
+
 
         // Grand Total
         const gRow = sheet.getRow(currentRow);
@@ -10340,25 +10353,38 @@ export default function ProjectDetailPage() {
         addCategory('OTEL | KONAKLAMA', accItems);
 
         // Dinamik Kategoriler
+        
         const grouped: Record<string, any[]> = {};
         sItems.forEach(it => {
-          const mainCat = getCategoryName(it.main_category) || 'DİĞER HİZMETLER';
-          if (!grouped[mainCat]) grouped[mainCat] = [];
-          grouped[mainCat].push({
-            desc: getCategoryName(it.sub_category) || it.description || '-',
+          const key = it.main_category || "other";
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push({
+            desc: getCategoryName(it.sub_category) || it.description || "-",
             qty: it.qty || 1,
             repeat: it.repeat || 1,
             price: it.unit_price || 0,
             totalEur: it.total || 0,
             fx: it.fx || 1,
             totalTl: (it.total || 0) * (it.fx || 1),
-            notes: it.description || ''
+            notes: it.description || ""
           });
         });
 
-        Object.entries(grouped).forEach(([catName, items]) => {
-          addCategory(catName, items);
+        const sortedCatIds = Object.keys(grouped).sort((a, b) => {
+          if (a === "other") return 1;
+          if (b === "other") return -1;
+          const catA = categories.find(c => c.id === a);
+          const catB = categories.find(c => c.id === b);
+          const aKey = (catA?.code || catA?.name || a).toString();
+          const bKey = (catB?.code || catB?.name || b).toString();
+          return aKey.localeCompare(bKey, "tr", { numeric: true, sensitivity: "base" });
         });
+
+        sortedCatIds.forEach((catId) => {
+          const catName = getCategoryName(catId) || "DİĞER HİZMETLER";
+          addCategory(catName, grouped[catId]);
+        });
+
         
         // Final Grand Total
         const gRow = sheet.getRow(currentRow);

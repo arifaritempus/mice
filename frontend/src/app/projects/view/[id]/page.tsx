@@ -660,14 +660,26 @@ export default function ProjectViewPublicPage() {
         // Group items
         const grouped: Record<string, any[]> = {};
         items.forEach(item => {
-          const key = getCategoryName(item.main_category || '') || 'Diğer';
+          const key = item.main_category || 'other';
           if (!grouped[key]) grouped[key] = [];
           grouped[key].push(item);
         });
 
         const subtotalRowsE: number[] = [];
 
-        Object.entries(grouped).forEach(([mainCat, catItems]: [string, any[]], i) => {
+        const sortedCatIds = Object.keys(grouped).sort((a, b) => {
+          if (a === 'other') return 1;
+          if (b === 'other') return -1;
+          const catA = categories.find(c => c.id === a);
+          const catB = categories.find(c => c.id === b);
+          const aKey = (catA?.code || catA?.name || a).toString();
+          const bKey = (catB?.code || catB?.name || b).toString();
+          return aKey.localeCompare(bKey, 'tr', { numeric: true, sensitivity: 'base' });
+        });
+
+        sortedCatIds.forEach((catId, i) => {
+          const catItems = grouped[catId];
+          const mainCat = getCategoryName(catId) || 'DİĞER HİZMETLER';
           const catRow = sheet.addRow([`${i + 1}. ${mainCat}`]);
           catRow.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
           for (let c = 1; c <= 6; c++) catRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
