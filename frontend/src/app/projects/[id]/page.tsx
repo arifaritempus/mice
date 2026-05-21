@@ -1090,7 +1090,7 @@ export default function ProjectDetailPage() {
             const cat = (it.category || it.main_category || '').trim().toLowerCase();
             const name = (it.description || '').trim().toLowerCase();
             const qty = Number(it.unit_quantity || 0);
-            const repeat = Number(it.sefer || it.repeat || 1);
+            const repeat = Number(it.sefer ?? it.repeat ?? 1);
             const price = Math.round(Number(it.unit_price || 0) * 100) / 100;
             const hId = it.hotel_id || '';
             const contentKey = `${cat}|${name}|${qty}|${repeat}|${price}|${hId}`;
@@ -1141,7 +1141,7 @@ export default function ProjectDetailPage() {
             ...it, 
             main_category: it.category, 
             qty: it.unit_quantity, 
-            repeat: Number(repeatTag || it.sefer || it.repeat || 1), 
+            repeat: Number((repeatTag || (it.sefer ?? (it.repeat ?? 1)))), 
             total: it.total_price, 
             total_try: (it.total_price || 0) * (it.fx || 1),
             description: (cleanDesc && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanDesc)) 
@@ -1158,7 +1158,7 @@ export default function ProjectDetailPage() {
             ...it, 
             main_category: it.category, 
             qty: it.unit_quantity, 
-            repeat: Number(repeatTag || it.sefer || it.repeat || 1), 
+            repeat: Number((repeatTag || (it.sefer ?? (it.repeat ?? 1)))), 
             total: it.total_price, 
             total_try: (it.total_price || 0) * (it.fx || 1),
             description: (cleanDesc && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanDesc)) 
@@ -1704,7 +1704,7 @@ export default function ProjectDetailPage() {
         ...createdItem,
         main_category: createdItem.category, 
         qty: createdItem.unit_quantity, 
-        repeat: createdItem.sefer || createdItem.repeat || 1,
+        repeat: createdItem.sefer ?? createdItem.repeat ?? 1,
         total: createdItem.total_price,
         hotel_id: tabId, 
         isEditing: true
@@ -2497,7 +2497,7 @@ export default function ProjectDetailPage() {
 
       const mapped = quoteItems.map((it: any) => {
         const qtyOnly = Number(it.unit_quantity || 0);
-        const repeatOnly = Number(it.sefer || 1);
+        const repeatOnly = Number(it.sefer ?? 1);
         const unitPrice = Number(it.unit_price || 0);
         const currency = it.currency || 'EUR';
         const vat = it.vat || 0;
@@ -2508,10 +2508,10 @@ export default function ProjectDetailPage() {
           category: it.main_category || '',
           sub_category: it.sub_category || '',
           description: desc,
-          unit_quantity: qtyOnly || 1,
-          sefer: repeatOnly || 1,
+          unit_quantity: qtyOnly ?? 1,
+          sefer: repeatOnly ?? 1,
           unit_price: unitPrice,
-          total_price: (qtyOnly || 1) * (repeatOnly || 1) * unitPrice,
+          total_price: (qtyOnly ?? 1) * (repeatOnly ?? 1) * unitPrice,
           currency,
           vat,
           fx,
@@ -2527,7 +2527,7 @@ export default function ProjectDetailPage() {
           ...created,
           main_category: created.category,
           qty: created.unit_quantity,
-          repeat: created.sefer || payload.sefer,
+          repeat: (created.sefer ?? payload.sefer),
           total: created.total_price,
           total_try: created.total_price * (created.fx || 1),
           isEditing: false
@@ -2562,7 +2562,7 @@ export default function ProjectDetailPage() {
 
       const mapped = quoteItems.map((it: any) => {
         const qtyOnly = Number(it.unit_quantity || 0);
-        const repeatOnly = Number(it.repeat || it.sefer || 1);
+        const repeatOnly = Number((it.repeat ?? it.sefer ?? 1));
         const currency = it.currency || 'EUR';
         const vat = it.vat || 0;
         const fx = it.fx || 1;
@@ -2577,8 +2577,8 @@ export default function ProjectDetailPage() {
           category: it.main_category || '',
           sub_category: it.sub_category || '',
           description: desc,
-          unit_quantity: qtyOnly || 1,
-          sefer: repeatOnly || 1, // Removing to fix 400 error
+          unit_quantity: qtyOnly ?? 1,
+          sefer: repeatOnly ?? 1, // Removing to fix 400 error
           unit_price: 0, // Alış fiyatı boş olarak başlar
           total_price: 0,
           currency,
@@ -2596,7 +2596,7 @@ export default function ProjectDetailPage() {
           ...created,
           main_category: created.category,
           qty: created.unit_quantity,
-          repeat: created.sefer || payload.sefer,
+          repeat: (created.sefer ?? payload.sefer),
           total: created.total_price,
           total_try: 0,
           isEditing: false
@@ -2684,7 +2684,7 @@ export default function ProjectDetailPage() {
       // Satış kalemlerini alış kalemlerine (DB payload) dönüştür
       const mapped = itemsSales.map((it: any, index: number) => {
         const qtyOnly = Number(it.qty || it.unit_quantity || 0);
-        const repeatOnly = Number(it.repeat || it.sefer || 1);
+        const repeatOnly = Number((it.repeat ?? it.sefer ?? 1));
         const currency = it.currency || 'EUR';
         const vat = it.vat || 0;
         const fx = it.fx || 1;
@@ -2718,8 +2718,8 @@ export default function ProjectDetailPage() {
           category: it.main_category || '',
           sub_category: it.sub_category || '',
           description: finalDescription,
-          unit_quantity: qtyOnly || 1,
-          sefer: repeatOnly || 1, // Removing to fix 400 error
+          unit_quantity: qtyOnly ?? 1,
+          sefer: repeatOnly ?? 1, // Removing to fix 400 error
           unit_price: 0, // Alış fiyatı boş olarak başlar
           total_price: 0,
           currency,
@@ -2747,11 +2747,11 @@ export default function ProjectDetailPage() {
       for (const row of mapped) {
         const key = makeImportOrderKey(row);
         if (!mergedMap.has(key)) {
-          mergedMap.set(key, { ...row, unit_quantity: Number(row.unit_quantity || 0) || 1 });
+          mergedMap.set(key, { ...row, unit_quantity: Number(row.unit_quantity ?? 0) || 1 });
           continue;
         }
         const prev = mergedMap.get(key);
-        prev.unit_quantity = (Number(prev.unit_quantity || 0) || 0) + (Number(row.unit_quantity || 0) || 0);
+        prev.unit_quantity = (Number(prev.unit_quantity || 0) || 0) + (Number(row.unit_quantity ?? 0) || 0);
         mergedMap.set(key, prev);
       }
       const mergedMapped = Array.from(mergedMap.values());
@@ -2801,7 +2801,7 @@ export default function ProjectDetailPage() {
               description: cleanDesc,
               hotel_id: tabTag || it.hotel_id,
               vendorId: supplierTag || null,
-              repeat: Number(repeatTag || it.sefer || it.repeat || 1),
+              repeat: Number((repeatTag || (it.sefer ?? (it.repeat ?? 1)))),
               source_order: orderTag !== null ? Number(orderTag) : null
             };
           })(),
@@ -2918,7 +2918,7 @@ export default function ProjectDetailPage() {
         ...createdItem,
         main_category: createdItem.category, 
         qty: createdItem.unit_quantity, 
-        repeat: createdItem.sefer || createdItem.repeat || 1,
+        repeat: createdItem.sefer ?? createdItem.repeat ?? 1,
         total: createdItem.total_price,
         hotel_id: originalItem.hotel_id,
         isEditing: true
