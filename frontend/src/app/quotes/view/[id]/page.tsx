@@ -770,42 +770,77 @@ export default function QuoteViewPublicPage() {
                const h = hotelsData.find((x: any) => x.id === activeViewHotelId);
                if (!h) return null;
                return (
-                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6 p-6 bg-slate-50 rounded-xl mb-8 border border-slate-100 shadow-sm items-center">
+                 <div 
+                   className="grid grid-cols-1 md:grid-cols-5 gap-6 p-6 rounded-xl mb-8 border shadow-sm items-center transition-colors duration-500"
+                   style={{ 
+                     backgroundColor: appSettings?.light_bg_secondary || '#f8fafc',
+                     borderColor: appSettings?.light_sidebar_border || '#f1f5f9'
+                   }}
+                 >
                    <div>
-                     <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1">OTEL KONSEPTİ</span>
-                     <span className="text-sm font-bold text-slate-900">{h.hotel_concept || '-'}</span>
+                     <span 
+                       className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
+                       style={{ color: appSettings?.secondary_color || '#94a3b8' }}
+                     >
+                       OTEL KONSEPTİ
+                     </span>
+                     <span className="text-sm font-bold" style={{ color: appSettings?.light_text_color || '#1e293b' }}>
+                       {h.hotel_concept || '-'}
+                     </span>
                    </div>
                    <div>
-                     <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1">GİRİŞ / ÇIKIŞ</span>
-                     <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
+                     <span 
+                       className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
+                       style={{ color: appSettings?.secondary_color || '#94a3b8' }}
+                     >
+                       GİRİŞ / ÇIKIŞ
+                     </span>
+                     <span className="text-sm font-bold whitespace-nowrap" style={{ color: appSettings?.light_text_color || '#1e293b' }}>
                        {h.check_in_date ? new Date(h.check_in_date).toLocaleDateString('tr-TR') : '-'} / {h.check_out_date ? new Date(h.check_out_date).toLocaleDateString('tr-TR') : '-'}
                      </span>
                    </div>
                    <div>
-                     <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1">ODA / PAX</span>
-                     <span className="text-sm font-bold text-slate-900">{h.room_count} Oda / {h.pax_count} Pax</span>
-                   </div>
-                   <div>
-                     <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1">OPSİYON</span>
-                     <span className="text-sm font-bold text-slate-900">
-                       {h.option || '-'} {h.option_date ? <span className="text-blue-600 block text-xs">({new Date(h.option_date).toLocaleDateString('tr-TR')})</span> : ''}
+                     <span 
+                       className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
+                       style={{ color: appSettings?.secondary_color || '#94a3b8' }}
+                     >
+                       ODA / PAX
+                     </span>
+                     <span className="text-sm font-bold" style={{ color: appSettings?.light_text_color || '#1e293b' }}>
+                       {h.room_count} Oda / {h.pax_count} Pax
                      </span>
                    </div>
                    <div>
-                     <span className="block text-[10px] text-gray-600 font-bold uppercase mb-2">OTEL DURUMU (GÜNCELLE)</span>
+                     <span 
+                       className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
+                       style={{ color: appSettings?.secondary_color || '#94a3b8' }}
+                     >
+                       OPSİYON
+                     </span>
+                     <span className="text-sm font-bold" style={{ color: appSettings?.light_text_color || '#1e293b' }}>
+                       {h.option || '-'} {h.option_date ? <span className="text-blue-600 block text-xs mt-0.5">({new Date(h.option_date).toLocaleDateString('tr-TR')})</span> : ''}
+                     </span>
+                   </div>
+                   <div>
+                     <span 
+                       className="block text-[10px] font-black uppercase tracking-tighter mb-2 italic underline decoration-blue-600/30"
+                       style={{ color: appSettings?.secondary_color || '#94a3b8' }}
+                     >
+                       OTEL DURUMU (GÜNCELLE)
+                     </span>
                      <div className="relative">
                        <select
                          value={tempHotelsData.find(x => x.id === activeViewHotelId || x.hotel_id === activeViewHotelId)?.hotel_status || 'BEKLEMEDE'} 
                          onChange={(e) => handleHotelStatusChange(activeViewHotelId, e.target.value)}
                          disabled={linkData?.approval?.is_approved}
-                         className="w-full h-10 px-3 text-[11px] font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
+                         className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
                        >
                          <option value="BEKLEMEDE">BEKLEMEDE</option>
                          <option value="KONFİRME">KONFİRME</option>
                          <option value="İPTAL">İPTAL</option>
                        </select>
                        {!linkData?.approval?.is_approved && (
-                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-blue-400">
+                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-blue-500">
                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
                          </div>
                        )}
