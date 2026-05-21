@@ -22,7 +22,7 @@ import EtkinlikAktiviteTab from './EtkinlikAktiviteTab';
 import InsanKaynaklariTab from './InsanKaynaklariTab';
 import TahsilatTab from './TahsilatTab';
 import OdemeTab from './OdemeTab';
-import { usePermissions, Module } from '@/lib/permissions';
+import { usePermissions, Module, Role } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import * as projectUtils from './projectUtils';
 import { useProjectState } from './hooks/useProjectState';
@@ -707,8 +707,20 @@ export default function ProjectDetailPage() {
 
   const handleSaveProject = useCallback(async () => {
     try {
-      await projectsService.update(projectId, projectFormData);
-      setProject({ ...project, ...projectFormData });
+      let finalData = { ...projectFormData };
+      
+      // Proje tamamlandıya çevrildiyse otomatik kilitle
+      if (finalData.status === 'completed') {
+        finalData.locked = true;
+        finalData.is_locked = true;
+      } else {
+        // Eğer Super Admin durumu geri aldıysa, kilidi aç
+        finalData.locked = false;
+        finalData.is_locked = false;
+      }
+
+      await projectsService.update(projectId, finalData);
+      setProject({ ...project, ...finalData });
 
       // Proje sorumlularını güncelle
       const updatedProjectUsers = { ...projectUsersMap };
@@ -11554,7 +11566,7 @@ export default function ProjectDetailPage() {
           </button>
           {isEditingProject ? (
             <>
-              {canEdit(Module.PROJECTS) && !project?.locked && (
+              {canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
                 <button
                   onClick={handleSaveProject}
                   className="bg-green-600 dark:bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs flex items-center gap-1"
@@ -11565,7 +11577,7 @@ export default function ProjectDetailPage() {
                   Kaydet
                 </button>
               )}
-              {canEdit(Module.PROJECTS) && !project?.locked && (
+              {canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
                 <button
                   onClick={handleCancelEdit}
                   className="bg-gray-600 dark:bg-gray-500 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 text-xs flex items-center gap-1"
@@ -11578,7 +11590,7 @@ export default function ProjectDetailPage() {
               )}
             </>
           ) : (
-            canEdit(Module.PROJECTS) && !project?.locked && (
+            canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
               <button
                 onClick={handleEditProject}
                 className="bg-blue-600 dark:bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs flex items-center gap-1"
