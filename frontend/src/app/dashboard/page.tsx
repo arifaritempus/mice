@@ -691,10 +691,13 @@ export default function DashboardPage() {
     });
 
     const calendarItems = [
-      ...filteredRpSejours.filter(s => normalizeStatus(s.durum).includes('konfirme')).map(s => ({
+      ...filteredRpSejours.map(s => ({
         date: s.giris_tarihi,
         type: 'Sejour',
         title: s.voucher_no || 'Sejour',
+        subtitle: s.acente || '',
+        hotel: s.otel || '',
+        status: s.durum || 'BEKLEMEDE',
         amount: toNumber(s.satis_tl),
         href: '/sejour',
         color: 'emerald'
@@ -703,18 +706,13 @@ export default function DashboardPage() {
         date: p.organizasyon_tarihi,
         type: 'Proje',
         title: p.referans_no || p.firma || 'Proje',
+        subtitle: p.acente || '',
+        hotel: p.otel || '',
+        status: p.durum || 'BEKLEMEDE',
         amount: toNumber(p.satis_tl),
         href: '/projects',
         color: 'blue'
-      })),
-      ...filteredCollectionPlans.map(p => ({
-        date: p.date,
-        type: 'Tahsilat',
-        title: p.description || 'Tahsilat',
-        amount: toNumber(p.amount),
-        href: '/accounting/cash-flow',
-        color: 'purple'
-      })),
+      }))
     ].filter(i => parseDateSafe(i.date)).sort((a, b) => (parseDateSafe(a.date)?.getTime() || 0) - (parseDateSafe(b.date)?.getTime() || 0)).slice(0, 12);
 
     const ticketOptionCount = filteredTickets.filter((t: any) => normalizeStatus(t.status).includes('opsiyon') || normalizeStatus(t.status).includes('option')).length;
@@ -977,14 +975,38 @@ export default function DashboardPage() {
               <Link 
                 key={idx}
                 href={item.href}
-                className="group border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200"
+                className={`group border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl transition-all duration-200 hover:border-${item.color}-500 dark:hover:border-${item.color}-400 flex flex-col`}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">{item.type}</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${item.color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' : item.color === 'purple' ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600 dark:text-blue-400'}`}>{item.type}</span>
                   <span className="text-[9px] font-bold text-gray-400">{shortDate(item.date)}</span>
                 </div>
-                <h4 className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">{item.title}</h4>
-                <p className="mt-3 text-sm font-black text-gray-700 dark:text-gray-300">{formatMoney(item.amount)}</p>
+                <h4 className={`text-xs font-bold text-gray-900 dark:text-white line-clamp-2 ${item.color === 'emerald' ? 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400' : item.color === 'purple' ? 'group-hover:text-purple-600 dark:group-hover:text-purple-400' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'} transition-colors duration-200`}>{item.title}</h4>
+                
+                <div className="mt-2 flex-1 space-y-1.5">
+                  {item.subtitle && item.subtitle !== '-' && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                      <Briefcase size={10} className="shrink-0" />
+                      <span className="truncate" title={item.subtitle}>{item.subtitle}</span>
+                    </div>
+                  )}
+                  {item.hotel && item.hotel !== '-' && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                      <Hotel size={10} className="shrink-0" />
+                      <span className="truncate" title={item.hotel}>{item.hotel}</span>
+                    </div>
+                  )}
+                  {item.status && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                      <CheckCircle2 size={10} className={`shrink-0 ${item.status.toLowerCase().includes('konfirme') ? 'text-emerald-500' : 'text-amber-500'}`} />
+                      <span className="truncate capitalize" title={item.status}>{item.status.toLowerCase()}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                   <p className="text-sm font-black text-gray-700 dark:text-gray-300">{formatMoney(item.amount)}</p>
+                </div>
               </Link>
             ))
           )}
