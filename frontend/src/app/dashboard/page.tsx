@@ -691,8 +691,9 @@ export default function DashboardPage() {
     });
 
     const calendarItems = [
-      ...filteredRpSejours.map(s => ({
+      ...filteredRpSejours.filter(s => normalizeStatus(s.durum).includes('konfirme')).map(s => ({
         date: s.giris_tarihi,
+        endDate: s.cikis_tarihi,
         type: 'Sejour',
         title: s.voucher_no || 'Sejour',
         subtitle: s.acente || '',
@@ -704,6 +705,7 @@ export default function DashboardPage() {
       })),
       ...filteredRpProjects.map(p => ({
         date: p.organizasyon_tarihi,
+        endDate: p.cikis_tarihi,
         type: 'Proje',
         title: p.referans_no || p.firma || 'Proje',
         subtitle: p.acente || '',
@@ -984,6 +986,15 @@ export default function DashboardPage() {
                 <h4 className={`text-xs font-bold text-gray-900 dark:text-white line-clamp-2 ${item.color === 'emerald' ? 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400' : item.color === 'purple' ? 'group-hover:text-purple-600 dark:group-hover:text-purple-400' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'} transition-colors duration-200`}>{item.title}</h4>
                 
                 <div className="mt-2 flex-1 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                    <Calendar size={10} className="shrink-0" />
+                    <span className="truncate">
+                      <span className="font-bold">C-IN:</span> {shortDate(item.date)} 
+                      {item.endDate && item.endDate !== item.date && (
+                        <> <span className="font-bold ml-1">C-OUT:</span> {shortDate(item.endDate)}</>
+                      )}
+                    </span>
+                  </div>
                   {item.subtitle && item.subtitle !== '-' && (
                     <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
                       <Briefcase size={10} className="shrink-0" />
