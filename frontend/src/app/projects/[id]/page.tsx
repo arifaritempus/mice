@@ -10523,10 +10523,10 @@ export default function ProjectDetailPage() {
       // Link listesini yenile
       await loadProjectLinks();
 
-      alert('Link başarıyla oluşturuldu!');
+      toast.success('Link başarıyla oluşturuldu!');
     } catch (error) {
       console.error('Link oluşturma hatası:', error);
-      alert('Link oluşturulurken bir hata oluştu.');
+      toast.error('Link oluşturulurken bir hata oluştu.');
     }
   };
 
@@ -10568,10 +10568,10 @@ export default function ProjectDetailPage() {
 
       await publicLinksService.toggleActive(link.id, !link.is_active);
       await loadProjectLinks();
-      alert('Link durumu güncellendi!');
+      toast.success('Link durumu güncellendi!');
     } catch (error) {
       console.error('Link durumu güncelleme hatası:', error);
-      alert('Link durumu güncellenirken bir hata oluştu.');
+      toast.error('Link durumu güncellenirken bir hata oluştu.');
     }
   };
 
