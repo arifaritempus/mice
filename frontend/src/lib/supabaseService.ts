@@ -118,6 +118,18 @@ export const quotesService = {
 
     let query = supabase.from('quotes').select('*', { count: 'exact' });
 
+    // RLS/Permission Filter
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (user) {
+      const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single();
+      const userRole = userData?.role || 'viewer';
+      if (userRole !== 'super_admin' && userRole !== 'süper_admin' && userRole !== 'süper admin') {
+        // Only show if user is in operation_managers, OR operation_managers is null/empty
+        query = query.or(`operation_managers.cs.{"${user.id}"},operation_managers.is.null,operation_managers.eq.{}`);
+      }
+    }
+
     if (params.filter && params.filter !== 'all') {
       if (params.filter === 'BEKLEMEDE') {
         query = query.in('status', ['BEKLEMEDE', 'TEKLİF']);
@@ -479,6 +491,35 @@ export const projectsService = {
     const to = from + pageSize - 1;
 
     let query = supabase.from('projects').select('*', { count: 'exact' });
+
+    // RLS/Permission Filter
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (user) {
+      const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single();
+      const userRole = userData?.role || 'viewer';
+      if (userRole !== 'super_admin' && userRole !== 'süper_admin' && userRole !== 'süper admin') {
+        const { data: myProjectUsers } = await supabase.from('project_users').select('project_id').eq('user_id', user.id);
+        const myProjectIds = (myProjectUsers || []).map(p => p.project_id);
+        
+        const { data: allProjectUsers } = await supabase.from('project_users').select('project_id');
+        const allAssignedProjectIds = new Set((allProjectUsers || []).map(p => p.project_id));
+        
+        const { data: allProjects } = await supabase.from('projects').select('id');
+        const allProjectIds = (allProjects || []).map(p => p.id);
+        
+        const allowedIds = allProjectIds.filter(id => 
+          myProjectIds.includes(id) || !allAssignedProjectIds.has(id)
+        );
+        
+        if (allowedIds.length > 0) {
+          query = query.in('id', allowedIds);
+        } else {
+          query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+        }
+      }
+    }
+
     if (params.filter && params.filter !== 'all') {
       if (params.filter === 'on-hold') {
         query = query.in('status', ['on-hold', 'on_hold']);
