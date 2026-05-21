@@ -875,13 +875,13 @@ export default function QuotesPage() {
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         description: withTabTag(item.description || '', tabUUID),
-        unit_quantity: item.unit_quantity || 1,
-        sefer: item.sefer || 1,
-        unit_price: item.unit_price || 0,
-        total_price: item.total || 0,
+        unit_quantity: item.unit_quantity ?? 1,
+        sefer: item.sefer ?? 1,
+        unit_price: item.unit_price ?? 0,
+        total_price: item.total ?? 0,
         currency: item.currency || 'EUR',
-        vat: item.vat || 0,
-        fx: item.fx || 1,
+        vat: item.vat ?? 0,
+        fx: item.fx ?? 1,
         hotel_id: realHotelId
       });
     }
@@ -897,13 +897,13 @@ export default function QuotesPage() {
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         description: withTabTag(item.description || '', tabUUID),
-        unit_quantity: item.unit_quantity || 1,
-        sefer: item.sefer || 1,
+        unit_quantity: item.unit_quantity ?? 1,
+        sefer: item.sefer ?? 1,
         unit_price: 0,
         total_price: 0,
         currency: item.currency || 'EUR',
-        vat: item.vat || 0,
-        fx: item.fx || 1,
+        vat: item.vat ?? 0,
+        fx: item.fx ?? 1,
         hotel_id: realHotelId
       });
     }

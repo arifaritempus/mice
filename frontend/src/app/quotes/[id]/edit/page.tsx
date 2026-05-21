@@ -470,13 +470,13 @@ export default function QuoteEditPage() {
         sub_category: item.sub_category || '',
         // Gölge tag'i açıklamaya gizle
         description: tabUUID ? `${item.description || ''} [T:${tabUUID}]` : (item.description || ''),
-        unit_quantity: Number(item.unit_quantity || 1),
-        sefer: Number(item.sefer || 1),
-        unit_price: Number(item.unit_price || 0),
-        total_price: Number(item.total || 0),
+        unit_quantity: Number(item.unit_quantity ?? 1),
+        sefer: Number(item.sefer ?? 1),
+        unit_price: Number(item.unit_price ?? 0),
+        total_price: Number(item.total ?? 0),
         currency: item.currency || 'EUR',
-        vat: Number(item.vat || 0),
-        fx: Number(item.fx || 1),
+        vat: Number(item.vat ?? 0),
+        fx: Number(item.fx ?? 1),
         hotel_id: realHotelId
       };
 
@@ -497,13 +497,13 @@ export default function QuoteEditPage() {
         category: item.main_category || '',
         sub_category: item.sub_category || '',
         description: tabUUID ? `${item.description || ''} [T:${tabUUID}]` : (item.description || ''),
-        unit_quantity: Number(item.unit_quantity || 1),
-        sefer: Number(item.sefer || 1),
+        unit_quantity: Number(item.unit_quantity ?? 1),
+        sefer: Number(item.sefer ?? 1),
         unit_price: 0,
         total_price: 0,
         currency: item.currency || 'EUR',
-        vat: Number(item.vat || 0),
-        fx: Number(item.fx || 1),
+        vat: Number(item.vat ?? 0),
+        fx: Number(item.fx ?? 1),
         hotel_id: realHotelId
       };
 
