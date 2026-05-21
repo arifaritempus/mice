@@ -691,7 +691,10 @@ export default function DashboardPage() {
     });
 
     const calendarItems = [
-      ...filteredRpSejours.filter(s => normalizeStatus(s.durum).includes('konfirme')).map(s => ({
+      ...filteredRpSejours.filter(s => {
+        const k = normalizeStatus(s.durum);
+        return k.includes('konfirme') || k.includes('confirm');
+      }).map(s => ({
         date: s.giris_tarihi,
         endDate: s.cikis_tarihi,
         type: 'Sejour',
