@@ -950,8 +950,7 @@ export default function QuoteEditPage() {
                         onEdit={handleEditItem}
                         onDelete={handleDeleteItem}
                         onSave={updatedItems => {
-                          const updatedIds = new Set(updatedItems.map(it => it.id));
-                          const otherItems = serviceItems.filter(item => !updatedIds.has(item.id));
+                          const otherItems = serviceItems.filter(item => item.hotel_id !== h.id);
                           handleSaveItems([...otherItems, ...updatedItems]);
                         }}
                         onAddBelow={itemId => handleAddBelowWithHotel(itemId, h.id)}
@@ -985,8 +984,7 @@ export default function QuoteEditPage() {
                       onEdit={handleEditItem}
                       onDelete={handleDeleteItem}
                       onSave={updatedItems => {
-                        const updatedIds = new Set(updatedItems.map(it => it.id));
-                        const otherItems = serviceItems.filter(item => !updatedIds.has(item.id));
+                        const otherItems = serviceItems.filter(item => item.hotel_id && item.hotel_id !== 'general');
                         handleSaveItems([...otherItems, ...updatedItems]);
                       }}
                       onAddBelow={itemId => handleAddBelowWithHotel(itemId, 'general')}
