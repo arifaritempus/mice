@@ -12,7 +12,8 @@ import {
   quoteItemsService,
   projectsService,
   projectSalesItemsService,
-  projectPurchaseItemsService
+  projectPurchaseItemsService,
+  projectUsersService
 } from '@/lib/supabaseService';
 import QuoteServiceEditor from '@/components/QuoteServiceEditor';
 import { usePermissions, Module } from '@/lib/permissions';
@@ -447,6 +448,10 @@ export default function QuoteEditPage() {
     } as any);
 
     console.log('✅ Proje oluşturuldu, ID:', created.id);
+
+    if (q.operation_managers && q.operation_managers.length > 0) {
+      await projectUsersService.updateByProjectId(created.id, q.operation_managers);
+    }
 
     // Satış kalemleri
     console.log('📝 Satış kalemleri ekleniyor...');

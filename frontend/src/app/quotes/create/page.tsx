@@ -15,7 +15,8 @@ import {
   quoteItemsService,
   projectsService,
   projectSalesItemsService,
-  projectPurchaseItemsService
+  projectPurchaseItemsService,
+  projectUsersService
 } from '@/lib/supabaseService';
 import QuoteServiceEditor from '@/components/QuoteServiceEditor';
 import { usePermissions, Module } from '@/lib/permissions';
@@ -601,6 +602,10 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       confirmed_at: q.confirmed_at || q.updated_at || q.created_at || start_date,
       hotels_data: normalizedHotels as any
     } as any);
+
+    if (q.operation_managers && q.operation_managers.length > 0) {
+      await projectUsersService.updateByProjectId(created.id, q.operation_managers);
+    }
 
     for (const item of relevantItems) {
       // Orijinal dizide indexi bul, böylece yeni atanan UUID'ye güvenle ulaş

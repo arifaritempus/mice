@@ -9,7 +9,7 @@ import { formatNumber, formatDate } from '@/utils/formatters';
 import { ExcelUtils } from '@/utils/excelUtils';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Modal from '@/components/Modal';
-import { projectsService, quotesService, agenciesService, hotelsService, quoteItemsService, projectSalesItemsService, projectPurchaseItemsService } from '@/lib/supabaseService';
+import { projectsService, quotesService, agenciesService, hotelsService, quoteItemsService, projectSalesItemsService, projectPurchaseItemsService, projectUsersService } from '@/lib/supabaseService';
 import { usePermissions, Module } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE } from '@/types/pagination';
 import { toast } from 'react-hot-toast';
@@ -853,6 +853,10 @@ export default function QuotesPage() {
         is_confirmed: true
       }] : [])
     } as any);
+
+    if (q.operation_managers && q.operation_managers.length > 0) {
+      await projectUsersService.updateByProjectId(created.id, q.operation_managers);
+    }
 
     const withTabTag = (desc: string, tabId: string | null) => {
       const cleanDesc = String(desc || '').replace(/\s*\[T:[^\]]+\]\s*/g, ' ').trim();

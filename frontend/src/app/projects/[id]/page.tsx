@@ -712,7 +712,9 @@ export default function ProjectDetailPage() {
       const updatedProjectUsers = { ...projectUsersMap };
       updatedProjectUsers[projectId] = selectedUsers;
       setProjectUsersMap(updatedProjectUsers);
-      // Proje kullanıcıları artık Supabase'de saklanacak
+      
+      // Proje kullanıcılarını Supabase'e kaydet
+      await projectUsersService.updateByProjectId(projectId, selectedUsers);
 
       setIsEditingProject(false);
       showNotification('Proje başarıyla güncellendi!', 'success');
