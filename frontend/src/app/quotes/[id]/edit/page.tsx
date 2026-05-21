@@ -471,6 +471,7 @@ export default function QuoteEditPage() {
         // Gölge tag'i açıklamaya gizle
         description: tabUUID ? `${item.description || ''} [T:${tabUUID}]` : (item.description || ''),
         unit_quantity: Number(item.unit_quantity || 1),
+        sefer: Number(item.sefer || 1),
         unit_price: Number(item.unit_price || 0),
         total_price: Number(item.total || 0),
         currency: item.currency || 'EUR',
@@ -497,6 +498,7 @@ export default function QuoteEditPage() {
         sub_category: item.sub_category || '',
         description: tabUUID ? `${item.description || ''} [T:${tabUUID}]` : (item.description || ''),
         unit_quantity: Number(item.unit_quantity || 1),
+        sefer: Number(item.sefer || 1),
         unit_price: 0,
         total_price: 0,
         currency: item.currency || 'EUR',
