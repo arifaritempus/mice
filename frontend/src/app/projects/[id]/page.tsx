@@ -712,11 +712,9 @@ export default function ProjectDetailPage() {
       // Proje tamamlandıya çevrildiyse otomatik kilitle
       if (finalData.status === 'completed') {
         finalData.locked = true;
-        finalData.is_locked = true;
       } else {
         // Eğer Super Admin durumu geri aldıysa, kilidi aç
         finalData.locked = false;
-        finalData.is_locked = false;
       }
 
       await projectsService.update(projectId, finalData);
@@ -12012,7 +12010,7 @@ export default function ProjectDetailPage() {
                   canCreate={canCreate(Module.PROJECTS)}
                   canEdit={canEdit(Module.PROJECTS)}
                   canDelete={canDelete(Module.PROJECTS)}
-                  isLocked={project?.is_locked || false}
+                  isLocked={project?.locked || false}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />
@@ -12071,7 +12069,7 @@ export default function ProjectDetailPage() {
                   canCreate={canCreate(Module.PROJECTS)}
                   canEdit={canEdit(Module.PROJECTS)}
                   canDelete={canDelete(Module.PROJECTS)}
-                  isLocked={project?.is_locked || false}
+                  isLocked={project?.locked || false}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />
