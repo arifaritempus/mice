@@ -12054,7 +12054,7 @@ export default function ProjectDetailPage() {
                   canCreate={canCreate(Module.PROJECTS)}
                   canEdit={canEdit(Module.PROJECTS)}
                   canDelete={canDelete(Module.PROJECTS)}
-                  isLocked={project?.locked || false}
+                  isLocked={project?.locked && userRole !== Role.SUPER_ADMIN}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />
@@ -12113,7 +12113,7 @@ export default function ProjectDetailPage() {
                   canCreate={canCreate(Module.PROJECTS)}
                   canEdit={canEdit(Module.PROJECTS)}
                   canDelete={canDelete(Module.PROJECTS)}
-                  isLocked={project?.locked || false}
+                  isLocked={project?.locked && userRole !== Role.SUPER_ADMIN}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />
