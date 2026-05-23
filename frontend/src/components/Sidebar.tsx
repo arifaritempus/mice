@@ -142,6 +142,7 @@ export default function Sidebar() {
             { id: 'expense-completed', label: 'Tamamlanan', icon: '✅', href: '/accounting/invoices/expense/completed', module: Module.INVOICES },
           ]
         },
+        { id: 'exchange-rates', label: 'Döviz Kurları', icon: '💱', href: '/accounting/exchange-rates', module: Module.ACCOUNTING },
       ]
     },
     { id: 'reports', label: 'Raporlar', icon: '📈', href: '/reports', module: Module.REPORTS },

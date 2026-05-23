@@ -23,6 +23,8 @@
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
+    "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.8.0",
     "framer-motion": "^10.16.5",
     "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
@@ -61,7 +63,6 @@
     "tr46": "^5.1.1",
     "uuid": "^9.0.1",
     "xlsx": "^0.18.5",
-    "exceljs": "^4.4.0",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
