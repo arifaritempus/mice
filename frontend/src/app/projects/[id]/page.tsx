@@ -140,34 +140,6 @@ export default function ProjectDetailPage() {
 
   const [updatingRates, setUpdatingRates] = useState(false);
 
-  const handleExchangeStrategyChange = async (strategy: string) => {
-    try {
-      setUpdatingRates(true);
-      const session = await supabase.auth.getSession();
-      const res = await fetch(`/api/projects/${projectId}/update-rates`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.data.session?.access_token}`
-        },
-        body: JSON.stringify({ strategy })
-      });
-      
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Bilinmeyen hata');
-      }
-      
-      alert('Kur stratejisi uygulandı, sayfayı yeniliyoruz...');
-      window.location.reload();
-    } catch (error: any) {
-      console.error('Kur güncellenirken hata:', error);
-      alert('Kur güncellenirken hata: ' + error.message);
-    } finally {
-      setUpdatingRates(false);
-    }
-  };
-
   const handleOpenHotelMenu = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
@@ -746,6 +718,10 @@ export default function ProjectDetailPage() {
       }
 
       await projectsService.update(projectId, finalData);
+      
+      const oldStrategy = project?.exchange_rate_strategy;
+      const newStrategy = finalData.exchange_rate_strategy || oldStrategy;
+      
       setProject({ ...project, ...finalData });
 
       // Proje sorumlularını güncelle
@@ -757,7 +733,33 @@ export default function ProjectDetailPage() {
       await projectUsersService.updateByProjectId(projectId, selectedUsers);
 
       setIsEditingProject(false);
-      showNotification('Proje başarıyla güncellendi!', 'success');
+      
+      // Kur stratejisi değiştiyse arka planda kurları güncelle
+      if (newStrategy && oldStrategy !== newStrategy && newStrategy !== 'manuel') {
+        showNotification('Proje kaydedildi, kurlar güncelleniyor lütfen bekleyin...', 'info');
+        setUpdatingRates(true);
+        const session = await supabase.auth.getSession();
+        fetch(`/api/projects/${projectId}/update-rates`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.data.session?.access_token}`
+          },
+          body: JSON.stringify({ strategy: newStrategy })
+        })
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Kur güncellenemedi');
+          showNotification('Kurlar başarıyla güncellendi! Sayfa yenileniyor...', 'success');
+          setTimeout(() => window.location.reload(), 1500);
+        })
+        .catch(err => {
+          console.error(err);
+          showNotification('Kurlar güncellenirken bir hata oluştu.', 'danger');
+        })
+        .finally(() => setUpdatingRates(false));
+      } else {
+        showNotification('Proje başarıyla güncellendi!', 'success');
+      }
     } catch (error: any) {
       const errorMessage =
         error?.message ||
@@ -11579,6 +11581,26 @@ export default function ProjectDetailPage() {
           <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200">Proje Detayı</h1>
         </div>
         <div className="flex items-center gap-2">
+          <div className="relative">
+            <select
+              value={isEditingProject ? (projectFormData?.exchange_rate_strategy || project?.exchange_rate_strategy || 'manuel') : (project?.exchange_rate_strategy || 'manuel')}
+              onChange={(e) => handleProjectFormChange('exchange_rate_strategy', e.target.value)}
+              disabled={!isEditingProject || updatingRates}
+              className={`px-2 py-1 rounded-lg text-xs font-bold border outline-none w-32 transition-colors ${
+                isEditingProject && !updatingRates
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-blue-500 cursor-pointer shadow-sm' 
+                  : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-80'
+              }`}
+              title="Kur Stratejisi (Sadece düzenleme modunda değiştirilebilir)"
+            >
+              <option value="manuel">Manuel</option>
+              <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
+              <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
+              <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
+              <option value="tcmb_banknote_selling">TCMB Efektif Satış</option>
+            </select>
+          </div>
+          
           {/* Excel Export Butonu - kilitli projelerde de aktif kalmalı */}
           <button
             onClick={exportProjectFullToExcel}
@@ -11590,22 +11612,6 @@ export default function ProjectDetailPage() {
             </svg>
             Excel (Tam Rapor)
           </button>
-          
-          <div className="relative">
-            <select
-              value={project?.exchange_rate_strategy || 'manuel'}
-              onChange={(e) => handleExchangeStrategyChange(e.target.value)}
-              disabled={updatingRates || (project?.locked && userRole !== Role.SUPER_ADMIN)}
-              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-lg text-xs font-bold border border-gray-300 dark:border-gray-600 outline-none w-32"
-              title="Kur Stratejisi"
-            >
-              <option value="manuel">Manuel</option>
-              <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
-              <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
-              <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
-              <option value="tcmb_banknote_selling">TCMB Efektif Satış</option>
-            </select>
-          </div>
           {isEditingProject ? (
             <>
               {canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
