@@ -858,7 +858,7 @@ export default function HomePage() {
           status: 'confirmed',
           source: 'MICE',
           parent_name: r.project_name
-        }));
+        } as MappedGuide));
 
       const mappedPartTime = hrRowsWithProject
         .filter(r => {
@@ -890,7 +890,7 @@ export default function HomePage() {
           location: e.supplierName || '',
           cost: e.price || 0,
           status: 'confirmed',
-          source: 'SEJOUR',
+          source: 'SEJOUR' as 'MICE' | 'SEJOUR',
           parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
           isGuide,
           isPartTime
@@ -900,10 +900,10 @@ export default function HomePage() {
       const allGuides: MappedGuide[] = [...mappedGuides, ...sejourExtras.filter(e => e.isGuide).map(e => ({
         id: e.id,
         name: e.name,
-        service_date: (e as any).date || '',
-        location: (e as any).hotel || '',
+        service_date: e.service_date || '',
+        location: e.location || '',
         guest_count: 0,
-        cost: (e as any).amount || 0,
+        cost: e.cost || 0,
         status: e.status,
         source: e.source as 'SEJOUR',
         parent_name: e.parent_name
@@ -912,8 +912,8 @@ export default function HomePage() {
       const allPartTime: MappedPartTime[] = [...mappedPartTime, ...sejourExtras.filter(e => e.isPartTime).map(e => ({
         id: e.id,
         name: e.name,
-        service_date: (e as any).date || '',
-        location: (e as any).hotel || '',
+        service_date: e.service_date || '',
+        location: e.location || '',
         hours: 0,
         hourly_rate: 0,
         status: e.status,
@@ -939,18 +939,23 @@ export default function HomePage() {
         };
       });
 
-      const sejourFlights: MappedTicket[] = sejours.flatMap(s => (s.flights || []).map((f: any) => ({
-        id: f.id,
-        flight_number: f.flightNo || '',
-        departure: f.departurePort || '',
-        arrival: f.arrivalPort || '',
-        date: f.date || s.check_in_date || s.checkInDate || '',
-        passenger_count: f.paxCount || 0,
-        cost: f.price || 0,
-        status: 'confirmed',
-        source: 'SEJOUR',
-        parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour'
-      })));
+      const sejourFlights: MappedTicket[] = sejours.flatMap(s => (s.flights || []).map((f: any) => {
+        const routeParts = (f.route || '').split(' ');
+        const dep = routeParts[0] || f.departureAirport || '';
+        const arr = routeParts[1] || f.arrivalAirport || '';
+        return {
+          id: f.id,
+          flight_number: f.flightNo || '',
+          departure: dep,
+          arrival: arr,
+          date: f.flightDate || s.checkInDate || s.check_in_date || '',
+          passenger_count: f.totalPassengers || 1,
+          cost: f.price || 0,
+          status: 'confirmed',
+          source: 'SEJOUR',
+          parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour'
+        };
+      }));
 
       const allTickets: MappedTicket[] = [...mappedTickets, ...sejourFlights];
 
