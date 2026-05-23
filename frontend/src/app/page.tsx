@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 import { 
   Users, 
   Hotel, 
@@ -113,6 +114,8 @@ interface MappedTransfer {
   status: string;
   source: 'MICE' | 'SEJOUR';
   parent_name: string;
+  vehicle_type?: string;
+  supplier_name?: string;
 }
 
 interface MappedTicket {
@@ -737,11 +740,12 @@ export default function HomePage() {
     try {
       setLoading(true);
 
-      const [projectsRes, sejoursRes, ticketsRes, categoriesRes] = await Promise.allSettled([
+      const [projectsRes, sejoursRes, ticketsRes, categoriesRes, projectFlightsRes] = await Promise.allSettled([
         projectsService.getAll(),
         SejourService.getSejours(),
         ticketOptionsService.getAll(),
-        categoriesService.getAll()
+        categoriesService.getAll(),
+        supabase.from('project_flight_tickets').select('*')
       ]);
 
       const today = new Date();
@@ -799,34 +803,64 @@ export default function HomePage() {
         const pTransfers = (transferBuckets[i] || []) as Transfer[];
         return pTransfers.map(t => {
           const item = t as any;
+          const routeStr = item.route || '';
+          const parts = routeStr.includes('→') ? routeStr.split('→').map((x: string) => x.trim()) : routeStr.split('-').map((x: string) => x.trim());
+          const pickup = parts[0] || item.pickup_location || '';
+          const dropoff = parts.length > 1 ? parts[parts.length - 1] : (item.dropoff_location || '');
+          
           return {
             id: item.id,
             type: item.service_type || item.transfer_type || 'Transfer',
-            pickup_location: item.pickup_location || '',
-            dropoff_location: item.dropoff_location || '',
+            pickup_location: pickup,
+            dropoff_location: dropoff,
             date: item.date || item.transfer_date || '',
             guest_count: item.passenger_count || 0,
             cost: item.cost_amount || 0,
             status: item.status || 'confirmed',
             source: 'MICE',
-            parent_name: p.name || 'Proje'
+            parent_name: p.name || 'Proje',
+            vehicle_type: item.vehicle_type || '',
+            supplier_name: item.supplier?.name || item.supplier_name || ''
           };
         });
       });
 
       // Sejour Transfers
-      const sejourTransfers: MappedTransfer[] = sejours.flatMap(s => (s.transfers || []).map((t: any) => ({
-        id: t.id,
-        type: t.type || t.transferType || 'Sejour Transfer',
-        pickup_location: t.direction === 'arrival' ? 'Havalimanı' : (t.routeDescription || 'Otel'),
-        dropoff_location: t.direction === 'arrival' ? (t.routeDescription || 'Otel') : 'Havalimanı',
-        date: t.date || s.check_in_date || s.checkInDate || '',
-        guest_count: t.paxCount || 0,
-        cost: t.price || 0,
-        status: 'confirmed',
-        source: 'SEJOUR',
-        parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour'
-      })));
+      const sejourTransfers: MappedTransfer[] = sejours.flatMap(s => (s.transfers || []).map((t: any) => {
+        const isArr = t.direction === 'arrival';
+        let routeDesc = t.routeDescription || '';
+        if (routeDesc.includes('→')) {
+           const rp = routeDesc.split('→').map((x: string) => x.trim());
+           return {
+             id: t.id,
+             type: t.type || t.transferType || 'Transfer',
+             pickup_location: rp[0] || 'Belirtilmemiş',
+             dropoff_location: rp[1] || 'Belirtilmemiş',
+             date: t.date || s.check_in_date || s.checkInDate || '',
+             guest_count: t.paxCount || 0,
+             cost: t.price || 0,
+             status: 'confirmed',
+             source: 'SEJOUR',
+             parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
+             vehicle_type: t.vehicleType || t.vehicle || '',
+             supplier_name: t.supplierName || ''
+           };
+        }
+        return {
+          id: t.id,
+          type: t.type || t.transferType || 'Transfer',
+          pickup_location: isArr ? 'Havalimanı' : (routeDesc || 'Otel'),
+          dropoff_location: isArr ? (routeDesc || 'Otel') : 'Havalimanı',
+          date: t.date || s.check_in_date || s.checkInDate || '',
+          guest_count: t.paxCount || 0,
+          cost: t.price || 0,
+          status: 'confirmed',
+          source: 'SEJOUR',
+          parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
+          vehicle_type: t.vehicleType || t.vehicle || '',
+          supplier_name: t.supplierName || ''
+        };
+      }));
 
       const allTransfers: MappedTransfer[] = [...projectTransfers, ...sejourTransfers];
 
@@ -940,9 +974,10 @@ export default function HomePage() {
       });
 
       const sejourFlights: MappedTicket[] = sejours.flatMap(s => (s.flights || []).map((f: any) => {
-        const routeParts = (f.route || '').split(' ');
-        const dep = routeParts[0] || f.departureAirport || '';
-        const arr = routeParts[1] || f.arrivalAirport || '';
+        const routeStr = (f.route || f.departureAirport || '');
+        const routeParts = routeStr.includes('-') ? routeStr.split('-') : routeStr.split(' ');
+        const dep = routeParts[0] || '';
+        const arr = routeParts.length > 1 ? routeParts[routeParts.length - 1] : (f.arrivalAirport || '');
         return {
           id: f.id,
           flight_number: f.flightNo || '',
@@ -957,7 +992,28 @@ export default function HomePage() {
         };
       }));
 
-      const allTickets: MappedTicket[] = [...mappedTickets, ...sejourFlights];
+      const projectFlightsData = projectFlightsRes.status === 'fulfilled' ? ((projectFlightsRes.value as any).data || []) : [];
+      const mappedProjectFlights: MappedTicket[] = projectFlightsData.map((t: any) => {
+        const p = activeProjects.find(proj => proj.id === t.project_id);
+        const routeStr = t.guzergah || '';
+        const routeParts = routeStr.includes('-') ? routeStr.split('-') : routeStr.split(' ');
+        const dep = routeParts[0] || '';
+        const arr = routeParts.length > 1 ? routeParts[routeParts.length - 1] : '';
+        return {
+          id: t.id,
+          flight_number: t.gidis_ucus_kodu || t.donus_ucus_kodu || t.ucus_tipi || '',
+          departure: dep,
+          arrival: arr,
+          date: t.gidis_tarihi || t.donus_tarihi || t.biletleme_tarihi || '',
+          passenger_count: t.kisi_sayisi || 1,
+          cost: t.toplam_maliyet || 0,
+          status: t.durum || 'confirmed',
+          source: 'MICE',
+          parent_name: p ? (p.name || 'Proje') : 'MICE'
+        };
+      });
+
+      const allTickets: MappedTicket[] = [...mappedTickets, ...sejourFlights, ...mappedProjectFlights];
 
       setDashboardData({
         upcomingProjects: filterUpcoming(mappedProjects, 'start_date'),
