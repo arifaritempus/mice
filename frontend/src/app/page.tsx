@@ -10,6 +10,7 @@ import {
   Truck, 
   Plus, 
   ChevronRight, 
+  ChevronLeft,
   TrendingUp,
   Clock,
   Briefcase,
@@ -754,7 +755,7 @@ export default function HomePage() {
           const aDate = new Date(aDateStr).getTime();
           const bDate = new Date(bDateStr).getTime();
           return aDate - bDate;
-        }).slice(0, 5);
+        }).slice(0, 50);
       };
 
       const projects = projectsRes.status === 'fulfilled' ? (projectsRes.value as Project[]) : [];
@@ -957,24 +958,52 @@ export default function HomePage() {
 
   if (permissionsLoading) return <LoadingSpinner message="Sistem hazırlanıyor..." />;
 
-  const DashboardCard = ({ title, icon: Icon, children, link, color }: { title: string; icon: React.ElementType; children: React.ReactNode; link: string; color: string }) => (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col h-full group hover:shadow-md transition-all duration-300">
-      <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-800 p-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
-            <Icon className={`w-4 h-4 ${color}`} />
+  const DashboardCard = ({ title, icon: Icon, items, renderItem, link, color }: { title: string; icon: React.ElementType; items: any[]; renderItem: (item: any, idx: number) => React.ReactNode; link: string; color: string }) => {
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 4;
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+    const currentItems = items.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
+
+    return (
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col h-full group hover:shadow-md transition-all duration-300">
+        <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-800 p-4 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
+              <Icon className={`w-4 h-4 ${color}`} />
+            </div>
+            <h3 className="font-bold text-slate-900 dark:text-white uppercase text-[10px] tracking-wider">{title}</h3>
           </div>
-          <h3 className="font-bold text-slate-900 dark:text-white uppercase text-[10px] tracking-wider">{title}</h3>
+          <Link href={link} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+            <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+          </Link>
         </div>
-        <Link href={link} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
-          <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
-        </Link>
+        <div className="p-4 flex-1 flex flex-col justify-between">
+          <div className="space-y-2">
+            {items.length > 0 ? currentItems.map((item, i) => renderItem(item, i)) : <EmptyState />}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+              <button 
+                onClick={() => setPage(p => Math.max(0, p - 1))} 
+                disabled={page === 0}
+                className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 transition-all"
+              >
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              </button>
+              <span className="text-[10px] font-bold text-slate-400">{page + 1} / {totalPages}</span>
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} 
+                disabled={page === totalPages - 1}
+                className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 transition-all"
+              >
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="p-4 flex-1 space-y-2">
-        {children}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -1062,77 +1091,125 @@ export default function HomePage() {
               <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase text-xs">Aktif Akış</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Dashboard Cards for different modules */}
-                <DashboardCard title="Yaklaşan Projeler" icon={Briefcase} link="/projects" color="text-blue-600">
-                  {dashboardData.upcomingProjects.length > 0 ? dashboardData.upcomingProjects.map((p, i) => (
-                    <div key={`project-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                      <div className="min-w-0">
+                <DashboardCard 
+                  title="Yaklaşan Projeler" 
+                  icon={Briefcase} 
+                  link="/projects" 
+                  color="text-blue-600"
+                  items={dashboardData.upcomingProjects}
+                  renderItem={(p, i) => (
+                    <div key={`project-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{p.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{p.client_name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{p.client_name || p.reference || 'Müşteri'}</p>
                       </div>
-                      <span className="text-[10px] font-black text-blue-600 whitespace-nowrap">{new Date(p.start_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] font-black text-blue-600 whitespace-nowrap">{new Date(p.start_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">{p.status}</p>
+                      </div>
                     </div>
-                  )) : <EmptyState />}
-                </DashboardCard>
+                  )}
+                />
 
-                <DashboardCard title="Sejour & Konaklama" icon={Hotel} link="/sejour" color="text-emerald-600">
-                  {dashboardData.upcomingSejours.length > 0 ? dashboardData.upcomingSejours.map((s, i) => (
-                    <div key={`sejour-${s.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                      <div className="min-w-0">
+                <DashboardCard 
+                  title="Sejour & Konaklama" 
+                  icon={Hotel} 
+                  link="/sejour" 
+                  color="text-emerald-600"
+                  items={dashboardData.upcomingSejours}
+                  renderItem={(s, i) => (
+                    <div key={`sejour-${s.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{s.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{s.hotel_name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{s.hotel_name || 'Otel'}</p>
                       </div>
-                      <span className="text-[10px] font-black text-emerald-600 whitespace-nowrap">{new Date(s.start_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] font-black text-emerald-600 whitespace-nowrap">{new Date(s.start_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">{s.guest_count > 0 ? `${s.guest_count} Oda` : s.status}</p>
+                      </div>
                     </div>
-                  )) : <EmptyState />}
-                </DashboardCard>
+                  )}
+                />
 
-                <DashboardCard title="Transferler" icon={Truck} link="/operations/transfers" color="text-indigo-600">
-                  {dashboardData.upcomingTransfers.length > 0 ? dashboardData.upcomingTransfers.map((t, i) => (
-                    <div key={`transfer-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                      <div className="min-w-0">
+                <DashboardCard 
+                  title="Transferler" 
+                  icon={Truck} 
+                  link="/operations/transfers" 
+                  color="text-indigo-600"
+                  items={dashboardData.upcomingTransfers}
+                  renderItem={(t, i) => (
+                    <div key={`transfer-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.pickup_location} → {t.dropoff_location}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.type}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{t.type}</p>
                       </div>
-                      <span className="text-[10px] font-black text-indigo-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] font-black text-indigo-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">{t.guest_count > 0 ? `${t.guest_count} Pax` : t.status}</p>
+                      </div>
                     </div>
-                  )) : <EmptyState />}
-                </DashboardCard>
+                  )}
+                />
 
-                <DashboardCard title="Uçuş & Biletler" icon={Plane} link="/tickets/options" color="text-amber-600">
-                  {dashboardData.upcomingTickets.length > 0 ? dashboardData.upcomingTickets.map((t, i) => (
-                    <div key={`ticket-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                      <div className="min-w-0">
+                <DashboardCard 
+                  title="Uçuş & Biletler" 
+                  icon={Plane} 
+                  link="/tickets/options" 
+                  color="text-amber-600"
+                  items={dashboardData.upcomingTickets}
+                  renderItem={(t, i) => (
+                    <div key={`ticket-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.flight_number}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.passenger_count} Yolcu</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{t.departure} → {t.arrival}</p>
                       </div>
-                      <span className="text-[10px] font-black text-amber-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] font-black text-amber-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">{t.passenger_count} Yolcu</p>
+                      </div>
                     </div>
-                  )) : <EmptyState />}
-                </DashboardCard>
+                  )}
+                />
 
-                <DashboardCard title="PERSONEL PLANLAMASI" icon={Users} link="/operations/part-time" color="text-rose-600">
-                  {dashboardData.upcomingPartTime.length > 0 ? dashboardData.upcomingPartTime.map((p, i) => (
-                    <div key={`pt-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                      <div className="min-w-0">
+                <DashboardCard 
+                  title="PERSONEL PLANLAMASI" 
+                  icon={Users} 
+                  link="/operations/part-time" 
+                  color="text-rose-600"
+                  items={dashboardData.upcomingPartTime}
+                  renderItem={(p, i) => (
+                    <div key={`pt-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{p.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{p.location}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{p.location || 'Saha'}</p>
                       </div>
-                      <span className="text-[10px] font-black text-rose-600 whitespace-nowrap">{new Date(p.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                      <div className="text-right shrink-0">
+                         <p className="text-[10px] font-black text-rose-600 whitespace-nowrap">{new Date(p.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
+                         <p className="text-[9px] font-bold text-slate-400 uppercase">{p.status}</p>
+                      </div>
                     </div>
-                  )) : <EmptyState />}
-                </DashboardCard>
+                  )}
+                />
 
-                <DashboardCard title="KOKARTLI REHBERLER" icon={UserCheck} link="/operations/guides" color="text-purple-600">
-                  {dashboardData.upcomingGuides.length > 0 ? dashboardData.upcomingGuides.map((g, i) => (
-                    <div key={`guide-${g.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                      <div className="min-w-0">
+                <DashboardCard 
+                  title="KOKARTLI REHBERLER" 
+                  icon={UserCheck} 
+                  link="/operations/guides" 
+                  color="text-purple-600"
+                  items={dashboardData.upcomingGuides}
+                  renderItem={(g, i) => (
+                    <div key={`guide-${g.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{g.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{g.location}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{g.location || 'Saha'}</p>
                       </div>
-                      <span className="text-[10px] font-black text-purple-600 whitespace-nowrap">{new Date(g.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] font-black text-purple-600 whitespace-nowrap">{new Date(g.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">{g.status}</p>
+                      </div>
                     </div>
-                  )) : <EmptyState />}
-                </DashboardCard>
+                  )}
+                />
               </div>
             </div>
 
