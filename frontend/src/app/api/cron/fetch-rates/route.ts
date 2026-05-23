@@ -60,8 +60,10 @@ export async function GET(request: NextRequest) {
     const tarih = `${year}-${month}-${day}`;
     const bultenNo = tarihDate['@_Bulten_No'] || '';
 
+    const targetCodes = ['USD', 'EUR', 'GBP'];
+
     const rates = currencies
-      .filter((c: any) => c.ForexBuying && c.ForexSelling)
+      .filter((c: any) => targetCodes.includes(c['@_Kod']) && c.ForexBuying && c.ForexSelling)
       .map((c: any) => ({
         tarih,
         bulten_no: bultenNo,
