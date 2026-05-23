@@ -138,7 +138,35 @@ export default function ProjectDetailPage() {
   const [activeHotelMenuId, setActiveHotelMenuId] = useState<string | null>(null);
   const [activeHotelMenuPos, setActiveHotelMenuPos] = useState<{ top: number, left: number } | null>(null);
 
+  const [updatingRates, setUpdatingRates] = useState(false);
 
+  const handleExchangeStrategyChange = async (strategy: string) => {
+    try {
+      setUpdatingRates(true);
+      const session = await supabase.auth.getSession();
+      const res = await fetch(`/api/projects/${projectId}/update-rates`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.data.session?.access_token}`
+        },
+        body: JSON.stringify({ strategy })
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Bilinmeyen hata');
+      }
+      
+      alert('Kur stratejisi uygulandı, sayfayı yeniliyoruz...');
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Kur güncellenirken hata:', error);
+      alert('Kur güncellenirken hata: ' + error.message);
+    } finally {
+      setUpdatingRates(false);
+    }
+  };
 
   const handleOpenHotelMenu = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -11562,6 +11590,22 @@ export default function ProjectDetailPage() {
             </svg>
             Excel (Tam Rapor)
           </button>
+          
+          <div className="relative">
+            <select
+              value={project?.exchange_rate_strategy || 'manuel'}
+              onChange={(e) => handleExchangeStrategyChange(e.target.value)}
+              disabled={updatingRates || (project?.locked && userRole !== Role.SUPER_ADMIN)}
+              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-lg text-xs font-bold border border-gray-300 dark:border-gray-600 outline-none w-32"
+              title="Kur Stratejisi"
+            >
+              <option value="manuel">Manuel</option>
+              <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
+              <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
+              <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
+              <option value="tcmb_banknote_selling">TCMB Efektif Satış</option>
+            </select>
+          </div>
           {isEditingProject ? (
             <>
               {canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (

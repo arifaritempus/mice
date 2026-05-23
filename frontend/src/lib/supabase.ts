@@ -161,6 +161,11 @@ export interface Project {
   // Kilit özelliği (opsiyonel)
   locked?: boolean;
   hotels_data?: any[];
+  // Kur Stratejisi
+  exchange_rate_strategy?: string;
+  usd_rate?: number;
+  eur_rate?: number;
+  gbp_rate?: number;
 }
 
 export interface Agency {

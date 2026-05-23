@@ -105,9 +105,39 @@ export async function GET(request: NextRequest) {
 
     console.log(`[TCMB] ${rates.length} kur başarıyla kaydedildi/güncellendi.`);
 
+    // --- PROJELERİN KURLARINI GÜNCELLEME ---
+    // Stratejisi manuel olmayan ve başlangıç tarihi bugünden büyük veya eşit olan projeleri bul
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    const { data: activeProjects, error: projectErr } = await supabase
+      .from('projects')
+      .select('id, exchange_rate_strategy, start_date')
+      .not('exchange_rate_strategy', 'eq', 'manuel')
+      .not('exchange_rate_strategy', 'is', null);
+      
+    if (!projectErr && activeProjects && activeProjects.length > 0) {
+      // lib/projectRatesService modülünü dinamik veya import ile çağır
+      const { updateProjectRates } = await import('@/lib/projectRatesService');
+      let updateCount = 0;
+      
+      for (const proj of activeProjects) {
+        // Eğer projenin başlangıç tarihi henüz gelmediyse veya tam bugünse günceller
+        // Başlangıç tarihi geçmişse (daha küçükse) artık sabitlemiştir, atlar
+        if (proj.start_date && proj.start_date >= todayStr) {
+          try {
+            await updateProjectRates(proj.id, proj.exchange_rate_strategy);
+            updateCount++;
+          } catch (e) {
+            console.error(`Proje kur güncelleme hatası (${proj.id}):`, e);
+          }
+        }
+      }
+      console.log(`[TCMB] ${updateCount} projenin kurları ve kalemleri başarıyla güncellendi.`);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `${rates.length} kur başarıyla kaydedildi.`,
+      message: `${rates.length} kur kaydedildi. Projeler güncellendi.`,
       date: tarih
     });
   } catch (error: any) {
