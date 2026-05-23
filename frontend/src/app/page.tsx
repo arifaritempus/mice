@@ -111,6 +111,8 @@ interface MappedTransfer {
   guest_count: number;
   cost: number;
   status: string;
+  source: 'MICE' | 'SEJOUR';
+  parent_name: string;
 }
 
 interface MappedTicket {
@@ -122,6 +124,8 @@ interface MappedTicket {
   passenger_count: number;
   cost: number;
   status: string;
+  source: 'MICE' | 'SEJOUR';
+  parent_name: string;
 }
 
 interface MappedGuide {
@@ -132,6 +136,8 @@ interface MappedGuide {
   guest_count: number;
   cost: number;
   status: string;
+  source: 'MICE' | 'SEJOUR';
+  parent_name: string;
 }
 
 interface MappedPartTime {
@@ -142,6 +148,8 @@ interface MappedPartTime {
   hours: number;
   hourly_rate: number;
   status: string;
+  source: 'MICE' | 'SEJOUR';
+  parent_name: string;
 }
 
 interface DashboardData {
@@ -787,18 +795,23 @@ export default function HomePage() {
       const transferBuckets = await Promise.all(
         activeProjects.map(p => projectTransfersService.getByProjectId(p.id).catch(() => []))
       );
-      const projectTransfers: MappedTransfer[] = (transferBuckets.flat() as Transfer[]).map(t => {
-        const item = t as any;
-        return {
-          id: item.id,
-          type: item.service_type || item.transfer_type || 'Transfer',
-          pickup_location: item.pickup_location || '',
-          dropoff_location: item.dropoff_location || '',
-          date: item.date || item.transfer_date || '',
-          guest_count: item.passenger_count || 0,
-          cost: item.cost_amount || 0,
-          status: item.status || 'confirmed'
-        };
+      const projectTransfers: MappedTransfer[] = activeProjects.flatMap((p, i) => {
+        const pTransfers = (transferBuckets[i] || []) as Transfer[];
+        return pTransfers.map(t => {
+          const item = t as any;
+          return {
+            id: item.id,
+            type: item.service_type || item.transfer_type || 'Transfer',
+            pickup_location: item.pickup_location || '',
+            dropoff_location: item.dropoff_location || '',
+            date: item.date || item.transfer_date || '',
+            guest_count: item.passenger_count || 0,
+            cost: item.cost_amount || 0,
+            status: item.status || 'confirmed',
+            source: 'MICE',
+            parent_name: p.name || 'Proje'
+          };
+        });
       });
 
       // Sejour Transfers
@@ -810,7 +823,9 @@ export default function HomePage() {
         date: t.date || s.check_in_date || s.checkInDate || '',
         guest_count: t.paxCount || 0,
         cost: t.price || 0,
-        status: 'confirmed'
+        status: 'confirmed',
+        source: 'SEJOUR',
+        parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour'
       })));
 
       const allTransfers: MappedTransfer[] = [...projectTransfers, ...sejourTransfers];
@@ -819,13 +834,16 @@ export default function HomePage() {
       const hrBuckets = await Promise.all(
         activeProjects.map(p => projectHumanResourcesService.getByProjectId(p.id).catch(() => []))
       );
-      const hrRows = hrBuckets.flat() as ProjectHumanResource[];
+      const hrRowsWithProject = activeProjects.flatMap((p, i) => {
+        const rows = (hrBuckets[i] || []) as ProjectHumanResource[];
+        return rows.map(r => ({ ...r, project_name: p.name || 'Proje' }));
+      });
 
       const categories = categoriesRes.status === 'fulfilled' ? (categoriesRes.value as { id: string; name: string }[]) : [];
       const categoryById: Record<string, { id: string; name: string }> = {};
       categories.forEach(c => { categoryById[c.id] = c; });
 
-      const mappedGuides = hrRows
+      const mappedGuides = hrRowsWithProject
         .filter(r => {
           const n = (categoryById[r.sub_category_id || '']?.name || r.sub_category_name || '').toString().toLowerCase();
           return n.includes('rehber') || n.includes('guide');
@@ -837,10 +855,12 @@ export default function HomePage() {
           location: r.hotel || '',
           guest_count: 0,
           cost: r.amount || 0,
-          status: 'confirmed'
+          status: 'confirmed',
+          source: 'MICE',
+          parent_name: r.project_name
         }));
 
-      const mappedPartTime = hrRows
+      const mappedPartTime = hrRowsWithProject
         .filter(r => {
           const n = (categoryById[r.sub_category_id || '']?.name || r.sub_category_name || '').toString().toLowerCase();
           return (n.includes('part') && n.includes('time')) || n.includes('yari zamanli') || n.includes('insan kaynak');
@@ -852,7 +872,9 @@ export default function HomePage() {
           location: r.hotel || '',
           hours: 0,
           hourly_rate: 0,
-          status: 'confirmed'
+          status: 'confirmed',
+          source: 'MICE',
+          parent_name: r.project_name
         } as MappedPartTime));
 
       // Sejour Extras (Guides & Part-Time)
@@ -868,6 +890,8 @@ export default function HomePage() {
           location: e.supplierName || '',
           cost: e.price || 0,
           status: 'confirmed',
+          source: 'SEJOUR',
+          parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour',
           isGuide,
           isPartTime
         };
@@ -880,7 +904,9 @@ export default function HomePage() {
         location: (e as any).hotel || '',
         guest_count: 0,
         cost: (e as any).amount || 0,
-        status: e.status
+        status: e.status,
+        source: e.source as 'SEJOUR',
+        parent_name: e.parent_name
       }))];
 
       const allPartTime: MappedPartTime[] = [...mappedPartTime, ...sejourExtras.filter(e => e.isPartTime).map(e => ({
@@ -890,21 +916,28 @@ export default function HomePage() {
         location: (e as any).hotel || '',
         hours: 0,
         hourly_rate: 0,
-        status: e.status
+        status: e.status,
+        source: e.source as 'SEJOUR',
+        parent_name: e.parent_name
       }))];
 
       // Tickets (Project Options + Sejour Flights)
       const tickets = ticketsRes.status === 'fulfilled' ? (ticketsRes.value as Ticket[]) : [];
-      const mappedTickets: MappedTicket[] = tickets.map(t => ({
-        id: t.id,
-        flight_number: (t as any).flight_number || (t as any).flight_no || '',
-        departure: (t as any).departure || '',
-        arrival: (t as any).arrival || '',
-        date: (t as any).service_date || (t as any).date || '',
-        passenger_count: (t as any).unit_quantity || 1,
-        cost: (t as any).total_price || 0,
-        status: 'confirmed'
-      }));
+      const mappedTickets: MappedTicket[] = tickets.map(t => {
+        const p = activeProjects.find(proj => proj.id === (t as any).project_id);
+        return {
+          id: t.id,
+          flight_number: (t as any).flight_number || (t as any).flight_no || '',
+          departure: (t as any).departure || '',
+          arrival: (t as any).arrival || '',
+          date: (t as any).service_date || (t as any).date || '',
+          passenger_count: (t as any).unit_quantity || 1,
+          cost: (t as any).total_price || 0,
+          status: 'confirmed',
+          source: 'MICE',
+          parent_name: p ? (p.name || 'Proje') : 'MICE'
+        };
+      });
 
       const sejourFlights: MappedTicket[] = sejours.flatMap(s => (s.flights || []).map((f: any) => ({
         id: f.id,
@@ -914,7 +947,9 @@ export default function HomePage() {
         date: f.date || s.check_in_date || s.checkInDate || '',
         passenger_count: f.paxCount || 0,
         cost: f.price || 0,
-        status: 'confirmed'
+        status: 'confirmed',
+        source: 'SEJOUR',
+        parent_name: s.voucherNumber || s.voucher_number || s.customerName || s.customer_name || 'Sejour'
       })));
 
       const allTickets: MappedTicket[] = [...mappedTickets, ...sejourFlights];
@@ -1140,8 +1175,12 @@ export default function HomePage() {
                   renderItem={(t, i) => (
                     <div key={`transfer-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.pickup_location} → {t.dropoff_location}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{t.type}</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${t.source === 'MICE' ? 'bg-blue-50/50 border-blue-200 text-blue-600' : 'bg-emerald-50/50 border-emerald-200 text-emerald-600'}`}>{t.source}</span>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{t.parent_name}</p>
+                        </div>
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.pickup_location || 'Belirtilmemiş'} → {t.dropoff_location || 'Belirtilmemiş'}</p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{t.type}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-[10px] font-black text-indigo-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
@@ -1160,8 +1199,12 @@ export default function HomePage() {
                   renderItem={(t, i) => (
                     <div key={`ticket-${t.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.flight_number}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{t.departure} → {t.arrival}</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${t.source === 'MICE' ? 'bg-blue-50/50 border-blue-200 text-blue-600' : 'bg-emerald-50/50 border-emerald-200 text-emerald-600'}`}>{t.source}</span>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{t.parent_name}</p>
+                        </div>
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{t.flight_number || 'Uçuş No Yok'}</p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{t.departure || '?'} → {t.arrival || '?'}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-[10px] font-black text-amber-600 whitespace-nowrap">{new Date(t.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
@@ -1180,8 +1223,12 @@ export default function HomePage() {
                   renderItem={(p, i) => (
                     <div key={`pt-${p.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{p.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{p.location || 'Saha'}</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${p.source === 'MICE' ? 'bg-blue-50/50 border-blue-200 text-blue-600' : 'bg-emerald-50/50 border-emerald-200 text-emerald-600'}`}>{p.source}</span>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{p.parent_name}</p>
+                        </div>
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{p.name || 'Personel'}</p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{p.location || 'Saha'}</p>
                       </div>
                       <div className="text-right shrink-0">
                          <p className="text-[10px] font-black text-rose-600 whitespace-nowrap">{new Date(p.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
@@ -1200,8 +1247,12 @@ export default function HomePage() {
                   renderItem={(g, i) => (
                     <div key={`guide-${g.id}-${i}`} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{g.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{g.location || 'Saha'}</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${g.source === 'MICE' ? 'bg-blue-50/50 border-blue-200 text-blue-600' : 'bg-emerald-50/50 border-emerald-200 text-emerald-600'}`}>{g.source}</span>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{g.parent_name}</p>
+                        </div>
+                        <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{g.name || 'Rehber'}</p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase truncate">{g.location || 'Saha'}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-[10px] font-black text-purple-600 whitespace-nowrap">{new Date(g.service_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</p>
