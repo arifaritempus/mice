@@ -62,10 +62,9 @@ export async function GET(request: NextRequest) {
 
     const targetCodes = ['USD', 'EUR', 'GBP'];
 
-    const rates = currencies
+    const baseRates = currencies
       .filter((c: any) => targetCodes.includes(c['@_Kod']) && c.ForexBuying && c.ForexSelling)
       .map((c: any) => ({
-        tarih,
         bulten_no: bultenNo,
         kod: c['@_Kod'],
         currency_code: c['@_CurrencyCode'],
@@ -85,17 +84,54 @@ export async function GET(request: NextRequest) {
           : null,
       }));
 
-    console.log(`[TCMB] ${rates.length} kur bulundu.`);
+    console.log(`[TCMB] ${baseRates.length} kur bulundu.`);
 
-    if (rates.length === 0) {
+    if (baseRates.length === 0) {
       return NextResponse.json({ message: 'Kur bulunamadı.' }, { status: 200 });
+    }
+
+    // Determine the dates to fill
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date());
+    
+    // Find the last recorded date in DB
+    const { data: lastRecord, error: lastRecordErr } = await supabase
+      .from('tcmb_kurlari')
+      .select('tarih')
+      .order('tarih', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+      
+    let datesToFill: string[] = [];
+    
+    if (!lastRecordErr && lastRecord?.tarih) {
+      const maxDateStr = lastRecord.tarih;
+      let curr = new Date(maxDateStr);
+      curr.setUTCDate(curr.getUTCDate() + 1); // start from next day
+      const todayDate = new Date(todayStr);
+      
+      while (curr <= todayDate) {
+        datesToFill.push(curr.toISOString().split('T')[0]);
+        curr.setUTCDate(curr.getUTCDate() + 1);
+      }
+    }
+    
+    // If we're up to date but want to ensure today is written (e.g. manual trigger on same day), or no previous records
+    if (datesToFill.length === 0) {
+      datesToFill.push(todayStr);
+    }
+
+    const allRatesToUpsert = [];
+    for (const d of datesToFill) {
+      for (const r of baseRates) {
+        allRatesToUpsert.push({ ...r, tarih: d });
+      }
     }
 
     // Upsert the data into Supabase
     // tarih ve kod için unique index (idx_tcmb_tarih_kod) olduğundan onConflict ile upsert kullanabiliriz
     const { data, error } = await supabase
       .from('tcmb_kurlari')
-      .upsert(rates, { onConflict: 'tarih, kod' })
+      .upsert(allRatesToUpsert, { onConflict: 'tarih, kod' })
       .select();
 
     if (error) {
@@ -103,11 +139,10 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
-    console.log(`[TCMB] ${rates.length} kur başarıyla kaydedildi/güncellendi.`);
+    console.log(`[TCMB] ${datesToFill.length} gün için toplam ${allRatesToUpsert.length} kur başarıyla kaydedildi/güncellendi.`);
 
     // --- PROJELERİN KURLARINI GÜNCELLEME ---
     // Stratejisi manuel olmayan ve başlangıç tarihi bugünden büyük veya eşit olan projeleri bul
-    const todayStr = new Date().toISOString().split('T')[0];
     
     const { data: activeProjects, error: projectErr } = await supabase
       .from('projects')
@@ -137,8 +172,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `${rates.length} kur kaydedildi. Projeler güncellendi.`,
-      date: tarih
+      message: `${allRatesToUpsert.length} kur kaydedildi. Projeler güncellendi.`,
+      date: todayStr
     });
   } catch (error: any) {
     console.error('[TCMB Fetch Error]:', error);
