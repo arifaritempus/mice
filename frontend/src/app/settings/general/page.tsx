@@ -69,10 +69,10 @@ interface GeneralSettings {
 }
 
 const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
-  company_name: 'TEMPUS TRAVEL',
-  company_email: 'info@tempustravel.co',
-  company_phone: '+90 212 555 0123',
-  company_address: 'İstanbul, Türkiye',
+  company_name: '',
+  company_email: '',
+  company_phone: '',
+  company_address: '',
   default_currency: 'TRY',
   timezone: 'Europe/Istanbul',
   date_format: 'DD.MM.YYYY',
