@@ -1,0 +1,48 @@
+@@ -11,15 +11,35 @@
+   return <LoadingSpinner message="Sayfa yükleniyor..." />;
+ }
+ 
+-export const metadata: Metadata = {
+-  title: 'TEMPUS TRAVEL - MICE Yönetim Sistemi',
+-  description: 'TEMPUS TRAVEL MICE Yönetim Sistemi',
+-  icons: {
+-    icon: [
+-      { url: '/LOGO_NAVY.png', sizes: '32x32', type: 'image/png' },
+-      { url: '/LOGO_OFFWHITE.png', sizes: '32x32', type: 'image/png' }
+-    ],
+-    shortcut: '/LOGO_NAVY.png',
+-    apple: '/LOGO_NAVY.png',
+-  },
+-};
++export async function generateMetadata(): Promise<Metadata> {
++  const defaultTitle = 'MICE Yönetim Sistemi';
++  const defaultIcon = '/LOGO_NAVY.png';
++  
++  let title = defaultTitle;
++  let iconUrl = defaultIcon;
++
++  try {
++    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
++    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
++    
++    if (supabaseUrl && supabaseKey) {
++      const { createClient } = await import('@supabase/supabase-js');
++      const client = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false }});
++      const { data } = await client.from('settings').select('value').eq('key', 'general_settings').maybeSingle();
++      
++      if (data?.value) {
++        const settings = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
++        if (settings.company_name) title = `${settings.company_name} - MICE Yönetim Sistemi`;
++        if (settings.dark_icon_logo) iconUrl = settings.dark_icon_logo;
++      }
++    }
++  } catch (error) {
++    console.error('Error generating metadata:', error);
++  }
++
++  return {
++    title,
++    description: title,
++    icons: {
++      icon: [{ url: iconUrl }],
++      shortcut: iconUrl,

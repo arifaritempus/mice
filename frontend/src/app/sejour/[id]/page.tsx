@@ -238,11 +238,11 @@ export default function SejourDetailPage() {
           <div className="flex justify-between items-center border-b-[3px] border-gray-900 pb-6 mb-8">
             <div className="flex items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={darkIconLogo || 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_icon_logo.png'} alt="Logo" className="w-16 h-auto object-contain" />
+              {darkIconLogo && <img src={darkIconLogo} alt="Logo" className="w-16 h-auto object-contain" />}
             </div>
             <div className="text-right flex flex-col items-end">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={darkWordmarkLogo || 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_wordmark_logo.png'} alt="Wordmark" className="h-6 w-auto object-contain mb-2" />
+              {darkWordmarkLogo && <img src={darkWordmarkLogo} alt="Wordmark" className="h-6 w-auto object-contain mb-2" />}
               <div className="text-[10px] tracking-[0.2em] text-gray-600 font-medium uppercase mt-1">OFFICIAL VOUCHER</div>
             </div>
           </div>

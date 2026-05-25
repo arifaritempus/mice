@@ -62,7 +62,7 @@ interface Quote {
   notes?: string;
 }
 
-const FIXED_PUBLIC_LOGO_URL = 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_icon_logo.png';
+// FIXED_PUBLIC_LOGO_URL removed to use dynamic logo from appSettings
 
 export default function QuoteViewPublicPage() {
   const formatTr = (n: number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -576,7 +576,7 @@ export default function QuoteViewPublicPage() {
   if (error && !showPasswordForm) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   if (showPasswordForm) {
-    const loginLogo = appSettings?.dark_menu_logo || appSettings?.light_menu_logo || FIXED_PUBLIC_LOGO_URL;
+    const loginLogo = appSettings?.dark_menu_logo || appSettings?.light_menu_logo || appSettings?.dark_icon_logo || '';
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Dekoratif arka plan */}
@@ -655,9 +655,11 @@ export default function QuoteViewPublicPage() {
           style={{ backgroundColor: '#232f38' }}
         >
           <div className="flex items-center gap-3">
-            <img src={FIXED_PUBLIC_LOGO_URL} alt="Logo" className="h-10 w-auto" />
+            {(appSettings?.dark_icon_logo || appSettings?.light_icon_logo) && (
+              <img src={appSettings.dark_icon_logo || appSettings.light_icon_logo} alt="Logo" className="h-10 w-auto" />
+            )}
             <span className="text-white text-lg font-bold tracking-tight">
-              {appSettings?.company_name || 'TEMPUS TRAVEL'}
+              {appSettings?.company_name || process.env.NEXT_PUBLIC_AGENCY_NAME || 'COOP EVENT'}
             </span>
           </div>
           <div className="flex items-center gap-4">
