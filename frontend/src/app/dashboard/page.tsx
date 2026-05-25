@@ -122,7 +122,7 @@ const formatMoney = (n: number) => new Intl.NumberFormat('tr-TR', {
 
 const formatInt = (n: number) => new Intl.NumberFormat('tr-TR').format(n || 0);
 const formatMillion = (n: number) => `${(toNumber(n) / 1_000_000).toFixed(2)}M`;
-const normalizeStatus = (status: any) => String(status || '').toLocaleLowerCase('tr-TR').trim();
+const normalizeStatus = (status: any) => String(status || '').toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').trim();
 
 const shortDate = (value: any) => {
   const dt = parseDateSafe(value);
