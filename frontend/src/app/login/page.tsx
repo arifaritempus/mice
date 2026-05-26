@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [errorKey, setErrorKey] = useState(0);
+  const [appSettings, setAppSettings] = useState<any>(null);
   const [menuLogo, setMenuLogo] = useState<string>('');
   const [logoLoading, setLogoLoading] = useState(true);
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -30,8 +31,13 @@ export default function LoginPage() {
       try {
         const settings = await SettingsService.getSettings();
         const generalSettings = settings.general_settings || {};
-        const currentMenuLogo = isDark ? generalSettings.dark_menu_logo : generalSettings.light_menu_logo;
-        setMenuLogo(currentMenuLogo || '');
+        setAppSettings(generalSettings);
+        
+        // Use wordmark logo by default for login page, fallback to icon or menu logo
+        const currentLogo = isDark 
+          ? (generalSettings.dark_wordmark_logo || generalSettings.dark_menu_logo || generalSettings.dark_icon_logo)
+          : (generalSettings.light_wordmark_logo || generalSettings.light_menu_logo || generalSettings.light_icon_logo);
+        setMenuLogo(currentLogo || '');
       } catch {
         setMenuLogo('');
       } finally {
@@ -151,7 +157,9 @@ export default function LoginPage() {
             />
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
-              <span className="text-white text-2xl font-bold">TT</span>
+              <span className="text-white text-2xl font-bold">
+                {appSettings?.company_name ? appSettings.company_name.substring(0, 2).toUpperCase() : (process.env.NEXT_PUBLIC_AGENCY_NAME ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(0, 2).toUpperCase() : 'TT')}
+              </span>
             </div>
           )}
         </div>
@@ -190,7 +198,7 @@ export default function LoginPage() {
                 value={credentials.email}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
-                placeholder="ornek@tempustravel.com"
+                placeholder="ornek@mail.com"
               />
             </div>
 
@@ -240,7 +248,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 pt-5 border-t border-white/5 text-center">
-            <p className="text-xs text-slate-500">TEMPUS TRAVEL Sistem v2.0</p>
+            <p className="text-xs text-slate-500">{appSettings?.company_name || process.env.NEXT_PUBLIC_AGENCY_NAME || 'Sistem'} v2.0</p>
             <p className="text-xs text-slate-600 mt-0.5">© {new Date().getFullYear()} Tüm Hakları Saklıdır</p>
           </div>
         </div>
