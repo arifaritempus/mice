@@ -146,6 +146,12 @@ export default function RolePermissionsPage() {
   const [moduleQuery, setModuleQuery] = useState('');
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
+  // New state for batch saving
+  const [stagedPermissions, setStagedPermissions] = useState<Set<string>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
+  const [pendingRoleSwitch, setPendingRoleSwitch] = useState<string | null>(null);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -248,10 +254,58 @@ export default function RolePermissionsPage() {
   const selectedRole = roles.find((role) => role.id === selectedRoleId) || roles[0];
   const selectedRoleEffectiveId = selectedRole?.id || '';
 
+  // Initialize staged permissions when role changes or data loads
+  useEffect(() => {
+    if (selectedRoleEffectiveId) {
+      const initialStaged = new Set<string>();
+      rolePermissions.forEach(rp => {
+        if (rp.role_id === selectedRoleEffectiveId && rp.permissions) {
+          const mod = normalizeModuleId(rp.permissions.module);
+          const act = rp.permissions.action;
+          initialStaged.add(`${mod}:${act}`);
+        }
+      });
+      setStagedPermissions(initialStaged);
+    }
+  }, [selectedRoleEffectiveId, rolePermissions]);
+
   const selectedRolePermissionCount = useMemo(() => {
     if (!selectedRoleEffectiveId) return 0;
     return rolePermissions.filter((rp) => rp.role_id === selectedRoleEffectiveId).length;
   }, [rolePermissions, selectedRoleEffectiveId]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (!selectedRoleEffectiveId) return false;
+    const initialStaged = new Set<string>();
+    rolePermissions.forEach(rp => {
+      if (rp.role_id === selectedRoleEffectiveId && rp.permissions) {
+        initialStaged.add(`${normalizeModuleId(rp.permissions.module)}:${rp.permissions.action}`);
+      }
+    });
+    if (initialStaged.size !== stagedPermissions.size) return true;
+    for (const item of stagedPermissions) {
+      if (!initialStaged.has(item)) return true;
+    }
+    return false;
+  }, [stagedPermissions, rolePermissions, selectedRoleEffectiveId]);
+
+  const handleRoleSelect = (roleId: string) => {
+    if (roleId === selectedRoleEffectiveId) return;
+    if (hasUnsavedChanges) {
+      setPendingRoleSwitch(roleId);
+      setShowUnsavedModal(true);
+    } else {
+      setSelectedRoleId(roleId);
+    }
+  };
+
+  const confirmRoleSwitch = () => {
+    if (pendingRoleSwitch) {
+      setSelectedRoleId(pendingRoleSwitch);
+      setPendingRoleSwitch(null);
+    }
+    setShowUnsavedModal(false);
+  };
 
   // USERS modülü için VIEW yetkisi kontrolü (Rol ve Yetki Yönetimi USERS modülü altında)
   if (permissionsLoading) {
@@ -272,23 +326,115 @@ export default function RolePermissionsPage() {
     );
   }
 
-  const handlePermissionChange = async (roleId: string, permissionId: string, value: boolean) => {
+  const handlePermissionChange = (moduleId: string, permissionId: string, value: boolean) => {
+    const key = `${moduleId}:${permissionId}`;
+    setStagedPermissions(prev => {
+      const next = new Set(prev);
+      if (value) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  };
+
+  const handleToggleColumn = (permissionId: string, value: boolean) => {
+    setStagedPermissions(prev => {
+      const next = new Set(prev);
+      filteredModules.forEach(mod => {
+        const key = `${mod.id}:${permissionId}`;
+        const hasPermissionRecord = permissions.some(p => normalizeModuleId(p.module) === mod.id && p.action === permissionId);
+        if (hasPermissionRecord) {
+          if (value) next.add(key);
+          else next.delete(key);
+        }
+      });
+      return next;
+    });
+  };
+
+  const handleToggleRow = (moduleId: string, value: boolean) => {
+    setStagedPermissions(prev => {
+      const next = new Set(prev);
+      PERMISSIONS.forEach(perm => {
+        const key = `${moduleId}:${perm.id}`;
+        const hasPermissionRecord = permissions.some(p => normalizeModuleId(p.module) === moduleId && p.action === perm.id);
+        if (hasPermissionRecord) {
+          if (value) next.add(key);
+          else next.delete(key);
+        }
+      });
+      return next;
+    });
+  };
+
+  const handleToggleAll = (value: boolean) => {
+    setStagedPermissions(prev => {
+      const next = new Set(prev);
+      filteredModules.forEach(mod => {
+        PERMISSIONS.forEach(perm => {
+          const key = `${mod.id}:${perm.id}`;
+          const hasPermissionRecord = permissions.some(p => normalizeModuleId(p.module) === mod.id && p.action === perm.id);
+          if (hasPermissionRecord) {
+            if (value) next.add(key);
+            else next.delete(key);
+          }
+        });
+      });
+      return next;
+    });
+  };
+
+  const handleSavePermissions = async () => {
+    if (!selectedRoleEffectiveId) return;
+    setIsSaving(true);
     try {
-      if (value) {
-        // Add permission
-        await rolePermissionsService.upsert(roleId, permissionId);
-      } else {
-        // Remove permission
-        await rolePermissionsService.deleteByRoleAndPermission(roleId, permissionId);
+      // Bul: Eklenecek ve silinecek yetkiler
+      const initialStaged = new Set<string>();
+      const initialRolePerms = rolePermissions.filter(rp => rp.role_id === selectedRoleEffectiveId && rp.permissions);
+      
+      const permissionRecordMap = new Map<string, string>(); // 'module:action' -> permission_id
+      permissions.forEach(p => {
+        permissionRecordMap.set(`${normalizeModuleId(p.module)}:${p.action}`, p.id);
+      });
+
+      initialRolePerms.forEach(rp => {
+        if (rp.permissions) {
+          initialStaged.add(`${normalizeModuleId(rp.permissions.module)}:${rp.permissions.action}`);
+        }
+      });
+
+      const toAdd: string[] = [];
+      const toRemove: string[] = [];
+
+      for (const item of stagedPermissions) {
+        if (!initialStaged.has(item)) {
+          const permId = permissionRecordMap.get(item);
+          if (permId) toAdd.push(permId);
+        }
       }
 
-      // Reload data to get updated permissions
+      for (const item of initialStaged) {
+        if (!stagedPermissions.has(item)) {
+          const permId = permissionRecordMap.get(item);
+          if (permId) toRemove.push(permId);
+        }
+      }
+
+      // Supabase'e islem gonder
+      for (const permId of toAdd) {
+        await rolePermissionsService.upsert(selectedRoleEffectiveId, permId);
+      }
+      for (const permId of toRemove) {
+        await rolePermissionsService.deleteByRoleAndPermission(selectedRoleEffectiveId, permId);
+      }
+
       await loadData();
-      setSuccess('Rol yetkisi güncellendi');
+      setSuccess('Yetkiler başarıyla kaydedildi');
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
-      console.error('Permission change error:', error);
-      setError('Yetki güncellenirken hata oluştu: ' + error.message);
+      console.error('Save permissions error:', error);
+      setError('Yetkiler kaydedilirken hata oluştu: ' + error.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -342,17 +488,9 @@ export default function RolePermissionsPage() {
     }
   };
 
-  const getRolePermission = (roleId: string, moduleId: string, action: string) => {
-    // Check if role has this permission
-    const normalizedModule = normalizeModuleId(moduleId);
-    const rolePermission = rolePermissions.find(rp => 
-      rp.role_id === roleId && 
-      rp.permissions && 
-      normalizeModuleId(rp.permissions.module) === normalizedModule && 
-      rp.permissions.action === action
-    );
-    
-    return !!rolePermission;
+  const getRolePermission = (moduleId: string, action: string) => {
+    const key = `${normalizeModuleId(moduleId)}:${action}`;
+    return stagedPermissions.has(key);
   };
 
   const handleEditRole = (role: Role) => {
@@ -450,7 +588,7 @@ export default function RolePermissionsPage() {
                 return (
                   <div
                     key={role.id}
-                    onClick={() => setSelectedRoleId(role.id)}
+                    onClick={() => handleRoleSelect(role.id)}
                     className={`w-full text-left rounded-xl border px-3 py-2 transition-all cursor-pointer ${
                       active
                         ? 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
@@ -511,55 +649,160 @@ export default function RolePermissionsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-y-auto pr-1">
-              {filteredModules.map((module) => (
-                <div key={module.id} className="rounded-xl border border-slate-200 dark:border-gray-700 p-3 bg-slate-50/70 dark:bg-gray-800/60">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg">{module.icon}</span>
-                    <div>
-                      <div className="text-sm font-semibold text-slate-900 dark:text-white">{module.name}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">{module.id}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {PERMISSIONS.map((permission) => {
-                      const permissionRecord = permissions.find((p) => normalizeModuleId(p.module) === module.id && p.action === permission.id);
-                      const isChecked = selectedRoleEffectiveId
-                        ? getRolePermission(selectedRoleEffectiveId, module.id, permission.id)
-                        : false;
-                      const isDisabled = !permissionRecord || !canEdit(Module.USERS) || !selectedRoleEffectiveId;
+            <div className="flex-1 overflow-auto pr-1">
+              <table className="w-full border-collapse">
+                <thead className="bg-slate-50 dark:bg-gray-800/50 sticky top-0 z-10">
+                  <tr>
+                    <th className="border-b border-slate-200 dark:border-gray-700 py-3 px-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Modül
+                    </th>
+                    {PERMISSIONS.map(perm => {
+                      // Check if all available modules have this permission
+                      let totalAvailable = 0;
+                      let totalSelected = 0;
+                      filteredModules.forEach(mod => {
+                        if (permissions.some(p => normalizeModuleId(p.module) === mod.id && p.action === perm.id)) {
+                          totalAvailable++;
+                          if (getRolePermission(mod.id, perm.id)) totalSelected++;
+                        }
+                      });
+                      const isAllSelected = totalAvailable > 0 && totalSelected === totalAvailable;
+                      
                       return (
-                        <label
-                          key={`${module.id}-${permission.id}`}
-                          className={`flex items-center gap-2 rounded-lg border px-2 py-2 text-xs ${
-                            isDisabled
-                              ? 'border-slate-200 dark:border-gray-700 text-slate-400 dark:text-slate-500'
-                              : 'border-slate-300 dark:border-gray-600 text-slate-700 dark:text-slate-200'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={(e) => {
-                              if (permissionRecord && selectedRoleEffectiveId && canEdit(Module.USERS)) {
-                                handlePermissionChange(selectedRoleEffectiveId, permissionRecord.id, e.target.checked);
-                              }
-                            }}
-                            disabled={isDisabled}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span>{permission.name}</span>
-                        </label>
+                        <th key={perm.id} className="border-b border-slate-200 dark:border-gray-700 py-3 px-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          <div className="flex flex-col items-center gap-1">
+                            <span>{perm.name}</span>
+                            <input
+                              type="checkbox"
+                              checked={isAllSelected}
+                              disabled={!canEdit(Module.USERS) || !selectedRoleEffectiveId}
+                              onChange={(e) => handleToggleColumn(perm.id, e.target.checked)}
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                              title="Tümünü Seç"
+                            />
+                          </div>
+                        </th>
                       );
                     })}
-                  </div>
-                </div>
-              ))}
-              {filteredModules.length === 0 && (
-                <div className="col-span-full rounded-xl border border-dashed border-slate-300 dark:border-gray-600 p-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                  Aramaniza uygun modul bulunamadi.
-                </div>
-              )}
+                    <th className="border-b border-slate-200 dark:border-gray-700 py-3 px-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      <div className="flex flex-col items-center gap-1">
+                        <span>Satır Tümünü Seç</span>
+                        <input
+                          type="checkbox"
+                          checked={(() => {
+                            let totalAvailable = 0;
+                            let totalSelected = 0;
+                            filteredModules.forEach(mod => {
+                              PERMISSIONS.forEach(perm => {
+                                if (permissions.some(p => normalizeModuleId(p.module) === mod.id && p.action === perm.id)) {
+                                  totalAvailable++;
+                                  if (getRolePermission(mod.id, perm.id)) totalSelected++;
+                                }
+                              });
+                            });
+                            return totalAvailable > 0 && totalSelected === totalAvailable;
+                          })()}
+                          disabled={!canEdit(Module.USERS) || !selectedRoleEffectiveId}
+                          onChange={(e) => handleToggleAll(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                          title="Sayfadaki Tüm Yetkileri Seç"
+                        />
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
+                  {filteredModules.map((module) => {
+                    // Check if all permissions for this row are selected
+                    let rowTotalAvailable = 0;
+                    let rowTotalSelected = 0;
+                    PERMISSIONS.forEach(perm => {
+                      if (permissions.some(p => normalizeModuleId(p.module) === module.id && p.action === perm.id)) {
+                        rowTotalAvailable++;
+                        if (getRolePermission(module.id, perm.id)) rowTotalSelected++;
+                      }
+                    });
+                    const isRowSelected = rowTotalAvailable > 0 && rowTotalSelected === rowTotalAvailable;
+
+                    return (
+                      <tr key={module.id} className="hover:bg-slate-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">{module.icon}</span>
+                            <div>
+                              <div className="text-sm font-semibold text-slate-900 dark:text-white">{module.name}</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">{module.id}</div>
+                            </div>
+                          </div>
+                        </td>
+                        {PERMISSIONS.map((permission) => {
+                          const permissionRecord = permissions.find((p) => normalizeModuleId(p.module) === module.id && p.action === permission.id);
+                          const isChecked = getRolePermission(module.id, permission.id);
+                          const isDisabled = !permissionRecord || !canEdit(Module.USERS) || !selectedRoleEffectiveId;
+                          
+                          return (
+                            <td key={permission.id} className="py-3 px-4 text-center">
+                              {permissionRecord ? (
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  disabled={isDisabled}
+                                  onChange={(e) => handlePermissionChange(module.id, permission.id, e.target.checked)}
+                                  className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+                                />
+                              ) : (
+                                <span className="text-slate-300 dark:text-gray-600">-</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="py-3 px-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={isRowSelected}
+                            disabled={!canEdit(Module.USERS) || !selectedRoleEffectiveId || rowTotalAvailable === 0}
+                            onChange={(e) => handleToggleRow(module.id, e.target.checked)}
+                            className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+                            title="Bu modülün tüm yetkilerini seç"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {filteredModules.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                        Aramanıza uygun modül bulunamadı.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Save Button Container */}
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={handleSavePermissions}
+                disabled={!hasUnsavedChanges || isSaving || !canEdit(Module.USERS)}
+                className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${
+                  hasUnsavedChanges 
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20' 
+                    : 'bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <span className="animate-spin text-lg">⏳</span>
+                    Kaydediliyor...
+                  </>
+                ) : (
+                  <>
+                    <Shield size={18} />
+                    Değişiklikleri Kaydet
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -681,6 +924,21 @@ export default function RolePermissionsPage() {
         confirmText="Evet, Sil"
         cancelText="İptal"
         type="danger"
+      />
+
+      {/* Unsaved Changes Modal */}
+      <ConfirmModal
+        isOpen={showUnsavedModal}
+        title="Kaydedilmemiş Değişiklikler"
+        message="Bu roldeki yetkilerde değişiklik yaptınız ama kaydetmediniz. Başka bir role geçerseniz bu değişiklikler iptal edilecek. Devam etmek istiyor musunuz?"
+        onConfirm={confirmRoleSwitch}
+        onCancel={() => {
+          setShowUnsavedModal(false);
+          setPendingRoleSwitch(null);
+        }}
+        confirmText="Evet, Değişiklikleri İptal Et"
+        cancelText="Hayır, Geri Dön"
+        type="warning"
       />
 
 

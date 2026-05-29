@@ -414,7 +414,11 @@ export default function UsersPage() {
             </label>
             {canCreate(Module.USERS) && (
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => {
+                  const defaultRole = roles && roles.length > 0 ? roles.find(r => r.is_active)?.id || 'user' : 'user';
+                  setNewUser(prev => ({ ...prev, role: defaultRole }));
+                  setShowCreateModal(true);
+                }}
                 className="bg-blue-600 dark:bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200 text-xs"
               >
                 Yeni Kullanıcı Ekle
@@ -593,7 +597,8 @@ export default function UsersPage() {
         isOpen={showCreateModal}
         onClose={() => {
           setShowCreateModal(false);
-          setNewUser({ email: '', password: '', first_name: '', last_name: '', role: 'user' });
+          const defaultRole = roles && roles.length > 0 ? roles.find(r => r.is_active)?.id || 'user' : 'user';
+          setNewUser({ email: '', password: '', first_name: '', last_name: '', role: defaultRole });
         }}
         title="Yeni Kullanıcı Ekle"
         maxWidth="max-w-xl"
@@ -669,9 +674,17 @@ export default function UsersPage() {
               className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer"
             >
               {roles && roles.length > 0 ? (
-                roles.filter(r => r.is_active).map(r => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))
+                roles.filter(r => r.is_active).map(r => {
+                  let roleKey = r.id;
+                  const nameLower = r.name.toLowerCase();
+                  if (roleKey.length > 20) { // UUID check
+                    if (nameLower.includes('super') || nameLower.includes('süper')) roleKey = 'super_admin';
+                    else if (nameLower.includes('admin')) roleKey = 'admin';
+                    else if (nameLower.includes('müdür') || nameLower.includes('manager')) roleKey = 'manager';
+                    else roleKey = 'user';
+                  }
+                  return <option key={r.id} value={roleKey}>{r.name}</option>
+                })
               ) : (
                 <option value="user">Kullanıcı</option>
               )}
