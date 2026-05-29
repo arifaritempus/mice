@@ -260,17 +260,29 @@ export default function UsersPage() {
   };
 
   const getRoleBadgeClass = (role: string) => {
-    switch (role) {
+    let roleKey = role;
+    if (role.length > 20) {
+      const found = roles.find(r => r.id === role);
+      if (found) {
+        const nameLower = found.name.toLowerCase();
+        if (nameLower.includes('super') || nameLower.includes('süper')) roleKey = 'super_admin';
+        else if (nameLower.includes('admin')) roleKey = 'admin';
+        else if (nameLower.includes('müdür') || nameLower.includes('manager')) roleKey = 'manager';
+        else roleKey = 'user';
+      }
+    }
+
+    switch (roleKey) {
       case 'super_admin':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300';
       case 'admin':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
       case 'manager':
-        return 'bg-indigo-100 text-indigo-800';
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300';
       case 'user':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
       default:
-        return 'bg-slate-100 text-slate-800';
+        return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
@@ -526,7 +538,7 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
                         }`}>
                         {user.is_active ? 'Aktif' : 'Pasif'}
                       </span>
