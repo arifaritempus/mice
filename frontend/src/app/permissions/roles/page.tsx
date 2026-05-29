@@ -938,7 +938,7 @@ export default function RolePermissionsPage() {
         }}
         confirmText="Evet, Değişiklikleri İptal Et"
         cancelText="Hayır, Geri Dön"
-        type="warning"
+        type="danger"
       />
 
 
