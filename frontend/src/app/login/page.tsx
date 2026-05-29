@@ -33,10 +33,8 @@ export default function LoginPage() {
         const generalSettings = settings.general_settings || {};
         setAppSettings(generalSettings);
         
-        // Use wordmark logo by default for login page, fallback to icon or menu logo
-        const currentLogo = isDark 
-          ? (generalSettings.dark_wordmark_logo || generalSettings.dark_menu_logo || generalSettings.dark_icon_logo)
-          : (generalSettings.light_wordmark_logo || generalSettings.light_menu_logo || generalSettings.light_icon_logo);
+        // Login sayfası her zaman koyu arka plana sahip olduğu için öncelikle dark_wordmark_logo kullanılmalı.
+        const currentLogo = generalSettings.dark_wordmark_logo || generalSettings.dark_menu_logo || generalSettings.dark_icon_logo || generalSettings.light_wordmark_logo || generalSettings.light_menu_logo || generalSettings.light_icon_logo;
         setMenuLogo(currentLogo || '');
       } catch {
         setMenuLogo('');
