@@ -418,14 +418,14 @@ export default function Sidebar() {
     
     if (isDark) {
       if (isCollapsed && !isHovered) {
-        return generalSettings.dark_icon_logo || '/LOGO_OFFWHITE.png';
+        return generalSettings.dark_icon_logo || generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || '/LOGO_OFFWHITE.png';
       }
-      return generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || '/LOGO_OFFWHITE.png';
+      return generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || generalSettings.dark_icon_logo || '/LOGO_OFFWHITE.png';
     } else {
       if (isCollapsed && !isHovered) {
-        return generalSettings.light_icon_logo || '/LOGO_NAVY.png';
+        return generalSettings.light_icon_logo || generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || '/LOGO_NAVY.png';
       }
-      return generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || '/LOGO_NAVY.png';
+      return generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || generalSettings.light_icon_logo || '/LOGO_NAVY.png';
     }
   };
 
