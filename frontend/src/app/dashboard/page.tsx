@@ -720,8 +720,8 @@ export default function DashboardPage() {
       }))
     ].filter(i => parseDateSafe(i.date)).sort((a, b) => (parseDateSafe(a.date)?.getTime() || 0) - (parseDateSafe(b.date)?.getTime() || 0)).slice(0, 12);
 
-    const ticketOptionCount = filteredTickets.filter((t: any) => normalizeStatus(t.status).includes('opsiyon') || normalizeStatus(t.status).includes('option')).length;
-    const ticketPendingPaymentCount = filteredTicketPlans.filter((p: any) => !normalizeStatus(p.status).includes('ödendi')).length;
+    const ticketOptionCount = filteredTickets.filter((t: any) => normalizeStatus(t.status) === 'active' || normalizeStatus(t.status) === 'aktif').length;
+    const ticketPendingPaymentCount = filteredTicketPlans.filter((p: any) => normalizeStatus(p.status) === 'active' || normalizeStatus(p.status) === 'aktif').length;
 
     return {
       projectRevenue,
@@ -915,7 +915,17 @@ export default function DashboardPage() {
             <div className="space-y-3 mt-auto">
               <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gelir</span>
-                <span className="text-sm font-black text-emerald-600">{formatMoney(metrics.sejourRevenue)}</span>
+                <span className="text-sm font-black text-gray-900 dark:text-white">{formatMoney(metrics.sejourRevenue)}</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-gray-700/50">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Maliyet</span>
+                <span className="text-sm font-black text-gray-900 dark:text-white">{formatMoney(metrics.sejourCost)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Net Kar</span>
+                <span className={`text-base font-black ${metrics.sejourProfit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {formatMoney(metrics.sejourProfit)}
+                </span>
               </div>
             </div>
           </div>
