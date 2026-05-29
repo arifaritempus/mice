@@ -17,7 +17,7 @@ const nextConfig = {
       // Favicon fallback: mevcut logo dosyasına yönlendir
       {
         source: '/favicon.ico',
-        destination: '/LOGO_NAVY.png',
+        destination: '/api/favicon',
       },
     ];
   },
