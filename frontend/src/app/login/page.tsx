@@ -33,8 +33,10 @@ export default function LoginPage() {
         const generalSettings = settings.general_settings || {};
         setAppSettings(generalSettings);
         
-        // Login sayfası her zaman koyu arka plana sahip olduğu için öncelikle dark_wordmark_logo kullanılmalı.
-        const currentLogo = generalSettings.dark_wordmark_logo || generalSettings.dark_menu_logo || generalSettings.dark_icon_logo || generalSettings.light_wordmark_logo || generalSettings.light_menu_logo || generalSettings.light_icon_logo;
+        // Login sayfası her zaman koyu arka plana sahip olduğu için öncelikle dark versiyonlar, sonra light versiyonlar denenir.
+        // Öncelik sırası: menu_logo > wordmark_logo > icon_logo
+        const currentLogo = generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || generalSettings.dark_icon_logo || 
+                            generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || generalSettings.light_icon_logo;
         setMenuLogo(currentLogo || '');
       } catch {
         setMenuLogo('');
