@@ -320,7 +320,7 @@ export default function QuoteServiceEditor({
       vat: subCat.revenue_vat_rate ?? 0,
       fx: 1,
       isEditing: true,
-      hotel_id: hotelId === 'general' ? undefined : hotelId
+      hotel_id: hotelId === 'general' ? 'general' : hotelId
     }));
 
 

@@ -428,7 +428,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       vat: 0,
       fx: 1,
       isEditing: true, // Düzenleme modunda açılacak
-      hotel_id: hotelId === 'general' ? undefined : hotelId
+      hotel_id: hotelId === 'general' ? 'general' : hotelId
     };
 
 
@@ -522,7 +522,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       vat: 0,
       fx: 1,
       isEditing: true,
-      hotel_id: hotelId === 'general' ? undefined : hotelId
+      hotel_id: hotelId === 'general' ? 'general' : hotelId
     };
 
     // Aynı ana kategorideki ve aynı oteldeki son item'ı bul
@@ -614,8 +614,8 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
 
       await projectSalesItemsService.create({
         project_id: created.id,
-        category: item.main_category || '',
-        sub_category: item.sub_category || '',
+        category: getCategoryName(item.main_category || '') || '',
+        sub_category: getCategoryName(item.sub_category || '') || '',
         description: item.description || '',
         unit_quantity: item.unit_quantity ?? 1,
         sefer: item.sefer ?? 1,
@@ -634,8 +634,8 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
 
       await projectPurchaseItemsService.create({
         project_id: created.id,
-        category: item.main_category || '',
-        sub_category: item.sub_category || '',
+        category: getCategoryName(item.main_category || '') || '',
+        sub_category: getCategoryName(item.sub_category || '') || '',
         description: item.description || '',
         unit_quantity: item.unit_quantity ?? 1,
         sefer: item.sefer ?? 1,

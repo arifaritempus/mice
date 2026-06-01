@@ -251,32 +251,28 @@ export default function QuoteViewPublicPage() {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
       
-      // Use logos from state if available to avoid refetching and CORS issues
       let iconLogoBase64 = iconLogo;
       let wordmarkLogoBase64 = wordmarkLogo;
       
       if (!iconLogoBase64 || !wordmarkLogoBase64) {
         try {
-          const logos = await getLogosForExcel(true);
+          const logos = await getLogosForExcel(true, appSettings);
           if (!iconLogoBase64) iconLogoBase64 = logos.iconLogoBase64 || null;
-          // Sag logoda da ayni dark_icon_logo kullanilsin
           if (!wordmarkLogoBase64) wordmarkLogoBase64 = logos.wordmarkLogoBase64 || logos.iconLogoBase64 || null;
         } catch (logoError) {
           console.error('Logo loading error for excel:', logoError);
         }
       }
 
-
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (d: string): 'png' | 'jpeg' => (d || '').includes('image/png') ? 'png' : 'jpeg';
 
       const hotelsData = quote?.hotels_data || [];
 
-      // Helper to add a sheet for a specific set of items and hotel info
       const addSheetForHotel = (sheetName: string, h: any, items: ServiceItem[]) => {
         if (items.length === 0 && sheetName !== 'GENEL HİZMETLER') return;
 
-        const sheet = workbook.addWorksheet(sheetName.substring(0, 31)); // Excel sheet name limit is 31
+        const sheet = workbook.addWorksheet(sheetName.substring(0, 31));
         sheet.pageSetup = { 
           orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, 
           horizontalCentered: true, paperSize: 9, 
@@ -394,7 +390,6 @@ export default function QuoteViewPublicPage() {
         totalRow.getCell(5).numFmt = '€ #,##0.00';
         totalRow.height = 30;
 
-        // Restore missing formatting: column widths and grid lines
         sheet.columns = [
           { width: 45 }, { width: 12 }, { width: 12 }, { width: 15 }, 
           { width: 20 }, { width: 45 }
@@ -402,7 +397,6 @@ export default function QuoteViewPublicPage() {
         sheet.views = [{ state: 'normal', showGridLines: false }];
       };
 
-      // Add sheet for each hotel
       hotelsData.forEach((h: any, idx: number) => {
         const hItems = serviceItems.filter(item => item.hotel_id === h.id);
         const hotelName = getHotelName(h.hotel_id);
@@ -410,7 +404,6 @@ export default function QuoteViewPublicPage() {
         addSheetForHotel(namePrefix, h, hItems);
       });
 
-      // Add "GENEL HİZMETLER" sheet if there are items without hotel_id
       const generalItems = serviceItems.filter(item => !item.hotel_id || item.hotel_id === 'general');
       if (generalItems.length > 0) {
         addSheetForHotel('GENEL HİZMETLER', {}, generalItems);
@@ -449,13 +442,13 @@ export default function QuoteViewPublicPage() {
   useEffect(() => {
     const loadLogos = async () => {
       try {
-        const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+        const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true, appSettings);
         setIconLogo(iconLogoBase64 || null);
         setWordmarkLogo(wordmarkLogoBase64 || iconLogoBase64 || null);
       } catch {}
     };
     if (!showPasswordForm && quote) loadLogos();
-  }, [showPasswordForm, quote]);
+  }, [showPasswordForm, quote, appSettings]);
 
   const handleUpdateStatus = async () => {
     if (!token) return;
@@ -518,6 +511,12 @@ export default function QuoteViewPublicPage() {
   const handleApprovalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !quote) return;
+
+    const hasPendingHotels = tempHotelsData.some((h: any) => h.hotel_status === 'BEKLEMEDE');
+    if (hasPendingHotels) {
+      toast.error('Lütfen tüm oteller için KONFİRME veya İPTAL durumunu seçiniz.');
+      return;
+    }
 
     try {
       setApproving(true);
@@ -968,7 +967,6 @@ export default function QuoteViewPublicPage() {
               <div className="flex-1 min-w-[300px]">
                 <h4 className="text-[10px] text-white/80 font-bold uppercase tracking-wider mb-2">NOTLAR & ŞARTLAR</h4>
                 <ul className="text-[11px] text-gray-300 space-y-1.5 leading-relaxed">
-                  <li>• FİYATLAR, NET & KOMİSYONSUZDUR.</li>
                   {quote?.notes ? (
                     quote.notes.split('\n').map((note, idx) => (
                       <li key={idx}>• {note}</li>

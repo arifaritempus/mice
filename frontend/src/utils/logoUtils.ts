@@ -27,19 +27,32 @@ async function urlToBase64(url: string): Promise<string> {
  * @param isDark - Koyu tema mı? (koyu tema için dark logolar, açık tema için light logolar)
  * @returns { iconLogoBase64, wordmarkLogoBase64 } - Base64 formatında logolar
  */
-export async function getLogosForExcel(isDark: boolean = false): Promise<{
+export async function getLogosForExcel(isDark: boolean = false, appSettings?: any): Promise<{
   iconLogoBase64?: string;
   wordmarkLogoBase64?: string;
 }> {
   try {
     // Excel export: solda icon, sagda wordmark
-    // light = navy logo (for white bg), dark = white logo (for dark bg)
-    const iconLogoUrl = isDark 
-      ? 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_icon_logo.png' 
-      : 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_icon_logo.png';
-    const wordmarkLogoUrl = isDark 
-      ? 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_wordmark_logo.png' 
-      : 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_wordmark_logo.png';
+    let iconLogoUrl = 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_icon_logo.png';
+    let wordmarkLogoUrl = 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_wordmark_logo.png';
+
+    if (appSettings) {
+      iconLogoUrl = isDark 
+        ? (appSettings.dark_icon_logo || appSettings.light_icon_logo || iconLogoUrl) 
+        : (appSettings.light_icon_logo || appSettings.dark_icon_logo || iconLogoUrl);
+      
+      wordmarkLogoUrl = isDark 
+        ? (appSettings.dark_wordmark_logo || appSettings.dark_menu_logo || appSettings.dark_icon_logo || wordmarkLogoUrl) 
+        : (appSettings.light_wordmark_logo || appSettings.light_menu_logo || appSettings.light_icon_logo || wordmarkLogoUrl);
+    } else {
+      // Fallback if appSettings is not provided
+      iconLogoUrl = isDark 
+        ? 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_icon_logo.png' 
+        : 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_icon_logo.png';
+      wordmarkLogoUrl = isDark 
+        ? 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_wordmark_logo.png' 
+        : 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_wordmark_logo.png';
+    }
     
     // Eğer tarayıcı ortamındaysak ve URL '/' ile başlıyorsa, fetch'in çalışabilmesi için tam URL'ye çevir
     const getFullUrl = (url: string) => {
