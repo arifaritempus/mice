@@ -1026,7 +1026,14 @@ export default function QuoteViewPublicPage() {
                     </div>
                     {!showApprovalForm && (
                       <button 
-                        onClick={() => setShowApprovalForm(true)} 
+                        onClick={() => {
+                          const hasPendingHotels = tempHotelsData.some((h: any) => h.hotel_status === 'BEKLEMEDE');
+                          if (hasPendingHotels) {
+                            toast.error('Lütfen teklifi onaylamadan önce tüm oteller için KONFİRME veya İPTAL durumunu seçiniz.');
+                            return;
+                          }
+                          setShowApprovalForm(true);
+                        }} 
                         className="bg-white text-blue-600 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-blue-900/20"
                       >
                         TEKLİFİ ONAYLA

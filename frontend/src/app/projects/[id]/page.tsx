@@ -1186,7 +1186,7 @@ export default function ProjectDetailPage() {
             total_try: (it.total_price || 0) * (it.fx || 1),
             description: (cleanDesc && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanDesc)) 
               ? cleanDesc 
-              : (getCategoryName(it.sub_category) || getCategoryName(it.category) || ''),
+              : '',
             hotel_id: resolveHotelTabId(it.hotel_id, tabTag),
             source_order: orderTag !== null ? Number(orderTag) : null
           };
@@ -1203,7 +1203,7 @@ export default function ProjectDetailPage() {
             total_try: (it.total_price || 0) * (it.fx || 1),
             description: (cleanDesc && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanDesc)) 
               ? cleanDesc 
-              : (getCategoryName(it.sub_category) || getCategoryName(it.category) || ''),
+              : '',
             hotel_id: resolveHotelTabId(it.hotel_id, tabTag),
             vendorId: supplierTag || null,
             source_order: orderTag !== null ? Number(orderTag) : null
