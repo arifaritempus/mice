@@ -512,7 +512,7 @@ export default function QuoteViewPublicPage() {
     e.preventDefault();
     if (!token || !quote) return;
 
-    const hasPendingHotels = tempHotelsData.some((h: any) => h.hotel_status === 'BEKLEMEDE');
+    const hasPendingHotels = tempHotelsData.some((h: any) => !h.hotel_status || h.hotel_status === 'BEKLEMEDE');
     if (hasPendingHotels) {
       toast.error('Lütfen tüm oteller için KONFİRME veya İPTAL durumunu seçiniz.');
       return;
@@ -896,10 +896,8 @@ export default function QuoteViewPublicPage() {
                       if (isKonaklama(nameA) && !isKonaklama(nameB)) return -1;
                       if (!isKonaklama(nameA) && isKonaklama(nameB)) return 1;
 
-                      // Priority 3: ID comparison
-                      const idA = catA?.id || a;
-                      const idB = catB?.id || b;
-                      return idA.localeCompare(idB, 'en', { numeric: true });
+                      // Priority 3: Name comparison
+                      return nameA.localeCompare(nameB, 'tr', { numeric: true, sensitivity: 'base' });
                     });
 
                     return sortedCatIds.map(catId => {
@@ -1027,7 +1025,7 @@ export default function QuoteViewPublicPage() {
                     {!showApprovalForm && (
                       <button 
                         onClick={() => {
-                          const hasPendingHotels = tempHotelsData.some((h: any) => h.hotel_status === 'BEKLEMEDE');
+                          const hasPendingHotels = tempHotelsData.some((h: any) => !h.hotel_status || h.hotel_status === 'BEKLEMEDE');
                           if (hasPendingHotels) {
                             toast.error('Lütfen teklifi onaylamadan önce tüm oteller için KONFİRME veya İPTAL durumunu seçiniz.');
                             return;
