@@ -549,6 +549,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
     const q = await quotesService.getById(quoteId);
     if (!q || confirmedHotels.length === 0) return;
     
+    const getCategoryName = (id: string) => {
+      if (!id) return '';
+      const cat = categories.find(c => c.id === id);
+      return cat ? (cat.name || id) : id;
+    };
+    
     // Proje başlığı ve detayları
     const firstH = confirmedHotels[0];
     const hotelObj = hotels.find(ht => ht.id === firstH.hotel_id);
