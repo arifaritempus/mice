@@ -1736,6 +1736,7 @@ export default function ProjectDetailPage() {
         repeat: createdItem.sefer ?? createdItem.repeat ?? 1,
         total: createdItem.total_price,
         hotel_id: tabId, 
+        description: '', // UI'da [T:uuid] göstermemek için
         isEditing: true
       };
 
@@ -2531,7 +2532,7 @@ export default function ProjectDetailPage() {
         const currency = it.currency || 'EUR';
         const vat = it.vat || 0;
         const fx = it.fx || 1;
-        const desc = it.description || it.sub_category || it.main_category || '-';
+        const desc = it.description || '';
         return {
           project_id: projectId,
           category: it.main_category || '',
@@ -2595,7 +2596,7 @@ export default function ProjectDetailPage() {
         const currency = it.currency || 'EUR';
         const vat = it.vat || 0;
         const fx = it.fx || 1;
-        let desc = (it.description || it.sub_category || it.main_category || '-').trim();
+        let desc = (it.description || '').trim();
         
         if (repeatOnly > 1) {
           desc += (desc ? ' ' : '') + `[R:${repeatOnly}]`;
@@ -2950,6 +2951,7 @@ export default function ProjectDetailPage() {
         repeat: createdItem.sefer ?? createdItem.repeat ?? 1,
         total: createdItem.total_price,
         hotel_id: originalItem.hotel_id,
+        description: '', // UI'da [T:uuid] göstermemek için
         isEditing: true
       };
 
