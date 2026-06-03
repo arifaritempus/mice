@@ -24,10 +24,21 @@ export async function updateProjectRates(projectId: string, strategy: string) {
   let usd_rate = 1, eur_rate = 1, gbp_rate = 1;
 
   if (strategy !== 'manuel') {
-    // En son TCMB kur tarihini bul (bugün veya en son eklenen)
+    // Proje başlangıç tarihini kontrol et. Eğer geçmişteyse o günkü (veya en yakın önceki) kuru al.
+    // Gelecekteyse güncel (en son) kuru al.
+    const now = new Date();
+    // Türkiye saati dikkate alınarak sadece tarih kısmını karşılaştırmak için string'e çeviriyoruz
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(now);
+    const startDateStr = project.start_date || todayStr;
+    
+    // Kullanılacak hedef tarih (eğer proje henüz başlamadıysa bugün, başladıysa/geçmişse projenin başlangıç tarihi)
+    const targetDateStr = startDateStr <= todayStr ? startDateStr : todayStr;
+
+    // Hedef tarihten önceki en güncel kur tarihini bul (hafta sonu vb. nedeniyle tam o günde kur olmayabilir)
     const { data: latestDateObj } = await supabase
       .from('tcmb_kurlari')
       .select('tarih')
+      .lte('tarih', targetDateStr)
       .order('tarih', { ascending: false })
       .limit(1)
       .single();

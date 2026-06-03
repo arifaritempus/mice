@@ -64,6 +64,41 @@ interface Quote {
 
 // FIXED_PUBLIC_LOGO_URL removed to use dynamic logo from appSettings
 
+const isUuid = (value?: string) =>
+  !!value &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+const getCategorySortKey = (category: any) => {
+  if (!category) return '';
+  const code = (category.code || '').toString().trim();
+  if (code) return code;
+  const id = (category.id || '').toString().trim();
+  if (id && !isUuid(id)) return id;
+  return (category.name || '').toString().trim();
+};
+
+const getCategorySortWeight = (category: any) => {
+  const key = getCategorySortKey(category);
+  const nums = key.match(/\d+/g);
+  if (!nums) return Number.MAX_SAFE_INTEGER;
+  const weight = Number(nums.join(''));
+  return Number.isFinite(weight) ? weight : Number.MAX_SAFE_INTEGER;
+};
+
+const compareByCategoryId = (a: any, b: any) => {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  const aOrder = a.sort_order ?? 9999;
+  const bOrder = b.sort_order ?? 9999;
+  if (aOrder !== bOrder) return aOrder - bOrder;
+
+  const wa = getCategorySortWeight(a);
+  const wb = getCategorySortWeight(b);
+  if (wa !== wb) return wa - wb;
+  return getCategorySortKey(a).localeCompare(getCategorySortKey(b), 'tr', { numeric: true, sensitivity: 'base' });
+};
+
 export default function QuoteViewPublicPage() {
   const formatTr = (n: number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   const formatNumberTR = (value: number) => {
@@ -170,13 +205,13 @@ export default function QuoteViewPublicPage() {
           
           const parseDescriptionTags = (desc: string) => {
             if (!desc) return { cleanDesc: '', tabTag: null, supplierTag: null, repeatTag: null };
-            const tabMatch = desc.match(/ \[T:(.*?)\]/);
-            const supplierMatch = desc.match(/ \[S:(.*?)\]/);
-            const repeatMatch = desc.match(/ \[R:(.*?)\]/);
+            const tabMatch = desc.match(/\[T:(.*?)\]/);
+            const supplierMatch = desc.match(/\[S:(.*?)\]/);
+            const repeatMatch = desc.match(/\[R:(.*?)\]/);
             let cleanDesc = desc
-              .replace(/ \[T:.*?\]/g, '')
-              .replace(/ \[S:.*?\]/g, '')
-              .replace(/ \[R:.*?\]/g, '')
+              .replace(/\s?\[T:.*?\]/g, '')
+              .replace(/\s?\[S:.*?\]/g, '')
+              .replace(/\s?\[R:.*?\]/g, '')
               .trim();
             return { 
               cleanDesc, 
@@ -193,7 +228,10 @@ export default function QuoteViewPublicPage() {
               if (matched) uiHotelId = matched.id;
             }
             const { cleanDesc, repeatTag } = parseDescriptionTags(item.description || '');
-            let inferredRepeat = Number(repeatTag || item.sefer || item.repeat || 1);
+            let inferredRepeat = 1;
+            if (repeatTag !== null && repeatTag !== undefined && repeatTag !== '') inferredRepeat = Number(repeatTag);
+            else if (item.sefer !== undefined && item.sefer !== null && item.sefer !== '') inferredRepeat = Number(item.sefer);
+            else if (item.repeat !== undefined && item.repeat !== null && item.repeat !== '') inferredRepeat = Number(item.repeat);
             const qty = Number(item.unit_quantity || 1);
             const uPrice = Number(item.unit_price || 0);
             const tPrice = Number(item.total_price || item.total || 0);
@@ -331,19 +369,41 @@ export default function QuoteViewPublicPage() {
         for (let c = 1; c <= 6; c++) sheet.getRow(rowIndex).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
         rowIndex++;
 
-        // Group items
+        // Group items by category ID
         const grouped: Record<string, ServiceItem[]> = {};
         items.forEach(item => {
-          const key = getCategoryName(item.main_category || '') || 'Diğer';
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(item);
+          const catId = item.main_category || 'other';
+          if (!grouped[catId]) grouped[catId] = [];
+          grouped[catId].push(item);
+        });
+
+        const sortedCatIds = Object.keys(grouped).sort((a, b) => {
+          if (a === 'other') return 1;
+          if (b === 'other') return -1;
+          const catA = categories.find(c => c.id === a || c.name === a) || { id: a, name: a };
+          const catB = categories.find(c => c.id === b || c.name === b) || { id: b, name: b };
+          return compareByCategoryId(catA, catB);
         });
 
         const subtotalRowsE: number[] = [];
-        const subtotalRowsG: number[] = [];
 
-        Object.entries(grouped).forEach(([mainCat, catItems], i) => {
-          const catRow = sheet.addRow([`${i + 1}. ${mainCat}`]);
+        sortedCatIds.forEach((catId, i) => {
+          const catItems = grouped[catId];
+          const subCategoriesByMain = categories.filter(c => c.parent_id === catId);
+          
+          const sortedCatItems = [...catItems].sort((a: any, b: any) => {
+            const aSubOrder = a.sub_category ? (subCategoriesByMain.findIndex(c => c.id === a.sub_category) ?? 999) : 999;
+            const bSubOrder = b.sub_category ? (subCategoriesByMain.findIndex(c => c.id === b.sub_category) ?? 999) : 999;
+            
+            if (aSubOrder !== bSubOrder && aSubOrder !== -1 && bSubOrder !== -1) {
+              return aSubOrder - bSubOrder;
+            }
+            return a.id.localeCompare(b.id);
+          });
+
+          const mainCatName = categories.find(c => c.id === catId)?.name || 'Diğer Hizmetler';
+
+          const catRow = sheet.addRow([`${i + 1}. ${mainCatName}`]);
           catRow.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
           for (let c = 1; c <= 6; c++) catRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF666666' } };
           catRow.height = 25;
@@ -357,7 +417,7 @@ export default function QuoteViewPublicPage() {
           rowIndex++;
 
           let firstItemRow: number | null = null;
-          catItems.forEach(item => {
+          sortedCatItems.forEach(item => {
             const sRow = sheet.addRow([getCategoryName(item.sub_category || ''), item.unit_quantity, item.sefer, item.unit_price || 0, 0, item.description || '']);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
@@ -587,11 +647,13 @@ export default function QuoteViewPublicPage() {
         <div className="relative w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <img 
-              src={loginLogo} 
-              alt="Logo" 
-              className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700" 
-            />
+            {loginLogo && (
+              <img 
+                src={loginLogo} 
+                alt="Logo" 
+                className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700" 
+              />
+            )}
           </div>
 
           <form onSubmit={handlePasswordSubmit} className="bg-white/5 backdrop-blur-2xl border border-white/10 p-10 rounded-3xl shadow-2xl w-full">
@@ -880,31 +942,29 @@ export default function QuoteViewPublicPage() {
                     }, {});
 
                     const sortedCatIds = Object.keys(grouped).sort((a, b) => {
-                      const catA = categories.find(c => c.id === a || c.name === a);
-                      const catB = categories.find(c => c.id === b || c.name === b);
-                      
-                      // Priority 1: sort_order
-                      const orderA = catA?.sort_order ?? 999;
-                      const orderB = catB?.sort_order ?? 999;
-                      if (orderA !== orderB) return orderA - orderB;
-                      
-                      // Priority 2: Custom logical ordering (Konaklama first)
-                      const nameA = (catA?.name || a).toUpperCase();
-                      const nameB = (catB?.name || b).toUpperCase();
-                      
-                      const isKonaklama = (name: string) => name.includes('KONAKLAMA');
-                      if (isKonaklama(nameA) && !isKonaklama(nameB)) return -1;
-                      if (!isKonaklama(nameA) && isKonaklama(nameB)) return 1;
-
-                      // Priority 3: Name comparison
-                      return nameA.localeCompare(nameB, 'tr', { numeric: true, sensitivity: 'base' });
+                      if (a === 'other') return 1;
+                      if (b === 'other') return -1;
+                      const catA = categories.find(c => c.id === a || c.name === a) || { id: a, name: a };
+                      const catB = categories.find(c => c.id === b || c.name === b) || { id: b, name: b };
+                      return compareByCategoryId(catA, catB);
                     });
 
                     return sortedCatIds.map(catId => {
                       const catItems = grouped[catId];
+                      const subCategoriesByMain = categories.filter(c => c.parent_id === catId);
+                      
+                      const sortedCatItems = [...catItems].sort((a: any, b: any) => {
+                        const aSub = a.sub_category ? categories.find(c => c.id === a.sub_category) : null;
+                        const bSub = b.sub_category ? categories.find(c => c.id === b.sub_category) : null;
+                        if (aSub || bSub) {
+                          return compareByCategoryId(aSub, bSub);
+                        }
+                        return a.id.localeCompare(b.id);
+                      });
+
                       const catName = categories.find(c => c.id === catId)?.name || 'Diğer Hizmetler';
-                      const catSubtotal = catItems.reduce((sum, item) => sum + item.total, 0);
-                      const currency = catItems[0]?.currency || 'EUR';
+                      const catSubtotal = sortedCatItems.reduce((sum, item) => sum + item.total, 0);
+                      const currency = sortedCatItems[0]?.currency || 'EUR';
 
                       return (
                         <Fragment key={catId}>
@@ -918,7 +978,7 @@ export default function QuoteViewPublicPage() {
                           </tr>
                           
                           {/* Items in Category */}
-                          {catItems.map((item) => (
+                          {sortedCatItems.map((item) => (
                             <tr key={item.id} className="hover:bg-blue-50/20 transition-colors">
                               <td className="py-4 px-4">
                                 <p className="text-xs font-bold text-slate-800">

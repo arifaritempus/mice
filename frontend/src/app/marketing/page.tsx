@@ -162,7 +162,9 @@ export default function MarketingPage() {
 
   const filteredInteractions = useMemo(() => {
     return interactions.filter(interaction => {
-      const interactionDate = parseISO(interaction.interaction_date);
+      const interactionDateStr = interaction.appointment_date || interaction.interaction_date;
+      if (!interactionDateStr) return false;
+      const interactionDate = parseISO(interactionDateStr);
       const matchesDate = (!startDate || interactionDate >= parseISO(startDate)) &&
                           (!endDate || interactionDate <= parseISO(endDate));
       
@@ -467,7 +469,14 @@ export default function MarketingPage() {
           onClose={() => setIsInteractionModalOpen(false)} 
           onSave={async (data: any) => {
             const payload = { ...data };
-            if (!payload.appointment_date) payload.appointment_date = null;
+            if (!payload.appointment_date) {
+              payload.appointment_date = null;
+            } else {
+              try { payload.appointment_date = new Date(payload.appointment_date).toISOString(); } catch(e) {}
+            }
+            if (payload.interaction_date) {
+              try { payload.interaction_date = new Date(payload.interaction_date).toISOString(); } catch(e) {}
+            }
             
             if (selectedInteraction) {
               await marketingService.interactions.update(selectedInteraction.id, payload);
@@ -670,7 +679,11 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
           <div>
             <h4 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{interaction.marketing_clients?.name}</h4>
             <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-0.5">
-              {format(parseISO(interaction.interaction_date), 'dd.MM.yyyy HH:mm')}
+              {interaction.appointment_date 
+                ? format(parseISO(interaction.appointment_date), 'dd.MM.yyyy HH:mm') 
+                : interaction.interaction_date 
+                  ? format(parseISO(interaction.interaction_date), 'dd.MM.yyyy HH:mm')
+                  : ''}
             </p>
           </div>
         </div>
@@ -930,6 +943,15 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
     appointment_date: interaction?.appointment_date || ''
   });
 
+  const formatForInput = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      return format(new Date(dateStr), "yyyy-MM-dd'T'HH:mm");
+    } catch {
+      return dateStr.substring(0, 16);
+    }
+  };
+
   useEffect(() => {
     if (client?.id) {
       marketingService.contacts.getByClientId(client.id).then(setContacts);
@@ -1035,7 +1057,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                   <input 
                     type="datetime-local" 
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-900 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold"
-                    value={formData.appointment_date ? formData.appointment_date.split('.')[0] : ''}
+                    value={formatForInput(formData.appointment_date)}
                     onChange={e => setFormData({...formData, appointment_date: e.target.value})}
                   />
                 </div>
@@ -1046,7 +1068,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                 <input 
                   type="datetime-local" 
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold"
-                  value={formData.interaction_date.split('.')[0]}
+                  value={formatForInput(formData.interaction_date)}
                   onChange={e => setFormData({...formData, interaction_date: e.target.value})}
                 />
               </div>

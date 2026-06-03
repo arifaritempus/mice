@@ -518,7 +518,9 @@ export default function CashFlowPage() {
 
   const generateWeeklyView = (date: Date): CalendarPeriod[] => {
     const weekStart = new Date(date);
-    weekStart.setDate(date.getDate() - date.getDay());
+    const dayOfWeek = date.getDay();
+    const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    weekStart.setDate(diff);
     
     const periods: CalendarPeriod[] = [];
     
@@ -775,7 +777,9 @@ export default function CashFlowPage() {
         });
       case 'weekly':
         const weekStart = new Date(currentDate);
-        weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+        const dayOfWeek = currentDate.getDay();
+        const diff = currentDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        weekStart.setDate(diff);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
         return `${weekStart.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}`;

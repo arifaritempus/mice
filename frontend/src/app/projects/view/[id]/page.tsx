@@ -24,6 +24,7 @@ interface Category {
   name: string;
   parent_id?: string;
   code?: string | number;
+  sort_order?: number;
 }
 
 interface Project {
@@ -58,6 +59,41 @@ interface SalesItem {
 }
 
 // FIXED_PUBLIC_LOGO_URL removed to use dynamic logo from appSettings
+
+const isUuid = (value?: string) =>
+  !!value &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+const getCategorySortKey = (category: any) => {
+  if (!category) return '';
+  const code = (category.code || '').toString().trim();
+  if (code) return code;
+  const id = (category.id || '').toString().trim();
+  if (id && !isUuid(id)) return id;
+  return (category.name || '').toString().trim();
+};
+
+const getCategorySortWeight = (category: any) => {
+  const key = getCategorySortKey(category);
+  const nums = key.match(/\d+/g);
+  if (!nums) return Number.MAX_SAFE_INTEGER;
+  const weight = Number(nums.join(''));
+  return Number.isFinite(weight) ? weight : Number.MAX_SAFE_INTEGER;
+};
+
+const compareByCategoryId = (a: any, b: any) => {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  const aOrder = a.sort_order ?? 9999;
+  const bOrder = b.sort_order ?? 9999;
+  if (aOrder !== bOrder) return aOrder - bOrder;
+
+  const wa = getCategorySortWeight(a);
+  const wb = getCategorySortWeight(b);
+  if (wa !== wb) return wa - wb;
+  return getCategorySortKey(a).localeCompare(getCategorySortKey(b), 'tr', { numeric: true, sensitivity: 'base' });
+};
 
 export default function ProjectViewPublicPage() {
   const formatTr = (n: number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -251,7 +287,10 @@ export default function ProjectViewPublicPage() {
             if (matched) uiHotelId = matched.id;
           }
           const { cleanDesc, repeatTag } = parseDescriptionTags(it.description || '');
-          let inferredRepeat = Number(repeatTag || it.sefer || it.repeat || 1);
+          let inferredRepeat = 1;
+          if (repeatTag !== null && repeatTag !== undefined && repeatTag !== '') inferredRepeat = Number(repeatTag);
+          else if (it.sefer !== undefined && it.sefer !== null && it.sefer !== '') inferredRepeat = Number(it.sefer);
+          else if (it.repeat !== undefined && it.repeat !== null && it.repeat !== '') inferredRepeat = Number(it.repeat);
           const qty = Number(it.unit_quantity || 1);
           const uPrice = Number(it.unit_price || 0);
           const tPrice = Number(it.total_price || it.total || 0);
@@ -670,11 +709,9 @@ export default function ProjectViewPublicPage() {
         const sortedCatIds = Object.keys(grouped).sort((a, b) => {
           if (a === 'other') return 1;
           if (b === 'other') return -1;
-          const catA = categories.find(c => c.id === a);
-          const catB = categories.find(c => c.id === b);
-          const aKey = (catA?.code || catA?.name || a).toString();
-          const bKey = (catB?.code || catB?.name || b).toString();
-          return aKey.localeCompare(bKey, 'tr', { numeric: true, sensitivity: 'base' });
+          const catA = categories.find(c => c.id === a || c.name === a) || { id: a, name: a };
+          const catB = categories.find(c => c.id === b || c.name === b) || { id: b, name: b };
+          return compareByCategoryId(catA, catB);
         });
 
         sortedCatIds.forEach((catId, i) => {
@@ -800,11 +837,13 @@ export default function ProjectViewPublicPage() {
         <div className="relative w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <img 
-              src={loginLogo} 
-              alt="Logo" 
-              className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700" 
-            />
+            {loginLogo && (
+              <img 
+                src={loginLogo} 
+                alt="Logo" 
+                className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700" 
+              />
+            )}
           </div>
 
           <form onSubmit={handlePasswordSubmit} className="bg-white/5 backdrop-blur-2xl border border-white/10 p-10 rounded-3xl shadow-2xl w-full">
@@ -1053,11 +1092,11 @@ export default function ProjectViewPublicPage() {
                   }, {});
 
                   const sortedCatIds = Object.keys(grouped).sort((a, b) => {
-                    const catA = categories.find(c => c.id === a);
-                    const catB = categories.find(c => c.id === b);
-                    const aKey = (catA?.code || catA?.name || a).toString();
-                    const bKey = (catB?.code || catB?.name || b).toString();
-                    return aKey.localeCompare(bKey, 'tr', { numeric: true, sensitivity: 'base' });
+                    if (a === 'other') return 1;
+                    if (b === 'other') return -1;
+                    const catA = categories.find(c => c.id === a || c.name === a) || { id: a, name: a };
+                    const catB = categories.find(c => c.id === b || c.name === b) || { id: b, name: b };
+                    return compareByCategoryId(catA, catB);
                   });
 
                   return sortedCatIds.map(catId => {
@@ -1077,7 +1116,14 @@ export default function ProjectViewPublicPage() {
                         </tr>
                         
                         {/* Service Items */}
-                        {items.map(item => (
+                        {[...items].sort((a: any, b: any) => {
+                          const aSub = a.sub_category ? categories.find(c => c.id === a.sub_category) : null;
+                          const bSub = b.sub_category ? categories.find(c => c.id === b.sub_category) : null;
+                          if (aSub || bSub) {
+                            return compareByCategoryId(aSub, bSub);
+                          }
+                          return a.id.localeCompare(b.id);
+                        }).map(item => (
                           <tr key={item.id} className="hover:bg-blue-50/20  transition-colors">
                             <td className="py-4 px-4">
                                <p className="text-xs font-bold text-slate-800">

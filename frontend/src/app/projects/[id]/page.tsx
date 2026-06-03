@@ -738,25 +738,18 @@ export default function ProjectDetailPage() {
       if (newStrategy && oldStrategy !== newStrategy && newStrategy !== 'manuel') {
         showNotification('Proje kaydedildi, kurlar güncelleniyor lütfen bekleyin...', 'info');
         setUpdatingRates(true);
-        const session = await supabase.auth.getSession();
-        fetch(`/api/projects/${projectId}/update-rates`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.data.session?.access_token}`
-          },
-          body: JSON.stringify({ strategy: newStrategy })
-        })
-        .then(async (res) => {
-          if (!res.ok) throw new Error('Kur güncellenemedi');
-          showNotification('Kurlar başarıyla güncellendi! Sayfa yenileniyor...', 'success');
-          setTimeout(() => window.location.reload(), 1500);
-        })
-        .catch(err => {
-          console.error(err);
-          showNotification('Kurlar güncellenirken bir hata oluştu.', 'danger');
-        })
-        .finally(() => setUpdatingRates(false));
+        import('@/lib/api').then(({ api }) => {
+          api.post(`/api/projects/${projectId}/update-rates`, { strategy: newStrategy })
+            .then(() => {
+              showNotification('Kurlar başarıyla güncellendi! Sayfa yenileniyor...', 'success');
+              setTimeout(() => window.location.reload(), 1500);
+            })
+            .catch(err => {
+              console.error(err);
+              showNotification('Kurlar güncellenirken bir hata oluştu.', 'danger');
+            })
+            .finally(() => setUpdatingRates(false));
+        });
       } else {
         showNotification('Proje başarıyla güncellendi!', 'success');
       }
@@ -1080,9 +1073,9 @@ export default function ProjectDetailPage() {
 
     // Timeout ile güvenlik - 5 saniye sonra loading'i kapat
     const timeoutId = setTimeout(() => {
-      console.error('[PROJECT DETAIL] Veri yükleme timeout (5 saniye)');
+      console.error('[PROJECT DETAIL] Veri yükleme timeout (15 saniye)');
       setLoading(false);
-    }, 5000);
+    }, 15000);
 
     try {
       const results = await Promise.allSettled([
@@ -1316,15 +1309,11 @@ export default function ProjectDetailPage() {
             const allCategories = await categoriesService.getAll();
             
             const mainCategory = allCategories.find((cat: any) => 
-              cat.code === 'CAT_005' || 
-              cat.code === 'CAT_008' || 
-              cat.name?.toLowerCase().includes('etkinlik') || 
-              cat.name?.toLowerCase().includes('aktivite') ||
-              cat.name === 'Etkinlik & Aktivite'
+              cat.code === 'CAT_005' || cat.id === 'CAT_005'
             );
             
             if (mainCategory) {
-              const subCats = allCategories.filter((cat: any) => cat.parent_id === mainCategory.id);
+              const subCats = allCategories.filter((cat: any) => cat.parent_id === mainCategory.id || cat.parent_id === 'CAT_005');
               setEventSubCategories(subCats);
             }
             break;
@@ -3904,11 +3893,11 @@ export default function ProjectDetailPage() {
 
     const loadOtherSubCategories = () => {
       try {
-        // İnsan Kaynakları ana kategorisini bul - önce code ile ara, sonra isim ile
-        let otherMainCategory = categories.find(cat => {
+        let otherMainCategories = categories.filter(cat => {
           if (cat.parent_id !== null) return false;
           // Önce code alanı ile ara
           if ((cat as any).code === 'CAT_007' || cat.id === 'CAT_007') return true;
+          if ((cat as any).code === 'CAT_008' || cat.id === 'CAT_008') return true;
           // Sonra isim ile ara
           const name = (cat.name || '').toLocaleUpperCase('tr-TR');
           return name.includes('DİĞER SERVİSLER') ||
@@ -3918,10 +3907,11 @@ export default function ProjectDetailPage() {
             name.includes('OTHER SERVICES');
         });
 
-        if (otherMainCategory) {
-          // Bu ana kategorinin alt kategorilerini bul
+        if (otherMainCategories.length > 0) {
+          // Bu ana kategorilerin alt kategorilerini bul
+          const mainCatIds = otherMainCategories.map((c: any) => c.id);
           const otherSubCategories = categories.filter(cat => {
-            return cat.parent_id === otherMainCategory.id;
+            return mainCatIds.includes(cat.parent_id);
           });
           setOtherSubCategories(otherSubCategories);
         } else {
@@ -7343,8 +7333,6 @@ export default function ProjectDetailPage() {
       // Değerleri güncellenmiş tempHrItem'dan al
       // ÖNEMLİ: Eğer updatedTempHrItem boşsa, currentTempHrItem'dan al
       const sourceItem = updatedTempHrItem && Object.keys(updatedTempHrItem).length > 0 ? updatedTempHrItem : currentTempHrItem;
-      console.error('  - sourceItem.subCategory:', sourceItem?.subCategory);
-      console.error('  - sourceItem.hotel:', sourceItem?.hotel);
 
       const finalDate = sourceItem?.date ? formatDateToSupabase(sourceItem.date) : new Date().toISOString().split('T')[0];
       const finalSubCategoryId = sourceItem?.subCategoryId || selectedSubCategory?.id || null;

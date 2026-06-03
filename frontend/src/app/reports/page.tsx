@@ -205,14 +205,14 @@ const parseIsoDate = (value: string) => {
 export default function ReportsPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
   const [activeReportId, setActiveReportId] = useState(REPORT_GROUPS[0].reports[0].id);
-  const [datePreset, setDatePreset] = useState<DatePreset>('bu_ay');
+  const [datePreset, setDatePreset] = useState<DatePreset>('bu_yil');
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
-    return toLocalInputDate(new Date(now.getFullYear(), now.getMonth(), 1));
+    return `${now.getFullYear()}-01-01`;
   });
   const [endDate, setEndDate] = useState(() => {
     const now = new Date();
-    return toLocalInputDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+    return `${now.getFullYear()}-12-31`;
   });
   const [opsiyonDurumuFilter, setOpsiyonDurumuFilter] = useState('tum');
   const [searchInput, setSearchInput] = useState('');
@@ -293,7 +293,7 @@ export default function ReportsPage() {
   };
 
   useEffect(() => {
-    applyPreset('bu_ay');
+    applyPreset('bu_yil');
   }, []);
 
   useEffect(() => {
@@ -759,7 +759,7 @@ export default function ReportsPage() {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" /></svg>
                   EXCEL
                 </button>
-                <button onClick={() => { applyPreset('bu_ay'); setSearchInput(''); setAppliedSearchInput(''); setOtelFilterInput(''); setCurrentPage(1); }} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors">
+                <button onClick={() => { applyPreset('bu_yil'); setSearchInput(''); setAppliedSearchInput(''); setOtelFilterInput(''); setCurrentPage(1); }} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </button>
               </div>

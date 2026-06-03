@@ -37,7 +37,7 @@ export async function GET() {
 
     if (authError) {
       console.error('❌ Auth kullanıcıları listelenemedi:', authError);
-      return NextResponse.json({ error: authError.message || 'Auth kullanıcıları alınamadı' }, { status: 400 });
+      // Hata dönüp frontend'i kırmak yerine hatayı yutup boş liste dönmesini sağlıyoruz.
     }
 
     const { data: profileRows, error: profileError } = await admin

@@ -162,6 +162,10 @@ interface DashboardData {
   upcomingTickets: MappedTicket[];
   upcomingGuides: MappedGuide[];
   upcomingPartTime: MappedPartTime[];
+  activeProjectsCount: number;
+  activeSejoursCount: number;
+  totalTransfersCount: number;
+  partTimeCount: number;
 }
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'];
@@ -729,7 +733,11 @@ export default function HomePage() {
     upcomingTransfers: [],
     upcomingTickets: [],
     upcomingGuides: [],
-    upcomingPartTime: []
+    upcomingPartTime: [],
+    activeProjectsCount: 0,
+    activeSejoursCount: 0,
+    totalTransfersCount: 0,
+    partTimeCount: 0
   });
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -797,9 +805,9 @@ export default function HomePage() {
       // Project Transfers
       const activeProjects = mappedProjects.filter(p => (p.status || '').toLowerCase() === 'active');
       const transferBuckets = await Promise.all(
-        activeProjects.map(p => projectTransfersService.getByProjectId(p.id).catch(() => []))
+        mappedProjects.map(p => projectTransfersService.getByProjectId(p.id).catch(() => []))
       );
-      const projectTransfers: MappedTransfer[] = activeProjects.flatMap((p, i) => {
+      const projectTransfers: MappedTransfer[] = mappedProjects.flatMap((p, i) => {
         const pTransfers = (transferBuckets[i] || []) as Transfer[];
         return pTransfers.map(t => {
           const item = t as any;
@@ -866,9 +874,9 @@ export default function HomePage() {
 
       // Project HR
       const hrBuckets = await Promise.all(
-        activeProjects.map(p => projectHumanResourcesService.getByProjectId(p.id).catch(() => []))
+        mappedProjects.map(p => projectHumanResourcesService.getByProjectId(p.id).catch(() => []))
       );
-      const hrRowsWithProject = activeProjects.flatMap((p, i) => {
+      const hrRowsWithProject = mappedProjects.flatMap((p, i) => {
         const rows = (hrBuckets[i] || []) as ProjectHumanResource[];
         return rows.map(r => ({ ...r, project_name: p.name || 'Proje' }));
       });
@@ -1021,7 +1029,11 @@ export default function HomePage() {
         upcomingTransfers: filterUpcoming(allTransfers, 'date'),
         upcomingTickets: filterUpcoming(allTickets, 'date'),
         upcomingGuides: filterUpcoming(allGuides, 'service_date'),
-        upcomingPartTime: filterUpcoming(allPartTime, 'service_date')
+        upcomingPartTime: filterUpcoming(allPartTime, 'service_date'),
+        activeProjectsCount: activeProjects.length,
+        activeSejoursCount: mappedSejours.filter(s => (s.status || '').toLowerCase() !== 'cancelled').length,
+        totalTransfersCount: allTransfers.length,
+        partTimeCount: allPartTime.length
       });
 
       setLastUpdate(new Date());
@@ -1046,10 +1058,10 @@ export default function HomePage() {
   ].filter(d => d.count > 0), [dashboardData]);
 
   const stats = useMemo(() => [
-    { label: 'Aktif Projeler', value: dashboardData.upcomingProjects.length, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Bekleyen Sejourlar', value: dashboardData.upcomingSejours.length, icon: Hotel, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Bugünkü Transferler', value: dashboardData.upcomingTransfers.length, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Personel Talepleri', value: dashboardData.upcomingPartTime.length, icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'Aktif Projeler', value: dashboardData.activeProjectsCount, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Aktif Sejourlar', value: dashboardData.activeSejoursCount, icon: Hotel, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Yaklaşan Transferler', value: dashboardData.upcomingTransfers.length, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'Planlanan Part-Time', value: dashboardData.upcomingPartTime.length, icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
   ], [dashboardData]);
 
   if (permissionsLoading) return <LoadingSpinner message="Sistem hazırlanıyor..." />;
@@ -1188,7 +1200,7 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Dashboard Cards for different modules */}
                 <DashboardCard 
-                  title="Yaklaşan Projeler" 
+                  title="AKTİF PROJELER" 
                   icon={Briefcase} 
                   link="/projects" 
                   color="text-blue-600"
@@ -1276,7 +1288,7 @@ export default function HomePage() {
                 />
 
                 <DashboardCard 
-                  title="PERSONEL PLANLAMASI" 
+                  title="PART-TIME" 
                   icon={Users} 
                   link="/operations/part-time" 
                   color="text-rose-600"

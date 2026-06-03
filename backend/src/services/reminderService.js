@@ -67,8 +67,6 @@ class ReminderService {
           message: message,
           type: type,
           is_read: false,
-          related_type: relatedType,
-          related_id: relatedId,
           created_at: new Date().toISOString()
         }]);
 
@@ -116,13 +114,14 @@ class ReminderService {
   async checkQuoteOptions() {
     try {
       const today = moment().format('YYYY-MM-DD');
-      const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
+      const dayAfterTomorrow = moment().add(2, 'days').format('YYYY-MM-DD');
       
       const { data: quotes } = await supabaseAdmin
         .from('quotes')
         .select('*')
-        .or(`valid_until.eq.${today},valid_until.eq.${tomorrow},option_date.eq.${today},option_date.eq.${tomorrow}`)
-        .in('status', ['draft', 'sent']);
+        .in('status', ['draft', 'sent'])
+        .or(`valid_until.gte.${today},option_date.gte.${today}`)
+        .or(`valid_until.lt.${dayAfterTomorrow},option_date.lt.${dayAfterTomorrow}`);
         
       if (!quotes) return;
 
@@ -130,7 +129,11 @@ class ReminderService {
         const user = await this.getUser(quote.created_by);
         if (user && user.email) {
           const date = quote.valid_until || quote.option_date;
-          const isToday = date === today;
+          // Verify it's actually today or tomorrow
+          const dateStr = moment(date).format('YYYY-MM-DD');
+          if (dateStr < today || dateStr >= dayAfterTomorrow) continue;
+          
+          const isToday = dateStr === today;
           const subject = `${isToday ? 'ACİL: ' : '' }Opsiyon Hatırlatması: Teklif #${quote.quote_number}`;
           
           const html = `
@@ -157,12 +160,13 @@ class ReminderService {
   async checkCollectionPlans() {
     try {
       const today = moment().format('YYYY-MM-DD');
-      const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
+      const dayAfterTomorrow = moment().add(2, 'days').format('YYYY-MM-DD');
       
       const { data: plans } = await supabaseAdmin
         .from('project_collection_plans')
         .select('*, projects(*, agencies(name), hotels(name))')
-        .or(`date.eq.${today},date.eq.${tomorrow}`)
+        .gte('date', today)
+        .lt('date', dayAfterTomorrow)
         .eq('status', 'pending');
         
       if (!plans) return;
@@ -172,7 +176,7 @@ class ReminderService {
         if (project) {
           const user = await this.getUser(project.manager_id);
           if (user && user.email) {
-            const isToday = plan.date === today;
+            const isToday = moment(plan.date).format('YYYY-MM-DD') === today;
             const agencyName = project.agencies?.name || project.company_name || '-';
             const hotelName = project.hotels?.name || '-';
             const dateRange = project.start_date ? `${moment(project.start_date).format('DD.MM.YYYY')} - ${moment(project.end_date).format('DD.MM.YYYY')}` : '-';
@@ -212,12 +216,13 @@ class ReminderService {
   async checkPaymentPlans() {
     try {
       const today = moment().format('YYYY-MM-DD');
-      const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
+      const dayAfterTomorrow = moment().add(2, 'days').format('YYYY-MM-DD');
       
       const { data: plans } = await supabaseAdmin
         .from('project_payment_plans')
         .select('*, projects(*, agencies(name), hotels(name))')
-        .or(`date.eq.${today},date.eq.${tomorrow}`)
+        .gte('date', today)
+        .lt('date', dayAfterTomorrow)
         .eq('status', 'pending');
         
       if (!plans) return;
@@ -227,7 +232,7 @@ class ReminderService {
         if (project) {
           const user = await this.getUser(project.manager_id);
           if (user && user.email) {
-            const isToday = plan.date === today;
+            const isToday = moment(plan.date).format('YYYY-MM-DD') === today;
             const agencyName = project.agencies?.name || project.company_name || '-';
             const hotelName = project.hotels?.name || '-';
             const dateRange = project.start_date ? `${moment(project.start_date).format('DD.MM.YYYY')} - ${moment(project.end_date).format('DD.MM.YYYY')}` : '-';
@@ -268,11 +273,13 @@ class ReminderService {
     try {
       const today = moment().format('YYYY-MM-DD');
       const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
+      const dayAfterTomorrow = moment().add(2, 'days').format('YYYY-MM-DD');
       
       const { data: options } = await supabaseAdmin
         .from('ticket_options')
         .select('*')
-        .or(`option_end_date.eq.${today},option_end_date.eq.${tomorrow}`)
+        .gte('option_end_date', today)
+        .lt('option_end_date', dayAfterTomorrow)
         .eq('status', 'active');
         
       if (!options || options.length === 0) return;
@@ -280,7 +287,7 @@ class ReminderService {
       const subject = `Bilet Opsiyon Hatırlatması (${options.length} Bilet)`;
       let tableRows = '';
       for (const opt of options) {
-        const isToday = opt.option_end_date === today;
+        const isToday = moment(opt.option_end_date).format('YYYY-MM-DD') === today;
         tableRows += `
           <tr style="border-bottom: 1px solid #eee; background: ${isToday ? '#fff1f2' : 'transparent'};">
             <td style="padding: 12px; font-size: 13px;">${opt.pnr || '-'}</td>
@@ -331,7 +338,11 @@ class ReminderService {
 
       let reminders = [];
       for (const plan of plans) {
-        const due = plan.installments?.filter(inst => inst.date === today || inst.date === tomorrow);
+        const due = plan.installments?.filter(inst => {
+          if (!inst.date) return false;
+          const instDate = moment(inst.date).format('YYYY-MM-DD');
+          return instDate === today || instDate === tomorrow;
+        });
         if (due?.length > 0) {
           const { data: opt } = await supabaseAdmin
             .from('ticket_options')
@@ -355,7 +366,7 @@ class ReminderService {
       const subject = `Bilet Ödeme Hatırlatması (${reminders.length} Ödeme)`;
       let rows = '';
       for (const rem of reminders) {
-        const isToday = rem.date === today;
+        const isToday = moment(rem.date).format('YYYY-MM-DD') === today;
         rows += `
           <tr style="border-bottom: 1px solid #eee; background: ${isToday ? '#fff1f2' : 'transparent'};">
             <td style="padding: 12px; font-size: 13px;">

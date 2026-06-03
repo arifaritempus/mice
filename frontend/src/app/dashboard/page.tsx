@@ -100,6 +100,7 @@ type DashboardState = {
   reportWarnings: string[];
   salesItems?: any[];
   purchaseItems?: any[];
+  projectFlights?: any[];
 };
 
 const toNumber = (value: any) => Number(value || 0);
@@ -422,7 +423,8 @@ export default function DashboardPage() {
     rpSejourRows: [],
     reportWarnings: [],
     salesItems: [],
-    purchaseItems: []
+    purchaseItems: [],
+    projectFlights: []
   });
 
   const loadDashboard = async () => {
@@ -434,7 +436,7 @@ export default function DashboardPage() {
         return Array.isArray(viewData) ? viewData : [];
       };
 
-      const [projectsRes, quotesRes, sejoursRes, ticketsRes, categoriesRes, collectionPlanRes, paymentPlanRes, ticketPlanRes, agenciesRes, hotelsRes, suppliersRes, rpProjectRes, rpSejourRes, salesItemsRes, purchaseItemsRes] = await Promise.allSettled([
+      const [projectsRes, quotesRes, sejoursRes, ticketsRes, categoriesRes, collectionPlanRes, paymentPlanRes, ticketPlanRes, agenciesRes, hotelsRes, suppliersRes, rpProjectRes, rpSejourRes, salesItemsRes, purchaseItemsRes, projectFlightsRes] = await Promise.allSettled([
         projectsService.getAll(),
         quotesService.getAll(),
         SejourService.getSejours(),
@@ -449,7 +451,8 @@ export default function DashboardPage() {
         fetchView('vw_rp_proje_satis_maliyet'),
         fetchView('vw_rp_sejour_kar_zarar'),
         supabase.from('project_sales_items').select('project_id, hotel_id, total_price, fx, total_try'),
-        supabase.from('project_purchase_items').select('project_id, hotel_id, total_price, fx, total_try')
+        supabase.from('project_purchase_items').select('project_id, hotel_id, total_price, fx, total_try'),
+        supabase.from('project_flight_tickets').select('created_at, gidis_tarihi, havayolu, toplam_tl, toplam_maliyet, kur')
       ]);
 
       const safe = (r: PromiseSettledResult<any>) => (r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []);
@@ -466,6 +469,7 @@ export default function DashboardPage() {
       const rpSejourRows = safe(rpSejourRes);
       const salesItems = safeSupabase(salesItemsRes);
       const purchaseItems = safeSupabase(purchaseItemsRes);
+      const projectFlights = safeSupabase(projectFlightsRes as any);
 
       const categoryById: Record<string, string> = {};
       const agencyById: Record<string, string> = {};
@@ -500,7 +504,8 @@ export default function DashboardPage() {
         rpSejourRows,
         reportWarnings: [],
         salesItems,
-        purchaseItems
+        purchaseItems,
+        projectFlights
       });
       setLastUpdate(new Date());
     } catch (error) {
@@ -531,7 +536,8 @@ export default function DashboardPage() {
       paymentPlans,
       ticketPlans,
       salesItems,
-      purchaseItems
+      purchaseItems,
+      projectFlights
     } = data;
 
     const hasCustomRange = period !== 'custom' || (customStartDate && customEndDate);
@@ -665,9 +671,30 @@ export default function DashboardPage() {
     });
 
     const airlineRevenue: Record<string, number> = {};
-    filteredTickets.forEach((t) => {
-      const airline = t.airline || t.flight_type || 'Tanımsız';
-      airlineRevenue[airline] = (airlineRevenue[airline] || 0) + toNumber(t.total_amount || t.price);
+
+    // Projelerden gelen uçak biletleri
+    const filteredProjectFlights = range ? projectFlights.filter((f: any) => inRange(f.gidis_tarihi || f.created_at, range)) : projectFlights;
+    filteredProjectFlights.forEach((f: any) => {
+      const airline = f.havayolu || 'Tanımsız';
+      if (!airline || airline.trim() === '') return;
+      const amount = toNumber(f.toplam_tl) || (toNumber(f.toplam_maliyet) * toNumber(f.kur || 1));
+      airlineRevenue[airline] = (airlineRevenue[airline] || 0) + amount;
+    });
+
+    // Konfirme Sejourlardan gelen uçak biletleri
+    const confirmedSejoursForFlights = filteredSejours.filter((s: any) => {
+      const k = normalizeStatus(s.status || s.durum || '');
+      return k.includes('konfirme') || k.includes('confirm');
+    });
+    confirmedSejoursForFlights.forEach((s: any) => {
+      if (Array.isArray(s.flights)) {
+        s.flights.forEach((f: any) => {
+          const airline = f.airline || 'Tanımsız';
+          if (!airline || airline.trim() === '') return;
+          const amount = toNumber(f.total_try) || (toNumber(f.price || f.total_price) * toNumber(f.fx || 1));
+          airlineRevenue[airline] = (airlineRevenue[airline] || 0) + amount;
+        });
+      }
     });
 
     const transferRevenue: Record<string, number> = {};
@@ -704,20 +731,77 @@ export default function DashboardPage() {
         status: s.durum || 'BEKLEMEDE',
         amount: toNumber(s.satis_tl),
         href: '/sejour',
-        color: 'emerald'
+        color: 'emerald',
+        company: ''
       })),
-      ...filteredRpProjects.map(p => ({
-        date: p.organizasyon_tarihi,
-        endDate: p.cikis_tarihi,
-        type: 'Proje',
-        title: p.referans_no || p.firma || 'Proje',
-        subtitle: p.acente || '',
-        hotel: p.otel || '',
-        status: p.durum || 'BEKLEMEDE',
-        amount: toNumber(p.satis_tl),
-        href: '/projects',
-        color: 'blue'
-      }))
+      ...filteredRpProjects.flatMap(p => {
+        const fullProj = projects.find(proj => proj.id === p.project_id);
+        const hasHotelsData = fullProj && Array.isArray(fullProj.hotels_data) && fullProj.hotels_data.length > 0;
+        
+        if (!hasHotelsData) {
+          return [{
+            date: p.organizasyon_tarihi,
+            endDate: p.cikis_tarihi,
+            type: 'Proje',
+            title: p.referans_no || p.firma || 'Proje',
+            subtitle: p.acente || '',
+            hotel: p.otel || '',
+            status: p.durum || 'BEKLEMEDE',
+            amount: toNumber(p.satis_tl),
+            href: `/projects/${p.project_id || ''}`,
+            color: 'blue',
+            company: p.firma || ''
+          }];
+        }
+
+        const projSales = (salesItems || []).filter((item: any) => item.project_id === p.project_id);
+        const uniqueHotels = Array.from(new Set(fullProj.hotels_data.map((h: any) => h.hotel_id ? hotelById[h.hotel_id] : null).filter(Boolean)));
+
+        const getHotelNameForItem = (item: any) => {
+          if (!item.hotel_id) return null;
+          const matchedTab = fullProj.hotels_data.find((h: any) => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
+          if (matchedTab && matchedTab.hotel_id) {
+            return hotelById[matchedTab.hotel_id] || null;
+          }
+          return hotelById[item.hotel_id] || null;
+        };
+
+        return fullProj.hotels_data.map((hData: any) => {
+          const hId = hData.hotel_id;
+          const hotelName = hId ? hotelById[hId] : (p.otel || '');
+          const cIn = hData.check_in_date || p.organizasyon_tarihi;
+          const cOut = hData.check_out_date || p.cikis_tarihi;
+          
+          let hotelRevenue = 0;
+          if (projSales.length > 0) {
+            projSales.forEach((item: any) => {
+              const itemVal = toNumber(item.total_try) || (toNumber(item.total_price) * toNumber(item.fx || 1));
+              const resolvedHotel = getHotelNameForItem(item);
+              if (resolvedHotel && uniqueHotels.includes(resolvedHotel)) {
+                if (resolvedHotel === hotelName) hotelRevenue += itemVal;
+              } else {
+                hotelRevenue += itemVal / (uniqueHotels.length || 1);
+              }
+            });
+          } else {
+            hotelRevenue = toNumber(p.satis_tl) / fullProj.hotels_data.length;
+          }
+          
+          return {
+            date: cIn,
+            endDate: cOut,
+            type: 'Proje',
+            title: p.referans_no || p.firma || 'Proje',
+            subtitle: p.acente || '',
+            hotel: hotelName,
+            status: p.durum || 'BEKLEMEDE',
+            amount: hotelRevenue,
+            href: `/projects/${p.project_id || ''}`,
+            color: 'blue',
+            company: p.firma || ''
+          };
+        });
+      })
     ].filter(i => parseDateSafe(i.date)).sort((a, b) => (parseDateSafe(a.date)?.getTime() || 0) - (parseDateSafe(b.date)?.getTime() || 0)).slice(0, 12);
 
     const ticketOptionCount = filteredTickets.filter((t: any) => normalizeStatus(t.status) === 'active' || normalizeStatus(t.status) === 'aktif').length;
@@ -1008,12 +1092,20 @@ export default function DashboardPage() {
                       )}
                     </span>
                   </div>
-                  {item.subtitle && item.subtitle !== '-' && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
-                      <Briefcase size={10} className="shrink-0" />
-                      <span className="truncate" title={item.subtitle}>{item.subtitle}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between gap-2">
+                    {item.company && item.company !== '-' && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 min-w-0 flex-1">
+                        <Building2 size={10} className="shrink-0" />
+                        <span className="truncate" title={item.company}>{item.company}</span>
+                      </div>
+                    )}
+                    {item.subtitle && item.subtitle !== '-' && (
+                      <div className={`flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 min-w-0 flex-1 ${!item.company || item.company === '-' ? '' : 'justify-end'}`}>
+                        <Briefcase size={10} className="shrink-0" />
+                        <span className="truncate" title={item.subtitle}>{item.subtitle}</span>
+                      </div>
+                    )}
+                  </div>
                   {item.hotel && item.hotel !== '-' && (
                     <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
                       <Hotel size={10} className="shrink-0" />

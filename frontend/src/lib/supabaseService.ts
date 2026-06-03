@@ -5043,6 +5043,20 @@ export const invoicesService = {
       if (i.supplier_id) contactIds.add(i.supplier_id);
       if (i.hotel_id) contactIds.add(i.hotel_id);
     });
+    (sejourRoomsRes.data || []).forEach((r: any) => {
+      if (r.hotel_id) contactIds.add(r.hotel_id);
+    });
+    (sejourFlightsRes.data || []).forEach((f: any) => {
+      if (f.ticketing_provider) contactIds.add(f.ticketing_provider);
+      if (f.supplier_id) contactIds.add(f.supplier_id);
+      if (f.airline_id) contactIds.add(f.airline_id);
+    });
+    (sejourTransfersRes.data || []).forEach((t: any) => {
+      if (t.supplier_id) contactIds.add(t.supplier_id);
+    });
+    (sejourExtraRes.data || []).forEach((e: any) => {
+      if (e.supplier_id) contactIds.add(e.supplier_id);
+    });
     const cIdArray = Array.from(contactIds);
 
     const [agenciesRes, hotelsRes, suppliersRes] = await Promise.all([
@@ -5224,7 +5238,9 @@ export const invoicesService = {
         id: r.id, sejour_id: r.sejour_id, category_name: 'Transfer Maliyeti',
         description: r.direction || '',
         total_price: price, currency: r.cost_currency || 'TRY', vat_rate: 20,
-        project: proj ? { ...proj, company_name: supplierName || 'Transfer Tedarikçisi Seçilmedi' } : null
+        project: proj ? { ...proj, company_name: supplierName || 'Transfer Tedarikçisi Seçilmedi' } : null,
+        supplier_name: supplierName || 'Transfer Tedarikçisi Seçilmedi',
+        supplier_id: r.supplier_id || null
       });
     });
     (sejourExtraRes.data || []).forEach((r: any) => {
@@ -5238,7 +5254,9 @@ export const invoicesService = {
         id: r.id, sejour_id: r.sejour_id, category_name: 'Ekstra Servis Maliyeti',
         description: r.service_description || r.description || '',
         total_price: price, currency: r.cost_currency || 'TRY', vat_rate: 20,
-        project: proj ? { ...proj, company_name: supplierName || 'Tedarikçi Seçilmedi' } : null
+        project: proj ? { ...proj, company_name: supplierName || 'Tedarikçi Seçilmedi' } : null,
+        supplier_name: supplierName || 'Tedarikçi Seçilmedi',
+        supplier_id: r.supplier_id || null
       });
     });
 

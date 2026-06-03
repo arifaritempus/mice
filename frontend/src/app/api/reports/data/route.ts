@@ -9,6 +9,10 @@ export async function GET(request: NextRequest) {
     const queryString = query ? `?${query}` : '';
     const backendUrl = `${BACKEND_URL}/api/reports/data${queryString}`;
 
+    console.log('--- REPORTS PROXY ---');
+    console.log('BACKEND_URL value:', BACKEND_URL);
+    console.log('Fetching:', backendUrl);
+
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {

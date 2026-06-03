@@ -110,11 +110,11 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                   <Calendar size={14} className="opacity-70" />
-                  {moment(notification.created_at).format('DD MMMM YYYY')}
+                  {moment.utc(notification.created_at).local().format('DD MMMM YYYY')}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                   <Clock size={14} className="opacity-70" />
-                  {moment(notification.created_at).format('HH:mm')}
+                  {moment.utc(notification.created_at).local().format('HH:mm')}
                 </div>
               </div>
             </div>
@@ -185,8 +185,23 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
         .notification-html-content td {
           border: 1px solid rgba(148, 163, 184, 0.1) !important;
         }
+        .dark .notification-html-content th,
+        .dark .notification-html-content td,
+        .dark .notification-html-content p,
+        .dark .notification-html-content div,
+        .dark .notification-html-content span,
+        .dark .notification-html-content strong,
+        .dark .notification-html-content h1,
+        .dark .notification-html-content h2,
+        .dark .notification-html-content h3,
+        .dark .notification-html-content h4,
+        .dark .notification-html-content h5,
+        .dark .notification-html-content h6 {
+          color: #e2e8f0 !important;
+          background-color: transparent !important;
+        }
         .notification-html-content a[style*="display: inline-block"] {
-          display: none !important; /* Hide the legacy inline buttons as we have our own in the footer */
+          display: none !important;
         }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

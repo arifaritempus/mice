@@ -537,8 +537,8 @@ export default function PurchaseTab({
                     <input
                       value={it.qty ?? 0}
                       onChange={(e)=>{ 
-                        const qty = Number(e.target.value);
-                        const updated = {...it, qty, total: qty * it.repeat * it.unit_price, total_try: qty * it.repeat * it.unit_price * it.fx}; 
+                        const qty = e.target.value === '' ? '' : Number(e.target.value);
+                        const updated = {...it, qty, total: Number(qty || 0) * Number(it.repeat || 0) * Number(it.unit_price || 0), total_try: Number(qty || 0) * Number(it.repeat || 0) * Number(it.unit_price || 0) * Number(it.fx || 1)};
                         setItemsPurchase(prev => prev.map(p => p.id === it.id ? updated : p));
                       }}
                       onKeyDown={(e) => {
@@ -561,8 +561,8 @@ export default function PurchaseTab({
                     <input
                       value={it.repeat ?? 0}
                       onChange={(e)=>{ 
-                        const repeat = Number(e.target.value);
-                        const updated = {...it, repeat, total: it.qty * repeat * it.unit_price, total_try: it.qty * repeat * it.unit_price * it.fx}; 
+                        const repeat = e.target.value === '' ? '' : Number(e.target.value);
+                        const updated = {...it, repeat, total: Number(it.qty || 0) * Number(repeat || 0) * Number(it.unit_price || 0), total_try: Number(it.qty || 0) * Number(repeat || 0) * Number(it.unit_price || 0) * Number(it.fx || 1)};
                         setItemsPurchase(prev => prev.map(p => p.id === it.id ? updated : p));
                       }}
                       onKeyDown={(e) => {
@@ -584,8 +584,8 @@ export default function PurchaseTab({
                     <input
                       value={it.unit_price ?? 0}
                       onChange={(e)=>{ 
-                        const unit_price = Number(e.target.value);
-                        const updated = {...it, unit_price, total: it.qty * it.repeat * unit_price, total_try: it.qty * it.repeat * unit_price * it.fx}; 
+                        const unit_price = e.target.value === '' ? '' : Number(e.target.value);
+                        const updated = {...it, unit_price, total: Number(it.qty || 0) * Number(it.repeat || 0) * Number(unit_price || 0), total_try: Number(it.qty || 0) * Number(it.repeat || 0) * Number(unit_price || 0) * Number(it.fx || 1)};
                         setItemsPurchase(prev => prev.map(p => p.id === it.id ? updated : p));
                       }}
                       onKeyDown={(e) => {
@@ -623,7 +623,7 @@ export default function PurchaseTab({
                     <input
                       value={it.vat ?? 0}
                       onChange={(e)=>{ 
-                        const updated = {...it, vat: Number(e.target.value)}; 
+                        const updated = {...it, vat: e.target.value === '' ? '' : Number(e.target.value)}; 
                         setItemsPurchase(prev => prev.map(p => p.id === it.id ? updated : p));
                       }}
                       onKeyDown={(e) => {
@@ -648,8 +648,8 @@ export default function PurchaseTab({
                     <input
                       value={it.fx ?? 0}
                       onChange={(e)=>{ 
-                        const fx = Number(e.target.value);
-                        const updated = {...it, fx, total_try: it.qty * it.repeat * it.unit_price * fx}; 
+                        const fx = e.target.value === '' ? '' : Number(e.target.value);
+                        const updated = {...it, fx, total_try: Number(it.qty || 0) * Number(it.repeat || 0) * Number(it.unit_price || 0) * Number(fx || 0)};
                         setItemsPurchase(prev => prev.map(p => p.id === it.id ? updated : p));
                       }}
                       onKeyDown={(e) => {
@@ -671,12 +671,12 @@ export default function PurchaseTab({
                     <input
                       value={it.total_try ?? 0}
                       onChange={(e)=>{ 
-                        const newTotalTRY = Number(e.target.value) || 0; 
-                        const qtyTimesRepeat = (Number(it.qty)||0) * (Number(it.repeat)||0); 
+                        const newTotalTRY = e.target.value === '' ? '' : Number(e.target.value); 
+                        const qtyTimesRepeat = (Number(it.qty)||0) * (Number(it.repeat)||0);
                         const fxVal = Number(it.fx)||0; 
                         let newUnitPrice = Number(it.unit_price)||0; 
                         if (fxVal > 0 && qtyTimesRepeat > 0) { 
-                          newUnitPrice = newTotalTRY / fxVal / qtyTimesRepeat; 
+                          newUnitPrice = Number(newTotalTRY || 0) / fxVal / qtyTimesRepeat; 
                         } 
                         const newTotal = qtyTimesRepeat * newUnitPrice; 
                         const updated = { ...it, unit_price: newUnitPrice, total: newTotal, total_try: newTotalTRY }; 

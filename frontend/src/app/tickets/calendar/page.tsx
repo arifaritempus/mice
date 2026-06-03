@@ -436,6 +436,10 @@ export default function TicketCalendarPage() {
     });
   };
 
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
   const getViewTitle = () => {
     if (viewMode === 'daily') return currentDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
     if (viewMode === 'weekly') {
@@ -559,66 +563,91 @@ export default function TicketCalendarPage() {
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30 px-4 py-4 lg:px-8">
         <div className="max-w-[1600px] mx-auto w-full space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 text-white">
-                <TicketIcon className="w-6 h-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Bilet Takvimi</h1>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mt-1">Ödeme Takibi ve Planlama</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-700">
-                {(['daily', 'weekly', 'monthly', 'yearly'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setViewMode(mode)}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all uppercase ${viewMode === mode ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-md scale-105' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    {mode === 'daily' ? 'GÜN' : mode === 'weekly' ? 'HAFTA' : mode === 'monthly' ? 'AY' : 'YIL'}
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative group w-72">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Search className="w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5 p-1.5 pl-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[1.5rem] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all min-h-[48px]">
-                  {searchTokens.map((token, idx) => (
-                    <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black tracking-tight">
-                      {token}
-                      <button onClick={() => removeSearchToken(token)} className="hover:text-red-500"><Plus className="w-2.5 h-2.5 rotate-45" /></button>
-                    </span>
-                  ))}
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={handleSearchKeyDown}
-                    placeholder={searchTokens.length === 0 ? "Ara..." : ""}
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-gray-900 dark:text-white h-8"
-                  />
-                </div>
-              </div>
-
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+              Bilet Takvimi
+            </h1>
+            <div className="flex items-center gap-2">
               <button
                 onClick={clearAllFilters}
-                className="p-3.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm"
-                title="Filtreleri Temizle"
+                className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-xl hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent shadow-sm"
+                title="Temizle"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
-
               <button
                 onClick={() => exportCalendarExcel()}
-                className="flex items-center gap-3 px-6 py-4 bg-blue-600 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.1em] hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-blue-600/20"
+                className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 px-5 text-[10px] font-black"
               >
                 <Download className="w-4 h-4" />
-                Dışa Aktar
+                DIŞA AKTAR
               </button>
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Navigation Controls */}
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <button
+                onClick={goToPreviousPeriod}
+                className="p-2 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-white dark:hover:bg-gray-700 transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <div className="px-3 min-w-[120px] text-center">
+                <span className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight whitespace-nowrap">
+                  {getViewTitle()}
+                </span>
+              </div>
+              <button
+                onClick={goToNextPeriod}
+                className="p-2 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-white dark:hover:bg-gray-700 transition-all"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* View Mode Switcher */}
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-700">
+              {(['daily', 'weekly', 'monthly', 'yearly'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all uppercase ${viewMode === mode ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-md scale-105' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  {mode === 'daily' ? 'GÜN' : mode === 'weekly' ? 'HAFTA' : mode === 'monthly' ? 'AY' : 'YIL'}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Bar - Same Row */}
+            <div className="relative group flex-1 min-w-[240px] max-w-sm">
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus-within:border-blue-500/50 rounded-2xl transition-all min-h-[36px]">
+                <div className="pl-2">
+                  <Search className="w-3.5 h-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                </div>
+                {searchTokens.map((token, idx) => (
+                  <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-bold tracking-tight shadow-sm">
+                    {token}
+                    <button onClick={() => removeSearchToken(token)} className="hover:text-red-500"><Plus className="w-2.5 h-2.5 rotate-45" /></button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder={searchTokens.length === 0 ? "Arama (Proje, Firma, Açıklama...)" : ""}
+                  className="flex-1 bg-transparent border-none focus:ring-0 text-[10px] font-bold text-gray-900 dark:text-white h-7 px-2 min-w-[80px]"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={goToToday}
+              className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-[10px] font-black text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-all uppercase tracking-widest border border-blue-100 dark:border-blue-800/50 ml-auto"
+            >
+              BUGÜN
+            </button>
           </div>
         </div>
       </header>

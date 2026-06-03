@@ -162,8 +162,36 @@ export function useFinancialData({
 
     const trCompare = (x: string, y: string) => x.localeCompare(y, 'tr', { sensitivity: 'base' });
 
+    const getCategorySortKey = (c: any) => {
+      const code = (c.code || '').toString().trim();
+      if (code) return code;
+      const id = (c.id || '').toString().trim();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+      if (id && !isUuid) return id;
+      return (c.name || '').toString().trim();
+    };
+
+    const getCategorySortWeight = (c: any) => {
+      const key = getCategorySortKey(c);
+      const nums = key.match(/\d+/g);
+      if (!nums) return Number.MAX_SAFE_INTEGER;
+      const weight = Number(nums.join(''));
+      return Number.isFinite(weight) ? weight : Number.MAX_SAFE_INTEGER;
+    };
+
+    const sortedCategories = [...categories].sort((a: any, b: any) => {
+      const aOrder = a.sort_order ?? 9999;
+      const bOrder = b.sort_order ?? 9999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+
+      const wa = getCategorySortWeight(a);
+      const wb = getCategorySortWeight(b);
+      if (wa !== wb) return wa - wb;
+      return getCategorySortKey(a).localeCompare(getCategorySortKey(b), 'tr', { numeric: true, sensitivity: 'base' });
+    });
+
     const mainOrder: Record<string, number> = {};
-    categories.forEach((c: any, idx: number) => {
+    sortedCategories.forEach((c: any, idx: number) => {
       if (!c.parent_id) {
         mainOrder[c.id] = idx;
       }
@@ -174,7 +202,7 @@ export function useFinancialData({
       const bMainIdx = mainOrder[b.mainCategoryId] ?? Number.MAX_SAFE_INTEGER;
       if (aMainIdx !== bMainIdx) return aMainIdx - bMainIdx;
 
-      const subList = categories.filter((c: any) => c.parent_id === a.mainCategoryId);
+      const subList = sortedCategories.filter((c: any) => c.parent_id === a.mainCategoryId);
       const subOrder: Record<string, number> = {};
       subList.forEach((c: any, idx: number) => { subOrder[c.id] = idx; });
       const aSubIdx = subOrder[a.subCategoryId] ?? Number.MAX_SAFE_INTEGER;

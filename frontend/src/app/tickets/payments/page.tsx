@@ -313,9 +313,7 @@ export default function TicketPaymentsPage() {
   const [companyFilter, setCompanyFilter] = useState('')
   const [agencyFilter, setAgencyFilter] = useState('')
   const [pnrFilter, setPnrFilter] = useState('')
-  const todayStr = new Date().toISOString().split('T')[0];
   const [departureDateRange, setDepartureDateRange] = useState({ startDate: '', endDate: '' })
-  const [paymentDateRange, setPaymentDateRange] = useState({ startDate: todayStr, endDate: '' })
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   
@@ -325,7 +323,7 @@ export default function TicketPaymentsPage() {
   
   useEffect(() => {
     setPage(1)
-  }, [companyFilter, agencyFilter, pnrFilter, departureDateRange, paymentDateRange, sortBy])
+  }, [companyFilter, agencyFilter, pnrFilter, departureDateRange, sortBy])
   
   // Modal State'leri
   const [showPaymentPlanModal, setShowPaymentPlanModal] = useState(false)
@@ -1008,45 +1006,6 @@ export default function TicketPaymentsPage() {
         if (!returnYmd || returnYmd > departureDateRange.endDate) return false
       }
       
-      // Ödeme tarihi kontrolü (ödeme planı ve ödeme kayıtlarına göre)
-      if (paymentDateRange.startDate || paymentDateRange.endDate) {
-        const ticketPlans = paymentPlans.filter(plan => plan.ticket_id === ticket.id)
-        const ticketPayments = paymentRecords.filter(record => 
-          ticketPlans.some(plan => plan.id === record.payment_plan_id)
-        )
-        
-        // Ödeme planı tarihleri kontrolü
-        const hasMatchingPaymentPlan = ticketPlans.some(plan => {
-          if (paymentDateRange.startDate && plan.installments.some(inst => {
-            const d = parseDate(inst.date)
-            const sd = parseDate(paymentDateRange.startDate)
-            return d && sd && d >= sd
-          })) return true
-          if (paymentDateRange.endDate && plan.installments.some(inst => {
-            const d = parseDate(inst.date)
-            const ed = parseDate(paymentDateRange.endDate)
-            return d && ed && d <= ed
-          })) return true
-          return false
-        })
-        
-        // Ödeme kayıt tarihleri kontrolü
-        const hasMatchingPayment = ticketPayments.some(payment => {
-          const pd = parseDate(payment.payment_date)
-          if (paymentDateRange.startDate) {
-            const sd = parseDate(paymentDateRange.startDate)
-            if (pd && sd && pd >= sd) return true
-          }
-          if (paymentDateRange.endDate) {
-            const ed = parseDate(paymentDateRange.endDate)
-            if (pd && ed && pd <= ed) return true
-          }
-          return false
-        })
-        
-        if (!hasMatchingPaymentPlan && !hasMatchingPayment) return false
-      }
-      
       return true
     })
     
@@ -1056,12 +1015,12 @@ export default function TicketPaymentsPage() {
     }
     // Diğerleri: sıralama uygula
     return sortTickets(filtered)
-  }, [confirmedTickets, companyFilter, agencyFilter, pnrFilter, departureDateRange.startDate, departureDateRange.endDate, paymentDateRange.startDate, paymentDateRange.endDate, paymentPlans, paymentRecords, sortBy, toCalendarYmd])
+  }, [confirmedTickets, companyFilter, agencyFilter, pnrFilter, departureDateRange.startDate, departureDateRange.endDate, paymentPlans, paymentRecords, sortBy, toCalendarYmd])
   const paginatedTickets = paginateItems(filteredTickets, page, pageSize)
 
   useEffect(() => {
     setPage(1)
-  }, [companyFilter, agencyFilter, pnrFilter, departureDateRange.startDate, departureDateRange.endDate, paymentDateRange.startDate, paymentDateRange.endDate, sortBy])
+  }, [companyFilter, agencyFilter, pnrFilter, departureDateRange.startDate, departureDateRange.endDate, sortBy])
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -1118,15 +1077,7 @@ export default function TicketPaymentsPage() {
 
       {/* Filter Section */}
       <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-2 w-full min-w-0">
-        <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1" style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1.5fr 1fr auto' }}>
-          <DateRangeField
-            label="Ödeme Tarihi"
-            startValue={paymentDateRange.startDate}
-            endValue={paymentDateRange.endDate}
-            onStartChange={(v) => setPaymentDateRange(prev => ({ ...prev, startDate: v }))}
-            onEndChange={(v) => setPaymentDateRange(prev => ({ ...prev, endDate: v }))}
-            onApply={() => setPage(1)}
-          />
+        <div className="grid w-full min-w-0 items-end gap-x-1 gap-y-1" style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1.5fr auto' }}>
           <DateRangeField
             label="Uçuş Tarihi"
             startValue={departureDateRange.startDate}
@@ -1172,7 +1123,6 @@ export default function TicketPaymentsPage() {
               setAgencyFilter('')
               setPnrFilter('')
               setDepartureDateRange({ startDate: '', endDate: '' })
-              setPaymentDateRange({ startDate: '', endDate: '' })
               setSortBy('flight')
               setPage(1)
               setFilterKey(k => k + 1)
@@ -1397,20 +1347,7 @@ export default function TicketPaymentsPage() {
                         <div className="space-y-1">
                           {(() => {
                             const allInstallments = ticketPlans[0]?.installments || []
-                            const visibleInstallments = allInstallments.filter(inst => {
-                              if (paymentDateRange.startDate || paymentDateRange.endDate) {
-                                const d = parseDate(inst.date)
-                                if (paymentDateRange.startDate) {
-                                  const sd = parseDate(paymentDateRange.startDate)
-                                  if (d && sd && d < sd) return false
-                                }
-                                if (paymentDateRange.endDate) {
-                                  const ed = parseDate(paymentDateRange.endDate)
-                                  if (d && ed && d > ed) return false
-                                }
-                              }
-                              return true
-                            })
+                            const visibleInstallments = allInstallments
                             return visibleInstallments.map(installment => {
                               const originalIndex = allInstallments.findIndex(i => i.id === installment.id)
                               return (
@@ -1470,21 +1407,6 @@ export default function TicketPaymentsPage() {
                         return (
                           <div className="space-y-1">
                             {sortedPayments
-                              .filter(payment => {
-                                // Ödeme tarihi filtrelerine göre ödemeleri filtrele
-                                if (paymentDateRange.startDate || paymentDateRange.endDate) {
-                                  const paymentDate = parseDate(payment.payment_date)
-                                  if (paymentDateRange.startDate) {
-                                    const sd = parseDate(paymentDateRange.startDate)
-                                    if (paymentDate && sd && paymentDate < sd) return false
-                                  }
-                                  if (paymentDateRange.endDate) {
-                                    const ed = parseDate(paymentDateRange.endDate)
-                                    if (paymentDate && ed && paymentDate > ed) return false
-                                  }
-                                }
-                                return true
-                              })
                               .map((payment) => {
                                 const originalIndex = sortedPayments.findIndex(p => p.id === payment.id)
                                 // Sıralanmış ödemelerde doğru index kullan

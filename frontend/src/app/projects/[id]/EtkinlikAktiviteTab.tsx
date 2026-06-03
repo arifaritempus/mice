@@ -231,7 +231,7 @@ export default function EtkinlikAktiviteTab(props: EtkinlikAktiviteTabProps) {
                                 if (e.key === 'Escape') {
                                   e.preventDefault();
                                   handleEventCancel();
-                                } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                } else if (e.key === 'Enter' && !showEventSupplierDropdown) {
                                   e.preventDefault();
                                   handleEventSave();
                                 }
