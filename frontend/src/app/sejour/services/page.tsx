@@ -68,7 +68,7 @@ interface ApiError {
   message?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 const PAGE_SIZE_OPTIONS = [20, 30, 50, 100];
 
 function formatCurrency(amount?: number, currency?: string) {
