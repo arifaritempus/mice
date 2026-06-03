@@ -50,6 +50,7 @@ const MODULE_META: Record<string, ModuleMeta> = {
   accounting: { id: 'accounting', name: 'Muhasebe (Grup)', icon: '💰' },
   cash_flow: { id: 'cash_flow', name: 'Nakit Akış', icon: '💵' },
   invoices: { id: 'invoices', name: 'Faturalar (Gelir/Gider)', icon: '📄' },
+  exchange_rates: { id: 'exchange_rates', name: 'Döviz Kurları', icon: '💱' },
   sejour: { id: 'sejour', name: 'Sejour', icon: '🏖️' },
   operations: { id: 'operations', name: 'Operasyon (Grup)', icon: '⚙️' },
   transfers: { id: 'transfers', name: 'Transfer', icon: '🚐' },
@@ -75,6 +76,7 @@ const MODULE_ORDER = [
   'accounting',
   'cash_flow',
   'invoices',
+  'exchange_rates',
   'sejour',
   'operations',
   'transfers',
@@ -114,7 +116,9 @@ const MODULE_ALIASES: Record<string, string> = {
   parttime: 'part_time',
   'part-time': 'part_time',
   cash_flow: 'cash_flow',
-  cashflow: 'cash_flow'
+  cashflow: 'cash_flow',
+  exchange_rates: 'exchange_rates',
+  'exchange-rates': 'exchange_rates'
 };
 
 const normalizeModuleId = (moduleId: string) => {
