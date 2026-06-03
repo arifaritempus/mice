@@ -348,7 +348,7 @@ export default function GeneralSettingsPage() {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const response = await fetch(`${API_BASE}/api/settings/upload-logo`, {
         method: 'POST',
         headers: {
@@ -387,7 +387,7 @@ export default function GeneralSettingsPage() {
             const { data: sessionData } = await supabase.auth.getSession();
             const token = sessionData.session?.access_token;
             
-            const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             await fetch(`${API_BASE}/api/settings/delete-logo`, {
               method: 'DELETE',
               headers: {
@@ -450,7 +450,7 @@ export default function GeneralSettingsPage() {
           const { data: sessionData } = await supabase.auth.getSession();
           const token = sessionData.session?.access_token;
           
-          const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+          const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           const response = await fetch(`${API_BASE}/api/settings/delete-logo`, {
             method: 'DELETE',
             headers: {

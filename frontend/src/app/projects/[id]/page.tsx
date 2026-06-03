@@ -4214,7 +4214,7 @@ export default function ProjectDetailPage() {
         try {
           setLoading(true);
           // Backend API üzerinden tüm uçak biletlerini sil
-          const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+          const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           const response = await fetch(`${API_BASE}/api/flight-tickets/${projectId}`, {
             method: 'DELETE'
           });
