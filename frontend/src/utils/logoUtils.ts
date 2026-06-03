@@ -32,9 +32,24 @@ export async function getLogosForExcel(isDark: boolean = false, appSettings?: an
   wordmarkLogoBase64?: string;
 }> {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gzdfdnfkyedwnameflso.supabase.co';
+    
     // Excel export: solda icon, sagda wordmark
-    let iconLogoUrl = 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_icon_logo.png';
-    let wordmarkLogoUrl = 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_wordmark_logo.png';
+    let iconLogoUrl = `${supabaseUrl}/storage/v1/object/public/logos/dark_icon_logo.png`;
+    let wordmarkLogoUrl = `${supabaseUrl}/storage/v1/object/public/logos/dark_wordmark_logo.png`;
+
+    if (!appSettings) {
+      try {
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        const response = await fetch(`${baseUrl}/api/theme-settings`);
+        if (response.ok) {
+          const data = await response.json();
+          appSettings = data.general_settings;
+        }
+      } catch (err) {
+        console.error('Failed to fetch theme settings for logos', err);
+      }
+    }
 
     if (appSettings) {
       iconLogoUrl = isDark 
@@ -47,11 +62,11 @@ export async function getLogosForExcel(isDark: boolean = false, appSettings?: an
     } else {
       // Fallback if appSettings is not provided
       iconLogoUrl = isDark 
-        ? 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_icon_logo.png' 
-        : 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_icon_logo.png';
+        ? `${supabaseUrl}/storage/v1/object/public/logos/dark_icon_logo.png` 
+        : `${supabaseUrl}/storage/v1/object/public/logos/light_icon_logo.png`;
       wordmarkLogoUrl = isDark 
-        ? 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/dark_wordmark_logo.png' 
-        : 'https://gzdfdnfkyedwnameflso.supabase.co/storage/v1/object/public/logos/light_wordmark_logo.png';
+        ? `${supabaseUrl}/storage/v1/object/public/logos/dark_wordmark_logo.png` 
+        : `${supabaseUrl}/storage/v1/object/public/logos/light_wordmark_logo.png`;
     }
     
     // Eğer tarayıcı ortamındaysak ve URL '/' ile başlıyorsa, fetch'in çalışabilmesi için tam URL'ye çevir
