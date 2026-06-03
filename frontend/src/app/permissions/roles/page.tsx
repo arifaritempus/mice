@@ -109,7 +109,6 @@ const MODULE_ALIASES: Record<string, string> = {
   sejur: 'sejour',
   service_types: 'suppliers',
   'service-types': 'suppliers',
-  accounting: 'projects',
   budgets: 'budget',
   part_time: 'part_time',
   parttime: 'part_time',

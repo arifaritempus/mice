@@ -43,7 +43,6 @@ const MODULE_ALIASES: Record<string, string> = {
   'teklif': 'quotes',
   'proje': 'projects',
   'project': 'projects',
-  'accounting': 'projects',
   'budgets': 'budget',
   'acenta': 'agencies',
   'hotel': 'hotels',
@@ -113,17 +112,23 @@ export async function GET(req: NextRequest) {
     const permissionById = new Map<string, any>(permissionRows.map((p: any) => [p.id, p]));
     
     const matchedRoleIds = new Set<string>();
+    let resolvedRoleName = role;
+    
     for (const r of roleRows) {
       // Sadece veritabanındaki role ile eşleştirme yap
       if (r.id === role || normalizeRole(r.id) === normalizeRole(role) || normalizeRole(r.name) === normalizeRole(role)) {
         matchedRoleIds.add(r.id);
+        resolvedRoleName = r.name; // Use the actual role name (e.g. "Süper Admin") instead of UUID
       }
     }
     
     // Fallback: users.role doğrudan role_id tutuluyorsa ve yukarıda eşleşmediyse
     if (matchedRoleIds.size === 0) {
       const direct = roleById.get(role);
-      if (direct) matchedRoleIds.add(direct.id);
+      if (direct) {
+        matchedRoleIds.add(direct.id);
+        resolvedRoleName = direct.name;
+      }
     }
 
     const effectivePermissions: Record<string, string[]> = {};
@@ -141,7 +146,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { role, effectivePermissions, matchedRoleIds: Array.from(matchedRoleIds) },
+      { role: resolvedRoleName, effectivePermissions, matchedRoleIds: Array.from(matchedRoleIds) },
       { 
         headers: { 
           'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',

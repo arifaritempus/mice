@@ -59,8 +59,11 @@ export enum Role {
 
 const ROLE_ALIASES: Record<string, string> = {
   super_admin: Role.SUPER_ADMIN,
+  superadmin: Role.SUPER_ADMIN,
   'süper_admin': Role.SUPER_ADMIN,
   'süper admin': Role.SUPER_ADMIN,
+  'süperadmin': Role.SUPER_ADMIN,
+  'super admin': Role.SUPER_ADMIN,
   admin: Role.ADMIN,
   manager: Role.MANAGER,
   müdür: Role.MANAGER,
