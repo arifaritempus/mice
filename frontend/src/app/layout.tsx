@@ -11,6 +11,9 @@ function GlobalLoader() {
   return <LoadingSpinner message="Sayfa yükleniyor..." />;
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
   const defaultTitle = 'MICE Yönetim Sistemi';
   const defaultIcon = '/LOGO_NAVY.png';
@@ -29,8 +32,12 @@ export async function generateMetadata(): Promise<Metadata> {
       
       if (data?.value) {
         const settings = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
-        if (settings.company_name) title = `${settings.company_name} - MICE Yönetim Sistemi`;
-        if (settings.dark_icon_logo) iconUrl = settings.dark_icon_logo;
+        if (settings.company_name) {
+          title = `${settings.company_name} - MICE Yönetim Sistemi`;
+        }
+        if (settings.dark_icon_logo !== undefined) {
+          iconUrl = settings.dark_icon_logo || '/favicon.ico';
+        }
       }
     }
   } catch (error) {

@@ -60,8 +60,7 @@ const REPORT_GROUPS: ReportGroup[] = [
       { id: 'acente_kar_zarar', title: 'Acente Bazlı Kar/Zarar', description: 'Acente bazında satış, maliyet, kar/zarar ve yüzde', dateField: 'organizasyon_tarihi' },
       { id: 'otel_kar_zarar', title: 'Otel Bazlı Kar/Zarar', description: 'Otel bazında satış, maliyet, kar/zarar ve yüzde', dateField: 'organizasyon_tarihi' },
       { id: 'kar_zarar_detay', title: 'Kar/Zarar Raporu', description: 'Proje bazında satış, maliyet, kar/zarar ve marj', dateField: 'organizasyon_tarihi' },
-      { id: 'acente_marj', title: 'Kar Marjına Göre Acente Raporu', description: 'Acenteleri kar marjına göre sıralar', dateField: 'organizasyon_tarihi' },
-      { id: 'otel_marj', title: 'Kar Marjına Göre Otel Raporu', description: 'Otelleri kar marjına göre sıralar', dateField: 'organizasyon_tarihi' },
+
       { id: 'yillik_kar_zarar_tl', title: 'Yıllık Kar/Zarar (Aylık Yatay - TL)', description: 'Sadece TL bazında aylık kar/zarar ve toplam', dateField: 'yil' }
     ]
   },
@@ -249,10 +248,10 @@ export default function ReportsPage() {
     if (activeReport.id === 'otel_detay_proje_maliyet') {
       return ['proje_referans', 'organizasyon_cikis_tarihi', 'firma_adi', 'acente', 'otel', 'alt_kategori', 'adet', 'sefer', 'birim_satis', 'birim_maliyet', 'para_birimi'];
     }
-    if (activeReport.id === 'acente_kar_zarar' || activeReport.id === 'acente_marj') {
+    if (activeReport.id === 'acente_kar_zarar') {
       return ['acente', 'proje_sayisi', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
     }
-    if (activeReport.id === 'otel_kar_zarar' || activeReport.id === 'otel_marj') {
+    if (activeReport.id === 'otel_kar_zarar') {
       return ['otel', 'proje_sayisi', 'satis_tl', 'maliyet_tl', 'kar_zarar_tl', 'kar_marj_yuzde'];
     }
     if (activeReport.id === 'kar_zarar_detay') {

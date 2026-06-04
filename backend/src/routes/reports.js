@@ -558,9 +558,9 @@ router.get('/data', async (req, res) => {
     } else if (reportId === 'otel_detay_proje_maliyet') {
       rows = applyDateFilter(await fetchOtelDetayProjeMaliyetRows(), 'organizasyon_tarihi', startDate, endDate);
     } else if (
-      ['acente_kar_zarar', 'otel_kar_zarar', 'kar_zarar_detay', 'acente_marj', 'otel_marj', 'yillik_kar_zarar_tl'].includes(reportId)
+      ['acente_kar_zarar', 'otel_kar_zarar', 'kar_zarar_detay', 'yillik_kar_zarar_tl'].includes(reportId)
     ) {
-      if (reportId === 'otel_kar_zarar' || reportId === 'otel_marj') {
+      if (reportId === 'otel_kar_zarar') {
         rows = await fetchOtelBazliKarZararFromLineItems(startDate, endDate);
       } else {
       const projectRows = applyDateFilter(
@@ -572,7 +572,7 @@ router.get('/data', async (req, res) => {
 
       if (reportId === 'kar_zarar_detay') {
         rows = projectRows;
-      } else if (reportId === 'acente_kar_zarar' || reportId === 'acente_marj') {
+      } else if (reportId === 'acente_kar_zarar') {
         const grouped = new Map();
         projectRows.forEach((r) => {
           const key = String(r.acente || '-');
@@ -689,11 +689,10 @@ router.get('/data', async (req, res) => {
 
     const effectiveSortKey =
       sortKey ||
-      (reportId === 'acente_marj' || reportId === 'otel_marj' ? 'kar_marj_yuzde' : '') ||
       (reportId === 'acente_kar_zarar' || reportId === 'otel_kar_zarar' ? 'kar_zarar_tl' : '');
     const effectiveSortDirection = sortKey
       ? sortDirection
-      : reportId === 'acente_marj' || reportId === 'otel_marj' || reportId === 'acente_kar_zarar' || reportId === 'otel_kar_zarar'
+      : reportId === 'acente_kar_zarar' || reportId === 'otel_kar_zarar'
         ? 'desc'
         : sortDirection;
 

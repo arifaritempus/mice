@@ -153,6 +153,13 @@ export default function GeneralSettingsPage() {
       // Custom event dispatch et (Sidebar/Theme canlı güncellensin)
       window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: { settings } }));
 
+      // Sekme başlığını anında güncelle
+      if (settings.company_name) {
+        document.title = `${settings.company_name} - MICE Yönetim Sistemi`;
+      } else {
+        document.title = 'MICE Yönetim Sistemi';
+      }
+
       setSuccess('Ayarlar başarıyla kaydedildi');
     } catch (error) {
       console.error('Settings save error:', error);
@@ -489,7 +496,7 @@ export default function GeneralSettingsPage() {
 
     // Eğer ikon logo siliniyorsa favicon'u varsayılan haline döndür
     if (field === 'dark_icon_logo' || field === 'light_icon_logo') {
-      const defaultFavicon = '/LOGO_NAVY.png';
+      const defaultFavicon = '/favicon.ico';
       updateFavicon(defaultFavicon);
     }
 
