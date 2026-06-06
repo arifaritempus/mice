@@ -1,0 +1,193 @@
+{
+  "meta": {
+    "title": "Codeicon - Kapsamlı Turizm ve Operasyon Yönetim Sistemi",
+    "description": "MICE, Sejour, Biletleme, Transfer Operasyonları ve Muhasebe süreçlerinizi tek bir akıllı platformdan yönetin. Seyahat acenteleri ve etkinlik firmaları için tasarlandı.",
+    "url": "https://codeicon.co",
+    "logo": "/images/logo.png"
+  },
+  "contact": {
+    "company": "Codeicon Company LLC",
+    "email": "hello@codeicon.co",
+    "address": "Dr. Burhan Nalbantoğlu Caddesi Numara 10, Lefkoşa, KKTC",
+    "instagram": "https://www.instagram.com/codeicon.co"
+  },
+  "hero": {
+    "headline": "Yeni Nesil MICE Acente Sistemi",
+    "subheadline": "Turizm acenteleri ve organizasyon şirketleri için özel olarak geliştirildi. MICE projeleri, Sejour konaklamaları, operasyonel akışlar ve tam entegre finansal yönetimi tek bir ekranda birleştiren rakipsiz altyapı.",
+    "ctaText": "Sistemi Keşfedin",
+    "ctaLink": "#features"
+  },
+  "features": [
+    {
+      "id": "f1",
+      "title": "MICE & Proje Yönetimi",
+      "description": "Kongre, toplantı, etkinlik ve grup organizasyonlarınızı uçtan uca planlayın. TCMB entegrasyonu, günlük forecast, otomasyonlu fatura yönetimi.",
+      "icon": "Briefcase"
+    },
+    {
+      "id": "f2",
+      "title": "Sejour & Konaklama",
+      "description": "Bakiye takibi, detaylı hizmet kalemleri, konaklama, transfer ve rehber atamalarının doğrudan operasyon modülüne otomatik akması.",
+      "icon": "Building"
+    },
+    {
+      "id": "f3",
+      "title": "Kapsamlı Operasyon",
+      "description": "Projelerden ve Sejour'dan gelen verilerle; bilet, transfer, rehber ve part-time listelerinin anlık tek ekrandan takibi ve Excel export.",
+      "icon": "Map"
+    },
+    {
+      "id": "f4",
+      "title": "Uçuş & Biletleme",
+      "description": "Opsiyon takibi, ödeme planı oluşturma, bilet takvimi ve nakit akışına otomatik entegrasyon.",
+      "icon": "Plane"
+    },
+    {
+      "id": "f5",
+      "title": "Muhasebe & Nakit Akışı",
+      "description": "Bekleyen gelir/gider faturalarının onayı, otomatik kur takibi ve online cari mutabakat bildirim sistemi.",
+      "icon": "Calculator"
+    },
+    {
+      "id": "f6",
+      "title": "Gelişmiş Raporlar",
+      "description": "Proje, otel ve acente bazlı detaylı kar-zarar raporları. Opsiyon ve teklif raporlarıyla işletmenizin anlık fotoğrafını çekin.",
+      "icon": "PieChart"
+    }
+  ],
+  "detailedModules": [
+    {
+      "id": "dashboard",
+      "title": "Dashboard",
+      "icon": "BarChart2",
+      "features": [
+        "İstediğiniz tarih aralığına özel finansal veriler ve dağılımlar",
+        "Operasyonel akışların (gelecekteki ve geçmişteki) anlık takibi",
+        "Yaklaşan görevlerin ve uyarıların tek ekranda özetlenmesi"
+      ]
+    },
+    {
+      "id": "teklifler",
+      "title": "Teklifler Modülü",
+      "icon": "FileText",
+      "features": [
+        "Çoklu otel tekliflendirme özelliği",
+        "Personel atama ve yalnızca yetkili/atanan personelin teklifleri görebilmesi",
+        "Müşteriler ile Online Teklif Onaylama altyapısı",
+        "Onaylanan tekliflerin kendini kilitlemesi (değiştirilemez olması)",
+        "Onaylanan teklif verilerinin otomatik olarak 'Projelere' aktarımı",
+        "Teklifleri Excel formatında export alma"
+      ]
+    },
+    {
+      "id": "projeler",
+      "title": "Projeler (MICE) Modülü",
+      "icon": "Briefcase",
+      "features": [
+        "Çoklu otel yönetimi ve projeye özel tedarikçi seçimi",
+        "Manuel kur seçimi veya TCMB verileri üzerinden her gün otomatik kur yenilemesi",
+        "Grup giriş tarihindeki seçilen kur türüne göre kurların otomatik sabitlenmesi",
+        "Alışlarda (maliyet) her hizmet için ayrı ayrı otel ve tedarikçi seçimi",
+        "Tamamlanan projelerde, bekleyen gelir ve gider faturalarının Muhasebe modülüne otomatik düşmesi (ve sonrasında faturalandırılarak 'tamamlananlara' aktarımı)",
+        "Konaklama tabında matbu formatlı Excel üzerinden toplu liste (rooming list) import edilmesi",
+        "Sistemin proje bazlı günlük forecast vermesi",
+        "Konaklama listesinde uçuş bilgisi varsa, transfer tabında OTOMATİK transfer oluşturulması",
+        "Çıkış transferi saatlerinin (örn: uçuştan X saat önce) otomatik ayarlanması",
+        "Transferleri gruplara ve araçlara bağlama, araç pax (kapasite) sayısı kontrolü ve uyarı sistemi",
+        "Çok fazla saat farkı olan uçuşların aynı transfere bağlanmasını engelleyen mantıksal uyarılar",
+        "Farklı tarihlerdeki veya gidiş-dönüş transferlerinin yanlışlıkla birbirine bağlanmasını engelleyen akıllı kontrol",
+        "Tahsilat ve ödeme planlarının projeye girilmesi, Muhasebe nakit akışında görülmesi ve hatırlatıcı bildirimler",
+        "Tedarikçi/Müşteri ile Online Mutabakat özelliği ve onaylanan mutabakatın sisteme bildirim vermesi"
+      ]
+    },
+    {
+      "id": "sejour",
+      "title": "Sejour Modülü",
+      "icon": "Calendar",
+      "features": [
+        "Pratik ve hızlı münferit Sejour oluşturma",
+        "Tahsilat ve bakiye takibi",
+        "Sejour'a girilen konaklama, transfer, rehber ve part-time kayıtlarının doğrudan Operasyon listelerine akması",
+        "Hizmet kalemlerinin (oda, extra, tur vb.) ayrı ayrı listelenmesi ve yönetilmesi"
+      ]
+    },
+    {
+      "id": "operasyon",
+      "title": "Operasyon Modülü",
+      "icon": "Map",
+      "features": [
+        "Sejour ve Projelere girilen tüm verilerin merkezi olarak toplanması",
+        "Bilet listesi, transfer listesi, rehber ve part-time listelerinin anlık saha takibi",
+        "Operasyon listelerinin hızlıca Excel olarak dışa aktarımı (Export)"
+      ]
+    },
+    {
+      "id": "bilet",
+      "title": "Bilet (Uçuş) Modülü",
+      "icon": "Plane",
+      "features": [
+        "Bilet opsiyon takibi ve konfirme (onaylama) süreçleri",
+        "Ödeme planlarının oluşturulması ve nakit akışa entegrasyonu",
+        "Biletlerin takvim (calendar) sayfası üzerinden görsel olarak takibi"
+      ]
+    },
+    {
+      "id": "pazarlama",
+      "title": "Pazarlama (Marketing) Modülü",
+      "icon": "Megaphone",
+      "features": [
+        "Firma ve acente tanımlama/CRM altyapısı",
+        "Müşteri randevuları oluşturma ve takvim takibi",
+        "Yapılan görüşmelerin notlarının sisteme kaydedilmesi"
+      ]
+    },
+    {
+      "id": "muhasebe",
+      "title": "Muhasebe & Finans Modülü",
+      "icon": "Calculator",
+      "features": [
+        "Merkezi nakit akış takibi ve döviz kurları yönetimi",
+        "Bekleyen gelir ve gider faturalarının (Projelerden/Sejourdan gelen) kontrolü",
+        "Faturalandırma işlemi ve 'tamamlanan faturalar' arşivi"
+      ]
+    },
+    {
+      "id": "raporlar",
+      "title": "Raporlar Modülü",
+      "icon": "PieChart",
+      "features": [
+        "Opsiyon takip raporu",
+        "Otel detaylı teklif raporu ve Otel detaylı proje maliyet raporu",
+        "Acente bazlı, otel bazlı, proje bazlı Kar/Zarar (P&L) raporları",
+        "Sejour Kar/Zarar raporu (Acente bazlı ve Otel bazlı)",
+        "Yıllık genel Kar/Zarar raporu ve tüm raporların Excel export imkanı"
+      ]
+    },
+    {
+      "id": "tanimlamalar",
+      "title": "Tanımlamalar Modülü",
+      "icon": "Settings",
+      "features": [
+        "Otel, tedarikçi, acente veritabanı yönetimi",
+        "Kategori ve tedarikçi hizmet kategorisi ayarları",
+        "Gelişmiş kullanıcı yetkilendirme (Rol bazlı erişim) mimarisi"
+      ]
+    },
+    {
+      "id": "ayarlar",
+      "title": "Sistem Ayarları Modülü",
+      "icon": "Sliders",
+      "features": [
+        "Şirket genel bilgilerinin yönetimi",
+        "Firma logolarının sisteme yüklenmesi",
+        "Kullanıcıya özel Açık/Koyu tema (Light/Dark mode) seçeneği",
+        "Sistem renklerinin kurumsal kimliğe göre belirlenmesi"
+      ]
+    }
+  ],
+  "demo": {
+    "title": "İşinizi Şansa Değil, Codeicon'a Bırakın",
+    "subtitle": "Operasyonel yükünüzü hafifletmek ve tüm süreçlerinizi sıfır hatayla dijitalleştirmek için uzman ekibimizle hemen bir demo toplantısı planlayın.",
+    "buttonText": "Ücretsiz Demo Talep Et"
+  }
+}

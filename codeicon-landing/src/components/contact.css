@@ -1,0 +1,98 @@
+.contact-section {
+  background-color: var(--color-bg);
+  padding: 6rem 0 4rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.contact-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4rem;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.contact-title {
+  font-size: clamp(2rem, 3vw, 2.5rem);
+  margin-bottom: 1rem;
+}
+
+.contact-subtitle {
+  color: var(--color-text-muted);
+  margin-bottom: 2.5rem;
+  max-width: 400px;
+  font-family: var(--font-inter);
+  font-weight: 400;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.contact-icon {
+  color: var(--color-accent);
+}
+
+.contact-link, .contact-text {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-family: var(--font-inter);
+  transition: color var(--transition-fast);
+}
+
+.contact-link:hover {
+  color: var(--color-accent-hover);
+}
+
+.contact-brand {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .contact-brand {
+    align-items: flex-start;
+    text-align: left;
+    margin-top: 2rem;
+  }
+}
+
+.logo-placeholder {
+  margin-bottom: 1.5rem;
+  max-width: 200px;
+}
+
+.footer-logo {
+  max-width: 100%;
+  height: auto;
+  filter: grayscale(100%) brightness(200%);
+}
+
+.logo-text {
+  font-family: var(--font-playfair);
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.copyright {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-family: var(--font-inter);
+}
