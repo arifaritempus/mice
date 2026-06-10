@@ -271,13 +271,27 @@ export const authService = {
     return data || { id: userId, ...profileData };
   },
 
-  // Şifre değiştir
-  async changePassword(newPassword: string) {
-    const { error } = await supabase.auth.updateUser({
+  // Şifre değiştir (Eski şifre kontrolü ile)
+  async changePassword(currentPassword: string, newPassword: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !user.email) throw new Error('Oturum bulunamadı');
+
+    // Eski şifreyi doğrula
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword
+    });
+
+    if (signInError) {
+      throw new Error('Mevcut şifreniz yanlış.');
+    }
+
+    // Şifreyi güncelle
+    const { error: updateError } = await supabase.auth.updateUser({
       password: newPassword
     });
 
-    if (error) throw error;
+    if (updateError) throw updateError;
   },
 
   // Şifre sıfırlama e-postası gönder

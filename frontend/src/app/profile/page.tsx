@@ -199,8 +199,13 @@ export default function ProfilePage() {
         return;
       }
 
-      // Gerçek Supabase şifre değişikliği
-      await authService.changePassword(passwordData.newPassword);
+      if (!passwordData.currentPassword) {
+        setError('Mevcut şifrenizi girmelisiniz');
+        return;
+      }
+
+      // Gerçek Supabase şifre değişikliği (artık eski şifreyi de kontrol ediyor)
+      await authService.changePassword(passwordData.currentPassword, passwordData.newPassword);
       
       setSuccess('Şifre başarıyla değiştirildi');
       
