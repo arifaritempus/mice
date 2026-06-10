@@ -1,9 +1,9 @@
 import content from "@/data/content.json";
-import { Mail, MapPin, AtSign } from "lucide-react";
+import { Mail, MapPin, AtSign, Phone } from "lucide-react";
 import "./footer.css";
 
 export default function Footer() {
-  const { company, email, address, instagram } = content.contact;
+  const { company, email, phone, address, instagram } = content.contact;
 
   return (
     <footer className="footer section">
@@ -13,6 +13,10 @@ export default function Footer() {
           <p className="footer-subtitle">Dijital dönüşümünüzü bugün başlatın.</p>
           
           <div className="footer-details">
+            <div className="footer-item">
+              <Phone className="footer-icon" size={20} />
+              <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="footer-link">{phone}</a>
+            </div>
             <div className="footer-item">
               <Mail className="footer-icon" size={20} />
               <a href={`mailto:${email}`} className="footer-link">{email}</a>
@@ -29,7 +33,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-brand">
-          <h3 className="logo-text">Codeicon</h3>
+          <img src="/logo.png" alt="Codeicon" style={{ height: "40px", marginBottom: "1rem" }} />
           <p className="copyright">© {new Date().getFullYear()} {company}. Tüm Hakları Saklıdır.</p>
         </div>
       </div>

@@ -1,9 +1,9 @@
 import content from "@/data/content.json";
-import { Mail, MapPin, AtSign } from "lucide-react";
+import { Mail, MapPin, AtSign, Phone } from "lucide-react";
 import "./contact.css";
 
 export default function Contact() {
-  const { company, email, address, instagram } = content.contact;
+  const { company, email, phone, address, instagram } = content.contact;
 
   return (
     <footer id="contact" className="section contact-section">
@@ -14,6 +14,10 @@ export default function Contact() {
             <p className="contact-subtitle">Yeni projenizi hayata geçirmek veya daha fazla bilgi almak için bizimle iletişime geçin.</p>
             
             <div className="contact-details">
+              <div className="contact-item">
+                <Phone size={20} className="contact-icon" />
+                <a href={`tel:${phone?.replace(/[^0-9+]/g, '')}`} className="contact-link">{phone}</a>
+              </div>
               <div className="contact-item">
                 <Mail size={20} className="contact-icon" />
                 <a href={`mailto:${email}`} className="contact-link">{email}</a>

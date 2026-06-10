@@ -23,8 +23,8 @@ export default function Header() {
     <>
       <header className={`header ${isScrolled ? "scrolled glass-panel" : ""}`}>
         <div className="container header-container">
-          <Link href="/" className="logo">
-            Codeicon
+          <Link href="/" className="logo flex items-center">
+            <img src="/logo.png" alt="Codeicon" style={{ height: "32px", width: "auto" }} />
           </Link>
           
           <nav className={`nav-links ${mobileMenuOpen ? "active" : ""}`}>
