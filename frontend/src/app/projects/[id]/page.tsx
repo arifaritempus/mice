@@ -90,7 +90,7 @@ const FIXED_HEADERS = [
 ];
 
 export default function ProjectDetailPage() {
-  const { canView, canCreate, canEdit, canDelete, userRole, loading: permissionsLoading } = usePermissions();
+  const { canView, canCreate, canEdit, canDelete, userRole, isSuperAdmin, loading: permissionsLoading } = usePermissions();
 
   const {
     projectId,
@@ -11604,7 +11604,7 @@ export default function ProjectDetailPage() {
           </button>
           {isEditingProject ? (
             <>
-              {canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
+              {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
                 <button
                   onClick={handleSaveProject}
                   className="bg-green-600 dark:bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs flex items-center gap-1"
@@ -11615,7 +11615,7 @@ export default function ProjectDetailPage() {
                   Kaydet
                 </button>
               )}
-              {canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
+              {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
                 <button
                   onClick={handleCancelEdit}
                   className="bg-gray-600 dark:bg-gray-500 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 text-xs flex items-center gap-1"
@@ -11628,7 +11628,7 @@ export default function ProjectDetailPage() {
               )}
             </>
           ) : (
-            canEdit(Module.PROJECTS) && (!project?.locked || userRole === Role.SUPER_ADMIN) && (
+            canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
               <button
                 onClick={handleEditProject}
                 className="bg-blue-600 dark:bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs flex items-center gap-1"
@@ -12050,7 +12050,7 @@ export default function ProjectDetailPage() {
                   canCreate={canCreate(Module.PROJECTS)}
                   canEdit={canEdit(Module.PROJECTS)}
                   canDelete={canDelete(Module.PROJECTS)}
-                  isLocked={project?.locked && userRole !== Role.SUPER_ADMIN}
+                  isLocked={project?.locked && !isSuperAdmin}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />
@@ -12109,7 +12109,7 @@ export default function ProjectDetailPage() {
                   canCreate={canCreate(Module.PROJECTS)}
                   canEdit={canEdit(Module.PROJECTS)}
                   canDelete={canDelete(Module.PROJECTS)}
-                  isLocked={project?.locked && userRole !== Role.SUPER_ADMIN}
+                  isLocked={project?.locked && !isSuperAdmin}
                   hotelsData={hotelsData}
                   hotels={hotels}
                 />

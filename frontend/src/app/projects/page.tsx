@@ -290,7 +290,7 @@ const getTodayIsoDate = () => {
 
 export default function ProjectsPage() {
   const todayStr = new Date().toISOString().split('T')[0];
-  const { canView, canCreate, canEdit, canDelete, userRole, loading: permissionsLoading } = usePermissions();
+  const { canView, canCreate, canEdit, canDelete, userRole, isSuperAdmin, loading: permissionsLoading } = usePermissions();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -505,7 +505,7 @@ export default function ProjectsPage() {
       toast.error('Projelerde kilit özelliği bu veritabanında aktif değil.');
       return;
     }
-    if (userRole !== 'super_admin') return;
+    if (!isSuperAdmin) return;
     if (lockUpdatingId) return;
     try {
       setLockUpdatingId(project.id);
@@ -1151,7 +1151,7 @@ export default function ProjectsPage() {
                     )}</div>
                   </th>
                   {/* Kilit durumu (sadece süper admin için) */}
-                  {userRole === 'super_admin' && lockFeatureAvailable && (
+                  {isSuperAdmin && lockFeatureAvailable && (
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Kilit
                     </th>
@@ -1185,7 +1185,7 @@ export default function ProjectsPage() {
                       )}
                     </td>
                     {/* Kilit sütunu */}
-                    {userRole === 'super_admin' && lockFeatureAvailable && (
+                    {isSuperAdmin && lockFeatureAvailable && (
                       <td className="px-3 py-2 whitespace-nowrap text-xs">
                         <button
                           onClick={() => toggleProjectLock(project)}
@@ -1250,7 +1250,7 @@ export default function ProjectsPage() {
                 ))}
                 {visibleProjects.length === 0 && (
                   <tr>
-                    <td colSpan={userRole === 'super_admin' && lockFeatureAvailable ? 13 : 12} className="px-3 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+                    <td colSpan={isSuperAdmin && lockFeatureAvailable ? 13 : 12} className="px-3 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
                       Filtrelere uygun kayıt bulunamadı.
                     </td>
                   </tr>

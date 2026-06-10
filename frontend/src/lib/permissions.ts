@@ -496,6 +496,7 @@ export const usePermissions = (explicitRole?: string) => {
       return all;
     },
     userRole: resolvedRole,
+    isSuperAdmin: isSuperAdminRole(resolvedRole),
     loading
   }), [resolvedRole, grantMap, loading]);
 };
