@@ -1,14 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { authService } from '@/lib/auth';
+import { useTheme } from '@/components/providers/ThemeProvider';
+import { SettingsService } from '@/lib/supabaseService';
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [email, setEmail] = useState('');
+
+  const { isDark } = useTheme();
+  const [appSettings, setAppSettings] = useState<any>(null);
+  const [menuLogo, setMenuLogo] = useState<string>('');
+  const [logoLoading, setLogoLoading] = useState(true);
+
+  useEffect(() => {
+    const loadMenuLogo = async () => {
+      try {
+        const settings = await SettingsService.getSettings();
+        const generalSettings = settings.general_settings || {};
+        setAppSettings(generalSettings);
+        
+        const currentLogo = generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || generalSettings.dark_icon_logo || 
+                            generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || generalSettings.light_icon_logo;
+        setMenuLogo(currentLogo || '');
+      } catch {
+        setMenuLogo('');
+      } finally {
+        setLogoLoading(false);
+      }
+    };
+    loadMenuLogo();
+  }, [isDark]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +65,22 @@ export default function ForgotPasswordPage() {
       <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
-            <span className="text-white text-2xl font-bold">
-              TT
-            </span>
-          </div>
+          {logoLoading ? (
+            <div className="h-32 w-32" />
+          ) : menuLogo ? (
+            <img
+              src={menuLogo}
+              alt="Logo"
+              className="h-32 w-auto object-contain drop-shadow-2xl"
+              key={menuLogo}
+            />
+          ) : (
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
+              <span className="text-white text-2xl font-bold">
+                {appSettings?.company_name ? appSettings.company_name.substring(0, 2).toUpperCase() : (process.env.NEXT_PUBLIC_AGENCY_NAME ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(0, 2).toUpperCase() : 'TT')}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Kart */}

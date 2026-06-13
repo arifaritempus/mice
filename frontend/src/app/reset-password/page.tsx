@@ -1,21 +1,64 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/auth';
+import { useTheme } from '@/components/providers/ThemeProvider';
+import { SettingsService } from '@/lib/supabaseService';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Sadece URL'den hash gelip gelmediğini kontrol etmek isterseniz burada useEffect kullanabilirsiniz.
-  // Supabase Auth, hash üzerinden session'ı otomatik ayarlar.
-  
+  const { isDark } = useTheme();
+  const [appSettings, setAppSettings] = useState<any>(null);
+  const [menuLogo, setMenuLogo] = useState<string>('');
+  const [logoLoading, setLogoLoading] = useState(true);
+
+  useEffect(() => {
+    const loadMenuLogo = async () => {
+      try {
+        const settings = await SettingsService.getSettings();
+        const generalSettings = settings.general_settings || {};
+        setAppSettings(generalSettings);
+        
+        const currentLogo = generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || generalSettings.dark_icon_logo || 
+                            generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || generalSettings.light_icon_logo;
+        setMenuLogo(currentLogo || '');
+      } catch {
+        setMenuLogo('');
+      } finally {
+        setLogoLoading(false);
+      }
+    };
+    loadMenuLogo();
+  }, [isDark]);
+
+  useEffect(() => {
+    const verifyToken = async () => {
+      // Sadece token_hash varsa doğrula, çünkü eğer yoksa zaten Supabase'in varsayılan 
+      // yönlendirmesiyle (cookie/session üzerinden) girmiş olabilir.
+      if (token_hash && type === 'recovery') {
+        const { error } = await authService.supabase.auth.verifyOtp({
+          token_hash,
+          type: 'recovery',
+        });
+        if (error) {
+          setError('Doğrulama bağlantısı geçersiz veya süresi dolmuş.');
+        }
+      }
+    };
+    verifyToken();
+  }, [token_hash, type]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -34,9 +77,6 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      // Şifreyi güncelle (Eğer URL hash ile session geldiyse, kullanıcı doğrulanmıştır)
-      // authService.changePassword(current, new) fonksiyonumuz var ama burada current yok!
-      // auth.ts'e 'setNewPassword(password)' fonksiyonu eklemeliyiz veya doğrudan supabase çağırabiliriz.
       const { error: updateError } = await authService.supabase.auth.updateUser({
         password: newPassword
       });
@@ -65,10 +105,24 @@ export default function ResetPasswordPage() {
       </div>
 
       <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
+        {/* Logo */}
         <div className="flex justify-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
-            <span className="text-white text-2xl font-bold">TT</span>
-          </div>
+          {logoLoading ? (
+            <div className="h-32 w-32" />
+          ) : menuLogo ? (
+            <img
+              src={menuLogo}
+              alt="Logo"
+              className="h-32 w-auto object-contain drop-shadow-2xl"
+              key={menuLogo}
+            />
+          ) : (
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
+              <span className="text-white text-2xl font-bold">
+                {appSettings?.company_name ? appSettings.company_name.substring(0, 2).toUpperCase() : (process.env.NEXT_PUBLIC_AGENCY_NAME ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(0, 2).toUpperCase() : 'TT')}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 px-8 py-8">
@@ -117,7 +171,7 @@ export default function ResetPasswordPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !!error}
                 className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center"
               >
                 {loading ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
@@ -127,5 +181,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Yükleniyor...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
