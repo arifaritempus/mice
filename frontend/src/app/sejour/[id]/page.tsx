@@ -251,7 +251,7 @@ export default function SejourDetailPage() {
           <div className="flex justify-between items-end mb-10">
             <div>
               <h1 className="text-2xl font-light text-gray-900 tracking-wider mb-4 uppercase">RESERVATION DIRECTORY</h1>
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 responsive-filter-grid">
                 <div>
                   <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">GUEST NAME</span>
                   <span className="block text-sm font-medium text-gray-900">{sejour.customerName}</span>

@@ -726,8 +726,29 @@ export default function QuoteServiceEditor({
         </div>
       )}
 
-      {/* Başlık satırı */}
-      <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 hidden md:flex items-center gap-2 text-xs font-semibold text-gray-800 dark:text-gray-200">
+      {/* Kategori Ekleme Butonu (Üstte Sağda) */}
+      <div className="flex justify-end pb-2">
+        {!disabled && (
+          <button 
+            type="button"
+            onClick={() => {
+              console.log('Kategori ekle butonuna tıklandı - modal açılmalı');
+              setShowCategoryModal(true);
+            }} 
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-emerald-500 text-white rounded shadow hover:bg-emerald-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6"/>
+            </svg>
+            KATEGORİ EKLE
+          </button>
+        )}
+      </div>
+
+      <div className="overflow-x-auto pb-4">
+        <div className="min-w-[1200px]">
+          {/* Başlık satırı */}
+          <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-gray-800 dark:text-gray-200">
         <div className="w-44">ALT KATEGORİ</div>
         <div className="w-16 flex flex-col justify-center items-end pr-1">
           <div>BİRİM</div>
@@ -746,24 +767,7 @@ export default function QuoteServiceEditor({
         <div className="w-32 ml-2">OTEL</div>
         <div className="flex-1 min-w-0">AÇIKLAMA</div>
 
-        <div className="w-24 flex items-center justify-between">
-          <span>İŞLEMLER</span>
-          {!disabled && (
-            <button 
-              type="button"
-              onClick={() => {
-                console.log('Başlık ekleme ikonuna tıklandı - kategori seçim modalı açılmalı');
-                setShowCategoryModal(true);
-              }} 
-              className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" 
-              title="Kategori Seç ve Ekle"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6"/>
-              </svg>
-            </button>
-          )}
-        </div>
+        <div className="w-24 text-center pr-2">İŞLEMLER</div>
       </div>
 
       {/* Liste */}
@@ -1141,6 +1145,8 @@ export default function QuoteServiceEditor({
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

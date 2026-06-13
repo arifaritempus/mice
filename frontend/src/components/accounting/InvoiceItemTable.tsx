@@ -138,7 +138,7 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
         className="overflow-auto rounded-xl border flex-1 min-h-0 w-full"
         style={themedPanelStyle}
       >
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm relative">
+        <table className="min-w-[900px] divide-y divide-gray-200 dark:divide-gray-700 text-sm relative">
           <thead className="bg-slate-100/80 dark:bg-slate-800/70 sticky top-0 z-10 backdrop-blur-sm">
             <tr>
               <th className="px-4 py-3 text-left w-10">

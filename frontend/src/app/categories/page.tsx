@@ -1002,7 +1002,7 @@ export default function CategoriesPage() {
                     </select>
                   </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Gider Muhasebe Kodu
@@ -1032,7 +1032,7 @@ export default function CategoriesPage() {
                   <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">KDV Bilgileri</h4>
                   
                   {/* Gelir KDV */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 responsive-filter-grid">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Gelir KDV Muhasebe Kodu
@@ -1061,7 +1061,7 @@ export default function CategoriesPage() {
                   </div>
                   
                   {/* Gider KDV */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Gider KDV Muhasebe Kodu
@@ -1187,7 +1187,7 @@ export default function CategoriesPage() {
                     ))}
                   </select>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Gider Muhasebe Kodu
@@ -1217,7 +1217,7 @@ export default function CategoriesPage() {
                   <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">KDV Bilgileri</h4>
                   
                   {/* Gelir KDV */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 responsive-filter-grid">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Gelir KDV Muhasebe Kodu
@@ -1246,7 +1246,7 @@ export default function CategoriesPage() {
                   </div>
                   
                   {/* Gider KDV */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Gider KDV Muhasebe Kodu

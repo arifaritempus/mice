@@ -58,7 +58,7 @@ export default function SettingsPage() {
           
           <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-2">
             {/* Company Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
                   Şirket Adı
@@ -127,7 +127,7 @@ export default function SettingsPage() {
             <div className="border-t border-gray-200 dark:border-gray-700 pt-2 transition-colors duration-200">
               <h3 className="text-xs font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">Sistem Ayarları</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
                     Dil
@@ -230,7 +230,7 @@ export default function SettingsPage() {
         <div className="mt-3 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-2">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Sistem Bilgileri</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
             <div>
               <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">Sistem Versiyonu</h3>
               <p className="text-xs text-gray-900 dark:text-white">v2.0.0</p>

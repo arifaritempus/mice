@@ -14043,7 +14043,7 @@ export default function ProjectDetailPage() {
                   {/* Genel Toplam */}
                   {hotelExtras.length > 0 && (
                     <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
-                      <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                      <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                         <div className="col-span-1 font-bold">GENEL TOPLAM</div>
                         <div className="col-span-1"></div>
                         <div className="col-span-1"></div>
@@ -15020,7 +15020,7 @@ export default function ProjectDetailPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 responsive-filter-grid">
                         {Object.entries(stats?.totals?.byVehicle || {})
                           .sort(([a], [b]) => a.localeCompare(b))
                           .map(([veh, v]: any) => (
@@ -16621,7 +16621,7 @@ export default function ProjectDetailPage() {
                   {/* Genel Toplam */}
                   {hrExtras.length > 0 && (
                     <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
-                      <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                      <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                         <div className="col-span-1 font-bold">GENEL TOPLAM</div>
                         <div className="col-span-1"></div>
                         <div className="col-span-1"></div>
@@ -16819,7 +16819,7 @@ export default function ProjectDetailPage() {
                 <div className="space-y-4">
                   {/* Satış Genel Toplamları */}
                   <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">Satış Genel Toplamları</div>
                       <div className="col-span-6 text-right font-bold">
                         {Object.entries(salesTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + ')}
@@ -17083,7 +17083,7 @@ export default function ProjectDetailPage() {
 
                   {/* Bakiye Özeti */}
                   <div className="bg-emerald-600 dark:bg-emerald-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">Bakiye Özeti (Döviz Bazında)</div>
                       <div className="col-span-9 text-right font-bold">
                         {Array.from(new Set([...Object.keys(planByCurrency), ...Object.keys(collectedByCurrency)])).map((cur) => {
@@ -17176,7 +17176,7 @@ export default function ProjectDetailPage() {
                 <div className="space-y-4">
                   {/* Alış Genel Toplamları */}
                   <div className="bg-red-600 dark:bg-red-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">Alış Genel Toplamları</div>
                       <div className="col-span-6 text-right font-bold">
                         {Object.entries(purchaseTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + ')}

@@ -33,6 +33,7 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [generalSettings, setGeneralSettings] = useState<any>(null);
   const { isDark } = useTheme();
@@ -381,6 +382,7 @@ export default function Sidebar() {
           </button>
         ) : (
           <Link
+            onClick={() => setIsMobileOpen(false)}
             href={item.href || '#'}
             className={`w-full flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all duration-200 group mb-1 ${
               active
@@ -433,16 +435,39 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="mobile-only-block fixed inset-0 bg-black/60 z-[45] backdrop-blur-sm transition-opacity"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+      
+      {/* Mobile Top Bar */}
+      <div className="mobile-only items-center justify-between p-3 bg-white dark:bg-[#1a2233] border-b border-gray-200 dark:border-white/5 shadow-sm flex-shrink-0 z-40 relative w-full">
+        <div className="flex items-center gap-3">
+          <img src={currentLogo} alt="Logo" className="h-8 w-auto object-contain" />
+        </div>
+        <button 
+          onClick={() => setIsMobileOpen(true)}
+          className="p-2 rounded-lg text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+
       <div 
-        className={`h-full flex flex-col transition-all duration-300 ease-in-out ${
+        className={`h-full flex flex-col transition-transform duration-300 ease-in-out ${
           isCollapsed && !isHovered ? 'w-20' : 'w-64'
-        } shadow-2xl overflow-hidden flex-shrink-0`}
+        } shadow-2xl overflow-hidden flex-shrink-0 mobile-sidebar-container ${
+          isMobileOpen ? 'mobile-sidebar-open' : 'mobile-sidebar-closed'
+        }`}
         style={{ 
           backgroundColor: 'var(--theme-sidebar-bg, #1a2233)',
           borderRight: '1px solid var(--theme-sidebar-border, rgba(255,255,255,0.05))'
         }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => !isMobileOpen && setIsHovered(true)}
+        onMouseLeave={() => !isMobileOpen && setIsHovered(false)}
       >
         {/* Logo / Header */}
         <div 
@@ -453,6 +478,7 @@ export default function Sidebar() {
             href="/" 
             className="flex flex-col items-center gap-2 w-full active:scale-95 transition-transform"
             onClick={() => {
+              setIsMobileOpen(false);
               if (pathname === '/') window.location.reload();
             }}
           >

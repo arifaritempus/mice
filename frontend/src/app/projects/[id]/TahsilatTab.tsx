@@ -193,7 +193,7 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                 <div className="space-y-4">
                   {/* Satış Genel Toplamları */}
                   <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">Satış Genel Toplamları</div>
                       <div className="col-span-6 text-right font-bold">
                         {Object.entries(salesTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + ')}

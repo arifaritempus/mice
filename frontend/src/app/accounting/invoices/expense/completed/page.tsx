@@ -234,7 +234,7 @@ export default function ExpenseCompletedPage() {
     'shrink-0 inline-flex items-center gap-1 px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-200 text-[10px]';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
+    <div className="flex flex-col min-h-[calc(100vh-2rem)] md:h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
       <div className="w-full min-w-0 flex flex-col flex-1 space-y-4">
       <div className="flex flex-col md:flex-row md:items-start justify-start gap-6">
         <div>
@@ -272,7 +272,7 @@ export default function ExpenseCompletedPage() {
           </button>
         </div>
         <div
-          className="grid w-full min-w-0 items-end gap-2"
+          className="grid w-full min-w-0 items-end gap-2 responsive-filter-grid"
           style={{
             gridTemplateColumns: 'minmax(0,1.25fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr)'
           }}

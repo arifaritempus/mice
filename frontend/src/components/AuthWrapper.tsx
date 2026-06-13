@@ -264,8 +264,8 @@ export default function AuthWrapper({
   // Tüm sayfalar için sidebar ile layout
   return (
     <div 
-      className="flex h-screen transition-colors duration-200" 
-      style={{ backgroundColor: 'var(--theme-bg-primary, #f9fafb)' }}
+      className="flex h-screen transition-colors duration-200 mobile-auth-wrapper" 
+      style={{ backgroundColor: 'var(--theme-bg, #f1f5f9)' }}
     >
       <Sidebar />
       <div 

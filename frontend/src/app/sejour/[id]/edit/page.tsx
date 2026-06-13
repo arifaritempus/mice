@@ -1011,11 +1011,11 @@ export default function EditSejourPage() {
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 responsive-filter-grid">
                   {/* Left Column: General Info */}
                   <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm transition-all duration-300">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                         <div className="space-y-4">
                           <div>
                             <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 ml-1">Voucher Numarası *</label>
@@ -1086,7 +1086,7 @@ export default function EditSejourPage() {
                             )}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2 responsive-filter-grid">
                             <div>
                               <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 ml-1">Giriş Tarihi *</label>
                               <input
@@ -1246,7 +1246,7 @@ export default function EditSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 responsive-filter-grid">
                             <div className="md:col-span-2">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">Otel Seçimi</label>
                               <SearchableSelect
@@ -1754,7 +1754,7 @@ export default function EditSejourPage() {
                     <h3 className="text-[9px] font-black text-gray-500 dark:text-gray-300 uppercase tracking-widest ml-1">Özet ve Toplamlar</h3>
                     <div className="h-px flex-1 bg-gray-100 dark:bg-gray-700 mx-8"></div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                     <div className="bg-blue-600 p-1 rounded-lg text-white shadow-sm">
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-xl">💰</span>
@@ -1814,7 +1814,7 @@ export default function EditSejourPage() {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                     <div>
                       <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 ml-1">Voucher Numarası</label>
                       <div className="px-2 py-1 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-lg text-xs text-gray-500 dark:text-gray-400 select-none cursor-not-allowed">
@@ -1866,7 +1866,7 @@ export default function EditSejourPage() {
                               ODA {index + 1} - {hotels.find(h => h.id === room.hotelId)?.name || 'Bilinmeyen Otel'}
                             </h4>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                             <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
                                 <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Misafir & Oda Tipi</label>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{room.guestInfo || '-'} / {room.roomType || '-'}</p>
@@ -1939,7 +1939,7 @@ export default function EditSejourPage() {
                               {flight.type === 'departure' ? 'GİDİŞ' : 'DÖNÜŞ'} {index + 1} - {flight.airline} ({flight.pnr || 'PNR Yok'})
                             </h4>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                             <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
                               <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Satış Tutarı</label>
                                 <p className="text-xs font-black text-gray-900 dark:text-white">{formatAmount(flight.price)} {flight.currency}</p>
@@ -2010,7 +2010,7 @@ export default function EditSejourPage() {
                               {transfer.direction === 'arrival' ? 'VARİS' : (transfer.direction === 'return' ? 'DÖNÜŞ' : 'ARA')} {index + 1} - {transfer.vehicle}
                             </h4>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                             <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
                                 <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Tarih & Saat</label>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{transfer.date} / {transfer.time}</p>
@@ -2086,7 +2086,7 @@ export default function EditSejourPage() {
                               HİZMET {index + 1} - {service.description || 'Aciklama Yok'}
                             </h4>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                             <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
                                 <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Hizmet Tipi</label>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
@@ -2178,7 +2178,7 @@ export default function EditSejourPage() {
                         <div className="flex-none w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center text-[10px] font-black text-blue-600 dark:text-blue-400 shadow-sm border border-blue-50 dark:border-blue-900/30">
                           {index + 1}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1 responsive-filter-grid">
                           <div>
                             <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Kayıt Tarihi</label>
                             <input
@@ -2254,7 +2254,7 @@ export default function EditSejourPage() {
                 </div>
 
                 {/* Collection Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-8 responsive-filter-grid">
                     <div className="bg-blue-600 p-2 rounded text-white shadow-xl shadow-blue-500/20">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-xl">💰</span>
@@ -2388,7 +2388,7 @@ export default function EditSejourPage() {
           <div className="flex justify-between items-end mb-10">
             <div>
               <h1 className="text-2xl font-light text-gray-900 tracking-wider mb-4 uppercase">RESERVATION DIRECTORY</h1>
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 responsive-filter-grid">
                 <div>
                   <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">GUEST NAME</span>
                   <span className="block text-sm font-medium text-gray-900">{salesData.customerName}</span>

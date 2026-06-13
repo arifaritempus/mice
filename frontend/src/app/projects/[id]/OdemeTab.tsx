@@ -336,7 +336,7 @@ export default function OdemeTab(props: OdemeTabProps) {
     <div className="space-y-4">
       {/* Alış Genel Toplamları */}
       <div className="bg-red-600 dark:bg-red-700 rounded-md p-3">
-        <div className="grid grid-cols-12 gap-2 text-white text-sm">
+        <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
           <div className="col-span-3 font-bold">Alış Genel Toplamları</div>
           <div className="col-span-6 text-right font-bold">
             {Object.entries(purchaseTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(' + ')}

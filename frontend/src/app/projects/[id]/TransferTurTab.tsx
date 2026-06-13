@@ -1100,7 +1100,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                           </div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 responsive-filter-grid">
                         {Object.entries(stats?.totals?.byVehicle || {})
                           .sort(([a], [b]) => a.localeCompare(b))
                           .map(([veh, v]: any) => (

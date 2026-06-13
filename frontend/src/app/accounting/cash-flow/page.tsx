@@ -1070,146 +1070,127 @@ export default function CashFlowPage() {
           ))}
         </div>
 
-        {/* Dynamic Calendar Grid Area */}
-        <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden flex flex-col relative mb-8">
-          
-          {/* Calendar Header/Days of Week */}
-          <AnimatePresence mode="wait">
-            {(viewMode === 'monthly' || viewMode === 'custom' || viewMode === 'weekly') && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="grid grid-cols-7 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700"
-              >
-                {['PAZARTESİ', 'SALI', 'ÇARŞAMBA', 'PERŞEMBE', 'CUMA', 'CUMARTESİ', 'PAZAR'].map((day) => (
-                  <div key={day} className="py-4 text-center text-[10px] font-black text-gray-400 tracking-widest">
-                    {day}
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <div className="flex-1 overflow-visible">
-            <div className={`grid ${
-              viewMode === 'daily' ? 'grid-cols-1' :
-              viewMode === 'weekly' ? 'grid-cols-7' :
-              viewMode === 'monthly' ? 'grid-cols-7' :
-              viewMode === 'custom' ? 'grid-cols-7' :
-              'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            }`}>
-              {calendarData.map((period, index) => {
-                const isCurrentPeriod = viewMode === 'monthly' ? 
-                  period.startDate.getMonth() === currentDate.getMonth() :
-                  viewMode === 'yearly' ? 
-                  period.startDate.getMonth() === new Date().getMonth() && period.startDate.getFullYear() === new Date().getFullYear() :
-                  viewMode === 'custom' ? true :
-                  period.startDate.toDateString() === new Date().toDateString();
-                
-                const isToday = period.startDate.toDateString() === new Date().toDateString();
-                          
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.01 }}
-                    className={`min-h-[160px] p-4 border-r border-b border-gray-100 dark:border-gray-700 group/cell transition-all duration-300 ${
-                      isCurrentPeriod 
-                        ? 'bg-white dark:bg-gray-800' 
-                        : 'bg-gray-50/50 dark:bg-gray-900/50'
-                    } ${
-                      isToday ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''
-                    } hover:bg-gray-50 dark:hover:bg-gray-700/50`}
-                  >
-                    {/* Day Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-baseline gap-2">
-                        <span className={`text-2xl font-black tracking-tighter ${
-                          isToday ? 'text-blue-600 dark:text-blue-400' : 
-                          isCurrentPeriod ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-600'
-                        }`}>
-                          {period.startDate.getDate()}
-                        </span>
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                          {period.startDate.toLocaleDateString('tr-TR', { month: 'short' })}
-                        </span>
-                      </div>
-                      {isToday && (
-                        <span className="bg-blue-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-blue-500/40">
-                          BUGÜN
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Totals Summary */}
-                    {(period.totals.TRY.collection > 0 || period.totals.TRY.payment > 0) && (
-                      <div 
-                        className="flex flex-col gap-1 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => {
-                          setSelectedPeriod(period);
-                          setIsPeriodModalOpen(true);
-                        }}
-                      >
-                        {period.totals.TRY.collection > 0 && (
-                          <div className="flex items-center text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-lg border border-emerald-100 dark:border-emerald-800/30">
-                            <Plus className="w-3 h-3 mr-1" /> {formatCurrency(period.totals.TRY.collection, 'TRY')}
-                          </div>
-                        )}
-                        {period.totals.TRY.payment > 0 && (
-                          <div className="flex items-center text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded-lg border border-rose-100 dark:border-rose-800/30">
-                            <Plus className="w-3 h-3 mr-1 rotate-45" /> {formatCurrency(period.totals.TRY.payment, 'TRY')}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* Item List */}
-                    <div className="space-y-2">
-                      {period.items.slice(0, 2).map((item: CashFlowItem) => (
-                        <motion.div
-                          key={item.id}
-                          whileHover={{ scale: 1.02, x: 2 }}
-                          onClick={() => {
-                            setSelectedItem(item);
-                            setIsModalOpen(true);
-                          }}
-                          className={`p-2.5 rounded-xl border cursor-pointer transition-all shadow-sm ${
-                            item.type === 'collection'
-                              ? 'bg-white dark:bg-gray-700 border-emerald-100 dark:border-emerald-800/50 hover:border-emerald-500' 
-                              : 'bg-white dark:bg-gray-700 border-rose-100 dark:border-rose-800/50 hover:border-rose-500'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className={`text-[8px] font-black uppercase tracking-widest ${item.type === 'collection' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                              {item.type === 'collection' ? 'TAHSİLAT' : 'ÖDEME'}
-                            </span>
-                            <span className="text-[9px] font-black text-gray-900 dark:text-white">
-                              {formatCurrency(item.amount, item.currency)}
-                            </span>
-                          </div>
-                          <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 truncate group-hover/cell:whitespace-normal transition-all">
-                            {item.project_reference || item.project_title}
-                          </p>
-                        </motion.div>
-                      ))}
-                      {period.items.length > 2 && (
-                        <button 
-                          onClick={() => {
-                            setCurrentDate(period.startDate);
-                            setViewMode('daily');
-                          }}
-                          className="w-full py-1 text-[9px] font-black text-gray-400 hover:text-blue-600 transition-colors uppercase tracking-widest text-center"
-                        >
-                          +{period.items.length - 2} DİĞER
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
+        {/* Calendar Grid */}
+        <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-xl shadow-blue-500/5 border border-gray-200 dark:border-gray-800 overflow-hidden min-h-[600px] flex flex-col mb-8">
+          {(viewMode === 'monthly' || viewMode === 'weekly' || viewMode === 'custom') && (
+            <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+              {['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'].map((day) => (
+                <div key={day} className="py-4 text-center">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{day}</span>
+                </div>
+              ))}
             </div>
+          )}
+
+          <div className={`grid flex-1 ${
+            viewMode === 'daily' ? 'grid-cols-1' :
+            viewMode === 'weekly' ? 'grid-cols-7' :
+            viewMode === 'yearly' ? 'grid-cols-4' :
+            viewMode === 'custom' ? 'grid-cols-7' :
+            'grid-cols-7'
+          }`}>
+            {calendarData.map((period, idx) => {
+              const isToday = period.startDate.toDateString() === new Date().toDateString();
+              const isCurrentPeriod = viewMode === 'monthly' ? 
+                period.startDate.getMonth() === currentDate.getMonth() :
+                viewMode === 'yearly' ? 
+                period.startDate.getMonth() === new Date().getMonth() && period.startDate.getFullYear() === new Date().getFullYear() :
+                viewMode === 'custom' ? true :
+                period.startDate.toDateString() === new Date().toDateString();
+              
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: idx * 0.005 }}
+                  key={idx}
+                  onClick={() => {
+                    if (period.items.length > 0) {
+                      setSelectedPeriod(period);
+                      setIsPeriodModalOpen(true);
+                    }
+                  }}
+                  className={`min-h-[160px] p-5 border-r border-b border-gray-100 dark:border-gray-800 group relative transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer ${
+                    !isCurrentPeriod && viewMode === 'monthly' ? 'bg-gray-50/10 dark:bg-gray-900/10 opacity-30' : 'bg-white dark:bg-gray-900'
+                  } ${isToday ? 'bg-blue-50/20 dark:bg-blue-900/5 ring-1 ring-inset ring-blue-500/20' : ''}`}
+                >
+                  <div className="absolute inset-0 border border-gray-100 dark:border-gray-800/50 m-2 rounded-3xl group-hover:border-blue-500/20 transition-all" />
+                  <div className="relative flex justify-between items-start mb-4">
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                      isToday ? 'px-2 py-1 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/30' :
+                      isCurrentPeriod || viewMode === 'yearly' ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-700'
+                    }`}>
+                      {viewMode === 'yearly' 
+                        ? period.startDate.toLocaleDateString('tr-TR', { month: 'long' }) 
+                        : `${period.startDate.getDate()} ${period.startDate.toLocaleDateString('tr-TR', { month: 'short' })}`}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 mt-2">
+                    {/* Currency Totals Summary */}
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {['TRY', 'USD', 'EUR', 'GBP'].map((curr) => {
+                        const coll = period.totals[curr as keyof typeof period.totals].collection;
+                        const pay = period.totals[curr as keyof typeof period.totals].payment;
+                        
+                        if (coll === 0 && pay === 0) return null;
+                        
+                        return (
+                          <div key={curr} className="flex flex-col gap-0.5 w-full">
+                            {coll > 0 && (
+                              <div className="flex items-center gap-1 text-[8px] font-black bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-md border border-emerald-100/50 dark:border-emerald-800/30 w-full justify-between">
+                                <span className="text-emerald-600 dark:text-emerald-400 flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" /> {curr}</span>
+                                <span className="text-gray-900 dark:text-white">{formatCurrency(coll, curr).replace(/[^\d,. ]/g, '')}</span>
+                              </div>
+                            )}
+                            {pay > 0 && (
+                              <div className="flex items-center gap-1 text-[8px] font-black bg-rose-50 dark:bg-rose-900/20 px-1.5 py-0.5 rounded-md border border-rose-100/50 dark:border-rose-800/30 w-full justify-between">
+                                <span className="text-rose-600 dark:text-rose-400 flex items-center"><TrendingDown className="w-2 h-2 mr-0.5" /> {curr}</span>
+                                <span className="text-gray-900 dark:text-white">{formatCurrency(pay, curr).replace(/[^\d,. ]/g, '')}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Movement List Preview */}
+                    <div className="space-y-1 overflow-hidden">
+                      {period.items.slice(0, 3).map((item, tIdx) => (
+                        <div key={tIdx} className={`text-[9px] leading-tight p-1.5 rounded-lg border group-hover:border-blue-500/30 transition-colors ${
+                          item.type === 'collection' ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100/50 dark:border-emerald-800/30' : 'bg-rose-50/30 dark:bg-rose-900/10 border-rose-100/50 dark:border-rose-800/30'
+                        }`}>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`font-black tracking-tighter truncate max-w-[60px] ${item.type === 'collection' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                              {item.project_title || 'İşlem'}
+                            </span>
+                            <span className="font-black text-gray-900 dark:text-white ml-1">
+                              {formatCurrency(item.amount, item.currency).replace(/[^\d,. ]/g, '')}
+                            </span>
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400 font-bold truncate">
+                            {item.type === 'collection' ? (item.project_company || item.agency_name || 'Bireysel') : (item.hotel || item.hotel_name || 'Tedarikçi')}
+                          </div>
+                          <div className="text-[8px] text-gray-400 dark:text-gray-500 mt-0.5 truncate tracking-tighter">
+                            {item.description || item.collection_type || item.payment_type || '-'}
+                          </div>
+                        </div>
+                      ))}
+                      {period.items.length > 3 && (
+                        <div className="text-[8px] font-black text-blue-500 uppercase px-1 pt-1 flex items-center gap-1 animate-pulse">
+                          <Plus className="w-2 h-2" /> {period.items.length - 3} HAREKET DAHA
+                        </div>
+                      )}
+                      {period.items.length > 0 && period.items.length <= 3 && (
+                        <div className="text-[8px] font-black text-gray-300 dark:text-gray-600 uppercase px-1 pt-1 flex items-center gap-1 group-hover:text-blue-400 transition-colors">
+                          <Plus className="w-2 h-2" /> DETAYLAR
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </main>
@@ -1242,7 +1223,7 @@ export default function CashFlowPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-y-8 gap-x-12 py-8 border-y border-gray-100 dark:border-gray-800">
+            <div className="grid grid-cols-2 gap-y-8 gap-x-12 py-8 border-y border-gray-100 dark:border-gray-800 responsive-filter-grid">
               <div className="space-y-1">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">İLGİLİ PROJE / REFERANS</p>
                 <p className="text-sm font-black text-gray-900 dark:text-white leading-snug">{selectedItem.project_title || 'Genel İşlem'}</p>

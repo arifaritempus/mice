@@ -579,7 +579,7 @@ export default function FinancialTab({
       {/* Genel Toplam - Diğer Servisler */}
       {financialServices.length > 0 && (
         <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
-          <div className="grid grid-cols-12 gap-2 text-white text-sm">
+          <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
             <div className="col-span-2 font-bold">GENEL TOPLAM</div>
             <div className="col-span-6 text-right font-bold">
               {Object.entries(financialTotals).map(([cur, val]: any) => `${formatNumber(Number(val.toplamMaliyet || 0))} ${cur}`).join(' + ')}

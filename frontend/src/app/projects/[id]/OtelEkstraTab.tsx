@@ -984,7 +984,7 @@ export default function OtelEkstraTab({
                   {/* Genel Toplam */}
                   {hotelExtras.length > 0 && (
                     <div className="bg-blue-600 dark:bg-blue-700 rounded-md p-3">
-                      <div className="grid grid-cols-12 gap-2 text-white text-sm">
+                      <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
                         <div className="col-span-1 font-bold">GENEL TOPLAM</div>
                         <div className="col-span-1"></div>
                         <div className="col-span-1"></div>

@@ -8,13 +8,14 @@ import { tr } from 'date-fns/locale';
 import { Calendar, X } from 'lucide-react';
 import 'react-datepicker/dist/react-datepicker.css';
 
-export interface DateRangeFieldAccountingProps {
+export interface ResponsiveDateRangeFieldProps {
   label: string;
-  startValue: string; // ISO date string
-  endValue: string;   // ISO date string
+  startValue: string;
+  endValue: string;
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
-  hideLabel?: boolean;
+  onApply: (start?: string, end?: string) => void;
+  className?: string;
 }
 
 const toDate = (value: string) => {
@@ -25,14 +26,9 @@ const toDate = (value: string) => {
 
 const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
 
-export function DateRangeFieldAccounting({
-  label,
-  startValue,
-  endValue,
-  onStartChange,
-  onEndChange,
-  hideLabel = false
-}: DateRangeFieldAccountingProps) {
+export default function ResponsiveDateRangeField({ 
+  label, startValue, endValue, onStartChange, onEndChange, onApply, className = "" 
+}: ResponsiveDateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -110,6 +106,7 @@ export function DateRangeFieldAccounting({
     const e = toIsoDate(pickerRange[1]);
     onStartChange(s);
     onEndChange(e);
+    onApply(s, e);
     setIsCalendarOpen(false);
   };
 
@@ -117,6 +114,7 @@ export function DateRangeFieldAccounting({
     e.stopPropagation();
     onStartChange('');
     onEndChange('');
+    onApply('', '');
     setPickerRange([null, null]);
   };
 
@@ -170,12 +168,10 @@ export function DateRangeFieldAccounting({
   );
 
   return (
-    <div className="min-w-0 relative flex flex-col w-full" ref={containerRef}>
-      {!hideLabel && (
-        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 truncate" title={label}>
-          {label}
-        </label>
-      )}
+    <div className={`min-w-0 relative flex flex-col w-full ${className}`} ref={containerRef}>
+      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 truncate" title={label}>
+        {label}
+      </label>
       
       {/* Trigger Button */}
       <button
@@ -481,4 +477,3 @@ export function DateRangeFieldAccounting({
     </div>
   );
 }
-

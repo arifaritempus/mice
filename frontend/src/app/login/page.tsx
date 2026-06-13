@@ -9,6 +9,19 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 import { SettingsService } from '@/lib/supabaseService';
 
 export default function LoginPage() {
+if (typeof window !== 'undefined') {
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes('Invalid Refresh Token')) {
+      return;
+    }
+    if (args[0] && args[0].message && args[0].message.includes('Invalid Refresh Token')) {
+      return;
+    }
+    originalConsoleError(...args);
+  };
+}
+
   const setCookie = (name: string, value: string) => {
     if (typeof document === 'undefined') return;
     document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
@@ -197,7 +210,7 @@ export default function LoginPage() {
                 required
                 value={credentials.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
                 placeholder="ornek@mail.com"
               />
             </div>
@@ -214,7 +227,7 @@ export default function LoginPage() {
                 required
                 value={credentials.password}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
                 placeholder="••••••••"
               />
             </div>

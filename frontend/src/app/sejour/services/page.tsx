@@ -1,4 +1,5 @@
 'use client';
+import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
 
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import ExcelJS from 'exceljs';
@@ -107,154 +108,8 @@ interface DateRangeFieldProps {
   onApply?: (start?: string, end?: string) => void;
 }
 
-const toDate = (value: string) => {
-  if (!value) return null;
-  const parsed = parseISO(value);
-  return isValidDate(parsed) ? parsed : null;
-};
 
-const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
 
-const parseTypedDate = (value: string): string | null => {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  const parsed = parseDateFns(trimmed, 'dd.MM.yyyy', new Date());
-  if (!isValidDate(parsed)) return null;
-  return formatDateFns(parsed, 'yyyy-MM-dd');
-};
-
-function DateRangeField({ 
-  label, 
-  startValue, 
-  endValue, 
-  onStartChange, 
-  onEndChange,
-  onApply 
-}: DateRangeFieldProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const startDate = toDate(startValue);
-  const endDate = toDate(endValue);
-  const [startText, setStartText] = useState(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
-  const [endText, setEndText] = useState(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '');
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-
-  useEffect(() => {
-    setStartText(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
-  }, [startValue]);
-
-  useEffect(() => {
-    setEndText(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '');
-  }, [endValue]);
-
-  useEffect(() => {
-    const onClickOutside = (event: MouseEvent) => {
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(event.target as Node)) setIsCalendarOpen(false);
-    };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
-
-  const handleApply = () => {
-    if (onApply) {
-      const s = startText.length === 10 ? parseTypedDate(startText) || '' : '';
-      const eVal = endText.length === 10 ? parseTypedDate(endText) || '' : '';
-      onApply(s, eVal);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleApply();
-      setIsCalendarOpen(false);
-    }
-  };
-
-  const handleStartTextChange = (value: string) => {
-    setStartText(value);
-    if (value === '') {
-      onStartChange('');
-      return;
-    }
-    if (value.length === 10) {
-      const parsed = parseTypedDate(value);
-      if (parsed !== null) {
-        onStartChange(parsed);
-        if (endText.length === 10 && onApply) {
-          const eVal = parseTypedDate(endText) || '';
-          onApply(parsed, eVal);
-        }
-      }
-    }
-  };
-
-  const handleEndTextChange = (value: string) => {
-    setEndText(value);
-    if (value === '') {
-      onEndChange('');
-      return;
-    }
-    if (value.length === 10) {
-      const parsed = parseTypedDate(value);
-      if (parsed !== null) {
-        onEndChange(parsed);
-        if (startText.length === 10 && onApply) {
-          const sVal = parseTypedDate(startText) || '';
-          onApply(sVal, parsed);
-        }
-      }
-    }
-  };
-
-  return (
-    <div className="min-w-0 relative" ref={containerRef}>
-      <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1">{label}</label>
-      <div className="flex gap-1">
-        <input
-          value={startText}
-          onChange={(e) => handleStartTextChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsCalendarOpen(true)}
-          placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-        <input
-          value={endText}
-          onChange={(e) => handleEndTextChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsCalendarOpen(true)}
-          placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-      </div>
-      {isCalendarOpen && (
-        <div className="absolute left-0 top-full mt-1 z-50 min-w-[560px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl p-2 overflow-x-auto">
-          <DatePicker
-            inline
-            locale={tr}
-            monthsShown={2}
-            selectsRange
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(dates) => {
-              const [start, end] = dates as [Date | null, Date | null];
-              const sIso = toIsoDate(start);
-              const eIso = toIsoDate(end);
-              onStartChange(sIso);
-              onEndChange(eIso);
-              if (start && end) {
-                setIsCalendarOpen(false);
-                if (onApply) onApply(sIso, eIso);
-              }
-            }}
-            openToDate={startDate || endDate || new Date()}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
 
 function MultiTokenFilterInput({
   label,
@@ -1005,79 +860,99 @@ export default function SejourServicesPage() {
 
 
         {/* Search and Date Filters */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @media (min-width: 768px) {
+            .sejour-services-filters-grid {
+              display: grid !important;
+              grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto !important;
+            }
+          }
+        `}} />
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-3 transition-colors duration-200 p-3">
-          <div className="grid grid-cols-[1.2fr_1fr_1.2fr_1.2fr_1.2fr_auto] items-end gap-2">
-            <DateRangeField
-              label="C-IN C-OUT Tarihi"
-              startValue={activeTab === 'sales' ? salesFromDate : costFromDate}
-              endValue={activeTab === 'sales' ? salesToDate : costToDate}
-              onStartChange={activeTab === 'sales' ? setSalesFromDate : setCostFromDate}
-              onEndChange={activeTab === 'sales' ? setSalesToDate : setCostToDate}
-              onApply={activeTab === 'sales' ? handleApplySalesDates : handleApplyCostDates}
-            />
-            <MultiTokenFilterInput
-              label="Voucher No"
-              tokens={activeTab === 'sales' ? salesVoucherTokens : costVoucherTokens}
-              inputValue={activeTab === 'sales' ? salesVoucherInput : costVoucherInput}
-              suggestions={voucherSuggestions}
-              onInputChange={activeTab === 'sales' ? setSalesVoucherInput : setCostVoucherInput}
-              onAddToken={(value) => activeTab === 'sales'
-                ? addToken(value, setSalesVoucherTokens, setSalesVoucherInput)
-                : addToken(value, setCostVoucherTokens, setCostVoucherInput)}
-              onRemoveToken={(value) => activeTab === 'sales'
-                ? removeToken(value, setSalesVoucherTokens)
-                : removeToken(value, setCostVoucherTokens)}
-            />
-            <MultiTokenFilterInput
-              label="Acente/Müşteri"
-              tokens={activeTab === 'sales' ? salesCustomerTokens : costCustomerTokens}
-              inputValue={activeTab === 'sales' ? salesCustomerInput : costCustomerInput}
-              suggestions={customerSuggestions}
-              onInputChange={activeTab === 'sales' ? setSalesCustomerInput : setCostCustomerInput}
-              onAddToken={(value) => activeTab === 'sales'
-                ? addToken(value, setSalesCustomerTokens, setSalesCustomerInput)
-                : addToken(value, setCostCustomerTokens, setCostCustomerInput)}
-              onRemoveToken={(value) => activeTab === 'sales'
-                ? removeToken(value, setSalesCustomerTokens)
-                : removeToken(value, setCostCustomerTokens)}
-            />
-            <MultiTokenFilterInput
-              label="Otel"
-              tokens={activeTab === 'sales' ? salesHotelTokens : costHotelTokens}
-              inputValue={activeTab === 'sales' ? salesHotelInput : costHotelInput}
-              suggestions={hotelSuggestions}
-              onInputChange={activeTab === 'sales' ? setSalesHotelInput : setCostHotelInput}
-              onAddToken={(value) => activeTab === 'sales'
-                ? addToken(value, setSalesHotelTokens, setSalesHotelInput)
-                : addToken(value, setCostHotelTokens, setCostHotelInput)}
-              onRemoveToken={(value) => activeTab === 'sales'
-                ? removeToken(value, setSalesHotelTokens)
-                : removeToken(value, setCostHotelTokens)}
-            />
-            <MultiTokenFilterInput
-              label="Misafir"
-              tokens={activeTab === 'sales' ? salesGuestTokens : costGuestTokens}
-              inputValue={activeTab === 'sales' ? salesGuestInput : costGuestInput}
-              suggestions={guestSuggestions}
-              onInputChange={activeTab === 'sales' ? setSalesGuestInput : setCostGuestInput}
-              onAddToken={(value) => activeTab === 'sales'
-                ? addToken(value, setSalesGuestTokens, setSalesGuestInput)
-                : addToken(value, setCostGuestTokens, setCostGuestInput)}
-              onRemoveToken={(value) => activeTab === 'sales'
-                ? removeToken(value, setSalesGuestTokens)
-                : removeToken(value, setCostGuestTokens)}
-            />
-            <div className="w-8">
-              <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 opacity-0">Temizle</label>
-              <button
-                onClick={clearServicesFilters}
-                className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
-                title="Filtreleri Temizle"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
+          <div className="flex flex-col sejour-services-filters-grid items-end gap-2 w-full min-w-0">
+            <div className="w-full min-w-0">
+              <ResponsiveDateRangeField
+                label="C-IN C-OUT Tarihi"
+                startValue={activeTab === 'sales' ? salesFromDate : costFromDate}
+                endValue={activeTab === 'sales' ? salesToDate : costToDate}
+                onStartChange={activeTab === 'sales' ? setSalesFromDate : setCostFromDate}
+                onEndChange={activeTab === 'sales' ? setSalesToDate : setCostToDate}
+                onApply={activeTab === 'sales' ? handleApplySalesDates : handleApplyCostDates}
+              />
+            </div>
+            <div className="w-full min-w-0">
+              <MultiTokenFilterInput
+                label="Voucher No"
+                tokens={activeTab === 'sales' ? salesVoucherTokens : costVoucherTokens}
+                inputValue={activeTab === 'sales' ? salesVoucherInput : costVoucherInput}
+                suggestions={voucherSuggestions}
+                onInputChange={activeTab === 'sales' ? setSalesVoucherInput : setCostVoucherInput}
+                onAddToken={(value) => activeTab === 'sales'
+                  ? addToken(value, setSalesVoucherTokens, setSalesVoucherInput)
+                  : addToken(value, setCostVoucherTokens, setCostVoucherInput)}
+                onRemoveToken={(value) => activeTab === 'sales'
+                  ? removeToken(value, setSalesVoucherTokens)
+                  : removeToken(value, setCostVoucherTokens)}
+              />
+            </div>
+            <div className="w-full min-w-0">
+              <MultiTokenFilterInput
+                label="Acente/Müşteri"
+                tokens={activeTab === 'sales' ? salesCustomerTokens : costCustomerTokens}
+                inputValue={activeTab === 'sales' ? salesCustomerInput : costCustomerInput}
+                suggestions={customerSuggestions}
+                onInputChange={activeTab === 'sales' ? setSalesCustomerInput : setCostCustomerInput}
+                onAddToken={(value) => activeTab === 'sales'
+                  ? addToken(value, setSalesCustomerTokens, setSalesCustomerInput)
+                  : addToken(value, setCostCustomerTokens, setCostCustomerInput)}
+                onRemoveToken={(value) => activeTab === 'sales'
+                  ? removeToken(value, setSalesCustomerTokens)
+                  : removeToken(value, setCostCustomerTokens)}
+              />
+            </div>
+            <div className="w-full min-w-0">
+              <MultiTokenFilterInput
+                label="Otel"
+                tokens={activeTab === 'sales' ? salesHotelTokens : costHotelTokens}
+                inputValue={activeTab === 'sales' ? salesHotelInput : costHotelInput}
+                suggestions={hotelSuggestions}
+                onInputChange={activeTab === 'sales' ? setSalesHotelInput : setCostHotelInput}
+                onAddToken={(value) => activeTab === 'sales'
+                  ? addToken(value, setSalesHotelTokens, setSalesHotelInput)
+                  : addToken(value, setCostHotelTokens, setCostHotelInput)}
+                onRemoveToken={(value) => activeTab === 'sales'
+                  ? removeToken(value, setSalesHotelTokens)
+                  : removeToken(value, setCostHotelTokens)}
+              />
+            </div>
+            <div className="w-full min-w-0">
+              <MultiTokenFilterInput
+                label="Misafir"
+                tokens={activeTab === 'sales' ? salesGuestTokens : costGuestTokens}
+                inputValue={activeTab === 'sales' ? salesGuestInput : costGuestInput}
+                suggestions={guestSuggestions}
+                onInputChange={activeTab === 'sales' ? setSalesGuestInput : setCostGuestInput}
+                onAddToken={(value) => activeTab === 'sales'
+                  ? addToken(value, setSalesGuestTokens, setSalesGuestInput)
+                  : addToken(value, setCostGuestTokens, setCostGuestInput)}
+                onRemoveToken={(value) => activeTab === 'sales'
+                  ? removeToken(value, setSalesGuestTokens)
+                  : removeToken(value, setCostGuestTokens)}
+              />
+            </div>
+            <div className="w-8 shrink-0 flex items-end">
+              <div className="w-full">
+                <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 opacity-0 hidden md:block">Temizle</label>
+                <button
+                  onClick={clearServicesFilters}
+                  className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
+                  title="Filtreleri Temizle"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1013,7 +1013,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">GÖRÜŞME TÜRÜ</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 responsive-filter-grid">
                   {INTERACTION_TYPES.map(type => (
                     <button
                       key={type.value}

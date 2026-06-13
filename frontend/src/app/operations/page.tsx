@@ -226,7 +226,7 @@ export default function OperationsPage() {
         </div>
 
         {/* İstatistikler */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4 responsive-filter-grid">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 transition-colors duration-200">
             <div className="flex items-center">
               <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded-lg">

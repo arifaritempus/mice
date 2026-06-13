@@ -310,7 +310,7 @@ export default function ProfilePage() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-200">Profil Bilgileri</h2>
             
             <form onSubmit={handleProfileUpdate} className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
                     Ad *

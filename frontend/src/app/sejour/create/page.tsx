@@ -950,11 +950,11 @@ export default function CreateSejourPage() {
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 responsive-filter-grid">
                   {/* Left Column: General Info */}
                   <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm transition-all duration-300">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                         <div className="space-y-4">
                           <div>
                             <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 ml-1">Voucher Numarası *</label>
@@ -1025,7 +1025,7 @@ export default function CreateSejourPage() {
                             )}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2 responsive-filter-grid">
                             <div>
                               <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 ml-1">Giriş Tarihi *</label>
                               <input
@@ -1185,7 +1185,7 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 responsive-filter-grid">
                             <div className="md:col-span-2">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">Otel Seçimi</label>
                               <SearchableSelect
@@ -1694,7 +1694,7 @@ export default function CreateSejourPage() {
                     </h3>
                   </div>
                   <div className="p-1">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 responsive-filter-grid">
                       <div className="relative group">
                         <div className="relative bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm transition-all duration-300 hover:scale-[1.02]">
                           <h4 className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Toplam Satış Tutarları</h4>
@@ -1740,7 +1740,7 @@ export default function CreateSejourPage() {
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 responsive-filter-grid">
                   <div className="lg:col-span-3 space-y-6">
                     {/* Accommodation Costs */}
                     {showAccommodation && (
@@ -1913,7 +1913,7 @@ export default function CreateSejourPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 responsive-filter-grid">
                   <div className="lg:col-span-3 space-y-6">
                     {/* Mevcut Tahsilat Kayıtları */}
                     {collections.length > 0 && (
@@ -1977,7 +1977,7 @@ export default function CreateSejourPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 responsive-filter-grid">
                   <div className="bg-blue-50/50 dark:bg-blue-900/10 p-1 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-all duration-300 hover:scale-[1.02]">
                     <h3 className="text-[10px] font-bold text-blue-800 dark:text-blue-400 uppercase tracking-widest mb-3">Toplam Tutarlar</h3>
                     <div className="space-y-1.5">
@@ -2084,7 +2084,7 @@ export default function CreateSejourPage() {
           <div className="flex justify-between items-end mb-10">
             <div>
               <h1 className="text-2xl font-light text-gray-900 tracking-wider mb-4 uppercase">RESERVATION DIRECTORY</h1>
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 responsive-filter-grid">
                 <div>
                   <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">GUEST NAME</span>
                   <span className="block text-sm font-medium text-gray-900">{salesData.customerName}</span>

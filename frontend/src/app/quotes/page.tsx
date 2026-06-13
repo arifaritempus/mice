@@ -1,4 +1,5 @@
 'use client';
+import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
 
 import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
 import Link from 'next/link';
@@ -95,142 +96,8 @@ interface DateRangeFieldProps {
   onApply?: (start?: string, end?: string) => void;
 }
 
-const toDate = (value: string) => {
-  if (!value) return null;
-  const parsed = parseISO(value);
-  return isValidDate(parsed) ? parsed : null;
-};
 
-const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
 
-const parseTypedDate = (value: string): string | null => {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  const parsed = parseDateFns(trimmed, 'dd.MM.yyyy', new Date());
-  if (!isValidDate(parsed)) return null;
-  return formatDateFns(parsed, 'yyyy-MM-dd');
-};
-
-function DateRangeField({
-  label,
-  startValue,
-  endValue,
-  onStartChange,
-  onEndChange,
-  onApply
-}: DateRangeFieldProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const startDate = toDate(startValue);
-  const endDate = toDate(endValue);
-  const [startText, setStartText] = useState(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
-  const [endText, setEndText] = useState(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '');
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-
-  useEffect(() => {
-    setStartText(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '');
-  }, [startValue]);
-
-  useEffect(() => {
-    setEndText(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '');
-  }, [endValue]);
-
-  useEffect(() => {
-    const onClickOutside = (event: MouseEvent) => {
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(event.target as Node)) {
-        setIsCalendarOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
-
-  const handleStartTextChange = (value: string) => {
-    setStartText(value);
-    if (value === '') {
-      onStartChange('');
-      return;
-    }
-    if (value.length === 10) {
-      const parsed = parseTypedDate(value);
-      if (parsed !== null) {
-        onStartChange(parsed);
-        if (endText.length === 10 && onApply) onApply();
-      }
-    }
-  };
-
-  const handleEndTextChange = (value: string) => {
-    setEndText(value);
-    if (value === '') {
-      onEndChange('');
-      return;
-    }
-    if (value.length === 10) {
-      const parsed = parseTypedDate(value);
-      if (parsed !== null) {
-        onEndChange(parsed);
-        if (startText.length === 10 && onApply) onApply();
-      }
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && onApply) {
-      e.preventDefault();
-      const s = startText.length === 10 ? parseTypedDate(startText) || '' : '';
-      const eVal = endText.length === 10 ? parseTypedDate(endText) || '' : '';
-      onApply(s, eVal);
-      setIsCalendarOpen(false);
-    }
-  };
-
-  return (
-    <div className="min-w-0 relative" ref={containerRef}>
-      <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1">{label}</label>
-      <div className="flex gap-1">
-        <input
-          value={startText}
-          onChange={(e) => handleStartTextChange(e.target.value)}
-          onFocus={() => setIsCalendarOpen(true)}
-          onKeyDown={handleKeyDown}
-          placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-        <input
-          value={endText}
-          onChange={(e) => handleEndTextChange(e.target.value)}
-          onFocus={() => setIsCalendarOpen(true)}
-          onKeyDown={handleKeyDown}
-          placeholder="gg.aa.yyyy"
-          className="w-full min-w-0 h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-      </div>
-      {isCalendarOpen && (
-        <div className="absolute left-0 top-full mt-1 z-50 min-w-[560px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl p-2 overflow-x-auto">
-          <DatePicker
-            inline
-            locale={tr}
-            monthsShown={2}
-            selectsRange
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(dates) => {
-              const [start, end] = dates as [Date | null, Date | null];
-              onStartChange(toIsoDate(start));
-              onEndChange(toIsoDate(end));
-              if (start && end) {
-                setIsCalendarOpen(false);
-                if (onApply) onApply();
-              }
-            }}
-            openToDate={startDate || endDate || new Date()}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
 
 function MultiTokenFilterInput({
   label,
@@ -1096,7 +963,7 @@ export default function QuotesPage() {
       </div>
 
       {/* Stats Cards - Durum */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2 responsive-filter-grid">
         <button
           onClick={() => setFilter('all')}
           className={`rounded-lg shadow px-3 py-2 transition-colors duration-200 text-left ${filter === 'all'
@@ -1140,7 +1007,7 @@ export default function QuotesPage() {
       </div>
 
       {/* Stats Cards - Opsiyon */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3 responsive-filter-grid">
         <button
           onClick={() => setOptionFilter('all')}
           className={`rounded-lg shadow px-3 py-2 transition-colors duration-200 text-left ${optionFilter === 'all'
@@ -1184,75 +1051,83 @@ export default function QuotesPage() {
       </div>
 
       {/* Bağımsız Arama Alanı */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (min-width: 768px) {
+          .quotes-filters-grid {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto !important;
+          }
+        }
+      `}} />
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-3 p-3 transition-colors duration-200 w-full min-w-0">
-        <div className="w-full min-w-0">
-          <div className="grid w-full items-end gap-2 grid-cols-[1.8fr_1fr_1.8fr_1fr_1fr_1fr_auto]">
-            <div className="min-w-0">
-              <DateRangeField
-                label="Teklif Tarihi"
-                startValue={quoteDateStart}
-                endValue={quoteDateEnd}
-                onStartChange={setQuoteDateStart}
-                onEndChange={setQuoteDateEnd}
-                onApply={handleApplyQuoteDates}
-              />
-            </div>
-            <div className="min-w-0">
-              <MultiTokenFilterInput
-                label="Referans"
-                tokens={referenceTokens}
-                inputValue={referenceInput}
-                suggestions={referenceSuggestions}
-                onInputChange={setReferenceInput}
-                onAddToken={(value) => addToken(value, setReferenceTokens, setReferenceInput)}
-                onRemoveToken={(value) => removeToken(value, setReferenceTokens)}
-              />
-            </div>
-            <div className="min-w-0">
-              <DateRangeField
-                label="C-IN C-OUT Tarihi"
-                startValue={checkInDate}
-                endValue={checkOutDate}
-                onStartChange={setCheckInDate}
-                onEndChange={setCheckOutDate}
-                onApply={handleApplyCheckInDates}
-              />
-            </div>
-            <div className="min-w-0">
-              <MultiTokenFilterInput
-                label="Firma Adı"
-                tokens={companyTokens}
-                inputValue={companyInput}
-                suggestions={companySuggestions}
-                onInputChange={setCompanyInput}
-                onAddToken={(value) => addToken(value, setCompanyTokens, setCompanyInput)}
-                onRemoveToken={(value) => removeToken(value, setCompanyTokens)}
-              />
-            </div>
-            <div className="min-w-0">
-              <MultiTokenFilterInput
-                label="Acente"
-                tokens={agencyTokens}
-                inputValue={agencyInput}
-                suggestions={agencySuggestions}
-                onInputChange={setAgencyInput}
-                onAddToken={(value) => addToken(value, setAgencyTokens, setAgencyInput)}
-                onRemoveToken={(value) => removeToken(value, setAgencyTokens)}
-              />
-            </div>
-            <div className="min-w-0">
-              <MultiTokenFilterInput
-                label="Durum"
-                tokens={statusTokens}
-                inputValue={statusInput}
-                suggestions={statusSuggestions}
-                onInputChange={setStatusInput}
-                onAddToken={(value) => addToken(value, setStatusTokens, setStatusInput)}
-                onRemoveToken={(value) => removeToken(value, setStatusTokens)}
-              />
-            </div>
-            <div className="w-8">
-              <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 opacity-0">Temizle</label>
+        <div className="flex flex-col quotes-filters-grid items-end gap-2 w-full min-w-0">
+          <div className="w-full min-w-0">
+            <ResponsiveDateRangeField
+              label="Teklif Tarihi"
+              startValue={quoteDateStart}
+              endValue={quoteDateEnd}
+              onStartChange={setQuoteDateStart}
+              onEndChange={setQuoteDateEnd}
+              onApply={handleApplyQuoteDates}
+            />
+          </div>
+          <div className="w-full min-w-0">
+            <MultiTokenFilterInput
+              label="Referans"
+              tokens={referenceTokens}
+              inputValue={referenceInput}
+              suggestions={referenceSuggestions}
+              onInputChange={setReferenceInput}
+              onAddToken={(value) => addToken(value, setReferenceTokens, setReferenceInput)}
+              onRemoveToken={(value) => removeToken(value, setReferenceTokens)}
+            />
+          </div>
+          <div className="w-full min-w-0">
+            <ResponsiveDateRangeField
+              label="C-IN C-OUT Tarihi"
+              startValue={checkInDate}
+              endValue={checkOutDate}
+              onStartChange={setCheckInDate}
+              onEndChange={setCheckOutDate}
+              onApply={handleApplyCheckInDates}
+            />
+          </div>
+          <div className="w-full min-w-0">
+            <MultiTokenFilterInput
+              label="Firma Adı"
+              tokens={companyTokens}
+              inputValue={companyInput}
+              suggestions={companySuggestions}
+              onInputChange={setCompanyInput}
+              onAddToken={(value) => addToken(value, setCompanyTokens, setCompanyInput)}
+              onRemoveToken={(value) => removeToken(value, setCompanyTokens)}
+            />
+          </div>
+          <div className="w-full min-w-0">
+            <MultiTokenFilterInput
+              label="Acente"
+              tokens={agencyTokens}
+              inputValue={agencyInput}
+              suggestions={agencySuggestions}
+              onInputChange={setAgencyInput}
+              onAddToken={(value) => addToken(value, setAgencyTokens, setAgencyInput)}
+              onRemoveToken={(value) => removeToken(value, setAgencyTokens)}
+            />
+          </div>
+          <div className="w-full min-w-0">
+            <MultiTokenFilterInput
+              label="Durum"
+              tokens={statusTokens}
+              inputValue={statusInput}
+              suggestions={statusSuggestions}
+              onInputChange={setStatusInput}
+              onAddToken={(value) => addToken(value, setStatusTokens, setStatusInput)}
+              onRemoveToken={(value) => removeToken(value, setStatusTokens)}
+            />
+          </div>
+          <div className="w-8 shrink-0 flex items-end">
+            <div className="w-full">
+              <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 opacity-0 hidden md:block">Temizle</label>
               <button
                 onClick={clearAllFilters}
                 className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
@@ -1268,7 +1143,7 @@ export default function QuotesPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-[300px]">
         <div className="overflow-auto w-full flex-1">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">

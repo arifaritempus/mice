@@ -508,7 +508,7 @@ export default function ServiceTypesPage() {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Yeni Hizmet Türü Ekle</h3>
                 <form onSubmit={handleCreateServiceType}>
                   <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Hizmet Türü Adı</label>
                         <input
@@ -542,7 +542,7 @@ export default function ServiceTypesPage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Gider Muhasebe Bağlantı Kodu</label>
                         <input
@@ -565,7 +565,7 @@ export default function ServiceTypesPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Gelir KDV Kodu</label>
                         <input
@@ -591,7 +591,7 @@ export default function ServiceTypesPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Gider KDV Kodu</label>
                         <input
@@ -669,7 +669,7 @@ export default function ServiceTypesPage() {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Hizmet Türü Düzenle</h3>
                 <form onSubmit={handleUpdateServiceType}>
                   <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Hizmet Türü Adı</label>
                         <input
@@ -703,7 +703,7 @@ export default function ServiceTypesPage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Gider Muhasebe Bağlantı Kodu</label>
                         <input
@@ -726,7 +726,7 @@ export default function ServiceTypesPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Gelir KDV Kodu</label>
                         <input
@@ -752,7 +752,7 @@ export default function ServiceTypesPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Gider KDV Kodu</label>
                         <input

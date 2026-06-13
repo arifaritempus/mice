@@ -145,7 +145,7 @@ export default function IncomePendingPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
+    <div className="flex flex-col min-h-[calc(100vh-2rem)] md:h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
       <div className="flex flex-col md:flex-row md:items-start justify-start gap-6">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function IncomePendingPage() {
             x
           </button>
         </div>
-        <div className="grid w-full min-w-0 items-end gap-2" style={{ gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr' }}>
+        <div className="grid w-full min-w-0 items-end gap-2 responsive-filter-grid" style={{ gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr' }}>
           <DateRangeFieldAccounting
             label="Fatura Tarihi Aralığı"
             startValue={dateRange.start}
