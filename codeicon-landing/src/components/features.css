@@ -1,78 +1,78 @@
 .features-section {
-  background-color: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  position: relative;
+  z-index: 2;
 }
 
 .features-header {
-  margin-bottom: 5rem;
   text-align: center;
+  margin-bottom: 5rem;
 }
 
 .section-title {
-  font-size: clamp(2rem, 4vw, 3rem); /* Reduced from 4.5rem */
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-family: var(--font-outfit);
   margin-bottom: 1.5rem;
 }
 
 .title-separator {
   width: 60px;
-  height: 2px;
-  background-color: var(--color-accent);
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   margin: 0 auto 1.5rem auto;
+  border-radius: 2px;
 }
 
 .section-subtitle {
   color: var(--color-text-muted);
-  font-size: 1.1rem;
   max-width: 600px;
   margin: 0 auto;
-  font-family: var(--font-inter);
-  font-weight: 400;
+  font-size: 1.1rem;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
 }
 
 .feature-card {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 3rem 2.5rem;
-  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  padding: 2.5rem;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--color-accent);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(59,130,246,0.1);
+  border-color: rgba(255,255,255,0.1);
 }
 
 .feature-icon-wrapper {
-  color: var(--color-accent);
+  color: #60a5fa;
   margin-bottom: 1.5rem;
   background: rgba(59, 130, 246, 0.1);
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 16px;
+  box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2);
 }
 
 .feature-title {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   margin-bottom: 1rem;
-  color: var(--color-text);
-  font-family: var(--font-inter);
+  font-family: var(--font-outfit);
   font-weight: 600;
 }
 
 .feature-description {
   color: var(--color-text-muted);
-  font-size: 1rem; /* Descriptive text size */
+  font-size: 0.95rem;
   line-height: 1.7;
-  font-family: var(--font-inter);
-  font-weight: 400;
 }

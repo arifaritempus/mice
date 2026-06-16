@@ -3,6 +3,7 @@ import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
 
 import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
 import Link from 'next/link';
+import PaginationControls from '@/components/PaginationControls';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatNumber, formatDate } from '@/utils/formatters';
@@ -859,8 +860,8 @@ export default function SejourPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      <div className="w-full min-w-0 flex flex-col flex-1">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg mb-4 transition-colors duration-200">
@@ -1011,7 +1012,7 @@ export default function SejourPage() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0 relative">
         <div className="overflow-auto w-full flex-1">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
@@ -1247,30 +1248,16 @@ export default function SejourPage() {
                 ))}
               </tbody>
             </table>
-            {totalCount > 0 && (
-              <div className="flex justify-end px-2 py-2 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
-                  <span className="text-sm">Toplam {totalCount} sejour</span>
-                  <button className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40" disabled={page <= 1} onClick={() => setPage(page - 1)}>‹</button>
-                  <span className="text-sm font-medium">{page}</span>
-                  <button className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>›</button>
-                  <select
-                    value={pageSize}
-                    className="h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm"
-                    onChange={(e) => {
-                      const size = Number(e.target.value) || DEFAULT_PAGE_SIZE;
-                      setPageSize(size);
-                      setPage(1);
-                    }}
-                  >
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <option key={size} value={size}>{size} / sayfa</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
         </div>
+        <PaginationControls
+          page={page}
+          pageSize={pageSize}
+          total={totalCount}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          preferenceKey="sejour_page_size"
+        />
       </div>
 
       {/* Delete Confirmation Modal */}

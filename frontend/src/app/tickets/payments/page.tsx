@@ -857,7 +857,8 @@ export default function TicketPaymentsPage() {
   }
 
   return (
-    <div className="max-w-full mx-auto px-1 space-y-2 pb-8">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-2">
       {/* Modern Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-xl p-3 mb-2">
         <div className="flex justify-between items-center">
@@ -1682,6 +1683,7 @@ export default function TicketPaymentsPage() {
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
+      </div>
     </div>
   )
 }

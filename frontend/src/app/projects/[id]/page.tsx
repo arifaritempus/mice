@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { TrendingUp, TrendingDown, DollarSign, Percent, Briefcase, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Percent, Briefcase, Clock, CheckCircle2, AlertCircle, ScrollText } from 'lucide-react';
 import { projectsService, projectSalesItemsService, projectPurchaseItemsService, suppliersService, categoriesService, projectAccommodationItemsService, quoteItemsService, projectHotelExtrasService, agenciesService, hotelsService, projectTransfersService, projectEventsActivitiesService, projectHumanResourcesService, projectOtherServicesService, projectFinancialServicesService, projectCollectionPlansService, projectCollectionsService, projectPaymentPlansService, projectPaymentsService, usersService, projectUsersService, publicLinksService } from '@/lib/supabaseService';
 import { supabase } from '@/lib/supabase';
 import { lsGet, lsSet } from '@/utils/safeStorage';
@@ -34,6 +34,7 @@ import { useEventActivityState } from './hooks/useEventActivityState';
 import { getLogosForExcel } from '@/utils/logoUtils';
 import { useFinancialData } from './hooks/useFinancialData';
 import ConfirmModal from '@/components/ConfirmModal';
+import Modal from '@/components/Modal';
 import { toast } from 'react-hot-toast';
 
 interface TabDef {
@@ -91,6 +92,45 @@ const FIXED_HEADERS = [
 
 export default function ProjectDetailPage() {
   const { canView, canCreate, canEdit, canDelete, userRole, isSuperAdmin, loading: permissionsLoading } = usePermissions();
+
+  // Logs state
+  const [showLogsModal, setShowLogsModal] = useState(false);
+  const [logsData, setLogsData] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [logSearchTerm, setLogSearchTerm] = useState('');
+
+  const fetchLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .in('module', [
+          'projects', 'project_sales_items', 'project_purchase_items', 
+          'project_hotel_extras', 'project_transfers', 'project_events_activities', 
+          'project_human_resources', 'project_other_services', 'project_financial_services',
+          'project_accommodation_items'
+        ])
+        .order('occurred_at', { ascending: false })
+        .limit(1000);
+
+      if (error) throw error;
+      
+      const filtered = (data || []).filter(log => {
+        if (log.entity_id === projectId) return true;
+        if (log.after_data?.project_id === projectId) return true;
+        if (log.before_data?.project_id === projectId) return true;
+        return false;
+      });
+      
+      setLogsData(filtered);
+    } catch (err) {
+      console.error('Loglar yüklenirken hata:', err);
+      toast.error('Log kayıtları alınamadı.');
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
 
   const {
     projectId,
@@ -11591,6 +11631,18 @@ export default function ProjectDetailPage() {
             </select>
           </div>
           
+          <button
+            onClick={() => {
+              setShowLogsModal(true);
+              fetchLogs();
+            }}
+            className="bg-purple-600 dark:bg-purple-500 text-white px-2 py-1 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors duration-200 flex items-center text-xs font-bold gap-1"
+            title="Log Kayıtları"
+          >
+            <ScrollText size={14} />
+            Loglar
+          </button>
+          
           {/* Excel Export Butonu - kilitli projelerde de aktif kalmalı */}
           <button
             onClick={exportProjectFullToExcel}
@@ -17824,6 +17876,83 @@ export default function ProjectDetailPage() {
         </div>,
         document.body
       )}
+
+      {/* Logs Modal */}
+      <Modal isOpen={showLogsModal} onClose={() => setShowLogsModal(false)} title="Proje Log Kayıtları" maxWidth="max-w-4xl">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="İşlem tipi, kullanıcı veya değer içinde ara..."
+              value={logSearchTerm}
+              onChange={(e) => setLogSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {loadingLogs ? (
+              <div className="flex justify-center p-8"><LoadingSpinner message="Loglar yükleniyor..." /></div>
+            ) : logsData.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">Bu projeye ait log kaydı bulunamadı.</div>
+            ) : (
+              <div className="space-y-4">
+                {logsData.filter(log => {
+                  if (!logSearchTerm) return true;
+                  const search = logSearchTerm.toLowerCase();
+                  const actionStr = (log.action || '').toLowerCase();
+                  const userStr = (log.user_name || log.user_id || '').toLowerCase();
+                  const moduleStr = (log.module || '').toLowerCase();
+                  const beforeStr = log.before_data ? JSON.stringify(log.before_data).toLowerCase() : '';
+                  const afterStr = log.after_data ? JSON.stringify(log.after_data).toLowerCase() : '';
+                  
+                  return actionStr.includes(search) || userStr.includes(search) || moduleStr.includes(search) || beforeStr.includes(search) || afterStr.includes(search);
+                }).map((log) => (
+                  <div key={log.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs">
+                    <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
+                          log.action === 'INSERT' ? 'bg-green-100 text-green-700' :
+                          log.action === 'UPDATE' ? 'bg-blue-100 text-blue-700' :
+                          log.action === 'DELETE' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {log.action}
+                        </span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          {log.user_name || log.user_id || 'Sistem / Anonim'}
+                        </span>
+                        <span className="text-gray-400 text-[10px]">({log.module})</span>
+                      </div>
+                      <div className="text-gray-500 font-medium">
+                        {log.occurred_at ? new Date(log.occurred_at).toLocaleString('tr-TR') : '-'}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      {log.before_data && Object.keys(log.before_data).length > 0 && (
+                        <div className="bg-red-50 dark:bg-red-900/10 p-2 rounded">
+                          <p className="font-bold text-red-800 dark:text-red-300 mb-1 border-b border-red-100 dark:border-red-900/30 pb-1">Önceki Değerler</p>
+                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
+                            {JSON.stringify(log.before_data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      {log.after_data && Object.keys(log.after_data).length > 0 && (
+                        <div className="bg-green-50 dark:bg-green-900/10 p-2 rounded">
+                          <p className="font-bold text-green-800 dark:text-green-300 mb-1 border-b border-green-100 dark:border-green-900/30 pb-1">Yeni Değerler</p>
+                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
+                            {JSON.stringify(log.after_data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
 
       {/* Modern Onay Modalı */}
       <ConfirmModal

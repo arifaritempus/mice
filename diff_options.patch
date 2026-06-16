@@ -1,0 +1,375 @@
+diff --git a/frontend/src/app/tickets/options/page.tsx b/frontend/src/app/tickets/options/page.tsx
+index f00d572..acc32a3 100644
+--- a/frontend/src/app/tickets/options/page.tsx
++++ b/frontend/src/app/tickets/options/page.tsx
+@@ -62,352 +62,6 @@ interface DateRangeFieldProps {
+   onApply?: (start: string, end: string) => void
+ }
+ 
+-const toDate = (value: string) => {
+-  if (!value) return null
+-  const parsed = parseISO(value)
+-  return isValidDate(parsed) ? parsed : null
+-}
+-
+-const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '')
+-
+-const parseTypedDate = (value: string): string | null => {
+-  const trimmed = value.trim()
+-  if (!trimmed) return ''
+-  const parsed = parseDateFns(trimmed, 'dd.MM.yyyy', new Date())
+-  if (!isValidDate(parsed)) return null
+-  return formatDateFns(parsed, 'yyyy-MM-dd')
+-}
+-
+-/** ISO / DB datetime → yerel takvim günü YYYY-MM-DD (UTC split ve saat kayması olmadan) */
+-function toCalendarYmd(value: string | Date | null | undefined): string {
+-  if (value == null) return ''
+-  if (value instanceof Date) {
+-    if (Number.isNaN(value.getTime())) return ''
+-    const y = value.getFullYear()
+-    const mo = String(value.getMonth() + 1).padStart(2, '0')
+-    const day = String(value.getDate()).padStart(2, '0')
+-    return `${y}-${mo}-${day}`
+-  }
+-  const trimmed = String(value).trim()
+-  if (!trimmed) return ''
+-  const parsed = new Date(trimmed)
+-  if (!Number.isNaN(parsed.getTime())) {
+-    const y = parsed.getFullYear()
+-    const mo = String(parsed.getMonth() + 1).padStart(2, '0')
+-    const day = String(parsed.getDate()).padStart(2, '0')
+-    return `${y}-${mo}-${day}`
+-  }
+-  const m = trimmed.match(/^(\d{4}-\d{2}-\d{2})/)
+-  return m ? m[1] : ''
+-}
+-
+-function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps) {
+-  const containerRef = useRef<HTMLDivElement | null>(null)
+-  const calendarRef = useRef<HTMLDivElement | null>(null)
+-  const startDate = toDate(startValue)
+-  const endDate = toDate(endValue)
+-  const [startText, setStartText] = useState(startDate ? formatDateFns(startDate, 'dd.MM.yyyy') : '')
+-  const [endText, setEndText] = useState(endDate ? formatDateFns(endDate, 'dd.MM.yyyy') : '')
+-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+-  const [pickerRange, setPickerRange] = useState<[Date | null, Date | null]>([startDate, endDate])
+-  const [calendarStyle, setCalendarStyle] = useState({ top: 0, left: 0 })
+-
+-  useEffect(() => {
+-    const s = toDate(startValue)
+-    setStartText(s ? formatDateFns(s, 'dd.MM.yyyy') : '')
+-  }, [startValue])
+-
+-  useEffect(() => {
+-    const e = toDate(endValue)
+-    setEndText(e ? formatDateFns(e, 'dd.MM.yyyy') : '')
+-  }, [endValue])
+-
+-  useEffect(() => {
+-    if (isCalendarOpen) {
+-      setPickerRange([toDate(startValue), toDate(endValue)])
+-    }
+-  }, [isCalendarOpen, startValue, endValue])
+-
+-  useEffect(() => {
+-    const onClickOutside = (event: MouseEvent) => {
+-      const target = event.target as Node
+-      if (!containerRef.current) return
+-      if (containerRef.current.contains(target)) return
+-      if (calendarRef.current?.contains(target)) return
+-      setIsCalendarOpen(false)
+-      setPickerRange([toDate(startValue), toDate(endValue)])
+-    }
+-    document.addEventListener('mousedown', onClickOutside)
+-    return () => document.removeEventListener('mousedown', onClickOutside)
+-  }, [startValue, endValue])
+-
+-  useEffect(() => {
+-    if (!isCalendarOpen) return
+-    const updatePos = () => {
+-      const rect = containerRef.current?.getBoundingClientRect()
+-      if (!rect) return
+-      setCalendarStyle({
+-        top: rect.bottom + 4,
+-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+-      })
+-    }
+-    updatePos()
+-    window.addEventListener('scroll', updatePos, true)
+-    window.addEventListener('resize', updatePos)
+-    return () => {
+-      window.removeEventListener('scroll', updatePos, true)
+-      window.removeEventListener('resize', updatePos)
+-    }
+-  }, [isCalendarOpen])
+-
+-  const openCalendar = () => {
+-    const rect = containerRef.current?.getBoundingClientRect()
+-    if (rect) {
+-      setCalendarStyle({
+-        top: rect.bottom + 4,
+-        left: Math.max(8, Math.min(rect.left, window.innerWidth - 680))
+-      })
+-    }
+-    setIsCalendarOpen(true)
+-  }
+-
+-  const handleStartTextChange = (value: string) => {
+-    setStartText(value)
+-    if (value === '') {
+-      onStartChange('')
+-      if (onApply) onApply('', endText.length === 10 ? parseTypedDate(endText) || '' : '')
+-      return
+-    }
+-    if (value.length === 10) {
+-      const parsed = parseTypedDate(value)
+-      if (parsed !== null) {
+-        onStartChange(parsed)
+-        if (onApply) {
+-          const endParsed = endText.length === 10 ? parseTypedDate(endText) : ''
+-          onApply(parsed, endParsed || '')
+-        }
+-      }
+-    }
+-  }
+-
+-  const handleEndTextChange = (value: string) => {
+-    setEndText(value)
+-    if (value === '') {
+-      onEndChange('')
+-      if (onApply) onApply(startText.length === 10 ? parseTypedDate(startText) || '' : '', '')
+-      return
+-    }
+-    if (value.length === 10) {
+-      const parsed = parseTypedDate(value)
+-      if (parsed !== null) {
+-        onEndChange(parsed)
+-        if (onApply) {
+-          const startParsed = startText.length === 10 ? parseTypedDate(startText) : ''
+-          onApply(startParsed || '', parsed)
+-        }
+-      }
+-    }
+-  }
+-
+-  const handleKeyDown = (e: React.KeyboardEvent) => {
+-    if (e.key === 'Enter') {
+-      e.preventDefault()
+-      const s = parseTypedDate(startText) || ''
+-      const e_ = parseTypedDate(endText) || ''
+-      onStartChange(s)
+-      onEndChange(e_)
+-      if (onApply) onApply(s, e_)
+-      setIsCalendarOpen(false)
+-    }
+-  }
+-
+-  const calStart = isCalendarOpen ? pickerRange[0] : startDate
+-  const calEnd = isCalendarOpen ? pickerRange[1] : endDate
+-
+-  return (
+-    <div className="min-w-0 relative" ref={containerRef}>
+-      <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate" title={label}>
+-        {label}
+-      </label>
+-      <div className="flex gap-0.5">
+-        <input
+-          value={startText}
+-          onChange={(e) => handleStartTextChange(e.target.value)}
+-          onFocus={openCalendar}
+-          onKeyDown={handleKeyDown}
+-          placeholder="gg.aa.yyyy"
+-          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+-        />
+-        <input
+-          value={endText}
+-          onChange={(e) => handleEndTextChange(e.target.value)}
+-          onFocus={openCalendar}
+-          onKeyDown={handleKeyDown}
+-          placeholder="gg.aa.yyyy"
+-          className="w-full min-w-0 h-8 px-1 text-[11px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+-        />
+-      </div>
+-      {isCalendarOpen &&
+-        typeof document !== 'undefined' &&
+-        createPortal(
+-          <div
+-            ref={calendarRef}
+-            className="transfer-range-datepicker-popover fixed z-[300] w-max max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl p-1.5 overflow-x-auto"
+-            style={{ top: `${calendarStyle.top}px`, left: `${calendarStyle.left}px` }}
+-          >
+-            <DatePicker
+-              inline
+-              locale={tr}
+-              monthsShown={2}
+-              selectsRange
+-              startDate={calStart}
+-              endDate={calEnd}
+-              onChange={(dates) => {
+-                const [start, end] = dates as [Date | null, Date | null]
+-                setPickerRange([start, end])
+-                if (start && end) {
+-                  onStartChange(toIsoDate(start))
+-                  onEndChange(toIsoDate(end))
+-                  setIsCalendarOpen(false)
+-                }
+-              }}
+-              openToDate={calStart || calEnd || new Date()}
+-              calendarClassName="!text-xs"
+-            />
+-          </div>,
+-          document.body
+-        )}
+-    </div>
+-  )
+-}
+-
+-interface MultiTokenFilterInputProps {
+-  label: string
+-  tokens: string[]
+-  inputValue: string
+-  suggestions: string[]
+-  onInputChange: (value: string) => void
+-  onAddToken: (value: string) => void
+-  onRemoveToken: (value: string) => void
+-}
+-
+-function MultiTokenFilterInput({
+-  label,
+-  tokens,
+-  inputValue,
+-  suggestions,
+-  onInputChange,
+-  onAddToken,
+-  onRemoveToken
+-}: MultiTokenFilterInputProps) {
+-  const inputRef = useRef<HTMLInputElement | null>(null)
+-  const normalizedInput = inputValue.trim().toLowerCase()
+-  const filteredSuggestions = suggestions
+-    .filter((item) => {
+-      const normalizedItem = item.toLowerCase()
+-      const alreadyAdded = tokens.some((token) => token.toLowerCase() === normalizedItem)
+-      return !alreadyAdded && normalizedInput.length > 0 && normalizedItem.includes(normalizedInput)
+-    })
+-    .slice(0, 6)
+-
+-  const handleAdd = (raw: string) => {
+-    onAddToken(raw)
+-    window.setTimeout(() => inputRef.current?.focus(), 0)
+-  }
+-
+-  return (
+-    <div className="relative min-w-0">
+-      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate" title={label}>
+-        {label}
+-      </label>
+-      <div className="w-full h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 flex items-center gap-0.5 overflow-x-auto">
+-        {tokens.length > 0 && (
+-          <button
+-            type="button"
+-            className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200"
+-            title={tokens.join(', ')}
+-            onClick={() => onRemoveToken(tokens[tokens.length - 1])}
+-          >
+-            <span className="text-xs font-medium">+{tokens.length}</span>
+-            <span className="text-[10px] leading-none">×</span>
+-          </button>
+-        )}
+-        <input
+-          ref={inputRef}
+-          type="text"
+-          value={inputValue}
+-          onChange={(e) => onInputChange(e.target.value)}
+-          onKeyDown={(e) => {
+-            if (e.key === 'Enter') {
+-              e.preventDefault()
+-              handleAdd(inputValue)
+-            }
+-            if (e.key === 'Backspace' && inputValue.length === 0 && tokens.length > 0) {
+-              onRemoveToken(tokens[tokens.length - 1])
+-            }
+-          }}
+-          className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-xs"
+-          placeholder="Yaz, Enter ile ekle"
+-        />
+-      </div>
+-      {filteredSuggestions.length > 0 && (
+-        <div className="absolute z-20 mt-0.5 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-32 overflow-y-auto">
+-          {filteredSuggestions.map((suggestion) => (
+-            <button
+-              type="button"
+-              key={suggestion}
+-              className="w-full text-left px-2 py-1.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+-              onMouseDown={(ev) => ev.preventDefault()}
+-              onClick={() => handleAdd(suggestion)}
+-            >
+-              {suggestion}
+-            </button>
+-          ))}
+-        </div>
+-      )}
+-    </div>
+-  )
+-}
+-
+-export default function TicketOptionsPage() {
+-  const { canCreate, canEdit, canDelete } = usePermissions();
+-  const [ticketOptions, setTicketOptions] = useState<TicketOption[]>([])
+-  const [loading, setLoading] = useState(true)
+-  const [initialFetchDone, setInitialFetchDone] = useState(false)
+-
+-  // Searchable Select Component
+-  const SearchableSelect = ({
+-    options,
+-    value,
+-    onChange,
+-    placeholder = 'Seçin...',
+-    className = ''
+-  }: {
+-    options: { id: string; name: string }[];
+-    value: string;
+-    onChange: (value: string) => void;
+-    placeholder?: string;
+-    className?: string;
+-  }) => {
+-    const [open, setOpen] = useState(false);
+-    const [query, setQuery] = useState('');
+-    const [highlight, setHighlight] = useState(0);
+-    const selected = options.find(o => o.name === value);
+-    const display = open ? query : (selected?.name || '');
+-    
+-    const filtered = useMemo(() => {
+-      if (!query) return options.slice(0, 100);
+-      const lowerQuery = query.toLowerCase();
+-      return options
+-        .filter(o => o.name?.toLowerCase().includes(lowerQuery))
+-        .slice(0, 100);
+-    }, [options, query]);
+-    
+-    const handleSelect = (name: string) => {
+-      onChange(name);
+-      setOpen(false);
+-      setQuery('');
+-    };
+ 
+     return (
+       <div className={`relative w-full ${className}`}>
+@@ -1451,7 +1105,7 @@ export default function TicketOptionsPage() {
+                 gridTemplateColumns: '2fr 2fr 1.2fr 1.8fr 1.8fr 1.2fr 1.2fr auto'
+               }}
+             >
+-              <DateRangeField
++              <ResponsiveDateRangeField
+                 label="Opsiyon bitiş tarihi"
+                 startValue={flightDateRange.startDate}
+                 endValue={flightDateRange.endDate}
+@@ -1459,7 +1113,7 @@ export default function TicketOptionsPage() {
+                 onEndChange={(value) => setFlightDateRange((prev) => ({ ...prev, endDate: value }))}
+                 onApply={() => setPage(1)}
+               />
+-              <DateRangeField
++              <ResponsiveDateRangeField
+                 label="Gidiş Dönüş Tarihi"
+                 startValue={dateRange.startDate}
+                 endValue={dateRange.endDate}

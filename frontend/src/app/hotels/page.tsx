@@ -11,6 +11,7 @@ import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 import { Building2, MapPin, Star, Phone, Mail, FileText, Plus, Pencil, Save, AlertCircle } from 'lucide-react';
 
 interface Hotel {
@@ -200,10 +201,10 @@ export default function HotelsPage() {
           } as any);
           await loadHotels();
         } catch (e: any) {
-          alert(`Supabase güncelleme hatası: ${e?.message || e}`);
+          toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
         }
         
-        alert('Otel başarıyla güncellendi!');
+        toast.success('Otel başarıyla güncellendi!');
       } else {
         // Yeni oteli oluştur
         const newHotel: Hotel = {
@@ -251,10 +252,10 @@ export default function HotelsPage() {
           } as any);
           await loadHotels();
         } catch (e: any) {
-          alert(`Supabase kayıt hatası: ${e?.message || e}`);
+          toast.error(`Supabase kayıt hatası: ${e?.message || e}`);
         }
         
-        alert('Otel başarıyla oluşturuldu!');
+        toast.success('Otel başarıyla oluşturuldu!');
       }
       
       // Formu sıfırla ve modalı kapat
@@ -282,7 +283,7 @@ export default function HotelsPage() {
       
     } catch (error) {
       console.error('Otel kaydedilirken hata:', error);
-      alert('Otel kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      toast.error('Otel kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 
@@ -502,13 +503,13 @@ export default function HotelsPage() {
       await hotelsService.update(hotelId, { is_active: updatedHotel.is_active } as any);
       await loadHotels();
     } catch (e: any) {
-      alert(`Supabase güncelleme hatası: ${e?.message || e}`);
+      toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
     }
       
-      alert('Otel durumu başarıyla değiştirildi!');
+      toast.success('Otel durumu başarıyla değiştirildi!');
     } catch (error) {
       console.error('Otel durumu değiştirilirken hata:', error);
-      alert('Otel durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      toast.error('Otel durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 

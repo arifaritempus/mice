@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, paginateItems } from '@/types/pagination';
 import { createPortal } from 'react-dom';
 import DatePicker from 'react-datepicker';
+import PaginationControls from '@/components/PaginationControls';
 import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { usePermissions, Module } from '@/lib/permissions';
@@ -567,10 +568,9 @@ export default function TicketsPage() {
     setSupplierInput('');
     setGuestTokens([]);
     setGuestInput('');
-    const todayStr = new Date().toISOString().split('T')[0];
-    setDraftTicketingStart(todayStr);
+    setDraftTicketingStart('');
     setDraftTicketingEnd('');
-    setDateRange({ startDate: todayStr, endDate: '' });
+    setDateRange({ startDate: '', endDate: '' });
     setDraftFlightStart('');
     setDraftFlightEnd('');
     setFlightDateRange({ startDate: '', endDate: '' });
@@ -881,13 +881,13 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 font-sans">
-      <div className="w-full min-w-0 flex flex-col gap-2">
+    <div className="flex flex-col h-full min-h-[calc(100vh-2rem)] md:h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 md:overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
-        <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Bilet Opsiyon Takip</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Uçak biletlerinin opsiyon tarihlerini ve detaylarını yönetin</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-200">Bilet Opsiyon Takip</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">Uçak biletlerinin opsiyon tarihlerini ve detaylarını yönetin</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -1101,7 +1101,7 @@ export default function TicketsPage() {
         </div>
 
         {/* Tickets Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0 relative">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-[300px] md:min-h-0 relative">
           {tableBusy && (
             <div
               className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 dark:bg-gray-900/50 backdrop-blur-[1px]"
@@ -1116,12 +1116,12 @@ export default function TicketsPage() {
           )}
           <div className="overflow-auto w-full flex-1">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 transition-colors duration-200">
                 <tr>
                   {activeTab === 'detail' ? (
                     <>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('voucherNumber')}
                   >
                     <div className="flex items-center">
@@ -1132,7 +1132,7 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('ticketingDate')}
                   >
                     <div className="flex items-center">
@@ -1143,7 +1143,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('sejourId')}
                   >
                     <div className="flex items-center">
@@ -1154,21 +1154,18 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-[6.25rem] min-w-[6.25rem] max-w-[6.25rem] align-top"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('checkInOut')}
                   >
                     <div className="flex items-center gap-0.5">
-                      <div className="flex flex-col items-start leading-tight gap-0">
-                        <span className="text-xs tracking-wide">C-IN</span>
-                        <span className="text-xs tracking-wide">C-OUT</span>
-                      </div>
+                      <div className="flex items-center">C-IN / C-OUT</div>
                       {sortField === 'checkInOut' && (
                         <span className="shrink-0 self-center text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('companyName')}
                   >
                     <div className="flex items-center">
@@ -1179,29 +1176,23 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-[11rem] min-w-[11rem] max-w-[11rem] align-top"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('customerName')}
                   >
                     <div className="flex items-center gap-0.5">
-                      <div className="flex flex-col items-start leading-tight gap-0">
-                        <span className="text-xs tracking-wide">ACENTE</span>
-                        <span className="text-xs tracking-wide">MÜŞTERİ</span>
-                      </div>
+                      <div className="flex items-center">Acente / Müşteri</div>
                       {sortField === 'customerName' && (
                         <span className="shrink-0 self-center text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[12rem] min-w-[12rem] max-w-[12rem] align-top"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200"
                   >
-                    <div className="flex flex-col items-start leading-tight gap-0">
-                      <span className="text-xs tracking-wide">MİSAFİR</span>
-                      <span className="text-xs tracking-wide">ADI</span>
-                    </div>
+                    <div className="flex items-center">Misafir Adı</div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('pnr')}
                   >
                     <div className="flex items-center">
@@ -1212,7 +1203,7 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('flightDate')}
                   >
                     <div className="flex items-center">
@@ -1223,18 +1214,18 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                   >
                     <div className="flex items-center">
                       GİDİŞ SAATİ
                     </div>
                   </th>
                   {/* MICE özel sütunları */}
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dönüş Tarihi</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">DÖNÜŞ SAATİ</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200">Dönüş Tarihi</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200">DÖNÜŞ SAATİ</th>
                   
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('airline')}
                       >
                         <div className="flex items-center">
@@ -1245,7 +1236,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('route')}
                       >
                         <div className="flex items-center">
@@ -1256,7 +1247,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('flightNo')}
                       >
                         <div className="flex items-center">
@@ -1267,7 +1258,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-[9rem] min-w-[9rem] max-w-[9rem] align-top"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('ticketingProvider')}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1279,7 +1270,7 @@ export default function TicketsPage() {
                       </th>
                       
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('costPrice')}
                       >
                         <div className="flex items-center">
@@ -1290,7 +1281,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('costCurrency')}
                       >
                         <div className="flex items-center">
@@ -1304,7 +1295,7 @@ export default function TicketsPage() {
                   ) : (
                     <>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('voucherNumber')}
                       >
                         <div className="flex items-center">
@@ -1315,7 +1306,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('ticketingDate')}
                       >
                         <div className="flex items-center">
@@ -1326,7 +1317,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('sejourId')}
                       >
                         <div className="flex items-center">
@@ -1337,21 +1328,18 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-[6.25rem] min-w-[6.25rem] max-w-[6.25rem] align-top"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('checkInOut')}
                       >
                         <div className="flex items-center gap-0.5">
-                          <div className="flex flex-col items-start leading-tight gap-0">
-                            <span className="text-xs tracking-wide">C-IN</span>
-                            <span className="text-xs tracking-wide">C-OUT</span>
-                          </div>
+                          <div className="flex items-center">C-IN / C-OUT</div>
                           {sortField === 'checkInOut' && (
                             <span className="shrink-0 self-center text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                           )}
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('companyName')}
                       >
                         <div className="flex items-center">
@@ -1362,29 +1350,23 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-[11rem] min-w-[11rem] max-w-[11rem] align-top"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('customerName')}
                       >
                         <div className="flex items-center gap-0.5">
-                          <div className="flex flex-col items-start leading-tight gap-0">
-                            <span className="text-xs tracking-wide">ACENTE</span>
-                            <span className="text-xs tracking-wide">MÜŞTERİ</span>
-                          </div>
+                          <div className="flex items-center">Acente / Müşteri</div>
                           {sortField === 'customerName' && (
                             <span className="shrink-0 self-center text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                           )}
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[12rem] min-w-[12rem] max-w-[12rem] align-top"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200"
                       >
-                        <div className="flex flex-col items-start leading-tight gap-0">
-                          <span className="text-xs tracking-wide">MİSAFİR</span>
-                          <span className="text-xs tracking-wide">ADI</span>
-                        </div>
+                        <div className="flex items-center">Misafir Adı</div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('pnr')}
                       >
                         <div className="flex items-center">
@@ -1395,7 +1377,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                         onClick={() => handleSort('flightDate')}
                       >
                         <div className="flex items-center">
@@ -1406,21 +1388,21 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                       >
                         <div className="flex items-center">
                           GİDİŞ SAATİ
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                       >
                         <div className="flex items-center">
                           DÖNÜŞ TARİHİ
                         </div>
                       </th>
                       <th 
-                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                       >
                         <div className="flex items-center">
                           DÖNÜŞ SAATİ
@@ -1428,7 +1410,7 @@ export default function TicketsPage() {
                       </th>
                       
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('airline')}
                   >
                     <div className="flex items-center">
@@ -1439,7 +1421,7 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('route')}
                   >
                     <div className="flex items-center">
@@ -1450,7 +1432,7 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('flightNo')}
                   >
                     <div className="flex items-center">
@@ -1461,7 +1443,7 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-[9rem] min-w-[9rem] max-w-[9rem] align-top"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('ticketingProvider')}
                   >
                     <div className="flex items-center gap-0.5">
@@ -1473,7 +1455,7 @@ export default function TicketsPage() {
                   </th>
                   
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('costPrice')}
                   >
                     <div className="flex items-center">
@@ -1484,7 +1466,7 @@ export default function TicketsPage() {
                     </div>
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('costCurrency')}
                   >
                     <div className="flex items-center">
@@ -1503,7 +1485,7 @@ export default function TicketsPage() {
                 {activeTab === 'detail' ? (
                   paginatedTickets.items.map((ticket) => (
                     <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                      <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <button
                           onClick={() => handleVoucherClick(ticket.sejourId)}
                           className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
@@ -1511,37 +1493,34 @@ export default function TicketsPage() {
                           {ticket.voucherNumber}
                         </button>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{formatDateCustom(ticket.ticketingDate)}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{formatDateCustom(ticket.ticketingDate)}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs rounded-full font-medium ${
                           'bg-blue-100 text-blue-800 dark:bg-gray-800/30 dark:text-blue-400'
                         }`}>
                           {getSejourType(ticket.sejourId)}
                         </span>
                       </td>
-                      <td className="px-3 py-1.5 text-xs text-gray-900 dark:text-white w-[6.25rem] min-w-[6.25rem] max-w-[6.25rem] align-top">
+                      <td className="px-3 py-1.5 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {ticket.checkInDate && ticket.checkOutDate ? (
-                          <div className="flex flex-col leading-tight gap-0">
-                            <span className="block truncate" title={formatDateCustom(ticket.checkInDate)}>
+                          <div className="flex items-center leading-tight"><span>
                               {formatDateCustom(ticket.checkInDate)}
-                            </span>
-                            <span className="block truncate" title={formatDateCustom(ticket.checkOutDate)}>
+                            <br />
                               {formatDateCustom(ticket.checkOutDate)}
-                            </span>
-                          </div>
+                            </span></div>
                         ) : (
                           '-'
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {ticket.companyName || '-'}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white w-[11rem] min-w-[11rem] max-w-[11rem]">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span className="block truncate" title={agencyCustomerTooltip(ticket) || agencyCustomerLine(ticket)}>
                           {agencyCustomerLine(ticket)}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white w-[12rem] min-w-[12rem] max-w-[12rem]">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span
                           className="block truncate whitespace-nowrap overflow-hidden text-ellipsis"
                           title={(ticket.guestNames && ticket.guestNames.trim()) || getGuestNames(ticket.sejourId)}
@@ -1549,23 +1528,23 @@ export default function TicketsPage() {
                           {(ticket.guestNames && ticket.guestNames.trim()) || getGuestNames(ticket.sejourId)}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{ticket.pnr}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{formatDateCustom(ticket.flightDate)}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{ticket.pnr}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{formatDateCustom(ticket.flightDate)}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {ticket.departureTime ? formatTime(ticket.departureTime) : '-'}
                       </td>
                       {/* MICE özel hücreler: sadece project:* için değer göster, aksi halde '-' */}
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {ticket.sejourId?.startsWith('project:') ? (ticket.returnDate ? formatDateCustom(ticket.returnDate) : '-') : '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {ticket.sejourId?.startsWith('project:') ? (ticket.returnDepartureTime ? formatTime(ticket.returnDepartureTime) : '-') : '-'}
                       </td>
                       
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{ticket.airline}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{ticket.route}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{ticket.flightNo}</td>
-                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white w-[9rem] min-w-[9rem] max-w-[9rem]">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{ticket.airline}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{ticket.route}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{ticket.flightNo}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span
                           className="block truncate whitespace-nowrap"
                           title={getSupplierName(ticket.ticketingProvider) || ''}
@@ -1573,14 +1552,14 @@ export default function TicketsPage() {
                           {getSupplierName(ticket.ticketingProvider)}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{formatNumber(ticket.costPrice)}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">{ticket.costCurrency}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{formatNumber(ticket.costPrice)}</td>
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">{ticket.costCurrency}</td>
                     </tr>
                   ))
                 ) : (
                   paginatedSummary.items.map((summary: any, idx: number) => (
                     <tr key={`${summary.voucherNumber}-${summary.pnr}-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                      <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <button
                           onClick={() => handleVoucherClick(summary.sejourId)}
                           className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
@@ -1588,39 +1567,36 @@ export default function TicketsPage() {
                           {summary.voucherNumber}
                         </button>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.ticketingDate ? formatDateCustom(summary.ticketingDate) : '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs rounded-full font-medium ${
                           'bg-blue-100 text-blue-800 dark:bg-gray-800/30 dark:text-blue-400'
                         }`}>
                           {getSejourType(summary.sejourId)}
                         </span>
                       </td>
-                      <td className="px-3 py-1.5 text-xs text-gray-900 dark:text-white w-[6.25rem] min-w-[6.25rem] max-w-[6.25rem] align-top">
+                      <td className="px-3 py-1.5 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.checkInDate && summary.checkOutDate ? (
-                          <div className="flex flex-col leading-tight gap-0">
-                            <span className="block truncate" title={formatDateCustom(summary.checkInDate)}>
+                          <div className="flex items-center leading-tight"><span>
                               {formatDateCustom(summary.checkInDate)}
-                            </span>
-                            <span className="block truncate" title={formatDateCustom(summary.checkOutDate)}>
+                            <br />
                               {formatDateCustom(summary.checkOutDate)}
-                            </span>
-                          </div>
+                            </span></div>
                         ) : (
                           '-'
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.companyName || '-'}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white w-[11rem] min-w-[11rem] max-w-[11rem]">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span className="block truncate" title={agencyCustomerTooltip(summary) || agencyCustomerLine(summary)}>
                           {agencyCustomerLine(summary)}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white w-[12rem] min-w-[12rem] max-w-[12rem]">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span
                           className="block truncate whitespace-nowrap overflow-hidden text-ellipsis"
                           title={(summary.guestNames && summary.guestNames.trim()) || getGuestNames(summary.sejourId)}
@@ -1628,32 +1604,32 @@ export default function TicketsPage() {
                           {(summary.guestNames && summary.guestNames.trim()) || getGuestNames(summary.sejourId)}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.pnr || '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.departureDate ? formatDateCustom(summary.departureDate) : '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.departureTime ? formatTime(summary.departureTime) : '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.returnDate ? formatDateCustom(summary.returnDate) : '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.arrivalTime ? formatTime(summary.arrivalTime) : '-'}
                       </td>
                       
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.airline || summary.airlines || '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.route || summary.departureRoute || '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.flightNo || '-'}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white w-[9rem] min-w-[9rem] max-w-[9rem]">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         <span
                           className="block truncate whitespace-nowrap"
                           title={getSupplierName(summary.ticketingProvider) || ''}
@@ -1662,55 +1638,38 @@ export default function TicketsPage() {
                         </span>
                       </td>
                       
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {formatNumber(summary.costPrice || summary.totalCost || 0)}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                         {summary.costCurrency || '-'}
                       </td>
                     </tr>
                   ))
                 )}
+              
+                {listTotalCount === 0 && !tableBusy && (
+                  <tr>
+                    <td colSpan={20} className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                      Filtrelere uygun kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-          {listTotalCount > 0 && (
-            <div className="flex justify-end px-2 py-2 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
-                <span className="text-sm">Toplam {listTotalCount} kayıt</span>
-                <button
-                  type="button"
-                  className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40"
-                  disabled={listPage <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
-                  ‹
-                </button>
-                <span className="text-sm font-medium">{listPage}</span>
-                <button
-                  type="button"
-                  className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40"
-                  disabled={listPage >= listTotalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  ›
-                </button>
-                <select
-                  value={pageSize}
-                  className="h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm"
-                  onChange={(e) => {
-                    const size = Number(e.target.value) || DEFAULT_PAGE_SIZE;
-                    setPageSize(size);
-                    setPage(1);
-                  }}
-                >
-                  {PAGE_SIZE_OPTIONS.map((size) => (
-                    <option key={size} value={size}>{size} / sayfa</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
+          
+          
+          <PaginationControls
+            page={listPage}
+            pageSize={pageSize}
+            total={listTotalCount}
+            totalPages={listTotalPages}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+            preferenceKey="tickets_page_size"
+          />
+
         </div>
 
 

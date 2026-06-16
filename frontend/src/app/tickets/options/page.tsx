@@ -1142,8 +1142,8 @@ export default function TicketOptionsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      <div className="w-full min-w-0 flex flex-col flex-1">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 rounded-lg mb-2">
           <div className="flex justify-between items-center p-2">
@@ -1363,8 +1363,8 @@ export default function TicketOptionsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0">
-          <div className="overflow-auto w-full flex-1">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0 relative">
+          <div className="overflow-auto w-full flex-1 min-h-0">
             <table className="w-full min-w-max text-xs">
               <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
                 <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -1622,9 +1622,18 @@ export default function TicketOptionsPage() {
                     </td>
                   </tr>
                 ))}
+              
+                {sortedOptions.length === 0 && (
+                  <tr>
+                    <td colSpan={20} className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                      {(voucherTerms.length || customerTerms.length || supplierTerms.length || airlineTerms.length || dateRange.startDate || dateRange.endDate) ? 'Filtrelere uygun bilet opsiyonu bulunamadı.' : 'Kayıtlı bilet opsiyonu bulunamadı.'}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+
           <PaginationControls
             page={paginatedOptions.page}
             pageSize={paginatedOptions.pageSize}
@@ -1639,24 +1648,7 @@ export default function TicketOptionsPage() {
             }}
           />
 
-          {sortedOptions.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <p className="text-sm">
-                {(voucherTerms.length ||
-                  customerTerms.length ||
-                  supplierTerms.length ||
-                  airlineTerms.length ||
-                  routeTerms.length ||
-                  dateRange.startDate ||
-                  dateRange.endDate ||
-                  flightDateRange.startDate ||
-                  flightDateRange.endDate ||
-                  statusFilter !== 'all')
-                  ? 'Filtrelere uygun bilet opsiyonu bulunamadı.'
-                  : 'Henüz bilet opsiyonu yok.'}
-              </p>
-            </div>
-          )}
+          
         </div>
       </div>
 

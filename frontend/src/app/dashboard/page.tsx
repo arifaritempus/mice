@@ -22,7 +22,13 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  XCircle
+  XCircle,
+  Megaphone,
+  Target,
+  Mail,
+  MousePointerClick,
+  Phone,
+  MessageSquare
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
@@ -38,7 +44,8 @@ import {
   SejourService,
   suppliersService,
   ticketOptionsService,
-  ticketPaymentPlansService
+  ticketPaymentPlansService,
+  marketingService
 } from '@/lib/supabaseService';
 import { supabase } from '@/lib/supabase';
 import { DateRangeFieldAccounting } from '@/components/accounting/DateRangeFieldAccounting';
@@ -101,6 +108,8 @@ type DashboardState = {
   salesItems?: any[];
   purchaseItems?: any[];
   projectFlights?: any[];
+  marketingClients?: any[];
+  marketingInteractions?: any[];
 };
 
 const toNumber = (value: any) => Number(value || 0);
@@ -424,7 +433,9 @@ export default function DashboardPage() {
     reportWarnings: [],
     salesItems: [],
     purchaseItems: [],
-    projectFlights: []
+    projectFlights: [],
+    marketingClients: [],
+    marketingInteractions: []
   });
 
   const loadDashboard = async () => {
@@ -436,7 +447,7 @@ export default function DashboardPage() {
         return Array.isArray(viewData) ? viewData : [];
       };
 
-      const [projectsRes, quotesRes, sejoursRes, ticketsRes, categoriesRes, collectionPlanRes, paymentPlanRes, ticketPlanRes, agenciesRes, hotelsRes, suppliersRes, rpProjectRes, rpSejourRes, salesItemsRes, purchaseItemsRes, projectFlightsRes] = await Promise.allSettled([
+      const [projectsRes, quotesRes, sejoursRes, ticketsRes, categoriesRes, collectionPlanRes, paymentPlanRes, ticketPlanRes, agenciesRes, hotelsRes, suppliersRes, rpProjectRes, rpSejourRes, salesItemsRes, purchaseItemsRes, projectFlightsRes, mktClientsRes, mktInteractionsRes] = await Promise.allSettled([
         projectsService.getAll(),
         quotesService.getAll(),
         SejourService.getSejours(),
@@ -452,7 +463,9 @@ export default function DashboardPage() {
         fetchView('vw_rp_sejour_kar_zarar'),
         supabase.from('project_sales_items').select('project_id, hotel_id, total_price, fx, total_try'),
         supabase.from('project_purchase_items').select('project_id, hotel_id, total_price, fx, total_try'),
-        supabase.from('project_flight_tickets').select('created_at, gidis_tarihi, havayolu, toplam_tl, toplam_maliyet, kur')
+        supabase.from('project_flight_tickets').select('created_at, gidis_tarihi, havayolu, toplam_tl, toplam_maliyet, kur'),
+        marketingService.clients.getAll(),
+        marketingService.interactions.getAll()
       ]);
 
       const safe = (r: PromiseSettledResult<any>) => (r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []);
@@ -470,6 +483,8 @@ export default function DashboardPage() {
       const salesItems = safeSupabase(salesItemsRes);
       const purchaseItems = safeSupabase(purchaseItemsRes);
       const projectFlights = safeSupabase(projectFlightsRes as any);
+      const marketingClients = safe(mktClientsRes);
+      const marketingInteractions = safe(mktInteractionsRes);
 
       const categoryById: Record<string, string> = {};
       const agencyById: Record<string, string> = {};
@@ -505,7 +520,9 @@ export default function DashboardPage() {
         reportWarnings: [],
         salesItems,
         purchaseItems,
-        projectFlights
+        projectFlights,
+        marketingClients,
+        marketingInteractions
       });
       setLastUpdate(new Date());
     } catch (error) {
@@ -537,7 +554,9 @@ export default function DashboardPage() {
       ticketPlans,
       salesItems,
       purchaseItems,
-      projectFlights
+      projectFlights,
+      marketingClients,
+      marketingInteractions
     } = data;
 
     const hasCustomRange = period !== 'custom' || (customStartDate && customEndDate);
@@ -553,6 +572,8 @@ export default function DashboardPage() {
     const filteredHrRows = range ? hrRows.filter((row: any) => inRange(row.date || row.created_at, range)) : hrRows;
     const filteredCollectionPlans = range ? collectionPlans.filter((p: any) => inRange(p.date || p.created_at, range)) : collectionPlans;
     const filteredTicketPlans = range ? ticketPlans.filter((p: any) => inRange(p.date || p.created_at || p.due_date, range)) : ticketPlans;
+    const filteredMktInteractions = range ? (marketingInteractions || []).filter((i: any) => inRange(i.appointment_date || i.interaction_date || i.created_at, range)) : (marketingInteractions || []);
+    const mktClients = marketingClients || [];
 
     const quotePending = filteredQuotes.filter((q: any) => ['beklemede', 'teklif'].includes(normalizeStatus(q.status)));
     const quoteOption = filteredQuotes.filter((q: any) => ['opsiyon', 'option', 'optional', '1'].includes(String(q.option || '').toLowerCase()) || parseDateSafe(q.option_date));
@@ -807,6 +828,29 @@ export default function DashboardPage() {
     const ticketOptionCount = filteredTickets.filter((t: any) => normalizeStatus(t.status) === 'active' || normalizeStatus(t.status) === 'aktif').length;
     const ticketPendingPaymentCount = filteredTicketPlans.filter((p: any) => normalizeStatus(p.status) === 'active' || normalizeStatus(p.status) === 'aktif').length;
 
+    const marketingItems = filteredMktInteractions.map((i: any) => {
+      const isPlanned = i.status === 'planned';
+      const client = mktClients.find((c: any) => c.id === i.client_id) || i.marketing_clients;
+      const clientName = client?.name || 'Firma Bilinmiyor';
+      
+      return {
+        date: i.appointment_date || i.interaction_date || i.created_at,
+        type: isPlanned ? 'Randevu' : 'Görüşme',
+        title: clientName,
+        subtitle: i.description || '',
+        status: isPlanned ? 'PLANLI' : 'TAMAMLANDI',
+        href: '/marketing',
+        color: isPlanned ? 'amber' : 'emerald',
+        interactionType: i.type
+      };
+    }).filter((i: any) => parseDateSafe(i.date))
+      .sort((a: any, b: any) => {
+        const timeA = parseDateSafe(a.date)?.getTime() || 0;
+        const timeB = parseDateSafe(b.date)?.getTime() || 0;
+        return timeB - timeA;
+      })
+      .slice(0, 8);
+
     return {
       projectRevenue,
       projectProfit: projectRevenue - projectCost,
@@ -829,7 +873,12 @@ export default function DashboardPage() {
       partTimeRevenue: Object.entries(partTimeRevenue).map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount).slice(0, 6),
       ticketOptionCount,
       ticketPendingPaymentCount,
-      calendarItems
+      calendarItems,
+      mktTotalClients: mktClients.length,
+      mktTotalAgencies: mktClients.filter((c: any) => c.type === 'acenta').length,
+      mktTotalInteractions: filteredMktInteractions.length,
+      mktTotalAppointments: filteredMktInteractions.filter((i: any) => i.status === 'planned').length,
+      marketingItems
     };
   }, [data, period, customStartDate, customEndDate]);
 
@@ -1063,6 +1112,95 @@ export default function DashboardPage() {
           </div>
         </DashboardCard>
       </div>
+
+      {/* Marketing & Conversion */}
+      <DashboardCard title="Pazarlama & Dönüşüm" subtitle="Kampanya Performansları" icon={Megaphone} className="mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-xl transition-all duration-200 hover:border-indigo-500 dark:hover:border-indigo-400 group">
+            <div className="flex justify-between items-start mb-3">
+              <div className="bg-indigo-100 dark:bg-indigo-900/50 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                <Target size={18} />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">+12.5%</span>
+            </div>
+            <p className="text-[10px] font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-widest mb-1">Toplam Portföy</p>
+            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">{metrics.mktTotalClients} Firma</p>
+          </div>
+          
+          <div className="border border-pink-100 dark:border-pink-900/30 bg-pink-50/30 dark:bg-pink-900/10 p-4 rounded-xl transition-all duration-200 hover:border-pink-500 dark:hover:border-pink-400 group">
+            <div className="flex justify-between items-start mb-3">
+              <div className="bg-pink-100 dark:bg-pink-900/50 p-2 rounded-lg text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform">
+                <Briefcase size={18} />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">+4.2%</span>
+            </div>
+            <p className="text-[10px] font-black text-pink-800 dark:text-pink-300 uppercase tracking-widest mb-1">Acenteler</p>
+            <p className="text-xl font-black text-pink-600 dark:text-pink-400">{metrics.mktTotalAgencies} Acente</p>
+          </div>
+
+          <div className="border border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-900/10 p-4 rounded-xl transition-all duration-200 hover:border-amber-500 dark:hover:border-amber-400 group">
+            <div className="flex justify-between items-start mb-3">
+              <div className="bg-amber-100 dark:bg-amber-900/50 p-2 rounded-lg text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+                <BarChart3 size={18} />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">+2.8%</span>
+            </div>
+            <p className="text-[10px] font-black text-amber-800 dark:text-amber-300 uppercase tracking-widest mb-1">Görüşmeler</p>
+            <p className="text-xl font-black text-amber-600 dark:text-amber-400">{metrics.mktTotalInteractions} Kayıt</p>
+          </div>
+
+          <div className="border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-900/10 p-4 rounded-xl transition-all duration-200 hover:border-emerald-500 dark:hover:border-emerald-400 group">
+            <div className="flex justify-between items-start mb-3">
+              <div className="bg-emerald-100 dark:bg-emerald-900/50 p-2 rounded-lg text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                <Calendar size={18} />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">+18.1%</span>
+            </div>
+            <p className="text-[10px] font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-widest mb-1">Randevular</p>
+            <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">{metrics.mktTotalAppointments} Planlı</p>
+          </div>
+        </div>
+
+        {/* Detailed Marketing List */}
+        <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <h4 className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Yaklaşan / Son Etkileşimler</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {metrics.marketingItems.length === 0 ? (
+              <p className="col-span-full text-center text-gray-400 py-6 italic text-sm">Etkileşim bulunamadı.</p>
+            ) : (
+              metrics.marketingItems.map((item: any, idx: number) => (
+                <Link 
+                  key={idx}
+                  href={item.href}
+                  className={`group border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl transition-all duration-200 hover:border-${item.color}-500 dark:hover:border-${item.color}-400 flex flex-col`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`text-[9px] font-black uppercase tracking-widest text-${item.color}-600 dark:text-${item.color}-400`}>{item.type}</span>
+                    <span className="text-[9px] font-bold text-gray-400">{shortDate(item.date)}</span>
+                  </div>
+                  <h4 className={`text-xs font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-${item.color}-600 dark:group-hover:text-${item.color}-400 transition-colors duration-200`}>{item.title}</h4>
+                  
+                  <div className="mt-2 flex-1 space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                      {item.interactionType === 'telefon' ? <Phone size={10} className="shrink-0" /> : 
+                       item.interactionType === 'e_posta' ? <Mail size={10} className="shrink-0" /> :
+                       item.interactionType === 'yuz_yuze' ? <Users size={10} className="shrink-0" /> :
+                       <MessageSquare size={10} className="shrink-0" />}
+                      <span className="truncate" title={item.subtitle}>{item.subtitle || 'Detay girilmemiş'}</span>
+                    </div>
+                    {item.status && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                        <CheckCircle2 size={10} className={`shrink-0 ${item.status === 'PLANLI' ? 'text-amber-500' : 'text-emerald-500'}`} />
+                        <span className="truncate" title={item.status}>{item.status}</span>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+      </DashboardCard>
 
       {/* Operational Flow */}
       <DashboardCard title="Operasyonel Akış" subtitle="Yaklaşan İşlemler" icon={Calendar} className="mb-8">

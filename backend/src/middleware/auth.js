@@ -49,16 +49,20 @@ const authMiddleware = async (req, res, next) => {
     if (!data) {
       // Profil yoksa fallback
       if (supabaseAuthUser) {
+        const fallbackRole = supabaseAuthUser.user_metadata?.role || 'user';
+        // Prevent privilege escalation via unverified metadata
+        const safeRole = ['admin', 'super_admin', 'manager'].includes(fallbackRole) ? 'user' : fallbackRole;
+        
         userProfile = {
           id: userId,
           email: supabaseAuthUser.email,
           full_name: supabaseAuthUser.user_metadata?.full_name || 
                      `${supabaseAuthUser.user_metadata?.first_name || ''} ${supabaseAuthUser.user_metadata?.last_name || ''}`.trim() || 
                      supabaseAuthUser.email,
-          role: supabaseAuthUser.user_metadata?.role || 'user',
+          role: safeRole,
           is_active: true
         };
-        console.warn(`User profile missing in public.users for ${supabaseAuthUser.email}, using metadata role: ${userProfile.role}`);
+        console.warn(`User profile missing in public.users for ${supabaseAuthUser.email}, using safe fallback role: ${userProfile.role}`);
       } else {
         return res.status(401).json({ message: 'Kullanıcı profili bulunamadı' });
       }

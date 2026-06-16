@@ -145,7 +145,8 @@ export default function ExpensePendingPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-2rem)] md:h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
       <div className="flex flex-col md:flex-row md:items-start justify-start gap-6">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -371,28 +372,7 @@ export default function ExpensePendingPage() {
             }}
           />
           
-          {filteredItems.length === 0 && (
-            <div className="text-center py-20">
-              <div className="text-4xl mb-4">✅</div>
-              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">Faturalanacak gider kalemi yok</h3>
-              <p className="text-slate-600 dark:text-slate-300">Tüm alış kalemleri faturası işlenmiş veya filtreye uygun kayıt yok.</p>
-              {(dateRange.start || dateRange.end || voucherTokens.length || voucherInput || companyTokens.length || companyInput || agencyTokens.length || agencyInput || hotelTokens.length || hotelInput || categoryTokens.length || categoryInput) && (
-                <button 
-                  onClick={() => {
-                    setDateRange({ start: '', end: '' });
-                    setVoucherTokens([]); setVoucherInput('');
-                    setCompanyTokens([]); setCompanyInput('');
-                    setAgencyTokens([]); setAgencyInput('');
-                    setHotelTokens([]); setHotelInput('');
-                    setCategoryTokens([]); setCategoryInput('');
-                  }}
-                  className="mt-4 text-orange-600 text-sm font-semibold hover:underline"
-                >
-                  Filtreleri Temizle
-                </button>
-              )}
-            </div>
-          )}
+          
         </div>
       )}
 
@@ -406,6 +386,7 @@ export default function ExpensePendingPage() {
           loadItems();
         }}
       />
+      </div>
     </div>
   );
 }

@@ -25,6 +25,10 @@ interface ThemeSettings {
   light_text_color?: string;
   dark_sidebar_border?: string;
   light_sidebar_border?: string;
+  dark_icon_logo?: string;
+  light_icon_logo?: string;
+  dark_menu_logo?: string;
+  light_menu_logo?: string;
 }
 
 interface SettingsUpdateEvent extends CustomEvent {
@@ -70,6 +74,21 @@ export default function ColorThemeApplier() {
         if (themeSidebarHeaderBg) root.style.setProperty('--theme-sidebar-header-bg', themeSidebarHeaderBg);
         if (themeTextColor) root.style.setProperty('--theme-text-color', themeTextColor);
         if (themeSidebarBorder) root.style.setProperty('--theme-sidebar-border', themeSidebarBorder);
+
+        // Dinamik favicon güncellemesi
+        const faviconUrl = isDark 
+          ? (settings.dark_icon_logo || settings.dark_menu_logo || '/LOGO_NAVY.png')
+          : (settings.light_icon_logo || settings.light_menu_logo || '/LOGO_NAVY.png');
+          
+        if (faviconUrl) {
+          let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = faviconUrl;
+        }
 
         const styleId = 'tt-dynamic-theme-styles';
         let styleEl = document.getElementById(styleId);

@@ -9,6 +9,10 @@ import { toast } from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
 import { usePermissions, Module } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import Modal from '@/components/Modal';
+import { supabase } from '@/lib/supabase';
+import { ScrollText } from 'lucide-react';
+import { formatDate } from '@/utils/formatters';
 
 interface Agency { id: string; name: string; company_name: string; }
 interface Hotel { id: string; name: string; concept: string; }
@@ -62,6 +66,12 @@ export default function QuoteViewPage() {
 
   const [activeViewHotelId, setActiveViewHotelId] = useState<string>('');
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
+  
+  // Logs state
+  const [showLogsModal, setShowLogsModal] = useState(false);
+  const [logsData, setLogsData] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [logSearchTerm, setLogSearchTerm] = useState('');
   // Dummy state required by QuoteServiceEditor (read-only in view mode)
   const [showAddRow] = useState(false);
   const [newServiceItem, setNewServiceItem] = useState<ServiceItem>({
@@ -133,6 +143,29 @@ export default function QuoteViewPage() {
       const links = await publicLinksService.getByQuoteId(quoteId);
       setQuoteLinks(links || []);
     } catch { setQuoteLinks([]); }
+  };
+
+  const fetchLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      const itemIds = serviceItems.map((item: any) => item.id).filter(Boolean);
+      const entityIds = [quoteId, ...itemIds];
+      
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .in('entity_id', entityIds)
+        .order('occurred_at', { ascending: false })
+        .limit(200);
+
+      if (error) throw error;
+      setLogsData(data || []);
+    } catch (err) {
+      console.error('Loglar yüklenirken hata:', err);
+      toast.error('Log kayıtları alınamadı.');
+    } finally {
+      setLoadingLogs(false);
+    }
   };
 
   // Link durumunu değiştir (aktif/pasif)
@@ -663,6 +696,17 @@ export default function QuoteViewPage() {
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 {exporting ? 'İşleniyor...' : 'Excel'}
               </button>
+              <button 
+                onClick={() => {
+                  setShowLogsModal(true);
+                  fetchLogs();
+                }}
+                className="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700 transition-colors flex items-center"
+                title="Log Kayıtları"
+              >
+                <ScrollText size={12} className="mr-1" />
+                Loglar
+              </button>
               <Link href={`/quotes/${quote.id}/edit`} className="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700 transition-colors">Düzenle</Link>
               <Link href="/quotes" className="bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors">Geri Dön</Link>
             </div>
@@ -836,6 +880,83 @@ export default function QuoteViewPage() {
         onConfirm={confirmModal.onConfirm}
         onCancel={confirmModal.onCancel}
       />
+
+      {/* Logs Modal */}
+      <Modal isOpen={showLogsModal} onClose={() => setShowLogsModal(false)} title="Teklif Log Kayıtları" maxWidth="max-w-4xl">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="İşlem tipi, kullanıcı veya değer içinde ara..."
+              value={logSearchTerm}
+              onChange={(e) => setLogSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {loadingLogs ? (
+              <div className="flex justify-center p-8"><LoadingSpinner message="Loglar yükleniyor..." /></div>
+            ) : logsData.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">Bu teklife ait log kaydı bulunamadı.</div>
+            ) : (
+              <div className="space-y-4">
+                {logsData.filter(log => {
+                  if (!logSearchTerm) return true;
+                  const search = logSearchTerm.toLowerCase();
+                  const actionStr = (log.action || '').toLowerCase();
+                  const userStr = (log.user_name || log.user_id || '').toLowerCase();
+                  const moduleStr = (log.module || '').toLowerCase();
+                  const beforeStr = log.before_data ? JSON.stringify(log.before_data).toLowerCase() : '';
+                  const afterStr = log.after_data ? JSON.stringify(log.after_data).toLowerCase() : '';
+                  
+                  return actionStr.includes(search) || userStr.includes(search) || moduleStr.includes(search) || beforeStr.includes(search) || afterStr.includes(search);
+                }).map((log) => (
+                  <div key={log.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs">
+                    <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
+                          log.action === 'INSERT' ? 'bg-green-100 text-green-700' :
+                          log.action === 'UPDATE' ? 'bg-blue-100 text-blue-700' :
+                          log.action === 'DELETE' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {log.action}
+                        </span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          {log.user_name || log.user_id || 'Sistem / Anonim'}
+                        </span>
+                        <span className="text-gray-400 text-[10px]">({log.module})</span>
+                      </div>
+                      <div className="text-gray-500 font-medium">
+                        {formatDate(log.occurred_at)}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      {log.before_data && Object.keys(log.before_data).length > 0 && (
+                        <div className="bg-red-50 dark:bg-red-900/10 p-2 rounded">
+                          <p className="font-bold text-red-800 dark:text-red-300 mb-1 border-b border-red-100 dark:border-red-900/30 pb-1">Önceki Değerler</p>
+                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
+                            {JSON.stringify(log.before_data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      {log.after_data && Object.keys(log.after_data).length > 0 && (
+                        <div className="bg-green-50 dark:bg-green-900/10 p-2 rounded">
+                          <p className="font-bold text-green-800 dark:text-green-300 mb-1 border-b border-green-100 dark:border-green-900/30 pb-1">Yeni Değerler</p>
+                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
+                            {JSON.stringify(log.after_data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

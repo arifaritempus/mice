@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Montserrat } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import content from "@/data/content.json";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat", weight: ["400", "700"] });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta" });
 
 export const metadata: Metadata = {
   title: content.meta.title,
@@ -23,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={`${playfair.variable} ${inter.variable} ${montserrat.variable}`}>
+    <html lang="tr" className={`${outfit.variable} ${jakarta.variable}`}>
       <body className="antialiased">
         <Header />
         {children}

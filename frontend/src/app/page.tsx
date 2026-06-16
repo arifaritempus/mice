@@ -38,7 +38,8 @@ import {
   Copy,
   ExternalLink,
   ChevronDown,
-  Hash
+  Hash,
+  Calculator
 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
@@ -192,13 +193,13 @@ const AlertBox = ({ type, title, children }: { type: 'tip' | 'warning' | 'critic
 
 const StepCard = ({ number, title, children }: { number: string, title: string, children: React.ReactNode }) => (
   <div className="relative pl-12 pb-12 last:pb-0 group">
-    <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-black text-xs z-10 shadow-lg group-hover:scale-110 transition-transform">
+    <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center font-black text-xs z-10 shadow-lg group-hover:scale-110 transition-transform">
       {number}
     </div>
-    <div className="absolute left-4 top-8 bottom-0 w-px bg-slate-200 dark:bg-slate-800 group-last:hidden" />
-    <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm group-hover:border-blue-500/50 transition-colors">
+    <div className="absolute left-4 top-8 bottom-0 w-px bg-slate-200 dark:bg-slate-700 group-last:hidden" />
+    <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm group-hover:border-blue-500/50 transition-colors">
       <h5 className="text-sm font-black text-slate-900 dark:text-white mb-3 uppercase tracking-tight">{title}</h5>
-      <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{children}</div>
+      <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{children}</div>
     </div>
   </div>
 );
@@ -212,7 +213,7 @@ const ScreenshotFrame = ({ caption, children }: { caption: string, children?: Re
   </div>
 );
 function UserManualModal({ onClose }: { onClose: () => void }) {
-  const [activeTab, setActiveTab] = useState('mice-teklif');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -226,16 +227,20 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
 
   const navigation = [
     {
+      id: 'genel',
+      title: 'Genel Bakış',
+      icon: Layout,
+      items: [
+        { id: 'dashboard', title: 'Dashboard & Özet' }
+      ]
+    },
+    {
       id: 'mice',
-      title: 'MICE & Proje Yönetimi',
+      title: 'MICE & Projeler',
       icon: Target,
       items: [
-        { id: 'mice-teklif', title: 'Teklif & Bütçe Yönetimi' },
-        { id: 'mice-link', title: 'Link ile Gönderim & Onay' },
-        { id: 'mice-proje', title: 'Projeye Dönüştürme' },
-        { id: 'mice-detay', title: 'Operasyonel Detaylar' },
-        { id: 'mice-bilet', title: 'Uçak Bileti Yönetimi' },
-        { id: 'mice-finans', title: 'Finansal Takip' }
+        { id: 'teklifler', title: 'Teklifler Modülü' },
+        { id: 'projeler', title: 'Projeler (MICE) Modülü' }
       ]
     },
     {
@@ -243,35 +248,42 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
       title: 'Sejour & Rezervasyon',
       icon: Hotel,
       items: [
-        { id: 'sejour-ops', title: 'Operasyon Akışı' },
-        { id: 'sejour-voucher', title: 'Voucher Yönetimi' }
+        { id: 'sejour', title: 'Sejour Modülü' }
       ]
     },
     {
-      id: 'operation',
+      id: 'operasyon',
       title: 'Saha Operasyonu',
-      icon: Truck,
+      icon: Briefcase,
       items: [
-        { id: 'ops-transfer', title: 'Transfer Planlama' },
-        { id: 'ops-guide', title: 'Rehber & Personel' }
+        { id: 'operasyon', title: 'Operasyon Modülü' }
       ]
     },
     {
-      id: 'accounting',
-      title: 'Muhasebe',
-      icon: CreditCard,
+      id: 'bilet',
+      title: 'Uçuş Yönetimi',
+      icon: Plane,
       items: [
-        { id: 'acc-invoice', title: 'Fatura Takibi' },
-        { id: 'acc-mutabakat', title: 'Link ile Mutabakat' },
-        { id: 'acc-cash', title: 'Kasa & Banka Yönetimi' }
+        { id: 'bilet', title: 'Bilet (Uçuş) Modülü' }
       ]
     },
     {
-      id: 'system',
-      title: 'Genel Sistem',
+      id: 'finans',
+      title: 'Muhasebe & Rapor',
+      icon: Calculator,
+      items: [
+        { id: 'muhasebe', title: 'Muhasebe & Finans Modülü' },
+        { id: 'raporlar', title: 'Raporlar Modülü' }
+      ]
+    },
+    {
+      id: 'diger',
+      title: 'Diğer Sistemler',
       icon: Settings,
       items: [
-        { id: 'sys-notify', title: 'Bildirim & Görev Takibi' }
+        { id: 'pazarlama', title: 'Pazarlama (Marketing) Modülü' },
+        { id: 'tanimlamalar', title: 'Tanımlamalar Modülü' },
+        { id: 'ayarlar', title: 'Sistem Ayarları Modülü' }
       ]
     }
   ];
@@ -286,288 +298,258 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
 
   const getContent = () => {
     switch(activeTab) {
-      case 'mice-teklif':
+      case 'dashboard':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Teklif & Bütçe Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Projeleriniz için maliyet ve satış kalemlerini detaylıca planlayın.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Dashboard Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+              Tüm operasyonel akışların anlık takibini sağlayan ana ekranımız.
+            </p>
             
-            <AlertBox type="tip" title="Bütçe Esnekliği">
-              Teklif aşamasında her kalem için farklı döviz birimleri (USD, EUR, TRY) kullanabilir, sistemin otomatik kur çevirisiyle genel bütçeyi görebilirsiniz.
-            </AlertBox>
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Yaklaşan Operasyonlar Takibi">
+                Sol alt panelde bulunan <strong>"Yaklaşan Operasyonlar"</strong> listesi, önümüzdeki 30 gün içinde gerçekleşecek projelerinizi ve operasyonlarınızı listeler. Listede herhangi bir satıra tıklayarak o projenin detay sayfasına direkt geçiş yapabilirsiniz.
+              </StepCard>
 
-            <div className="space-y-0">
-              <StepCard number="01" title="Teklif Kartı Oluşturma">
-                Müşteri ve acente bilgilerini seçerek projenin ana çerçevesini çizin.
+              <StepCard number="02" title="Hızlı Özet Bölümü">
+                Ekranın üst kısmında bulunan istatistik kartları; yaklaşan projelerinizi, bekleyen sejour kayıtlarınızı, transfer, uçak bileti ve görevlendirilen rehber sayılarınızı özetler. Kartların üzerine tıklayarak ilgili departmanın listesine hızlıca ulaşabilirsiniz.
               </StepCard>
-              <StepCard number="02" title="Kalem Girişi">
-                Konaklama, transfer ve diğer servis kalemlerini maliyet/satış fiyatlarıyla birlikte ekleyin.
-              </StepCard>
-              <StepCard number="03" title="Revizyon Takibi">
-                Teklifinizi PDF olarak dışa aktarabilir veya sistem üzerinden güncellemeler yapabilirsiniz.
+
+              <StepCard number="03" title="Finansal Durum Analizi">
+                Sağ alt panelde yer alan <strong>"Finansal Durum"</strong> grafikleri üzerinden aylık bazda firmanızın cirosunu, yapılan giderleri ve net karlılığı takip edebilirsiniz. Rakamlar sadece yetkili kullanıcılar tarafından görüntülenebilir.
               </StepCard>
             </div>
-
-            <ScreenshotFrame caption="Teklif Düzenleme Paneli" />
           </div>
         );
-      case 'mice-link':
+      case 'teklifler':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Link ile Gönderim & Onay</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Tekliflerinizi interaktif bir web linki olarak müşterinize sunun.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Teklifler Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Müşterilerinize sunacağınız MICE (Toplantı/Etkinlik) veya grup organizasyon tekliflerinin hazırlandığı modüldür.</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                <h6 className="text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Hızlı Paylaşım</h6>
-                <p className="text-xs text-slate-500 leading-relaxed">"Link Oluştur" butonu ile teklife özel URL üretin ve WhatsApp/Email üzerinden gönderin.</p>
-              </div>
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                <h6 className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-2">Anlık Bildirim</h6>
-                <p className="text-xs text-slate-500 leading-relaxed">Müşteri teklifi onayladığında veya reddettiğinde sisteminize anlık bildirim düşer.</p>
-              </div>
-            </div>
-
-            <AlertBox type="warning" title="Durum Kontrolü">
-              Müşteri link üzerinden onay verdiğinde teklif statüsü otomatik olarak "Onaylandı" olur ve proje aşamasına geçmeye hazır hale gelir.
-            </AlertBox>
-          </div>
-        );
-      case 'mice-proje':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Projeye Dönüştürme</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Onaylanan teklifleri operasyonel listelere aktarın.</p>
-
-            <div className="space-y-0">
-              <StepCard number="01" title="Statü Güncelleme">
-                Teklif konfirme olduğunda statüsünü değiştirerek projeye dönüştürün.
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Yeni Teklif Oluşturma">
+                Sağ üstteki <strong>"Yeni Teklif"</strong> butonuna basın. Açılan ekranda teklif verilecek Müşteri'yi (Cari), Teklif adını, başlangıç/bitiş tarihlerini ve tahmini katılımcı sayısını girin.
               </StepCard>
-              <StepCard number="02" title="Operasyonel Aktarım">
-                Projeye dönüşen her kalem, ilgili departmanların (Transfer, HR, Otel) çalışma listesine düşer.
+
+              <StepCard number="02" title="Hizmet Kalemlerini Ekleme">
+                Teklifin detay sayfasına girdiğinizde; Konaklama, Transfer, Uçuş, Etkinlik gibi kalemleri (sekme olarak) göreceksiniz. İlgili sekmeye girip tedarikçiden aldığınız "Maliyet" tutarını ve müşteriye satacağınız "Satış Fiyatını" girin. İstenirse farklı döviz cinsleri kullanılabilir.
+              </StepCard>
+
+              <StepCard number="03" title="Müşteriye Gönderme & Onay Alma">
+                Teklifinizi tamamladığınızda, üstteki <strong>"Link Oluştur / Paylaş"</strong> butonuna basarak dijital bir sunum linki elde edersiniz. Müşteri bu linke tıklayarak teklifi inceler ve <strong>"Onayla"</strong> butonuna basabilir.
+              </StepCard>
+
+              <StepCard number="04" title="Teklifi Projeye Çevirme">
+                Müşteri onayladığında veya siz manuel olarak onaylandı işaretlediğinizde teklif otomatik olarak "Projeler" modülüne aktarılır ve kilitlenir. Artık üzerinde değişiklik yapılamaz, operasyon başlar.
               </StepCard>
             </div>
           </div>
         );
-      case 'mice-detay':
+      case 'projeler':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Operasyonel Detaylar</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Proje sekmeleri üzerinden tüm saha yönetimini gerçekleştirin.</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {[
-                 { t: 'Konaklama', d: 'Otel oda dağılım listelerini ve check-in detaylarını yönetin.' },
-                 { t: 'Transfer', d: 'Araç tipi ve kapasitesine göre transfer planlamalarını yapın.' },
-                 { t: 'Personel', d: 'Projeye rehber ve saha personeli ataması gerçekleştirin.' }
-               ].map((item, i) => (
-                 <div key={i} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                    <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">{item.t}</h6>
-                    <p className="text-[10px] text-slate-500 leading-relaxed">{item.d}</p>
-                 </div>
-               ))}
-            </div>
-
-            <AlertBox type="tip" title="Hızlı Liste">
-               Konaklama listesindeki verileri topluca Excel'den içeri aktarabilirsiniz.
-            </AlertBox>
-          </div>
-        );
-      case 'mice-bilet':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Uçak Bileti Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Projelerinizdeki uçuş ve biletleme süreçlerini kontrol edin.</p>
-
-            <div className="space-y-4">
-               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-sm font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">PNR & Yolcu Takibi</h6>
-                  <p className="text-xs text-slate-500 leading-relaxed">Yolcu isim listelerini, PNR kodlarını ve uçuş saatlerini proje bazlı listeleyebilir, grup biletlemelerini yönetebilirsiniz.</p>
-               </div>
-            </div>
-
-            <div className="space-y-0">
-              <StepCard number="01" title="Rezervasyon Girişi">
-                Havayolu ve parkur bilgilerini girerek ön rezervasyonları oluşturun.
-              </StepCard>
-              <StepCard number="02" title="Biletleme & Opsiyon">
-                Biletleme zaman limitlerini (TL) takip edin ve bilet kesim işlemlerini gerçekleştirin.
-              </StepCard>
-            </div>
-          </div>
-        );
-      case 'mice-finans':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Finansal Takip</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Projenin mali durumunu ve bakiye takibini yapın.</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-100 dark:border-emerald-800">
-                  <h6 className="text-xs font-black text-emerald-900 dark:text-emerald-100 uppercase mb-2">Tahsilat Takibi</h6>
-                  <p className="text-[10px] text-emerald-800 dark:text-emerald-200">Müşteriden gelen ödemeleri proje bazlı kaydedin.</p>
-               </div>
-               <div className="p-6 bg-rose-50 dark:bg-rose-900/20 rounded-3xl border border-rose-100 dark:border-rose-800">
-                  <h6 className="text-xs font-black text-rose-900 dark:text-rose-100 uppercase mb-2">Ödeme Takibi</h6>
-                  <p className="text-[10px] text-rose-800 dark:text-rose-200">Tedarikçi ödemelerini ve bakiyelerini izleyin.</p>
-               </div>
-            </div>
-          </div>
-        );
-      case 'sejour-ops':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Operasyon Akışı</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Münferit rezervasyonların yönetim süreci.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Projeler (MICE) Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Onaylanmış tekliflerin veya direkt açılan kesinleşmiş işlerin yönetildiği, operasyonel dağılımın yapıldığı merkezdir.</p>
             
-            <div className="space-y-0">
-              <StepCard number="01" title="Kayıt Girişi">
-                Otel, uçuş ve transfer detaylarını sisteme işleyin.
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Rooming List (Konaklama Listesi) Yükleme">
+                Projeye girdiğinizde <strong>"Konaklama"</strong> sekmesinde <strong>"Excel'den Yükle"</strong> seçeneğini kullanarak katılımcı listenizi tek seferde sisteme aktarabilirsiniz. Sistem single/double/twin oda atamalarını otomatik yapar.
               </StepCard>
-              <StepCard number="02" title="Maliyetlendirme">
-                Hizmet bazlı maliyet ve satış rakamlarını belirleyin.
+
+              <StepCard number="02" title="Transferleri Otomatik Oluşturma">
+                Yolcuların geliş ve gidiş uçuş bilgilerini sisteme girdiyseniz, <strong>"Transferler"</strong> sekmesinde "Uçuşlardan Transfer Oluştur" diyerek tüm transfer planlamasını saniyeler içinde taslak olarak oluşturabilirsiniz.
+              </StepCard>
+
+              <StepCard number="03" title="Döviz & Kur Yönetimi">
+                Proje ayarlarından "TCMB Kurunu Kullan"ı seçerek projedeki farklı döviz harcamalarının o günkü kurdan otomatik hesaplanmasını veya belirli bir kura sabitlenmesini sağlayabilirsiniz.
+              </StepCard>
+
+              <StepCard number="04" title="Bütçe ve Karlılık Kontrolü">
+                Projenin <strong>"Finans"</strong> sekmesinde, kalem kalem yapılan masraflar ve fatura edilen satışlar karşılaştırılarak projenin anlık net kar/zararı (P&L) görüntülenir.
               </StepCard>
             </div>
           </div>
         );
-      case 'sejour-voucher':
+      case 'sejour':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Voucher Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Rezervasyon dökümanlarının hazırlanması.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Sejour Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Münferit misafirler veya ufak gruplar için yapılan otel rezervasyonları, voucher ve yan hizmetlerin yönetildiği modüldür.</p>
             
-            <AlertBox type="tip" title="Döküman Yazdırma">
-              Hazırlanan tüm voucherları tek tıkla PDF olarak indirebilir ve paylaşabilirsiniz.
-            </AlertBox>
-          </div>
-        );
-      case 'ops-transfer':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Transfer Planlama & Araç Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Saha hareketliliğini hatasız ve maliyet odaklı yönetin.</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-xs font-black text-blue-600 uppercase mb-2">Araç Atama & Plaka</h6>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Transfer listesindeki her bir hareket için araç tipini belirleyin ve tedarikçi plakalarını sisteme işleyin.</p>
-               </div>
-               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-xs font-black text-emerald-600 uppercase mb-2">Transfer Gruplandırma</h6>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Aynı saatteki ve yöndeki misafirleri tek araçta toplayarak operasyonel verimliliği artırın.</p>
-               </div>
-            </div>
-
-            <div className="space-y-0">
-              <StepCard number="01" title="Liste Oluşturma">
-                MICE veya Sejour modüllerinden gelen transfer taleplerini günlük liste halinde görüntüleyin.
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Yeni Kayıt ve Voucher">
+                "Yeni Sejour" diyerek misafir adını, kalacağı oteli ve tarihleri belirleyin. Kayıt tamamlandıktan sonra sağ üstteki <strong>"Voucher Üret"</strong> butonu ile müşterinize veya otele göndereceğiniz resmi belgeyi PDF olarak indirebilirsiniz.
               </StepCard>
-              <StepCard number="02" title="Tedarikçi Bildirimi">
-                Atanan araç ve saat detaylarını tedarikçilerle paylaşarak konfirme alın.
+
+              <StepCard number="02" title="Hizmet Ekleme (Çapraz Satış)">
+                Sadece otel değil, Sejour detayına girip "Hizmetler" sekmesinden misafire havalimanı transferi, rehberlik veya müze bileti gibi ekstra hizmetler ekleyebilirsiniz. Bu hizmetler doğrudan operasyon birimine iş emri olarak düşer.
+              </StepCard>
+
+              <StepCard number="03" title="Misafir Tahsilatları">
+                "Bakiye / Ödeme" sekmesinden müşterinin yaptığı kredi kartı veya nakit ödemeleri girin. Sistem müşterinin kalan bakiyesini her an size gösterir.
               </StepCard>
             </div>
           </div>
         );
-      case 'ops-guide':
+      case 'operasyon':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Rehber & Saha Personeli</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Saha kadrosunun yetkinlik ve müsaitlik takibi.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Operasyon Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Proje ve Sejour'lardan otomatik akan transferlerin, biletlerin ve saha personellerinin yönetildiği kontrol panelidir.</p>
             
-            <div className="space-y-4">
-               <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border border-amber-100 dark:border-amber-800">
-                  <h6 className="text-xs font-black text-amber-900 dark:text-amber-100 uppercase mb-2">Müsaitlik Takibi</h6>
-                  <p className="text-[11px] text-amber-800 dark:text-amber-200 leading-relaxed">Personelin hangi tarihlerde hangi projede olduğunu takvim üzerinden izleyin, çakışmaları önleyin.</p>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">Döküman Arşivi</h6>
-                  <p className="text-[10px] text-slate-500">Rehberlerin kokart ve kimlik bilgilerini dijital olarak saklayın.</p>
-               </div>
-               <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-[11px] font-black uppercase text-blue-600 mb-1">Görev Atama</h6>
-                  <p className="text-[10px] text-slate-500">Transfer veya tur bazlı personel görevlendirmelerini yapın.</p>
-               </div>
-            </div>
-          </div>
-        );
-      case 'acc-invoice':
-        return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Fatura Takibi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Finansal döküman yönetimi.</p>
-
-            <div className="space-y-0">
-              <StepCard number="01" title="Fatura Bekleyenler">
-                Konfirme olan projelerin fatura durumlarını bu listeden izleyin.
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Transfer Araç Atama & Birleştirme">
+                "Transferler" sekmesinde bekleyen yolcuları görürsünüz. Aynı saatte inen uçuşları seçip <strong>"Araç Ata"</strong> diyerek tek bir araca (Minibüs/Otobüs vb.) birden fazla yolcuyu atayabilir, transfer firmasını seçebilirsiniz.
               </StepCard>
-              <StepCard number="02" title="Giriş ve Çıkış">
-                Gelen ve giden fatura bilgilerini sisteme kaydedin.
+
+              <StepCard number="02" title="Transfer Formu Çıktısı">
+                Atamaları biten gün için sağ üstteki <strong>"Transfer Formu (Excel)"</strong> butonuna basarak şoförlerinize ve havalimanı karşılama personeline vereceğiniz yolcu tablolarını çıktı alabilirsiniz.
+              </StepCard>
+
+              <StepCard number="03" title="Part-time & Rehber Atama">
+                Projede görev alacak rehberleri "Personel" sekmesinden seçin. Sistem, o rehberin o gün başka bir projede olup olmadığını kontrol eder. Atama yapıldığında yevmiye bedeli üzerinden hakedişi otomatik hesaplanır.
               </StepCard>
             </div>
           </div>
         );
-      case 'acc-mutabakat':
+      case 'bilet':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Link ile Mutabakat</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Tedarikçilerinizle rakamsal doğrulamaları online yapın.</p>
-
-            <AlertBox type="tip" title="Hızlı Doğrulama">
-              Tedarikçiye gönderilen mutabakat linki üzerinden kalem bazlı onay alınabilir, bu sayede fatura öncesi hataların önüne geçilir.
-            </AlertBox>
-
-            <div className="space-y-0">
-              <StepCard number="01" title="Mutabakat Linki Oluşturma">
-                İlgili proje kalemleri için tedarikçiye özel mutabakat URL'si hazırlayın.
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Bilet (Uçuş) Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">İç ve dış hat tüm biletlemelerin, PNR'ların ve opsiyon sürelerinin takip edildiği alandır.</p>
+            
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Bilet İşleme">
+                "Yeni Bilet" butonuna tıklayıp Havayolu, PNR, Yolcu Bilgisi, Net Maliyet ve Vergi(Tax) detaylarını girerek bileti sisteme kaydedin.
               </StepCard>
-              <StepCard number="02" title="Tedarikçi Onayı">
-                Tedarikçi link üzerinden tutarları onayladığında kalem "Mutabık" statüsüne geçer.
+
+              <StepCard number="02" title="Opsiyon (Time Limit) Takibi">
+                Henüz kesilmemiş (rezervasyon) biletler için <strong>Opsiyon Tarihi</strong> girerseniz, bilet menüsünde günü yaklaşanlar kırmızı alarm ile liste başında gösterilir.
+              </StepCard>
+
+              <StepCard number="03" title="Bilet Takvimi Kullanımı">
+                Üstteki "Takvim Görünümü"ne geçerek hangi gün hangi yolcunun uçuşu olduğunu görsel olarak takip edebilirsiniz.
               </StepCard>
             </div>
           </div>
         );
-      case 'acc-cash':
+      case 'pazarlama':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Kasa & Banka Yönetimi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Bakiye kontrolleri.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Pazarlama (Marketing) Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Müşterilerinizle olan görüşme ve satış süreçlerinizi (CRM) yönettiğiniz modüldür.</p>
+            
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Randevu Oluşturma">
+                Yeni bir müşteri görüşmesi ayarladığınızda "Yeni Randevu" diyerek firma adını, tarihi ve toplantı konusunu belirleyin.
+              </StepCard>
 
-            <div className="p-8 bg-slate-100 dark:bg-slate-800 rounded-[3rem]">
-               <h5 className="text-xl font-black mb-4">Finansal Bakiyeler</h5>
-               <p className="text-sm opacity-70 leading-relaxed mb-6">Şirket kasalarınızın ve banka hesaplarınızın bakiye durumlarını sistem üzerinden takip edebilirsiniz.</p>
+              <StepCard number="02" title="Görüşme Notları (Log)">
+                Toplantı sonrası randevu detayına girerek neler konuşulduğunu "Görüşme Notu" olarak kaydedin. Bu sayede aylar sonra bile hangi müşteriye hangi sözlerin verildiğini hatırlayabilirsiniz.
+              </StepCard>
             </div>
           </div>
         );
-      case 'sys-notify':
+      case 'muhasebe':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Bildirim & Görev Takibi</h1>
-            <p className="text-lg text-slate-500 leading-relaxed">Sistemdeki kritik gelişmeleri anlık olarak takip edin.</p>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Muhasebe & Finans Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Faturalar, mutabakatlar ve kasa-banka ödemelerinin şirket resmi muhasebesine işlendiği yerdir.</p>
+            
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Bekleyen Faturaları İşleme">
+                Muhasebe modülüne girdiğinizde operasyondan gelen "Faturalandırılacak Projeler" listesi göreceksiniz. Faturasını resmen kestiğiniz işleri seçip "Fatura Kesildi" olarak işaretleyin ve e-fatura numarasını girin.
+              </StepCard>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-xs font-black text-blue-600 uppercase mb-2">Anlık Bildirimler</h6>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Yeni teklif onayı, mutabakat yanıtı veya iptal işlemlerinde sağ üst panelde anlık uyarılar alırsınız.</p>
-               </div>
-               <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700">
-                  <h6 className="text-xs font-black text-emerald-600 uppercase mb-2">Görev Hatırlatıcıları</h6>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Vadesi yaklaşan ödemeler veya biletleme opsiyon süreleri için sistem otomatik hatırlatmalar yapar.</p>
-               </div>
+              <StepCard number="02" title="Cari Mutabakat Gönderimi">
+                Tedarikçilerinize (Cari) girdiğinizde sağ üstteki <strong>"Mutabakat Linki Gönder"</strong> diyerek karşı tarafa sistem üzerinden bir link iletebilirsiniz. Onlar onayladığında sistemde "Mutabık" olarak güncellenir.
+              </StepCard>
+
+              <StepCard number="03" title="Kasa ve Banka Hareketi İşleme">
+                Gelen havaleleri veya yaptığınız nakit/EFT ödemelerini "Kasa İşlemleri" alanından "Yeni Tahsilat/Tediye" diyerek işleyin. Seçtiğiniz cari hesabın bakiyesinden anında düşülecektir.
+              </StepCard>
             </div>
+          </div>
+        );
+      case 'raporlar':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Raporlar Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Filtreleyerek şirketin operasyonel ve finansal sonuçlarını dışa aktardığınız ekrandır.</p>
+            
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Kar/Zarar (P&L) Raporu Alma">
+                Örneğin "Proje Bazlı Kar/Zarar" raporunu seçin. Tarih aralığını belirleyin. Sistem size o tarihlerdeki tüm projelerin cirosunu, maliyetini ve karlılığını listeleyecektir.
+              </StepCard>
 
-            <AlertBox type="tip" title="Bildirim Merkezi">
-              Tüm geçmiş bildirimlerinize sağ üstteki zil ikonuna tıklayarak ulaşabilir, okundu olarak işaretleyebilirsiniz.
-            </AlertBox>
+              <StepCard number="02" title="Dışa Aktarma">
+                Tüm raporların sol üst köşesinde bulunan <strong>"Excel'e Aktar"</strong> butonunu kullanarak verileri bilgisayarınıza indirebilir, muhasebecinizle veya yönetimle paylaşabilirsiniz.
+              </StepCard>
+            </div>
+          </div>
+        );
+      case 'tanimlamalar':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Tanımlamalar Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Sistemde kullanılacak alt verilerin (oteller, tedarikçiler, acenteler, kullanıcılar) kaydedildiği alandır.</p>
+            
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Tedarikçi/Müşteri Ekleme">
+                Cari Kartlar alanından çalıştığınız yeni bir oteli veya kurumsal müşteriyi sisteme tanıtın. Fatura bilgileri ve adreslerini eksiksiz girin.
+              </StepCard>
+
+              <StepCard number="02" title="Personel ve Rol Yönetimi">
+                Kullanıcılar menüsünden yeni bir çalışan hesabı açın. Ona <strong>"Rol"</strong> (Örn: Sadece Operasyon Görebilir, Muhasebe Görebilir vb.) atayarak sistemdeki yetkilerini kısıtlayabilirsiniz.
+              </StepCard>
+            </div>
+          </div>
+        );
+      case 'ayarlar':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Sistem Ayarları Modülü</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">Sistemin görünüm, entegrasyon ve genel şirket ayarlarının yapıldığı bölümdür.</p>
+            
+            <div className="mt-8 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Nasıl Kullanılır?</h3>
+              
+              <StepCard number="01" title="Şirket Logosu Yükleme">
+                Sistem genelinde tekliflerde ve voucher'larda çıkacak resmi şirket logonuzu buradan sisteme yükleyebilirsiniz.
+              </StepCard>
+
+              <StepCard number="02" title="Tema Ayarları">
+                Karanlık (Dark) veya Aydınlık (Light) tema seçimini yapabilir veya bilgisayarınızın sistem ayarına (Sistem) göre otomatik değişmesini sağlayabilirsiniz.
+              </StepCard>
+            </div>
           </div>
         );
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-center p-12">
             <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center mb-6">
-              <BookOpen className="w-12 h-12 text-slate-300" />
+              <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-600" />
             </div>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tighter">İçerik Bulunamadı</h3>
           </div>
@@ -590,84 +572,131 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="bg-white dark:bg-slate-900 w-full max-w-screen-2xl h-full md:h-[90vh] md:rounded-[3rem] shadow-[0_50px_150px_rgba(0,0,0,0.7)] flex overflow-hidden relative"
       >
-        {/* Left Sidebar - Navigation */}
-        <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} absolute md:relative inset-y-0 left-0 w-80 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-100 dark:border-slate-800 z-50 shrink-0 transition-transform duration-500`}>
-          <div className="h-full flex flex-col">
-            <div className="p-8 border-b border-slate-100 dark:border-slate-800">
-               <div className="flex items-center gap-3 mb-8">
-                  <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
-                    <BookOpen className="w-5 h-5" />
+        {/* === MOBILE SIDEBAR === */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden">
+            <div 
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-40 transition-opacity"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <aside className="absolute inset-y-0 left-0 z-50 w-80 shrink-0 flex flex-col bg-slate-50 dark:bg-[#0f172a] border-r border-slate-100 dark:border-slate-800/50 animate-in slide-in-from-left duration-300">
+              <div className="p-8 border-b border-slate-100 dark:border-slate-800/50">
+                 <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">SİSTEM REHBERİ</h3>
+                      <p className="text-[10px] text-slate-500 font-bold tracking-widest">v4.0 Ultimate</p>
+                    </div>
+                 </div>
+              </div>
+              <nav className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+                {filteredNavigation.map((group) => (
+                  <div key={group.id} className="space-y-2">
+                    <div className="px-4 flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-3">
+                      <group.icon className="w-4 h-4" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">{group.title}</span>
+                    </div>
+                    <div className="space-y-1">
+                      {group.items.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActiveTab(item.id);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-between group ${
+                            activeTab === item.id 
+                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                              : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          {item.title}
+                          <ChevronRight className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ${activeTab === item.id ? 'opacity-100' : ''}`} />
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">SİSTEM REHBERİ</h3>
-                    <p className="text-[10px] text-slate-400 font-bold tracking-widest">v4.0 Ultimate</p>
-                  </div>
-               </div>
-
-               {/* Search Bar */}
-               <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                  <input 
-                    type="text"
-                    placeholder="Dokümanlarda ara..."
-                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-[11px] font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-               </div>
-            </div>
-
-            <nav className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
-              {filteredNavigation.map((group) => (
-                <div key={group.id} className="space-y-2">
-                  <div className="px-4 flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-4">
-                    <group.icon className="w-4 h-4" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{group.title}</span>
-                  </div>
-                  <div className="space-y-1">
-                    {group.items.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          setActiveTab(item.id);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-between group ${
-                          activeTab === item.id 
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        {item.title}
-                        <ChevronRight className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ${activeTab === item.id ? 'opacity-100' : ''}`} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </nav>
+                ))}
+              </nav>
+            </aside>
           </div>
+        )}
+
+        {/* === DESKTOP SIDEBAR === (KAYMA/ÖRTÜŞME İHTİMALİNİ %100 ORTADAN KALDIRIR) */}
+        <aside className="hidden md:flex flex-col w-80 shrink-0 bg-slate-50 dark:bg-[#0f172a] border-r border-slate-100 dark:border-slate-800/50">
+          <div className="p-8 border-b border-slate-100 dark:border-slate-800/50">
+             <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">SİSTEM REHBERİ</h3>
+                  <p className="text-[10px] text-slate-500 font-bold tracking-widest">v4.0 Ultimate</p>
+                </div>
+             </div>
+
+             {/* Search Bar */}
+             <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                <input 
+                  type="text"
+                  placeholder="Dokümanlarda ara..."
+                  className="w-full bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl py-2.5 pl-10 pr-4 text-[11px] font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-slate-900 dark:text-white transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+             </div>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+            {filteredNavigation.map((group) => (
+              <div key={group.id} className="space-y-2">
+                <div className="px-4 flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-3">
+                  <group.icon className="w-4 h-4" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">{group.title}</span>
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full text-left px-4 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-between group ${
+                        activeTab === item.id 
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {item.title}
+                      <ChevronRight className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ${activeTab === item.id ? 'opacity-100' : ''}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
         </aside>
 
-        {/* Main Content Area */}
-        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-[#0f172a] overflow-hidden">
-          {/* Top Bar - Breadcrumbs & Actions */}
-          <header className="h-20 border-b border-slate-100 dark:border-slate-800 px-8 flex items-center justify-between shrink-0 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-40">
+        {/* === MAIN CONTENT AREA === */}
+        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-[#0b1120] overflow-hidden">
+          {/* Top Bar */}
+          <header className="h-20 border-b border-slate-100 dark:border-slate-800/50 px-8 flex items-center justify-between shrink-0 bg-white/80 dark:bg-[#0b1120]/80 backdrop-blur-md sticky top-0 z-40">
              <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="p-2 md:hidden bg-slate-100 dark:bg-slate-800 rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="p-2 md:hidden bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300"
                 >
                   <Menu className="w-5 h-5" />
                 </button>
                 {/* Breadcrumbs */}
                 <nav className="hidden md:flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                   <span>Ana Sayfa</span>
-                   <ChevronRight className="w-3 h-3" />
+                   <span>Sistem Rehberi</span>
+                   <ChevronRight className="w-3 h-3 text-slate-600" />
                    {currentPath().map((p, i) => (
                      <React.Fragment key={i}>
-                       <span className={i === currentPath().length - 1 ? 'text-blue-600' : ''}>{p}</span>
-                       {i < currentPath().length - 1 && <ChevronRight className="w-3 h-3" />}
+                       <span className={i === currentPath().length - 1 ? 'text-blue-600 dark:text-blue-400' : ''}>{p}</span>
+                       {i < currentPath().length - 1 && <ChevronRight className="w-3 h-3 text-slate-600" />}
                      </React.Fragment>
                    ))}
                 </nav>
@@ -675,7 +704,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
 
              <button 
                onClick={onClose}
-               className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl transition-all hover:rotate-90"
+               className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl transition-all hover:rotate-90"
              >
                <X className="w-5 h-5" />
              </button>
@@ -683,38 +712,31 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
 
           <div className="flex-1 flex overflow-hidden">
              {/* Center Scrollable Content */}
-             <main className="flex-1 overflow-y-auto p-8 md:p-16 lg:p-24 custom-scrollbar">
+             <main className="flex-1 overflow-y-auto p-8 md:p-16 lg:p-20 custom-scrollbar">
                 <div className="max-w-4xl mx-auto">
                    {getContent()}
 
-                   {/* Helpful Rating */}
-                   <div className="mt-24 pt-12 border-t border-slate-100 dark:border-slate-800 flex flex-col items-center gap-6">
-                      <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">Bu makale yardımcı oldu mu?</p>
-                      <div className="flex gap-4">
-                         <button className="px-8 py-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[11px] font-bold hover:bg-emerald-500 hover:text-white transition-all">EVET, YARDIMCI OLDU</button>
-                         <button className="px-8 py-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[11px] font-bold hover:bg-rose-500 hover:text-white transition-all">HAYIR, GELİŞTİRİLMELİ</button>
-                      </div>
-                   </div>
+                   
                 </div>
              </main>
 
              {/* Right Sidebar - TOC (On This Page) */}
-             <aside className="hidden xl:block w-72 p-12 border-l border-slate-100 dark:border-slate-800">
+             <aside className="hidden xl:block w-72 p-10 border-l border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-[#0b1120]">
                 <div className="sticky top-0">
                    <h5 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-6">BU SAYFADA</h5>
                    <ul className="space-y-4">
-                      {['Genel Bakış', 'Adım Adım Süreç', 'Kritik Uyarılar', 'Görsel Rehber'].map((t, i) => (
-                        <li key={i} className="flex items-center gap-3 text-[11px] font-bold text-slate-500 hover:text-blue-600 cursor-pointer transition-colors group">
-                           <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 group-hover:bg-blue-600" />
+                      {['Özet Bilgi', 'Adım Adım Süreç', 'Önemli İpuçları'].map((t, i) => (
+                        <li key={i} className="flex items-center gap-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors group">
+                           <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 group-hover:bg-blue-600 dark:group-hover:bg-blue-400" />
                            {t}
                         </li>
                       ))}
                    </ul>
 
-                   <div className="mt-16 p-6 bg-blue-50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/30">
-                      <p className="text-[10px] font-black text-blue-600 uppercase mb-2">Hızlı Erişim</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-4">MICE tekliflerinde %20 daha hızlı olmak için klavye kısayollarını öğrenin.</p>
-                      <button className="text-[10px] font-black text-blue-600 underline">GÖZ AT</button>
+                   <div className="mt-16 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800/30">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase mb-2">Hızlı Destek</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-4">Sistem kullanımı ile ilgili sormak istediğiniz sorular için destek ekibimize ulaşabilirsiniz.</p>
+                      <button className="text-[10px] font-black text-blue-600 dark:text-blue-400 underline">DESTEK TALEBİ OLUŞTUR</button>
                    </div>
                 </div>
              </aside>
@@ -724,6 +746,7 @@ function UserManualModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
 
 export default function HomePage() {
   const { canCreate, loading: permissionsLoading } = usePermissions();

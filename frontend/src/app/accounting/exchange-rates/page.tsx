@@ -113,7 +113,8 @@ export default function ExchangeRatesPage() {
   };
 
   return (
-    <div className="p-6 max-w-full">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -172,8 +173,8 @@ export default function ExchangeRatesPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 flex-1 min-h-0 flex flex-col w-full relative">
+        <div className="overflow-auto w-full flex-1">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900/50">
               <tr>
@@ -243,6 +244,7 @@ export default function ExchangeRatesPage() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

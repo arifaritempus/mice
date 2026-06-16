@@ -231,8 +231,8 @@ export default function IncomeCompletedPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-2rem)] md:h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200">
-      <div className="w-full min-w-0 flex flex-col flex-1 space-y-4">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
       <div className="flex flex-col md:flex-row md:items-start justify-start gap-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -445,7 +445,7 @@ export default function IncomeCompletedPage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-slate-100 flex-1 min-h-0 flex flex-col w-full relative">
-          <div className="overflow-auto w-full flex-1">
+          <div className="overflow-auto w-full flex-1 min-h-0">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 relative">
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
               <tr>
@@ -576,8 +576,18 @@ export default function IncomeCompletedPage() {
                   </td>
                 </tr>
               ))}
+            
+              {filteredInvoices.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="px-4 py-16 text-center italic text-slate-500 dark:text-slate-400">
+                    Kayıtlı fatura bulunamadı veya filtrelere uyan sonuç yok.
+                  </td>
+                </tr>
+              )}
             </tbody>
+
           </table>
+          </div>
           <PaginationControls
             page={page}
             pageSize={pageSize}
@@ -592,44 +602,7 @@ export default function IncomeCompletedPage() {
             }}
           />
 
-          {filteredInvoices.length === 0 && (
-            <div className="text-center py-16 italic text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
-              Kayıtlı fatura bulunamadı.
-              {(dateRange.start ||
-                dateRange.end ||
-                voucherTokens.length ||
-                voucherInput ||
-                companyTokens.length ||
-                companyInput ||
-                agencyTokens.length ||
-                agencyInput ||
-                hotelTokens.length ||
-                hotelInput ||
-                categoryTokens.length ||
-                categoryInput) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDateRange({ start: '', end: '' });
-                    setVoucherTokens([]);
-                    setVoucherInput('');
-                    setCompanyTokens([]);
-                    setCompanyInput('');
-                    setAgencyTokens([]);
-                    setAgencyInput('');
-                    setHotelTokens([]);
-                    setHotelInput('');
-                    setCategoryTokens([]);
-                    setCategoryInput('');
-                  }}
-                  className="block mx-auto mt-4 text-blue-600 dark:text-blue-400 text-sm font-semibold hover:underline"
-                >
-                  Filtreleri Temizle
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+          
         </div>
       )}
 

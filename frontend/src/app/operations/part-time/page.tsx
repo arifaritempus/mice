@@ -296,10 +296,9 @@ export default function PartTimePage() {
     setSupplierInput('');
     setEmployeeTokens([]);
     setEmployeeInput('');
-    const todayStr = new Date().toISOString().split('T')[0];
-    setDraftStart(todayStr);
+    setDraftStart('');
     setDraftEnd('');
-    setDateRange({ startDate: todayStr, endDate: '' });
+    setDateRange({ startDate: '', endDate: '' });
     setFilter('all');
     setPage(1);
     setFilterKey((prev) => prev + 1);
@@ -522,13 +521,13 @@ export default function PartTimePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 font-sans">
-      <div className="w-full min-w-0 flex flex-col gap-2">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
-        <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Yarı Zamanlı Çalışan Yönetimi</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-200">Yarı Zamanlı Çalışan Yönetimi</h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin</p>
           </div>
           <button
             type="button"
@@ -682,10 +681,10 @@ export default function PartTimePage() {
         <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0 relative ${tableBusy ? 'opacity-80' : ''}`}>
           <div className="overflow-auto w-full flex-1">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 transition-colors duration-200">
                 <tr>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('voucher_number')}
                   >
                     Voucher No
@@ -694,7 +693,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('check_in_date')}
                   >
                     Tarih
@@ -703,7 +702,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('customer_type')}
                   >
                     Tür
@@ -712,7 +711,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('check_in_date')}
                   >
                     C-IN / C-OUT
@@ -721,7 +720,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('company_name')}
                   >
                     FİRMA ADI
@@ -730,7 +729,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('customer_name')}
                   >
                     ACENTE/MÜŞTERİ
@@ -739,7 +738,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('hotel_name')}
                   >
                     Otel
@@ -748,7 +747,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('service_type')}
                   >
                     Hizmet Türü
@@ -757,7 +756,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('supplier')}
                   >
                     Tedarikçi
@@ -766,7 +765,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('employee_name')}
                   >
                     Çalışan Adı
@@ -775,7 +774,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('cost_price')}
                   >
                     Maliyet
@@ -784,7 +783,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('cost_currency')}
                   >
                     Döviz
@@ -793,7 +792,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('fx')}
                   >
                     Kur
@@ -802,7 +801,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort('totalTRY')}
                   >
                     Toplam TL
@@ -814,8 +813,8 @@ export default function PartTimePage() {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {paginatedPartTime.items.map((service) => (
-                  <tr key={service.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900 dark:text-white">
+                  <tr key={service.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                    <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       <button
                         onClick={() => handleVoucherClick(service.sejour_id, service.project_type, service.project_id)}
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
@@ -823,10 +822,10 @@ export default function PartTimePage() {
                         {service.voucher_number}
                       </button>
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {formatDate(service.check_in_date)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         service.customer_type === 'mice' 
                           ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
@@ -835,63 +834,57 @@ export default function PartTimePage() {
                         {service.customer_type === 'mice' ? 'MICE' : 'SEJOUR'}
                       </span>
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.check_in_date && service.check_out_date 
                         ? `${formatDate(service.check_in_date)} / ${formatDate(service.check_out_date)}`
                         : '-'
                       }
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.company_name || '-'}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.customer_name || '-'}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.hotel_name || '-'}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.service_type}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.supplier || '-'}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.employee_name}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(service.cost_price)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {service.cost_currency}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(service.fx || 1)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       {formatNumber((service.cost_price || 0) * (service.fx || 1))}
                     </td>
                   </tr>
                 ))}
+              
+                {filteredAndSortedServices.length === 0 && (
+                  <tr>
+                    <td colSpan={20} className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                      Filtrelere uygun kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
           
-          {filteredAndSortedServices.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {(voucherTerms.length ||
-                  customerTerms.length ||
-                  hotelTerms.length ||
-                  supplierTerms.length ||
-                  employeeTerms.length ||
-                  dateRange.startDate ||
-                  dateRange.endDate)
-                  ? 'Arama kriterlerine uygun part-time hizmet bulunamadı.'
-                  : 'Henüz part-time hizmet bulunmuyor.'}
-              </p>
-            </div>
-          )}
+          
           <PaginationControls
             page={paginatedPartTime.page}
             pageSize={paginatedPartTime.pageSize}

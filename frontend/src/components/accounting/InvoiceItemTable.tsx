@@ -116,7 +116,7 @@ export default function InvoiceItemTable({ items, type, onSelectItems, selectedI
   } as const;
 
   return (
-    <div className="flex flex-col gap-4 flex-1 min-h-0 relative h-full w-full">
+    <div className="flex flex-col gap-4 flex-1 min-h-0 relative w-full">
       <div className="flex justify-between items-center gap-3">
         {enableInternalSearch ? (
           <input

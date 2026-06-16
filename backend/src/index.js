@@ -64,19 +64,20 @@ logger.success('Express ve Socket.io hazır');
 
 // Middleware
 app.use(cors({
-  origin: '*', // For development, allow all origins or specifically http://localhost:3000
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  credentials: false // Set to false if using '*' origin
+  credentials: true
 }));
 
 // Rate limiting and security after CORS
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: 1000 // Increased for development
-// });
-// app.use(limiter);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000, // Increased for development
+  message: { success: false, message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.' }
+});
+app.use(limiter);
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));

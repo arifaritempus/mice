@@ -4,6 +4,7 @@ import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
 import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
 import Link from 'next/link';
 import DatePicker from 'react-datepicker';
+import PaginationControls from '@/components/PaginationControls';
 import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { formatNumber, formatDate } from '@/utils/formatters';
@@ -921,7 +922,8 @@ export default function QuotesPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
+    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden">
+      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div>
@@ -1143,7 +1145,7 @@ export default function QuotesPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-[300px]">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0 relative">
         <div className="overflow-auto w-full flex-1">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
@@ -1504,32 +1506,15 @@ export default function QuotesPage() {
             </tbody>
           </table>
         </div>
-        {totalCount > 0 && (
-          <div className="flex justify-end px-2 py-2 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-3">
-              <button
-                className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40 flex items-center justify-center transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                title="Önceki"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 min-w-[1.5rem] text-center">{page}</span>
-              <button
-                className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40 flex items-center justify-center transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
-                title="Sonraki"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </button>
-              <span className="h-8 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 text-xs font-bold text-gray-500 tracking-tight">
-                {pageSize} / SAYFA
-              </span>
-            </div>
-          </div>
-        )}
+        <PaginationControls
+          page={page}
+          pageSize={pageSize}
+          total={totalCount}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          preferenceKey="quotes_page_size"
+        />
       </div>
 
       <Modal
@@ -1713,6 +1698,7 @@ export default function QuotesPage() {
           </div>
         </div>
       </Modal>
+      </div>
     </div>
   );
 }
