@@ -310,7 +310,7 @@ export default function PartTimePage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Part-Time Hizmetler');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Part-Time Hizmetler`);
       sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
       
       // Header band

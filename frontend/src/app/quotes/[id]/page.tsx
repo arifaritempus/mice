@@ -569,11 +569,10 @@ export default function QuoteViewPage() {
     const map: Record<string, string> = {};
     (users || []).forEach(u => { if (u.id) map[u.id] = u.name || u.email || 'Kullanıcı'; });
     (categories || []).forEach(c => { if (c.id) map[c.id] = c.name; });
-    ([] || []).forEach(s => { if (s.id) map[s.id] = s.name; });
     (hotels || []).forEach(h => { if (h.id) map[h.id] = h.name; });
     (agencies || []).forEach(a => { if (a.id) map[a.id] = a.name; });
     return map;
-  }, [users, categories, [], hotels, agencies]);
+  }, [users, categories, hotels, agencies]);
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;

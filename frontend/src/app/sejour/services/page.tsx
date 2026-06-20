@@ -546,7 +546,7 @@ export default function SejourServicesPage() {
   // ExcelJS ile Export - Satış Tabı
   const exportSalesExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Sejour Satış Hizmetleri');
+    const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Sejour Satış Hizmetleri`);
     sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
 
     // Header band
@@ -622,7 +622,7 @@ export default function SejourServicesPage() {
   // ExcelJS ile Export - Alış Tabı
   const exportCostsExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Sejour Alış Hizmetleri');
+    const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Sejour Alış Hizmetleri`);
     sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
 
     // Header band

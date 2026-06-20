@@ -203,6 +203,7 @@ export default function HotelsPage() {
         } catch (e: any) {
           toast.error(`Supabase kayıt hatası: ${e?.message || e}`);
         }
+      }
       
       // Formu sıfırla ve modalı kapat
       setFormData({
