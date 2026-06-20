@@ -219,7 +219,7 @@ export default function CreateSejourPage() {
   const [darkIconLogo, setDarkIconLogo] = useState<string>('');
   const [darkWordmarkLogo, setDarkWordmarkLogo] = useState<string>('');
   const [companyInfo, setCompanyInfo] = useState({
-    company_name: 'TEMPUS TRAVEL',
+    company_name: (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
     company_email: 'info@tempustravel.co',
     company_phone: '',
     company_address: '',
@@ -327,7 +327,7 @@ export default function CreateSejourPage() {
       const settings = await SettingsService.getSettings();
       const generalSettings = settings.general_settings || {};
       setCompanyInfo({
-        company_name: generalSettings.company_name || 'TEMPUS TRAVEL',
+        company_name: generalSettings.company_name || (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
         company_email: generalSettings.company_email || 'info@tempustravel.co',
         company_phone: generalSettings.company_phone || '',
         company_address: generalSettings.company_address || '',

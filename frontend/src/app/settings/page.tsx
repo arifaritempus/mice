@@ -6,7 +6,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 export default function SettingsPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
   const [settings, setSettings] = useState({
-    companyName: 'TEMPUS TRAVEL',
+    companyName: (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
     companyEmail: 'info@tempustravel.com',
     companyPhone: '+90 212 555 0000',
     companyAddress: 'İstanbul, Türkiye',

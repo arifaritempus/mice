@@ -156,31 +156,6 @@ export default function HotelsPage() {
     try {
       if (editingHotel) {
         // Mevcut oteli güncelle
-        const updatedHotels = hotels.map(hotel => 
-          hotel.id === editingHotel.id 
-            ? { 
-                ...hotel, 
-                name: nameValue,
-                company_name: companyNameValue,
-                location: locationValue,
-                concept: conceptValue,
-                contact_person: contactPersonValue,
-                phone: phoneValue,
-                email: emailValue,
-                address: addressValue,
-                tax_number: taxNumberValue,
-                tax_office: taxOfficeValue,
-                accounting_link_codes: {
-                  TL: tlCodeValue,
-                  EUR: eurCodeValue,
-                  USD: usdCodeValue,
-                  GBP: gbpCodeValue
-                }
-              }
-            : hotel
-        );
-        
-        setHotels(updatedHotels);
         try {
           await hotelsService.update(editingHotel.id, {
             name: nameValue,
@@ -197,41 +172,14 @@ export default function HotelsPage() {
             accounting_link_codes: {
               TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
             },
-            is_active: updatedHotels.find(h => h.id === editingHotel.id)?.is_active ?? true
+            is_active: hotels.find(h => h.id === editingHotel.id)?.is_active ?? true
           } as any);
           await loadHotels();
+          toast.success('Otel başarıyla güncellendi!');
         } catch (e: any) {
           toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
         }
-        
-        toast.success('Otel başarıyla güncellendi!');
       } else {
-        // Yeni oteli oluştur
-        const newHotel: Hotel = {
-          id: Date.now().toString(),
-          name: nameValue,
-          company_name: companyNameValue,
-          location: locationValue,
-          concept: conceptValue,
-          rating: formData.rating,
-          contact_person: contactPersonValue,
-          phone: phoneValue,
-          email: emailValue,
-          address: addressValue,
-          tax_number: taxNumberValue,
-          tax_office: taxOfficeValue,
-          accounting_link_codes: {
-            TL: tlCodeValue,
-            EUR: eurCodeValue,
-            USD: usdCodeValue,
-            GBP: gbpCodeValue
-          },
-          is_active: true,
-          created_at: new Date().toISOString()
-        };
-        
-        const updatedHotels = [...hotels, newHotel];
-        setHotels(updatedHotels);
         try {
           await hotelsService.create({
             name: nameValue,
@@ -251,12 +199,10 @@ export default function HotelsPage() {
             is_active: true
           } as any);
           await loadHotels();
+          toast.success('Otel başarıyla oluşturuldu!');
         } catch (e: any) {
           toast.error(`Supabase kayıt hatası: ${e?.message || e}`);
         }
-        
-        toast.success('Otel başarıyla oluşturuldu!');
-      }
       
       // Formu sıfırla ve modalı kapat
       setFormData({

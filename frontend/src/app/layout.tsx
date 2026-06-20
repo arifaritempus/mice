@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import PublicLayout from '@/components/PublicLayout';
 import { Toaster } from 'react-hot-toast';
+import DraggableAIAssistant from '@/components/AI/DraggableAIAssistant';
 
 function GlobalLoader() {
   return <LoadingSpinner message="Sayfa yükleniyor..." />;
@@ -130,6 +131,7 @@ export default function RootLayout({
             <Suspense fallback={<GlobalLoader />}>{children}</Suspense>
           </PublicLayout>
           <Toaster position="top-right" reverseOrder={false} />
+          <DraggableAIAssistant />
         </ThemeProvider>
       </body>
     </html>

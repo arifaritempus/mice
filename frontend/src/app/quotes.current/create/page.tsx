@@ -354,8 +354,8 @@ export default function CreateQuotePage() {
           },
           {
             id: '3',
-            name: 'TEMPUS TRAVEL',
-            company_name: 'TEMPUS TRAVEL LTD.',
+            name: (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
+            company_name: '${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} LTD.',
             contact_person: 'Mehmet Kaya',
             phone: '+90 212 345 67 89',
             email: 'info@tempustravel.com',
@@ -614,7 +614,7 @@ export default function CreateQuotePage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-200">Yeni Teklif Oluştur</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">TEMPUS TRAVEL formatında detaylı teklif hazırlayın</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} formatında detaylı teklif hazırlayın</p>
             </div>
             <Link
               href="/quotes"
@@ -631,7 +631,7 @@ export default function CreateQuotePage() {
         {/* Form */}
         <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Header Information - TEMPUS TRAVEL Style */}
+            {/* Header Information - ${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} Style */}
             <div className="border-b border-gray-200 dark:border-gray-700 pb-6 transition-colors duration-200">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Teklif Bilgileri</h3>
               <div className="grid grid-cols-1 gap-6">

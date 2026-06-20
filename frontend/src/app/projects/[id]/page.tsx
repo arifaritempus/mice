@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { TrendingUp, TrendingDown, DollarSign, Percent, Briefcase, Clock, CheckCircle2, AlertCircle, ScrollText } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Percent, Briefcase, Clock, CheckCircle2, AlertCircle, ScrollText, X } from 'lucide-react';
 import { projectsService, projectSalesItemsService, projectPurchaseItemsService, suppliersService, categoriesService, projectAccommodationItemsService, quoteItemsService, projectHotelExtrasService, agenciesService, hotelsService, projectTransfersService, projectEventsActivitiesService, projectHumanResourcesService, projectOtherServicesService, projectFinancialServicesService, projectCollectionPlansService, projectCollectionsService, projectPaymentPlansService, projectPaymentsService, usersService, projectUsersService, publicLinksService } from '@/lib/supabaseService';
 import { supabase } from '@/lib/supabase';
 import { lsGet, lsSet } from '@/utils/safeStorage';
@@ -24,6 +24,7 @@ import TahsilatTab from './TahsilatTab';
 import OdemeTab from './OdemeTab';
 import { usePermissions, Module, Role } from '@/lib/permissions';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
 import * as projectUtils from './projectUtils';
 import { useProjectState } from './hooks/useProjectState';
 import { useAccommodationState } from './hooks/useAccommodationState';
@@ -90,14 +91,142 @@ const FIXED_HEADERS = [
   'DÖVİZ'
 ];
 
+
+// Log formatlama fonksiyonları
+const fieldTranslations: Record<string, string> = {
+  id: 'ID',
+  project_id: 'Proje ID',
+  category: 'Kategori',
+  sub_category: 'Alt Kategori',
+  description: 'Açıklama',
+  unit_price: 'Birim Fiyat',
+  unit_quantity: 'Miktar',
+  sefer: 'Tekrar/Sefer',
+  vat: 'KDV (%)',
+  fx: 'Döviz Kuru',
+  currency: 'Döviz',
+  total_try: 'Toplam (TL)',
+  total_price: 'Toplam Fiyat',
+  created_at: 'Oluşturulma Tarihi',
+  updated_at: 'Güncellenme Tarihi',
+  supplier_id: 'Tedarikçi ID',
+  supplier_name: 'Tedarikçi Adı',
+  status: 'Durum',
+  title: 'Başlık',
+  start_date: 'Başlangıç Tarihi',
+  end_date: 'Bitiş Tarihi',
+  hotel_id: 'Otel ID',
+  room_count: 'Oda Sayısı',
+  pax_count: 'Kişi Sayısı',
+  module: 'Modül',
+  entity_type: 'Kayıt Tipi',
+  action: 'İşlem',
+  amount: 'Tutar',
+  date: 'Tarih',
+  time: 'Saat',
+  notes: 'Notlar',
+  name: 'İsim',
+  surname: 'Soyisim',
+  identity_number: 'TC/Pasaport',
+  phone: 'Telefon',
+  email: 'E-posta'
+};
+
+const translateField = (key: string) => fieldTranslations[key] || key;
+
+const getChanges = (before: any, after: any) => {
+  const changes: { field: string; oldVal: any; newVal: any }[] = [];
+  const allKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+  
+  const ignoreKeys = ['id', 'created_at', 'updated_at', 'project_id', 'project_code', 'reference_code', 'voucher_no'];
+  
+  allKeys.forEach(key => {
+    if (ignoreKeys.includes(key)) return;
+    
+    const oldVal = before ? before[key] : undefined;
+    const newVal = after ? after[key] : undefined;
+    
+    // Değerleri karşılaştırırken boşluk, null vs. normalize et
+    const stringifyVal = (val: any) => {
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'object') return JSON.stringify(val);
+      return String(val);
+    };
+    
+    const sOld = stringifyVal(oldVal);
+    const sNew = stringifyVal(newVal);
+    
+    if (sOld !== sNew) {
+      changes.push({
+        field: key,
+        oldVal: oldVal,
+        newVal: newVal
+      });
+    }
+  });
+  
+  return changes;
+};
+
+// Formatter to cleanly display values
+const resolveUuidsInString = (str: string, uuidMap?: Record<string, string>): string => {
+  if (!str || typeof str !== 'string' || !uuidMap) return str;
+  // Çok daha geniş bir UUID regex'i (versiyon fark etmeksizin)
+  let result = str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, (match) => {
+    return uuidMap[match] || ''; 
+  });
+  
+  // T: veya R: gibi gereksiz kalan parantezleri de temizle (Örn: [T:] -> "")
+  result = result.replace(/\[[A-Z]:\]/g, '').replace(/\s+/g, ' ').trim();
+  return result;
+};
+
+const formatLogValue = (val: any, uuidMap?: Record<string, string>): string => {
+  if (val === null || val === undefined || val === '') return '-';
+  if (typeof val === 'boolean') return val ? 'Evet' : 'Hayır';
+  
+  if (typeof val === 'string') {
+    return resolveUuidsInString(val, uuidMap);
+  }
+  
+  if (typeof val === 'object') {
+    // Stringify and then resolve UUIDs inside the JSON string
+    return resolveUuidsInString(JSON.stringify(val), uuidMap);
+  }
+  return String(val);
+};
+
+const getItemContext = (log: any, uuidMap: Record<string, string>) => {
+  const data = log.after_data || log.before_data;
+  if (!data) return null;
+  
+  const details: string[] = [];
+  
+  if (data.description) details.push(`Açıklama: ${resolveUuidsInString(data.description, uuidMap)}`);
+  if (data.title) details.push(`Başlık: ${resolveUuidsInString(data.title, uuidMap)}`);
+  if (data.name) details.push(`İsim: ${resolveUuidsInString(data.name, uuidMap)}`);
+  if (data.pnr) details.push(`PNR: ${resolveUuidsInString(data.pnr, uuidMap)}`);
+  if (data.flight_code || data.gidis_ucus_kodu) details.push(`Uçuş: ${resolveUuidsInString(data.flight_code || data.gidis_ucus_kodu, uuidMap)}`);
+  if (data.hotel_id && uuidMap[data.hotel_id]) details.push(`Otel: ${uuidMap[data.hotel_id]}`);
+  if (data.supplier_id && uuidMap[data.supplier_id]) details.push(`Tedarikçi: ${uuidMap[data.supplier_id]}`);
+  if (data.category && uuidMap[data.category]) details.push(`Kategori: ${uuidMap[data.category]}`);
+  
+  return details.length > 0 ? details.join(' | ') : null;
+};
+
+
 export default function ProjectDetailPage() {
+
   const { canView, canCreate, canEdit, canDelete, userRole, isSuperAdmin, loading: permissionsLoading } = usePermissions();
 
   // Logs state
   const [showLogsModal, setShowLogsModal] = useState(false);
   const [logsData, setLogsData] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
-  const [logSearchTerm, setLogSearchTerm] = useState('');
+  const [logSearchTerms, setLogSearchTerms] = useState<string[]>([]);
+  const [logSearchInput, setLogSearchInput] = useState('');
+  const [logStartDate, setLogStartDate] = useState('');
+  const [logEndDate, setLogEndDate] = useState('');
 
   const fetchLogs = async () => {
     try {
@@ -711,6 +840,18 @@ export default function ProjectDetailPage() {
   const [agencies, setAgencies] = useState<any[]>([]);
   const [projectUsersMap, setProjectUsersMap] = useState<Record<string, string[]>>({});
   const [users, setUsers] = useState<any[]>([]);
+
+  // Create a map to resolve UUIDs to names
+  const uuidNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    (users || []).forEach(u => { if (u.id) map[u.id] = u.name || u.email || 'Kullanıcı'; });
+    (categories || []).forEach(c => { if (c.id) map[c.id] = c.name; });
+    (allSuppliers || []).forEach(s => { if (s.id) map[s.id] = s.name; });
+    (hotels || []).forEach(h => { if (h.id) map[h.id] = h.name; });
+    (agencies || []).forEach(a => { if (a.id) map[a.id] = a.name; });
+    return map;
+  }, [users, categories, allSuppliers, hotels, agencies]);
+
   // accommodationSearch useAccommodationState hook'undan geliyor
   // transferSearch useTransferState hook'undan geliyor
 
@@ -4337,7 +4478,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Uçak Bileti Raporu');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Uçak Bileti Raporu`);
 
       // Sayfa ayarları
       sheet.pageSetup = {
@@ -5508,7 +5649,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Otel Ekstra Raporu');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Otel Ekstra Raporu`);
 
       // Sayfa ayarları
       sheet.pageSetup = {
@@ -6017,7 +6158,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Diğer Servisler Raporu');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Diğer Servisler Raporu`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -6212,7 +6353,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Finansal Raporu');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Finansal Raporu`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -6436,7 +6577,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Etkinlik & Aktivite Raporu');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Etkinlik & Aktivite Raporu`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -6660,7 +6801,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - İnsan Kaynakları Raporu');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - İnsan Kaynakları Raporu`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -10853,7 +10994,7 @@ export default function ProjectDetailPage() {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Konaklama Listesi');
+      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Konaklama Listesi`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -17880,15 +18021,53 @@ export default function ProjectDetailPage() {
       {/* Logs Modal */}
       <Modal isOpen={showLogsModal} onClose={() => setShowLogsModal(false)} title="Proje Log Kayıtları" maxWidth="max-w-4xl">
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="İşlem tipi, kullanıcı veya değer içinde ara..."
-              value={logSearchTerm}
-              onChange={(e) => setLogSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+          
+          <div className="mb-4 flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <div className="flex-1 w-full relative">
+              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
+                {logSearchTerms.map((term, idx) => (
+                  <div key={idx} className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
+                    <span>{term}</span>
+                    <button onClick={() => setLogSearchTerms(prev => prev.filter((_, i) => i !== idx))} className="hover:text-blue-900 dark:hover:text-blue-100">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <input
+                  type="text"
+                  placeholder={logSearchTerms.length === 0 ? "İşlem tipi, kullanıcı veya değer içinde ara (Enter'a basarak ekleyin)..." : "Yeni kelime ekle..."}
+                  value={logSearchInput}
+                  onChange={(e) => setLogSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && logSearchInput.trim()) {
+                      e.preventDefault();
+                      if (!logSearchTerms.includes(logSearchInput.trim())) {
+                        setLogSearchTerms(prev => [...prev, logSearchInput.trim()]);
+                      }
+                      setLogSearchInput('');
+                    } else if (e.key === 'Backspace' && !logSearchInput && logSearchTerms.length > 0) {
+                      setLogSearchTerms(prev => prev.slice(0, -1));
+                    }
+                  }}
+                  className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                />
+              </div>
+            </div>
+            <div className="w-full md:w-auto">
+              <ResponsiveDateRangeField
+                label="Tarih Aralığı"
+                startValue={logStartDate}
+                endValue={logEndDate}
+                onStartChange={setLogStartDate}
+                onEndChange={setLogEndDate}
+                onApply={(start, end) => {
+                  setLogStartDate(start || '');
+                  setLogEndDate(end || '');
+                }}
+              />
+            </div>
           </div>
+
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {loadingLogs ? (
               <div className="flex justify-center p-8"><LoadingSpinner message="Loglar yükleniyor..." /></div>
@@ -17897,15 +18076,49 @@ export default function ProjectDetailPage() {
             ) : (
               <div className="space-y-4">
                 {logsData.filter(log => {
-                  if (!logSearchTerm) return true;
-                  const search = logSearchTerm.toLowerCase();
-                  const actionStr = (log.action || '').toLowerCase();
-                  const userStr = (log.user_name || log.user_id || '').toLowerCase();
-                  const moduleStr = (log.module || '').toLowerCase();
-                  const beforeStr = log.before_data ? JSON.stringify(log.before_data).toLowerCase() : '';
-                  const afterStr = log.after_data ? JSON.stringify(log.after_data).toLowerCase() : '';
+                  let matchesSearch = true;
+                  if (logSearchTerms.length > 0) {
+                    const actionStr = (log.action || '').toLowerCase();
+                    const userStr = (log.user_name || log.user_id || '').toLowerCase();
+                    const moduleStr = (log.module || '').toLowerCase();
+                    const beforeStr = log.before_data ? JSON.stringify(log.before_data).toLowerCase() : '';
+                    const afterStr = log.after_data ? JSON.stringify(log.after_data).toLowerCase() : '';
+                    
+                    matchesSearch = logSearchTerms.every(term => {
+                      const search = term.toLowerCase();
+                      return actionStr.includes(search) || userStr.includes(search) || moduleStr.includes(search) || beforeStr.includes(search) || afterStr.includes(search);
+                    });
+                  }
                   
-                  return actionStr.includes(search) || userStr.includes(search) || moduleStr.includes(search) || beforeStr.includes(search) || afterStr.includes(search);
+                  let matchesDate = true;
+                  if (logStartDate || logEndDate) {
+                    const logDate = log.occurred_at ? new Date(log.occurred_at) : null;
+                    if (logDate) {
+                      // reset time for date comparison
+                      logDate.setHours(0,0,0,0);
+                      
+                      if (logStartDate) {
+                        const [d,m,y] = logStartDate.split('.');
+                        if(d && m && y) {
+                          const startD = new Date(Number(y), Number(m)-1, Number(d));
+                          startD.setHours(0,0,0,0);
+                          if (logDate < startD) matchesDate = false;
+                        }
+                      }
+                      if (logEndDate) {
+                        const [d,m,y] = logEndDate.split('.');
+                        if(d && m && y) {
+                          const endD = new Date(Number(y), Number(m)-1, Number(d));
+                          endD.setHours(0,0,0,0);
+                          if (logDate > endD) matchesDate = false;
+                        }
+                      }
+                    } else {
+                      matchesDate = false; // No date, don't show if date filter is active
+                    }
+                  }
+
+                  return matchesSearch && matchesDate;
                 }).map((log) => (
                   <div key={log.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs">
                     <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
@@ -17919,7 +18132,7 @@ export default function ProjectDetailPage() {
                           {log.action}
                         </span>
                         <span className="font-semibold text-gray-800 dark:text-gray-200">
-                          {log.user_name || log.user_id || 'Sistem / Anonim'}
+                          {log.user_name || users.find(u => u.id === log.user_id)?.name || users.find(u => u.id === log.user_id)?.email || log.user_id || 'Sistem / Anonim'}
                         </span>
                         <span className="text-gray-400 text-[10px]">({log.module})</span>
                       </div>
@@ -17927,24 +18140,54 @@ export default function ProjectDetailPage() {
                         {log.occurred_at ? new Date(log.occurred_at).toLocaleString('tr-TR') : '-'}
                       </div>
                     </div>
+                    {(() => {
+                      const contextStr = getItemContext(log, uuidNameMap);
+                      return contextStr ? (
+                        <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold">Kayıt Detayı:</span> {contextStr}
+                        </div>
+                      ) : null;
+                    })()}
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                      {log.before_data && Object.keys(log.before_data).length > 0 && (
-                        <div className="bg-red-50 dark:bg-red-900/10 p-2 rounded">
-                          <p className="font-bold text-red-800 dark:text-red-300 mb-1 border-b border-red-100 dark:border-red-900/30 pb-1">Önceki Değerler</p>
-                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
-                            {JSON.stringify(log.before_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {log.after_data && Object.keys(log.after_data).length > 0 && (
-                        <div className="bg-green-50 dark:bg-green-900/10 p-2 rounded">
-                          <p className="font-bold text-green-800 dark:text-green-300 mb-1 border-b border-green-100 dark:border-green-900/30 pb-1">Yeni Değerler</p>
-                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
-                            {JSON.stringify(log.after_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
+                    
+                    <div className="mt-3">
+                      {(() => {
+                        const changes = getChanges(log.before_data, log.after_data);
+                        if (changes.length === 0) {
+                          return <div className="text-gray-500 italic text-[11px] py-1">Görsel bir değişiklik tespit edilmedi (sadece arka plan verileri güncellenmiş olabilir).</div>;
+                        }
+
+                        return (
+                          <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase tracking-wider">
+                                  <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3">Alan</th>
+                                  {log.action !== 'INSERT' && <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-red-600 dark:text-red-400">Eski Değer</th>}
+                                  {log.action !== 'DELETE' && <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-green-600 dark:text-green-400">Yeni Değer</th>}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                {changes.map((change, idx) => (
+                                  <tr key={idx} className="bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <td className="px-3 py-2 font-medium text-gray-700 dark:text-gray-300">{translateField(change.field)}</td>
+                                    {log.action !== 'INSERT' && (
+                                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 line-through decoration-red-300 dark:decoration-red-800">
+                                        {formatLogValue(change.oldVal, uuidNameMap)}
+                                      </td>
+                                    )}
+                                    {log.action !== 'DELETE' && (
+                                      <td className="px-3 py-2 text-gray-800 dark:text-gray-200 font-medium">
+                                        {formatLogValue(change.newVal, uuidNameMap)}
+                                      </td>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}

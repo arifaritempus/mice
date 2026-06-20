@@ -420,61 +420,31 @@ export default function SuppliersPage() {
     const paymentTermsValue = editPaymentTermsInputRef.current?.value || '';
 
     try {
-      const updatedSuppliers = suppliers.map(supplier => 
-        supplier.id === editingSupplier.id 
-          ? { 
-              ...editingSupplier, 
-              name: nameValue,
-              title: titleValue,
-              contact_person: contactPersonValue,
-              phone: phoneValue,
-              email: emailValue,
-              address: addressValue,
-              tax_id: taxIdValue,
-              tax_office: taxOfficeValue,
-              accounting_link_codes: {
-                TL: tlCodeValue,
-                EUR: eurCodeValue,
-                USD: usdCodeValue,
-                GBP: gbpCodeValue
-              },
-              contract_info: {
-                ...editingSupplier.contract_info,
-                payment_terms: paymentTermsValue
-              },
-              updated_at: new Date().toISOString() 
-            }
-          : supplier
-      );
+      await suppliersService.update(editingSupplier.id, {
+        name: nameValue,
+        title: titleValue,
+        contact_person: contactPersonValue,
+        phone: phoneValue,
+        email: emailValue,
+        address: addressValue,
+        tax_id: taxIdValue,
+        tax_office: taxOfficeValue,
+        accounting_link_codes: {
+          TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
+        },
+        contract_info: {
+          ...editingSupplier.contract_info,
+          payment_terms: paymentTermsValue
+        }
+      } as any);
       
-      setSuppliers(updatedSuppliers);
-      try {
-        await suppliersService.update(editingSupplier.id, {
-          name: nameValue,
-          title: titleValue,
-          contact_person: contactPersonValue,
-          phone: phoneValue,
-          email: emailValue,
-          address: addressValue,
-          tax_id: taxIdValue,
-          tax_office: taxOfficeValue,
-          accounting_link_codes: {
-            TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
-          },
-          contract_info: {
-            ...editingSupplier.contract_info,
-            payment_terms: paymentTermsValue
-          }
-        } as any);
-        await loadSuppliers();
-      } catch (e: any) {
-        alert(`Supabase güncelleme hatası: ${e?.message || e}`);
-      }
+      await loadSuppliers();
       setSuccess('Tedarikçi başarıyla güncellendi');
       setShowEditModal(false);
       setEditingSupplier(null);
-    } catch (error: any) {
-      setError('Tedarikçi güncellenirken hata oluştu');
+    } catch (e: any) {
+      console.error(e);
+      alert(`Supabase güncelleme hatası: ${e?.message || JSON.stringify(e)}`);
     }
   };
 
@@ -513,8 +483,7 @@ export default function SuppliersPage() {
     const paymentTermsValue = newPaymentTermsInputRef.current?.value || '';
 
     try {
-      const supplierWithId: Supplier = {
-        id: Date.now().toString(),
+      await suppliersService.create({
         name: nameValue,
         title: titleValue,
         service_type: newSupplier.service_type,
@@ -525,10 +494,7 @@ export default function SuppliersPage() {
         tax_id: taxIdValue,
         tax_office: taxOfficeValue,
         accounting_link_codes: {
-          TL: tlCodeValue,
-          EUR: eurCodeValue,
-          USD: usdCodeValue,
-          GBP: gbpCodeValue
+          TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
         },
         bank_info: newSupplier.bank_info,
         contract_info: {
@@ -537,42 +503,13 @@ export default function SuppliersPage() {
         },
         is_active: newSupplier.is_active,
         notes: newSupplier.notes,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      const updatedSuppliers = [...suppliers, supplierWithId];
-      setSuppliers(updatedSuppliers);
-      try {
-        await suppliersService.create({
-          name: nameValue,
-          title: titleValue,
-          service_type: newSupplier.service_type,
-          contact_person: contactPersonValue,
-          phone: phoneValue,
-          email: emailValue,
-          address: addressValue,
-          tax_id: taxIdValue,
-          tax_office: taxOfficeValue,
-          accounting_link_codes: {
-            TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
-          },
-          bank_info: newSupplier.bank_info,
-          contract_info: {
-            ...newSupplier.contract_info,
-            payment_terms: paymentTermsValue
-          },
-          is_active: newSupplier.is_active,
-          notes: newSupplier.notes,
-          type: 'supplier'
-        } as any);
-        await loadSuppliers();
-      } catch (e: any) {
-        alert(`Supabase kayıt hatası: ${e?.message || e}`);
-      }
-
+        type: 'supplier'
+      } as any);
+      
+      await loadSuppliers();
       setSuccess('Tedarikçi başarıyla oluşturuldu');
       setShowCreateModal(false);
+
       setNewSupplier({
         name: '',
         title: '',
@@ -584,27 +521,20 @@ export default function SuppliersPage() {
         tax_id: '',
         tax_office: '',
         accounting_link_codes: {
-          TL: '',
-          EUR: '',
-          USD: '',
-          GBP: ''
+          TL: '', EUR: '', USD: '', GBP: ''
         },
         bank_info: {
-          bank_name: '',
-          account_number: '',
-          iban: ''
+          bank_name: '', account_number: '', iban: ''
         },
         contract_info: {
-          contract_start: '',
-          contract_end: '',
-          commission_rate: 0,
-          payment_terms: ''
+          contract_start: '', contract_end: '', commission_rate: 0, payment_terms: ''
         },
         is_active: true,
         notes: ''
       });
-    } catch (error: any) {
-      setError(error.message || 'Tedarikçi oluşturulurken hata oluştu');
+    } catch (e: any) {
+      console.error(e);
+      alert(`Supabase kayıt hatası: ${e?.message || JSON.stringify(e)}`);
     }
   };
 
@@ -1057,17 +987,19 @@ export default function SuppliersPage() {
         title={editingSupplier ? 'Tedarikçi Düzenle' : 'Yeni Tedarikçi Ekle'}
         maxWidth="max-w-5xl"
       >
-        <form onSubmit={editingSupplier ? handleUpdateSupplier : handleCreateSupplier} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <form onSubmit={editingSupplier ? handleUpdateSupplier : handleCreateSupplier} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Temel Bilgiler Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                <Building2 size={16} className="text-blue-500" />
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/60 rounded-2xl p-5 space-y-4 shadow-sm">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                  <Building2 size={16} className="text-blue-600 dark:text-blue-400" />
+                </div>
                 Kurumsal Bilgiler
               </h4>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                     Tedarikçi Adı *
                   </label>
                   <input
@@ -1075,12 +1007,12 @@ export default function SuppliersPage() {
                     type="text"
                     defaultValue={editingSupplier?.name || ''}
                     required
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm shadow-sm"
                     placeholder="Kısa isim"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                     Tedarikçi Unvanı *
                   </label>
                   <input
@@ -1088,13 +1020,13 @@ export default function SuppliersPage() {
                     type="text"
                     defaultValue={editingSupplier?.title || ''}
                     required
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm shadow-sm"
                     placeholder="Tam ticari unvan"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                       Hizmet Türü *
                     </label>
                     <select
@@ -1102,7 +1034,7 @@ export default function SuppliersPage() {
                       onChange={(e) => editingSupplier 
                         ? setEditingSupplier({...editingSupplier, service_type: e.target.value})
                         : setNewSupplier({...newSupplier, service_type: e.target.value})}
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm cursor-pointer appearance-none"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm cursor-pointer shadow-sm"
                       required
                     >
                       <option value="">Seçiniz</option>
@@ -1112,39 +1044,39 @@ export default function SuppliersPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                       Vade / Ödeme Koşulu
                     </label>
                     <input
                       ref={editingSupplier ? editPaymentTermsInputRef : newPaymentTermsInputRef}
                       type="text"
                       defaultValue={editingSupplier?.contract_info?.payment_terms || ''}
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm shadow-sm"
                       placeholder="Örn: 30 Gün"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                       Vergi No
                     </label>
                     <input
                       ref={editingSupplier ? editTaxIdInputRef : newTaxIdInputRef}
                       type="text"
                       defaultValue={editingSupplier?.tax_id || ''}
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                       Vergi Dairesi
                     </label>
                     <input
                       ref={editingSupplier ? editTaxOfficeInputRef : newTaxOfficeInputRef}
                       type="text"
                       defaultValue={editingSupplier?.tax_office || ''}
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm shadow-sm"
                     />
                   </div>
                 </div>
@@ -1152,14 +1084,16 @@ export default function SuppliersPage() {
             </div>
 
             {/* İletişim Bilgileri Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                <Phone size={16} className="text-blue-500" />
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/60 rounded-2xl p-5 space-y-4 shadow-sm">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                  <Phone size={16} className="text-green-600 dark:text-green-400" />
+                </div>
                 İletişim Detayları
               </h4>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
                     İletişim Kişisi *
                   </label>
                   <input
@@ -1167,13 +1101,13 @@ export default function SuppliersPage() {
                     type="text"
                     defaultValue={editingSupplier?.contact_person || ''}
                     required
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-sm shadow-sm"
                     placeholder="Ad Soyad"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
                       <Phone size={12} /> Telefon *
                     </label>
                     <input
@@ -1181,11 +1115,11 @@ export default function SuppliersPage() {
                       type="tel"
                       defaultValue={editingSupplier?.phone || ''}
                       required
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-sm shadow-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
                       <Mail size={12} /> E-posta *
                     </label>
                     <input
@@ -1193,20 +1127,20 @@ export default function SuppliersPage() {
                       type="email"
                       defaultValue={editingSupplier?.email || ''}
                       required
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-sm shadow-sm"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
                     <MapPin size={12} /> Adres *
                   </label>
                   <textarea
                     ref={editingSupplier ? editAddressInputRef : newAddressInputRef}
                     defaultValue={editingSupplier?.address || ''}
                     required
-                    rows={3}
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm resize-none"
+                    rows={4}
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-sm resize-none shadow-sm"
                     placeholder="Fatura ve şirket adresi"
                   />
                 </div>
@@ -1215,47 +1149,56 @@ export default function SuppliersPage() {
           </div>
 
           {/* Muhasebe Kodları Section */}
-          <div className="space-y-4 pt-2">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-              <FileText size={16} className="text-blue-500" />
+          <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/60 rounded-2xl p-5 shadow-sm mt-2">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                <FileText size={16} className="text-purple-600 dark:text-purple-400" />
+              </div>
               Muhasebe Bağlantı Kodları
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">TL Kodu</label>
-                <input ref={editingSupplier ? editTlCodeInputRef : newTlCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.TL || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">TL Kodu</label>
+                <input ref={editingSupplier ? editTlCodeInputRef : newTlCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.TL || ''} className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs shadow-sm transition-all" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">EUR Kodu</label>
-                <input ref={editingSupplier ? editEurCodeInputRef : newEurCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.EUR || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">EUR Kodu</label>
+                <input ref={editingSupplier ? editEurCodeInputRef : newEurCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.EUR || ''} className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs shadow-sm transition-all" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">USD Kodu</label>
-                <input ref={editingSupplier ? editUsdCodeInputRef : newUsdCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.USD || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">USD Kodu</label>
+                <input ref={editingSupplier ? editUsdCodeInputRef : newUsdCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.USD || ''} className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs shadow-sm transition-all" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">GBP Kodu</label>
-                <input ref={editingSupplier ? editGbpCodeInputRef : newGbpCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.GBP || ''} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">GBP Kodu</label>
+                <input ref={editingSupplier ? editGbpCodeInputRef : newGbpCodeInputRef} type="text" defaultValue={editingSupplier?.accounting_link_codes?.GBP || ''} className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs shadow-sm transition-all" />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              id="isActiveModal"
-              type="checkbox"
-              className="w-4 h-4 text-blue-600 rounded border-slate-200 focus:ring-blue-500"
-              checked={editingSupplier ? editingSupplier.is_active : newSupplier.is_active}
-              onChange={(e) => editingSupplier 
-                ? setEditingSupplier({...editingSupplier, is_active: e.target.checked})
-                : setNewSupplier({...newSupplier, is_active: e.target.checked})}
-            />
-            <label htmlFor="isActiveModal" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Bu tedarikçi aktif olarak işaretlensin
-            </label>
+          <div className="flex items-center gap-3 px-1 py-2">
+            <div className="relative flex items-start">
+              <div className="flex h-6 items-center">
+                <input
+                  id="isActiveModal"
+                  type="checkbox"
+                  className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-700 dark:ring-offset-slate-800 cursor-pointer transition-all"
+                  checked={editingSupplier ? editingSupplier.is_active : newSupplier.is_active}
+                  onChange={(e) => editingSupplier 
+                    ? setEditingSupplier({...editingSupplier, is_active: e.target.checked})
+                    : setNewSupplier({...newSupplier, is_active: e.target.checked})}
+                />
+              </div>
+              <div className="ml-3 text-sm leading-6">
+                <label htmlFor="isActiveModal" className="font-semibold text-slate-900 dark:text-white cursor-pointer">
+                  Aktif Tedarikçi
+                </label>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">Bu tedarikçi sistemde listelenecek ve işlem yapılabilecek.</p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700/60 mt-4">
             <button
               type="button"
               onClick={() => {
@@ -1263,16 +1206,16 @@ export default function SuppliersPage() {
                 setShowEditModal(false);
                 setEditingSupplier(null);
               }}
-              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+              className="px-6 py-3 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm transition-all"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
             >
               {editingSupplier ? <Pencil size={18} /> : <Plus size={18} />}
-              {editingSupplier ? 'Güncelle' : 'Tedarikçi Oluştur'}
+              {editingSupplier ? 'Değişiklikleri Kaydet' : 'Tedarikçiyi Oluştur'}
             </button>
           </div>
         </form>

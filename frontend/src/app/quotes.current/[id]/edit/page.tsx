@@ -496,7 +496,7 @@ export default function QuoteEditPage() {
         {/* Form */}
         <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Header Information - TEMPUS TRAVEL Style */}
+            {/* Header Information - ${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} Style */}
             <div className="border-b border-gray-200 dark:border-gray-700 pb-6 transition-colors duration-200">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Teklif Bilgileri</h3>
               <div className="grid grid-cols-1 gap-6">

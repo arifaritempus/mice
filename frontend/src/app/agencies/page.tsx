@@ -12,6 +12,7 @@ import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { Building2, User, Phone, Mail, FileText, Plus, Pencil, MapPin } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface Agency {
   id: string;
@@ -213,9 +214,9 @@ export default function AgenciesPage() {
           } as any);
           await loadAgencies();
         } catch (e: any) {
-          alert(`Supabase güncelleme hatası: ${e?.message || e}`);
+          toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
         }
-        alert('Acente başarıyla güncellendi!');
+        toast.success('Acente başarıyla güncellendi!');
       } else {
         // Yeni acente oluştur
         const newAgency: Agency = {
@@ -254,9 +255,9 @@ export default function AgenciesPage() {
           } as any);
           await loadAgencies();
         } catch (e: any) {
-          alert(`Supabase kayıt hatası: ${e?.message || e}`);
+          toast.error(`Supabase kayıt hatası: ${e?.message || e}`);
         }
-        alert('Acente başarıyla oluşturuldu!');
+        toast.success('Acente başarıyla oluşturuldu!');
       }
       
       // Formu sıfırla ve modalı kapat
@@ -281,7 +282,7 @@ export default function AgenciesPage() {
       
     } catch (error) {
       console.error('Acente kaydedilirken hata:', error);
-      alert('Acente kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      toast.error('Acente kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 
@@ -477,7 +478,7 @@ export default function AgenciesPage() {
         }
         await loadAgencies();
       } catch (e: any) {
-        alert(`Supabase kayıt hatası: ${e?.message || e}`);
+        toast.error(`Supabase kayıt hatası: ${e?.message || e}`);
       }
 
       setSuccess(`${importedAgencies.length} acente başarıyla içe aktarıldı!`);
@@ -504,12 +505,12 @@ export default function AgenciesPage() {
         await agenciesService.update(agencyId, { is_active: updatedAgency.is_active } as any);
         await loadAgencies();
       } catch (e: any) {
-        alert(`Supabase güncelleme hatası: ${e?.message || e}`);
+        toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
       }
-      alert('Acente durumu başarıyla değiştirildi!');
+      toast.success('Acente durumu başarıyla değiştirildi!');
     } catch (error) {
       console.error('Acente durumu değiştirilirken hata:', error);
-      alert('Acente durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      toast.error('Acente durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 

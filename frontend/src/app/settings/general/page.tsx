@@ -66,6 +66,7 @@ interface GeneralSettings {
   light_sidebar_header_bg?: string; // Açık tema sidebar header rengi
   light_text_color?: string;     // Açık tema yazı rengi
   light_sidebar_border?: string; // Açık tema sidebar çerçeve rengi
+  ai_assistant_enabled?: boolean; // AI Asistan aktif mi?
 }
 
 const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
@@ -88,7 +89,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   smtp_username: '',
   smtp_password: '',
   smtp_secure: true,
-  mail_from_name: 'TEMPUS TRAVEL',
+  mail_from_name: (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
   mail_from_email: 'noreply@tempustravel.co',
   mail_reply_to: 'info@tempustravel.co',
   primary_color: '#2563eb',
@@ -110,7 +111,8 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   light_sidebar_bg: '#f9fafb',
   light_sidebar_header_bg: '#ffffff',
   light_text_color: '#111827',
-  light_sidebar_border: '#e5e7eb'
+  light_sidebar_border: '#e5e7eb',
+  ai_assistant_enabled: true
 };
 
 export default function GeneralSettingsPage() {
@@ -1156,7 +1158,7 @@ export default function GeneralSettingsPage() {
                     type="text"
                     value={settings.mail_from_name}
                     onChange={(e) => handleChange('mail_from_name', e.target.value)}
-                    placeholder="TEMPUS TRAVEL"
+                    placeholder={(typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma")}
                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                   />
                 </div>
@@ -1197,6 +1199,29 @@ export default function GeneralSettingsPage() {
                 </button>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Test maili göndererek ayarların doğru çalıştığını kontrol edin</p>
               </div>
+            </div>
+
+            {/* AI Asistan Ayarları */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">AI Asistan Ayarları</h3>
+              
+              <div className="flex items-center space-x-3 mt-4">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.ai_assistant_enabled ?? true}
+                    onChange={(e) => handleChange('ai_assistant_enabled', e.target.checked)}
+                  />
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  <span className="ml-3 text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Sistemde Yapay Zeka Asistanını Göster
+                  </span>
+                </label>
+              </div>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2">
+                Aktif edildiğinde ekranın sağ alt köşesinde AI asistan butonu belirir. Pasif edilirse sistemden gizlenir.
+              </p>
             </div>
 
             {/* Renk Ayarları */}

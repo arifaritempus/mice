@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { X, ScrollText } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { SejourService, SettingsService } from '@/lib/supabaseService';
+import { SejourService, SettingsService, usersService, agenciesService, hotelsService, categoriesService, suppliersService } from '@/lib/supabaseService';
 import { getLogosForExcel } from '@/utils/logoUtils';
+import Modal from '@/components/Modal';
+import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
+import { supabase } from '@/lib/supabase';
 import { usePermissions, Module } from '@/lib/permissions';
 
 interface SejourRoom {
@@ -70,10 +74,157 @@ interface SejourData {
   created_at: string;
 }
 
+
+const fieldTranslations: Record<string, string> = {
+  id: 'ID',
+  project_id: 'Proje ID',
+  sejour_id: 'Sejour ID',
+  category: 'Kategori',
+  sub_category: 'Alt Kategori',
+  description: 'Açıklama',
+  unit_price: 'Birim Fiyat',
+  unit_quantity: 'Miktar',
+  sefer: 'Tekrar/Sefer',
+  vat: 'KDV (%)',
+  fx: 'Döviz Kuru',
+  currency: 'Döviz',
+  total_try: 'Toplam (TL)',
+  total_price: 'Toplam Fiyat',
+  created_at: 'Oluşturulma Tarihi',
+  updated_at: 'Güncellenme Tarihi',
+  supplier_id: 'Tedarikçi ID',
+  supplier_name: 'Tedarikçi Adı',
+  status: 'Durum',
+  title: 'Başlık',
+  start_date: 'Başlangıç Tarihi',
+  end_date: 'Bitiş Tarihi',
+  hotel_id: 'Otel ID',
+  room_count: 'Oda Sayısı',
+  pax_count: 'Kişi Sayısı',
+  module: 'Modül',
+  entity_type: 'Kayıt Tipi',
+  action: 'İşlem',
+  amount: 'Tutar',
+  date: 'Tarih',
+  time: 'Saat',
+  notes: 'Notlar',
+  name: 'İsim',
+  surname: 'Soyisim',
+  identity_number: 'TC/Pasaport',
+  phone: 'Telefon',
+  email: 'E-posta'
+};
+
+const translateField = (key: string) => fieldTranslations[key] || key;
+
+const getChanges = (before: any, after: any) => {
+  const changes: { field: string; oldVal: any; newVal: any }[] = [];
+  const allKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+  
+  const ignoreKeys = ['id', 'created_at', 'updated_at', 'sejour_id', 'project_id'];
+  
+  allKeys.forEach(key => {
+    if (ignoreKeys.includes(key)) return;
+    
+    const oldVal = before ? before[key] : undefined;
+    const newVal = after ? after[key] : undefined;
+    
+    const stringifyVal = (val: any) => {
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'object') return JSON.stringify(val);
+      return String(val);
+    };
+    
+    const sOld = stringifyVal(oldVal);
+    const sNew = stringifyVal(newVal);
+    
+    if (sOld !== sNew) {
+      changes.push({
+        field: key,
+        oldVal: oldVal,
+        newVal: newVal
+      });
+    }
+  });
+  
+  return changes;
+};
+
+const resolveUuidsInString = (str: string, uuidMap?: Record<string, string>): string => {
+  if (!str || typeof str !== 'string' || !uuidMap) return str;
+  let result = str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, (match) => {
+    return uuidMap[match] || ''; 
+  });
+  result = result.replace(/\[[A-Z]:\]/g, '').replace(/\s+/g, ' ').trim();
+  return result;
+};
+
+const formatLogValue = (val: any, uuidMap?: Record<string, string>): string => {
+  if (val === null || val === undefined || val === '') return '-';
+  if (typeof val === 'boolean') return val ? 'Evet' : 'Hayır';
+  if (typeof val === 'string') return resolveUuidsInString(val, uuidMap);
+  if (typeof val === 'object') return resolveUuidsInString(JSON.stringify(val), uuidMap);
+  return String(val);
+};
+
+const getItemContext = (log: any, uuidMap: Record<string, string>) => {
+  const data = log.after_data || log.before_data;
+  if (!data) return null;
+  const details: string[] = [];
+  if (data.description) details.push(`Açıklama: ${resolveUuidsInString(data.description, uuidMap)}`);
+  if (data.title) details.push(`Başlık: ${resolveUuidsInString(data.title, uuidMap)}`);
+  if (data.name) details.push(`İsim: ${resolveUuidsInString(data.name, uuidMap)}`);
+  if (data.pnr) details.push(`PNR: ${resolveUuidsInString(data.pnr, uuidMap)}`);
+  return details.length > 0 ? details.join(' | ') : null;
+};
+
 export default function SejourDetailPage() {
   const params = useParams();
   const { canEdit } = usePermissions();
+  // Logs state
+  const [showLogsModal, setShowLogsModal] = useState(false);
+  const [logsData, setLogsData] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [logSearchTerms, setLogSearchTerms] = useState<string[]>([]);
+  const [logSearchInput, setLogSearchInput] = useState('');
+  const [logStartDate, setLogStartDate] = useState('');
+  const [logEndDate, setLogEndDate] = useState('');
+
+  const fetchLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .in('module', [
+          'sejours', 'sejour_items', 'sejour_guests', 'sejour_flights', 'sejour_transfers', 'sejour_extra_services'
+        ])
+        .order('occurred_at', { ascending: false })
+        .limit(1000);
+
+      if (error) throw error;
+      
+      const filtered = (data || []).filter(log => {
+        if (log.entity_id === params.id) return true;
+        if (log.after_data?.sejour_id === params.id) return true;
+        if (log.before_data?.sejour_id === params.id) return true;
+        return false;
+      });
+      
+      setLogsData(filtered);
+    } catch (err) {
+      console.error('Loglar yüklenirken hata:', err);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
   const [sejour, setSejour] = useState<SejourData | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [agencies, setAgencies] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const voucherRef = useRef<HTMLDivElement>(null);
@@ -81,7 +232,7 @@ export default function SejourDetailPage() {
   const [darkWordmarkLogo, setDarkWordmarkLogo] = useState<string>('');
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({
-    company_name: 'TEMPUS TRAVEL',
+    company_name: (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
     company_email: 'info@tempustravel.co',
     company_phone: '',
     company_address: '',
@@ -91,7 +242,19 @@ export default function SejourDetailPage() {
   const loadSejourData = useCallback(async () => {
     try {
       setLoading(true);
-      const sejourData = await SejourService.getSejourWithDetails(params.id as string);
+      const [sejourData, uList, agList, htList, catList, supList] = await Promise.all([
+        SejourService.getSejourWithDetails(params.id as string),
+        usersService.getAll(),
+        agenciesService.getAll(),
+        hotelsService.getAll(),
+        categoriesService.getAll(),
+        suppliersService.getAll()
+      ]);
+      if (uList) setUsers(uList);
+      if (agList) setAgencies(agList);
+      if (htList) setHotels(htList);
+      if (catList) setCategories(catList);
+      if (supList) setSuppliers(supList);
       if (sejourData) {
         setSejour(sejourData as SejourData);
       } else {
@@ -125,7 +288,7 @@ export default function SejourDetailPage() {
         const settings = await SettingsService.getSettings();
         const generalSettings = settings.general_settings || {};
         setCompanyInfo({
-          company_name: generalSettings.company_name || 'TEMPUS TRAVEL',
+          company_name: generalSettings.company_name || (typeof document !== "undefined" ? document.title.split("-")[0].trim() : "Firma"),
           company_email: generalSettings.company_email || 'info@tempustravel.co',
           company_phone: generalSettings.company_phone || '',
           company_address: generalSettings.company_address || '',
@@ -183,6 +346,17 @@ export default function SejourDetailPage() {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+
+  const uuidNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    (users || []).forEach(u => { if (u.id) map[u.id] = u.name || u.email || 'Kullanıcı'; });
+    (categories || []).forEach(c => { if (c.id) map[c.id] = c.name; });
+    (hotels || []).forEach(h => { if (h.id) map[h.id] = h.name; });
+    (agencies || []).forEach(a => { if (a.id) map[a.id] = a.name; });
+    (suppliers || []).forEach(s => { if (s.id) map[s.id] = s.name; });
+    return map;
+  }, [users, categories, hotels, agencies, suppliers]);
 
   if (loading) {
     return (
@@ -402,6 +576,18 @@ export default function SejourDetailPage() {
           <button onClick={generateVoucherPDF} disabled={isGeneratingPDF} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-70">
             {isGeneratingPDF ? 'HAZIRLANIYOR...' : 'PDF VOUCHER İNDİR'}
           </button>
+          
+          <button
+            onClick={() => {
+              setShowLogsModal(true);
+              fetchLogs();
+            }}
+            className="bg-purple-600 dark:bg-purple-500 text-white px-2 py-1 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors duration-200 flex items-center text-xs font-bold gap-1"
+            title="Log Kayıtları"
+          >
+            <ScrollText size={14} />
+            Loglar
+          </button>
           {canEdit(Module.SEJOUR) && (
             <Link href={`/sejour/${sejour.id}/edit`} className="bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700 transition-colors text-sm">
               Düzenle
@@ -531,6 +717,180 @@ export default function SejourDetailPage() {
           <p className="text-sm">{sejour.notes}</p>
         </div>
       )}
+
+      {/* Logs Modal */}
+      <Modal isOpen={showLogsModal} onClose={() => setShowLogsModal(false)} title="Sejour Log Kayıtları" maxWidth="max-w-4xl">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
+          <div className="mb-4 flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <div className="flex-1 w-full relative">
+              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
+                {logSearchTerms.map((term, idx) => (
+                  <div key={idx} className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
+                    <span>{term}</span>
+                    <button onClick={() => setLogSearchTerms(prev => prev.filter((_, i) => i !== idx))} className="hover:text-blue-900 dark:hover:text-blue-100">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <input
+                  type="text"
+                  placeholder={logSearchTerms.length === 0 ? "İşlem tipi, kullanıcı veya değer içinde ara (Enter'a basarak ekleyin)..." : "Yeni kelime ekle..."}
+                  value={logSearchInput}
+                  onChange={(e) => setLogSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && logSearchInput.trim()) {
+                      e.preventDefault();
+                      if (!logSearchTerms.includes(logSearchInput.trim())) {
+                         setLogSearchTerms(prev => [...prev, logSearchInput.trim()]);
+                      }
+                      setLogSearchInput('');
+                    } else if (e.key === 'Backspace' && !logSearchInput && logSearchTerms.length > 0) {
+                      setLogSearchTerms(prev => prev.slice(0, -1));
+                    }
+                  }}
+                  className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                />
+              </div>
+            </div>
+            <div className="w-full md:w-auto">
+              <ResponsiveDateRangeField
+                label="Tarih Aralığı"
+                startValue={logStartDate}
+                endValue={logEndDate}
+                onStartChange={setLogStartDate}
+                onEndChange={setLogEndDate}
+                onApply={(start, end) => {
+                  setLogStartDate(start || '');
+                  setLogEndDate(end || '');
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {loadingLogs ? (
+              <div className="flex justify-center p-8">Yükleniyor...</div>
+            ) : logsData.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">Bu sejour'a ait log kaydı bulunamadı.</div>
+            ) : (
+              <div className="space-y-4">
+                {logsData.filter(log => {
+                  let matchesSearch = true;
+                  if (logSearchTerms.length > 0) {
+                    const actionStr = (log.action || '').toLowerCase();
+                    const userStr = (log.user_name || log.user_id || '').toLowerCase();
+                    const moduleStr = (log.module || '').toLowerCase();
+                    const beforeStr = log.before_data ? JSON.stringify(log.before_data).toLowerCase() : '';
+                    const afterStr = log.after_data ? JSON.stringify(log.after_data).toLowerCase() : '';
+                    matchesSearch = logSearchTerms.every(term => {
+                      const search = term.toLowerCase();
+                      return actionStr.includes(search) || userStr.includes(search) || moduleStr.includes(search) || beforeStr.includes(search) || afterStr.includes(search);
+                    });
+                  }
+                  
+                  let matchesDate = true;
+                  if (logStartDate || logEndDate) {
+                    const logDate = log.occurred_at ? new Date(log.occurred_at) : null;
+                    if (logDate) {
+                      logDate.setHours(0,0,0,0);
+                      if (logStartDate) {
+                        const [d,m,y] = logStartDate.split('.');
+                        if(d && m && y) {
+                          const startD = new Date(Number(y), Number(m)-1, Number(d));
+                          startD.setHours(0,0,0,0);
+                          if (logDate < startD) matchesDate = false;
+                        }
+                      }
+                      if (logEndDate) {
+                        const [d,m,y] = logEndDate.split('.');
+                        if(d && m && y) {
+                          const endD = new Date(Number(y), Number(m)-1, Number(d));
+                          endD.setHours(0,0,0,0);
+                          if (logDate > endD) matchesDate = false;
+                        }
+                      }
+                    } else {
+                      matchesDate = false;
+                    }
+                  }
+                  return matchesSearch && matchesDate;
+                }).map((log) => (
+                  <div key={log.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs">
+                    <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
+                          log.action === 'INSERT' ? 'bg-green-100 text-green-700' :
+                          log.action === 'UPDATE' ? 'bg-blue-100 text-blue-700' :
+                          log.action === 'DELETE' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {log.action}
+                        </span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          {log.user_name || users.find(u => u.id === log.user_id)?.name || users.find(u => u.id === log.user_id)?.email || log.user_id || 'Sistem / Anonim'}
+                        </span>
+                        <span className="text-gray-400 text-[10px]">({log.module})</span>
+                      </div>
+                      <div className="text-gray-500 font-medium">
+                        {log.occurred_at ? new Date(log.occurred_at).toLocaleString('tr-TR') : '-'}
+                      </div>
+                    </div>
+                    {(() => {
+                      const contextStr = getItemContext(log, uuidNameMap);
+                      return contextStr ? (
+                        <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold">Kayıt Detayı:</span> {contextStr}
+                        </div>
+                      ) : null;
+                    })()}
+                    
+                    <div className="mt-3">
+                      {(() => {
+                        const changes = getChanges(log.before_data, log.after_data);
+                        if (changes.length === 0) {
+                          return <div className="text-gray-500 italic text-[11px] py-1">Görsel bir değişiklik tespit edilmedi.</div>;
+                        }
+
+                        return (
+                          <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase tracking-wider">
+                                  <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3">Alan</th>
+                                  {log.action !== 'INSERT' && <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-red-600 dark:text-red-400">Eski Değer</th>}
+                                  {log.action !== 'DELETE' && <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-green-600 dark:text-green-400">Yeni Değer</th>}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                {changes.map((change, idx) => (
+                                  <tr key={idx} className="bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <td className="px-3 py-2 font-medium text-gray-700 dark:text-gray-300">{translateField(change.field)}</td>
+                                    {log.action !== 'INSERT' && (
+                                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 line-through decoration-red-300 dark:decoration-red-800">
+                                        {formatLogValue(change.oldVal, uuidNameMap)}
+                                      </td>
+                                    )}
+                                    {log.action !== 'DELETE' && (
+                                      <td className="px-3 py-2 text-gray-800 dark:text-gray-200 font-medium">
+                                        {formatLogValue(change.newVal, uuidNameMap)}
+                                      </td>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 }

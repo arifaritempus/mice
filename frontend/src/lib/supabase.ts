@@ -111,6 +111,7 @@ export interface Quote {
   project_name?: string;
   created_at: string;
   updated_at: string;
+  items?: { currency: string }[];
 }
 
 export interface QuoteItem {

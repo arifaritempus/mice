@@ -201,31 +201,6 @@ export default function ProjectsPage() {
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; project: Project | null }>({ open: false, project: null });
   const [deleting, setDeleting] = useState(false);
 
-  // Logs state
-  const [showLogsModal, setShowLogsModal] = useState(false);
-  const [logsData, setLogsData] = useState<any[]>([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
-  const [logSearchTerm, setLogSearchTerm] = useState('');
-
-  const fetchLogs = async () => {
-    try {
-      setLoadingLogs(true);
-      const { data, error } = await supabase
-        .from('audit_logs')
-        .select('*')
-        .in('module', ['projects', 'project_sales_items', 'project_purchase_items'])
-        .order('occurred_at', { ascending: false })
-        .limit(200);
-
-      if (error) throw error;
-      setLogsData(data || []);
-    } catch (err) {
-      console.error('Loglar yüklenirken hata:', err);
-      toast.error('Log kayıtları alınamadı.');
-    } finally {
-      setLoadingLogs(false);
-    }
-  };
 
   const loadedRef = useRef(false);
   const loadProjects = async () => {
@@ -697,17 +672,6 @@ export default function ProjectsPage() {
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">Projelerinizi yönetin</p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setShowLogsModal(true);
-                fetchLogs();
-              }}
-              className="bg-purple-600 dark:bg-purple-500 text-white px-2 py-1 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors duration-200 flex items-center text-xs"
-              title="Log Kayıtları"
-            >
-              <ScrollText size={14} className="mr-1" />
-              Loglar
-            </button>
             {/* Excel Export Butonu */}
             <button
               onClick={handleExportExcel}
@@ -1339,82 +1303,7 @@ export default function ProjectsPage() {
         </div>
       </Modal>
 
-      {/* Logs Modal */}
-      <Modal isOpen={showLogsModal} onClose={() => setShowLogsModal(false)} title="Proje Log Kayıtları" maxWidth="max-w-4xl">
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="İşlem tipi, kullanıcı veya değer içinde ara..."
-              value={logSearchTerm}
-              onChange={(e) => setLogSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {loadingLogs ? (
-              <div className="flex justify-center p-8"><LoadingSpinner message="Loglar yükleniyor..." /></div>
-            ) : logsData.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">Projelere ait log kaydı bulunamadı.</div>
-            ) : (
-              <div className="space-y-4">
-                {logsData.filter(log => {
-                  if (!logSearchTerm) return true;
-                  const search = logSearchTerm.toLowerCase();
-                  const actionStr = (log.action || '').toLowerCase();
-                  const userStr = (log.user_name || log.user_id || '').toLowerCase();
-                  const moduleStr = (log.module || '').toLowerCase();
-                  const beforeStr = log.before_data ? JSON.stringify(log.before_data).toLowerCase() : '';
-                  const afterStr = log.after_data ? JSON.stringify(log.after_data).toLowerCase() : '';
-                  
-                  return actionStr.includes(search) || userStr.includes(search) || moduleStr.includes(search) || beforeStr.includes(search) || afterStr.includes(search);
-                }).map((log) => (
-                  <div key={log.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs">
-                    <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
-                          log.action === 'INSERT' ? 'bg-green-100 text-green-700' :
-                          log.action === 'UPDATE' ? 'bg-blue-100 text-blue-700' :
-                          log.action === 'DELETE' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {log.action}
-                        </span>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">
-                          {log.user_name || log.user_id || 'Sistem / Anonim'}
-                        </span>
-                        <span className="text-gray-400 text-[10px]">({log.module})</span>
-                      </div>
-                      <div className="text-gray-500 font-medium">
-                        {formatDate(log.occurred_at)}
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                      {log.before_data && Object.keys(log.before_data).length > 0 && (
-                        <div className="bg-red-50 dark:bg-red-900/10 p-2 rounded">
-                          <p className="font-bold text-red-800 dark:text-red-300 mb-1 border-b border-red-100 dark:border-red-900/30 pb-1">Önceki Değerler</p>
-                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
-                            {JSON.stringify(log.before_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {log.after_data && Object.keys(log.after_data).length > 0 && (
-                        <div className="bg-green-50 dark:bg-green-900/10 p-2 rounded">
-                          <p className="font-bold text-green-800 dark:text-green-300 mb-1 border-b border-green-100 dark:border-green-900/30 pb-1">Yeni Değerler</p>
-                          <pre className="text-[10px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48">
-                            {JSON.stringify(log.after_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </Modal>
+      
 
       <style jsx global>{`
         @keyframes slideUp {

@@ -61,7 +61,7 @@ export class ExcelUtils {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Teklifler');
+      const sheet = workbook.addWorksheet(`${typeof document !== 'undefined' ? document.title.split('-')[0].trim() : 'MICE'} - Teklifler`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -204,7 +204,7 @@ export class ExcelUtils {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Biletler (Detay)');
+      const sheet = workbook.addWorksheet(`${typeof document !== 'undefined' ? document.title.split('-')[0].trim() : 'MICE'} - Biletler (Detay)`);
 
       sheet.pageSetup = {
         orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true,
@@ -290,7 +290,7 @@ export class ExcelUtils {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Biletler (Özet)');
+      const sheet = workbook.addWorksheet(`${typeof document !== 'undefined' ? document.title.split('-')[0].trim() : 'MICE'} - Biletler (Özet)`);
       sheet.pageSetup = {
         orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true,
         paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 }
@@ -372,7 +372,7 @@ export class ExcelUtils {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Teklif');
+      const sheet = workbook.addWorksheet(`${typeof document !== 'undefined' ? document.title.split('-')[0].trim() : 'MICE'} - Teklif`);
 
       sheet.pageSetup = {
         orientation: 'landscape',
@@ -673,7 +673,7 @@ export class ExcelUtils {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Kullanıcılar');
+      const sheet = workbook.addWorksheet(`${typeof document !== 'undefined' ? document.title.split('-')[0].trim() : 'MICE'} - Kullanıcılar`);
 
       sheet.columns = [
         { header: 'Ad Soyad', key: 'full_name', width: 25 },

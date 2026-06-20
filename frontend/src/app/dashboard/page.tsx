@@ -575,10 +575,17 @@ export default function DashboardPage() {
     const filteredMktInteractions = range ? (marketingInteractions || []).filter((i: any) => inRange(i.appointment_date || i.interaction_date || i.created_at, range)) : (marketingInteractions || []);
     const mktClients = marketingClients || [];
 
-    const quotePending = filteredQuotes.filter((q: any) => ['beklemede', 'teklif'].includes(normalizeStatus(q.status)));
-    const quoteOption = filteredQuotes.filter((q: any) => ['opsiyon', 'option', 'optional', '1'].includes(String(q.option || '').toLowerCase()) || parseDateSafe(q.option_date));
-    const quoteAgency = filteredQuotes.filter((q: any) => !!q.agency_id || (q.company_name && String(q.company_name).trim().length > 0));
     const quoteConfirmed = filteredQuotes.filter((q: any) => normalizeStatus(q.status).includes('konfirme') || normalizeStatus(q.status).includes('confirm'));
+    const quoteOption = filteredQuotes.filter((q: any) => {
+      const isConf = normalizeStatus(q.status).includes('konfirme') || normalizeStatus(q.status).includes('confirm');
+      return !isConf && (['opsiyon', 'option', 'optional', '1'].includes(String(q.option || '').toLowerCase()) || parseDateSafe(q.option_date));
+    });
+    const quotePending = filteredQuotes.filter((q: any) => {
+      const isConf = normalizeStatus(q.status).includes('konfirme') || normalizeStatus(q.status).includes('confirm');
+      const isOpt = ['opsiyon', 'option', 'optional', '1'].includes(String(q.option || '').toLowerCase()) || parseDateSafe(q.option_date);
+      return !isConf && !isOpt && ['beklemede', 'teklif'].includes(normalizeStatus(q.status));
+    });
+    const quoteAgency = filteredQuotes.filter((q: any) => !!q.agency_id || (q.company_name && String(q.company_name).trim().length > 0));
     const quoteTotal = quotePending.length + quoteOption.length + quoteConfirmed.length;
 
     const projectRevenue = filteredRpProjects.reduce((sum, p) => sum + toNumber(p.satis_tl), 0);

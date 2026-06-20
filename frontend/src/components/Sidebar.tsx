@@ -30,7 +30,7 @@ export default function Sidebar() {
   const { theme } = useTheme();
   const { canView, loading: permissionsLoading } = usePermissions();
   
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -261,12 +261,14 @@ export default function Sidebar() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Unsubscribe from existing if any
-      if (channel) {
-        await supabase.removeChannel(channel);
-      }
+      const channelName = `sidebar-notifications-${user.id}`;
+      supabase.getChannels().forEach(ch => {
+        if (ch.topic === `realtime:${channelName}`) {
+          supabase.removeChannel(ch);
+        }
+      });
 
-      channel = supabase.channel(`sidebar-notifications-${user.id}`)
+      channel = supabase.channel(channelName)
         .on(
           'postgres_changes', 
           { 

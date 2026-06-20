@@ -349,7 +349,7 @@ export default function TicketsPage() {
   const exportDetailsExcel = async (rows: any[]) => {
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Biletler (Detay)');
+    const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Biletler (Detay)`);
     sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
     // Header band
     const top = sheet.addRow([]); top.height = 48; sheet.mergeCells('A1:R1');
@@ -414,7 +414,7 @@ export default function TicketsPage() {
   const exportSummaryExcel = async (rows: any[], suppliersList: any[] = []) => {
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('TEMPUS TRAVEL - Biletler (Özet)');
+    const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Biletler (Özet)`);
     sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
     const top = sheet.addRow([]); top.height = 48; sheet.mergeCells('A1:R1');
     for (let c = 1; c <= 18; c++) { sheet.getRow(1).getCell(c).value=''; sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any; }
