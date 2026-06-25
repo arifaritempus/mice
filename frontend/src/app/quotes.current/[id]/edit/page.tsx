@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useTheme } from '@/components/providers/ThemeProvider';
-import { storage } from '@/utils/safeStorage';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { storage } from "@/utils/safeStorage";
 
 interface QuoteItem {
   id: string;
@@ -78,36 +78,36 @@ export default function QuoteEditPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Form data
   const [formData, setFormData] = useState({
-    reference: '',
-    agency_id: '',
-    company_name: '',
-    check_in_date: '',
-    check_out_date: '',
-    hotel_id: '',
-    quote_type: 'BİRİM',
+    reference: "",
+    agency_id: "",
+    company_name: "",
+    check_in_date: "",
+    check_out_date: "",
+    hotel_id: "",
+    quote_type: "BİRİM",
     room_count: 0,
     pax_count: 0,
-    option: 'SOR - SAT',
-    status: 'TEKLİF',
-    notes: '',
-    file_manager: '' // Added for file manager
+    option: "SOR - SAT",
+    status: "TEKLİF",
+    notes: "",
+    file_manager: "", // Added for file manager
   });
 
   // New item for adding
   const [newItem, setNewItem] = useState({
-    main_category: '',
-    sub_category: '',
-    service_name: '',
+    main_category: "",
+    sub_category: "",
+    service_name: "",
     unit_price: 0,
-    currency: 'EUR',
+    currency: "EUR",
     quantity: 1,
     repeat_frequency: 1,
-    total_price: 0
+    total_price: 0,
   });
 
   useEffect(() => {
@@ -119,37 +119,37 @@ export default function QuoteEditPage() {
   const loadQuote = async (quoteId: string) => {
     try {
       // Load from localStorage for now
-      const storedQuotes = storage.getItem('quotes');
+      const storedQuotes = storage.getItem("quotes");
       if (storedQuotes) {
         const quotes = JSON.parse(storedQuotes);
         const foundQuote = quotes.find((q: Quote) => q.id === quoteId);
-        
+
         if (foundQuote) {
           setQuote(foundQuote);
           setFormData({
-            reference: foundQuote.reference || '',
-            agency_id: foundQuote.agency_id || '',
-            company_name: foundQuote.company_name || '',
-            check_in_date: foundQuote.check_in_date || '',
-            check_out_date: foundQuote.check_out_date || '',
-            hotel_id: foundQuote.hotel_id || '',
-            quote_type: foundQuote.quote_type || 'BİRİM',
+            reference: foundQuote.reference || "",
+            agency_id: foundQuote.agency_id || "",
+            company_name: foundQuote.company_name || "",
+            check_in_date: foundQuote.check_in_date || "",
+            check_out_date: foundQuote.check_out_date || "",
+            hotel_id: foundQuote.hotel_id || "",
+            quote_type: foundQuote.quote_type || "BİRİM",
             room_count: foundQuote.room_count || 0,
             pax_count: foundQuote.pax_count || 0,
-            option: foundQuote.option || 'SOR - SAT',
-            status: foundQuote.status || 'TEKLİF',
-            notes: foundQuote.notes || foundQuote.note || '',
-            file_manager: foundQuote.file_manager || '' // Load file manager
+            option: foundQuote.option || "SOR - SAT",
+            status: foundQuote.status || "TEKLİF",
+            notes: foundQuote.notes || foundQuote.note || "",
+            file_manager: foundQuote.file_manager || "", // Load file manager
           });
         } else {
-          setError('Teklif bulunamadı');
+          setError("Teklif bulunamadı");
         }
       } else {
-        setError('Teklif bulunamadı');
+        setError("Teklif bulunamadı");
       }
     } catch (error) {
-      console.error('Error loading quote:', error);
-      setError('Teklif yüklenirken hata oluştu');
+      console.error("Error loading quote:", error);
+      setError("Teklif yüklenirken hata oluştu");
     } finally {
       setLoading(false);
     }
@@ -157,91 +157,118 @@ export default function QuoteEditPage() {
 
   const loadAgencies = () => {
     try {
-      const storedAgencies = storage.getItem('agencies');
+      const storedAgencies = storage.getItem("agencies");
       if (storedAgencies) {
         setAgencies(JSON.parse(storedAgencies));
       }
     } catch (error) {
-      console.error('Error loading agencies:', error);
+      console.error("Error loading agencies:", error);
     }
   };
 
   const loadHotels = () => {
     try {
-      const storedHotels = storage.getItem('hotels');
+      const storedHotels = storage.getItem("hotels");
       if (storedHotels) {
         setHotels(JSON.parse(storedHotels));
       }
     } catch (error) {
-      console.error('Error loading hotels:', error);
+      console.error("Error loading hotels:", error);
     }
   };
 
   const loadUsers = () => {
     try {
-      const savedUsers = storage.getItem('users');
+      const savedUsers = storage.getItem("users");
       if (savedUsers) {
         const parsedUsers = JSON.parse(savedUsers);
-        console.log('Users loaded from users page:', parsedUsers);
+        console.log("Users loaded from users page:", parsedUsers);
         setUsers(parsedUsers);
       } else {
-        console.log('No users found, using default users');
+        console.log("No users found, using default users");
         const defaultUsers = [
-          { id: '1', first_name: 'Arif', last_name: 'Ari', email: 'arif.ari@tempustravel.co' },
-          { id: '2', first_name: 'John', last_name: 'Doe', email: 'john.doe@tempustravel.co' }
+          {
+            id: "1",
+            first_name: "Arif",
+            last_name: "Ari",
+            email: "arif.ari@tempustravel.co",
+          },
+          {
+            id: "2",
+            first_name: "John",
+            last_name: "Doe",
+            email: "john.doe@tempustravel.co",
+          },
         ];
         setUsers(defaultUsers);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error("Error loading users:", error);
     }
   };
 
   const loadCategories = () => {
     try {
-      const savedCategories = storage.getItem('categories');
+      const savedCategories = storage.getItem("categories");
       if (savedCategories) {
         const parsedCategories = JSON.parse(savedCategories);
-        console.log('Raw categories from categories page:', parsedCategories);
-        
+        console.log("Raw categories from categories page:", parsedCategories);
+
         // Ana kategorileri ve alt kategorilerini grupla
-        const mainCategories = parsedCategories.filter((cat: any) => cat.type === 'main');
-        const subCategories = parsedCategories.filter((cat: any) => cat.type === 'sub');
-        
-        console.log('Main categories found:', mainCategories.length);
-        console.log('Sub categories found:', subCategories.length);
-        
+        const mainCategories = parsedCategories.filter(
+          (cat: any) => cat.type === "main",
+        );
+        const subCategories = parsedCategories.filter(
+          (cat: any) => cat.type === "sub",
+        );
+
+        console.log("Main categories found:", mainCategories.length);
+        console.log("Sub categories found:", subCategories.length);
+
         const categoriesWithSubs = mainCategories.map((mainCat: any) => {
-          const relatedSubs = subCategories.filter((subCat: any) => subCat.parent_id === mainCat.id);
-          console.log(`Main category "${mainCat.name}" has ${relatedSubs.length} sub categories:`, relatedSubs);
-          
+          const relatedSubs = subCategories.filter(
+            (subCat: any) => subCat.parent_id === mainCat.id,
+          );
+          console.log(
+            `Main category "${mainCat.name}" has ${relatedSubs.length} sub categories:`,
+            relatedSubs,
+          );
+
           return {
             id: mainCat.id,
             name: mainCat.name,
-            sub_categories: relatedSubs.map((subCat: any) => subCat.name)
+            sub_categories: relatedSubs.map((subCat: any) => subCat.name),
           };
         });
-        
-        console.log('Final categories with subs:', categoriesWithSubs);
+
+        console.log("Final categories with subs:", categoriesWithSubs);
         setCategories(categoriesWithSubs);
       } else {
-        console.log('No categories found, using default categories');
+        console.log("No categories found, using default categories");
         const defaultCategories = [
           {
-            id: '1',
-            name: 'OTEL | KONAKLAMA',
-            sub_categories: ['DOUBLE ODA KİŞİ BAŞI', 'SINGLE ODA', 'TRIPLE ODA']
+            id: "1",
+            name: "OTEL | KONAKLAMA",
+            sub_categories: [
+              "DOUBLE ODA KİŞİ BAŞI",
+              "SINGLE ODA",
+              "TRIPLE ODA",
+            ],
           },
           {
-            id: '2',
-            name: 'TOPLANTI SALONU',
-            sub_categories: ['TOPLANTI SALONU KULLANIMI', 'KAHVE MOLASI', 'ÖĞLE YEMEĞİ']
-          }
+            id: "2",
+            name: "TOPLANTI SALONU",
+            sub_categories: [
+              "TOPLANTI SALONU KULLANIMI",
+              "KAHVE MOLASI",
+              "ÖĞLE YEMEĞİ",
+            ],
+          },
         ];
         setCategories(defaultCategories);
       }
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error("Error loading categories:", error);
     }
   };
 
@@ -252,17 +279,26 @@ export default function QuoteEditPage() {
     loadUsers();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const addItem = () => {
-    if (!newItem.main_category || !newItem.sub_category || !newItem.service_name || newItem.unit_price <= 0) {
-      alert('Lütfen gerekli alanları doldurun');
+    if (
+      !newItem.main_category ||
+      !newItem.sub_category ||
+      !newItem.service_name ||
+      newItem.unit_price <= 0
+    ) {
+      alert("Lütfen gerekli alanları doldurun");
       return;
     }
 
@@ -281,59 +317,59 @@ export default function QuoteEditPage() {
       description: newItem.service_name,
       total: newItem.total_price,
       sefer: newItem.repeat_frequency,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
     const updatedQuote = {
       ...quote,
       items: [...quote.items, item],
-      total_amount: quote.total_amount + newItem.total_price
+      total_amount: quote.total_amount + newItem.total_price,
     };
 
     setQuote(updatedQuote);
     setNewItem({
-      main_category: '',
-      sub_category: '',
-      service_name: '',
+      main_category: "",
+      sub_category: "",
+      service_name: "",
       unit_price: 0,
-      currency: 'EUR',
+      currency: "EUR",
       quantity: 1,
       repeat_frequency: 1,
-      total_price: 0
+      total_price: 0,
     });
   };
 
   const removeItem = (itemId: string) => {
     if (!quote) return;
 
-    const itemToRemove = quote.items.find(item => item.id === itemId);
+    const itemToRemove = quote.items.find((item) => item.id === itemId);
     if (!itemToRemove) return;
 
     const updatedQuote = {
       ...quote,
-      items: quote.items.filter(item => item.id !== itemId),
-      total_amount: quote.total_amount - (itemToRemove.total_price || 0)
+      items: quote.items.filter((item) => item.id !== itemId),
+      total_amount: quote.total_amount - (itemToRemove.total_price || 0),
     };
-    
+
     setQuote(updatedQuote);
   };
 
   const editItem = (itemId: string) => {
     if (!quote) return;
 
-    const itemToEdit = quote.items.find(item => item.id === itemId);
+    const itemToEdit = quote.items.find((item) => item.id === itemId);
     if (!itemToEdit) return;
 
     // Set newItem state with the item to edit
     setNewItem({
-      main_category: itemToEdit.main_category || '',
-      sub_category: itemToEdit.sub_category || '',
-      service_name: itemToEdit.description || '',
+      main_category: itemToEdit.main_category || "",
+      sub_category: itemToEdit.sub_category || "",
+      service_name: itemToEdit.description || "",
       unit_price: itemToEdit.unit_price || 0,
-      currency: itemToEdit.currency || 'EUR',
+      currency: itemToEdit.currency || "EUR",
       quantity: itemToEdit.unit_quantity || 1,
       repeat_frequency: itemToEdit.repeat_frequency || 1,
-      total_price: itemToEdit.total_price || 0
+      total_price: itemToEdit.total_price || 0,
     });
 
     // Remove the item from the quote
@@ -343,61 +379,63 @@ export default function QuoteEditPage() {
   // Eski ID formatını yeni ID formatına çevir
   const convertOldIdToNew = (oldId: string) => {
     if (!oldId) return oldId;
-    
+
     // Eğer zaten yeni format ise (CAT_ ile başlıyorsa) direkt döndür
-    if (oldId.startsWith('CAT_')) {
+    if (oldId.startsWith("CAT_")) {
       return oldId;
     }
-    
+
     // Eski formatı yeni formata çevir
-    if (oldId === '1') return 'CAT_001';
-    if (oldId === '2') return 'CAT_002';
-    if (oldId === '3') return 'CAT_003';
-    if (oldId === '4') return 'CAT_004';
-    if (oldId === '5') return 'CAT_005';
-    
+    if (oldId === "1") return "CAT_001";
+    if (oldId === "2") return "CAT_002";
+    if (oldId === "3") return "CAT_003";
+    if (oldId === "4") return "CAT_004";
+    if (oldId === "5") return "CAT_005";
+
     // Alt kategoriler için
-    if (oldId === '1-1') return 'CAT_006';
-    if (oldId === '1-2') return 'CAT_007';
-    if (oldId === '2-1') return 'CAT_008';
-    if (oldId === '2-2') return 'CAT_009';
-    if (oldId === '3-1') return 'CAT_010';
-    if (oldId === '3-2') return 'CAT_011';
-    
+    if (oldId === "1-1") return "CAT_006";
+    if (oldId === "1-2") return "CAT_007";
+    if (oldId === "2-1") return "CAT_008";
+    if (oldId === "2-2") return "CAT_009";
+    if (oldId === "3-1") return "CAT_010";
+    if (oldId === "3-2") return "CAT_011";
+
     return oldId;
   };
 
   // Kategori adını ID'den bul
   const getCategoryName = (categoryId: string) => {
-    if (!categoryId) return '';
-    
+    if (!categoryId) return "";
+
     // Eski ID formatını yeni formata çevir
     const newId = convertOldIdToNew(categoryId);
-    
+
     // Kategoriler listesinde ara
-    const category = categories.find(cat => cat.id === newId);
+    const category = categories.find((cat) => cat.id === newId);
     if (category) {
       return category.name;
     }
-    
+
     // Alt kategorilerde de ara
-    const subCategory = categories.find(cat => cat.sub_categories?.includes(newId));
+    const subCategory = categories.find((cat) =>
+      cat.sub_categories?.includes(newId),
+    );
     if (subCategory) {
       return newId; // Alt kategori ismini döndür
     }
-    
+
     return categoryId;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       if (!quote) {
-        setError('Teklif bulunamadı');
+        setError("Teklif bulunamadı");
         return;
       }
 
@@ -406,27 +444,26 @@ export default function QuoteEditPage() {
         ...formData,
         items: quote.items,
         total_amount: quote.total_amount,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       // Update in localStorage
-      const storedQuotes = storage.getItem('quotes');
+      const storedQuotes = storage.getItem("quotes");
       if (storedQuotes) {
         const quotes = JSON.parse(storedQuotes);
-        const updatedQuotes = quotes.map((q: Quote) => 
-          q.id === quote.id ? updatedQuote : q
+        const updatedQuotes = quotes.map((q: Quote) =>
+          q.id === quote.id ? updatedQuote : q,
         );
-        storage.setItem('quotes', JSON.stringify(updatedQuotes));
+        storage.setItem("quotes", JSON.stringify(updatedQuotes));
       }
 
-      setSuccess('Teklif başarıyla güncellendi!');
+      setSuccess("Teklif başarıyla güncellendi!");
       setTimeout(() => {
-        router.push('/quotes');
+        router.push("/quotes");
       }, 1500);
-
     } catch (error) {
-      console.error('Error updating quote:', error);
-      setError('Teklif güncellenirken hata oluştu');
+      console.error("Error updating quote:", error);
+      setError("Teklif güncellenirken hata oluştu");
     } finally {
       setSaving(false);
     }
@@ -434,7 +471,7 @@ export default function QuoteEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="min-h-screen bg-transparent transition-colors duration-200">
         <div className="p-6">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
@@ -448,10 +485,10 @@ export default function QuoteEditPage() {
 
   if (error || !quote) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="min-h-screen bg-transparent transition-colors duration-200">
         <div className="p-6">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-6">
-            {error || 'Teklif bulunamadı'}
+            {error || "Teklif bulunamadı"}
           </div>
           <Link
             href="/quotes"
@@ -465,21 +502,24 @@ export default function QuoteEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-transparent transition-colors duration-200">
       <div className="w-full">
         {/* Header */}
         <div className="mb-8 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-200">Teklif Düzenle</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+                Teklif Düzenle
+              </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
-                Referans: {quote.reference} | {new Date(quote.created_at).toLocaleDateString('tr-TR')}
+                Referans: {quote.reference} |{" "}
+                {new Date(quote.created_at).toLocaleDateString("tr-TR")}
               </p>
             </div>
             <div className="flex space-x-4">
               <Link
                 href={`/quotes/${quote.id}`}
-                className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
+                className="px-4 py-2 bg-blue-500 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
               >
                 Önizle
               </Link>
@@ -498,7 +538,9 @@ export default function QuoteEditPage() {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Header Information - ${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} Style */}
             <div className="border-b border-gray-200 dark:border-gray-700 pb-6 transition-colors duration-200">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Teklif Bilgileri</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">
+                Teklif Bilgileri
+              </h3>
               <div className="grid grid-cols-1 gap-6">
                 {/* 1. Referans - Tek Bölüm Tam Genişlik */}
                 <div>
@@ -530,8 +572,10 @@ export default function QuoteEditPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                       <option value="">Acente seçin</option>
-                      {agencies.map(agency => (
-                        <option key={agency.id} value={agency.id}>{agency.name}</option>
+                      {agencies.map((agency) => (
+                        <option key={agency.id} value={agency.id}>
+                          {agency.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -597,8 +641,10 @@ export default function QuoteEditPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                       <option value="">Otel seçin</option>
-                      {hotels.map(hotel => (
-                        <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+                      {hotels.map((hotel) => (
+                        <option key={hotel.id} value={hotel.id}>
+                          {hotel.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -609,7 +655,10 @@ export default function QuoteEditPage() {
                     </label>
                     <input
                       type="text"
-                      value={hotels.find(h => h.id === formData.hotel_id)?.concept || ''}
+                      value={
+                        hotels.find((h) => h.id === formData.hotel_id)
+                          ?.concept || ""
+                      }
                       disabled
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 transition-colors duration-200"
                       placeholder="Otel seçildiğinde otomatik doldurulur"
@@ -708,13 +757,15 @@ export default function QuoteEditPage() {
                     </label>
                     <select
                       name="file_manager"
-                      value={formData.file_manager || ''}
+                      value={formData.file_manager || ""}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                       <option value="">Kullanıcı seçin</option>
-                      {users.map(user => (
-                        <option key={user.id} value={user.id}>{user.first_name} {user.last_name}</option>
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.first_name} {user.last_name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -752,8 +803,10 @@ export default function QuoteEditPage() {
             {/* Add New Item */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mx-6 mb-6 transition-colors duration-200">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">Yeni Hizmet Ekle</h2>
-                
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
+                  Yeni Hizmet Ekle
+                </h2>
+
                 <div className="grid grid-cols-12 gap-4 mb-4">
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
@@ -761,12 +814,20 @@ export default function QuoteEditPage() {
                     </label>
                     <select
                       value={newItem.main_category}
-                      onChange={(e) => setNewItem({ ...newItem, main_category: e.target.value, sub_category: '' })}
+                      onChange={(e) =>
+                        setNewItem({
+                          ...newItem,
+                          main_category: e.target.value,
+                          sub_category: "",
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                       <option value="">Seçin</option>
-                      {categories.map(category => (
-                        <option key={category.id} value={category.id}>{category.name}</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -777,13 +838,19 @@ export default function QuoteEditPage() {
                     </label>
                     <select
                       value={newItem.sub_category}
-                      onChange={(e) => setNewItem({ ...newItem, sub_category: e.target.value })}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, sub_category: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                       <option value="">Seçin</option>
-                      {categories.find(c => c.id === newItem.main_category)?.sub_categories?.map(subCat => (
-                        <option key={subCat} value={subCat}>{subCat}</option>
-                      ))}
+                      {categories
+                        .find((c) => c.id === newItem.main_category)
+                        ?.sub_categories?.map((subCat) => (
+                          <option key={subCat} value={subCat}>
+                            {subCat}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
@@ -796,10 +863,11 @@ export default function QuoteEditPage() {
                       value={newItem.quantity}
                       onChange={(e) => {
                         const qty = parseInt(e.target.value) || 1;
-                        setNewItem({ 
-                          ...newItem, 
-                          quantity: qty, 
-                          total_price: newItem.unit_price * qty * newItem.repeat_frequency
+                        setNewItem({
+                          ...newItem,
+                          quantity: qty,
+                          total_price:
+                            newItem.unit_price * qty * newItem.repeat_frequency,
                         });
                       }}
                       min="1"
@@ -816,10 +884,11 @@ export default function QuoteEditPage() {
                       value={newItem.repeat_frequency}
                       onChange={(e) => {
                         const repeat = parseInt(e.target.value) || 1;
-                        setNewItem({ 
-                          ...newItem, 
-                          repeat_frequency: repeat, 
-                          total_price: newItem.unit_price * newItem.quantity * repeat
+                        setNewItem({
+                          ...newItem,
+                          repeat_frequency: repeat,
+                          total_price:
+                            newItem.unit_price * newItem.quantity * repeat,
                         });
                       }}
                       min="1"
@@ -836,10 +905,11 @@ export default function QuoteEditPage() {
                       value={newItem.unit_price}
                       onChange={(e) => {
                         const price = parseFloat(e.target.value) || 0;
-                        setNewItem({ 
-                          ...newItem, 
-                          unit_price: price, 
-                          total_price: price * newItem.quantity * newItem.repeat_frequency
+                        setNewItem({
+                          ...newItem,
+                          unit_price: price,
+                          total_price:
+                            price * newItem.quantity * newItem.repeat_frequency,
                         });
                       }}
                       min="0"
@@ -855,7 +925,9 @@ export default function QuoteEditPage() {
                     </label>
                     <select
                       value={newItem.currency}
-                      onChange={(e) => setNewItem({ ...newItem, currency: e.target.value })}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, currency: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                       <option value="EUR">EUR</option>
@@ -872,7 +944,9 @@ export default function QuoteEditPage() {
                     <input
                       type="text"
                       value={newItem.service_name}
-                      onChange={(e) => setNewItem({ ...newItem, service_name: e.target.value })}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, service_name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       placeholder="Hizmet açıklaması girin"
                     />
@@ -883,8 +957,13 @@ export default function QuoteEditPage() {
                   <button
                     type="button"
                     onClick={addItem}
-                    disabled={!newItem.main_category || !newItem.sub_category || !newItem.service_name || newItem.unit_price <= 0}
-                    className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={
+                      !newItem.main_category ||
+                      !newItem.sub_category ||
+                      !newItem.service_name ||
+                      newItem.unit_price <= 0
+                    }
+                    className="px-4 py-2 bg-blue-500 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Hizmet Ekle
                   </button>
@@ -896,8 +975,10 @@ export default function QuoteEditPage() {
             {quote.items && quote.items.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mx-6 mb-6 transition-colors duration-200">
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">Teklif Kalemleri</h2>
-                  
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
+                    Teklif Kalemleri
+                  </h2>
+
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead className="bg-gray-50 dark:bg-gray-700">
@@ -933,15 +1014,24 @@ export default function QuoteEditPage() {
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {quote.items.map((item) => (
-                          <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                          <tr
+                            key={item.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                          >
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
-                              {getCategoryName(item.main_category || item.category_id || '')}
+                              {getCategoryName(
+                                item.main_category || item.category_id || "",
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
-                              {getCategoryName(item.sub_category || item.sub_category_id || '') || 'Bilinmiyor'}
+                              {getCategoryName(
+                                item.sub_category || item.sub_category_id || "",
+                              ) || "Bilinmiyor"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
-                              {item.description || item.detail_description || '-'}
+                              {item.description ||
+                                item.detail_description ||
+                                "-"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
                               {item.unit_quantity || 0}
@@ -950,13 +1040,16 @@ export default function QuoteEditPage() {
                               {item.repeat_frequency || item.sefer || 0}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
-                              {item.unit_price?.toFixed(2) || '0.00'}
+                              {item.unit_price?.toFixed(2) || "0.00"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
-                              {item.currency || 'EUR'}
+                              {item.currency || "EUR"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
-                              {item.currency || 'EUR'} {item.total_price?.toFixed(2) || item.total?.toFixed(2) || '0.00'}
+                              {item.currency || "EUR"}{" "}
+                              {item.total_price?.toFixed(2) ||
+                                item.total?.toFixed(2) ||
+                                "0.00"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <div className="flex space-x-2">
@@ -966,8 +1059,18 @@ export default function QuoteEditPage() {
                                   className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors duration-200"
                                   title="Düzenle"
                                 >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                    />
                                   </svg>
                                 </button>
                                 <button
@@ -976,8 +1079,18 @@ export default function QuoteEditPage() {
                                   className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors duration-200"
                                   title="Sil"
                                 >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
                                   </svg>
                                 </button>
                               </div>
@@ -991,9 +1104,11 @@ export default function QuoteEditPage() {
                   {/* Total */}
                   <div className="mt-6 text-right">
                     <div className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
-                      TOPLAM: {quote.total_amount?.toFixed(2) || '0.00'} EUR
+                      TOPLAM: {quote.total_amount?.toFixed(2) || "0.00"} EUR
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">KDV DAHİL</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">
+                      KDV DAHİL
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1004,9 +1119,9 @@ export default function QuoteEditPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-blue-500 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {saving ? 'Güncelleniyor...' : 'Teklifi Güncelle'}
+                {saving ? "Güncelleniyor..." : "Teklifi Güncelle"}
               </button>
             </div>
           </form>
@@ -1014,4 +1129,4 @@ export default function QuoteEditPage() {
       </div>
     </div>
   );
-} 
+}

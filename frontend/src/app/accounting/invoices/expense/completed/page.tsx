@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, type Dispatch, type SetStateAction } from 'react';
-import { invoicesService } from '@/lib/supabaseService';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import InvoiceModal from '@/components/accounting/InvoiceModal';
-import InvoicePreview from '@/components/accounting/InvoicePreview';
-import ConfirmModal from '@/components/ConfirmModal';
-import PaginationControls from '@/components/PaginationControls';
-import { DateRangeFieldAccounting } from '@/components/accounting/DateRangeFieldAccounting';
-import { DEFAULT_PAGE_SIZE } from '@/types/pagination';
-import { usePermissions, Module } from '@/lib/permissions';
+import { useState, useEffect, useMemo } from "react";
+import { invoicesService } from "@/lib/supabaseService";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import InvoiceModal from "@/components/accounting/InvoiceModal";
+import CompletedInvoicePreview from "@/components/accounting/CompletedInvoicePreview";
+import ConfirmModal from "@/components/ConfirmModal";
+import PaginationControls from "@/components/PaginationControls";
+import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
+import MultiTokenFilterInput from "@/components/MultiTokenFilterInput";
+import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
+import { usePermissions, Module } from "@/lib/permissions";
+import { Download, X } from "lucide-react";
+import * as XLSX from "xlsx";
 
 export default function ExpenseCompletedPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [allInvoices, setAllInvoices] = useState<any[]>([]);
-  const [dateRange, setDateRange] = useState({ start: new Date().toISOString().split('T')[0], end: '' });
-  const [voucherTokens, setVoucherTokens] = useState<string[]>([]);
-  const [voucherInput, setVoucherInput] = useState('');
-  const [companyTokens, setCompanyTokens] = useState<string[]>([]);
-  const [companyInput, setCompanyInput] = useState('');
-  const [agencyTokens, setAgencyTokens] = useState<string[]>([]);
-  const [agencyInput, setAgencyInput] = useState('');
-  const [hotelTokens, setHotelTokens] = useState<string[]>([]);
-  const [hotelInput, setHotelInput] = useState('');
-  const [categoryTokens, setCategoryTokens] = useState<string[]>([]);
-  const [categoryInput, setCategoryInput] = useState('');
+  const [dateRange, setDateRange] = useState({
+    start: new Date().toISOString().split("T")[0],
+    end: "",
+  });
+
+  const [globalTokens, setGlobalTokens] = useState<string[]>([]);
+  const [globalInput, setGlobalInput] = useState("");
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
@@ -35,7 +35,10 @@ export default function ExpenseCompletedPage() {
   const [selectedInvoiceItems, setSelectedInvoiceItems] = useState<any[]>([]);
 
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [deletingInvoice, setDeletingInvoice] = useState<{ id: string; no: string } | null>(null);
+  const [deletingInvoice, setDeletingInvoice] = useState<{
+    id: string;
+    no: string;
+  } | null>(null);
 
   useEffect(() => {
     loadInvoices();
@@ -45,14 +48,14 @@ export default function ExpenseCompletedPage() {
     try {
       setLoading(true);
       const response = await invoicesService.getInvoicesPage({
-        type: 'expense',
+        type: "expense",
         fetchAllInRange: true,
         startDate: dateRange.start || undefined,
-        endDate: dateRange.end || undefined
+        endDate: dateRange.end || undefined,
       });
       setAllInvoices(response.data);
     } catch (err) {
-      console.error('Invoices load error:', err);
+      console.error("Invoices load error:", err);
     } finally {
       setLoading(false);
     }
@@ -60,76 +63,56 @@ export default function ExpenseCompletedPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [dateRange.start, dateRange.end, voucherTokens, companyTokens, agencyTokens, hotelTokens, categoryTokens]);
-
-  const addToken = (
-    raw: string,
-    tokens: string[],
-    setTokens: Dispatch<SetStateAction<string[]>>,
-    setInput: Dispatch<SetStateAction<string>>
-  ) => {
-    const parts = raw
-      .split(/[,;\n]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (!parts.length) return;
-    const lowerSet = new Set(tokens.map((t) => t.toLowerCase()));
-    const next = [...tokens];
-    for (const p of parts) {
-      const k = p.toLowerCase();
-      if (!lowerSet.has(k)) {
-        next.push(p);
-        lowerSet.add(k);
-      }
-    }
-    setTokens(next);
-    setInput('');
-  };
-
-  const removeLastToken = (setTokens: Dispatch<SetStateAction<string[]>>) => {
-    setTokens((prev) => prev.slice(0, -1));
-  };
-
-  const voucherTerms = useMemo(() => voucherTokens.map((v) => v.toLowerCase()), [voucherTokens]);
-  const companyTerms = useMemo(() => companyTokens.map((v) => v.toLowerCase()), [companyTokens]);
-  const agencyTerms = useMemo(() => agencyTokens.map((v) => v.toLowerCase()), [agencyTokens]);
-  const hotelTerms = useMemo(() => hotelTokens.map((v) => v.toLowerCase()), [hotelTokens]);
-  const categoryTerms = useMemo(() => categoryTokens.map((v) => v.toLowerCase()), [categoryTokens]);
+  }, [dateRange.start, dateRange.end, globalTokens]);
 
   const filteredInvoices = useMemo(() => {
-    if (
-      !voucherTerms.length &&
-      !companyTerms.length &&
-      !agencyTerms.length &&
-      !hotelTerms.length &&
-      !categoryTerms.length
-    ) {
+    const searchTerms = [...globalTokens, globalInput.trim()]
+      .filter(Boolean)
+      .map((t) => t.toLowerCase());
+    if (!searchTerms.length) {
       return allInvoices;
     }
     return allInvoices.filter((inv) => {
       const isSejour = inv.metadata?.is_sejour === true;
-      const category = (inv.metadata?.category_search || '').toLowerCase();
+      const category = (inv.metadata?.category_search || "").toLowerCase();
       const hotelSearchTarget = [
-        inv.metadata?.hotel_name || '',
-        !isSejour ? (inv.metadata?.reference || '') : '',
-        inv.notes || ''
+        inv.metadata?.hotel_name || "",
+        !isSejour ? inv.metadata?.reference || "" : "",
+        inv.notes || "",
       ]
-        .join(' ')
+        .join(" ")
         .toLowerCase();
-      const firmaBarHaystack = (inv.metadata?.agency_name || (isSejour ? inv.metadata?.company_name : '') || '').toLowerCase();
-      const acenteBarHaystack = (isSejour ? '' : (inv.metadata?.company_name || '')).toLowerCase();
-      const voucher = (inv.metadata?.voucher_number || '').toLowerCase();
-      const reference = (!isSejour ? (inv.metadata?.reference || '') : '').toLowerCase();
-      const notes = (inv.notes || '').toLowerCase();
+      const firmaBarHaystack = (
+        inv.metadata?.agency_name ||
+        (isSejour ? inv.metadata?.company_name : "") ||
+        ""
+      ).toLowerCase();
+      const acenteBarHaystack = (
+        isSejour ? "" : inv.metadata?.company_name || ""
+      ).toLowerCase();
+      const voucher = (inv.metadata?.voucher_number || "").toLowerCase();
+      const reference = (
+        !isSejour ? inv.metadata?.reference || "" : ""
+      ).toLowerCase();
+      const notes = (inv.notes || "").toLowerCase();
 
-      if (voucherTerms.length && !voucherTerms.some((t) => voucher.includes(t) || reference.includes(t))) return false;
-      if (companyTerms.length && !companyTerms.some((t) => firmaBarHaystack.includes(t))) return false;
-      if (agencyTerms.length && !agencyTerms.some((t) => acenteBarHaystack.includes(t))) return false;
-      if (hotelTerms.length && !hotelTerms.some((t) => hotelSearchTarget.includes(t))) return false;
-      if (categoryTerms.length && !categoryTerms.some((t) => category.includes(t) || notes.includes(t))) return false;
-      return true;
+      const combinedHaystack = [
+        voucher,
+        reference,
+        firmaBarHaystack,
+        acenteBarHaystack,
+        hotelSearchTarget,
+        category,
+        notes,
+        inv.invoice_no,
+        inv.contact_name,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchTerms.every((term) => combinedHaystack.includes(term));
     });
-  }, [allInvoices, voucherTerms, companyTerms, agencyTerms, hotelTerms, categoryTerms]);
+  }, [allInvoices, globalTokens, globalInput]);
 
   const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / pageSize));
   const displayInvoices = useMemo(() => {
@@ -141,17 +124,48 @@ export default function ExpenseCompletedPage() {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
+  const exportToExcel = () => {
+    const exportData = filteredInvoices.map((inv) => ({
+      "Fatura Tarihi": new Date(inv.date).toLocaleDateString("tr-TR"),
+      "Fatura No": inv.invoice_no,
+      "Tedarikçi / Cari": inv.contact_name,
+      "Firma / Acente": inv.metadata?.company_name || "-",
+      Otel: inv.metadata?.hotel_name || "-",
+      "Hizmet Tarihi": inv.metadata?.date_start
+        ? `${new Date(inv.metadata.date_start).toLocaleDateString("tr-TR")} - ${new Date(inv.metadata.date_end).toLocaleDateString("tr-TR")}`
+        : "-",
+      Voucher: inv.metadata?.voucher_number || inv.metadata?.reference || "-",
+      Tutar: inv.total_amount,
+      "Para Birimi": inv.currency,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tamamlanan Gider Faturalari");
+    XLSX.writeFile(
+      wb,
+      `Tamamlanan_Gider_Faturalari_${new Date().toISOString().split("T")[0]}.xlsx`,
+    );
+  };
+
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
   }
 
   if (!canView(Module.INVOICES)) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Bu sayfaya erişim yetkiniz bulunmuyor.</p>
-          <a href="/accounting" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Yetki Gerekli
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Bu sayfaya erişim yetkiniz bulunmuyor.
+          </p>
+          <a
+            href="/accounting"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 transition-colors"
+          >
             Muhasebeye Dön
           </a>
         </div>
@@ -159,7 +173,8 @@ export default function ExpenseCompletedPage() {
     );
   }
 
-  const handleEdit = async (inv: any) => {
+  const handleEdit = async (inv: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     try {
       setLoading(true);
       const fullInvoice = await invoicesService.getById(inv.id);
@@ -167,14 +182,15 @@ export default function ExpenseCompletedPage() {
       setSelectedInvoiceItems(fullInvoice.invoice_items || []);
       setIsModalOpen(true);
     } catch (err) {
-      console.error('Fetch invoice error:', err);
-      alert('Fatura detayları yüklenemedi.');
+      console.error("Fetch invoice error:", err);
+      alert("Fatura detayları yüklenemedi.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePreview = async (inv: any) => {
+  const handlePreview = async (inv: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     try {
       setLoading(true);
       const fullInvoice = await invoicesService.getById(inv.id);
@@ -182,21 +198,21 @@ export default function ExpenseCompletedPage() {
       setSelectedInvoiceItems(fullInvoice.invoice_items || []);
       setIsPreviewOpen(true);
     } catch (err) {
-      console.error('Preview fetch error:', err);
-      alert('Önizleme yüklenemedi.');
+      console.error("Preview fetch error:", err);
+      alert("Önizleme yüklenemedi.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteClick = (id: string, no: string) => {
+  const handleDeleteClick = (id: string, no: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setDeletingInvoice({ id, no });
     setIsDeleteConfirmOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!deletingInvoice) return;
-
     try {
       setLoading(true);
       await invoicesService.delete(deletingInvoice.id);
@@ -204,22 +220,26 @@ export default function ExpenseCompletedPage() {
       setDeletingInvoice(null);
       await loadInvoices();
     } catch (err) {
-      console.error('Delete error:', err);
-      alert('Silme işlemi sırasında hata oluştu.');
+      console.error("Delete error:", err);
+      alert("Silme işlemi sırasında hata oluştu.");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("tr-TR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: currency || 'TRY'
+    return new Intl.NumberFormat("tr-TR", {
+      style: "currency",
+      currency: currency || "TRY",
     }).format(amount || 0);
   };
 
@@ -227,419 +247,340 @@ export default function ExpenseCompletedPage() {
     const v = inv.metadata?.voucher_number;
     const r = inv.metadata?.reference;
     if (v && r) return `${v} · ${r}`;
-    return v || r || '';
+    return v || r || "";
   };
 
-  const tokenChipCls =
-    'shrink-0 inline-flex items-center gap-1 px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-200 text-[10px]';
-
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-4 space-y-4 bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 w-full min-w-0 transition-colors duration-200 overflow-hidden">
-      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
-      <div className="flex flex-col md:flex-row md:items-start justify-start gap-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            ✅ Tamamlanan Gider Faturaları
-          </h1>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-            İşlemi tamamlanmış gider faturalarının listesi
-          </p>
-        </div>
-      </div>
+    <div className="h-[calc(100vh-2rem)] w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+      <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-4 shrink-0">
+          {/* Sol: Başlık */}
+          <div className="shrink-0 mr-2">
+            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              Tamamlanan Gider Faturaları
+            </h1>
+            <p className="text-xs text-slate-400 mt-1">
+              Sisteme işlenmiş alış/gider faturalarının listesi
+            </p>
+          </div>
 
-      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Arama ve Filtreleme</h3>
-          <button
-            type="button"
-            onClick={() => {
-              setVoucherTokens([]);
-              setVoucherInput('');
-              setCompanyTokens([]);
-              setCompanyInput('');
-              setAgencyTokens([]);
-              setAgencyInput('');
-              setHotelTokens([]);
-              setHotelInput('');
-              setCategoryTokens([]);
-              setCategoryInput('');
-              setDateRange({ start: '', end: '' });
-            }}
-            className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md text-xs"
-            title="Filtreleri temizle"
-          >
-            x
-          </button>
+          {/* Sağ: Filtreler ve Butonlar */}
+          <div className="flex flex-wrap items-end gap-4 flex-1">
+            <div className="w-64 shrink-0">
+              <ResponsiveDateRangeField
+                label="Fatura Tarihi"
+                startValue={dateRange.start}
+                endValue={dateRange.end}
+                onStartChange={(value) =>
+                  setDateRange((prev) => ({ ...prev, start: value }))
+                }
+                onEndChange={(value) =>
+                  setDateRange((prev) => ({ ...prev, end: value }))
+                }
+                onApply={() => {}}
+              />
+            </div>
+
+            <div className="flex-[2] min-w-[300px] max-w-lg">
+              <MultiTokenFilterInput
+                label="Genel Arama (Fatura No, Voucher, Tedarikçi, Firma, Otel vb.)"
+                tokens={globalTokens}
+                inputValue={globalInput}
+                suggestions={[]}
+                onInputChange={setGlobalInput}
+                onAddToken={(t) => {
+                  const trimmed = t.trim();
+                  if (trimmed && !globalTokens.includes(trimmed)) {
+                    setGlobalTokens((prev) => [...prev, trimmed]);
+                    setGlobalInput("");
+                  }
+                }}
+                onRemoveToken={(t) =>
+                  setGlobalTokens((prev) => prev.filter((v) => v !== t))
+                }
+              />
+            </div>
+
+            <div className="shrink-0 flex items-center gap-3 ml-auto">
+              {(dateRange.start ||
+                dateRange.end ||
+                globalTokens.length > 0 ||
+                globalInput.trim().length > 0) && (
+                <button
+                  onClick={() => {
+                    setDateRange({ start: "", end: "" });
+                    setGlobalTokens([]);
+                    setGlobalInput("");
+                  }}
+                  className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
+                  title="Filtreleri Temizle"
+                >
+                  <X size={16} strokeWidth={2.5} />
+                </button>
+              )}
+              <button
+                onClick={exportToExcel}
+                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"
+              >
+                <Download size={14} /> Excel İndir
+              </button>
+            </div>
+          </div>
         </div>
-        <div
-          className="grid w-full min-w-0 items-end gap-2 responsive-filter-grid"
-          style={{
-            gridTemplateColumns: 'minmax(0,1.25fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr) minmax(0,0.95fr)'
-          }}
-        >
-          <DateRangeFieldAccounting
-            label="Fatura Tarihi Aralığı"
-            startValue={dateRange.start}
-            endValue={dateRange.end}
-            onStartChange={(value) => setDateRange((prev) => ({ ...prev, start: value }))}
-            onEndChange={(value) => setDateRange((prev) => ({ ...prev, end: value }))}
+
+        {loading && allInvoices.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <LoadingSpinner compact />
+          </div>
+        ) : (
+          <div className="bg-[#0f172a]/40 backdrop-blur-md rounded-2xl border border-white/10 flex-1 min-h-0 flex flex-col w-full relative mt-4 overflow-hidden">
+            <div className="overflow-auto w-full flex-1 min-h-0">
+              <table className="min-w-full text-left border-collapse">
+                <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 z-10 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Fatura Tarihi
+                    </th>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Fatura No
+                    </th>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Tedarikçi
+                    </th>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Firma / Acente
+                    </th>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Otel
+                    </th>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Hizmet Tarihi
+                    </th>
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Voucher / Ref
+                    </th>
+                    <th className="px-2.5 py-2.5 text-right text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Tutar
+                    </th>
+                    <th className="px-2.5 py-2.5 text-center text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      İşlemler
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {displayInvoices.map((inv) => (
+                    <tr
+                      key={inv.id}
+                      className="hover:bg-orange-500/10 transition-colors group border-b border-white/5 last:border-0 cursor-pointer"
+                      onDoubleClick={(e) => handlePreview(inv, e as any)}
+                      title="Görüntülemek için çift tıklayın"
+                    >
+                      <td className="px-2.5 py-2.5 text-[11px] text-slate-700 dark:text-white whitespace-nowrap">
+                        {new Date(inv.date).toLocaleDateString("tr-TR")}
+                      </td>
+                      <td className="px-2.5 py-2.5">
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                          {inv.invoice_no}
+                        </span>
+                      </td>
+                      <td className="px-2.5 py-2.5">
+                        <div className="text-[11px] text-slate-700 dark:text-slate-200 font-medium">
+                          {inv.contact_name}
+                        </div>
+                      </td>
+                      <td className="px-2.5 py-2.5 max-w-[14rem]">
+                        {inv.metadata?.company_name ? (
+                          <div
+                            className="text-[11px] text-slate-600 dark:text-white font-medium truncate"
+                            title={inv.metadata.company_name}
+                          >
+                            {inv.metadata.company_name}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px]">
+                            -
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2.5 py-2.5 max-w-[12rem]">
+                        {inv.metadata?.hotel_name ? (
+                          <div
+                            className="text-[10px] text-slate-500 dark:text-slate-400 truncate"
+                            title={inv.metadata.hotel_name}
+                          >
+                            {inv.metadata.hotel_name}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                            -
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2.5 py-2.5 whitespace-nowrap">
+                        {inv.metadata?.date_start || inv.metadata?.date_end ? (
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                            {formatDate(inv.metadata.date_start)} →{" "}
+                            {formatDate(inv.metadata.date_end)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                            -
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2.5 py-2.5 max-w-[12rem]">
+                        {voucherDisplay(inv) ? (
+                          <span
+                            className="text-[10px] font-bold text-slate-600 dark:text-white truncate block"
+                            title={voucherDisplay(inv)}
+                          >
+                            {voucherDisplay(inv)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                            -
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2.5 py-2.5 text-right text-[11px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                        {formatCurrency(inv.total_amount, inv.currency)}
+                      </td>
+                      <td className="px-2.5 py-2.5 text-center">
+                        <div className="flex justify-center gap-1.5  transition-opacity">
+                          <button
+                            onClick={(e) => handlePreview(inv, e)}
+                            className="p-1 text-slate-400 hover:text-orange-500 transition-colors"
+                            title="Görüntüle / Yazdır"
+                            type="button"
+                          >
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => handleEdit(inv, e)}
+                            className="p-1 text-slate-400 hover:text-amber-500 transition-colors"
+                            title="Düzenle"
+                            type="button"
+                          >
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) =>
+                              handleDeleteClick(inv.id, inv.invoice_no, e)
+                            }
+                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Sil"
+                            type="button"
+                          >
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {filteredInvoices.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="px-6 py-16 text-center italic text-slate-500"
+                      >
+                        Kayıtlı fatura bulunamadı veya filtrelere uyan sonuç
+                        yok.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <PaginationControls
+              page={page}
+              pageSize={pageSize}
+              total={filteredInvoices.length}
+              totalPages={totalPages}
+              preferenceKey="expense_completed_page_size"
+              compactRight
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
+          </div>
+        )}
+
+        {isModalOpen && selectedInvoice && (
+          <InvoiceModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            type="expense"
+            onSuccess={loadInvoices}
+            editInvoice={selectedInvoice}
+            selectedItems={selectedInvoiceItems}
           />
-          <div className="min-w-0">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Voucher</label>
-            <div className="w-full h-8 px-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 flex items-center gap-1 overflow-x-auto">
-              {voucherTokens.length > 0 && (
-                <button
-                  type="button"
-                  className={tokenChipCls}
-                  onClick={() => removeLastToken(setVoucherTokens)}
-                  title={voucherTokens.join(', ')}
-                >
-                  <span>+{voucherTokens.length}</span>
-                  <span>x</span>
-                </button>
-              )}
-              <input
-                type="text"
-                value={voucherInput}
-                onChange={(e) => setVoucherInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addToken(voucherInput, voucherTokens, setVoucherTokens, setVoucherInput);
-                  }
-                  if (e.key === 'Backspace' && voucherInput.length === 0 && voucherTokens.length > 0)
-                    removeLastToken(setVoucherTokens);
-                }}
-                placeholder="Yaz, Enter ile ekle"
-                className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white text-xs"
-              />
-            </div>
-          </div>
-          <div className="min-w-0">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Firma</label>
-            <div className="w-full h-8 px-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 flex items-center gap-1 overflow-x-auto">
-              {companyTokens.length > 0 && (
-                <button
-                  type="button"
-                  className={tokenChipCls}
-                  onClick={() => removeLastToken(setCompanyTokens)}
-                  title={companyTokens.join(', ')}
-                >
-                  <span>+{companyTokens.length}</span>
-                  <span>x</span>
-                </button>
-              )}
-              <input
-                type="text"
-                value={companyInput}
-                onChange={(e) => setCompanyInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addToken(companyInput, companyTokens, setCompanyTokens, setCompanyInput);
-                  }
-                  if (e.key === 'Backspace' && companyInput.length === 0 && companyTokens.length > 0)
-                    removeLastToken(setCompanyTokens);
-                }}
-                placeholder="Yaz, Enter ile ekle"
-                className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white text-xs"
-              />
-            </div>
-          </div>
-          <div className="min-w-0">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Acente</label>
-            <div className="w-full h-8 px-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 flex items-center gap-1 overflow-x-auto">
-              {agencyTokens.length > 0 && (
-                <button
-                  type="button"
-                  className={tokenChipCls}
-                  onClick={() => removeLastToken(setAgencyTokens)}
-                  title={agencyTokens.join(', ')}
-                >
-                  <span>+{agencyTokens.length}</span>
-                  <span>x</span>
-                </button>
-              )}
-              <input
-                type="text"
-                value={agencyInput}
-                onChange={(e) => setAgencyInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addToken(agencyInput, agencyTokens, setAgencyTokens, setAgencyInput);
-                  }
-                  if (e.key === 'Backspace' && agencyInput.length === 0 && agencyTokens.length > 0)
-                    removeLastToken(setAgencyTokens);
-                }}
-                placeholder="Yaz, Enter ile ekle"
-                className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white text-xs"
-              />
-            </div>
-          </div>
-          <div className="min-w-0">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Otel</label>
-            <div className="w-full h-8 px-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 flex items-center gap-1 overflow-x-auto">
-              {hotelTokens.length > 0 && (
-                <button
-                  type="button"
-                  className={tokenChipCls}
-                  onClick={() => removeLastToken(setHotelTokens)}
-                  title={hotelTokens.join(', ')}
-                >
-                  <span>+{hotelTokens.length}</span>
-                  <span>x</span>
-                </button>
-              )}
-              <input
-                type="text"
-                value={hotelInput}
-                onChange={(e) => setHotelInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addToken(hotelInput, hotelTokens, setHotelTokens, setHotelInput);
-                  }
-                  if (e.key === 'Backspace' && hotelInput.length === 0 && hotelTokens.length > 0)
-                    removeLastToken(setHotelTokens);
-                }}
-                placeholder="Yaz, Enter ile ekle"
-                className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white text-xs"
-              />
-            </div>
-          </div>
-          <div className="min-w-0">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Kategori</label>
-            <div className="w-full h-8 px-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 flex items-center gap-1 overflow-x-auto">
-              {categoryTokens.length > 0 && (
-                <button
-                  type="button"
-                  className={tokenChipCls}
-                  onClick={() => removeLastToken(setCategoryTokens)}
-                  title={categoryTokens.join(', ')}
-                >
-                  <span>+{categoryTokens.length}</span>
-                  <span>x</span>
-                </button>
-              )}
-              <input
-                type="text"
-                value={categoryInput}
-                onChange={(e) => setCategoryInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addToken(categoryInput, categoryTokens, setCategoryTokens, setCategoryInput);
-                  }
-                  if (e.key === 'Backspace' && categoryInput.length === 0 && categoryTokens.length > 0)
-                    removeLastToken(setCategoryTokens);
-                }}
-                placeholder="Yaz, Enter ile ekle"
-                className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white text-xs"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {loading && allInvoices.length === 0 ? (
-        <div className="flex items-center justify-center py-20">
-          <LoadingSpinner compact />
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-slate-100 flex-1 min-h-0 flex flex-col w-full relative">
-          <div className="overflow-auto w-full flex-1 min-h-0">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 relative">
-            <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Fatura Tarihi
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Fatura No
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Tedarikçi
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Firma & Otel
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Hizmet Tarihi
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Voucher / Ref
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Tutar
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  İşlemler
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {displayInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                    {new Date(inv.date).toLocaleDateString('tr-TR')}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2.5 py-1 text-xs font-bold rounded-md bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300">
-                      {inv.invoice_no}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="text-sm text-slate-900 dark:text-slate-100 font-medium">{inv.contact_name}</div>
-                  </td>
-                  <td className="px-4 py-3 max-w-[14rem]">
-                    {inv.metadata?.company_name ? (
-                      <div className="text-xs text-slate-800 dark:text-slate-200 font-medium truncate" title={inv.metadata.company_name}>
-                        {inv.metadata.company_name}
-                      </div>
-                    ) : null}
-                    {inv.metadata?.hotel_name ? (
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate" title={inv.metadata.hotel_name}>
-                        {inv.metadata.hotel_name}
-                      </div>
-                    ) : !inv.metadata?.company_name ? (
-                      <span className="text-slate-400 text-xs">-</span>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {inv.metadata?.date_start || inv.metadata?.date_end ? (
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                        {formatDate(inv.metadata.date_start)} → {formatDate(inv.metadata.date_end)}
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 text-xs">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 max-w-[12rem]">
-                    {voucherDisplay(inv) ? (
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate block" title={voucherDisplay(inv)}>
-                        {voucherDisplay(inv)}
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 text-xs">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                    {formatCurrency(inv.total_amount, inv.currency)}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handlePreview(inv)}
-                        className="p-1.5 text-slate-400 hover:text-orange-600 transition-colors"
-                        title="Görüntüle / Yazdır"
-                        type="button"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleEdit(inv)}
-                        className="p-1.5 text-slate-400 hover:text-amber-600 transition-colors"
-                        title="Düzenle"
-                        type="button"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(inv.id, inv.invoice_no)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
-                        title="Sil"
-                        type="button"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            
-              {filteredInvoices.length === 0 && (
-                <tr>
-                  <td colSpan={10} className="px-4 py-16 text-center italic text-slate-500 dark:text-slate-400">
-                    Kayıtlı fatura bulunamadı veya filtrelere uyan sonuç yok.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-
-          </table>
-          </div>
-          <PaginationControls
-            page={page}
-            pageSize={pageSize}
-            total={filteredInvoices.length}
-            totalPages={totalPages}
-            preferenceKey="expense_completed_page_size"
-            compactRight
-            onPageChange={setPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setPage(1);
-            }}
+        {isPreviewOpen && selectedInvoice && (
+          <CompletedInvoicePreview
+            isOpen={isPreviewOpen}
+            onClose={() => setIsPreviewOpen(false)}
+            invoice={selectedInvoice}
+            items={selectedInvoiceItems}
           />
+        )}
 
-          
-        </div>
-      )}
-
-      {isModalOpen && selectedInvoice && (
-        <InvoiceModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          type="expense"
-          onSuccess={loadInvoices}
-          editInvoice={selectedInvoice}
-          selectedItems={selectedInvoiceItems}
+        <ConfirmModal
+          isOpen={isDeleteConfirmOpen}
+          onCancel={() => setIsDeleteConfirmOpen(false)}
+          onConfirm={confirmDelete}
+          title="Faturayı Sil"
+          message={`${deletingInvoice?.no} numaralı faturayı silmek istediğinize emin misiniz? Fatura kalemleri bekleyenler listesine geri dönecektir.`}
+          confirmText="Evet, Sil"
+          cancelText="Vazgeç"
+          type="danger"
         />
-      )}
-
-      {isPreviewOpen && selectedInvoice && (
-        <InvoicePreview
-          isOpen={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-          invoice={selectedInvoice}
-          items={selectedInvoiceItems}
-        />
-      )}
-
-      <ConfirmModal
-        isOpen={isDeleteConfirmOpen}
-        onCancel={() => setIsDeleteConfirmOpen(false)}
-        onConfirm={confirmDelete}
-        title="Faturayı Sil"
-        message={`${deletingInvoice?.no} numaralı gider faturasını silmek istediğinize emin misiniz?`}
-        confirmText="Evet, Sil"
-        cancelText="Vazgeç"
-        type="danger"
-      />
-    </div>
+      </div>
     </div>
   );
 }

@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { authService } from '@/lib/auth';
-import { useTheme } from '@/components/providers/ThemeProvider';
-import { SettingsService } from '@/lib/supabaseService';
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authService } from "@/lib/auth";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { SettingsService } from "@/lib/supabaseService";
 
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token_hash = searchParams.get('token_hash');
-  const type = searchParams.get('type');
+  const token_hash = searchParams.get("token_hash");
+  const type = searchParams.get("type");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const { isDark } = useTheme();
   const [appSettings, setAppSettings] = useState<any>(null);
-  const [menuLogo, setMenuLogo] = useState<string>('');
+  const [menuLogo, setMenuLogo] = useState<string>("");
   const [logoLoading, setLogoLoading] = useState(true);
 
   useEffect(() => {
@@ -29,12 +29,17 @@ function ResetPasswordForm() {
         const settings = await SettingsService.getSettings();
         const generalSettings = settings.general_settings || {};
         setAppSettings(generalSettings);
-        
-        const currentLogo = generalSettings.dark_menu_logo || generalSettings.dark_wordmark_logo || generalSettings.dark_icon_logo || 
-                            generalSettings.light_menu_logo || generalSettings.light_wordmark_logo || generalSettings.light_icon_logo;
-        setMenuLogo(currentLogo || '');
+
+        const currentLogo =
+          generalSettings.dark_menu_logo ||
+          generalSettings.dark_wordmark_logo ||
+          generalSettings.dark_icon_logo ||
+          generalSettings.light_menu_logo ||
+          generalSettings.light_wordmark_logo ||
+          generalSettings.light_icon_logo;
+        setMenuLogo(currentLogo || "");
       } catch {
-        setMenuLogo('');
+        setMenuLogo("");
       } finally {
         setLogoLoading(false);
       }
@@ -44,15 +49,15 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     const verifyToken = async () => {
-      // Sadece token_hash varsa doğrula, çünkü eğer yoksa zaten Supabase'in varsayılan 
+      // Sadece token_hash varsa doğrula, çünkü eğer yoksa zaten Supabase'in varsayılan
       // yönlendirmesiyle (cookie/session üzerinden) girmiş olabilir.
-      if (token_hash && type === 'recovery') {
+      if (token_hash && type === "recovery") {
         const { error } = await authService.supabase.auth.verifyOtp({
           token_hash,
-          type: 'recovery',
+          type: "recovery",
         });
         if (error) {
-          setError('Doğrulama bağlantısı geçersiz veya süresi dolmuş.');
+          setError("Doğrulama bağlantısı geçersiz veya süresi dolmuş.");
         }
       }
     };
@@ -62,34 +67,39 @@ function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     if (newPassword !== confirmPassword) {
-      setError('Şifreler eşleşmiyor.');
+      setError("Şifreler eşleşmiyor.");
       setLoading(false);
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('Şifre en az 6 karakter olmalıdır.');
+      setError("Şifre en az 6 karakter olmalıdır.");
       setLoading(false);
       return;
     }
 
     try {
-      const { error: updateError } = await authService.supabase.auth.updateUser({
-        password: newPassword
-      });
+      const { error: updateError } = await authService.supabase.auth.updateUser(
+        {
+          password: newPassword,
+        },
+      );
 
       if (updateError) throw updateError;
-      
+
       setSuccess(true);
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 3000);
     } catch (error: any) {
-      console.error('Şifre güncelleme hatası:', error);
-      setError(error.message || 'Şifre güncellenirken bir hata oluştu. Bağlantı süresi dolmuş olabilir.');
+      console.error("Şifre güncelleme hatası:", error);
+      setError(
+        error.message ||
+          "Şifre güncellenirken bir hata oluştu. Bağlantı süresi dolmuş olabilir.",
+      );
     } finally {
       setLoading(false);
     }
@@ -119,7 +129,14 @@ function ResetPasswordForm() {
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
               <span className="text-white text-2xl font-bold">
-                {appSettings?.company_name ? appSettings.company_name.substring(0, 2).toUpperCase() : (process.env.NEXT_PUBLIC_AGENCY_NAME ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(0, 2).toUpperCase() : 'TT')}
+                {appSettings?.company_name
+                  ? appSettings.company_name.substring(0, 2).toUpperCase()
+                  : process.env.NEXT_PUBLIC_AGENCY_NAME
+                    ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(
+                        0,
+                        2,
+                      ).toUpperCase()
+                    : "TT"}
               </span>
             </div>
           )}
@@ -127,8 +144,12 @@ function ResetPasswordForm() {
 
         <div className="bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 px-8 py-8">
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-white text-center">Yeni Şifre Belirle</h1>
-            <p className="text-sm text-slate-400 text-center mt-1">Lütfen yeni şifrenizi girin.</p>
+            <h1 className="text-xl font-bold text-white text-center">
+              Yeni Şifre Belirle
+            </h1>
+            <p className="text-sm text-slate-400 text-center mt-1">
+              Lütfen yeni şifrenizi girin.
+            </p>
           </div>
 
           {error && (
@@ -140,13 +161,16 @@ function ResetPasswordForm() {
           {success ? (
             <div className="text-center space-y-5">
               <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl">
-                Şifreniz başarıyla güncellendi. Giriş sayfasına yönlendiriliyorsunuz...
+                Şifreniz başarıyla güncellendi. Giriş sayfasına
+                yönlendiriliyorsunuz...
               </div>
             </div>
           ) : (
             <form className="space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Yeni Şifre</label>
+                <label className="block text-xs font-medium text-white mb-1.5">
+                  Yeni Şifre
+                </label>
                 <input
                   type="password"
                   required
@@ -156,9 +180,11 @@ function ResetPasswordForm() {
                   placeholder="••••••••"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Yeni Şifre (Tekrar)</label>
+                <label className="block text-xs font-medium text-white mb-1.5">
+                  Yeni Şifre (Tekrar)
+                </label>
                 <input
                   type="password"
                   required
@@ -172,9 +198,9 @@ function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={loading || !!error}
-                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center"
+                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-500 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center"
               >
-                {loading ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
+                {loading ? "Güncelleniyor..." : "Şifreyi Güncelle"}
               </button>
             </form>
           )}
@@ -186,7 +212,13 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Yükleniyor...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white">
+          Yükleniyor...
+        </div>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );

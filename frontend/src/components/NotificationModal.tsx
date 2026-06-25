@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import moment from 'moment';
-import 'moment/locale/tr';
-import { X, Info, AlertTriangle, AlertCircle, CheckCircle2, Calendar, Clock, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import moment from "moment";
+import "moment/locale/tr";
+import {
+  X,
+  Info,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+  Calendar,
+  Clock,
+  ExternalLink,
+} from "lucide-react";
 
 interface Notification {
   id: string;
@@ -22,7 +31,11 @@ interface NotificationModalProps {
   notification: Notification | null;
 }
 
-export default function NotificationModal({ isOpen, onClose, notification }: NotificationModalProps) {
+export default function NotificationModal({
+  isOpen,
+  onClose,
+  notification,
+}: NotificationModalProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,56 +44,59 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
 
   useEffect(() => {
     if (isOpen && mounted) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, mounted]);
 
   if (!isOpen || !notification || !mounted) return null;
 
-  const typeConfig: Record<string, { 
-    container: string; 
-    iconBg: string; 
-    iconColor: string; 
-    icon: any;
-    border: string;
-    glow: string;
-  }> = {
-    info: { 
-      container: 'bg-blue-50 dark:bg-blue-900/10', 
-      iconBg: 'bg-blue-100 dark:bg-blue-900/30', 
-      iconColor: 'text-blue-600 dark:text-blue-400', 
+  const typeConfig: Record<
+    string,
+    {
+      container: string;
+      iconBg: string;
+      iconColor: string;
+      icon: any;
+      border: string;
+      glow: string;
+    }
+  > = {
+    info: {
+      container: "bg-blue-500/10 dark:bg-blue-900/10",
+      iconBg: "bg-blue-100 dark:bg-blue-900/30",
+      iconColor: "text-blue-600 dark:text-blue-400",
       icon: Info,
-      border: 'border-blue-100 dark:border-blue-800/50',
-      glow: 'shadow-blue-500/10'
+      border: "border-blue-100 dark:border-blue-800/50",
+      glow: "shadow-blue-500/10",
     },
-    warning: { 
-      container: 'bg-amber-50 dark:bg-amber-900/10', 
-      iconBg: 'bg-amber-100 dark:bg-amber-900/30', 
-      iconColor: 'text-amber-600 dark:text-amber-400', 
+    warning: {
+      container: "bg-amber-50 dark:bg-amber-900/10",
+      iconBg: "bg-amber-100 dark:bg-amber-900/30",
+      iconColor: "text-amber-600 dark:text-amber-400",
       icon: AlertTriangle,
-      border: 'border-amber-100 dark:border-amber-800/50',
-      glow: 'shadow-amber-500/10'
+      border: "border-amber-100 dark:border-amber-800/50",
+      glow: "shadow-amber-500/10",
     },
-    error: { 
-      container: 'bg-red-50 dark:bg-red-900/10', 
-      iconBg: 'bg-red-100 dark:bg-red-900/30', 
-      iconColor: 'text-red-600 dark:text-red-400', 
+    error: {
+      container: "bg-red-50 dark:bg-red-900/10",
+      iconBg: "bg-red-100 dark:bg-red-900/30",
+      iconColor: "text-red-600 dark:text-red-400",
       icon: AlertCircle,
-      border: 'border-red-100 dark:border-red-800/50',
-      glow: 'shadow-red-500/10'
+      border: "border-red-100 dark:border-red-800/50",
+      glow: "shadow-red-500/10",
     },
-    success: { 
-      container: 'bg-emerald-50 dark:bg-emerald-900/10', 
-      iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', 
-      iconColor: 'text-emerald-600 dark:text-emerald-400', 
+    success: {
+      container: "bg-emerald-50 dark:bg-emerald-900/10",
+      iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
       icon: CheckCircle2,
-      border: 'border-emerald-100 dark:border-emerald-800/50',
-      glow: 'shadow-emerald-500/10'
+      border: "border-emerald-100 dark:border-emerald-800/50",
+      glow: "shadow-emerald-500/10",
     },
   };
 
@@ -91,16 +107,22 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-6">
-      <div 
+      <div
         className="absolute inset-0 bg-slate-950/40 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
-      
-      <div className={`relative w-full max-w-3xl bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-2xl overflow-hidden border ${config.border} animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]`}>
+
+      <div
+        className={`relative w-full max-w-3xl bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-2xl overflow-hidden border ${config.border} animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]`}
+      >
         {/* Header Section */}
-        <div className={`p-6 md:p-8 flex items-start justify-between ${config.container} border-b ${config.border}`}>
+        <div
+          className={`p-6 md:p-8 flex items-start justify-between ${config.container} border-b ${config.border}`}
+        >
           <div className="flex items-start gap-4 md:gap-6">
-            <div className={`flex-shrink-0 w-14 h-14 rounded-2xl ${config.iconBg} flex items-center justify-center ${config.iconColor} shadow-lg ${config.glow}`}>
+            <div
+              className={`flex-shrink-0 w-14 h-14 rounded-2xl ${config.iconBg} flex items-center justify-center ${config.iconColor} shadow-lg ${config.glow}`}
+            >
               <Icon size={32} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
@@ -110,16 +132,19 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                   <Calendar size={14} className="opacity-70" />
-                  {moment.utc(notification.created_at).local().format('DD MMMM YYYY')}
+                  {moment
+                    .utc(notification.created_at)
+                    .local()
+                    .format("DD MMMM YYYY")}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                   <Clock size={14} className="opacity-70" />
-                  {moment.utc(notification.created_at).local().format('HH:mm')}
+                  {moment.utc(notification.created_at).local().format("HH:mm")}
                 </div>
               </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2.5 bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full transition-all active:scale-90"
           >
@@ -129,15 +154,17 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
 
         {/* Content Section */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
-          <div className={`prose dark:prose-invert max-w-none 
+          <div
+            className={`prose dark:prose-invert max-w-none 
             prose-headings:font-black prose-headings:tracking-tight
-            prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-p:leading-relaxed
+            prose-p:text-slate-600 dark:prose-p:text-white prose-p:leading-relaxed
             prose-table:border prose-table:border-slate-200 dark:prose-table:border-slate-800 prose-table:rounded-xl prose-table:overflow-hidden
             prose-th:bg-slate-50 dark:prose-th:bg-slate-800/50 prose-th:px-4 prose-th:py-3 prose-th:text-xs prose-th:font-black prose-th:uppercase prose-th:tracking-widest
             prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:border-t prose-td:border-slate-100 dark:prose-td:border-slate-800
-          `}>
+          `}
+          >
             {isHtml(notification.message) ? (
-              <div 
+              <div
                 dangerouslySetInnerHTML={{ __html: notification.message }}
                 className="notification-html-content"
               />
@@ -150,7 +177,7 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
         </div>
 
         {/* Action / Footer Section */}
-        <div className="p-6 md:p-8 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="p-6 md:p-8 bg-[#0f172a]/50 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-xs text-slate-400 font-medium">
             Bu bildirim sistem tarafından otomatik olarak oluşturulmuştur.
           </div>
@@ -158,7 +185,7 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
             {notification.action_url && (
               <a
                 href={notification.action_url}
-                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-8 py-3 bg-blue-500 hover:bg-blue-500/90 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
               >
                 Detaylara Git
                 <ExternalLink size={18} />
@@ -174,7 +201,9 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .notification-html-content table {
           width: 100% !important;
           border-collapse: separate !important;
@@ -207,8 +236,10 @@ export default function NotificationModal({ isOpen, onClose, notification }: Not
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.3); }
-      `}} />
+      `,
+        }}
+      />
     </div>,
-    document.body
+    document.body,
   );
 }

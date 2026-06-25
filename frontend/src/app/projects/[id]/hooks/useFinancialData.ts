@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 interface FinancialDataProps {
   itemsSales: any[];
@@ -23,9 +23,8 @@ export function useFinancialData({
   collectionPlans,
   collections,
   paymentPlans,
-  payments
+  payments,
 }: FinancialDataProps) {
-  
   // Kategori isimlerini Map ile cache'le
   const categoryNameMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -36,15 +35,15 @@ export function useFinancialData({
   }, [categories]);
 
   const getCategoryName = (id: string) => {
-    if (!id) return '';
+    if (!id) return "";
     return categoryNameMap.get(id) || id;
   };
 
   // Diğer Servisler döviz cinsine göre toplam hesaplamaları
   const otherServicesTotals = useMemo(() => {
     const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
-    otherServices.forEach(item => {
-      const cur = item.currency || 'TRY';
+    otherServices.forEach((item) => {
+      const cur = item.currency || "TRY";
       if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
       totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount) || 0;
     });
@@ -54,8 +53,8 @@ export function useFinancialData({
   // Finansal döviz cinsine göre toplam hesaplamaları
   const financialTotals = useMemo(() => {
     const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
-    financialServices.forEach(item => {
-      const cur = item.currency || 'TRY';
+    financialServices.forEach((item) => {
+      const cur = item.currency || "TRY";
       if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { toplamMaliyet: 0 };
       totalsByCurrency[cur].toplamMaliyet += parseFloat(item.amount) || 0;
     });
@@ -64,22 +63,30 @@ export function useFinancialData({
 
   // Satış genel toplamları
   const salesTotals = useMemo(() => {
-    const totalTRY = itemsSales.reduce((sum: number, it: any) => sum + (Number(it.total_try) || 0), 0);
+    const totalTRY = itemsSales.reduce(
+      (sum: number, it: any) => sum + (Number(it.total_try) || 0),
+      0,
+    );
     const totalByCurrency: Record<string, number> = {};
     itemsSales.forEach((it: any) => {
-      const cur = it.currency || 'EUR';
-      totalByCurrency[cur] = (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
+      const cur = it.currency || "EUR";
+      totalByCurrency[cur] =
+        (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
     });
     return { totalTRY, totalByCurrency };
   }, [itemsSales]);
 
   // Alış genel toplamları
   const purchaseTotals = useMemo(() => {
-    const totalTRY = itemsPurchase.reduce((sum: number, it: any) => sum + (Number(it.total_try) || 0), 0);
+    const totalTRY = itemsPurchase.reduce(
+      (sum: number, it: any) => sum + (Number(it.total_try) || 0),
+      0,
+    );
     const totalByCurrency: Record<string, number> = {};
     itemsPurchase.forEach((it: any) => {
-      const cur = it.currency || 'EUR';
-      totalByCurrency[cur] = (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
+      const cur = it.currency || "EUR";
+      totalByCurrency[cur] =
+        (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
     });
     return { totalTRY, totalByCurrency };
   }, [itemsPurchase]);
@@ -101,13 +108,18 @@ export function useFinancialData({
       marginPercent: number;
     };
 
-    const ensure = (map: Record<string, Row>, key: string, mainId: string, subId: string) => {
+    const ensure = (
+      map: Record<string, Row>,
+      key: string,
+      mainId: string,
+      subId: string,
+    ) => {
       if (!map[key]) {
         map[key] = {
           mainCategoryId: mainId,
-          mainCategoryName: getCategoryName(mainId) || 'Diğer',
+          mainCategoryName: getCategoryName(mainId) || "Diğer",
           subCategoryId: subId,
-          subCategoryName: getCategoryName(subId) || '—',
+          subCategoryName: getCategoryName(subId) || "—",
           salesByCurrency: {},
           salesTRY: 0,
           purchaseByCurrency: {},
@@ -123,11 +135,11 @@ export function useFinancialData({
     const rowsByKey: Record<string, Row> = {};
 
     itemsSales.forEach((it: any) => {
-      const mainId = it.main_category || '';
-      const subId = it.sub_category || '';
+      const mainId = it.main_category || "";
+      const subId = it.sub_category || "";
       const key = `${mainId}|${subId}`;
       const row = ensure(rowsByKey, key, mainId, subId);
-      const cur = it.currency || 'EUR';
+      const cur = it.currency || "EUR";
       const total = Number(it.total) || 0;
       const totalTRY = Number(it.total_try) || 0;
       row.salesByCurrency[cur] = (row.salesByCurrency[cur] || 0) + total;
@@ -135,11 +147,11 @@ export function useFinancialData({
     });
 
     itemsPurchase.forEach((it: any) => {
-      const mainId = it.main_category || '';
-      const subId = it.sub_category || '';
+      const mainId = it.main_category || "";
+      const subId = it.sub_category || "";
       const key = `${mainId}|${subId}`;
       const row = ensure(rowsByKey, key, mainId, subId);
-      const cur = it.currency || 'EUR';
+      const cur = it.currency || "EUR";
       const total = Number(it.total) || 0;
       const totalTRY = Number(it.total_try) || 0;
       row.purchaseByCurrency[cur] = (row.purchaseByCurrency[cur] || 0) + total;
@@ -157,25 +169,30 @@ export function useFinancialData({
         row.profitByCurrency[c] = s - p;
       });
       row.profitTRY = row.salesTRY - row.purchaseTRY;
-      row.marginPercent = row.salesTRY > 0 ? (row.profitTRY / row.salesTRY) * 100 : 0;
+      row.marginPercent =
+        row.salesTRY > 0 ? (row.profitTRY / row.salesTRY) * 100 : 0;
     });
 
-    const trCompare = (x: string, y: string) => x.localeCompare(y, 'tr', { sensitivity: 'base' });
+    const trCompare = (x: string, y: string) =>
+      x.localeCompare(y, "tr", { sensitivity: "base" });
 
     const getCategorySortKey = (c: any) => {
-      const code = (c.code || '').toString().trim();
+      const code = (c.code || "").toString().trim();
       if (code) return code;
-      const id = (c.id || '').toString().trim();
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+      const id = (c.id || "").toString().trim();
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          id,
+        );
       if (id && !isUuid) return id;
-      return (c.name || '').toString().trim();
+      return (c.name || "").toString().trim();
     };
 
     const getCategorySortWeight = (c: any) => {
       const key = getCategorySortKey(c);
       const nums = key.match(/\d+/g);
       if (!nums) return Number.MAX_SAFE_INTEGER;
-      const weight = Number(nums.join(''));
+      const weight = Number(nums.join(""));
       return Number.isFinite(weight) ? weight : Number.MAX_SAFE_INTEGER;
     };
 
@@ -187,7 +204,10 @@ export function useFinancialData({
       const wa = getCategorySortWeight(a);
       const wb = getCategorySortWeight(b);
       if (wa !== wb) return wa - wb;
-      return getCategorySortKey(a).localeCompare(getCategorySortKey(b), 'tr', { numeric: true, sensitivity: 'base' });
+      return getCategorySortKey(a).localeCompare(getCategorySortKey(b), "tr", {
+        numeric: true,
+        sensitivity: "base",
+      });
     });
 
     const mainOrder: Record<string, number> = {};
@@ -202,14 +222,19 @@ export function useFinancialData({
       const bMainIdx = mainOrder[b.mainCategoryId] ?? Number.MAX_SAFE_INTEGER;
       if (aMainIdx !== bMainIdx) return aMainIdx - bMainIdx;
 
-      const subList = sortedCategories.filter((c: any) => c.parent_id === a.mainCategoryId);
+      const subList = sortedCategories.filter(
+        (c: any) => c.parent_id === a.mainCategoryId,
+      );
       const subOrder: Record<string, number> = {};
-      subList.forEach((c: any, idx: number) => { subOrder[c.id] = idx; });
+      subList.forEach((c: any, idx: number) => {
+        subOrder[c.id] = idx;
+      });
       const aSubIdx = subOrder[a.subCategoryId] ?? Number.MAX_SAFE_INTEGER;
       const bSubIdx = subOrder[b.subCategoryId] ?? Number.MAX_SAFE_INTEGER;
       if (aSubIdx !== bSubIdx) return aSubIdx - bSubIdx;
 
-      if (a.mainCategoryName !== b.mainCategoryName) return trCompare(a.mainCategoryName, b.mainCategoryName);
+      if (a.mainCategoryName !== b.mainCategoryName)
+        return trCompare(a.mainCategoryName, b.mainCategoryName);
       return trCompare(a.subCategoryName, b.subCategoryName);
     });
 
@@ -219,7 +244,8 @@ export function useFinancialData({
           acc.salesByCurrency[c] = (acc.salesByCurrency[c] || 0) + (v || 0);
         });
         Object.entries(r.purchaseByCurrency).forEach(([c, v]) => {
-          acc.purchaseByCurrency[c] = (acc.purchaseByCurrency[c] || 0) + (v || 0);
+          acc.purchaseByCurrency[c] =
+            (acc.purchaseByCurrency[c] || 0) + (v || 0);
         });
         Object.entries(r.profitByCurrency).forEach(([c, v]) => {
           acc.profitByCurrency[c] = (acc.profitByCurrency[c] || 0) + (v || 0);
@@ -236,10 +262,11 @@ export function useFinancialData({
         purchaseTRY: 0,
         profitByCurrency: {} as CurrencyMap,
         profitTRY: 0,
-      }
+      },
     );
 
-    const totalMarginPercent = totals.salesTRY > 0 ? (totals.profitTRY / totals.salesTRY) * 100 : 0;
+    const totalMarginPercent =
+      totals.salesTRY > 0 ? (totals.profitTRY / totals.salesTRY) * 100 : 0;
 
     // Kar/Zarar tabı için gruplanmış veriler
     const groupedProfitLossData = {
@@ -248,16 +275,26 @@ export function useFinancialData({
         acc[r.mainCategoryName].push(r);
         return acc;
       }, {}),
-      mainNames: Array.from(new Set(sortedRows.map(r => r.mainCategoryName)))
+      mainNames: Array.from(new Set(sortedRows.map((r) => r.mainCategoryName))),
     };
 
-    return { rows: sortedRows, totals, totalMarginPercent, groupedProfitLossData };
+    return {
+      rows: sortedRows,
+      totals,
+      totalMarginPercent,
+      groupedProfitLossData,
+    };
   }, [itemsSales, itemsPurchase, categories, categoryNameMap]);
 
   // Tahsilat hesapları
   const collectionSummary = useMemo(() => {
     const planTRY = Number(salesTotals.totalTRY || 0);
-    const collectedTRY = collections.reduce((sum: number, c: any) => sum + (c.totalTRY || (Number(c.amount) || 0) * (Number(c.exchangeRate || 1))), 0);
+    const collectedTRY = collections.reduce(
+      (sum: number, c: any) =>
+        sum +
+        (c.totalTRY || (Number(c.amount) || 0) * Number(c.exchangeRate || 1)),
+      0,
+    );
     const balanceTRY = planTRY - collectedTRY;
     return { planTRY, collectedTRY, balanceTRY };
   }, [collections, salesTotals.totalTRY]);
@@ -265,7 +302,7 @@ export function useFinancialData({
   const planByCurrency = useMemo(() => {
     const byCur: Record<string, number> = {};
     collectionPlans.forEach((p: any) => {
-      const cur = p.currency || 'TRY';
+      const cur = p.currency || "TRY";
       byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
     });
     return byCur;
@@ -274,14 +311,17 @@ export function useFinancialData({
   const collectedByCurrency = useMemo(() => {
     const byCur: Record<string, number> = {};
     collections.forEach((c: any) => {
-      const cur = c.currency || 'TRY';
+      const cur = c.currency || "TRY";
       byCur[cur] = (byCur[cur] || 0) + (Number(c.amount) || 0);
     });
     return byCur;
   }, [collections]);
 
   const balanceByCurrency = useMemo(() => {
-    const keys = new Set<string>([...Object.keys(planByCurrency), ...Object.keys(collectedByCurrency)]);
+    const keys = new Set<string>([
+      ...Object.keys(planByCurrency),
+      ...Object.keys(collectedByCurrency),
+    ]);
     const res: Record<string, number> = {};
     keys.forEach((k) => {
       res[k] = (planByCurrency[k] || 0) - (collectedByCurrency[k] || 0);
@@ -291,8 +331,14 @@ export function useFinancialData({
 
   // Ödeme hesapları
   const paymentSummary = useMemo(() => {
-    const planTRY = paymentPlans.reduce((sum: number, p: any) => sum + (p.totalTRY || p.amount || 0), 0);
-    const paidTRY = payments.reduce((sum: number, p: any) => sum + (p.totalTRY || p.amount || 0), 0);
+    const planTRY = paymentPlans.reduce(
+      (sum: number, p: any) => sum + (p.totalTRY || p.amount || 0),
+      0,
+    );
+    const paidTRY = payments.reduce(
+      (sum: number, p: any) => sum + (p.totalTRY || p.amount || 0),
+      0,
+    );
     const balanceTRY = planTRY - paidTRY;
     return { planTRY, paidTRY, balanceTRY };
   }, [paymentPlans, payments]);
@@ -300,7 +346,7 @@ export function useFinancialData({
   const paymentPlanByCurrency = useMemo(() => {
     const byCur: Record<string, number> = {};
     paymentPlans.forEach((p: any) => {
-      const cur = p.currency || 'TRY';
+      const cur = p.currency || "TRY";
       byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
     });
     return byCur;
@@ -309,14 +355,17 @@ export function useFinancialData({
   const paidByCurrency = useMemo(() => {
     const byCur: Record<string, number> = {};
     payments.forEach((p: any) => {
-      const cur = p.currency || 'TRY';
+      const cur = p.currency || "TRY";
       byCur[cur] = (byCur[cur] || 0) + (Number(p.amount) || 0);
     });
     return byCur;
   }, [payments]);
 
   const paymentBalanceByCurrency = useMemo(() => {
-    const keys = new Set<string>([...Object.keys(paymentPlanByCurrency), ...Object.keys(paidByCurrency)]);
+    const keys = new Set<string>([
+      ...Object.keys(paymentPlanByCurrency),
+      ...Object.keys(paidByCurrency),
+    ]);
     const res: Record<string, number> = {};
     keys.forEach((k) => {
       res[k] = (paymentPlanByCurrency[k] || 0) - (paidByCurrency[k] || 0);
@@ -327,8 +376,8 @@ export function useFinancialData({
   // İnsan Kaynakları toplamları
   const hrTotals = useMemo(() => {
     const totalsByCurrency: { [key: string]: { toplamMaliyet: number } } = {};
-    hrExtras.forEach(extra => {
-      const doviz = extra.currency || 'TRY';
+    hrExtras.forEach((extra) => {
+      const doviz = extra.currency || "TRY";
       if (!totalsByCurrency[doviz]) {
         totalsByCurrency[doviz] = { toplamMaliyet: 0 };
       }
@@ -351,6 +400,6 @@ export function useFinancialData({
     paymentSummary,
     paymentPlanByCurrency,
     paidByCurrency,
-    paymentBalanceByCurrency
+    paymentBalanceByCurrency,
   };
 }

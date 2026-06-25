@@ -1,20 +1,23 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 // Server-side Supabase admin client
 function getAdminClient() {
-  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL) as string;
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL) as string;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Supabase configuration missing (URL or Service Role Key).');
+    throw new Error(
+      "Supabase configuration missing (URL or Service Role Key).",
+    );
   }
 
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
-    }
+      persistSession: false,
+    },
   });
 }
 
@@ -23,87 +26,101 @@ export async function POST(req: Request) {
     const { token, quoteId, approvalData, hotelsData } = await req.json();
 
     if (!token || !quoteId || !approvalData) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
     }
 
     const admin = getAdminClient();
 
     // 1. Verify token and quoteId match
     const { data: link, error: linkError } = await admin
-      .from('public_links')
-      .select('id, quote_id, is_active, expiry_date')
-      .eq('token', token)
+      .from("public_links")
+      .select("id, quote_id, is_active, expiry_date")
+      .eq("token", token)
       .single();
 
     if (linkError || !link) {
-      console.error('Link verification error:', linkError);
-      return NextResponse.json({ error: 'Invalid or expired link' }, { status: 403 });
+      console.error("Link verification error:", linkError);
+      return NextResponse.json(
+        { error: "Invalid or expired link" },
+        { status: 403 },
+      );
     }
 
     if (link.quote_id !== quoteId) {
-      return NextResponse.json({ error: 'Token/Quote mismatch' }, { status: 403 });
+      return NextResponse.json(
+        { error: "Token/Quote mismatch" },
+        { status: 403 },
+      );
     }
 
     // Check expiry
     if (link.expiry_date && new Date(link.expiry_date) < new Date()) {
-      return NextResponse.json({ error: 'Link expired' }, { status: 403 });
+      return NextResponse.json({ error: "Link expired" }, { status: 403 });
     }
 
     if (!link.is_active) {
-      return NextResponse.json({ error: 'Link inactive' }, { status: 403 });
+      return NextResponse.json({ error: "Link inactive" }, { status: 403 });
     }
 
     // 2. Perform updates using SERVICE_ROLE (bypassing RLS)
-    
+
     // Fetch quote details for notification
     const { data: quote, error: quoteFetchError } = await admin
-      .from('quotes')
-      .select('*, agencies(name), hotels(name)')
-      .eq('id', quoteId)
+      .from("quotes")
+      .select("*, agencies(name), hotels(name)")
+      .eq("id", quoteId)
       .single();
 
     if (quoteFetchError) {
-      console.error('Quote fetch error:', quoteFetchError);
+      console.error("Quote fetch error:", quoteFetchError);
       throw quoteFetchError;
     }
 
     // Update public_link approval
     const { error: approvalError } = await admin
-      .from('public_links')
-      .update({ 
+      .from("public_links")
+      .update({
         approval: approvalData,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', link.id);
+      .eq("id", link.id);
 
     if (approvalError) {
-      console.error('Approval update error:', approvalError);
+      console.error("Approval update error:", approvalError);
       throw approvalError;
     }
 
     // Update quote status and hotels_data
     const { error: quoteError } = await admin
-      .from('quotes')
+      .from("quotes")
       .update({
-        status: 'KONFİRME',
+        status: "KONFİRME",
         hotels_data: hotelsData,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', quoteId);
+      .eq("id", quoteId);
 
     if (quoteError) {
-      console.error('Quote update error:', quoteError);
+      console.error("Quote update error:", quoteError);
       throw quoteError;
     }
 
     // 3. Create Detailed Notification
     try {
       const creatorId = quote.created_by;
-      const agencyName = quote.agencies?.name || quote.company_name || 'Bilinmiyor';
-      const hotelName = quote.hotels?.name || 'Çoklu Otel/Belirtilmemiş';
-      const checkIn = quote.check_in_date ? new Date(quote.check_in_date).toLocaleDateString('tr-TR') : '-';
-      const checkOut = quote.check_out_date ? new Date(quote.check_out_date).toLocaleDateString('tr-TR') : '-';
-      
+      const agencyName =
+        quote.agencies?.name || quote.company_name || "Bilinmiyor";
+      const hotelName = quote.hotels?.name || "Çoklu Otel/Belirtilmemiş";
+      const checkIn = quote.check_in_date
+        ? new Date(quote.check_in_date).toLocaleDateString("tr-TR")
+        : "-";
+      const checkOut = quote.check_out_date
+        ? new Date(quote.check_out_date).toLocaleDateString("tr-TR")
+        : "-";
+
       const notificationTitle = `✅ Teklif Onaylandı: ${quote.reference}`;
       const notificationHtml = `
         <div class="prose prose-sm max-w-none">
@@ -122,16 +139,16 @@ export async function POST(req: Request) {
               <tr><td class="py-1 font-semibold text-slate-500 w-32">Müşteri/Acente:</td><td class="py-1 font-bold text-slate-900">${agencyName}</td></tr>
               <tr><td class="py-1 font-semibold text-slate-500">Ana Otel:</td><td class="py-1 font-bold text-slate-900">${hotelName}</td></tr>
               <tr><td class="py-1 font-semibold text-slate-500">Tarih Aralığı:</td><td class="py-1 font-bold text-slate-900">${checkIn} - ${checkOut}</td></tr>
-              <tr><td class="py-1 font-semibold text-slate-500">Tutar:</td><td class="py-1 font-bold text-green-600">${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'EUR' }).format(quote.total_amount || 0)}</td></tr>
+              <tr><td class="py-1 font-semibold text-slate-500">Tutar:</td><td class="py-1 font-bold text-green-600">${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "EUR" }).format(quote.total_amount || 0)}</td></tr>
             </table>
           </div>
 
-          <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+          <div class="bg-blue-500/10 rounded-xl p-4 border border-blue-100">
             <h4 class="text-xs font-bold text-blue-700 uppercase mb-2">Onay Bilgileri</h4>
             <table class="w-full text-xs">
               <tr><td class="py-1 font-semibold text-blue-600 w-32">Onaylayan:</td><td class="py-1 font-bold text-blue-900">${approvalData.name} ${approvalData.surname}</td></tr>
               <tr><td class="py-1 font-semibold text-blue-600">E-Posta:</td><td class="py-1 font-bold text-blue-900">${approvalData.email}</td></tr>
-              <tr><td class="py-1 font-semibold text-blue-600">IP / Konum:</td><td class="py-1 font-bold text-blue-900">${approvalData.ip_address} (${approvalData.geo_location?.city || 'Bilinmiyor'})</td></tr>
+              <tr><td class="py-1 font-semibold text-blue-600">IP / Konum:</td><td class="py-1 font-bold text-blue-900">${approvalData.ip_address} (${approvalData.geo_location?.city || "Bilinmiyor"})</td></tr>
             </table>
           </div>
           
@@ -141,49 +158,55 @@ export async function POST(req: Request) {
 
       // Creator'a bildirim gönder
       if (creatorId) {
-        await admin.from('notifications').insert({
+        await admin.from("notifications").insert({
           user_id: creatorId,
           title: notificationTitle,
           message: notificationHtml,
-          type: 'success',
-          action_url: `/quotes`
+          type: "success",
+          action_url: `/quotes`,
         });
       }
 
       // Adminlere de gönder
-      const { data: admins } = await admin.from('users').select('id').eq('role', 'super_admin');
+      const { data: admins } = await admin
+        .from("users")
+        .select("id")
+        .eq("role", "super_admin");
       if (admins) {
         const bulk = admins
-          .filter(a => a.id !== creatorId)
-          .map(a => ({
+          .filter((a) => a.id !== creatorId)
+          .map((a) => ({
             user_id: a.id,
             title: notificationTitle,
             message: notificationHtml,
-            type: 'success',
-            action_url: `/quotes`
+            type: "success",
+            action_url: `/quotes`,
           }));
-        if (bulk.length > 0) await admin.from('notifications').insert(bulk);
+        if (bulk.length > 0) await admin.from("notifications").insert(bulk);
       }
-
     } catch (notifErr) {
-      console.error('Notification creation error (non-fatal):', notifErr);
+      console.error("Notification creation error (non-fatal):", notifErr);
     }
 
     // 4. Automatically transfer to project
     try {
-      const { quotesService } = await import('@/lib/supabaseService');
+      const { quotesService } = await import("@/lib/supabaseService");
       await quotesService.transferToProject(quoteId, admin);
       console.log(`🚀 Auto-transferred Quote ${quoteId} to Project`);
     } catch (transferErr) {
-      console.error('Auto-transfer error (non-fatal):', transferErr);
+      console.error("Auto-transfer error (non-fatal):", transferErr);
     }
 
-    console.log(`✅ Success: Quote ${quoteId} approved via token ${token.substring(0,8)}...`);
-    
-    return NextResponse.json({ success: true });
+    console.log(
+      `✅ Success: Quote ${quoteId} approved via token ${token.substring(0, 8)}...`,
+    );
 
+    return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error('Critical Approval API Error:', err);
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
+    console.error("Critical Approval API Error:", err);
+    return NextResponse.json(
+      { error: err.message || "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

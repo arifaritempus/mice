@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useLayoutEffect } from 'react';
-import { useTheme } from '@/components/providers/ThemeProvider';
-import { SettingsService } from '@/lib/supabaseService';
+import { useLayoutEffect } from "react";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { SettingsService } from "@/lib/supabaseService";
 
 interface ThemeSettings {
   primary_color?: string;
@@ -43,65 +43,103 @@ export default function ColorThemeApplier() {
   useLayoutEffect(() => {
     const applyColors = async (overrideSettings?: ThemeSettings) => {
       try {
-        const resolvedSettings = overrideSettings || (await SettingsService.getSettings())?.general_settings as ThemeSettings;
+        const resolvedSettings =
+          overrideSettings ||
+          ((await SettingsService.getSettings())
+            ?.general_settings as ThemeSettings);
         if (!resolvedSettings) return;
 
         const settings = resolvedSettings;
         const root = document.documentElement;
 
         // Genel renkler
-        if (settings.primary_color) root.style.setProperty('--color-primary', settings.primary_color);
-        if (settings.secondary_color) root.style.setProperty('--color-secondary', settings.secondary_color);
-        if (settings.success_color) root.style.setProperty('--color-success', settings.success_color);
-        if (settings.warning_color) root.style.setProperty('--color-warning', settings.warning_color);
-        if (settings.error_color) root.style.setProperty('--color-error', settings.error_color);
-        if (settings.info_color) root.style.setProperty('--color-info', settings.info_color);
+        if (settings.primary_color)
+          root.style.setProperty("--color-primary", settings.primary_color);
+        if (settings.secondary_color)
+          root.style.setProperty("--color-secondary", settings.secondary_color);
+        if (settings.success_color)
+          root.style.setProperty("--color-success", settings.success_color);
+        if (settings.warning_color)
+          root.style.setProperty("--color-warning", settings.warning_color);
+        if (settings.error_color)
+          root.style.setProperty("--color-error", settings.error_color);
+        if (settings.info_color)
+          root.style.setProperty("--color-info", settings.info_color);
 
         // Tema bazlı renkleri belirle
-        const themeBgPrimary = isDark ? settings.dark_bg_primary : settings.light_bg_primary;
-        const themeBgSecondary = isDark ? settings.dark_bg_secondary : settings.light_bg_secondary;
-        const themeCardBg = isDark ? settings.dark_card_bg : settings.light_card_bg;
-        const themeSidebarBg = isDark ? settings.dark_sidebar_bg : settings.light_sidebar_bg;
-        const themeSidebarHeaderBg = isDark ? settings.dark_sidebar_header_bg : settings.light_sidebar_header_bg;
-        const themeTextColor = isDark ? settings.dark_text_color : settings.light_text_color;
-        const themeSidebarBorder = isDark ? settings.dark_sidebar_border : settings.light_sidebar_border;
-        
+        const themeBgPrimary = isDark
+          ? settings.dark_bg_primary
+          : settings.light_bg_primary;
+        const themeBgSecondary = isDark
+          ? settings.dark_bg_secondary
+          : settings.light_bg_secondary;
+        const themeCardBg = isDark
+          ? settings.dark_card_bg
+          : settings.light_card_bg;
+        const themeSidebarBg = isDark
+          ? settings.dark_sidebar_bg
+          : settings.light_sidebar_bg;
+        const themeSidebarHeaderBg = isDark
+          ? settings.dark_sidebar_header_bg
+          : settings.light_sidebar_header_bg;
+        const themeTextColor = isDark
+          ? settings.dark_text_color
+          : settings.light_text_color;
+        const themeSidebarBorder = isDark
+          ? settings.dark_sidebar_border
+          : settings.light_sidebar_border;
+
         // CSS Değişkenlerini root'a ekle
-        if (themeBgPrimary) root.style.setProperty('--theme-bg-primary', themeBgPrimary);
-        if (themeBgSecondary) root.style.setProperty('--theme-bg-secondary', themeBgSecondary);
-        if (themeCardBg) root.style.setProperty('--theme-card-bg', themeCardBg);
-        if (themeSidebarBg) root.style.setProperty('--theme-sidebar-bg', themeSidebarBg);
-        if (themeSidebarHeaderBg) root.style.setProperty('--theme-sidebar-header-bg', themeSidebarHeaderBg);
-        if (themeTextColor) root.style.setProperty('--theme-text-color', themeTextColor);
-        if (themeSidebarBorder) root.style.setProperty('--theme-sidebar-border', themeSidebarBorder);
+        if (themeBgPrimary)
+          root.style.setProperty("--theme-bg-primary", themeBgPrimary);
+        if (themeBgSecondary)
+          root.style.setProperty("--theme-bg-secondary", themeBgSecondary);
+        if (themeCardBg) root.style.setProperty("--theme-card-bg", themeCardBg);
+        if (themeSidebarBg)
+          root.style.setProperty("--theme-sidebar-bg", themeSidebarBg);
+        if (themeSidebarHeaderBg)
+          root.style.setProperty(
+            "--theme-sidebar-header-bg",
+            themeSidebarHeaderBg,
+          );
+        if (themeTextColor)
+          root.style.setProperty("--theme-text-color", themeTextColor);
+        if (themeSidebarBorder)
+          root.style.setProperty("--theme-sidebar-border", themeSidebarBorder);
 
         // Dinamik favicon güncellemesi
-        const faviconUrl = isDark 
-          ? (settings.dark_icon_logo || settings.dark_menu_logo || '/LOGO_NAVY.png')
-          : (settings.light_icon_logo || settings.light_menu_logo || '/LOGO_NAVY.png');
-          
+        const faviconUrl = isDark
+          ? settings.dark_icon_logo ||
+            settings.dark_menu_logo ||
+            "/LOGO_NAVY.png"
+          : settings.light_icon_logo ||
+            settings.light_menu_logo ||
+            "/LOGO_NAVY.png";
+
         if (faviconUrl) {
-          let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          let link = document.querySelector(
+            "link[rel~='icon']",
+          ) as HTMLLinkElement;
           if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
+            link = document.createElement("link");
+            link.rel = "icon";
             document.head.appendChild(link);
           }
           link.href = faviconUrl;
         }
 
-        const styleId = 'tt-dynamic-theme-styles';
+        const styleId = "tt-dynamic-theme-styles";
         let styleEl = document.getElementById(styleId);
         if (!styleEl) {
-          styleEl = document.createElement('style');
+          styleEl = document.createElement("style");
           styleEl.id = styleId;
           document.head.appendChild(styleEl);
         }
 
-        let css = '';
-        
+        let css = "";
+
         // Exclusion selector for elements that should NEVER be themed (like Vouchers)
-        const exclude = ':not(.no-theme-root):not(.no-theme-root *)';
+        const exclude = ":not(.no-theme-root):not(.no-theme-root *)";
 
         // Body, Main ve Container elementleri için zemin rengi
         if (themeBgPrimary) {
@@ -128,11 +166,11 @@ export default function ColorThemeApplier() {
           `;
           if (isDark) {
             css += `
-              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-slate-900${exclude}, .dark .dark\\:bg-zinc-900${exclude} { background-color: var(--theme-bg-secondary) !important; }
+              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-[#0f172a]${exclude}, .dark .dark\\:bg-zinc-900${exclude} { background-color: var(--theme-bg-secondary) !important; }
             \n`;
           }
         }
-        
+
         // Card (Kart) bileşenleri
         if (themeCardBg) {
           css += `
@@ -165,27 +203,29 @@ export default function ColorThemeApplier() {
         }
 
         // Sidebar stilleri
-        if (themeSidebarBg) css += `aside${exclude}, .sidebar, [class*="sidebar"] { background-color: var(--theme-sidebar-bg) !important; }\n`;
-        if (themeSidebarHeaderBg) css += `aside header, .sidebar-header, [class*="sidebar"] [class*="header"] { background-color: var(--theme-sidebar-header-bg) !important; }\n`;
-        if (themeSidebarBorder) css += `aside, .sidebar, [class*="sidebar"] { border-color: var(--theme-sidebar-border) !important; border-right-width: 1px; }\n`;
+        if (themeSidebarBg)
+          css += `aside${exclude}, .sidebar, [class*="sidebar"] { background-color: var(--theme-sidebar-bg) !important; }\n`;
+        if (themeSidebarHeaderBg)
+          css += `aside header, .sidebar-header, [class*="sidebar"] [class*="header"] { background-color: var(--theme-sidebar-header-bg) !important; }\n`;
+        if (themeSidebarBorder)
+          css += `aside, .sidebar, [class*="sidebar"] { border-color: var(--theme-sidebar-border) !important; border-right-width: 1px; }\n`;
 
         styleEl.innerHTML = css;
-
       } catch (error) {
-        console.error('Renk uygulama hatası:', error);
+        console.error("Renk uygulama hatası:", error);
       }
     };
 
     applyColors();
-    
+
     const handleSettingsUpdate = (e: Event) => {
       const customEvent = e as SettingsUpdateEvent;
       applyColors(customEvent?.detail?.settings);
     };
-    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    window.addEventListener("settingsUpdated", handleSettingsUpdate);
 
     return () => {
-      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+      window.removeEventListener("settingsUpdated", handleSettingsUpdate);
     };
   }, [isDark]);
 

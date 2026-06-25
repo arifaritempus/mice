@@ -1,60 +1,36 @@
-import './globals.css';
-import { Metadata } from 'next';
-import Sidebar from '@/components/Sidebar';
-import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { Suspense } from 'react';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import PublicLayout from '@/components/PublicLayout';
-import { Toaster } from 'react-hot-toast';
-import DraggableAIAssistant from '@/components/AI/DraggableAIAssistant';
+import "./globals.css";
+import { Metadata } from "next";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { Suspense } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import PublicLayout from "@/components/PublicLayout";
+import { Toaster } from "react-hot-toast";
+import DraggableAIAssistant from "@/components/AI/DraggableAIAssistant";
+import AuthWrapper from "@/components/AuthWrapper";
+
+import { Outfit } from "next/font/google";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-outfit",
+});
 
 function GlobalLoader() {
   return <LoadingSpinner message="Sayfa yükleniyor..." />;
 }
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function generateMetadata(): Promise<Metadata> {
-  const defaultTitle = 'MICE Yönetim Sistemi';
-  const defaultIcon = '/LOGO_NAVY.png';
-  
-  let title = defaultTitle;
-  let iconUrl = defaultIcon;
-
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (supabaseUrl && supabaseKey) {
-      const { createClient } = await import('@supabase/supabase-js');
-      const client = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false }});
-      const { data } = await client.from('settings').select('value').eq('key', 'general_settings').maybeSingle();
-      
-      if (data?.value) {
-        const settings = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
-        if (settings.company_name) {
-          title = `${settings.company_name} - MICE Yönetim Sistemi`;
-        }
-        if (settings.dark_icon_logo !== undefined) {
-          iconUrl = settings.dark_icon_logo || '/favicon.ico';
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error generating metadata:', error);
-  }
-
-  return {
-    title,
-    description: title,
-    icons: {
-      icon: [{ url: iconUrl }],
-      shortcut: iconUrl,
-      apple: iconUrl,
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: "NEXUS Analytics",
+  description: "Premium Workspace Management",
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -62,74 +38,74 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" suppressHydrationWarning>
+    <html lang="tr" suppressHydrationWarning className={outfit.variable}>
       <head>
-        <link rel="stylesheet" href="/styles.css" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
-          (function(){
-            try {
-              var root = document.documentElement;
-              root.classList.remove('light','dark');
-              
-              // Tema belirleme (cookie tabanlı)
-              var cookieMatch = document.cookie.match(/(?:^|;\\s*)theme=([^;]+)/);
-              var theme = cookieMatch ? decodeURIComponent(cookieMatch[1]) : 'dark';
-              if(theme === 'system'){
-                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-              }
-              root.classList.add(theme || 'dark');
+              try {
+                // FORCE DARK MODE ONLY for V3
+                
+// FORCE DARK MODE ONLY for V3
+                document.documentElement.classList.add('dark');
 
-              // İlk açılışta tema renklerini Supabase'den hızlıca çekip uygula
-              fetch('/api/theme-settings', { credentials: 'same-origin' })
-                .then(function(r){ return r.ok ? r.json() : null; })
-                .then(function(payload){
-                  var settings = payload && payload.general_settings;
-                  if (!settings) return;
-                  var isDark = (theme || 'dark') === 'dark';
-                  if (settings.primary_color) root.style.setProperty('--color-primary', settings.primary_color);
-                  if (settings.secondary_color) root.style.setProperty('--color-secondary', settings.secondary_color);
-                  if (settings.success_color) root.style.setProperty('--color-success', settings.success_color);
-                  if (settings.warning_color) root.style.setProperty('--color-warning', settings.warning_color);
-                  if (settings.error_color) root.style.setProperty('--color-error', settings.error_color);
-                  if (settings.info_color) root.style.setProperty('--color-info', settings.info_color);
+                
+                fetch('/api/theme-settings')
+                  .then(res => res.json())
+                  .then(settings => {
+                    if (!settings || !settings.general_settings?.colorPrimary) return;
+                    var root = document.documentElement;
+                    
+                    function hexToRgb(hex) {
+                      var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+                      hex = hex.replace(shorthandRegex, function(m, r, g, b) { return r + r + g + g + b + b; });
+                      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                      return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+                    }
 
-                  var bgPrimary = isDark ? settings.dark_bg_primary : settings.light_bg_primary;
-                  var bgSecondary = isDark ? settings.dark_bg_secondary : settings.light_bg_secondary;
-                  var cardBg = isDark ? settings.dark_card_bg : settings.light_card_bg;
-                  var textColor = isDark ? settings.dark_text_color : settings.light_text_color;
-                  var sidebarBg = isDark ? settings.dark_sidebar_bg : settings.light_sidebar_bg;
-                  var sidebarHeaderBg = isDark ? settings.dark_sidebar_header_bg : settings.light_sidebar_header_bg;
-                  var sidebarBorder = isDark ? settings.dark_sidebar_border : settings.light_sidebar_border;
+                    var baseRgb = hexToRgb(settings.general_settings?.colorPrimary);
+                    if (!baseRgb) return;
 
-                  if (bgPrimary) root.style.setProperty('--theme-bg-primary', bgPrimary);
-                  if (bgSecondary) root.style.setProperty('--theme-bg-secondary', bgSecondary);
-                  if (cardBg) root.style.setProperty('--theme-card-bg', cardBg);
-                  if (textColor) root.style.setProperty('--theme-text-color', textColor);
-                  if (sidebarBg) root.style.setProperty('--theme-sidebar-bg', sidebarBg);
-                  if (sidebarHeaderBg) root.style.setProperty('--theme-sidebar-header-bg', sidebarHeaderBg);
-                  if (sidebarBorder) root.style.setProperty('--theme-sidebar-border', sidebarBorder);
-                })
-                .catch(function(){});
-            } catch (e) {
-              document.documentElement.classList.add('dark');
-            }
-          })();
-        `}}
+                    var mix = function(c1, c2, weight) {
+                        return Math.round(c1.r * weight + c2.r * (1 - weight)) + ' ' +
+                               Math.round(c1.g * weight + c2.g * (1 - weight)) + ' ' +
+                               Math.round(c1.b * weight + c2.b * (1 - weight));
+                    };
+                    var white = { r: 255, g: 255, b: 255 };
+                    var black = { r: 0, g: 0, b: 0 };
+
+                    root.style.setProperty('--color-primary-50', mix(baseRgb, white, 0.1));
+                    root.style.setProperty('--color-primary-100', mix(baseRgb, white, 0.2));
+                    root.style.setProperty('--color-primary-200', mix(baseRgb, white, 0.4));
+                    root.style.setProperty('--color-primary-300', mix(baseRgb, white, 0.6));
+                    root.style.setProperty('--color-primary-400', mix(baseRgb, white, 0.8));
+                    root.style.setProperty('--color-primary-500', baseRgb.r + ' ' + baseRgb.g + ' ' + baseRgb.b);
+                    root.style.setProperty('--color-primary-600', mix(baseRgb, black, 0.8));
+                    root.style.setProperty('--color-primary-700', mix(baseRgb, black, 0.6));
+                    root.style.setProperty('--color-primary-800', mix(baseRgb, black, 0.4));
+                    root.style.setProperty('--color-primary-900', mix(baseRgb, black, 0.2));
+                    root.style.setProperty('--color-primary-950', mix(baseRgb, black, 0.1));
+                  })
+                  .catch(console.error);
+              } catch (e) {}
+            `,
+          }}
         />
       </head>
       <body
-        suppressHydrationWarning={true}
-        className="antialiased text-slate-900 dark:text-slate-100 transition-colors duration-200"
+        className="antialiased text-slate-900 dark:text-slate-100 transition-colors duration-200 h-screen w-full overflow-hidden"
         style={{
-          backgroundColor: 'var(--theme-bg-primary)'
+          backgroundColor: "rgb(var(--theme-bg-main))",
         }}
       >
         <ThemeProvider>
-          <PublicLayout>
-            <Suspense fallback={<GlobalLoader />}>{children}</Suspense>
-          </PublicLayout>
+          <LanguageProvider>
+            <AuthWrapper>
+              <PublicLayout>
+                <Suspense fallback={<GlobalLoader />}>{children}</Suspense>
+              </PublicLayout>
+            </AuthWrapper>
+          </LanguageProvider>
           <Toaster position="top-right" reverseOrder={false} />
           <DraggableAIAssistant />
         </ThemeProvider>

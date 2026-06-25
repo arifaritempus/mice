@@ -1,29 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const query = url.searchParams.toString();
-    const queryString = query ? `?${query}` : '';
+    const queryString = query ? `?${query}` : "";
     const backendUrl = `${BACKEND_URL}/api/operations/part-time${queryString}`;
 
     const response = await fetch(backendUrl, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        Authorization: request.headers.get('Authorization') || '',
-        'Content-Type': 'application/json'
-      }
+        Authorization: request.headers.get("Authorization") || "",
+        "Content-Type": "application/json",
+      },
     });
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    console.error('Operations part-time proxy error:', error);
+    console.error("Operations part-time proxy error:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error', details: error?.message || '' },
-      { status: 500 }
+      {
+        success: false,
+        message: "Internal server error",
+        details: error?.message || "",
+      },
+      { status: 500 },
     );
   }
 }

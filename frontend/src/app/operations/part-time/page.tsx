@@ -1,23 +1,36 @@
-'use client';
-import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';
+"use client";
+import MultiTokenFilterInput from "@/components/MultiTokenFilterInput";
+import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 
-import { useState, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
-import { createPortal } from 'react-dom';
-import DatePicker from 'react-datepicker';
-import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { formatNumber, formatDate } from '@/utils/formatters';
-import PaginationControls from '@/components/PaginationControls';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { DEFAULT_PAGE_SIZE } from '@/types/pagination';
-import { usePermissions, Module } from '@/lib/permissions';
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { createPortal } from "react-dom";
+import DatePicker from "react-datepicker";
+import {
+  format as formatDateFns,
+  parse as parseDateFns,
+  isValid as isValidDate,
+  parseISO,
+} from "date-fns";
+import { tr } from "date-fns/locale";
+import { formatNumber, formatDate } from "@/utils/formatters";
+import PaginationControls from "@/components/PaginationControls";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
+import { usePermissions, Module } from "@/lib/permissions";
 
 interface PartTimeService {
   id: string;
   sejour_id: string;
   voucher_number: string;
-  customer_type: 'sejour' | 'mice';
-  project_type?: 'project';
+  customer_type: "sejour" | "mice";
+  project_type?: "project";
   project_id?: string;
   check_in_date: string;
   check_out_date: string;
@@ -35,19 +48,9 @@ interface PartTimeService {
   fx?: number;
   totalTRY?: number;
   hours?: string;
-  status: 'active' | 'completed' | 'cancelled';
+  status: "active" | "completed" | "cancelled";
   notes: string;
   created_at: string;
-}
-
-interface MultiTokenFilterInputProps {
-  label: string;
-  tokens: string[];
-  inputValue: string;
-  suggestions: string[];
-  onInputChange: (value: string) => void;
-  onAddToken: (value: string) => void;
-  onRemoveToken: (value: string) => void;
 }
 
 interface DateRangeFieldProps {
@@ -58,108 +61,34 @@ interface DateRangeFieldProps {
   onEndChange: (value: string) => void;
 }
 
-
-
-function MultiTokenFilterInput({
-  label,
-  tokens,
-  inputValue,
-  suggestions,
-  onInputChange,
-  onAddToken,
-  onRemoveToken
-}: MultiTokenFilterInputProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const normalizedInput = inputValue.trim().toLowerCase();
-  const filteredSuggestions = suggestions
-    .filter((item) => {
-      const normalizedItem = item.toLowerCase();
-      const alreadyAdded = tokens.some((token) => token.toLowerCase() === normalizedItem);
-      return !alreadyAdded && normalizedInput.length > 0 && normalizedItem.includes(normalizedInput);
-    })
-    .slice(0, 6);
-
-  const handleAdd = (raw: string) => {
-    onAddToken(raw);
-    window.setTimeout(() => inputRef.current?.focus(), 0);
-  };
-
-  return (
-    <div className="relative min-w-0">
-      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate" title={label}>
-        {label}
-      </label>
-      <div className="w-full h-8 px-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 flex items-center gap-0.5 overflow-x-auto">
-        {tokens.length > 0 && (
-          <button
-            type="button"
-            className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200"
-            title={tokens.join(', ')}
-            onClick={() => onRemoveToken(tokens[tokens.length - 1])}
-          >
-            <span className="text-xs font-medium">+{tokens.length}</span>
-            <span className="text-[10px] leading-none">×</span>
-          </button>
-        )}
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => onInputChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAdd(inputValue);
-            }
-            if (e.key === 'Backspace' && inputValue.length === 0 && tokens.length > 0) {
-              onRemoveToken(tokens[tokens.length - 1]);
-            }
-          }}
-          className="flex-1 min-w-[1.5rem] h-full bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-xs"
-          placeholder="Yaz, Enter ile ekle"
-        />
-      </div>
-      {filteredSuggestions.length > 0 && (
-        <div className="absolute z-20 mt-0.5 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-32 overflow-y-auto">
-          {filteredSuggestions.map((suggestion) => (
-            <button
-              type="button"
-              key={suggestion}
-              className="w-full text-left px-2 py-1.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-              onMouseDown={(ev) => ev.preventDefault()}
-              onClick={() => handleAdd(suggestion)}
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function PartTimePage() {
   const { canView, loading: permissionsLoading } = usePermissions();
-  const [partTimeServices, setPartTimeServices] = useState<PartTimeService[]>([]);
+  const [partTimeServices, setPartTimeServices] = useState<PartTimeService[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
   const [tableBusy, setTableBusy] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   // Voucher numarasına tıklandığında önizleme aç
-  const handleVoucherClick = (sejourId: string, projectType?: string, projectId?: string) => {
-    if (projectType === 'project' && projectId) {
-      window.open(`/projects/${projectId}`, '_blank');
+  const handleVoucherClick = (
+    sejourId: string,
+    projectType?: string,
+    projectId?: string,
+  ) => {
+    if (projectType === "project" && projectId) {
+      window.open(`/projects/${projectId}`, "_blank");
     } else {
-      window.open(`/sejour/${sejourId}`, '_blank');
+      window.open(`/sejour/${sejourId}`, "_blank");
     }
   };
 
   const addToken = (
     value: string,
     setTokens: Dispatch<SetStateAction<string[]>>,
-    setInput: Dispatch<SetStateAction<string>>
+    setInput: Dispatch<SetStateAction<string>>,
   ) => {
     const parts = value
       .split(/[,;]+/)
@@ -169,27 +98,31 @@ export default function PartTimePage() {
     setTokens((prev) => {
       const next = [...prev];
       for (const p of parts) {
-        if (!next.some((item) => item.toLowerCase() === p.toLowerCase())) next.push(p);
+        if (!next.some((item) => item.toLowerCase() === p.toLowerCase()))
+          next.push(p);
       }
       return next;
     });
-    setInput('');
+    setInput("");
   };
 
-  const removeToken = (value: string, setTokens: Dispatch<SetStateAction<string[]>>) => {
+  const removeToken = (
+    value: string,
+    setTokens: Dispatch<SetStateAction<string[]>>,
+  ) => {
     setTokens((prev) => prev.filter((item) => item !== value));
   };
 
   const [voucherTokens, setVoucherTokens] = useState<string[]>([]);
-  const [voucherInput, setVoucherInput] = useState('');
+  const [voucherInput, setVoucherInput] = useState("");
   const [customerTokens, setCustomerTokens] = useState<string[]>([]);
-  const [customerInput, setCustomerInput] = useState('');
+  const [customerInput, setCustomerInput] = useState("");
   const [hotelTokens, setHotelTokens] = useState<string[]>([]);
-  const [hotelInput, setHotelInput] = useState('');
+  const [hotelInput, setHotelInput] = useState("");
   const [supplierTokens, setSupplierTokens] = useState<string[]>([]);
-  const [supplierInput, setSupplierInput] = useState('');
+  const [supplierInput, setSupplierInput] = useState("");
   const [employeeTokens, setEmployeeTokens] = useState<string[]>([]);
-  const [employeeInput, setEmployeeInput] = useState('');
+  const [employeeInput, setEmployeeInput] = useState("");
 
   const voucherTerms = useMemo(() => [...voucherTokens], [voucherTokens]);
   const customerTerms = useMemo(() => [...customerTokens], [customerTokens]);
@@ -198,39 +131,66 @@ export default function PartTimePage() {
   const employeeTerms = useMemo(() => [...employeeTokens], [employeeTokens]);
 
   const scopedSearchState = useMemo(
-    () => JSON.stringify({ voucherTerms, customerTerms, hotelTerms, supplierTerms, employeeTerms }),
-    [voucherTerms, customerTerms, hotelTerms, supplierTerms, employeeTerms]
+    () =>
+      JSON.stringify({
+        voucherTerms: voucherInput
+          ? [...voucherTerms, voucherInput]
+          : voucherTerms,
+        customerTerms: customerInput
+          ? [...customerTerms, customerInput]
+          : customerTerms,
+        hotelTerms: hotelInput ? [...hotelTerms, hotelInput] : hotelTerms,
+        supplierTerms: supplierInput
+          ? [...supplierTerms, supplierInput]
+          : supplierTerms,
+        employeeTerms: employeeInput
+          ? [...employeeTerms, employeeInput]
+          : employeeTerms,
+      }),
+    [
+      voucherTerms,
+      voucherInput,
+      customerTerms,
+      customerInput,
+      hotelTerms,
+      hotelInput,
+      supplierTerms,
+      supplierInput,
+      employeeTerms,
+      employeeInput,
+    ],
   );
-  const [sortField, setSortField] = useState<keyof PartTimeService>('created_at');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortField, setSortField] =
+    useState<keyof PartTimeService>("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [filter, setFilter] = useState<'all' | 'mice' | 'sejour'>('all');
+  const [filter, setFilter] = useState<"all" | "mice" | "sejour">("all");
   const [typeCounts, setTypeCounts] = useState({ all: 0, mice: 0, sejour: 0 });
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const [dateRange, setDateRange] = useState({ startDate: todayStr, endDate: '' });
+  const todayStr = new Date().toISOString().split("T")[0];
+  const [dateRange, setDateRange] = useState({
+    startDate: todayStr,
+    endDate: "",
+  });
   const [draftStart, setDraftStart] = useState(todayStr);
-  const [draftEnd, setDraftEnd] = useState('');
-  
+  const [draftEnd, setDraftEnd] = useState("");
+
   const [filterKey, setFilterKey] = useState<number>(0);
   const [forceReload, setForceReload] = useState<number>(0);
-
-
 
   useEffect(() => {
     const handleProjectChange = () => setForceReload((prev) => prev + 1);
     const handleStorage = () => setForceReload((prev) => prev + 1);
-    window.addEventListener('projectUpdated', handleProjectChange);
-    window.addEventListener('storage', handleStorage);
+    window.addEventListener("projectUpdated", handleProjectChange);
+    window.addEventListener("storage", handleStorage);
     return () => {
-      window.removeEventListener('projectUpdated', handleProjectChange);
-      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener("projectUpdated", handleProjectChange);
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
-
 
   const loadPartTimeServices = async () => {
     try {
@@ -239,22 +199,34 @@ export default function PartTimePage() {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
-        searchTerm: '',
+        searchTerm: voucherTokens.join(" "),
         filter,
         sortField: String(sortField),
         sortDirection,
-        startDate: dateRange.startDate || '',
-        endDate: dateRange.endDate || '',
-        voucherTerms: JSON.stringify(voucherTerms),
-        customerTerms: JSON.stringify(customerTerms),
-        hotelTerms: JSON.stringify(hotelTerms),
-        supplierTerms: JSON.stringify(supplierTerms),
-        employeeTerms: JSON.stringify(employeeTerms)
+        startDate: dateRange.startDate || "",
+        endDate: dateRange.endDate || "",
+        voucherTerms: JSON.stringify(
+          voucherInput ? [...voucherTerms, voucherInput] : voucherTerms,
+        ),
+        customerTerms: JSON.stringify(
+          customerInput ? [...customerTerms, customerInput] : customerTerms,
+        ),
+        hotelTerms: JSON.stringify(
+          hotelInput ? [...hotelTerms, hotelInput] : hotelTerms,
+        ),
+        supplierTerms: JSON.stringify(
+          supplierInput ? [...supplierTerms, supplierInput] : supplierTerms,
+        ),
+        employeeTerms: JSON.stringify(
+          employeeInput ? [...employeeTerms, employeeInput] : employeeTerms,
+        ),
       });
-      const response = await fetch(`/api/operations/part-time?${params.toString()}`);
+      const response = await fetch(
+        `/api/operations/part-time?${params.toString()}`,
+      );
       const result = await response.json();
       if (!response.ok || !result?.success) {
-        throw new Error(result?.message || 'Part-time verileri alinamadi');
+        throw new Error(result?.message || "Part-time verileri alinamadi");
       }
       setPartTimeServices(Array.isArray(result.data) ? result.data : []);
       setTotalCount(Number(result.total || 0));
@@ -263,7 +235,7 @@ export default function PartTimePage() {
         setTypeCounts(result.typeCounts);
       }
     } catch (error) {
-      console.error('Part-Time hizmet verileri yüklenirken hata:', error);
+      console.error("Part-Time hizmet verileri yüklenirken hata:", error);
     } finally {
       setLoading(false);
       setTableBusy(false);
@@ -273,33 +245,42 @@ export default function PartTimePage() {
 
   useEffect(() => {
     loadPartTimeServices();
-  }, [page, pageSize, scopedSearchState, filter, sortField, sortDirection, dateRange, forceReload]);
+  }, [
+    page,
+    pageSize,
+    scopedSearchState,
+    filter,
+    sortField,
+    sortDirection,
+    dateRange,
+    forceReload,
+  ]);
 
   const handleApplyDates = (start?: string, end?: string) => {
     setDateRange({
       startDate: start !== undefined ? start : draftStart,
-      endDate: end !== undefined ? end : draftEnd
+      endDate: end !== undefined ? end : draftEnd,
     });
     setPage(1);
-    setForceReload(prev => prev + 1);
+    setForceReload((prev) => prev + 1);
   };
 
   // Filtreleri temizleme fonksiyonu - Part-Time sayfası için
   const clearPartTimeFilters = () => {
     setVoucherTokens([]);
-    setVoucherInput('');
+    setVoucherInput("");
     setCustomerTokens([]);
-    setCustomerInput('');
+    setCustomerInput("");
     setHotelTokens([]);
-    setHotelInput('');
+    setHotelInput("");
     setSupplierTokens([]);
-    setSupplierInput('');
+    setSupplierInput("");
     setEmployeeTokens([]);
-    setEmployeeInput('');
-    setDraftStart('');
-    setDraftEnd('');
-    setDateRange({ startDate: '', endDate: '' });
-    setFilter('all');
+    setEmployeeInput("");
+    setDraftStart("");
+    setDraftEnd("");
+    setDateRange({ startDate: "", endDate: "" });
+    setFilter("all");
     setPage(1);
     setFilterKey((prev) => prev + 1);
     setForceReload((prev) => prev + 1);
@@ -308,82 +289,120 @@ export default function PartTimePage() {
   // Excel export fonksiyonu - Bilet sayfası formatında header ile
   const exportPartTimeToExcel = async () => {
     try {
-      const ExcelJS = (await import('exceljs')).default;
+      const ExcelJS = (await import("exceljs")).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet(`${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Part-Time Hizmetler`);
-      sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, paperSize: 9, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 } } as any;
-      
+      const sheet = workbook.addWorksheet(
+        `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Part-Time Hizmetler`,
+      );
+      sheet.pageSetup = {
+        orientation: "landscape",
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        horizontalCentered: true,
+        paperSize: 9,
+        margins: {
+          left: 0.25,
+          right: 0.25,
+          top: 0.3,
+          bottom: 0.3,
+          header: 0.1,
+          footer: 0.1,
+        },
+      } as any;
+
       // Header band
-      const top = sheet.addRow([]); 
-      top.height = 48; 
-      sheet.mergeCells('A1:N1');
-      for (let c = 1; c <= 14; c++) { 
-        sheet.getRow(1).getCell(c).value=''; 
-        sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any; 
+      const top = sheet.addRow([]);
+      top.height = 48;
+      sheet.mergeCells("A1:N1");
+      for (let c = 1; c <= 14; c++) {
+        sheet.getRow(1).getCell(c).value = "";
+        sheet.getRow(1).getCell(c).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF232F38" },
+        } as any;
       }
-      
+
       // Logos (Supabase settings)
-      let iconLogoBase64: string | undefined; 
+      let iconLogoBase64: string | undefined;
       let wordmarkLogoBase64: string | undefined;
       try {
-        const { SettingsService } = await import('@/lib/supabaseService');
+        const { SettingsService } = await import("@/lib/supabaseService");
         const settings = await SettingsService.getSettings();
         const general = settings?.general_settings || {};
         iconLogoBase64 = general?.icon_logo;
         wordmarkLogoBase64 = general?.wordmark_logo;
       } catch {}
-      
+
       const inchToPx = (inch: number) => Math.round(inch * 96);
-      const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
-      
-      if (iconLogoBase64) { 
-        const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }); 
-        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any); 
+      const guessExt = (dataUrl: string): "png" | "jpeg" =>
+        (dataUrl || "").includes("image/png") ? "png" : "jpeg";
+
+      if (iconLogoBase64) {
+        const iconId = workbook.addImage({
+          base64: iconLogoBase64,
+          extension: guessExt(iconLogoBase64),
+        });
+        sheet.addImage(iconId, {
+          tl: { col: 0.15, row: 0.15 },
+          ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        } as any);
       }
-      if (wordmarkLogoBase64) { 
-        const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }); 
-        sheet.addImage(markId, { tl: { col: 11.5, row: 0.23 }, ext: { width: inchToPx(2.0), height: inchToPx(0.50) } as any } as any); 
+      if (wordmarkLogoBase64) {
+        const markId = workbook.addImage({
+          base64: wordmarkLogoBase64,
+          extension: guessExt(wordmarkLogoBase64),
+        });
+        sheet.addImage(markId, {
+          tl: { col: 11.5, row: 0.23 },
+          ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
+        } as any);
       }
 
       // Sütun tanımları
       sheet.columns = [
-        { header: 'Voucher', key: 'voucher_number', width: 16 },
-        { header: 'Tarih', key: 'check_in_date', width: 14 },
-        { header: 'Tür', key: 'customer_type', width: 12 },
-        { header: 'C-IN / C-OUT', key: 'check_in_out', width: 20 },
-        { header: 'Firma Adı', key: 'company_name', width: 20 },
-        { header: 'Acente/Müşteri', key: 'customer_name', width: 20 },
-        { header: 'Otel', key: 'hotel_name', width: 18 },
-        { header: 'Hizmet Türü', key: 'service_type', width: 18 },
-        { header: 'Tedarikçi', key: 'supplier', width: 18 },
-        { header: 'Çalışan Adı', key: 'employee_name', width: 18 },
-        { header: 'Maliyet', key: 'cost_price', width: 12 },
-        { header: 'Döviz', key: 'currency', width: 8 },
-        { header: 'Kur', key: 'fx', width: 10 },
-        { header: 'Toplam TL', key: 'totalTRY', width: 12 }
+        { header: "Voucher", key: "voucher_number", width: 16 },
+        { header: "Tarih", key: "check_in_date", width: 14 },
+        { header: "Tür", key: "customer_type", width: 12 },
+        { header: "C-IN / C-OUT", key: "check_in_out", width: 20 },
+        { header: "Firma Adı", key: "company_name", width: 20 },
+        { header: "Acente/Müşteri", key: "customer_name", width: 20 },
+        { header: "Otel", key: "hotel_name", width: 18 },
+        { header: "Hizmet Türü", key: "service_type", width: 18 },
+        { header: "Tedarikçi", key: "supplier", width: 18 },
+        { header: "Çalışan Adı", key: "employee_name", width: 18 },
+        { header: "Maliyet", key: "cost_price", width: 12 },
+        { header: "Döviz", key: "currency", width: 8 },
+        { header: "Kur", key: "fx", width: 10 },
+        { header: "Toplam TL", key: "totalTRY", width: 12 },
       ];
-      
+
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
       sheet.getRow(headerRow.number).height = 18;
-      
+
       // Sayısal sütun biçimi
-      sheet.getColumn('cost_price').numFmt = '#,##0.00';
-      sheet.getColumn('cost_price').alignment = { horizontal: 'right' } as any;
-      sheet.getColumn('fx').numFmt = '#,##0.00';
-      sheet.getColumn('fx').alignment = { horizontal: 'right' } as any;
-      sheet.getColumn('totalTRY').numFmt = '#,##0.00';
-      sheet.getColumn('totalTRY').alignment = { horizontal: 'right' } as any;
-      
-      headerRow.eachCell((cell) => { 
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; 
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F3B46' } } as any; 
-        cell.alignment = { vertical: 'middle', horizontal: 'center' } as any; 
+      sheet.getColumn("cost_price").numFmt = "#,##0.00";
+      sheet.getColumn("cost_price").alignment = { horizontal: "right" } as any;
+      sheet.getColumn("fx").numFmt = "#,##0.00";
+      sheet.getColumn("fx").alignment = { horizontal: "right" } as any;
+      sheet.getColumn("totalTRY").numFmt = "#,##0.00";
+      sheet.getColumn("totalTRY").alignment = { horizontal: "right" } as any;
+
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF2F3B46" },
+        } as any;
+        cell.alignment = { vertical: "middle", horizontal: "center" } as any;
       });
-      
+
       const fmtDate = (d?: string) => {
-        if (!d) return '';
+        if (!d) return "";
         try {
-          return new Date(d).toLocaleDateString('tr-TR');
+          return new Date(d).toLocaleDateString("tr-TR");
         } catch {
           return d;
         }
@@ -391,7 +410,7 @@ export default function PartTimePage() {
 
       const toNum = (num: number | string | undefined): number => {
         if (num == null) return 0;
-        const parsed = typeof num === 'string' ? parseFloat(num) : num;
+        const parsed = typeof num === "string" ? parseFloat(num) : num;
         return Number.isFinite(parsed) ? parsed : 0;
       };
 
@@ -402,83 +421,109 @@ export default function PartTimePage() {
         sheet.addRow({
           voucher_number: service.voucher_number,
           check_in_date: fmtDate(service.check_in_date),
-          customer_type: service.customer_type === 'mice' ? 'MICE' : 'Sejour',
-          check_in_out: service.check_in_date && service.check_out_date 
-            ? `${fmtDate(service.check_in_date)} / ${fmtDate(service.check_out_date)}`
-            : service.check_in_date 
-            ? fmtDate(service.check_in_date)
-            : service.check_out_date
-            ? fmtDate(service.check_out_date)
-            : '',
-          company_name: service.company_name || '',
-          customer_name: service.customer_name || '',
-          hotel_name: service.hotel_name || '',
-          service_type: service.service_type || '',
-          supplier: service.supplier || '',
-          employee_name: service.employee_name || '',
+          customer_type: service.customer_type === "mice" ? "MICE" : "Sejour",
+          check_in_out:
+            service.check_in_date && service.check_out_date
+              ? `${fmtDate(service.check_in_date)} / ${fmtDate(service.check_out_date)}`
+              : service.check_in_date
+                ? fmtDate(service.check_in_date)
+                : service.check_out_date
+                  ? fmtDate(service.check_out_date)
+                  : "",
+          company_name: service.company_name || "",
+          customer_name: service.customer_name || "",
+          hotel_name: service.hotel_name || "",
+          service_type: service.service_type || "",
+          supplier: service.supplier || "",
+          employee_name: service.employee_name || "",
           cost_price: costPrice,
-          currency: service.cost_currency || service.currency || 'TRY',
+          currency: service.cost_currency || service.currency || "TRY",
           fx,
-          totalTRY
+          totalTRY,
         });
       });
-      
+
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob); 
-      const link = document.createElement('a');
-      link.href = url; 
-      link.download = `part_time_hizmetler_${new Date().toISOString().split('T')[0]}.xlsx`; 
-      link.click(); 
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `part_time_hizmetler_${new Date().toISOString().split("T")[0]}.xlsx`;
+      link.click();
       window.URL.revokeObjectURL(url);
 
-      setSuccess('Part-Time hizmetler Excel dosyası olarak indirildi!');
-      setTimeout(() => setSuccess(''), 3000);
+      setSuccess("Part-Time hizmetler Excel dosyası olarak indirildi!");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
-      console.error('Excel export hatası:', error);
-      setError('Excel dosyası oluşturulurken bir hata oluştu!');
-      setTimeout(() => setError(''), 3000);
+      console.error("Excel export hatası:", error);
+      setError("Excel dosyası oluşturulurken bir hata oluştu!");
+      setTimeout(() => setError(""), 3000);
     }
   };
 
   const handleSort = (field: keyof PartTimeService) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
   const voucherSuggestions = useMemo(
-    () => Array.from(new Set(partTimeServices.map((s) => (s.voucher_number || '').trim()).filter(Boolean))),
-    [partTimeServices]
+    () =>
+      Array.from(
+        new Set(
+          partTimeServices
+            .map((s) => (s.voucher_number || "").trim())
+            .filter(Boolean),
+        ),
+      ),
+    [partTimeServices],
   );
   const customerSuggestions = useMemo(
     () =>
       Array.from(
         new Set(
           partTimeServices
-            .flatMap((s) => [s.customer_name, s.company_name].map((x) => (x || '').trim()))
-            .filter(Boolean)
-        )
+            .flatMap((s) =>
+              [s.customer_name, s.company_name].map((x) => (x || "").trim()),
+            )
+            .filter(Boolean),
+        ),
       ),
-    [partTimeServices]
+    [partTimeServices],
   );
   const hotelSuggestions = useMemo(
-    () => Array.from(new Set(partTimeServices.map((s) => (s.hotel_name || '').trim()).filter(Boolean))),
-    [partTimeServices]
+    () =>
+      Array.from(
+        new Set(
+          partTimeServices
+            .map((s) => (s.hotel_name || "").trim())
+            .filter(Boolean),
+        ),
+      ),
+    [partTimeServices],
   );
   const supplierSuggestions = useMemo(
-    () => Array.from(new Set(partTimeServices.map((s) => (s.supplier || '').trim()).filter(Boolean))),
-    [partTimeServices]
+    () =>
+      Array.from(
+        new Set(
+          partTimeServices
+            .map((s) => (s.supplier || "").trim())
+            .filter(Boolean),
+        ),
+      ),
+    [partTimeServices],
   );
   const employeeSuggestions = useMemo(() => {
     const set = new Set<string>();
     for (const s of partTimeServices) {
-      const e = (s.employee_name || '').trim();
+      const e = (s.employee_name || "").trim();
       if (e) set.add(e);
-      const t = (s.service_type || '').trim();
+      const t = (s.service_type || "").trim();
       if (t) set.add(t);
     }
     return Array.from(set);
@@ -491,12 +536,18 @@ export default function PartTimePage() {
     page,
     pageSize,
     total: totalCount,
-    totalPages
+    totalPages,
   };
 
   useEffect(() => {
     setPage(1);
-  }, [scopedSearchState, dateRange.startDate, dateRange.endDate, sortField, sortDirection]);
+  }, [
+    scopedSearchState,
+    dateRange.startDate,
+    dateRange.endDate,
+    sortField,
+    sortDirection,
+  ]);
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -504,11 +555,18 @@ export default function PartTimePage() {
 
   if (!canView(Module.PART_TIME)) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Bu sayfaya erişim yetkiniz bulunmuyor.</p>
-          <a href="/operations" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Yetki Gerekli
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Bu sayfaya erişim yetkiniz bulunmuyor.
+          </p>
+          <a
+            href="/operations"
+            className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
+          >
             Operasyonlara Dön
           </a>
         </div>
@@ -521,81 +579,24 @@ export default function PartTimePage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0 overflow-hidden">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-200">Yarı Zamanlı Çalışan Yönetimi</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin</p>
+        {/* Unified Header */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
+          {/* Left: Title */}
+          <div className="shrink-0 mr-4">
+            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              Yarı Zamanlı Çalışan Yönetimi
+            </h1>
+            <p className="text-xs text-slate-400 mt-1">
+              MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={exportPartTimeToExcel}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm text-sm font-semibold"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Excel İndir
-          </button>
-        </div>
 
-        {/* Tab Sistemi */}
-        <div className="flex gap-1 bg-gray-200/50 dark:bg-gray-800/50 p-1 rounded-xl w-full">
-          <button
-            onClick={() => { setFilter('all'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
-              filter === 'all'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            Tüm Çalışanlar ({typeCounts.all})
-          </button>
-          <button
-            onClick={() => { setFilter('mice'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
-              filter === 'mice'
-                ? 'bg-orange-600 text-white shadow-md'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            MICE ({typeCounts.mice})
-          </button>
-          <button
-            onClick={() => { setFilter('sejour'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
-              filter === 'sejour'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Sejour ({typeCounts.sejour})
-          </button>
-        </div>
-
-        {/* Arama ve Filtreleme */}
-        <style dangerouslySetInnerHTML={{__html: `
-          @media (min-width: 768px) {
-            .parttime-filters-grid {
-              display: grid !important;
-              grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto !important;
-            }
-          }
-        `}} />
-        <div key={filterKey} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-3 w-full min-w-0">
-          <div className="flex flex-col parttime-filters-grid items-end gap-2 w-full min-w-0">
-            <div className="w-full min-w-0">
+          {/* Right: All Filters and Actions */}
+          <div className="flex flex-wrap items-end gap-3 flex-1 xl:justify-end">
+            {/* Dates */}
+            <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
                 label="Hizmet Tarihi"
                 startValue={dateRange.startDate}
@@ -605,277 +606,373 @@ export default function PartTimePage() {
                 onApply={handleApplyDates}
               />
             </div>
-            <div className="w-full min-w-0">
+
+            {/* Search */}
+            <div className="flex-1 min-w-[300px]">
               <MultiTokenFilterInput
-                label="Voucher"
+                label="Genel Arama (Voucher, Çalışan, Otel vb.)"
                 tokens={voucherTokens}
                 inputValue={voucherInput}
                 suggestions={voucherSuggestions}
                 onInputChange={setVoucherInput}
-                onAddToken={(value) => addToken(value, setVoucherTokens, setVoucherInput)}
+                onAddToken={(value) =>
+                  addToken(value, setVoucherTokens, setVoucherInput)
+                }
                 onRemoveToken={(value) => removeToken(value, setVoucherTokens)}
               />
             </div>
-            <div className="w-full min-w-0">
-              <MultiTokenFilterInput
-                label="Acente / Müşteri"
-                tokens={customerTokens}
-                inputValue={customerInput}
-                suggestions={customerSuggestions}
-                onInputChange={setCustomerInput}
-                onAddToken={(value) => addToken(value, setCustomerTokens, setCustomerInput)}
-                onRemoveToken={(value) => removeToken(value, setCustomerTokens)}
-              />
-            </div>
-            <div className="w-full min-w-0">
-              <MultiTokenFilterInput
-                label="Otel"
-                tokens={hotelTokens}
-                inputValue={hotelInput}
-                suggestions={hotelSuggestions}
-                onInputChange={setHotelInput}
-                onAddToken={(value) => addToken(value, setHotelTokens, setHotelInput)}
-                onRemoveToken={(value) => removeToken(value, setHotelTokens)}
-              />
-            </div>
-            <div className="w-full min-w-0">
-              <MultiTokenFilterInput
-                label="Tedarikçi"
-                tokens={supplierTokens}
-                inputValue={supplierInput}
-                suggestions={supplierSuggestions}
-                onInputChange={setSupplierInput}
-                onAddToken={(value) => addToken(value, setSupplierTokens, setSupplierInput)}
-                onRemoveToken={(value) => removeToken(value, setSupplierTokens)}
-              />
-            </div>
-            <div className="w-full min-w-0">
-              <MultiTokenFilterInput
-                label="Çalışan / Hizmet"
-                tokens={employeeTokens}
-                inputValue={employeeInput}
-                suggestions={employeeSuggestions}
-                onInputChange={setEmployeeInput}
-                onAddToken={(value) => addToken(value, setEmployeeTokens, setEmployeeInput)}
-                onRemoveToken={(value) => removeToken(value, setEmployeeTokens)}
-              />
-            </div>
-            <div className="w-8 shrink-0 flex items-end">
-              <div className="w-full">
-                <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 opacity-0 hidden md:block">Temizle</label>
-                <button
-                  type="button"
-                  onClick={clearPartTimeFilters}
-                  className="w-8 h-8 inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200 shadow-sm"
-                  title="Filtreleri Temizle"
+
+            {/* Clear Button */}
+            <div className="shrink-0">
+              <button
+                type="button"
+                onClick={clearPartTimeFilters}
+                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
+                title="Filtreleri Temizle"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+              <button
+                type="button"
+                onClick={exportPartTimeToExcel}
+                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                title="Excel İndir"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Excel İndir
+              </button>
             </div>
           </div>
         </div>
 
-        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0 relative ${tableBusy ? 'opacity-80' : ''}`}>
-          <div className="overflow-auto w-full flex-1">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 transition-colors duration-200">
+        {/* Unified Stats Strip */}
+        <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+              KAYNAK:
+            </span>
+            <button
+              onClick={() => {
+                setFilter("all");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+            >
+              <span>TÜMÜ</span>
+              <span className="font-bold">{typeCounts.all}</span>
+            </button>
+            <button
+              onClick={() => {
+                setFilter("mice");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+            >
+              <span>MICE</span>
+              <span className="font-bold">{typeCounts.mice}</span>
+            </button>
+            <button
+              onClick={() => {
+                setFilter("sejour");
+                setPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+            >
+              <span>SEJOUR</span>
+              <span className="font-bold">{typeCounts.sejour}</span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          className={`flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
+        >
+          <div className="flex-1 overflow-auto custom-scrollbar">
+            <table className="w-full text-left border-collapse min-w-[1200px]">
+              <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
                 <tr>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('voucher_number')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("voucher_number")}
                   >
                     Voucher No
-                    {sortField === 'voucher_number' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "voucher_number" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('check_in_date')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("check_in_date")}
                   >
                     Tarih
-                    {sortField === 'check_in_date' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "check_in_date" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('customer_type')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("customer_type")}
                   >
                     Tür
-                    {sortField === 'customer_type' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "customer_type" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('check_in_date')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("check_in_date")}
                   >
                     C-IN / C-OUT
-                    {sortField === 'check_in_date' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "check_in_date" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('company_name')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("company_name")}
                   >
                     FİRMA ADI
-                    {sortField === 'company_name' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "company_name" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('customer_name')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("customer_name")}
                   >
                     ACENTE/MÜŞTERİ
-                    {sortField === 'customer_name' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "customer_name" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('hotel_name')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("hotel_name")}
                   >
                     Otel
-                    {sortField === 'hotel_name' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "hotel_name" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('service_type')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("service_type")}
                   >
                     Hizmet Türü
-                    {sortField === 'service_type' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "service_type" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('supplier')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("supplier")}
                   >
                     Tedarikçi
-                    {sortField === 'supplier' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "supplier" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('employee_name')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("employee_name")}
                   >
                     Çalışan Adı
-                    {sortField === 'employee_name' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "employee_name" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('cost_price')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("cost_price")}
                   >
                     Maliyet
-                    {sortField === 'cost_price' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "cost_price" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('cost_currency')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("cost_currency")}
                   >
                     Döviz
-                    {sortField === 'cost_currency' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "cost_currency" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('fx')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("fx")}
                   >
                     Kur
-                    {sortField === 'fx' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "fx" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                    onClick={() => handleSort('totalTRY')}
+                  <th
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    onClick={() => handleSort("totalTRY")}
                   >
                     Toplam TL
-                    {sortField === 'totalTRY' && (
-                      <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                    {sortField === "totalTRY" && (
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-white/5">
                 {paginatedPartTime.items.map((service) => (
-                  <tr key={service.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                  <tr
+                    key={service.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                  >
                     <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
                       <button
-                        onClick={() => handleVoucherClick(service.sejour_id, service.project_type, service.project_id)}
+                        onClick={() =>
+                          handleVoucherClick(
+                            service.sejour_id,
+                            service.project_type,
+                            service.project_id,
+                          )
+                        }
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
                       >
                         {service.voucher_number}
                       </button>
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
                       {formatDate(service.check_in_date)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        service.customer_type === 'mice' 
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                      }`}>
-                        {service.customer_type === 'mice' ? 'MICE' : 'SEJOUR'}
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          service.customer_type === "mice"
+                            ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                            : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        }`}
+                      >
+                        {service.customer_type === "mice" ? "MICE" : "SEJOUR"}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      {service.check_in_date && service.check_out_date 
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                      {service.check_in_date && service.check_out_date
                         ? `${formatDate(service.check_in_date)} / ${formatDate(service.check_out_date)}`
-                        : '-'
-                      }
+                        : "-"}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      {service.company_name || '-'}
+                    <td
+                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      title={service.company_name || ""}
+                    >
+                      {service.company_name || "-"}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      {service.customer_name || '-'}
+                    <td
+                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      title={service.customer_name || ""}
+                    >
+                      {service.customer_name || "-"}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      {service.hotel_name || '-'}
+                    <td
+                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[150px]"
+                      title={service.hotel_name || ""}
+                    >
+                      {service.hotel_name || "-"}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td
+                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      title={service.service_type || ""}
+                    >
                       {service.service_type}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      {service.supplier || '-'}
+                    <td
+                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      title={service.supplier || ""}
+                    >
+                      {service.supplier || "-"}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td
+                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      title={service.employee_name || ""}
+                    >
                       {service.employee_name}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(service.cost_price)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
                       {service.cost_currency}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(service.fx || 1)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber((service.cost_price || 0) * (service.fx || 1))}
+                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                      {formatNumber(
+                        (service.cost_price || 0) * (service.fx || 1),
+                      )}
                     </td>
                   </tr>
                 ))}
-              
+
                 {filteredAndSortedServices.length === 0 && (
                   <tr>
-                    <td colSpan={20} className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <td
+                      colSpan={20}
+                      className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                    >
                       Filtrelere uygun kayıt bulunamadı.
                     </td>
                   </tr>
@@ -883,8 +980,7 @@ export default function PartTimePage() {
               </tbody>
             </table>
           </div>
-          
-          
+
           <PaginationControls
             page={paginatedPartTime.page}
             pageSize={paginatedPartTime.pageSize}
@@ -911,8 +1007,7 @@ export default function PartTimePage() {
             {error}
           </div>
         )}
-        
       </div>
     </div>
   );
-} 
+}

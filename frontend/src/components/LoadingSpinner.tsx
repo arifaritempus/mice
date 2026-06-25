@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -7,12 +7,12 @@ interface LoadingSpinnerProps {
 }
 
 export default function LoadingSpinner({
-  message = 'Yükleniyor...',
-  compact = false
+  message = "Yükleniyor...",
+  compact = false,
 }: LoadingSpinnerProps) {
   const shellClass = compact
-    ? 'flex flex-col items-center justify-center'
-    : 'min-h-dvh w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_top_right,#1e3a8a33,transparent_40%),radial-gradient(circle_at_bottom_left,#7e22ce2e,transparent_45%),#030712] z-50';
+    ? "flex flex-col items-center justify-center"
+    : "min-h-dvh w-full flex flex-col items-center justify-center bg-[radial-gradient(circle_at_top_right,#1e3a8a33,transparent_40%),radial-gradient(circle_at_bottom_left,#7e22ce2e,transparent_45%),#030712] z-50";
 
   return (
     <div className={shellClass} role="status" aria-live="polite">
@@ -22,7 +22,7 @@ export default function LoadingSpinner({
           <div className="absolute top-0 left-0 w-10 h-10 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin"></div>
           <div
             className="absolute top-0 left-0 w-10 h-10 rounded-full border-4 border-transparent border-r-indigo-400 animate-spin"
-            style={{ animationDelay: '0.12s', animationDuration: '1.4s' }}
+            style={{ animationDelay: "0.12s", animationDuration: "1.4s" }}
           ></div>
         </div>
 
@@ -32,11 +32,7 @@ export default function LoadingSpinner({
           <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse [animation-delay:240ms]"></span>
         </div>
 
-        {message && (
-          <p className="mt-3 text-slate-300 text-sm">
-            {message}
-          </p>
-        )}
+        {message && <p className="mt-3 text-white text-sm">{message}</p>}
       </div>
     </div>
   );

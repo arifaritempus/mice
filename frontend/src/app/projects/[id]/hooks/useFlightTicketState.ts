@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export interface FlightTicket {
   id: string;
@@ -21,21 +21,29 @@ export interface FlightTicket {
   kur: number;
   toplamTl: number;
   misafirler: string;
-  durum: 'aktif' | 'iptal' | 'iade' | 'degistirildi';
+  durum: "aktif" | "iptal" | "iade" | "degistirildi";
   islemler?: string;
   hotel_id?: string;
 }
 
 export function useFlightTicketState() {
   const [flightTickets, setFlightTickets] = useState<FlightTicket[]>([]);
-  const [editingFlightIndex, setEditingFlightIndex] = useState<number | null>(null);
-  const [tempFlightItem, setTempFlightItem] = useState<FlightTicket | null>(null);
+  const [editingFlightIndex, setEditingFlightIndex] = useState<number | null>(
+    null,
+  );
+  const [tempFlightItem, setTempFlightItem] = useState<FlightTicket | null>(
+    null,
+  );
   const [isNewFlightItem, setIsNewFlightItem] = useState<boolean>(false);
-  const [flightSearch, setFlightSearch] = useState<string>('');
-  const [flightSortField, setFlightSortField] = useState<string>('');
-  const [flightSortDirection, setFlightSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [expandedFlightTickets, setExpandedFlightTickets] = useState<Set<string>>(new Set());
-  const [flightTicketSearch, setFlightTicketSearch] = useState<string>('');
+  const [flightSearch, setFlightSearch] = useState<string>("");
+  const [flightSortField, setFlightSortField] = useState<string>("");
+  const [flightSortDirection, setFlightSortDirection] = useState<
+    "asc" | "desc"
+  >("asc");
+  const [expandedFlightTickets, setExpandedFlightTickets] = useState<
+    Set<string>
+  >(new Set());
+  const [flightTicketSearch, setFlightTicketSearch] = useState<string>("");
 
   return {
     flightTickets,
@@ -58,6 +66,3 @@ export function useFlightTicketState() {
     setFlightTicketSearch,
   };
 }
-
-
-

@@ -1,0 +1,222 @@
+const m = useMemo(() => {
+    const range = getPeriodRange(period, customDate.start, customDate.end);
+
+    // Filtering
+    const fProj = data.rpProjectRows.filter((r: any) =>
+      inRange(r.organizasyon_tarihi || r.created_at, range),
+    );
+    const fSej = data.rpSejourRows.filter((r: any) =>
+      inRange(r.giris_tarihi || r.created_at, range),
+    );
+    const fCols = data.collectionPlans.filter((c: any) =>
+      inRange(c.due_date || c.date, range),
+    );
+    const fPays = data.paymentPlans.filter((p: any) =>
+      inRange(p.due_date || p.date, range),
+    );
+    const fQts = data.quotes.filter((q: any) =>
+      inRange(q.created_at || q.option_date, range),
+    );
+    const fTransfers = data.transfers.filter((t: any) =>
+      inRange(t.transfer_date || t.created_at, range),
+    );
+    const fFlights = data.flights.filter((f: any) =>
+      inRange(f.gidis_tarihi || f.created_at, range),
+    );
+    const fHr = data.hrRows.filter((h: any) =>
+      inRange(h.start_date || h.created_at, range),
+    );
+    const fEvents = data.events.filter((e: any) =>
+      inRange(e.event_date || e.created_at, range),
+    );
+    const fMkt = data.marketingInteractions.filter((m: any) =>
+      inRange(m.created_at || m.date, range),
+    );
+
+    // KPI: Revenues
+    const miceRev = fProj.reduce(
+      (acc: number, p: any) => acc + (Number(p.satis_tl) || 0),
+      0,
+    );
+    const miceCost = fProj.reduce(
+      (acc: number, p: any) => acc + (Number(p.maliyet_tl) || 0),
+      0,
+    );
+    const sejRev = fSej.reduce(
+      (acc: number, s: any) => acc + (Number(s.satis_tl) || 0),
+      0,
+    );
+    const sejCost = fSej.reduce(
+      (acc: number, s: any) => acc + (Number(s.maliyet_tl) || 0),
+      0,
+    );
+    const flightRev = fFlights.reduce(
+      (acc: number, f: any) =>
+        acc +
+        (Number(f.total_price) ||
+          Number(f.total_tl) ||
+          Number(f.fiyat) ||
+          Number(f.satis_fiyati) ||
+          0),
+      0,
+    );
+    const eventRev = fEvents.reduce(
+      (acc: number, e: any) =>
+        acc +
+        (Number(e.total_tl) ||
+          Number(e.total_price) ||
+          Number(e.satis_fiyati) ||
+          0),
+      0,
+    );
+
+    const totalRev = miceRev + sejRev + flightRev + eventRev;
+    const totalCost = miceCost + sejCost; // Assuming flights/events cost might be mapped if needed, or included in projects.
+    const totalProfit = totalRev - totalCost;
+
+    // Funnel Data
+    const totalMkt = fMkt.length;
+    const pendingQts = fQts.filter(
+      (q: any) => (q.status || "").toLowerCase() === "pending",
+    ).length;
+    const wonQts = fQts.filter(
+      (q: any) =>
+        (q.status || "").toLowerCase().includes("konfirme") ||
+        (q.status || "").toLowerCase() === "won",
+    ).length;
+
+    const funnelData = [
+      {
+        name: "Etkileşim (Toplantı/Mail)",
+        value: totalMkt > 0 ? totalMkt : 1,
+        fill: "#8b5cf6",
+      },
+      { name: "Oluşturulan Teklif", value: fQts.length, fill: "#3b82f6" },
+      { name: "Kazanılan Proje", value: wonQts, fill: "#10b981" },
+    ];
+
+    const pendingQtsValue = fQts
+      .filter((q: any) => (q.status || "").toLowerCase() === "pending")
+      .reduce(
+        (acc: number, q: any) =>
+          acc + (Number(q.total_amount) || Number(q.amount) || 0),
+        0,
+      );
+
+    // Agency Analysis
+    const agnMap: Record<
+      string,
+      { name: string; ciro: number; maliyet: number }
+    > = {};
+    fProj.forEach((p: any) => {
+      const a = p.musteri_adi || p.acente_adi || "Bilinmeyen Acente";
+      if (!agnMap[a]) agnMap[a] = { name: a, ciro: 0, maliyet: 0 };
+      agnMap[a].ciro += Number(p.satis_tl) || 0;
+      agnMap[a].maliyet += Number(p.maliyet_tl) || 0;
+    });
+    fSej.forEach((s: any) => {
+      const a = s.acente_adi || s.musteri_adi || "Bilinmeyen Acente";
+      if (!agnMap[a]) agnMap[a] = { name: a, ciro: 0, maliyet: 0 };
+      agnMap[a].ciro += Number(s.satis_tl) || 0;
+      agnMap[a].maliyet += Number(s.maliyet_tl) || 0;
+    });
+    const agencyData = Object.values(agnMap)
+      .map((a) => ({
+        name: a.name,
+        Ciro: a.ciro,
+        Kâr: a.ciro - a.maliyet,
+        Marj:
+          a.ciro > 0 ? Math.round(((a.ciro - a.maliyet) / a.ciro) * 100) : 0,
+      }))
+      .sort((a, b) => b.Ciro - a.Ciro)
+      .slice(0, 10);
+
+    // Hotel Analysis
+    const htlMap: Record<string, number> = {};
+    fSej.forEach((s: any) => {
+      const h = s.hotel_name || s.hotelName || "Bilinmeyen Otel";
+      htlMap[h] = (htlMap[h] || 0) + (Number(s.satis_tl) || 0);
+    });
+    const hotelData = Object.keys(htlMap)
+      .map((k) => ({ name: k, Ciro: htlMap[k] }))
+      .sort((a, b) => b.Ciro - a.Ciro)
+      .slice(0, 10);
+
+    // Airline Distribution
+    const airMap: Record<string, number> = {};
+    fFlights.forEach((f: any) => {
+      const a = f.airline || f.havayolu || "Diğer";
+      airMap[a] = (airMap[a] || 0) + 1;
+    });
+    const airlineData = Object.keys(airMap)
+      .map((k) => ({ name: k, Adet: airMap[k] }))
+      .sort((a, b) => b.Adet - a.Adet);
+
+    // Vehicle Types
+    const vehMap: Record<string, number> = {};
+    fTransfers.forEach((t: any) => {
+      const v = t.vehicle_type || t.arac_tipi || "Diğer";
+      vehMap[v] = (vehMap[v] || 0) + 1;
+    });
+    const vehicleData = Object.keys(vehMap)
+      .map((k) => ({ name: k, Adet: vehMap[k] }))
+      .sort((a, b) => b.Adet - a.Adet);
+
+    // HR Types
+    const hrMap: Record<string, number> = {};
+    fHr.forEach((h: any) => {
+      const r = h.role || h.personnel_type || h.type || "Diğer";
+      hrMap[r] = (hrMap[r] || 0) + 1;
+    });
+    const hrData = Object.keys(hrMap)
+      .map((k) => ({ name: k, Adet: hrMap[k] }))
+      .sort((a, b) => b.Adet - a.Adet);
+
+    // Operational Flow (Upcoming)
+    const upcomingOps: any[] = [];
+    const now = new Date();
+    data.flights
+      .filter(
+        (f: any) =>
+          parseDateSafe(f.gidis_tarihi) &&
+          parseDateSafe(f.gidis_tarihi)! >= now,
+      )
+      .forEach((f: any) =>
+        upcomingOps.push({
+          type: "Uçuş",
+          date: parseDateSafe(f.gidis_tarihi),
+          title: f.airline || "Uçuş",
+          detail: f.pnr || "-",
+        }),
+      );
+    data.transfers
+      .filter(
+        (t: any) =>
+          parseDateSafe(t.transfer_date) &&
+          parseDateSafe(t.transfer_date)! >= now,
+      )
+      .forEach((t: any) =>
+        upcomingOps.push({
+          type: "Transfer",
+          date: parseDateSafe(t.transfer_date),
+          title: t.vehicle_type || "Transfer",
+          detail: t.route || "-",
+        }),
+      );
+    data.sejours
+      .filter(
+        (s: any) =>
+          parseDateSafe(s.checkInDate) && parseDateSafe(s.checkInDate)! >= now,
+      )
+      .forEach((s: any) =>
+        upcomingOps.push({
+          type: "Sejour C-In",
+          date: parseDateSafe(s.checkInDate),
+          title: s.hotelName || "Otel",
+          detail: s.guestInfo || "-",
+        }),
+      );
+    upcomingOps.sort((a, b) => a.date.getTime() - b.date.getTime());
+    const topOps = upcomingOps.slice(0, 10);
+
+    

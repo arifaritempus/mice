@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { authService } from '@/lib/auth';
-import { Module, Permission, Role, checkPermission } from '@/lib/permissions';
-import Sidebar from '@/components/Sidebar';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { authService } from "@/lib/auth";
+import { Module, Permission, Role, checkPermission } from "@/lib/permissions";
+import TopNavigation from "@/components/TopNavigation";
+import BottomNavigation from "@/components/BottomNavigation";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AuthWrapper({
   children,
@@ -14,46 +15,47 @@ export default function AuthWrapper({
 }) {
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState<boolean>(true);
-  const [debugInfo, setDebugInfo] = useState({ role: '', module: '' });
+  const [debugInfo, setDebugInfo] = useState({ role: "", module: "" });
   const pathname = usePathname();
   const router = useRouter();
 
   // Giriş sayfası ve şifre sıfırlama sayfası için authentication gerekmez
   const publicPages = [
-    '/login',
-    '/forgot-password',
-    '/reset-password',
+    "/login",
+    "/forgot-password",
+    "/reset-password",
     // Public view sayfaları
-    '/quotes/view/',
-    '/projects/view/'
+    "/quotes/view/",
+    "/projects/view/",
   ];
 
   // Route -> Module eşlemesi
   const resolveModule = (path: string): Module | undefined => {
     if (!path) return undefined;
-    if (path === '/') return Module.HOME;
-    if (path.startsWith('/dashboard')) return Module.DASHBOARD;
-    if (path.startsWith('/quotes/view/')) return undefined; // public
-    if (path.startsWith('/projects/view/')) return undefined; // public
-    if (path.startsWith('/quotes')) return Module.QUOTES;
-    if (path.startsWith('/projects')) return Module.PROJECTS;
-    if (path.startsWith('/accounting/cash-flow')) return Module.CASH_FLOW;
-    if (path.startsWith('/accounting/invoices')) return Module.INVOICES;
-    if (path.startsWith('/accounting')) return Module.ACCOUNTING;
-    if (path.startsWith('/agencies')) return Module.AGENCIES;
-    if (path.startsWith('/hotels')) return Module.HOTELS;
-    if (path.startsWith('/categories')) return Module.CATEGORIES;
-    if (path.startsWith('/users') || path.startsWith('/permissions')) return Module.USERS;
-    if (path.startsWith('/reports')) return Module.REPORTS;
-    if (path.startsWith('/settings')) return Module.SETTINGS;
-    if (path.startsWith('/sejour')) return Module.SEJOUR;
-    if (path.startsWith('/operations/transfers')) return Module.TRANSFERS;
-    if (path.startsWith('/operations/guides')) return Module.GUIDES;
-    if (path.startsWith('/operations/part-time')) return Module.PART_TIME;
-    if (path.startsWith('/operations')) return Module.OPERATIONS;
-    if (path.startsWith('/suppliers')) return Module.SUPPLIERS;
-    if (path.startsWith('/tickets')) return Module.TICKETS;
-    if (path.startsWith('/profile')) return Module.PROFILE;
+    if (path === "/") return Module.HOME;
+    if (path.startsWith("/dashboard")) return Module.DASHBOARD;
+    if (path.startsWith("/quotes/view/")) return undefined; // public
+    if (path.startsWith("/projects/view/")) return undefined; // public
+    if (path.startsWith("/quotes")) return Module.QUOTES;
+    if (path.startsWith("/projects")) return Module.PROJECTS;
+    if (path.startsWith("/accounting/cash-flow")) return Module.CASH_FLOW;
+    if (path.startsWith("/accounting/invoices")) return Module.INVOICES;
+    if (path.startsWith("/accounting")) return Module.ACCOUNTING;
+    if (path.startsWith("/agencies")) return Module.AGENCIES;
+    if (path.startsWith("/hotels")) return Module.HOTELS;
+    if (path.startsWith("/categories")) return Module.CATEGORIES;
+    if (path.startsWith("/users") || path.startsWith("/permissions"))
+      return Module.USERS;
+    if (path.startsWith("/reports")) return Module.REPORTS;
+    if (path.startsWith("/settings")) return Module.SETTINGS;
+    if (path.startsWith("/sejour")) return Module.SEJOUR;
+    if (path.startsWith("/operations/transfers")) return Module.TRANSFERS;
+    if (path.startsWith("/operations/guides")) return Module.GUIDES;
+    if (path.startsWith("/operations/part-time")) return Module.PART_TIME;
+    if (path.startsWith("/operations")) return Module.OPERATIONS;
+    if (path.startsWith("/suppliers")) return Module.SUPPLIERS;
+    if (path.startsWith("/tickets")) return Module.TICKETS;
+    if (path.startsWith("/profile")) return Module.PROFILE;
     return undefined;
   };
 
@@ -75,13 +77,15 @@ export default function AuthWrapper({
     const checkAuthAndPermissions = async () => {
       // Latest pathname check inside the closure capture
       const currentPathname = pathname;
-      
+
       try {
         // Public pages return early
         const isPublic =
           publicPages.includes(currentPathname) ||
-          publicPages.some((p) => p.endsWith('/') && currentPathname.startsWith(p));
-        
+          publicPages.some(
+            (p) => p.endsWith("/") && currentPathname.startsWith(p),
+          );
+
         if (isPublic) {
           if (isMounted && pathname === currentPathname) {
             setHasAccess(true);
@@ -89,70 +93,86 @@ export default function AuthWrapper({
           }
           return;
         }
-        
+
         // Session check
-        const { data: { session }, error: sessionError } = await authService.supabase.auth.getSession();
-        
+        const {
+          data: { session },
+          error: sessionError,
+        } = await authService.supabase.auth.getSession();
+
         if (sessionError || !session?.user) {
-          console.debug('[AuthWrapper] No session found, redirecting to login');
+          console.debug("[AuthWrapper] No session found, redirecting to login");
           if (isMounted && pathname === currentPathname) {
             setHasAccess(false);
             finishLoading();
-            router.push('/login');
+            router.push("/login");
           }
           return;
         }
-        
+
         const user = session.user;
-        
+
         // Profile check (non-blocking)
         let role = Role.VIEWER as string;
         try {
           const profile = await Promise.race([
             authService.getUserProfile(user.id),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 3500)) // Increased timeout to 3.5s
+            new Promise<null>((resolve) =>
+              setTimeout(() => resolve(null), 3500),
+            ), // Increased timeout to 3.5s
           ]);
-          
+
           if (profile?.role) {
             role = profile.role;
             console.debug(`[AuthWrapper] Profile role detected: "${role}"`);
           } else {
-            console.warn('[AuthWrapper] Profile or role not found, using default viewer');
+            console.warn(
+              "[AuthWrapper] Profile or role not found, using default viewer",
+            );
           }
         } catch (e) {
-          console.warn('[AuthWrapper] Profile fetch error, defaulting to viewer:', e);
+          console.warn(
+            "[AuthWrapper] Profile fetch error, defaulting to viewer:",
+            e,
+          );
         }
-        
+
         if (!isMounted || pathname !== currentPathname) return;
-        
+
         const resolvedRole = (role || Role.VIEWER) as string;
         const module = resolveModule(currentPathname);
-        
+
         if (!module) {
-          console.debug(`[AuthWrapper] Path "${currentPathname}" has no module mapping, allowing access`);
+          console.debug(
+            `[AuthWrapper] Path "${currentPathname}" has no module mapping, allowing access`,
+          );
           setHasAccess(true);
           finishLoading();
           return;
         }
-        
-        const allowed = await checkPermission(resolvedRole, module, Permission.VIEW);
-        console.debug(`[AuthWrapper] Access check for path "${currentPathname}" (Module: ${module}, Role: ${resolvedRole}): ${allowed ? 'ALLOWED' : 'DENIED'}`);
-        
+
+        const allowed = await checkPermission(
+          resolvedRole,
+          module,
+          Permission.VIEW,
+        );
+        console.debug(
+          `[AuthWrapper] Access check for path "${currentPathname}" (Module: ${module}, Role: ${resolvedRole}): ${allowed ? "ALLOWED" : "DENIED"}`,
+        );
+
         setHasAccess(allowed);
         setDebugInfo({ role: resolvedRole, module: module as string });
         finishLoading();
-        
       } catch (error) {
-        console.error('Auth check global catch:', error);
+        console.error("Auth check global catch:", error);
         if (isMounted && pathname === currentPathname) {
           setHasAccess(false);
           finishLoading();
-          router.push('/login');
+          router.push("/login");
         }
       }
     };
 
-    
     checkAuthAndPermissions();
 
     // Cleanup
@@ -166,19 +186,21 @@ export default function AuthWrapper({
   useEffect(() => {
     const isPublic =
       publicPages.includes(pathname) ||
-      publicPages.some((p) => p.endsWith('/') && pathname.startsWith(p));
-    
+      publicPages.some((p) => p.endsWith("/") && pathname.startsWith(p));
+
     if (isPublic || loading || !hasAccess) return;
 
     let idleTimer: NodeJS.Timeout;
 
     const logoutUser = async () => {
       try {
-        console.log('[AuthWrapper] Kullanıcı 30 dakika boyunca işlem yapmadı, oturum kapatılıyor...');
+        console.log(
+          "[AuthWrapper] Kullanıcı 30 dakika boyunca işlem yapmadı, oturum kapatılıyor...",
+        );
         await authService.supabase.auth.signOut();
-        router.push('/login');
+        router.push("/login");
       } catch (error) {
-        console.error('Oturum kapatılırken hata oluştu:', error);
+        console.error("Oturum kapatılırken hata oluştu:", error);
       }
     };
 
@@ -189,20 +211,27 @@ export default function AuthWrapper({
     };
 
     // Kullanıcı etkileşimlerini dinle
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
+    const events = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+      "click",
+    ];
+
     // İlk zamanlayıcıyı başlat
     resetTimer();
 
     // Event listener'ları ekle
-    events.forEach(event => {
+    events.forEach((event) => {
       window.addEventListener(event, resetTimer, { passive: true });
     });
 
     // Temizlik (Cleanup)
     return () => {
       if (idleTimer) clearTimeout(idleTimer);
-      events.forEach(event => {
+      events.forEach((event) => {
         window.removeEventListener(event, resetTimer);
       });
     };
@@ -225,16 +254,20 @@ export default function AuthWrapper({
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400 shadow-inner">
             <span className="text-3xl">🔒</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Erişim Sınırlandırıldı</h2>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+            Erişim Sınırlandırıldı
+          </h2>
           <p className="text-sm font-medium text-slate-500 dark:text-gray-400 leading-relaxed">
-            Bu bölüme erişmek için gerekli yetki seviyesine sahip değilsiniz. <br/>Lütfen bir yönetici ile iletişime geçin.
+            Bu bölüme erişmek için gerekli yetki seviyesine sahip değilsiniz.{" "}
+            <br />
+            Lütfen bir yönetici ile iletişime geçin.
           </p>
-          
+
           <div className="mt-8 flex flex-col gap-3">
             <button
               type="button"
-              onClick={() => router.push('/')}
-              className="w-full inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3.5 text-xs font-black text-white uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-blue-600/20"
+              onClick={() => router.push("/")}
+              className="w-full inline-flex items-center justify-center rounded-2xl bg-blue-500 px-6 py-3.5 text-xs font-black text-white uppercase tracking-widest hover:bg-blue-500/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-blue-600/20"
             >
               Ana Sayfaya Dön
             </button>
@@ -242,7 +275,7 @@ export default function AuthWrapper({
               type="button"
               onClick={() => {
                 authService.supabase.auth.signOut();
-                router.push('/login');
+                router.push("/login");
               }}
               className="w-full inline-flex items-center justify-center rounded-2xl bg-white dark:bg-gray-800 px-6 py-3.5 text-xs font-black text-slate-600 dark:text-gray-300 uppercase tracking-widest border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all"
             >
@@ -256,29 +289,28 @@ export default function AuthWrapper({
 
   // Public sayfalar için layout
   const isPublicExact = publicPages.includes(pathname);
-  const isPublicPrefix = publicPages.some((p) => p.endsWith('/') && pathname.startsWith(p));
+  const isPublicPrefix = publicPages.some(
+    (p) => p.endsWith("/") && pathname.startsWith(p),
+  );
   if (isPublicExact || isPublicPrefix) {
     return <>{children}</>;
   }
 
-  // Tüm sayfalar için sidebar ile layout
+  // Tüm sayfalar için Merkezi Cam Pencere (Floating App Window) layout'u
   return (
-    <div 
-      className="flex h-screen transition-colors duration-200 mobile-auth-wrapper" 
-      style={{ backgroundColor: 'var(--theme-bg, #f1f5f9)' }}
-    >
-      <Sidebar />
-      <div 
-        className="flex-1 flex flex-col overflow-hidden transition-colors duration-200"
-        style={{ backgroundColor: 'var(--theme-bg-primary, #f9fafb)' }}
-      >
-        <main 
-          className="flex-1 overflow-y-auto p-4 transition-colors duration-200" 
-          style={{ backgroundColor: 'var(--theme-bg-primary, #f9fafb)' }}
-        >
+    <div className="flex items-center justify-center h-screen w-screen overflow-hidden transition-colors duration-200 mobile-auth-wrapper bg-transparent relative">
+      {/* Arka plan renkli çember efektleri (Blurred Circles) */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
+
+      {/* Main Glass Window (Now Edge to Edge) */}
+      <div className="w-full h-full glass-panel shadow-2xl flex flex-col overflow-hidden relative z-10 backdrop-blur-2xl bg-[#0a0f1c]/60">
+        <TopNavigation />
+        <main className="flex-1 overflow-hidden transition-colors duration-200 bg-transparent relative pb-[84px] md:pb-0 md:pt-[76px]">
           {children}
         </main>
+        <BottomNavigation />
       </div>
     </div>
   );
-} 
+}

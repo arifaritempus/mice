@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import DatePicker from 'react-datepicker';
-import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { Calendar, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import DatePicker from "react-datepicker";
+import {
+  format as formatDateFns,
+  parse as parseDateFns,
+  isValid as isValidDate,
+  parseISO,
+} from "date-fns";
+import { tr } from "date-fns/locale";
+import { Calendar, X } from "lucide-react";
 
 interface DateRangeFieldProps {
   label: string;
   startValue: string; // ISO date string (YYYY-MM-DD) or empty
-  endValue: string;   // ISO date string (YYYY-MM-DD) or empty
+  endValue: string; // ISO date string (YYYY-MM-DD) or empty
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
   onApply: (start?: string, end?: string) => void;
@@ -22,22 +27,33 @@ const toDate = (value: string) => {
   return isValidDate(parsed) ? parsed : null;
 };
 
-const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
+const toIsoDate = (date: Date | null) =>
+  date ? formatDateFns(date, "yyyy-MM-dd") : "";
 
-export default function DateRangeField({ label, startValue, endValue, onStartChange, onEndChange, onApply }: DateRangeFieldProps) {
+export default function DateRangeField({
+  label,
+  startValue,
+  endValue,
+  onStartChange,
+  onEndChange,
+  onApply,
+}: DateRangeFieldProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [pickerRange, setPickerRange] = useState<[Date | null, Date | null]>([toDate(startValue), toDate(endValue)]);
+  const [pickerRange, setPickerRange] = useState<[Date | null, Date | null]>([
+    toDate(startValue),
+    toDate(endValue),
+  ]);
   const [calendarStyle, setCalendarStyle] = useState({ top: 0, left: 0 });
 
   // Handle responsive
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Sync internal range with props
@@ -55,15 +71,15 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
       if (!containerRef.current) return;
       if (containerRef.current.contains(target)) return;
       if (calendarRef.current?.contains(target)) return;
-      
+
       // Prevent closing if clicking on a calendar navigation button inside the portal
-      if ((target as Element).closest('.react-datepicker')) return;
-      
+      if ((target as Element).closest(".react-datepicker")) return;
+
       setIsCalendarOpen(false);
       setPickerRange([toDate(startValue), toDate(endValue)]);
     };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
   }, [startValue, endValue, isMobile]);
 
   // Position portal (Desktop)
@@ -74,15 +90,15 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
       if (!rect) return;
       setCalendarStyle({
         top: rect.bottom + 8, // Little gap
-        left: Math.max(6, rect.left)
+        left: Math.max(6, rect.left),
       });
     };
     updatePos();
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
     return () => {
-      window.removeEventListener('scroll', updatePos, true);
-      window.removeEventListener('resize', updatePos);
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
     };
   }, [isCalendarOpen, isMobile]);
 
@@ -106,9 +122,9 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onStartChange('');
-    onEndChange('');
-    onApply('', '');
+    onStartChange("");
+    onEndChange("");
+    onApply("", "");
     setPickerRange([null, null]);
   };
 
@@ -118,9 +134,9 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
   // Formatted display text
   let displayText = "Tarih Seçin";
   if (startValue && endValue) {
-    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yy', {locale: tr})} - ${formatDateFns(toDate(endValue)!, 'dd MMM yy', {locale: tr})}`;
+    displayText = `${formatDateFns(toDate(startValue)!, "dd MMM yy", { locale: tr })} - ${formatDateFns(toDate(endValue)!, "dd MMM yy", { locale: tr })}`;
   } else if (startValue) {
-    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yy', {locale: tr})} - Belirsiz`;
+    displayText = `${formatDateFns(toDate(startValue)!, "dd MMM yy", { locale: tr })} - Belirsiz`;
   }
 
   const renderCalendarContent = () => (
@@ -153,7 +169,7 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
         <button
           onClick={handleApply}
           disabled={!pickerRange[0]}
-          className="flex-1 sm:flex-none px-6 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shadow-blue-500/20"
+          className="flex-1 sm:flex-none px-6 py-3 text-sm font-bold text-white bg-blue-500 rounded-xl hover:bg-blue-500/90 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shadow-blue-500/20"
         >
           Uygula
         </button>
@@ -163,22 +179,28 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
 
   return (
     <div className="min-w-0 relative flex flex-col" ref={containerRef}>
-      <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate" title={label}>
+      <label
+        className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-0.5 leading-snug truncate"
+        title={label}
+      >
         {label}
       </label>
-      
+
       {/* Trigger Button */}
       <button
         type="button"
         onClick={openCalendar}
-        className="flex items-center justify-between w-full min-w-0 h-9 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors shadow-sm"
+        className="flex items-center justify-between w-full min-w-0 h-10 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors shadow-sm"
       >
         <div className="flex items-center gap-2 truncate">
-          <Calendar size={14} className="text-gray-400 dark:text-gray-400 shrink-0" />
+          <Calendar
+            size={14}
+            className="text-gray-400 dark:text-gray-400 shrink-0"
+          />
           <span className="truncate font-medium">{displayText}</span>
         </div>
         {(startValue || endValue) && (
-          <div 
+          <div
             onClick={handleClear}
             className="shrink-0 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
@@ -188,41 +210,53 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
       </button>
 
       {/* Calendar Portal / Modal */}
-      {isCalendarOpen && typeof document !== 'undefined' && createPortal(
-        isMobile ? (
-          // Mobile: Full-screen or bottom-sheet modal
-          <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div 
-              className="bg-white dark:bg-gray-900 w-full rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300"
-              style={{ maxHeight: '85dvh' }}
-              ref={calendarRef}
-            >
-              <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-black tracking-tight text-gray-900 dark:text-white">{label}</h3>
-                <button onClick={closeCalendar} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="flex-1 overflow-hidden flex flex-col">
-                {renderCalendarContent()}
+      {isCalendarOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          isMobile ? (
+            // Mobile: Full-screen or bottom-sheet modal
+            <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+              <div
+                className="bg-white dark:bg-gray-900 w-full rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300"
+                style={{ maxHeight: "85dvh" }}
+                ref={calendarRef}
+              >
+                <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+                  <h3 className="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                    {label}
+                  </h3>
+                  <button
+                    onClick={closeCalendar}
+                    className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  {renderCalendarContent()}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          // Desktop: Popover
-          <div
-            ref={calendarRef}
-            className="transfer-range-datepicker-popover fixed z-[9999] w-max max-w-[calc(100vw-0.75rem)] shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-            style={{ top: `${calendarStyle.top}px`, left: `${calendarStyle.left}px` }}
-          >
-            {renderCalendarContent()}
-          </div>
-        ),
-        document.body
-      )}
+          ) : (
+            // Desktop: Popover
+            <div
+              ref={calendarRef}
+              className="transfer-range-datepicker-popover fixed z-[9999] w-max max-w-[calc(100vw-0.75rem)] shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+              style={{
+                top: `${calendarStyle.top}px`,
+                left: `${calendarStyle.left}px`,
+              }}
+            >
+              {renderCalendarContent()}
+            </div>
+          ),
+          document.body,
+        )}
 
       {/* Inject some simple custom CSS for datepicker to make it match tailwind dark mode */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .custom-datepicker-theme {
           font-family: inherit;
         }
@@ -321,7 +355,9 @@ export default function DateRangeField({ label, startValue, endValue, onStartCha
           background-color: #1f2937;
           color: #f3f4f6;
         }
-      `}} />
+      `,
+        }}
+      />
     </div>
   );
 }

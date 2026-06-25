@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import DatePicker from 'react-datepicker';
-import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
+import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO, getYear, getMonth } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Calendar, X } from 'lucide-react';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -94,6 +94,18 @@ export default function ResponsiveDateRangeField({
     };
   }, [isCalendarOpen, isMobile]);
 
+  // Handle ESC key
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsCalendarOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isCalendarOpen]);
+
   const openCalendar = () => setIsCalendarOpen(true);
 
   const closeCalendar = () => {
@@ -132,39 +144,132 @@ export default function ResponsiveDateRangeField({
   const renderCalendarContent = () => (
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 overflow-y-auto w-full flex items-center justify-center p-2 sm:p-5 custom-datepicker-wrapper">
-        <DatePicker
+                <DatePicker
           inline
           locale={tr}
           monthsShown={isMobile ? 1 : 2}
           selectsRange
           startDate={calStart || undefined}
           endDate={calEnd || undefined}
-          showMonthDropdown
-          showYearDropdown
-          dropdownMode="select"
+          calendarClassName="!border-0 !bg-transparent w-full mx-auto"
           onChange={(dates) => {
             const [start, end] = dates as [Date | null, Date | null];
             setPickerRange([start, end]);
+            if (start && end) {
+              const s = toIsoDate(start);
+              const e = toIsoDate(end);
+              onStartChange(s);
+              onEndChange(e);
+              if (onApply) onApply(s, e);
+              setIsCalendarOpen(false);
+            } else if (!start && !end) {
+              onStartChange('');
+              onEndChange('');
+              if (onApply) onApply('', '');
+            } else if (start && !end) {
+              onStartChange(toIsoDate(start));
+              onEndChange('');
+            }
           }}
-          calendarClassName="!border-0 !bg-transparent w-full mx-auto"
+          renderCustomHeader={({
+            monthDate,
+            customHeaderCount,
+            decreaseMonth,
+            increaseMonth,
+            prevMonthButtonDisabled,
+            nextMonthButtonDisabled,
+            changeYear,
+            changeMonth,
+          }) => {
+            const months = [
+              "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+              "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+            ];
+            const years = [];
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear - 10; i <= currentYear + 10; i++) {
+              years.push(i);
+            }
+
+            return (
+              <div className="flex items-center justify-between px-2 py-2">
+                <button
+                  aria-label="Previous Month"
+                  className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
+                    prevMonthButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={decreaseMonth}
+                  disabled={prevMonthButtonDisabled}
+                  style={{ visibility: customHeaderCount === 1 ? "hidden" : "visible" }}
+                >
+                  <svg className="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  <select
+                    value={months[getMonth(monthDate)]}
+                    onChange={({ target: { value } }) => {
+                      const newMonth = months.indexOf(value);
+                      if (customHeaderCount === 1) {
+                        const targetDate = new Date(getYear(monthDate), newMonth, 1);
+                        const leftDate = new Date(targetDate);
+                        leftDate.setMonth(targetDate.getMonth() - 1);
+                        changeYear(leftDate.getFullYear());
+                        changeMonth(leftDate.getMonth());
+                      } else {
+                        changeMonth(newMonth);
+                      }
+                    }}
+                    className="appearance-none bg-transparent font-bold text-slate-800 dark:text-slate-100 text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                  >
+                    {months.map((option) => (
+                      <option key={option} value={option} className="text-slate-900 dark:text-slate-900">
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={getYear(monthDate)}
+                    onChange={({ target: { value } }) => {
+                      const newYear = Number(value);
+                      if (customHeaderCount === 1) {
+                        const targetDate = new Date(newYear, getMonth(monthDate), 1);
+                        const leftDate = new Date(targetDate);
+                        leftDate.setMonth(targetDate.getMonth() - 1);
+                        changeYear(leftDate.getFullYear());
+                        changeMonth(leftDate.getMonth());
+                      } else {
+                        changeYear(newYear);
+                      }
+                    }}
+                    className="appearance-none bg-transparent font-bold text-slate-800 dark:text-slate-100 text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                  >
+                    {years.map((option) => (
+                      <option key={option} value={option} className="text-slate-900 dark:text-slate-900">
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  aria-label="Next Month"
+                  className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
+                    nextMonthButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={increaseMonth}
+                  disabled={nextMonthButtonDisabled}
+                  style={{ visibility: customHeaderCount === 0 && !isMobile ? "hidden" : "visible" }}
+                >
+                  <svg className="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+              </div>
+            );
+          }}
         />
       </div>
-      <div className="flex justify-end gap-3 p-4 sm:px-6 sm:py-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 w-full mt-auto">
-        <button
-          onClick={closeCalendar}
-          className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 transition-all shadow-sm"
-        >
-          İptal
-        </button>
-        <button
-          onClick={handleApply}
-          disabled={!pickerRange[0]}
-          className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/20"
-        >
-          Uygula
-        </button>
-      </div>
-    </div>
+            </div>
   );
 
   return (
@@ -177,7 +282,7 @@ export default function ResponsiveDateRangeField({
       <button
         type="button"
         onClick={openCalendar}
-        className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+        className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
       >
         <div className="flex items-center gap-2.5 truncate">
           <Calendar size={16} className="text-slate-400 dark:text-slate-400 shrink-0" />
@@ -248,6 +353,14 @@ export default function ResponsiveDateRangeField({
           background: transparent !important;
           padding: 0 0.5rem;
         }
+        
+        /* Header styling */
+        .custom-datepicker-wrapper .react-datepicker__header {
+          background: transparent !important;
+          border-bottom: none !important;
+          padding-top: 0.5rem;
+          padding-bottom: 0;
+        }
 
         /* Mobile specific full width */
         @media (max-width: 767px) {
@@ -282,13 +395,7 @@ export default function ResponsiveDateRangeField({
           }
         }
 
-        /* Header styling */
-        .custom-datepicker-wrapper .react-datepicker__header {
-          background: transparent !important;
-          border-bottom: none !important;
-          padding-top: 0.5rem;
-          padding-bottom: 0;
-        }
+
 
         /* Navigation Arrows */
         .custom-datepicker-wrapper .react-datepicker__navigation {

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export async function GET() {
   try {
@@ -15,22 +15,22 @@ export async function GET() {
     }
 
     const client = createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false }
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
     const { data, error } = await client
-      .from('settings')
-      .select('value')
-      .eq('key', 'general_settings')
+      .from("settings")
+      .select("value")
+      .eq("key", "general_settings")
       .maybeSingle();
 
     if (error) {
-      console.error('[ThemeSettingsAPI] Supabase error:', error);
+      console.error("[ThemeSettingsAPI] Supabase error:", error);
       return NextResponse.json({ general_settings: null }, { status: 200 });
     }
 
     let parsed: any = data?.value ?? null;
-    if (typeof parsed === 'string') {
+    if (typeof parsed === "string") {
       try {
         parsed = JSON.parse(parsed);
       } catch {
@@ -38,9 +38,45 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ general_settings: parsed || null }, { status: 200 });
+    return NextResponse.json(
+      { general_settings: parsed || null },
+      { status: 200 },
+    );
   } catch (err) {
-    console.error('[ThemeSettingsAPI] Global error:', err);
+    console.error("[ThemeSettingsAPI] Global error:", err);
     return NextResponse.json({ general_settings: null }, { status: 200 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
+    const key = serviceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!url || !key) {
+      return NextResponse.json({ error: "Missing config" }, { status: 500 });
+    }
+
+    const client = createClient(url, key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { error } = await client
+      .from("settings")
+      .upsert({ key: "general_settings", value: body }, { onConflict: "key" });
+
+    if (error) {
+      console.error("[ThemeSettingsAPI POST] Supabase error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (err) {
+    console.error("[ThemeSettingsAPI POST] Global error:", err);
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }

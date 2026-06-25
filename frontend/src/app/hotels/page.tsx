@@ -1,18 +1,30 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import PaginationControls from '@/components/PaginationControls';
-import { ExcelUtils } from '@/utils/excelUtils';
-import { formatDate } from '@/utils/formatters';
-import { hotelsService } from '@/lib/supabaseService';
-import { usePermissions, Module } from '@/lib/permissions';
-import { DEFAULT_PAGE_SIZE, paginateItems } from '@/types/pagination';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import Modal from '@/components/Modal';
-import ConfirmModal from '@/components/ConfirmModal';
-import { toast } from 'react-hot-toast';
-import { Building2, MapPin, Star, Phone, Mail, FileText, Plus, Pencil, Save, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import PaginationControls from "@/components/PaginationControls";
+import MultiTokenFilterInput from "@/components/MultiTokenFilterInput";
+import { ExcelUtils } from "@/utils/excelUtils";
+import { formatDate } from "@/utils/formatters";
+import { hotelsService } from "@/lib/supabaseService";
+import { usePermissions, Module } from "@/lib/permissions";
+import { DEFAULT_PAGE_SIZE, paginateItems } from "@/types/pagination";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import Modal from "@/components/Modal";
+import ConfirmModal from "@/components/ConfirmModal";
+import { toast } from "react-hot-toast";
+import {
+  Building2,
+  MapPin,
+  Star,
+  Phone,
+  Mail,
+  FileText,
+  Plus,
+  Pencil,
+  Save,
+  AlertCircle,
+} from "lucide-react";
 
 interface Hotel {
   id: string;
@@ -39,41 +51,48 @@ interface Hotel {
 }
 
 export default function HotelsPage() {
-  const { canView, canCreate, canEdit, canDelete, loading: permissionsLoading } = usePermissions();
+  const {
+    canView,
+    canCreate,
+    canEdit,
+    canDelete,
+    loading: permissionsLoading,
+  } = usePermissions();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTokens, setSearchTokens] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [filter, setFilter] = useState("all");
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
   const [hotelToDelete, setHotelToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    company_name: '',
-    location: '',
-    concept: '',
+    name: "",
+    company_name: "",
+    location: "",
+    concept: "",
     rating: 5,
-    contact_person: '',
-    phone: '',
-    email: '',
-    address: '',
-    tax_number: '',
-    tax_office: '',
+    contact_person: "",
+    phone: "",
+    email: "",
+    address: "",
+    tax_number: "",
+    tax_office: "",
     accounting_link_codes: {
-      TL: '',
-      EUR: '',
-      USD: '',
-      GBP: ''
-    }
+      TL: "",
+      EUR: "",
+      USD: "",
+      GBP: "",
+    },
   });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -95,7 +114,6 @@ export default function HotelsPage() {
     loadHotels();
   }, []);
 
-
   const loadHotels = async () => {
     try {
       setLoading(true);
@@ -104,31 +122,33 @@ export default function HotelsPage() {
       if (supaHotels && supaHotels.length > 0) {
         // Supabase şeması camelCase olmayabilir; alanları eşleştir
         const normalized: Hotel[] = supaHotels.map((h: any) => ({
-          id: h.id || h.uuid || '',
+          id: h.id || h.uuid || "",
           name: h.name,
-          company_name: h.company_name || '',
-          location: h.location || h.city || '',
-          concept: h.concept || '',
+          company_name: h.company_name || "",
+          location: h.location || h.city || "",
+          concept: h.concept || "",
           rating: h.rating || 0,
-          contact_person: h.contact_person || '',
-          phone: h.phone || '',
-          email: h.email || '',
-          address: h.address || '',
-          tax_number: h.tax_number || '',
-          tax_office: h.tax_office || '',
+          contact_person: h.contact_person || "",
+          phone: h.phone || "",
+          email: h.email || "",
+          address: h.address || "",
+          tax_number: h.tax_number || "",
+          tax_office: h.tax_office || "",
           accounting_link_codes: h.accounting_link_codes || {},
           is_active: h.is_active,
           created_at: h.created_at,
-          updated_at: h.updated_at
+          updated_at: h.updated_at,
         }));
         setHotels(normalized);
         (window as any).globalHotels = normalized;
-        window.dispatchEvent(new CustomEvent('hotelsUpdated', { detail: normalized }));
+        window.dispatchEvent(
+          new CustomEvent("hotelsUpdated", { detail: normalized }),
+        );
       } else {
         setHotels([]);
       }
     } catch (error) {
-      console.error('Hotels yüklenirken hata:', error);
+      console.error("Hotels yüklenirken hata:", error);
     } finally {
       setLoading(false);
     }
@@ -136,23 +156,23 @@ export default function HotelsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Ref'lerden değerleri al
-    const nameValue = nameInputRef.current?.value || '';
-    const companyNameValue = companyNameInputRef.current?.value || '';
-    const locationValue = locationInputRef.current?.value || '';
-    const conceptValue = conceptInputRef.current?.value || '';
-    const contactPersonValue = contactPersonInputRef.current?.value || '';
-    const phoneValue = phoneInputRef.current?.value || '';
-    const emailValue = emailInputRef.current?.value || '';
-    const addressValue = addressInputRef.current?.value || '';
-    const taxNumberValue = taxNumberInputRef.current?.value || '';
-    const taxOfficeValue = taxOfficeInputRef.current?.value || '';
-    const tlCodeValue = tlCodeInputRef.current?.value || '';
-    const eurCodeValue = eurCodeInputRef.current?.value || '';
-    const usdCodeValue = usdCodeInputRef.current?.value || '';
-    const gbpCodeValue = gbpCodeInputRef.current?.value || '';
-    
+    const nameValue = nameInputRef.current?.value || "";
+    const companyNameValue = companyNameInputRef.current?.value || "";
+    const locationValue = locationInputRef.current?.value || "";
+    const conceptValue = conceptInputRef.current?.value || "";
+    const contactPersonValue = contactPersonInputRef.current?.value || "";
+    const phoneValue = phoneInputRef.current?.value || "";
+    const emailValue = emailInputRef.current?.value || "";
+    const addressValue = addressInputRef.current?.value || "";
+    const taxNumberValue = taxNumberInputRef.current?.value || "";
+    const taxOfficeValue = taxOfficeInputRef.current?.value || "";
+    const tlCodeValue = tlCodeInputRef.current?.value || "";
+    const eurCodeValue = eurCodeInputRef.current?.value || "";
+    const usdCodeValue = usdCodeInputRef.current?.value || "";
+    const gbpCodeValue = gbpCodeInputRef.current?.value || "";
+
     try {
       if (editingHotel) {
         // Mevcut oteli güncelle
@@ -170,12 +190,16 @@ export default function HotelsPage() {
             tax_number: taxNumberValue,
             tax_office: taxOfficeValue,
             accounting_link_codes: {
-              TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
+              TL: tlCodeValue,
+              EUR: eurCodeValue,
+              USD: usdCodeValue,
+              GBP: gbpCodeValue,
             },
-            is_active: hotels.find(h => h.id === editingHotel.id)?.is_active ?? true
+            is_active:
+              hotels.find((h) => h.id === editingHotel.id)?.is_active ?? true,
           } as any);
           await loadHotels();
-          toast.success('Otel başarıyla güncellendi!');
+          toast.success("Otel başarıyla güncellendi!");
         } catch (e: any) {
           toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
         }
@@ -194,43 +218,45 @@ export default function HotelsPage() {
             tax_number: taxNumberValue,
             tax_office: taxOfficeValue,
             accounting_link_codes: {
-              TL: tlCodeValue, EUR: eurCodeValue, USD: usdCodeValue, GBP: gbpCodeValue
+              TL: tlCodeValue,
+              EUR: eurCodeValue,
+              USD: usdCodeValue,
+              GBP: gbpCodeValue,
             },
-            is_active: true
+            is_active: true,
           } as any);
           await loadHotels();
-          toast.success('Otel başarıyla oluşturuldu!');
+          toast.success("Otel başarıyla oluşturuldu!");
         } catch (e: any) {
           toast.error(`Supabase kayıt hatası: ${e?.message || e}`);
         }
       }
-      
+
       // Formu sıfırla ve modalı kapat
       setFormData({
-        name: '',
-        company_name: '',
-        location: '',
-        concept: '',
+        name: "",
+        company_name: "",
+        location: "",
+        concept: "",
         rating: 5,
-        contact_person: '',
-        phone: '',
-        email: '',
-        address: '',
-        tax_number: '',
-        tax_office: '',
+        contact_person: "",
+        phone: "",
+        email: "",
+        address: "",
+        tax_number: "",
+        tax_office: "",
         accounting_link_codes: {
-          TL: '',
-          EUR: '',
-          USD: '',
-          GBP: ''
-        }
+          TL: "",
+          EUR: "",
+          USD: "",
+          GBP: "",
+        },
       });
       setEditingHotel(null);
       setShowAddModal(false);
-      
     } catch (error) {
-      console.error('Otel kaydedilirken hata:', error);
-      toast.error('Otel kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error("Otel kaydedilirken hata:", error);
+      toast.error("Otel kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
 
@@ -238,41 +264,54 @@ export default function HotelsPage() {
     setEditingHotel(hotel);
     setFormData({
       name: hotel.name,
-      company_name: hotel.company_name || '',
-      location: hotel.location || '',
+      company_name: hotel.company_name || "",
+      location: hotel.location || "",
       concept: hotel.concept,
       rating: hotel.rating || 5,
-      contact_person: hotel.contact_person || '',
-      phone: hotel.phone || '',
-      email: hotel.email || '',
-      address: hotel.address || '',
-      tax_number: hotel.tax_number || '',
-      tax_office: hotel.tax_office || '',
+      contact_person: hotel.contact_person || "",
+      phone: hotel.phone || "",
+      email: hotel.email || "",
+      address: hotel.address || "",
+      tax_number: hotel.tax_number || "",
+      tax_office: hotel.tax_office || "",
       accounting_link_codes: {
-        TL: hotel.accounting_link_codes?.TL || '',
-        EUR: hotel.accounting_link_codes?.EUR || '',
-        USD: hotel.accounting_link_codes?.USD || '',
-        GBP: hotel.accounting_link_codes?.GBP || ''
-      }
+        TL: hotel.accounting_link_codes?.TL || "",
+        EUR: hotel.accounting_link_codes?.EUR || "",
+        USD: hotel.accounting_link_codes?.USD || "",
+        GBP: hotel.accounting_link_codes?.GBP || "",
+      },
     });
     setShowAddModal(true);
-    
+
     // Ref'lere değerleri set et
     setTimeout(() => {
-      if (nameInputRef.current) nameInputRef.current.value = hotel.name || '';
-      if (companyNameInputRef.current) companyNameInputRef.current.value = hotel.company_name || '';
-      if (locationInputRef.current) locationInputRef.current.value = hotel.location || '';
-      if (conceptInputRef.current) conceptInputRef.current.value = hotel.concept || '';
-      if (contactPersonInputRef.current) contactPersonInputRef.current.value = hotel.contact_person || '';
-      if (phoneInputRef.current) phoneInputRef.current.value = hotel.phone || '';
-      if (emailInputRef.current) emailInputRef.current.value = hotel.email || '';
-      if (addressInputRef.current) addressInputRef.current.value = hotel.address || '';
-      if (taxNumberInputRef.current) taxNumberInputRef.current.value = hotel.tax_number || '';
-      if (taxOfficeInputRef.current) taxOfficeInputRef.current.value = hotel.tax_office || '';
-      if (tlCodeInputRef.current) tlCodeInputRef.current.value = hotel.accounting_link_codes?.TL || '';
-      if (eurCodeInputRef.current) eurCodeInputRef.current.value = hotel.accounting_link_codes?.EUR || '';
-      if (usdCodeInputRef.current) usdCodeInputRef.current.value = hotel.accounting_link_codes?.USD || '';
-      if (gbpCodeInputRef.current) gbpCodeInputRef.current.value = hotel.accounting_link_codes?.GBP || '';
+      if (nameInputRef.current) nameInputRef.current.value = hotel.name || "";
+      if (companyNameInputRef.current)
+        companyNameInputRef.current.value = hotel.company_name || "";
+      if (locationInputRef.current)
+        locationInputRef.current.value = hotel.location || "";
+      if (conceptInputRef.current)
+        conceptInputRef.current.value = hotel.concept || "";
+      if (contactPersonInputRef.current)
+        contactPersonInputRef.current.value = hotel.contact_person || "";
+      if (phoneInputRef.current)
+        phoneInputRef.current.value = hotel.phone || "";
+      if (emailInputRef.current)
+        emailInputRef.current.value = hotel.email || "";
+      if (addressInputRef.current)
+        addressInputRef.current.value = hotel.address || "";
+      if (taxNumberInputRef.current)
+        taxNumberInputRef.current.value = hotel.tax_number || "";
+      if (taxOfficeInputRef.current)
+        taxOfficeInputRef.current.value = hotel.tax_office || "";
+      if (tlCodeInputRef.current)
+        tlCodeInputRef.current.value = hotel.accounting_link_codes?.TL || "";
+      if (eurCodeInputRef.current)
+        eurCodeInputRef.current.value = hotel.accounting_link_codes?.EUR || "";
+      if (usdCodeInputRef.current)
+        usdCodeInputRef.current.value = hotel.accounting_link_codes?.USD || "";
+      if (gbpCodeInputRef.current)
+        gbpCodeInputRef.current.value = hotel.accounting_link_codes?.GBP || "";
     }, 100);
   };
 
@@ -280,11 +319,11 @@ export default function HotelsPage() {
     try {
       await hotelsService.delete(hotelId);
       await loadHotels();
-      setSuccess('Otel başarıyla silindi!');
-      setTimeout(() => setSuccess(''), 3000);
+      setSuccess("Otel başarıyla silindi!");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
-      console.error('Otel silinirken hata:', error);
-      setError('Otel silinirken bir hata oluştu.');
+      console.error("Otel silinirken hata:", error);
+      setError("Otel silinirken bir hata oluştu.");
     } finally {
       setHotelToDelete(null);
     }
@@ -293,55 +332,55 @@ export default function HotelsPage() {
   const exportHotelsToExcel = async () => {
     try {
       setExporting(true);
-      setError('');
-      setSuccess('');
+      setError("");
+      setSuccess("");
 
       const workbook = await ExcelUtils.createWorkbook();
-      const worksheet = workbook.addWorksheet('Oteller');
+      const worksheet = workbook.addWorksheet("Oteller");
 
       // Başlık satırı
       const headers = [
-        'Otel Adı',
-        'Firma Adı',
-        'Konum',
-        'Konsept',
-        'Yıldız',
-        'İletişim Kişisi',
-        'Telefon',
-        'E-posta',
-        'Adres',
-        'Vergi Numarası',
-        'Vergi Dairesi',
-        'TL Kodu',
-        'EUR Kodu',
-        'USD Kodu',
-        'GBP Kodu',
-        'Durum',
-        'Oluşturulma Tarihi'
+        "Otel Adı",
+        "Firma Adı",
+        "Konum",
+        "Konsept",
+        "Yıldız",
+        "İletişim Kişisi",
+        "Telefon",
+        "E-posta",
+        "Adres",
+        "Vergi Numarası",
+        "Vergi Dairesi",
+        "TL Kodu",
+        "EUR Kodu",
+        "USD Kodu",
+        "GBP Kodu",
+        "Durum",
+        "Oluşturulma Tarihi",
       ];
 
       worksheet.addRow(headers);
 
       // Veri satırları
-      filteredHotels.forEach(hotel => {
+      filteredHotels.forEach((hotel) => {
         worksheet.addRow([
           hotel.name,
-          hotel.company_name || '',
-          hotel.location || '',
+          hotel.company_name || "",
+          hotel.location || "",
           hotel.concept,
-          hotel.rating || '',
-          hotel.contact_person || '',
-          hotel.phone || '',
-          hotel.email || '',
-          hotel.address || '',
-          hotel.tax_number || '',
-          hotel.tax_office || '',
-          hotel.accounting_link_codes?.TL || '',
-          hotel.accounting_link_codes?.EUR || '',
-          hotel.accounting_link_codes?.USD || '',
-          hotel.accounting_link_codes?.GBP || '',
-          hotel.is_active ? 'Aktif' : 'Pasif',
-          formatDate(hotel.created_at)
+          hotel.rating || "",
+          hotel.contact_person || "",
+          hotel.phone || "",
+          hotel.email || "",
+          hotel.address || "",
+          hotel.tax_number || "",
+          hotel.tax_office || "",
+          hotel.accounting_link_codes?.TL || "",
+          hotel.accounting_link_codes?.EUR || "",
+          hotel.accounting_link_codes?.USD || "",
+          hotel.accounting_link_codes?.GBP || "",
+          hotel.is_active ? "Aktif" : "Pasif",
+          formatDate(hotel.created_at),
         ]);
       });
 
@@ -349,75 +388,82 @@ export default function HotelsPage() {
       const headerRow = worksheet.getRow(1);
       headerRow.font = { bold: true };
       headerRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF2E3440' }
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF2E3440" },
       };
-      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      headerRow.alignment = { horizontal: 'center' };
+      headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      headerRow.alignment = { horizontal: "center" };
 
       // Sütun genişliklerini ayarla
-      worksheet.columns.forEach(column => {
+      worksheet.columns.forEach((column) => {
         column.width = 15;
       });
 
       // Dosyayı indir
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `oteller_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = `oteller_${new Date().toISOString().split("T")[0]}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
 
-      setSuccess('Oteller başarıyla Excel dosyasına aktarıldı!');
+      setSuccess("Oteller başarıyla Excel dosyasına aktarıldı!");
     } catch (error) {
-      console.error('Excel export hatası:', error);
-      setError('Excel dosyası oluşturulurken bir hata oluştu.');
+      console.error("Excel export hatası:", error);
+      setError("Excel dosyası oluşturulurken bir hata oluştu.");
     } finally {
       setExporting(false);
     }
   };
 
-  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       setImporting(true);
-      setError('');
-      setSuccess('');
+      setError("");
+      setSuccess("");
 
       const data = await ExcelUtils.readExcelFile(file);
-      
+
       if (!data || data.length === 0) {
-        setError('Excel dosyasında veri bulunamadı.');
+        setError("Excel dosyasında veri bulunamadı.");
         return;
       }
 
       const importedHotels: Hotel[] = data.map((row: any, index: number) => ({
         id: Date.now().toString() + index,
-        name: row['Otel Adı'] || '',
-        company_name: row['Firma Adı'] || '',
-        location: row['Konum'] || '',
-        concept: row['Konsept'] || '',
-        rating: row['Yıldız'] ? parseInt(row['Yıldız']) : 5,
-        contact_person: row['İletişim Kişisi'] || '',
-        phone: row['Telefon'] || '',
-        email: row['E-posta'] || '',
-        address: row['Adres'] || '',
-        tax_number: row['Vergi Numarası'] || '',
-        tax_office: row['Vergi Dairesi'] || '',
+        name: row["Otel Adı"] || "",
+        company_name: row["Firma Adı"] || "",
+        location: row["Konum"] || "",
+        concept: row["Konsept"] || "",
+        rating: row["Yıldız"] ? parseInt(row["Yıldız"]) : 5,
+        contact_person: row["İletişim Kişisi"] || "",
+        phone: row["Telefon"] || "",
+        email: row["E-posta"] || "",
+        address: row["Adres"] || "",
+        tax_number: row["Vergi Numarası"] || "",
+        tax_office: row["Vergi Dairesi"] || "",
         accounting_link_codes: {
-          TL: row['TL Kodu'] || '',
-          EUR: row['EUR Kodu'] || '',
-          USD: row['USD Kodu'] || '',
-          GBP: row['GBP Kodu'] || ''
+          TL: row["TL Kodu"] || "",
+          EUR: row["EUR Kodu"] || "",
+          USD: row["USD Kodu"] || "",
+          GBP: row["GBP Kodu"] || "",
         },
-        is_active: row['Durum'] === 'Aktif' || row['Durum'] === 'aktif' || row['Durum'] === true,
+        is_active:
+          row["Durum"] === "Aktif" ||
+          row["Durum"] === "aktif" ||
+          row["Durum"] === true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }));
 
       // Mevcut otellerle birleştir
@@ -426,114 +472,147 @@ export default function HotelsPage() {
 
       setSuccess(`${importedHotels.length} otel başarıyla içe aktarıldı!`);
     } catch (error) {
-      console.error('Excel import hatası:', error);
-      setError('Excel dosyası okunurken bir hata oluştu.');
+      console.error("Excel import hatası:", error);
+      setError("Excel dosyası okunurken bir hata oluştu.");
     } finally {
       setImporting(false);
       // Input'u temizle
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
   const toggleActive = async (hotelId: string) => {
     try {
-      const hotelToUpdate = hotels.find(hotel => hotel.id === hotelId);
+      const hotelToUpdate = hotels.find((hotel) => hotel.id === hotelId);
       if (!hotelToUpdate) return;
 
-      const updatedHotel = { ...hotelToUpdate, is_active: !hotelToUpdate.is_active };
-      const updatedHotels = hotels.map(hotel => 
-        hotel.id === hotelId ? updatedHotel : hotel
+      const updatedHotel = {
+        ...hotelToUpdate,
+        is_active: !hotelToUpdate.is_active,
+      };
+      const updatedHotels = hotels.map((hotel) =>
+        hotel.id === hotelId ? updatedHotel : hotel,
       );
-    
-    setHotels(updatedHotels);
-    try {
-      await hotelsService.update(hotelId, { is_active: updatedHotel.is_active } as any);
-      await loadHotels();
-    } catch (e: any) {
-      toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
-    }
-      
-      toast.success('Otel durumu başarıyla değiştirildi!');
+
+      setHotels(updatedHotels);
+      try {
+        await hotelsService.update(hotelId, {
+          is_active: updatedHotel.is_active,
+        } as any);
+        await loadHotels();
+      } catch (e: any) {
+        toast.error(`Supabase güncelleme hatası: ${e?.message || e}`);
+      }
+
+      toast.success("Otel durumu başarıyla değiştirildi!");
     } catch (error) {
-      console.error('Otel durumu değiştirilirken hata:', error);
-      toast.error('Otel durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error("Otel durumu değiştirilirken hata:", error);
+      toast.error(
+        "Otel durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.",
+      );
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      company_name: '',
-      location: '',
-      concept: '',
+      name: "",
+      company_name: "",
+      location: "",
+      concept: "",
       rating: 5,
-      contact_person: '',
-      phone: '',
-      email: '',
-      address: '',
-      tax_number: '',
-      tax_office: '',
+      contact_person: "",
+      phone: "",
+      email: "",
+      address: "",
+      tax_number: "",
+      tax_office: "",
       accounting_link_codes: {
-        TL: '',
-        EUR: '',
-        USD: '',
-        GBP: ''
-      }
+        TL: "",
+        EUR: "",
+        USD: "",
+        GBP: "",
+      },
     });
     setEditingHotel(null);
     setShowAddModal(false);
   };
 
+  const searchHotels = (hotels: Hotel[], term: string, tokens: string[]) => {
+    if (!term && (!tokens || tokens.length === 0)) return hotels;
 
-  const searchHotels = (hotels: Hotel[], searchTerm: string) => {
-    if (!searchTerm) return hotels;
-    
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return hotels.filter(hotel => 
-      hotel.name.toLowerCase().includes(lowerSearchTerm) ||
-      hotel.company_name?.toLowerCase().includes(lowerSearchTerm) ||
-      (hotel.contact_person && hotel.contact_person.toLowerCase().includes(lowerSearchTerm)) ||
-      (hotel.phone && hotel.phone.toLowerCase().includes(lowerSearchTerm)) ||
-      (hotel.email && hotel.email.toLowerCase().includes(lowerSearchTerm)) ||
-      (hotel.address && hotel.address.toLowerCase().includes(lowerSearchTerm)) ||
-      (hotel.tax_number && hotel.tax_number.toLowerCase().includes(lowerSearchTerm)) ||
-      (hotel.tax_office && hotel.tax_office.toLowerCase().includes(lowerSearchTerm))
-    );
+    return hotels.filter((hotel) => {
+      const matches = (s: string) => {
+        if (!s) return true;
+        const lowerS = s.toLowerCase();
+        return (
+          hotel.name.toLowerCase().includes(lowerS) ||
+          (hotel.company_name &&
+            hotel.company_name.toLowerCase().includes(lowerS)) ||
+          (hotel.location && hotel.location.toLowerCase().includes(lowerS)) ||
+          (hotel.concept && hotel.concept.toLowerCase().includes(lowerS)) ||
+          (hotel.rating !== undefined &&
+            hotel.rating !== null &&
+            hotel.rating.toString().includes(lowerS)) ||
+          (hotel.contact_person &&
+            hotel.contact_person.toLowerCase().includes(lowerS)) ||
+          (hotel.phone && hotel.phone.toLowerCase().includes(lowerS)) ||
+          (hotel.email && hotel.email.toLowerCase().includes(lowerS)) ||
+          (hotel.address && hotel.address.toLowerCase().includes(lowerS)) ||
+          (hotel.tax_number &&
+            hotel.tax_number.toLowerCase().includes(lowerS)) ||
+          (hotel.tax_office && hotel.tax_office.toLowerCase().includes(lowerS))
+        );
+      };
+
+      if (term && !matches(term)) return false;
+
+      if (tokens && tokens.length > 0) {
+        for (const t of tokens) {
+          if (!matches(t)) return false;
+        }
+      }
+
+      return true;
+    });
   };
 
-  const sortHotels = (hotels: Hotel[], field: string, direction: 'asc' | 'desc') => {
+  const sortHotels = (
+    hotels: Hotel[],
+    field: string,
+    direction: "asc" | "desc",
+  ) => {
     if (!field) return hotels;
-    
+
     return [...hotels].sort((a, b) => {
       let aValue: any;
       let bValue: any;
-      
+
       switch (field) {
-        case 'name':
+        case "name":
           aValue = a.name;
           bValue = b.name;
           break;
-        case 'company_name':
-          aValue = a.company_name || '';
-          bValue = b.company_name || '';
+        case "company_name":
+          aValue = a.company_name || "";
+          bValue = b.company_name || "";
           break;
-        case 'location':
-          aValue = a.location || '';
-          bValue = b.location || '';
+        case "location":
+          aValue = a.location || "";
+          bValue = b.location || "";
           break;
-        case 'concept':
+        case "concept":
           aValue = a.concept;
           bValue = b.concept;
           break;
-        case 'rating':
+        case "rating":
           aValue = a.rating || 0;
           bValue = b.rating || 0;
           break;
-        case 'contact_person':
-          aValue = a.contact_person || '';
-          bValue = b.contact_person || '';
+        case "contact_person":
+          aValue = a.contact_person || "";
+          bValue = b.contact_person || "";
           break;
-        case 'created_at':
+        case "created_at":
           aValue = new Date(a.created_at);
           bValue = new Date(b.created_at);
           break;
@@ -541,40 +620,44 @@ export default function HotelsPage() {
           aValue = a[field as keyof Hotel];
           bValue = b[field as keyof Hotel];
       }
-      
-      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
       return 0;
     });
   };
 
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
   const filteredHotels = sortHotels(
     searchHotels(
-      filter === 'all' 
-        ? hotels 
-        : hotels.filter(hotel => 
-            filter === 'active' ? hotel.is_active :
-            filter === 'inactive' ? !hotel.is_active : true
+      filter === "all"
+        ? hotels
+        : hotels.filter((hotel) =>
+            filter === "active"
+              ? hotel.is_active
+              : filter === "inactive"
+                ? !hotel.is_active
+                : true,
           ),
-      searchTerm
+      searchTerm,
+      searchTokens,
     ),
     sortField,
-    sortDirection
+    sortDirection,
   );
   const paginatedHotels = paginateItems(filteredHotels, page, pageSize);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filter, sortField, sortDirection]);
+  }, [searchTerm, searchTokens, filter, sortField, sortDirection]);
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -583,11 +666,18 @@ export default function HotelsPage() {
   // Hotels görüntüleme yetkisi kontrolü
   if (!canView(Module.HOTELS)) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Oteller sayfasına erişim için yetkiniz bulunmuyor.</p>
-          <Link href="/" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Yetki Gerekli
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Oteller sayfasına erişim için yetkiniz bulunmuyor.
+          </p>
+          <Link
+            href="/"
+            className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
+          >
             Ana Sayfaya Dön
           </Link>
         </div>
@@ -600,24 +690,109 @@ export default function HotelsPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] p-2 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 w-full min-w-0">
-      <div className="w-full min-w-0 flex flex-col flex-1">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-200">Otel Yönetimi</h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">Otel bilgilerini yönetin ve düzenleyin</p>
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+      <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
+        {/* Header Section */}
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
+          {/* Title Area */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+            </div>
+            <div className="space-y-0.5">
+              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+                Otel Yönetimi
+              </h1>
+              <p className="text-xs text-slate-400 mt-1">
+                Otel bilgilerini yönetin ve düzenleyin
+              </p>
+            </div>
           </div>
-          <div className="flex space-x-2">
+
+          {/* Filters & Actions Area */}
+          <div className="flex flex-row items-end justify-start xl:justify-end gap-3 flex-1 flex-wrap">
+            {/* Search Bar */}
+            <div className="flex flex-col gap-1.5 flex-[2] min-w-[250px] max-w-lg shrink-0">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                GENEL ARAMA (OTEL, FİRMA, KONUM...)
+              </label>
+              <div className="h-10">
+                <MultiTokenFilterInput
+                  label=""
+                  placeholder="Yaz, Enter ile ekle"
+                  inputValue={searchTerm}
+                  onInputChange={setSearchTerm}
+                  tokens={searchTokens}
+                  suggestions={[]}
+                  onAddToken={(t) => {
+                    if (!searchTokens.includes(t)) {
+                      setSearchTokens([...searchTokens, t]);
+                      setSearchTerm("");
+                    }
+                  }}
+                  onRemoveToken={(t) => {
+                    setSearchTokens(searchTokens.filter((st) => st !== t));
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Trash Button */}
             <button
-              onClick={exportHotelsToExcel}
-              disabled={exporting}
-              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200 disabled:opacity-50"
+              onClick={() => {
+                setFilter("all");
+                setSearchTerm("");
+                setSearchTokens([]);
+              }}
+              className="h-10 w-10 flex items-center justify-center bg-red-500/10 text-red-400 hover:text-red-300 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-all shrink-0"
+              title="Filtreleri Temizle"
             >
-              {exporting ? '📤 Exporting...' : '📤 Excel Export'}
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
             </button>
-            <label className="px-2 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors duration-200 cursor-pointer disabled:opacity-50">
-              {importing ? '📥 Importing...' : '📥 Excel Import'}
+
+            {/* Actions Divider */}
+            <div className="w-px h-6 bg-white/10 shrink-0 mx-1 hidden sm:block"></div>
+
+            {/* Actions */}
+            <label className="h-10 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                />
+              </svg>
+              {importing ? "YÜKLENİYOR..." : "EXCEL YÜKLE"}
               <input
                 type="file"
                 accept=".xlsx,.xls"
@@ -626,248 +801,247 @@ export default function HotelsPage() {
                 className="hidden"
               />
             </label>
+
+            <button
+              onClick={exportHotelsToExcel}
+              disabled={exporting}
+              className="h-10 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" />
+              </svg>
+              {exporting ? "İNDİRİLİYOR..." : "EXCEL İNDİR"}
+            </button>
+
             {canCreate(Module.HOTELS) && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="bg-blue-600 dark:bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 text-xs"
+                className="h-10 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
-                Yeni Otel
+                <Plus size={16} /> YENİ OTEL
               </button>
             )}
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="flex flex-nowrap gap-2 mb-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0">
-            <div className="flex items-center">
-              <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">Toplam Otel</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200">{hotels.length}</p>
-              </div>
-            </div>
+        {/* Unified Stats Strip */}
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+            <span className="text-[11px] font-medium text-white">Durum:</span>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0">
-            <div className="flex items-center">
-              <div className="p-1 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">Aktif</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200">{hotels.filter(h => h.is_active).length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 transition-colors duration-200 flex-1 min-w-0">
-            <div className="flex items-center">
-              <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <svg className="w-3 h-3 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">Pasif</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200">{hotels.filter(h => !h.is_active).length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-2 transition-colors duration-200">
-          <div className="p-2">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-2 py-1 rounded-lg font-medium transition-colors duration-200 text-xs ${
-                  filter === 'all'
-                    ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                Tümü ({hotels.length})
-              </button>
-              <button
-                onClick={() => setFilter('active')}
-                className={`px-2 py-1 rounded-lg font-medium transition-colors duration-200 text-xs ${
-                  filter === 'active'
-                    ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                Aktif ({hotels.filter(h => h.is_active).length})
-              </button>
-              <button
-                onClick={() => setFilter('inactive')}
-                className={`px-2 py-1 rounded-lg font-medium transition-colors duration-200 text-xs ${
-                  filter === 'inactive'
-                    ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                Pasif ({hotels.filter(h => !h.is_active).length})
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-3">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Otel adı, firma adı, konum, konsept, iletişim kişisi, telefon, e-posta, adres, vergi numarası, vergi dairesi... herhangi bir şey arayın"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-6 pr-2 py-1 border border-gray-300 rounded-lg leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-xs"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute inset-y-0 right-0 pr-2 flex items-center"
-              >
-                <svg className="h-3 w-3 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+          >
+            TÜMÜ
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "all" ? "bg-blue-500/20 text-blue-300" : "bg-white/10"}`}
+            >
+              {hotels.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setFilter("active")}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+          >
+            AKTİF
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "active" ? "bg-teal-500/20 text-teal-300" : "bg-white/10"}`}
+            >
+              {hotels.filter((h) => h.is_active).length}
+            </span>
+          </button>
+          <button
+            onClick={() => setFilter("inactive")}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "inactive" ? "bg-red-500/20 border border-red-500/30 text-red-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+          >
+            PASİF
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "inactive" ? "bg-red-500/20 text-red-300" : "bg-white/10"}`}
+            >
+              {hotels.filter((h) => !h.is_active).length}
+            </span>
+          </button>
         </div>
 
         {/* Hotels Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200 w-full min-w-0 flex-1 flex flex-col min-h-0">
-          <div className="overflow-auto w-full flex-1">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+        <div className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl w-full min-w-0 flex-1 flex flex-col min-h-0 relative overflow-hidden">
+          <div className="overflow-auto w-full flex-1 custom-scrollbar">
+            <table className="min-w-full divide-y divide-white/10">
+              <thead className="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
                 <tr>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
                     Otel Bilgileri
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
                     Konum & Konsept
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
                     İletişim
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
                     Muhasebe
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
                     Durum
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
                     İşlemler
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-white/5">
                 {paginatedHotels.items.map((hotel) => (
-                  <tr key={hotel.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-2 py-2">
+                  <tr
+                    key={hotel.id}
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                    onDoubleClick={() => handleEdit(hotel)}
+                  >
+                    <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200">
+                        <div className="text-sm font-medium text-white mb-0.5">
                           {hotel.name}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">
-                          {hotel.company_name || '-'}
+                        <div className="text-[11px] text-slate-400">
+                          {hotel.company_name || "-"}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">
+                        <div className="text-[10px] text-slate-500">
                           ID: {hotel.id}
                         </div>
                       </div>
                     </td>
-                    <td className="px-2 py-2">
-                      <div className="text-xs text-gray-900 dark:text-white transition-colors duration-200">
-                        <div className="font-medium">{hotel.location || '-'}</div>
-                        <div className="text-gray-500 dark:text-gray-400">{hotel.concept}</div>
+                    <td className="px-2.5 py-2.5">
+                      <div>
+                        <div className="text-xs font-medium text-slate-200">
+                          {hotel.location || "-"}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {hotel.concept}
+                        </div>
                         {hotel.rating && (
                           <div className="flex items-center mt-1">
-                            <span className="text-yellow-500 text-xs">★</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">{hotel.rating}/5</span>
+                            <span className="text-yellow-400 text-xs">★</span>
+                            <span className="text-xs text-slate-400 ml-1">
+                              {hotel.rating}/5
+                            </span>
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-2 py-2">
-                      <div className="text-xs text-gray-900 dark:text-white transition-colors duration-200">
-                        <div className="font-medium">{hotel.contact_person || '-'}</div>
-                        <div className="text-gray-500 dark:text-gray-400">{hotel.phone || '-'}</div>
-                        <div className="text-gray-500 dark:text-gray-400">{hotel.email || '-'}</div>
+                    <td className="px-2.5 py-2.5">
+                      <div>
+                        <div className="text-xs font-medium text-slate-200">
+                          {hotel.contact_person || "-"}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {hotel.phone || "-"}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {hotel.email || "-"}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-2 py-2">
-                      <div className="text-xs text-gray-900 dark:text-white transition-colors duration-200">
-                        <div className="font-medium">Vergi: {hotel.tax_number || '-'}</div>
-                        <div className="text-gray-500 dark:text-gray-400">{hotel.tax_office || '-'}</div>
+                    <td className="px-2.5 py-2.5">
+                      <div>
+                        <div className="text-xs font-medium text-slate-200">
+                          Vergi: {hotel.tax_number || "-"}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {hotel.tax_office || "-"}
+                        </div>
                         {hotel.accounting_link_codes && (
                           <div className="mt-1">
-                            <div className="text-gray-500 dark:text-gray-400 text-xs">
-                              {hotel.accounting_link_codes.TL && `TL: ${hotel.accounting_link_codes.TL}`}
+                            <div className="text-xs text-slate-400">
+                              {hotel.accounting_link_codes.TL &&
+                                `TL: ${hotel.accounting_link_codes.TL}`}
                             </div>
-                            <div className="text-gray-500 dark:text-gray-400 text-xs">
-                              {hotel.accounting_link_codes.EUR && `EUR: ${hotel.accounting_link_codes.EUR}`}
+                            <div className="text-xs text-slate-400">
+                              {hotel.accounting_link_codes.EUR &&
+                                `EUR: ${hotel.accounting_link_codes.EUR}`}
                             </div>
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        hotel.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {hotel.is_active ? 'Aktif' : 'Pasif'}
+                    <td className="px-2.5 py-2.5 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2.5 py-1 text-[11px] font-semibold rounded-full border ${
+                          hotel.is_active
+                            ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                            : "bg-red-500/10 text-red-400 border-red-500/20"
+                        }`}
+                      >
+                        {hotel.is_active ? "Aktif" : "Pasif"}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium">
                       <div className="flex items-center space-x-2">
                         {canEdit(Module.HOTELS) && (
                           <button
                             onClick={() => handleEdit(hotel)}
-                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors duration-200"
+                            className="text-green-400 hover:text-green-300 p-1.5 rounded-lg hover:bg-green-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Düzenle"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </button>
                         )}
                         {canDelete(Module.HOTELS) && (
                           <button
                             onClick={() => setHotelToDelete(hotel.id)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
+                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Sil"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </button>
                         )}
                         {canEdit(Module.HOTELS) && (
                           <button
                             onClick={() => toggleActive(hotel.id)}
-                            className={`p-1 rounded transition-colors duration-200 ${
-                              hotel.is_active 
-                                ? 'text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/30' 
-                                : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30'
+                            className={`p-1.5 rounded-lg transition-all duration-200 opacity-70 group-hover:opacity-100 ${
+                              hotel.is_active
+                                ? "text-orange-400 hover:text-orange-300 hover:bg-orange-500/20"
+                                : "text-teal-400 hover:text-teal-300 hover:bg-teal-500/20"
                             }`}
-                            title={hotel.is_active ? 'Pasif Yap' : 'Aktif Yap'}
+                            title={hotel.is_active ? "Pasif Yap" : "Aktif Yap"}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </button>
                         )}
@@ -899,19 +1073,19 @@ export default function HotelsPage() {
           setEditingHotel(null);
           resetForm();
         }}
-        title={editingHotel ? 'Otel Düzenle' : 'Yeni Otel Ekle'}
+        title={editingHotel ? "Otel Düzenle" : "Yeni Otel Ekle"}
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                <Building2 size={16} className="text-blue-500" />
+              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-2">
+                <Building2 size={16} className="text-blue-400" />
                 Temel Bilgiler
               </h4>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-white mb-1.5">
                     Otel Adı *
                   </label>
                   <input
@@ -919,37 +1093,37 @@ export default function HotelsPage() {
                     type="text"
                     defaultValue=""
                     required
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Otel Adı"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-white mb-1.5">
                     Firma Adı
                   </label>
                   <input
                     ref={companyNameInputRef}
                     type="text"
                     defaultValue=""
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Şirket Ünvanı"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
                       <MapPin size={12} /> Konum
                     </label>
                     <input
                       ref={locationInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="Şehir/Bölge"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-white mb-1.5">
                       Konsept *
                     </label>
                     <input
@@ -957,22 +1131,29 @@ export default function HotelsPage() {
                       type="text"
                       defaultValue=""
                       required
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="Örn: Her Şey Dahil"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
                     <Star size={12} /> Yıldız
                   </label>
                   <select
                     value={formData.rating}
-                    onChange={(e) => setFormData({...formData, rating: parseInt(e.target.value)})}
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer text-sm"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        rating: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer text-sm"
                   >
-                    {[1, 2, 3, 4, 5].map(rating => (
-                      <option key={rating} value={rating}>{rating} Yıldız</option>
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <option key={rating} value={rating}>
+                        {rating} Yıldız
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -980,82 +1161,82 @@ export default function HotelsPage() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                <Phone size={16} className="text-blue-500" />
+              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-2">
+                <Phone size={16} className="text-blue-400" />
                 İletişim & Fatura
               </h4>
               <div className="grid grid-cols-1 gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-white mb-1.5">
                       İletişim Kişisi
                     </label>
                     <input
                       ref={contactPersonInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="Ad Soyad"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                    <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
                       <Phone size={12} /> Telefon
                     </label>
                     <input
                       ref={phoneInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="+90..."
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
                     <Mail size={12} /> E-posta
                   </label>
                   <input
                     ref={emailInputRef}
                     type="email"
                     defaultValue=""
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="otel@eposta.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-white mb-1.5">
                     Adres
                   </label>
                   <input
                     ref={addressInputRef}
                     type="text"
                     defaultValue=""
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Tam adres..."
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-white mb-1.5">
                       Vergi No
                     </label>
                     <input
                       ref={taxNumberInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-white mb-1.5">
                       Vergi Dairesi
                     </label>
                     <input
                       ref={taxOfficeInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     />
                   </div>
                 </div>
@@ -1064,31 +1245,59 @@ export default function HotelsPage() {
           </div>
 
           <div className="space-y-4 pt-2">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-              <FileText size={16} className="text-blue-500" />
+            <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-2">
+              <FileText size={16} className="text-blue-400" />
               Muhasebe Bağlantı Kodları
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">TL Kodu</label>
-                <input ref={tlCodeInputRef} type="text" defaultValue="" className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  TL Kodu
+                </label>
+                <input
+                  ref={tlCodeInputRef}
+                  type="text"
+                  defaultValue=""
+                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">EUR Kodu</label>
-                <input ref={eurCodeInputRef} type="text" defaultValue="" className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  EUR Kodu
+                </label>
+                <input
+                  ref={eurCodeInputRef}
+                  type="text"
+                  defaultValue=""
+                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">USD Kodu</label>
-                <input ref={usdCodeInputRef} type="text" defaultValue="" className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  USD Kodu
+                </label>
+                <input
+                  ref={usdCodeInputRef}
+                  type="text"
+                  defaultValue=""
+                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">GBP Kodu</label>
-                <input ref={gbpCodeInputRef} type="text" defaultValue="" className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  GBP Kodu
+                </label>
+                <input
+                  ref={gbpCodeInputRef}
+                  type="text"
+                  defaultValue=""
+                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
             <button
               type="button"
               onClick={() => {
@@ -1096,16 +1305,16 @@ export default function HotelsPage() {
                 setEditingHotel(null);
                 resetForm();
               }}
-              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+              className="px-6 py-2.5 text-sm font-bold text-white bg-[#0f172a]/40 border border-white/10 rounded-xl hover:bg-white/5 transition-all"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-600 dark:bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all flex items-center gap-2"
             >
               {editingHotel ? <Pencil size={18} /> : <Plus size={18} />}
-              {editingHotel ? 'Güncelle' : 'Otel Oluştur'}
+              {editingHotel ? "Güncelle" : "Otel Oluştur"}
             </button>
           </div>
         </form>
@@ -1125,15 +1334,17 @@ export default function HotelsPage() {
 
       {/* Mesaj Bildirimleri */}
       {(success || error) && (
-        <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-[1000] border backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
-          success 
-            ? 'bg-green-500/90 border-green-400 text-white' 
-            : 'bg-red-500/90 border-red-400 text-white'
-        }`}>
+        <div
+          className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-[1000] border backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+            success
+              ? "bg-green-500/90 border-green-400 text-white"
+              : "bg-red-500/90 border-red-400 text-white"
+          }`}
+        >
           {success ? <Save size={20} /> : <AlertCircle size={20} />}
           <span className="font-bold text-sm">{success || error}</span>
         </div>
       )}
     </div>
   );
-} 
+}

@@ -1,42 +1,45 @@
-import { useState, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useMemo } from "react";
+import { useParams } from "next/navigation";
 
 export function useProjectState() {
   const params = useParams();
   const projectId = useMemo(() => {
-    const id = String(params?.id || '');
+    const id = String(params?.id || "");
     return id;
   }, [params]);
 
   // Genel state'ler
-  const [activeTab, setActiveTab] = useState<string>('satis');
-  const [activeHotelId, setActiveHotelId] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>("satis");
+  const [activeHotelId, setActiveHotelId] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['satis', 'alis', 'kar-zarar']));
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(
+    new Set(["satis", "alis", "kar-zarar"]),
+  );
   const [project, setProject] = useState<any>(null);
-  
+
   // Proje düzenleme state'leri
   const [isEditingProject, setIsEditingProject] = useState<boolean>(false);
   const [projectFormData, setProjectFormData] = useState<any>({});
-  
+
   // Dropdown ve arama state'leri
-  const [agencySearch, setAgencySearch] = useState<string>('');
-  const [hotelSearch, setHotelSearch] = useState<string>('');
+  const [agencySearch, setAgencySearch] = useState<string>("");
+  const [hotelSearch, setHotelSearch] = useState<string>("");
   const [showAgencyDropdown, setShowAgencyDropdown] = useState<boolean>(false);
   const [showHotelDropdown, setShowHotelDropdown] = useState<boolean>(false);
   const [selectedAgencyIndex, setSelectedAgencyIndex] = useState<number>(-1);
   const [selectedHotelIndex, setSelectedHotelIndex] = useState<number>(-1);
-  const [userSearch, setUserSearch] = useState<string>('');
+  const [userSearch, setUserSearch] = useState<string>("");
   const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
   const [selectedUserIndex, setSelectedUserIndex] = useState<number>(-1);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [isAddHotelModalOpen, setIsAddHotelModalOpen] = useState<boolean>(false);
+  const [isAddHotelModalOpen, setIsAddHotelModalOpen] =
+    useState<boolean>(false);
 
   // Tab değiştirme fonksiyonu
   const handleTabChange = (tabKey: string) => {
     setActiveTab(tabKey);
     if (!loadedTabs.has(tabKey)) {
-      setLoadedTabs(prev => new Set([...prev, tabKey]));
+      setLoadedTabs((prev) => new Set([...prev, tabKey]));
     }
   };
 
@@ -86,6 +89,3 @@ export function useProjectState() {
     handleHotelChange,
   };
 }
-
-
-

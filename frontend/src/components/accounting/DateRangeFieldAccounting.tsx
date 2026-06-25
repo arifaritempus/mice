@@ -1,17 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import DatePicker from 'react-datepicker';
-import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { Calendar, X } from 'lucide-react';
-import 'react-datepicker/dist/react-datepicker.css';
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import DatePicker from "react-datepicker";
+import {
+  format as formatDateFns,
+  parse as parseDateFns,
+  isValid as isValidDate,
+  parseISO,
+} from "date-fns";
+import { tr } from "date-fns/locale";
+import { Calendar, X } from "lucide-react";
+import "react-datepicker/dist/react-datepicker.css";
 
 export interface DateRangeFieldAccountingProps {
   label: string;
   startValue: string; // ISO date string
-  endValue: string;   // ISO date string
+  endValue: string; // ISO date string
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
   hideLabel?: boolean;
@@ -23,7 +28,8 @@ const toDate = (value: string) => {
   return isValidDate(parsed) ? parsed : null;
 };
 
-const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd') : '');
+const toIsoDate = (date: Date | null) =>
+  date ? formatDateFns(date, "yyyy-MM-dd") : "";
 
 export function DateRangeFieldAccounting({
   label,
@@ -31,21 +37,28 @@ export function DateRangeFieldAccounting({
   endValue,
   onStartChange,
   onEndChange,
-  hideLabel = false
+  hideLabel = false,
 }: DateRangeFieldAccountingProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [pickerRange, setPickerRange] = useState<[Date | null, Date | null]>([toDate(startValue), toDate(endValue)]);
-  const [calendarStyle, setCalendarStyle] = useState({ top: 0, left: 0, origin: 'top left' });
+  const [pickerRange, setPickerRange] = useState<[Date | null, Date | null]>([
+    toDate(startValue),
+    toDate(endValue),
+  ]);
+  const [calendarStyle, setCalendarStyle] = useState({
+    top: 0,
+    left: 0,
+    origin: "top left",
+  });
 
   // Handle responsive
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Sync internal range with props
@@ -63,15 +76,15 @@ export function DateRangeFieldAccounting({
       if (!containerRef.current) return;
       if (containerRef.current.contains(target)) return;
       if (calendarRef.current?.contains(target)) return;
-      
+
       // Prevent closing if clicking on a calendar navigation button inside the portal
-      if ((target as Element).closest('.react-datepicker')) return;
-      
+      if ((target as Element).closest(".react-datepicker")) return;
+
       setIsCalendarOpen(false);
       setPickerRange([toDate(startValue), toDate(endValue)]);
     };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
   }, [startValue, endValue, isMobile]);
 
   // Position portal (Desktop)
@@ -80,21 +93,23 @@ export function DateRangeFieldAccounting({
     const updatePos = () => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      
+
       const isRightAligned = window.innerWidth - rect.left < 650; // Popover width is roughly 620px for 2 months
-      
+
       setCalendarStyle({
         top: rect.bottom + 8,
-        left: isRightAligned ? Math.max(8, rect.right - 620) : Math.max(8, rect.left),
-        origin: isRightAligned ? 'top right' : 'top left'
+        left: isRightAligned
+          ? Math.max(8, rect.right - 620)
+          : Math.max(8, rect.left),
+        origin: isRightAligned ? "top right" : "top left",
       });
     };
     updatePos();
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
     return () => {
-      window.removeEventListener('scroll', updatePos, true);
-      window.removeEventListener('resize', updatePos);
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
     };
   }, [isCalendarOpen, isMobile]);
 
@@ -115,8 +130,8 @@ export function DateRangeFieldAccounting({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onStartChange('');
-    onEndChange('');
+    onStartChange("");
+    onEndChange("");
     setPickerRange([null, null]);
   };
 
@@ -126,9 +141,9 @@ export function DateRangeFieldAccounting({
   // Formatted display text
   let displayText = "Tarih Seçin";
   if (startValue && endValue) {
-    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yyyy', {locale: tr})} - ${formatDateFns(toDate(endValue)!, 'dd MMM yyyy', {locale: tr})}`;
+    displayText = `${formatDateFns(toDate(startValue)!, "dd MMM yyyy", { locale: tr })} - ${formatDateFns(toDate(endValue)!, "dd MMM yyyy", { locale: tr })}`;
   } else if (startValue) {
-    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yyyy', {locale: tr})} - Belirsiz`;
+    displayText = `${formatDateFns(toDate(startValue)!, "dd MMM yyyy", { locale: tr })} - Belirsiz`;
   }
 
   const renderCalendarContent = () => (
@@ -151,7 +166,7 @@ export function DateRangeFieldAccounting({
           calendarClassName="!border-0 !bg-transparent w-full mx-auto"
         />
       </div>
-      <div className="flex justify-end gap-3 p-4 sm:px-6 sm:py-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 w-full mt-auto">
+      <div className="flex justify-end gap-3 p-4 sm:px-6 sm:py-5 border-t border-slate-200 dark:border-slate-800 bg-[#0f172a]/50 w-full mt-auto">
         <button
           onClick={closeCalendar}
           className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 transition-all shadow-sm"
@@ -161,7 +176,7 @@ export function DateRangeFieldAccounting({
         <button
           onClick={handleApply}
           disabled={!pickerRange[0]}
-          className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/20"
+          className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-semibold text-white bg-blue-500 border border-transparent rounded-xl hover:bg-blue-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/20"
         >
           Uygula
         </button>
@@ -172,11 +187,14 @@ export function DateRangeFieldAccounting({
   return (
     <div className="min-w-0 relative flex flex-col w-full" ref={containerRef}>
       {!hideLabel && (
-        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 truncate" title={label}>
+        <label
+          className="block text-xs font-semibold text-slate-700 dark:text-white mb-1.5 truncate"
+          title={label}
+        >
           {label}
         </label>
       )}
-      
+
       {/* Trigger Button */}
       <button
         type="button"
@@ -184,13 +202,16 @@ export function DateRangeFieldAccounting({
         className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
       >
         <div className="flex items-center gap-2.5 truncate">
-          <Calendar size={16} className="text-slate-400 dark:text-slate-400 shrink-0" />
+          <Calendar
+            size={16}
+            className="text-slate-400 dark:text-slate-400 shrink-0"
+          />
           <span className="truncate">{displayText}</span>
         </div>
         {(startValue || endValue) && (
-          <div 
+          <div
             onClick={handleClear}
-            className="shrink-0 p-1 ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="shrink-0 p-1 ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
           >
             <X size={14} />
           </div>
@@ -198,44 +219,53 @@ export function DateRangeFieldAccounting({
       </button>
 
       {/* Calendar Portal / Modal */}
-      {isCalendarOpen && typeof document !== 'undefined' && createPortal(
-        isMobile ? (
-          // Mobile: Bottom-sheet modal
-          <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div 
-              className="bg-white dark:bg-slate-900 w-full rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
-              style={{ maxHeight: '90dvh' }}
-              ref={calendarRef}
-            >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{label || "Tarih Seçin"}</h3>
-                <button onClick={closeCalendar} className="p-2 -mr-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="flex-1 overflow-hidden flex flex-col">
-                {renderCalendarContent()}
+      {isCalendarOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          isMobile ? (
+            // Mobile: Bottom-sheet modal
+            <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-[#0f172a]/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+              <div
+                className="bg-white dark:bg-[#0f172a] w-full rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
+                style={{ maxHeight: "90dvh" }}
+                ref={calendarRef}
+              >
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {label || "Tarih Seçin"}
+                  </h3>
+                  <button
+                    onClick={closeCalendar}
+                    className="p-2 -mr-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  {renderCalendarContent()}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          // Desktop: Popover
-          <div
-            ref={calendarRef}
-            className="fixed z-[9999] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-            style={{ 
-              top: `${calendarStyle.top}px`, 
-              left: `${calendarStyle.left}px`,
-              transformOrigin: calendarStyle.origin
-            }}
-          >
-            {renderCalendarContent()}
-          </div>
-        ),
-        document.body
-      )}
+          ) : (
+            // Desktop: Popover
+            <div
+              ref={calendarRef}
+              className="fixed z-[9999] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+              style={{
+                top: `${calendarStyle.top}px`,
+                left: `${calendarStyle.left}px`,
+                transformOrigin: calendarStyle.origin,
+              }}
+            >
+              {renderCalendarContent()}
+            </div>
+          ),
+          document.body,
+        )}
 
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         /* Hide scrollbar for smooth bottom sheet */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -477,8 +507,9 @@ export function DateRangeFieldAccounting({
           font-size: 1rem;
           font-weight: 600;
         }
-      `}} />
+      `,
+        }}
+      />
     </div>
   );
 }
-

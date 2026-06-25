@@ -3,9 +3,9 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p 6002",
     "build": "next build",
-    "start": "next start -p 3001",
+    "start": "next start -p 6002",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "build:css": "tailwindcss -i ./src/app/globals.css -o ./public/styles.css --watch",

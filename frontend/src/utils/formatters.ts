@@ -30,4 +30,15 @@ export const formatDate = (date: string | Date) => {
 // Tarih aralığı formatı: GG.AA.YYYY - GG.AA.YYYY
 export const formatDateRange = (startDate: string | Date, endDate: string | Date) => {
   return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+};
+
+// Kısa gün adını döndür (Örn: Pzt, Sal, vs.)
+export const getDayNameShort = (date: string | Date) => {
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('tr-TR', { weekday: 'short' });
+  } catch (e) {
+    return '';
+  }
 }; 

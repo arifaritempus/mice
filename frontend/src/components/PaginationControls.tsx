@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/types/pagination';
-import { useEffect } from 'react';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/pagination";
+import { useEffect } from "react";
 
 interface PaginationControlsProps {
   page: number;
@@ -16,13 +16,13 @@ interface PaginationControlsProps {
 }
 
 const getCookie = (name: string): string | null => {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
   const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
   return m ? decodeURIComponent(m[1]) : null;
 };
 
 const setCookie = (name: string, value: string) => {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
 };
 
@@ -33,14 +33,16 @@ export default function PaginationControls({
   totalPages,
   onPageChange,
   onPageSizeChange,
-  preferenceKey = 'list_page_size',
+  preferenceKey = "list_page_size",
   compactRight = false,
-  loadingHint = null
+  loadingHint = null,
 }: PaginationControlsProps) {
-
   useEffect(() => {
-    const cookieSize = Number(getCookie(preferenceKey) || '');
-    if (PAGE_SIZE_OPTIONS.includes(cookieSize as any) && cookieSize !== pageSize) {
+    const cookieSize = Number(getCookie(preferenceKey) || "");
+    if (
+      PAGE_SIZE_OPTIONS.includes(cookieSize as any) &&
+      cookieSize !== pageSize
+    ) {
       onPageSizeChange(cookieSize);
     }
   }, [pageSize, onPageSizeChange, preferenceKey]);
@@ -54,7 +56,9 @@ export default function PaginationControls({
         <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
           Toplam 0 kayıt
         </span>
-        <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">Sayfa başına</span>
+        <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
+          Sayfa başına
+        </span>
         <select
           value={pageSize}
           className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
@@ -101,13 +105,17 @@ export default function PaginationControls({
             <span className="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-600" />
             <span className="absolute inset-0 rounded-full border border-transparent border-t-blue-600 animate-spin dark:border-t-blue-400" />
           </span>
-          <span className="max-w-[10rem] truncate whitespace-nowrap sm:max-w-none">{loadingHint}</span>
+          <span className="max-w-[10rem] truncate whitespace-nowrap sm:max-w-none">
+            {loadingHint}
+          </span>
         </span>
       ) : null}
       <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-        {total > 0 ? `${start}-${end} / ${total} kayıt` : 'Toplam 0 kayıt'}
+        {total > 0 ? `${start}-${end} / ${total} kayıt` : "Toplam 0 kayıt"}
       </span>
-      <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">Sayfa başına</span>
+      <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
+        Sayfa başına
+      </span>
       <select
         value={pageSize}
         className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"

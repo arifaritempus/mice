@@ -594,17 +594,19 @@ export const projectsService = {
 
   async update(id: string, project: Partial<Project>): Promise<Project> {
     const payload = { ...project, updated_at: new Date().toISOString() };
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('projects')
       .update(payload)
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) {
       const details = [error.message, error.details, error.hint, error.code].filter(Boolean).join(' | ');
       throw new Error(details || 'Proje güncelleme hatası');
     }
     // RLS bulunan ortamlarda update + select 406 üretebilir; burada satır döndürmeyi zorlamıyoruz.
-    return { id, ...payload } as Project;
+    return data as Project;
   },
 
   async delete(id: string): Promise<void> {
@@ -4647,27 +4649,69 @@ export const invoicesService = {
       const itemIds = invoiceItems.map((ii: any) => ii.item_id).filter(Boolean);
 
       // Kaynak satış ve alış kalemlerini paralel çek
-      const [salesRes, purchaseRes, categoriesRes] = await Promise.all([
-        supabase.from('project_sales_items').select('id, category, description').in('id', itemIds),
-        supabase.from('project_purchase_items').select('id, category, description').in('id', itemIds),
-        supabase.from('categories').select('id, name')
+      const [
+        salesRes, purchaseRes, categoriesRes,
+        sRooms, sFlights, sTransfers, sExtras
+      ] = await Promise.all([
+        supabase.from('project_sales_items').select('id, category, sub_category, description').in('id', itemIds),
+        supabase.from('project_purchase_items').select('id, category, sub_category, description').in('id', itemIds),
+        supabase.from('categories').select('id, name, sort_order'),
+        supabase.from('sejour_rooms').select('id').in('id', itemIds),
+        supabase.from('sejour_flights').select('id').in('id', itemIds),
+        supabase.from('sejour_transfers').select('id').in('id', itemIds),
+        supabase.from('sejour_extra_services').select('id').in('id', itemIds)
       ]);
 
       // Kategori map
-      const categoriesMap: Record<string, string> = {};
-      (categoriesRes.data || []).forEach((c: any) => { categoriesMap[c.id] = c.name; });
+      const categoriesMap: Record<string, any> = {};
+      (categoriesRes.data || []).forEach((c: any) => { categoriesMap[c.id] = c; });
 
       // Kaynak kalem → kategori map
-      const sourceMap: Record<string, { category: string; description: string }> = {};
-      (salesRes.data || []).forEach((s: any) => { sourceMap[s.id] = { category: s.category, description: s.description }; });
-      (purchaseRes.data || []).forEach((p: any) => { sourceMap[p.id] = { category: p.category, description: p.description }; });
+      const sourceMap: Record<string, { category: string; sub_category: string; description: string, isStatic?: boolean, staticCat?: string, staticSub?: string }> = {};
+      (salesRes.data || []).forEach((s: any) => { sourceMap[s.id] = { category: s.category, sub_category: s.sub_category, description: s.description }; });
+      (purchaseRes.data || []).forEach((p: any) => { sourceMap[p.id] = { category: p.category, sub_category: p.sub_category, description: p.description }; });
+      (sRooms.data || []).forEach((r: any) => { sourceMap[r.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'KONAKLAMA' }; });
+      (sFlights.data || []).forEach((f: any) => { sourceMap[f.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'UÇAK BİLETİ' }; });
+      (sTransfers.data || []).forEach((t: any) => { sourceMap[t.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'TRANSFER' }; });
+      (sExtras.data || []).forEach((e: any) => { sourceMap[e.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'EKSTRA SERVİS' }; });
 
       enrichedItems = invoiceItems.map((ii: any) => {
         const source = sourceMap[ii.item_id];
-        const categoryName = source?.category ? (categoriesMap[source.category] || '') : '';
+        let categoryName = '';
+        let subCategoryName = '';
+        
+        let catSort = 9999;
+        let subCatSort = 9999;
+
+        if (source?.isStatic) {
+           categoryName = source.staticCat || '';
+           subCategoryName = source.staticSub || '';
+           // Default sejour items to top
+           catSort = 0;
+           subCatSort = 0;
+        } else {
+           const cat = source?.category ? categoriesMap[source.category] : null;
+           const subCat = source?.sub_category ? categoriesMap[source.sub_category] : null;
+           
+           categoryName = cat?.name || '';
+           catSort = cat?.sort_order ?? 9999;
+
+           subCategoryName = subCat?.name || '';
+           subCatSort = subCat?.sort_order ?? 9999;
+        }
+
+        // If even after static/db it's empty, try to use the description itself as sub_category so it's not empty "-"
+        if (!subCategoryName && ii.description) {
+           // As a last fallback to avoid dashes on proforma:
+           subCategoryName = ii.description;
+        }
+
         return {
           ...ii,
-          category_name: categoryName
+          category_name: categoryName,
+          category_sort_order: catSort,
+          sub_category_name: subCategoryName,
+          sub_category_sort_order: subCatSort
         };
       });
     }
@@ -4893,7 +4937,7 @@ export const invoicesService = {
         sub_category_name: subCategoryName,
         description: cleanDescription(item.description),
         // Kategori tanımında KDV varsa onu kullan, yoksa kalemdeki KDV'yi kullan
-        vat_rate: cat.revenue_vat_rate ?? (item.vat || 0),
+        vat_rate: (item.vat !== null && item.vat !== undefined) ? item.vat : (subCat.revenue_vat_rate ?? cat.revenue_vat_rate ?? 0),
         project: proj,
         invoiced_amount: invoicedAmount,
         balance: balance
@@ -5161,7 +5205,7 @@ export const invoicesService = {
         sub_category_name: subCategoryName,
         description: cleanDescription(item.description),
         // Kategori tanımında KDV varsa onu kullan, yoksa kalemdeki KDV'yi kullan
-        vat_rate: cat.expense_vat_rate ?? (item.vat || 0),
+        vat_rate: (item.vat !== null && item.vat !== undefined) ? item.vat : (subCat.expense_vat_rate ?? cat.expense_vat_rate ?? 0),
         supplier_id: outSupplierId,
         hotel_id: outHotelId,
         project: proj ? {
