@@ -204,6 +204,114 @@ interface Quote {
   created_at: string;
 }
 
+  // Lightweight inline searchable select for simple lists
+  const SearchableSelect = ({
+    options,
+    value,
+    onChange,
+    placeholder,
+  }: {
+    options: { id: string; name: string }[];
+    value: string;
+    onChange: (id: string) => void;
+    placeholder: string;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState("");
+    const [highlight, setHighlight] = useState(0);
+    const selected = options.find((o) => o.id === value);
+    const display = open ? query : selected?.name || "";
+    const filtered = (
+      query
+        ? options.filter((o) =>
+            o.name.toLowerCase().includes(query.toLowerCase()),
+          )
+        : options
+    ).slice(0, 100);
+    const handleSelect = (id: string) => {
+      onChange(id);
+      setOpen(false);
+      setQuery("");
+    };
+    return (
+      <div className="relative">
+        <input
+          type="text"
+          value={display}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            setHighlight(0);
+          }}
+          onFocus={() => {
+            setQuery("");
+            setOpen(true);
+            setHighlight(0);
+          }}
+          onKeyDown={(e) => {
+            if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+              setOpen(true);
+              e.preventDefault();
+              return;
+            }
+            if (e.key === "Tab") {
+              if (open && filtered[highlight]) {
+                handleSelect(filtered[highlight].id);
+              }
+            }
+            if (!open) return;
+            if (e.key === "ArrowDown") {
+              setHighlight((h) =>
+                Math.min(h + 1, Math.max(filtered.length - 1, 0)),
+              );
+              e.preventDefault();
+            }
+            if (e.key === "ArrowUp") {
+              setHighlight((h) => Math.max(h - 1, 0));
+              e.preventDefault();
+            }
+            if (e.key === "Enter") {
+              const opt = filtered[highlight];
+              if (opt) handleSelect(opt.id);
+              e.preventDefault();
+            }
+            if (e.key === "Escape") {
+              setOpen(false);
+            }
+          }}
+          onBlur={() => {
+            setTimeout(() => setOpen(false), 150);
+          }}
+          placeholder={placeholder}
+          className="w-full px-3 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
+        />
+        {open && (
+          <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
+            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">
+              {filtered.length} sonuç
+            </div>
+            {filtered.map((opt, idx) => (
+              <button
+                type="button"
+                key={opt.id}
+                onMouseEnter={() => setHighlight(idx)}
+                onClick={() => handleSelect(opt.id)}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${idx === highlight ? "bg-blue-500/10 dark:bg-gray-700" : ""} text-gray-900 dark:text-white`}
+              >
+                {opt.name}
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                Sonuç yok
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
 export default function CreateQuotePage() {
   const router = useRouter();
   const { canCreate, loading: permissionsLoading } = usePermissions();
@@ -961,108 +1069,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
     return totals;
   };
 
-  // Lightweight inline searchable select for simple lists
-  const SearchableSelect = ({
-    options,
-    value,
-    onChange,
-    placeholder,
-  }: {
-    options: { id: string; name: string }[];
-    value: string;
-    onChange: (id: string) => void;
-    placeholder: string;
-  }) => {
-    const [open, setOpen] = useState(false);
-    const [query, setQuery] = useState("");
-    const [highlight, setHighlight] = useState(0);
-    const selected = options.find((o) => o.id === value);
-    const display = open ? query : selected?.name || "";
-    const filtered = (
-      query
-        ? options.filter((o) =>
-            o.name.toLowerCase().includes(query.toLowerCase()),
-          )
-        : options
-    ).slice(0, 100);
-    const handleSelect = (id: string) => {
-      onChange(id);
-      setOpen(false);
-      setQuery("");
-    };
-    return (
-      <div className="relative">
-        <input
-          type="text"
-          value={display}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-            setHighlight(0);
-          }}
-          onFocus={() => {
-            setQuery("");
-            setOpen(true);
-            setHighlight(0);
-          }}
-          onKeyDown={(e) => {
-            if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
-              setOpen(true);
-              e.preventDefault();
-              return;
-            }
-            if (!open) return;
-            if (e.key === "ArrowDown") {
-              setHighlight((h) =>
-                Math.min(h + 1, Math.max(filtered.length - 1, 0)),
-              );
-              e.preventDefault();
-            }
-            if (e.key === "ArrowUp") {
-              setHighlight((h) => Math.max(h - 1, 0));
-              e.preventDefault();
-            }
-            if (e.key === "Enter") {
-              const opt = filtered[highlight];
-              if (opt) handleSelect(opt.id);
-              e.preventDefault();
-            }
-            if (e.key === "Escape") {
-              setOpen(false);
-            }
-          }}
-          onBlur={() => {
-            setTimeout(() => setOpen(false), 150);
-          }}
-          placeholder={placeholder}
-          className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-        {open && (
-          <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
-            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">
-              {filtered.length} sonuç
-            </div>
-            {filtered.map((opt, idx) => (
-              <button
-                type="button"
-                key={opt.id}
-                onMouseEnter={() => setHighlight(idx)}
-                onClick={() => handleSelect(opt.id)}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${idx === highlight ? "bg-blue-500/10 dark:bg-gray-700" : ""} text-gray-900 dark:text-white`}
-              >
-                {opt.name}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                Sonuç yok
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
+
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
   }
@@ -1112,7 +1119,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
   }
 
   return (
-    <div className="min-h-screen bg-transparent transition-colors duration-200 compact">
+    <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent transition-colors duration-200 compact">
       <div className="p-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
@@ -1123,9 +1130,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
           </div>
           <Link
             href="/quotes"
-            className="bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors duration-200"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
           >
-            Geri Dön
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            GERİ DÖN
           </Link>
         </div>
 
@@ -1136,23 +1146,21 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
               Teklif Bilgileri
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
               {/* Reference & Custom Codes */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-4">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                     KOD *
                   </label>
-                  <input
+                <input
                     type="text"
                     name="reference"
                     value={formData.reference}
                     onChange={handleInputChange}
                     required
                     placeholder="Teklif kodu giriniz..."
-                    className="w-full px-4 h-10 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
+                    className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                   />
-                </div>
               </div>
 
               {/* Agency */}
@@ -1179,7 +1187,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                   value={formData.company_name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                  className="w-full px-2 py-1 text-xs bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                 />
               </div>
 
@@ -1195,7 +1203,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                   value={formData.status}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                  className="w-full px-2 py-1 text-xs bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                 >
                   <option value="TEKLİF">TEKLİF</option>
                   <option value="KONFİRME">KONFİRME</option>
@@ -1213,7 +1221,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                   value={formData.quote_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                  className="w-full px-2 py-1 text-xs bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                 >
                   <option value="BİRİM">BİRİM</option>
                   <option value="PAKET">PAKET</option>
@@ -1233,12 +1241,24 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                         !showOperationManagersDropdown,
                       )
                     }
-                    className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-left flex justify-between items-center transition-colors duration-200"
+                    className="w-full px-3 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white flex justify-between items-center"
                   >
-                    <span>
-                      {formData.operation_managers.length > 0
-                        ? `${formData.operation_managers.length} kullanıcı seçildi`
-                        : "Kullanıcı seçin..."}
+                    <span className="flex-1 overflow-hidden">
+                      {formData.operation_managers.length > 0 ? (
+                        <div className="flex gap-1 overflow-hidden whitespace-nowrap items-center h-full">
+                          {formData.operation_managers.map((id, index) => {
+                            const u = users.find(x => x.id === id);
+                            if (!u) return null;
+                            if (index < 2) {
+                              return <span key={id} className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-1 py-0.5 rounded text-[10px] leading-none truncate max-w-[65px]">{u.first_name}</span>;
+                            }
+                            if (index === 2) {
+                              return <span key="more" className="bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300 px-1 py-0.5 rounded text-[10px] leading-none font-medium">+{formData.operation_managers.length - 2}</span>;
+                            }
+                            return null;
+                          })}
+                        </div>
+                      ) : "Kullanıcı seçin..."}
                     </span>
                     <svg
                       className="w-4 h-4"
@@ -1297,43 +1317,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                   )}
                 </div>
 
-                {/* Seçilen kullanıcıları göster */}
-                {formData.operation_managers.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {formData.operation_managers.map((managerId) => {
-                      const user = users.find((u) => u.id === managerId);
-                      return (
-                        <span
-                          key={managerId}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-gray-200 dark:bg-blue-900/30 dark:text-blue-200"
-                        >
-                          {user
-                            ? `${user.first_name} ${user.last_name}`
-                            : managerId}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                operation_managers:
-                                  prev.operation_managers.filter(
-                                    (id) => id !== managerId,
-                                  ),
-                              }));
-                            }}
-                            className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
+                </div>
+
               </div>
 
               {/* Notlar */}
-              <div className="md:col-span-2">
+              <div className="w-full mt-4">
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
                   NOTLAR
                 </label>
@@ -1342,24 +1331,18 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                   value={formData.notes}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full px-3 h-24 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                  className="w-full px-3 py-2 h-24 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-xs text-gray-900 dark:text-white"
                   placeholder="Teklif notlarını buraya yazın..."
                 />
               </div>
 
               {/* Çoklu Otel Seçimi Başlangıcı */}
-              <div className="md:col-span-2 space-y-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="w-full space-y-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mt-4">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                     Otel & Konaklama Seçimleri
                   </h3>
-                  <button
-                    type="button"
-                    onClick={addHotelRow}
-                    className="text-xs font-medium bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded transition-colors"
-                  >
-                    + OTEL EKLE
-                  </button>
+                  
                 </div>
                 {/* Tab Bar for Hotels */}
                 <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto">
@@ -1454,22 +1437,10 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                     className="flex items-center px-3 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
                     title="Yeni Otel Ekle"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v12m6-6H6"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
                     </svg>
-                    <span className="ml-1 text-xs font-bold uppercase">
-                      Yeni Otel
-                    </span>
+                    <span className="ml-1 text-xs font-bold uppercase">Yeni Otel</span>
                   </button>
                 </div>
 
@@ -1482,9 +1453,9 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                           key={h.id}
                           className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-blue-500 ring-2 ring-blue-500/10 shadow-sm relative group space-y-4"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                            <div className="md:col-span-4">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Otel *
                               </label>
                               <SearchableSelect
@@ -1496,8 +1467,8 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                 placeholder="Otel seç..."
                               />
                             </div>
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Otel Konsepti
                               </label>
                               <input
@@ -1510,12 +1481,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                                 placeholder="Konsept..."
                               />
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 C/IN Tarihi *
                               </label>
                               <input
@@ -1529,11 +1500,11 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                   )
                                 }
                                 required
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                               />
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 C/OUT Tarihi *
                               </label>
                               <input
@@ -1547,14 +1518,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                   )
                                 }
                                 required
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                               />
                             </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border-t border-gray-50 dark:border-gray-700/50 pt-3">
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Oda Sayısı
                               </label>
                               <input
@@ -1564,15 +1533,15 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                   handleHotelListChange(
                                     h.id,
                                     "room_count",
-                                    parseInt(e.target.value) || 0,
+                                    (e.target.value === "" ? "" : parseInt(e.target.value)) as unknown as number,
                                   )
                                 }
                                 min="1"
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                               />
                             </div>
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Pax Sayısı
                               </label>
                               <input
@@ -1582,15 +1551,15 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                   handleHotelListChange(
                                     h.id,
                                     "pax_count",
-                                    parseInt(e.target.value) || 0,
+                                    (e.target.value === "" ? "" : parseInt(e.target.value)) as unknown as number,
                                   )
                                 }
                                 min="1"
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                               />
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Opsiyon
                               </label>
                               <select
@@ -1602,15 +1571,15 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                               >
                                 <option value="1. OPSİYON">1. OPSİYON</option>
                                 <option value="2. OPSİYON">2. OPSİYON</option>
                                 <option value="SOR-SAT">SOR-SAT</option>
                               </select>
                             </div>
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Otel Durumu
                               </label>
                               <select
@@ -1622,15 +1591,15 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white"
                               >
                                 <option value="BEKLEMEDE">BEKLEMEDE</option>
                                 <option value="KONFİRME">KONFİRME</option>
                                 <option value="İPTAL">İPTAL</option>
                               </select>
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Opsiyon Tarihi
                               </label>
                               <input
@@ -1644,29 +1613,20 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                   )
                                 }
                                 disabled={h.option === "SOR-SAT"}
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
                               />
                             </div>
                           </div>
 
                           <div className="mt-6 border-t border-gray-100 dark:border-gray-700 pt-6">
-                            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4 uppercase flex items-center">
-                              <svg
-                                className="w-4 h-4 mr-2 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-10V4a1 1 0 011-1h2a1 1 0 011 1v3M12 7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                />
-                              </svg>
-                              Otel Bazlı Hizmet Kalemleri
-                            </h3>
+                            
                             <QuoteServiceEditor
+                              title={
+                                <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase flex items-center m-0">
+                                  <svg className="w-4 h-4 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-10V4a1 1 0 011-1h2a1 1 0 011 1v3M12 7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                  Otel Bazlı Hizmet Kalemleri
+                                </h3>
+                              }
                               items={serviceItems.filter(
                                 (item) => item.hotel_id === h.id,
                               )}
@@ -1708,23 +1668,14 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                 {/* Tab Content for General Services */}
                 {activeHotelId === "general" && (
                   <div className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm relative group space-y-4">
-                    <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4 uppercase flex items-center">
-                      <svg
-                        className="w-4 h-4 mr-2 text-indigo-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                        />
-                      </svg>
-                      Genel Hizmet Kalemleri (Uçak, Transfer vb.)
-                    </h3>
+                    
                     <QuoteServiceEditor
+                              title={
+                                <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase flex items-center m-0">
+                                  <svg className="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                                  Genel Hizmet Kalemleri (Uçak, Transfer vb.)
+                                </h3>
+                              }
                       items={serviceItems.filter(
                         (item) => !item.hotel_id || item.hotel_id === "general",
                       )}
@@ -1758,24 +1709,26 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                   </div>
                 )}
               </div>
-            </div>
           </div>
 
           {/* Submit Button */}
 
           {/* Submit Button */}
-          <div className="flex justify-end space-x-4 p-4">
+          <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">
             <Link
               href="/quotes"
-              className="bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors duration-200"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
             >
-              İptal
+              İPTAL
             </Link>
             <button
               type="submit"
-              className="bg-green-600 dark:bg-green-700 text-white px-2 py-1 rounded text-xs hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration-200"
+              className="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5"
             >
-              Teklifi Kaydet
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              TEKLİFİ KAYDET
             </button>
           </div>
         </form>
@@ -1799,7 +1752,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                 >
                   {notification.type === "success" ? (
                     <svg
-                      className="w-10 h-10"
+                      className="w-10 h-8"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1813,7 +1766,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                     </svg>
                   ) : (
                     <svg
-                      className="w-10 h-10"
+                      className="w-10 h-8"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

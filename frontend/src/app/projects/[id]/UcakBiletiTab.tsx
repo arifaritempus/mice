@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
@@ -23,6 +24,12 @@ interface FlightTicket {
   doviz: string;
   kur: number;
   toplamTl: number;
+  satisPax?: number | any;
+  ppSatis?: number | any;
+  toplamSatis?: number | any;
+  satisDoviz?: string;
+  satisKur?: number | any;
+  toplamSatisTl?: number | any;
   misafirler: string;
   durum: "aktif" | "iptal" | "iade" | "degistirildi";
   islemler?: string;
@@ -110,6 +117,122 @@ interface UcakBiletiTabProps {
   ) => void;
 }
 
+
+
+// DigerTab'dan kopyalanan AutocompleteInput componenti
+function AutocompleteInput({ 
+  value, 
+  options, 
+  placeholder, 
+  onSelect,
+  onKeyDownOuter
+}: { 
+  value: string;
+  options: {id: string, label: string}[];
+  placeholder: string;
+  onSelect: (id: string | null, label: string) => void;
+  onKeyDownOuter?: (e: React.KeyboardEvent) => void;
+}) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState(value);
+  const [highlightedIndex, setHighlightedIndex] = React.useState(0);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => { setInputValue(value); }, [value]);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = React.useMemo(() => {
+    if (!inputValue) return options;
+    const lower = inputValue.toLowerCase();
+    return options.filter(o => o.label.toLowerCase().includes(lower));
+  }, [options, inputValue]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isOpen) setIsOpen(true);
+      else setHighlightedIndex(prev => Math.min(prev + 1, filteredOptions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) setIsOpen(true);
+      else setHighlightedIndex(prev => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (isOpen) {
+        e.preventDefault();
+        e.stopPropagation(); // Prevents outer form save on select
+        if (filteredOptions[highlightedIndex]) {
+          const selected = filteredOptions[highlightedIndex];
+          setInputValue(selected.label);
+          onSelect(selected.id, selected.label);
+        } else if (inputValue) {
+          onSelect(null, inputValue);
+        }
+        setIsOpen(false);
+      } else {
+        if(onKeyDownOuter) onKeyDownOuter(e);
+      }
+    } else if (e.key === 'Escape') {
+      if (isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsOpen(false);
+      } else {
+        if(onKeyDownOuter) onKeyDownOuter(e);
+      }
+    } else {
+      if(onKeyDownOuter) onKeyDownOuter(e);
+    }
+  };
+
+  return (
+    <div className="relative w-full" ref={wrapperRef}>
+      <input
+        ref={inputRef}
+        type="text"
+        value={inputValue}
+        onChange={(e) => {
+          setInputValue(e.target.value);
+          setIsOpen(true);
+          setHighlightedIndex(0);
+          onSelect(null, e.target.value);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 truncate"
+      />
+      {isOpen && filteredOptions.length > 0 && (
+        <ul className="absolute z-50 mt-1 max-h-48 w-full min-w-[200px] overflow-auto rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 py-1 text-xs">
+          {filteredOptions.map((opt, index) => (
+            <li
+              key={opt.id}
+              className={`cursor-pointer px-3 py-1.5 ${index === highlightedIndex ? 'bg-indigo-500 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'}`}
+              onClick={() => {
+                setInputValue(opt.label);
+                onSelect(opt.id, opt.label);
+                setIsOpen(false);
+              }}
+              onMouseEnter={() => setHighlightedIndex(index)}
+            >
+              {opt.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function UcakBiletiTab({
   flightTickets,
   setFlightTickets,
@@ -148,6 +271,47 @@ export default function UcakBiletiTab({
   selectFlightSupplier,
   handleSupplierKeyDown,
 }: UcakBiletiTabProps) {
+  const [searchTags, setSearchTags] = React.useState<string[]>([]);
+  const [searchInput, setSearchInput] = React.useState("");
+
+  // Sync initial flightTicketSearch with searchTags
+  React.useEffect(() => {
+    if (flightTicketSearch && searchTags.length === 0) {
+      setSearchTags(flightTicketSearch.split(" ").filter((t: string) => t.trim() !== ""));
+    }
+  }, [flightTicketSearch]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchInput.trim()) {
+      e.preventDefault();
+      const newTags = [...searchTags, searchInput.trim()];
+      setSearchTags(newTags);
+      setSearchInput("");
+      setFlightTicketSearch(newTags.join(" "));
+    } else if (e.key === "Backspace" && !searchInput && searchTags.length > 0) {
+      const newTags = searchTags.slice(0, -1);
+      setSearchTags(newTags);
+      setFlightTicketSearch(newTags.join(" "));
+    }
+  };
+
+  const removeSearchTag = (tagToRemove: string) => {
+    const newTags = searchTags.filter((tag) => tag !== tagToRemove);
+    setSearchTags(newTags);
+    setFlightTicketSearch(newTags.join(" "));
+  };
+
+
+  const handleGlobalKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleFlightSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleFlightCancel();
+    }
+  };
+
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -203,19 +367,76 @@ export default function UcakBiletiTab({
     };
   }, [tempFlightItem?.id, supplierDropdowns]);
 
+  
+  const totalsBySupplierAndCurrency = React.useMemo(() => {
+    const totals: Record<string, any> = {};
+
+    filteredFlightTickets.forEach(item => {
+      const supplier = item.tedarikci || "Diğer/Bilinmeyen";
+      if (!totals[supplier]) {
+         totals[supplier] = {
+           costs: {},
+           sales: {},
+           totalCostTry: 0,
+           totalSaleTry: 0
+         };
+      }
+      
+      const cCur = item.doviz || "EUR";
+      const sCur = item.satisDoviz || "TRY";
+      
+      totals[supplier].costs[cCur] = (totals[supplier].costs[cCur] || 0) + (Number(item.toplamMaliyet) || 0);
+      totals[supplier].sales[sCur] = (totals[supplier].sales[sCur] || 0) + (Number(item.toplamSatis) || 0);
+      
+      totals[supplier].totalCostTry += (Number(item.toplamTl) || 0);
+      totals[supplier].totalSaleTry += (Number(item.toplamSatisTl) || 0);
+    });
+
+    return totals;
+  }, [filteredFlightTickets]);
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <div className="flex-1 mr-4">
-          <input
-            type="text"
-            placeholder="Uçak bileti ara (tedarikçi, havayolu, güzergah, PNR, misafirler)..."
-            value={flightTicketSearch}
-            onChange={(e) => setFlightTicketSearch(e.target.value)}
-            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="relative w-full sm:w-96 group">
+          <div className="flex flex-wrap items-center gap-1.5 w-full px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all shadow-inner">
+            {searchTags.map((tag, idx) => (
+              <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
+                {tag}
+                <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-600 dark:hover:text-blue-400">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </span>
+            ))}
+            <input
+              type="text"
+              className="flex-1 min-w-[100px] bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+              placeholder={searchTags.length === 0 ? "Arama yap... (Enter ile çoğalt)" : "Yeni arama..."}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+          <label
+            htmlFor="flight-import"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Excel İçe Aktar
+          </label>
+<button
+            onClick={handleFlightExport}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel Dışa Aktar
+          </button>
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -237,39 +458,20 @@ export default function UcakBiletiTab({
           <input
             type="file"
             accept=".xlsx,.xls"
-            onChange={handleFlightImport}
+            onChange={handleFlightImport}  
             className="hidden"
             id="flight-import"
           />
-          <label
-            htmlFor="flight-import"
-            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 cursor-pointer transition-colors"
-          >
-            Excel İçe Aktar
-          </label>
-          <button
-            onClick={handleFlightExport}
-            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90 transition-colors"
-          >
-            Excel Dışa Aktar
-          </button>
-          <button
-            onClick={handleFlightClear}
-            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
-          >
-            Temizle
-          </button>
-        </div>
+</div>
       </div>
 
       {/* Uçak Bileti Tablosu */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-xs">
+        <div className="overflow-x-auto min-h-[400px]">
+          <table className="min-w-full text-left text-xs border-collapse">
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th
-                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort("biletlemeTarihi")}
                 >
                   <div className="flex items-center">
@@ -283,8 +485,7 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th
-                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[180px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort("tedarikci")}
                 >
                   <div className="flex items-center">
@@ -296,8 +497,7 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th
-                  className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[140px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[90px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort("havayolu")}
                 >
                   <div className="flex items-center">
@@ -309,37 +509,41 @@ export default function UcakBiletiTab({
                     )}
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px]">
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[90px] whitespace-nowrap">
                   PNR
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px]">
-                  UÇUŞ TİPİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">
-                  GİDİŞ TARİHİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">
-                  GİDİŞ SAATİ
-                </th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px] whitespace-nowrap">
+                    <div className="leading-tight">UÇUŞ<br />TİPİ</div>
+                    </th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20 whitespace-nowrap">
+                    <div className="leading-tight">GİDİŞ<br />TARİHİ</div>
+                    </th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20 whitespace-nowrap">
+                    <div className="leading-tight">GİDİŞ<br />SAATİ</div>
+                    </th>
                 <th
-                  style={{ minWidth: "100px", width: "100px" }}
+                  style={{ minWidth: "85px", width: "85px" }}
                   className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white"
                 >
-                  GİDİŞ UÇUŞ KODU
+                  <div className="leading-tight whitespace-nowrap">
+                    GİDİŞ<br />UÇUŞ KODU
+                  </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-24">
-                  DÖNÜŞ TARİHİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20">
-                  DÖNÜŞ SAATİ
-                </th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20 whitespace-nowrap">
+                    <div className="leading-tight">DÖNÜŞ<br />TARİHİ</div>
+                    </th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white w-20 whitespace-nowrap">
+                    <div className="leading-tight">DÖNÜŞ<br />SAATİ</div>
+                    </th>
                 <th
-                  style={{ minWidth: "100px", width: "100px" }}
+                  style={{ minWidth: "85px", width: "85px" }}
                   className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white"
                 >
-                  DÖNÜŞ UÇUŞ KODU
+                  <div className="leading-tight whitespace-nowrap">
+                    DÖNÜŞ<br />UÇUŞ KODU
+                  </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[200px] whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px] whitespace-nowrap">
                   GÜZERGAH
                 </th>
                 <th
@@ -347,7 +551,7 @@ export default function UcakBiletiTab({
                   onClick={() => handleFlightSort("kisiSayisi")}
                 >
                   <div className="flex items-center justify-center">
-                    KİŞİ SAYISI
+                    <div className="leading-tight">Maliyet<br />Pax</div>
                     {flightSortField === "kisiSayisi" && (
                       <span className="ml-1">
                         {flightSortDirection === "asc" ? "↑" : "↓"}
@@ -356,12 +560,12 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  style={{ minWidth: "100px", width: "100px" }}
+                  style={{ minWidth: "70px", width: "70px" }}
                   className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort("ppMaliyet")}
                 >
                   <div className="flex items-center justify-end">
-                    PP MALİYET
+                    <div className="leading-tight">PP<br />Maliyet</div>
                     {flightSortField === "ppMaliyet" && (
                       <span className="ml-1">
                         {flightSortDirection === "asc" ? "↑" : "↓"}
@@ -370,11 +574,11 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[150px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
+                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
                   onClick={() => handleFlightSort("toplamMaliyet")}
                 >
                   <div className="flex items-center justify-end">
-                    TOPLAM MALİYET
+                    <div className="leading-tight">Toplam<br />Maliyet</div>
                     {flightSortField === "toplamMaliyet" && (
                       <span className="ml-1">
                         {flightSortDirection === "asc" ? "↑" : "↓"}
@@ -383,30 +587,88 @@ export default function UcakBiletiTab({
                   </div>
                 </th>
                 <th
-                  style={{ minWidth: "100px", width: "100px" }}
+                  style={{ minWidth: "70px", width: "70px" }}
                   className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap"
                 >
-                  DÖVİZ
+                  Döviz
                 </th>
                 <th
-                  style={{ minWidth: "100px", width: "100px" }}
+                  style={{ minWidth: "70px", width: "70px" }}
                   className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap"
                 >
                   KUR
                 </th>
                 <th
-                  style={{ minWidth: "200px" }}
+                  style={{ minWidth: "90px" }}
                   className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap"
                 >
-                  TOPLAM TL
+                  <div className="leading-tight">Toplam<br />Maliyet TL</div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[300px]">
+                <th
+                  className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap border-l border-gray-200 dark:border-gray-700"
+                  onClick={() => handleFlightSort("satisPax")}
+                >
+                  <div className="flex items-center justify-center">
+                    <div className="leading-tight">Satış<br />Pax</div>
+                    {flightSortField === "satisPax" && (
+                      <span className="ml-1">
+                        {flightSortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+                <th
+                  style={{ minWidth: "70px", width: "70px" }}
+                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
+                  onClick={() => handleFlightSort("ppSatis")}
+                >
+                  <div className="flex items-center justify-end">
+                    <div className="leading-tight">PP<br />Satış</div>
+                    {flightSortField === "ppSatis" && (
+                      <span className="ml-1">
+                        {flightSortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+                <th
+                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap"
+                  onClick={() => handleFlightSort("toplamSatis")}
+                >
+                  <div className="flex items-center justify-end">
+                    <div className="leading-tight">Toplam<br />Satış</div>
+                    {flightSortField === "toplamSatis" && (
+                      <span className="ml-1">
+                        {flightSortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+                <th
+                  style={{ minWidth: "70px", width: "70px" }}
+                  className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap"
+                >
+                  Döviz
+                </th>
+                <th
+                  style={{ minWidth: "70px", width: "70px" }}
+                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap"
+                >
+                  KUR
+                </th>
+                <th
+                  style={{ minWidth: "90px" }}
+                  className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap"
+                >
+                  <div className="leading-tight">Toplam<br />Satış TL</div>
+                </th>
+                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[120px] whitespace-nowrap">
                   MİSAFİRLER
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20">
+                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-20 whitespace-nowrap">
                   DURUM
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-24">
+                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white w-28 whitespace-nowrap">
                   İŞLEMLER
                 </th>
               </tr>
@@ -420,7 +682,7 @@ export default function UcakBiletiTab({
               ) ? (
                 <tr>
                   <td
-                    colSpan={21}
+                    colSpan={27}
                     className="px-4 py-8 text-center text-gray-500 dark:text-gray-400"
                   >
                     Uçak bileti bulunamadı
@@ -430,7 +692,12 @@ export default function UcakBiletiTab({
                 sortedFlightTickets.map((ticket, index) => (
                   <tr
                     key={ticket.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0"
+                    onDoubleClick={() => {
+                      if (editingFlightIndex !== index) {
+                        handleFlightEdit(index);
+                      }
+                    }}
                   >
                     {editingFlightIndex === index ? (
                       <>
@@ -444,119 +711,16 @@ export default function UcakBiletiTab({
                                 biletlemeTarihi: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2 relative">
-                          <div className="relative">
-                            <input
-                              ref={(el) => {
-                                if (tempFlightItem?.id) {
-                                  supplierInputRefs.current[tempFlightItem.id] =
-                                    el;
-                                }
-                              }}
-                              type="text"
-                              value={
-                                supplierDropdowns[tempFlightItem?.id || ""]
-                                  ?.isOpen
-                                  ? (supplierDropdowns[tempFlightItem?.id || ""]
-                                      ?.searchTerm ?? "")
-                                  : tempFlightItem?.tedarikci || ""
-                              }
-                              placeholder="Tedarikçi Seçiniz"
-                              onChange={(e) => {
-                                if (
-                                  !supplierDropdowns[tempFlightItem?.id || ""]
-                                    ?.isOpen
-                                ) {
-                                  toggleSupplierDropdown(
-                                    tempFlightItem?.id || "",
-                                  );
-                                }
-                                updateSupplierSearch(
-                                  tempFlightItem?.id || "",
-                                  e.target.value,
-                                );
-                                if (tempFlightItem?.id) {
-                                  updateDropdownPosition(tempFlightItem.id);
-                                }
-                              }}
-                              onClick={() => {
-                                if (
-                                  !supplierDropdowns[tempFlightItem?.id || ""]
-                                    ?.isOpen
-                                ) {
-                                  toggleSupplierDropdown(
-                                    tempFlightItem?.id || "",
-                                  );
-                                  if (tempFlightItem?.id) {
-                                    updateDropdownPosition(tempFlightItem.id);
-                                  }
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (
-                                  supplierDropdowns[tempFlightItem?.id || ""]
-                                    ?.isOpen
-                                ) {
-                                  handleSupplierKeyDown(
-                                    e,
-                                    tempFlightItem?.id || "",
-                                  );
-                                  if (e.key === "Enter" || e.key === "Escape") {
-                                    e.stopPropagation();
-                                  }
-                                }
-                              }}
-                              className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
-                            />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
-                              {tempFlightItem?.tedarikci && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setTempFlightItem({
-                                      ...tempFlightItem!,
-                                      tedarikci: "",
-                                    });
-                                  }}
-                                  className="p-0.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                  title="Tedarikçiyi Temizle"
-                                >
-                                  <svg
-                                    className="w-3 h-3"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M6 18L18 6M6 6l12 12"
-                                    />
-                                  </svg>
-                                </button>
-                              )}
-                              <span className="pointer-events-none">
-                                <svg
-                                  className="w-3 h-3 text-gray-400"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 9l-7 7-7-7"
-                                  />
-                                </svg>
-                              </span>
-                            </div>
-                          </div>
-                        </td>
+                          <AutocompleteInput
+                            value={tempFlightItem?.tedarikci || ""}
+                            options={allSuppliers.map(s => ({ id: s.id, label: s.displayName || s.name || s.title || "" }))}
+                            placeholder="Tedarikçi Seçiniz"
+                            onSelect={(id, label) => setTempFlightItem({ ...tempFlightItem!, tedarikci: label })}
+                          /></td>
                         <td className="px-2 py-2">
                           <input
                             type="text"
@@ -567,7 +731,7 @@ export default function UcakBiletiTab({
                                 havayolu: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -580,7 +744,7 @@ export default function UcakBiletiTab({
                                 pnr: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -593,7 +757,7 @@ export default function UcakBiletiTab({
                                 ucusTipi: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           >
                             <option value="GRUP">GRUP</option>
                             <option value="MÜNFERİT">MÜNFERİT</option>
@@ -609,7 +773,7 @@ export default function UcakBiletiTab({
                                 gidisTarihi: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -622,7 +786,7 @@ export default function UcakBiletiTab({
                                 gidisSaati: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -635,7 +799,7 @@ export default function UcakBiletiTab({
                                 gidisUcusKodu: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -648,7 +812,7 @@ export default function UcakBiletiTab({
                                 donusTarihi: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -661,7 +825,7 @@ export default function UcakBiletiTab({
                                 donusSaati: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2">
@@ -674,7 +838,7 @@ export default function UcakBiletiTab({
                                 donusUcusKodu: e.target.value,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
@@ -786,7 +950,7 @@ export default function UcakBiletiTab({
                                 toplamTl,
                               });
                             }}
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           >
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
@@ -843,6 +1007,104 @@ export default function UcakBiletiTab({
                             className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none"
                           />
                         </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            value={tempFlightItem?.satisPax || 0}
+                            onChange={(e) => {
+                              const satisPax = Number(e.target.value);
+                              const ppSatis = tempFlightItem?.ppSatis || 0;
+                              const toplamSatis = satisPax * ppSatis;
+                              const satisKur = tempFlightItem?.satisKur || 1;
+                              const satisDoviz = tempFlightItem?.satisDoviz || "TL";
+                              const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                              setTempFlightItem({ ...tempFlightItem!, satisPax, toplamSatis, toplamSatisTl });
+                            }}
+                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center"
+                          />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={tempFlightItem?.ppSatis || 0}
+                            onChange={(e) => {
+                              const ppSatis = Number(e.target.value);
+                              const satisPax = tempFlightItem?.satisPax || 0;
+                              const toplamSatis = satisPax * ppSatis;
+                              const satisKur = tempFlightItem?.satisKur || 1;
+                              const satisDoviz = tempFlightItem?.satisDoviz || "TL";
+                              const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                              setTempFlightItem({ ...tempFlightItem!, ppSatis, toplamSatis, toplamSatisTl });
+                            }}
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right"
+                          />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={tempFlightItem?.toplamSatis || 0}
+                            onChange={(e) => {
+                              const toplamSatis = Number(e.target.value);
+                              const satisPax = tempFlightItem?.satisPax || 1;
+                              const ppSatis = satisPax > 0 ? toplamSatis / satisPax : 0;
+                              const satisKur = tempFlightItem?.satisKur || 1;
+                              const satisDoviz = tempFlightItem?.satisDoviz || "TL";
+                              const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                              setTempFlightItem({ ...tempFlightItem!, toplamSatis, ppSatis, toplamSatisTl });
+                            }}
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right"
+                          />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <select
+                            value={tempFlightItem?.satisDoviz || "TL"}
+                            onChange={(e) => {
+                              const satisDoviz = e.target.value;
+                              const toplamSatis = tempFlightItem?.toplamSatis || 0;
+                              const satisKur = satisDoviz === "TL" ? 1 : tempFlightItem?.satisKur || 1;
+                              const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                              setTempFlightItem({ ...tempFlightItem!, satisDoviz, satisKur, toplamSatisTl });
+                            }}
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="TL">TL</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                          </select>
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            step="0.0001"
+                            value={tempFlightItem?.satisKur || 1}
+                            onChange={(e) => {
+                              const satisKur = Number(e.target.value);
+                              const toplamSatis = tempFlightItem?.toplamSatis || 0;
+                              const satisDoviz = tempFlightItem?.satisDoviz || "TL";
+                              const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                              setTempFlightItem({ ...tempFlightItem!, satisKur, toplamSatisTl });
+                            }}
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right"
+                            disabled={tempFlightItem?.satisDoviz === "TL"}
+                          />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={tempFlightItem?.toplamSatisTl || 0}
+                            onChange={(e) => {
+                              const toplamSatisTl = Number(e.target.value);
+                              const toplamSatis = tempFlightItem?.toplamSatis || 0;
+                              const satisKur = tempFlightItem?.satisDoviz === "TL" ? 1 : toplamSatis > 0 ? toplamSatisTl / toplamSatis : 1;
+                              setTempFlightItem({ ...tempFlightItem!, toplamSatisTl, satisKur });
+                            }}
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right"
+                          />
+                        </td>
                         <td className="px-2 py-2 w-48 max-w-48">
                           <input
                             type="text"
@@ -865,7 +1127,7 @@ export default function UcakBiletiTab({
                                 durum: e.target.value as any,
                               })
                             }
-                            className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                           >
                             <option value="aktif">Aktif</option>
                             <option value="iptal">İptal</option>
@@ -877,7 +1139,7 @@ export default function UcakBiletiTab({
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={handleFlightSave}
-                              className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                              className="p-1.5 rounded-md transition-colors text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                               title="Kaydet"
                             >
                               <svg
@@ -896,7 +1158,7 @@ export default function UcakBiletiTab({
                             </button>
                             <button
                               onClick={handleFlightCancel}
-                              className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                              className="p-1.5 rounded-md transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                               title="İptal"
                             >
                               <svg
@@ -960,7 +1222,7 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.ppMaliyet)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right font-semibold whitespace-nowrap">
+                        <td className="px-2 py-2 text-red-600 dark:text-red-400 text-right font-semibold whitespace-nowrap">
                           {formatNumberForDisplay(ticket.toplamMaliyet)}
                         </td>
                         <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
@@ -969,10 +1231,28 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.kur)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right font-semibold whitespace-nowrap">
-                          {formatNumberForDisplay(ticket.toplamTl)} TL
+                        <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
+                          {formatNumberForDisplay(ticket.toplamTl)}
                         </td>
-                        <td className="px-2 py-2 min-w-[300px]">
+                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center whitespace-nowrap">
+                          {ticket.satisPax || 0}
+                        </td>
+                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
+                          {formatNumberForDisplay(ticket.ppSatis || 0)}
+                        </td>
+                        <td className="px-2 py-2 text-green-600 dark:text-green-400 text-right font-semibold whitespace-nowrap">
+                          {formatNumberForDisplay(ticket.toplamSatis || 0)}
+                        </td>
+                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold whitespace-nowrap">
+                          {ticket.satisDoviz || "TL"}
+                        </td>
+                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
+                          {formatNumberForDisplay(ticket.satisKur || 1)}
+                        </td>
+                        <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
+                          {formatNumberForDisplay(ticket.toplamSatisTl || 0)}
+                        </td>
+                        <td className="px-2 py-2 min-w-[120px]">
                           <div className="flex items-center gap-1">
                             <div className="flex-1 min-w-0 max-w-full">
                               {expandedMisafirler[ticket.id] ? (
@@ -1058,7 +1338,7 @@ export default function UcakBiletiTab({
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => handleFlightEdit(index)}
-                              className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
+                              className="p-1.5 rounded-md transition-colors text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
                               title="Düzenle"
                             >
                               <svg
@@ -1077,7 +1357,7 @@ export default function UcakBiletiTab({
                             </button>
                             <button
                               onClick={() => handleFlightDelete(index)}
-                              className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                              className="p-1.5 rounded-md transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                               title="Sil"
                             >
                               <svg
@@ -1107,7 +1387,7 @@ export default function UcakBiletiTab({
                 isNewFlightItem && (
                   <tr
                     key="new-flight-ticket"
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0"
                   >
                     <td className="px-2 py-2">
                       <input
@@ -1119,93 +1399,16 @@ export default function UcakBiletiTab({
                             biletlemeTarihi: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2 relative">
-                      <div className="relative">
-                        <input
-                          ref={(el) => {
-                            if (tempFlightItem?.id) {
-                              supplierInputRefs.current[tempFlightItem.id] = el;
-                            }
-                          }}
-                          type="text"
-                          value={tempFlightItem?.tedarikci || ""}
-                          placeholder="Tedarikçi Seçiniz"
-                          onClick={() => {
-                            if (
-                              !supplierDropdowns[tempFlightItem?.id || ""]
-                                ?.isOpen
-                            ) {
-                              toggleSupplierDropdown(tempFlightItem?.id || "");
-                              if (tempFlightItem?.id) {
-                                updateDropdownPosition(tempFlightItem.id);
-                              }
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (
-                              supplierDropdowns[tempFlightItem?.id || ""]
-                                ?.isOpen
-                            ) {
-                              handleSupplierKeyDown(
-                                e,
-                                tempFlightItem?.id || "",
-                              );
-                              if (e.key === "Enter" || e.key === "Escape") {
-                                e.stopPropagation();
-                              }
-                            }
-                          }}
-                          className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer"
-                          readOnly
-                        />
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
-                          {tempFlightItem?.tedarikci && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setTempFlightItem({
-                                  ...tempFlightItem!,
-                                  tedarikci: "",
-                                });
-                              }}
-                              className="p-0.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                              title="Tedarikçiyi Temizle"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          )}
-                          <span className="pointer-events-none">
-                            <svg
-                              className="w-3 h-3 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 9l-7 7-7-7"
-                              />
-                            </svg>
-                          </span>
-                        </div>
-                      </div>
+                      <AutocompleteInput
+                        value={tempFlightItem?.tedarikci || ""}
+                        options={allSuppliers.map(s => ({ id: s.id, label: s.displayName || s.name || s.title || "" }))}
+                        placeholder="Tedarikçi Seçiniz"
+                        onSelect={(id, label) => setTempFlightItem({ ...tempFlightItem!, tedarikci: label })}
+                      />
                     </td>
                     <td className="px-2 py-2">
                       <input
@@ -1217,7 +1420,7 @@ export default function UcakBiletiTab({
                             havayolu: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1230,7 +1433,7 @@ export default function UcakBiletiTab({
                             pnr: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1243,7 +1446,7 @@ export default function UcakBiletiTab({
                             ucusTipi: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       >
                         <option value="GRUP">GRUP</option>
                         <option value="MÜNFERİT">MÜNFERİT</option>
@@ -1259,7 +1462,7 @@ export default function UcakBiletiTab({
                             gidisTarihi: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1272,7 +1475,7 @@ export default function UcakBiletiTab({
                             gidisSaati: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1285,7 +1488,7 @@ export default function UcakBiletiTab({
                             gidisUcusKodu: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1298,7 +1501,7 @@ export default function UcakBiletiTab({
                             donusTarihi: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1311,7 +1514,7 @@ export default function UcakBiletiTab({
                             donusSaati: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -1324,7 +1527,7 @@ export default function UcakBiletiTab({
                             donusUcusKodu: e.target.value,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -1434,7 +1637,7 @@ export default function UcakBiletiTab({
                             toplamTl,
                           });
                         }}
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       >
                         <option value="EUR">EUR</option>
                         <option value="USD">USD</option>
@@ -1513,7 +1716,7 @@ export default function UcakBiletiTab({
                             durum: e.target.value as any,
                           })
                         }
-                        className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                       >
                         <option value="aktif">Aktif</option>
                         <option value="iptal">İptal</option>
@@ -1525,7 +1728,7 @@ export default function UcakBiletiTab({
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={handleFlightSave}
-                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                          className="p-1.5 rounded-md transition-colors text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
                           title="Kaydet"
                         >
                           <svg
@@ -1544,7 +1747,7 @@ export default function UcakBiletiTab({
                         </button>
                         <button
                           onClick={handleFlightCancel}
-                          className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                          className="p-1.5 rounded-md transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                           title="İptal"
                         >
                           <svg
@@ -1566,43 +1769,99 @@ export default function UcakBiletiTab({
                   </tr>
                 )}
               {/* Döviz bazlı toplamlar */}
-              {Object.keys(flightTotals).map((doviz) => (
-                <tr key={doviz} className="bg-blue-500/10 dark:bg-blue-900/20">
-                  <td
-                    colSpan={12}
-                    className="px-2 py-2 text-gray-900 dark:text-white text-right font-semibold"
-                  >
-                    TOPLAM ({doviz})
-                  </td>
-                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
-                    {flightTotals[doviz].kisiSayisi}
-                  </td>
-                  <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
-                    {formatNumberForDisplay(flightTotals[doviz].ppMaliyet)}
-                  </td>
-                  <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
-                    {formatNumberForDisplay(flightTotals[doviz].toplamMaliyet)}
-                  </td>
-                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold">
-                    {doviz}
-                  </td>
-                  <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
-                    {/* KUR sütunu - boş */}
-                  </td>
-                  <td className="px-2 py-2 text-gray-900 dark:text-white text-right font-semibold">
-                    {formatNumberForDisplay(flightTotals[doviz].toplamTl)} TL
-                  </td>
-                  <td
-                    className="px-2 py-2 text-gray-900 dark:text-white"
-                    colSpan={3}
-                  >
-                    {/* Boş sütunlar */}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              </tbody>
           </table>
         </div>
+        {/* --- YENİ EKLENEN ÖZET KARTLARI (DİĞER TABIYLA UYUMLU) --- */}
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            Uçak Bileti Maliyet & Satış Özeti
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Object.keys(flightTotals).map((doviz) => {
+              const dovizT = flightTickets.filter(t => t.doviz === doviz || (t.satisDoviz === doviz && t.doviz !== doviz));
+              const mToplam = flightTickets.filter(t => t.doviz === doviz).reduce((s, t) => s + (t.toplamMaliyet || 0), 0);
+              const sToplam = flightTickets.filter(t => t.satisDoviz === doviz).reduce((s, t) => s + (t.toplamSatis || 0), 0);
+              
+              if (mToplam === 0 && sToplam === 0) return null;
+
+              return (
+                <div
+                  key={doviz}
+                  className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {doviz} BAZINDA
+                    </span>
+                    <span className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-md">
+                      {doviz}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3 mt-4">
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Toplam Maliyet:</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {formatNumberForDisplay(mToplam)} {doviz}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Toplam Satış:</span>
+                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                        {formatNumberForDisplay(sToplam)} {doviz}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-1">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tahmini Kâr:</span>
+                      <span className={`text-sm font-bold ${(sToplam - mToplam) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                        {formatNumberForDisplay(sToplam - mToplam)} {doviz}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Toplam TL Kartı */}
+            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800 shadow-sm p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-indigo-800 dark:text-indigo-300 uppercase tracking-wider">
+                  GENEL TOPLAM (TL)
+                </span>
+                <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200 text-xs font-bold rounded-md">
+                  TRY
+                </span>
+              </div>
+              
+              <div className="space-y-3 mt-4">
+                <div className="flex justify-between items-center pb-2 border-b border-indigo-100 dark:border-indigo-800/50">
+                  <span className="text-sm text-indigo-900/70 dark:text-indigo-200/70">Maliyet TL Karşılığı:</span>
+                  <span className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
+                    {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamTl || 0), 0))} ₺
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center pb-2 border-b border-indigo-100 dark:border-indigo-800/50">
+                  <span className="text-sm text-indigo-900/70 dark:text-indigo-200/70">Satış TL Karşılığı:</span>
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                    {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamSatisTl || 0), 0))} ₺
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-sm font-medium text-indigo-900 dark:text-indigo-100">Net Kâr (TL):</span>
+                  <span className="text-lg font-black text-indigo-700 dark:text-indigo-400">
+                    {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamSatisTl || 0), 0) - flightTickets.reduce((acc, curr) => acc + (curr.toplamTl || 0), 0))} ₺
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Portal ile render edilen supplier dropdown */}

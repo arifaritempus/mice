@@ -288,6 +288,192 @@ export default function OdemeTab(props: OdemeTabProps) {
     ],
   );
 
+    const [searchTags, setSearchTags] = React.useState<string[]>([]);
+  const [searchInput, setSearchInput] = React.useState("");
+  
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchInput.trim() !== "") {
+      e.preventDefault();
+      if (!searchTags.includes(searchInput.trim())) {
+        setSearchTags([...searchTags, searchInput.trim()]);
+      }
+      setSearchInput("");
+    } else if (e.key === "Backspace" && searchInput === "" && searchTags.length > 0) {
+      setSearchTags(searchTags.slice(0, -1));
+    }
+  };
+  
+  const removeSearchTag = (tagToRemove: string) => {
+    setSearchTags(searchTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const [sortConfigPlan, setSortConfigPlan] = React.useState<{key: string, direction: 'asc'|'desc'} | null>(null);
+  const [sortConfigActual, setSortConfigActual] = React.useState<{key: string, direction: 'asc'|'desc'} | null>(null);
+
+  const handleSortPlan = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfigPlan && sortConfigPlan.key === key && sortConfigPlan.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfigPlan({ key, direction });
+  };
+
+  const handleSortActual = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfigActual && sortConfigActual.key === key && sortConfigActual.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfigActual({ key, direction });
+  };
+
+  const getFilteredAndSortedPlans = useCallback(() => {
+    let result = [...paymentPlans];
+    
+    if (searchTags.length > 0) {
+      result = result.filter(item => {
+        return searchTags.every(tag => {
+          const s = tag.toLowerCase();
+          return (item.description && item.description.toLowerCase().includes(s)) ||
+        (item.paymentType && item.paymentType.toLowerCase().includes(s)) ||
+        (item.hotel && item.hotel.toLowerCase().includes(s)) ||
+        (item.currency && item.currency.toLowerCase().includes(s)) ||
+        (item.date && item.date.includes(s));
+        });
+      });
+    }
+    if (searchInput.trim() !== "") {
+      const s = searchInput.toLowerCase();
+      result = result.filter(item => {
+        return (item.description && item.description.toLowerCase().includes(s)) ||
+        (item.paymentType && item.paymentType.toLowerCase().includes(s)) ||
+        (item.hotel && item.hotel.toLowerCase().includes(s)) ||
+        (item.currency && item.currency.toLowerCase().includes(s)) ||
+        (item.date && item.date.includes(s));
+      });
+    }
+    
+    if (sortConfigPlan !== null) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfigPlan.key];
+        let bVal = b[sortConfigPlan.key];
+        
+        if (sortConfigPlan.key === 'totalTRY') {
+           aVal = a.totalTRY || a.amount;
+           bVal = b.totalTRY || b.amount;
+        }
+
+        if (aVal < bVal) return sortConfigPlan.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfigPlan.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [paymentPlans, searchTags, searchInput, sortConfigPlan]);
+
+  const getFilteredAndSortedActuals = useCallback(() => {
+    let result = [...payments];
+    
+    if (searchTags.length > 0) {
+      result = result.filter(item => {
+        return searchTags.every(tag => {
+          const s = tag.toLowerCase();
+          return (item.description && item.description.toLowerCase().includes(s)) ||
+        (item.paymentType && item.paymentType.toLowerCase().includes(s)) ||
+        (item.hotel && item.hotel.toLowerCase().includes(s)) ||
+        (item.currency && item.currency.toLowerCase().includes(s)) ||
+        (item.date && item.date.includes(s));
+        });
+      });
+    }
+    if (searchInput.trim() !== "") {
+      const s = searchInput.toLowerCase();
+      result = result.filter(item => {
+        return (item.description && item.description.toLowerCase().includes(s)) ||
+        (item.paymentType && item.paymentType.toLowerCase().includes(s)) ||
+        (item.hotel && item.hotel.toLowerCase().includes(s)) ||
+        (item.currency && item.currency.toLowerCase().includes(s)) ||
+        (item.date && item.date.includes(s));
+      });
+    }
+    
+    if (sortConfigActual !== null) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfigActual.key];
+        let bVal = b[sortConfigActual.key];
+        
+        if (sortConfigActual.key === 'totalTRY') {
+           aVal = a.totalTRY || a.amount;
+           bVal = b.totalTRY || b.amount;
+        }
+
+        if (aVal < bVal) return sortConfigActual.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfigActual.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [payments, searchTags, searchInput, sortConfigActual]);
+
+  const exportToExcel = async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      
+      const createSheet = (name, data) => {
+        const sheet = workbook.addWorksheet(name);
+        
+        sheet.columns = [
+          { header: 'Tarih', key: 'date', width: 15 },
+          { header: 'Otel/Tedarikçi', key: 'hotel', width: 30 },
+          { header: 'Tip', key: 'paymentType', width: 20 },
+          { header: 'Açıklama', key: 'description', width: 30 },
+          { header: 'Tutar', key: 'amount', width: 15 },
+          { header: 'Döviz', key: 'currency', width: 10 },
+          { header: 'Kur', key: 'exchangeRate', width: 15 },
+          { header: 'Toplam TL', key: 'totalTRY', width: 20 },
+        ];
+
+        sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE11D48' } };
+
+        data.forEach(item => {
+          sheet.addRow({
+            date: item.date,
+            hotel: item.hotel,
+            paymentType: item.paymentType,
+            description: item.description,
+            amount: Number(item.amount || 0),
+            currency: item.currency,
+            exchangeRate: Number(item.exchangeRate || 1),
+            totalTRY: Number(item.totalTRY || item.amount || 0)
+          });
+        });
+      };
+
+      createSheet('Ödeme Planı', getFilteredAndSortedPlans());
+      createSheet('Gerçekleşen Ödemeler', getFilteredAndSortedActuals());
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Odeme_${projectId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Excel export error:", e);
+      alert("Excel çıktısı alınırken bir hata oluştu.");
+    }
+  };
+
+  const SortIcon = ({ sortConfig, columnKey }: { sortConfig: any, columnKey: string }) => {
+    if (!sortConfig || sortConfig.key !== columnKey) {
+      return <span className="ml-1 text-gray-400">↕</span>;
+    }
+    return sortConfig.direction === 'asc' ? <span className="ml-1 text-blue-500">↑</span> : <span className="ml-1 text-blue-500">↓</span>;
+  };
+
   const resetPaymentPlanState = useCallback(() => {
     setEditingPaymentPlanIndex(null);
     setTempPaymentPlanItem(null);
@@ -465,6 +651,7 @@ export default function OdemeTab(props: OdemeTabProps) {
 
   return (
     <div className="space-y-4">
+
       {/* Alış Genel Toplamları */}
       <div className="bg-red-600 dark:bg-red-700 rounded-md p-3">
         <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
@@ -483,6 +670,43 @@ export default function OdemeTab(props: OdemeTabProps) {
         </div>
       </div>
 
+      
+      {/* Üst İşlem Barı (Arama ve Excel) */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="relative w-full sm:w-96 group">
+          <div className="flex flex-wrap items-center gap-1.5 w-full px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all shadow-inner">
+            {searchTags.map((tag, idx) => (
+              <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
+                {tag}
+                <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-600 dark:hover:text-blue-400">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </span>
+            ))}
+            <input
+              type="text"
+              className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+              placeholder={searchTags.length === 0 ? "Arama yap... (Enter ile çoğalt)" : "Yeni arama..."}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={exportToExcel}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel Export
+          </button>
+        </div>
+      </div>
+
+      
       {/* Ödeme Planı (Alış) */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="p-3 flex items-center justify-between">
@@ -526,30 +750,14 @@ export default function OdemeTab(props: OdemeTabProps) {
             </colgroup>
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  TARİH
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  OTEL/TEDARİKÇİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  ÖDEME TİPİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  AÇIKLAMA
-                </th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white">
-                  TUTAR
-                </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
-                  DÖVİZ
-                </th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white">
-                  KUR
-                </th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white">
-                  TOPLAM TL
-                </th>
+                <th onClick={() => handleSortPlan("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TARİH <SortIcon sortConfig={sortConfigPlan} columnKey="date" /></th>
+                <th onClick={() => handleSortPlan("hotel")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">OTEL/TEDARİKÇİ <SortIcon sortConfig={sortConfigPlan} columnKey="hotel" /></th>
+                <th onClick={() => handleSortPlan("paymentType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ÖDEME TİPİ <SortIcon sortConfig={sortConfigPlan} columnKey="paymentType" /></th>
+                <th onClick={() => handleSortPlan("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">AÇIKLAMA <SortIcon sortConfig={sortConfigPlan} columnKey="description" /></th>
+                <th onClick={() => handleSortPlan("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TUTAR <SortIcon sortConfig={sortConfigPlan} columnKey="amount" /></th>
+                <th onClick={() => handleSortPlan("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">DÖVİZ <SortIcon sortConfig={sortConfigPlan} columnKey="currency" /></th>
+                <th onClick={() => handleSortPlan("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">KUR <SortIcon sortConfig={sortConfigPlan} columnKey="exchangeRate" /></th>
+                <th onClick={() => handleSortPlan("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TOPLAM TL <SortIcon sortConfig={sortConfigPlan} columnKey="totalTRY" /></th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
                   İŞLEMLER
                 </th>
@@ -561,14 +769,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                   <tr>
                     <td className="px-2 py-2">
                       <input
-                        type="date"
-                        value={tempPaymentPlanItem?.date || ""}
-                        onChange={(e) =>
-                          setTempPaymentPlanItem((p: any) => ({
-                            ...p,
-                            date: e.target.value,
-                          }))
-                        }
+                        type="date" value={tempPaymentPlanItem?.date || ""} onChange={(e) => setTempPaymentPlanItem((p: any) => ({ ...p, date: e.target.value }))} 
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -748,10 +949,10 @@ export default function OdemeTab(props: OdemeTabProps) {
                         }}
                         className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="TRY">TRY</option>
                         <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
+<option value="TRY">TRY</option>
+<option value="USD">USD</option>
+<option value="GBP">GBP</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -871,19 +1072,17 @@ export default function OdemeTab(props: OdemeTabProps) {
                     </td>
                   </tr>
                 )}
-              {paymentPlans.map((p, idx) =>
+              {getFilteredAndSortedPlans().map((p, idx) =>
                 editingPaymentPlanIndex === idx ? (
-                  <tr key={p.id}>
+                  <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+                    setEditingPaymentPlanIndex(idx);
+                    setTempPaymentPlanItem({ ...p });
+                    setPaymentPlanAmountInput(formatNumberForDisplay(p.amount || 0));
+                    setPaymentPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
+                  }}>
                     <td className="px-2 py-2">
                       <input
-                        type="date"
-                        value={tempPaymentPlanItem?.date ?? p.date}
-                        onChange={(e) =>
-                          setTempPaymentPlanItem((pp: any) => ({
-                            ...pp,
-                            date: e.target.value,
-                          }))
-                        }
+                        type="date" value={tempPaymentPlanItem?.date ?? p.date} onChange={(e) => setTempPaymentPlanItem((pp: any) => ({ ...pp, date: e.target.value }))} 
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1088,10 +1287,10 @@ export default function OdemeTab(props: OdemeTabProps) {
                         }}
                         className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="TRY">TRY</option>
                         <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
+<option value="TRY">TRY</option>
+<option value="USD">USD</option>
+<option value="GBP">GBP</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -1219,7 +1418,12 @@ export default function OdemeTab(props: OdemeTabProps) {
                     </td>
                   </tr>
                 ) : (
-                  <tr key={p.id}>
+                  <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+                    setEditingPaymentPlanIndex(idx);
+                    setTempPaymentPlanItem({ ...p });
+                    setPaymentPlanAmountInput(formatNumberForDisplay(p.amount || 0));
+                    setPaymentPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
+                  }}>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
                       {formatDateForDisplay(p.date)}
                     </td>
@@ -1237,7 +1441,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                               ? "Nakit"
                               : "-"}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-gray-900 dark:text-white max-w-xs truncate" title={p.description}>
                       {p.description}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
@@ -1355,30 +1559,14 @@ export default function OdemeTab(props: OdemeTabProps) {
             </colgroup>
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  TARİH
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  OTEL/TEDARİKÇİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  ÖDEME TİPİ
-                </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">
-                  AÇIKLAMA
-                </th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white">
-                  TUTAR
-                </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
-                  DÖVİZ
-                </th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white">
-                  KUR
-                </th>
-                <th className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white">
-                  TOPLAM TL
-                </th>
+                <th onClick={() => handleSortActual("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TARİH <SortIcon sortConfig={sortConfigActual} columnKey="date" /></th>
+                <th onClick={() => handleSortActual("hotel")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">OTEL/TEDARİKÇİ <SortIcon sortConfig={sortConfigActual} columnKey="hotel" /></th>
+                <th onClick={() => handleSortActual("paymentType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ÖDEME TİPİ <SortIcon sortConfig={sortConfigActual} columnKey="paymentType" /></th>
+                <th onClick={() => handleSortActual("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">AÇIKLAMA <SortIcon sortConfig={sortConfigActual} columnKey="description" /></th>
+                <th onClick={() => handleSortActual("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TUTAR <SortIcon sortConfig={sortConfigActual} columnKey="amount" /></th>
+                <th onClick={() => handleSortActual("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">DÖVİZ <SortIcon sortConfig={sortConfigActual} columnKey="currency" /></th>
+                <th onClick={() => handleSortActual("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">KUR <SortIcon sortConfig={sortConfigActual} columnKey="exchangeRate" /></th>
+                <th onClick={() => handleSortActual("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TOPLAM TL <SortIcon sortConfig={sortConfigActual} columnKey="totalTRY" /></th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
                   İŞLEMLER
                 </th>
@@ -1390,14 +1578,7 @@ export default function OdemeTab(props: OdemeTabProps) {
                   <tr>
                     <td className="px-2 py-2">
                       <input
-                        type="date"
-                        value={tempPaymentItem?.date || ""}
-                        onChange={(e) =>
-                          setTempPaymentItem((p: any) => ({
-                            ...p,
-                            date: e.target.value,
-                          }))
-                        }
+                        type="date" value={tempPaymentItem?.date || ""} onChange={(e) => setTempPaymentItem((p: any) => ({ ...p, date: e.target.value }))} 
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1571,10 +1752,10 @@ export default function OdemeTab(props: OdemeTabProps) {
                         }}
                         className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="TRY">TRY</option>
                         <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
+<option value="TRY">TRY</option>
+<option value="USD">USD</option>
+<option value="GBP">GBP</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -1690,19 +1871,12 @@ export default function OdemeTab(props: OdemeTabProps) {
                     </td>
                   </tr>
                 )}
-              {payments.map((pay, idx) =>
+              {getFilteredAndSortedActuals().map((pay, idx) =>
                 editingPaymentIndex === idx ? (
                   <tr key={pay.id}>
                     <td className="px-2 py-2">
                       <input
-                        type="date"
-                        value={tempPaymentItem?.date ?? pay.date}
-                        onChange={(e) =>
-                          setTempPaymentItem((pp: any) => ({
-                            ...pp,
-                            date: e.target.value,
-                          }))
-                        }
+                        type="date" value={tempPaymentItem?.date ?? pay.date} onChange={(e) => setTempPaymentItem((pp: any) => ({ ...pp, date: e.target.value }))} 
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1899,10 +2073,10 @@ export default function OdemeTab(props: OdemeTabProps) {
                         }}
                         className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="TRY">TRY</option>
                         <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
+<option value="TRY">TRY</option>
+<option value="USD">USD</option>
+<option value="GBP">GBP</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -2210,7 +2384,7 @@ export default function OdemeTab(props: OdemeTabProps) {
         </div>
       </div>
 
-      {/* Portal ile render edilen dropdown - Ödeme Planı */}
+            {/* Portal ile render edilen dropdown - Ödeme Planı */}
       {showPaymentPlanHotelSupplierDropdown &&
         createPortal(
           <div

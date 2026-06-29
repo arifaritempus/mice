@@ -31,7 +31,6 @@ import {
   categoriesService,
   hotelsService,
   projectCollectionPlansService,
-  projectHumanResourcesService,
   projectPaymentPlansService,
   projectsService,
   projectTransfersService,
@@ -230,6 +229,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           {('Satış' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>Satış:</span> <span>{formatMoneySafe(data['Satış'])}</span></p>}
           {('Maliyet' in data) && <p className="text-rose-400 text-[11px] flex justify-between gap-4 font-mono"><span>Maliyet:</span> <span>{formatMoneySafe(data['Maliyet'])}</span></p>}
           {('Kar/Zarar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar/Zarar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>Kar/Zarar:</span> <span>{formatMoneySafe(data['Kar/Zarar'])}</span></p>}
+          {('Kar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>Kâr:</span> <span>{formatMoneySafe(data['Kar'])}</span></p>}
           {('Marj' in data) && <p className="text-amber-400 text-[11px] flex justify-between gap-4 font-mono"><span>Marj:</span> <span>%{data['Marj']}</span></p>}
           {('Adet' in data) && <p className="text-cyan-400 text-[11px] flex justify-between gap-4 font-mono"><span>Adet:</span> <span>{data['Adet']}</span></p>}
           {('value' in data && !('Ciro' in data) && !('Adet' in data)) && <p className="text-white text-[11px] flex justify-between gap-4 font-mono"><span>Değer:</span> <span>{data['value']}</span></p>}
@@ -569,9 +569,18 @@ export default function UltimateDashboard() {
           0),
       0,
     );
+    const eventCost = fEvents.reduce(
+      (acc: number, e: any) =>
+        acc +
+        (Number(e.maliyet_tl) ||
+          Number(e.cost) ||
+          Number(e.maliyet) ||
+          0),
+      0,
+    );
 
     const totalRev = miceRev + sejRev + eventRev; // flightRev is already included in miceRev and sejRev!
-    const totalCost = miceCost + sejCost; // Assuming flights/events cost might be mapped if needed, or included in projects.
+    const totalCost = miceCost + sejCost + eventCost; // Assuming flights/events cost might be mapped if needed, or included in projects.
     const totalProfit = totalRev - totalCost;
 
     // Funnel Data
@@ -715,7 +724,7 @@ export default function UltimateDashboard() {
     fProj.forEach((p: any) => {
       const c = Number(p.satis_tl) || 0;
       const m = Number(p.maliyet_tl) || 0;
-      const dateStr = p.start_date || p.created_at;
+      const dateStr = p.organizasyon_tarihi || p.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
       const monthKey = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
@@ -738,7 +747,7 @@ export default function UltimateDashboard() {
     fSej.forEach((s: any) => {
       const c = Number(s.satis_tl) || 0;
       const m = Number(s.maliyet_tl) || 0;
-      const dateStr = s.check_in_date || s.created_at;
+      const dateStr = s.giris_tarihi || s.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
       const monthKey = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
@@ -755,6 +764,67 @@ export default function UltimateDashboard() {
       item.Marj = item.Ciro > 0 ? Math.round((item["Kar/Zarar"] / item.Ciro) * 100) : 0;
       return item;
     });
+
+    // New Chart: Aylık Finansal Özet (Ciro, Maliyet, Kar, Marj)
+    const monthlyFinMap: Record<string, any> = {};
+
+    fProj.forEach((p: any) => {
+      const c = Number(p.satis_tl) || 0;
+      const m = Number(p.maliyet_tl) || 0;
+      const dateStr = p.organizasyon_tarihi || p.created_at;
+      if (!dateStr) return;
+      const date = new Date(dateStr);
+      const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+      const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      
+      if (!monthlyFinMap[sortKey]) {
+        monthlyFinMap[sortKey] = { sortKey, name: monthName, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
+      }
+      monthlyFinMap[sortKey].Ciro += c;
+      monthlyFinMap[sortKey].Maliyet += m;
+      monthlyFinMap[sortKey]["Kar/Zarar"] += (c - m);
+    });
+
+    fSej.forEach((s: any) => {
+      const c = Number(s.satis_tl) || 0;
+      const m = Number(s.maliyet_tl) || 0;
+      const dateStr = s.giris_tarihi || s.created_at;
+      if (!dateStr) return;
+      const date = new Date(dateStr);
+      const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+      const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      
+      if (!monthlyFinMap[sortKey]) {
+        monthlyFinMap[sortKey] = { sortKey, name: monthName, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
+      }
+      monthlyFinMap[sortKey].Ciro += c;
+      monthlyFinMap[sortKey].Maliyet += m;
+      monthlyFinMap[sortKey]["Kar/Zarar"] += (c - m);
+    });
+
+    fEvents.forEach((e: any) => {
+      const c = Number(e.total_tl) || Number(e.total_price) || Number(e.satis_fiyati) || 0;
+      const m = Number(e.maliyet_tl) || Number(e.cost) || Number(e.maliyet) || 0;
+      const dateStr = e.event_date || e.created_at;
+      if (!dateStr) return;
+      const date = new Date(dateStr);
+      const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+      const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      
+      if (!monthlyFinMap[sortKey]) {
+        monthlyFinMap[sortKey] = { sortKey, name: monthName, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
+      }
+      monthlyFinMap[sortKey].Ciro += c;
+      monthlyFinMap[sortKey].Maliyet += m;
+      monthlyFinMap[sortKey]["Kar/Zarar"] += (c - m);
+    });
+
+    const monthlyFinancialData = Object.values(monthlyFinMap)
+      .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey))
+      .map((item: any) => {
+         item.Marj = item.Ciro > 0 ? Math.round((item["Kar/Zarar"] / item.Ciro) * 100) : 0;
+         return item;
+      });
 
     // New Chart: Transfer Suppliers
     const getSupplierName = (id: string, fallback: string) => {
@@ -995,6 +1065,7 @@ export default function UltimateDashboard() {
       transferSupplierData,
       conversionChartData,
       supplierCostData,
+      monthlyFinancialData,
       allOps,
     };
   }, [
@@ -1026,7 +1097,7 @@ export default function UltimateDashboard() {
     );
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto pt-4 pb-10 px-4 gap-4 custom-scrollbar">
+    <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden pt-4 pb-10 px-4 gap-4 custom-scrollbar">
       {/* Top Header: Title & Filters */}
       <div className="shrink-0 flex flex-col gap-3 z-10">
         <div className="flex flex-wrap items-center justify-start gap-8">
@@ -1035,7 +1106,7 @@ export default function UltimateDashboard() {
               Dashboard
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Tüm Departmanların Detaylı Ciro, Hacim ve Operasyon Haritası.
+              Detaylı Ciro, Hacim ve Operasyon Haritası.
             </p>
           </div>
 
@@ -1129,6 +1200,93 @@ export default function UltimateDashboard() {
           <KPICard title="Sejour (Otel) Ciro" value={m.sejRev} isMoney icon={Hotel} color="cyan" />
           <KPICard title="Bilet Ciro" value={m.flightRev} isMoney icon={Ticket} color="amber" />
           <KPICard title="Toplam Kâr" value={m.totalProfit} isMoney icon={Award} color="fuchsia" />
+        </div>
+
+        {/* ROW 1.5: AYLIK FİNANSAL ÖZET */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-6 relative z-10">
+          <div className="xl:col-span-12 flex flex-col">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia">
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                <BarChart3 size={18} className="text-fuchsia-400" /> Aylık Finansal Özet
+              </h2>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+                Toplam Ciro, Maliyet, Kâr Tutarı ve Kâr Marjı Analizi (Takvim Yılı)
+              </p>
+              <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-4 pt-2">
+                {m.monthlyFinancialData.map((row: any, i: number) => (
+                  <div key={i} className="min-w-[140px] shrink-0 bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group hover:bg-white/10 transition-all duration-300">
+                    <div className="absolute -right-4 -top-6 text-white/[0.03] text-5xl font-black pointer-events-none group-hover:text-white/[0.06] transition-colors duration-300">
+                      {row.name.split(' ')[0]}
+                    </div>
+                    <h3 className="font-bold text-white text-sm relative z-10">{row.name}</h3>
+                    
+                    <div className="flex flex-col gap-1.5 relative z-10">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-400">Ciro</span>
+                        <span className="text-emerald-400 font-mono font-medium">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(row.Ciro)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-400">Maliyet</span>
+                        <span className="text-rose-400 font-mono font-medium">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(row.Maliyet)}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-auto pt-2 border-t border-white/10 flex justify-between items-end relative z-10">
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-1">Kâr/Zarar</p>
+                        <p className={`font-black text-xs ${row['Kar/Zarar'] >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(row['Kar/Zarar'])}
+                        </p>
+                      </div>
+                      <div className="bg-[#0f172a]/80 px-1.5 py-0.5 rounded-lg border border-white/10 shadow-inner">
+                        <span className="text-amber-400 font-mono font-bold text-[10px]">%{row.Marj}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {m.monthlyFinancialData.length === 0 && (
+                  <div className="w-full p-8 text-center text-slate-500 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">
+                    Bu tarih aralığı için finansal veri bulunmuyor.
+                  </div>
+                )}
+
+                {m.monthlyFinancialData.length > 0 && (
+                  <div className="min-w-[180px] shrink-0 bg-gradient-to-br from-fuchsia-500/20 to-purple-600/20 border border-fuchsia-500/30 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group shadow-lg shadow-fuchsia-500/10">
+                    <div className="absolute -right-6 -bottom-6 text-fuchsia-500/10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                      <BarChart3 size={80} />
+                    </div>
+                    <h3 className="font-black text-fuchsia-100 text-sm relative z-10">Yıllık Toplam</h3>
+                    
+                    <div className="flex flex-col gap-1.5 relative z-10">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-fuchsia-200/70">Top. Ciro</span>
+                        <span className="text-emerald-300 font-mono font-bold">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0))}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-fuchsia-200/70">Top. Mal.</span>
+                        <span className="text-rose-300 font-mono font-bold">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0))}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-auto pt-2 border-t border-fuchsia-500/30 flex justify-between items-end relative z-10">
+                      <div>
+                        <p className="text-[9px] text-fuchsia-300/70 uppercase tracking-widest mb-1">Net Kâr</p>
+                        <p className={`font-black text-sm ${m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                          {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0))}
+                        </p>
+                      </div>
+                      <div className="bg-[#4a044e]/50 px-1.5 py-0.5 rounded-lg border border-fuchsia-500/30 backdrop-blur-md">
+                        <span className="text-fuchsia-300 font-mono font-black text-xs">
+                          %{m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0) > 0 ? Math.round((m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) / m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0)) * 100) : 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          </div>
         </div>
 
         {/* ROW 2: PAZARLAMA HUNİSİ & ACENTE ANALİZİ */}

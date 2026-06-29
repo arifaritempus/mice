@@ -624,16 +624,12 @@ export const projectsService = {
       projectAccommodationItemsService?.deleteByProjectId?.(id),
 
       // Etkinlik & aktiviteler
-      projectEventsActivitiesService?.deleteByProjectId?.(id),
 
       // İnsan kaynakları
-      projectHumanResourcesService?.deleteByProjectId?.(id),
 
       // Diğer servisler
-      projectOtherServicesService?.deleteByProjectId?.(id),
 
       // Finansal servisler
-      projectFinancialServicesService?.deleteByProjectId?.(id),
 
       // Tahsilat / ödeme planları ve kayıtları
       projectCollectionPlansService?.deleteByProjectId?.(id),
@@ -642,10 +638,10 @@ export const projectsService = {
       projectPaymentsService?.deleteByProjectId?.(id),
 
       // Otel ekstraları
-      projectHotelExtrasService?.deleteByProjectId?.(id),
 
       // Transfer / tur kayıtları
       projectTransfersService?.deleteByProjectId?.(id),
+      projectOthersService?.deleteByProjectId?.(id),
 
       // Proje kullanıcı eşleştirmeleri + public linkleri
       supabase.from('project_users').delete().eq('project_id', id),
@@ -2789,59 +2785,6 @@ export const projectAccommodationItemsService = {
 };
 
 // PROJECT HOTEL EXTRAS
-export const projectHotelExtrasService = {
-  async getByProjectId(projectId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('project_hotel_extras')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('date', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  async create(hotelExtra: Omit<any, 'id' | 'created_at' | 'updated_at'>): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_hotel_extras')
-      .insert([hotelExtra])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async update(id: string, hotelExtra: Partial<any>): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_hotel_extras')
-      .update({ ...hotelExtra, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_hotel_extras')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  async deleteByProjectId(projectId: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_hotel_extras')
-      .delete()
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-  }
-};
 
 // PROJECT TRANSFERS
 export const projectTransfersService = {
@@ -3115,316 +3058,12 @@ export const projectTransfersService = {
 };
 
 // PROJECT EVENTS & ACTIVITIES
-export const projectEventsActivitiesService = {
-  // Proje etkinliklerini getir
-  async getByProjectId(projectId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('project_events_activities')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('event_date', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Etkinlik oluştur
-  async create(eventData: any): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_events_activities')
-      .insert([eventData])
-      .select('*')
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Etkinlik güncelle
-  async update(id: string, eventData: any): Promise<any> {
-    const { total_tl, ...updateData } = eventData;
-
-    const { data, error } = await supabase
-      .from('project_events_activities')
-      .update({ ...updateData, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Etkinlik sil
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_events_activities')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  // Proje bazında tüm etkinlikleri sil
-  async deleteByProjectId(projectId: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_events_activities')
-      .delete()
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-  },
-
-  // Proje etkinlik istatistikleri
-  async getStats(projectId: string): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_events_activities')
-      .select('amount, currency, exchange_rate, total_tl')
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-
-    const totalEvents = data?.length || 0;
-    const totalAmount = data?.reduce((sum, event) => sum + parseFloat(event.amount || 0), 0) || 0;
-    const totalTL = data?.reduce((sum, event) => sum + parseFloat(event.total_tl || 0), 0) || 0;
-
-    // Döviz bazında toplamlar
-    const currencyTotals = data?.reduce((acc, event) => {
-      const currency = event.currency || 'EUR';
-      if (!acc[currency]) {
-        acc[currency] = 0;
-      }
-      acc[currency] += parseFloat(event.amount || 0);
-      return acc;
-    }, {}) || {};
-
-    return {
-      totalEvents,
-      totalAmount,
-      totalTL,
-      currencyTotals,
-      averageAmount: totalEvents > 0 ? totalAmount / totalEvents : 0
-    };
-  }
-};
 
 // PROJECT HUMAN RESOURCES (İnsan Kaynakları)
-export const projectHumanResourcesService = {
-  async getByProjectId(projectId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('project_human_resources')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('date', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  async create(hrExtra: Omit<any, 'id' | 'created_at' | 'updated_at'>): Promise<any> {
-    console.log('🔍 projectHumanResourcesService.create çağrıldı:', hrExtra);
-    console.log('🔍 hrExtra JSON:', JSON.stringify(hrExtra, null, 2));
-    console.log('🔍 hrExtra.hotel:', hrExtra.hotel);
-    console.log('🔍 hrExtra.sub_category:', hrExtra.sub_category);
-    console.log('🔍 hrExtra.description:', hrExtra.description);
-
-    const { data, error } = await supabase
-      .from('project_human_resources')
-      .insert([hrExtra])
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error('❌ projectHumanResourcesService.create hatası:', error);
-      console.error('❌ Hata detayları:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
-      throw error;
-    }
-
-    console.log('✅ projectHumanResourcesService.create başarılı:', data);
-    return data;
-  },
-
-  async update(id: string, hrExtra: Partial<any>): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_human_resources')
-      .update({ ...hrExtra, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(`
-        *,
-        supplier:suppliers(name),
-        sub_category:categories(name),
-        created_by_user:users(first_name, last_name)
-      `)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_human_resources')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  async deleteByProjectId(projectId: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_human_resources')
-      .delete()
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-  }
-};
 
 // PROJECT OTHER SERVICES (Diğer Servisler)
-export const projectOtherServicesService = {
-  async getByProjectId(projectId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('project_other_services')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('date', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  async create(otherService: Omit<any, 'id' | 'created_at' | 'updated_at'>): Promise<any> {
-    console.log('🔍 projectOtherServicesService.create çağrıldı:', otherService);
-
-    const { data, error } = await supabase
-      .from('project_other_services')
-      .insert([otherService])
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error('❌ projectOtherServicesService.create hatası:', error);
-      throw error;
-    }
-
-    console.log('✅ projectOtherServicesService.create başarılı:', data);
-    return data;
-  },
-
-  async update(id: string, otherService: Partial<any>): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_other_services')
-      .update({ ...otherService, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(`
-        *,
-        supplier:suppliers(name),
-        sub_category:categories(name),
-        created_by_user:users(first_name, last_name)
-      `)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_other_services')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  async deleteByProjectId(projectId: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_other_services')
-      .delete()
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-  }
-};
 
 // PROJECT FINANCIAL SERVICES
-export const projectFinancialServicesService = {
-  async getByProjectId(projectId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('project_financial_services')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('date', { ascending: false });
-
-    // 404 veya tablo yoksa sessizce boş array döndür
-    if (error) {
-      // Tablo bulunamadı hatası (404) veya relation yok hatası sessizce handle edilir
-      if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
-        return [];
-      }
-      throw error;
-    }
-    return data || [];
-  },
-
-  async create(financialService: Omit<any, 'id' | 'created_at' | 'updated_at'>): Promise<any> {
-    console.log('🔍 projectFinancialServicesService.create çağrıldı:', financialService);
-
-    const { data, error } = await supabase
-      .from('project_financial_services')
-      .insert([financialService])
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error('❌ projectFinancialServicesService.create hatası:', error);
-      throw error;
-    }
-
-    console.log('✅ projectFinancialServicesService.create başarılı:', data);
-    return data;
-  },
-
-  async update(id: string, financialService: Partial<any>): Promise<any> {
-    const { data, error } = await supabase
-      .from('project_financial_services')
-      .update({ ...financialService, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(`
-        *,
-        supplier:suppliers(name),
-        sub_category:categories(name),
-        created_by_user:users(first_name, last_name)
-      `)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_financial_services')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  async deleteByProjectId(projectId: string): Promise<void> {
-    const { error } = await supabase
-      .from('project_financial_services')
-      .delete()
-      .eq('project_id', projectId);
-
-    if (error) throw error;
-  }
-};
 
 // PROJECT COLLECTION PLANS
 export const projectCollectionPlansService = {
@@ -5533,5 +5172,69 @@ export const marketingService = {
       if (error) throw error;
       return data;
     }
+  }
+};
+
+
+// --- DİĞER (Others) Tablosu Servisleri ---
+export const projectOthersService = {
+  // Tüm kayıtları getir (Proje ID'sine göre)
+  async getByProjectId(projectId: string): Promise<any[]> {
+    console.log("Fetching project_others for", projectId);
+    const { data, error } = await supabase
+      .from('project_others')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('date', { ascending: false });
+
+    console.log("project_others fetch result:", data, error);
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Yeni kayıt ekle
+  async create(record: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('project_others')
+      .insert([record])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Kayıt güncelle
+  async update(id: string, record: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('project_others')
+      .update({ ...record, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Kayıt sil
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('project_others')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  // Proje bazında tüm kayıtları sil
+  async deleteByProjectId(projectId: string): Promise<void> {
+    const { error } = await supabase
+      .from('project_others')
+      .delete()
+      .eq('project_id', projectId);
+
+    if (error) throw error;
   }
 };

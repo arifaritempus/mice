@@ -51,9 +51,12 @@ interface QuoteServiceEditorProps {
   }[];
   hotelId?: string;
   disabled?: boolean;
+  isViewMode?: boolean;
+  title?: React.ReactNode;
 }
 
 export default function QuoteServiceEditor({
+  title,
   items,
   onAdd,
   onEdit,
@@ -69,6 +72,7 @@ export default function QuoteServiceEditor({
   hotels = [],
   hotelId,
   disabled = false,
+  isViewMode = false,
 }: QuoteServiceEditorProps) {
   // Modal state
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -840,7 +844,7 @@ export default function QuoteServiceEditor({
 
       {/* Kategori Ekleme Butonu (Üstte Sağda) */}
       <div className="flex justify-end pb-2">
-        {!disabled && (
+        {!disabled && !isViewMode && (
           <button
             type="button"
             onClick={() => {
@@ -889,7 +893,7 @@ export default function QuoteServiceEditor({
             <div className="w-32 ml-2">OTEL</div>
             <div className="flex-1 min-w-0">AÇIKLAMA</div>
 
-            <div className="w-24 text-center pr-2">İŞLEMLER</div>
+            {!isViewMode && <div className="w-24 text-right pr-2">İŞLEMLER</div>}
           </div>
 
           {/* Liste */}
@@ -1230,6 +1234,7 @@ export default function QuoteServiceEditor({
                           it.main_category === "CAT_002") &&
                           hotels.length > 0 && (
                             <select
+                              disabled={isViewMode}
                               value={it.hotel_id || ""}
                               onChange={(e) =>
                                 handleItemChange(
@@ -1268,8 +1273,9 @@ export default function QuoteServiceEditor({
                           className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white ml-2"
                           placeholder="Açıklama"
                         />
-                        <div className="w-24 flex items-center gap-1 justify-end pr-1">
-                          {onAddBelow && (
+                        {!isViewMode && (
+                          <div className="w-24 flex items-center gap-1 justify-end pr-1">
+                            {onAddBelow && (
                             <button
                               type="button"
                               onClick={() => onAddBelow(it.id)}
@@ -1338,7 +1344,8 @@ export default function QuoteServiceEditor({
                               />
                             </svg>
                           </button>
-                        </div>
+                          </div>
+                        )}
                       </>
                     ) : (
                       // Görüntüleme modu - normal div'ler
@@ -1387,7 +1394,7 @@ export default function QuoteServiceEditor({
                           {it.description || "-"}
                         </div>
 
-                        {!disabled ? (
+                        {!disabled && !isViewMode ? (
                           <div className="w-24 flex items-center gap-1 justify-end pr-1">
                             {onAddBelow && (
                               <button

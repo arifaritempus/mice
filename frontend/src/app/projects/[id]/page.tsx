@@ -25,14 +25,9 @@ import {
   categoriesService,
   projectAccommodationItemsService,
   quoteItemsService,
-  projectHotelExtrasService,
   agenciesService,
   hotelsService,
-  projectTransfersService,
-  projectEventsActivitiesService,
-  projectHumanResourcesService,
-  projectOtherServicesService,
-  projectFinancialServicesService,
+  projectTransfersService, projectOthersService,
   projectCollectionPlansService,
   projectCollectionsService,
   projectPaymentPlansService,
@@ -41,19 +36,29 @@ import {
   projectUsersService,
   publicLinksService,
 } from "@/lib/supabaseService";
+
+// MOCK old services that were removed to prevent dead code from crashing
+const mockService = { 
+  getByProjectId: async (arg?: any): Promise<any> => [], 
+  create: async (arg?: any): Promise<any> => ({}), 
+  update: async (arg1?: any, arg2?: any): Promise<any> => ({}), 
+  delete: async (arg?: any): Promise<any> => ({}), 
+  deleteByProjectId: async (arg?: any): Promise<any> => ({}) 
+};
+const projectHotelExtrasService = mockService;
+const projectEventsActivitiesService = mockService;
+const projectOtherServicesService = mockService;
+const projectFinancialServicesService = mockService;
+
 import { supabase } from "@/lib/supabase";
 import { lsGet, lsSet } from "@/utils/safeStorage";
 import AccommodationTabOptimized from "./AccommodationTabOptimized";
-import OtherServicesTab from "./OtherServicesTab";
-import FinancialTab from "./FinancialTab";
 import SalesTab from "./SalesTab";
 import PurchaseTab from "./PurchaseTab";
 import KarZararTab from "./KarZararTab";
 import UcakBiletiTab from "./UcakBiletiTab";
-import OtelEkstraTab from "./OtelEkstraTab";
 import TransferTurTab from "./TransferTurTab";
-import EtkinlikAktiviteTab from "./EtkinlikAktiviteTab";
-import InsanKaynaklariTab from "./InsanKaynaklariTab";
+import DigerTab from "./DigerTab";
 import TahsilatTab from "./TahsilatTab";
 import OdemeTab from "./OdemeTab";
 import { usePermissions, Module, Role } from "@/lib/permissions";
@@ -84,13 +89,9 @@ const TABS: TabDef[] = [
   { key: "satis", label: "Satış" },
   { key: "alis", label: "Alış" },
   { key: "konaklama", label: "Konaklama" },
-  { key: "otel-ekstra", label: "Otel Ekstra" },
   { key: "ucak-bileti", label: "Uçak Bileti" },
   { key: "transfer-tur", label: "Transfer & Tur" },
-  { key: "etkinlik-aktivite", label: "Etkinlik & Aktivite" },
-  { key: "insan-kaynaklari", label: "İnsan Kaynakları" },
-  { key: "diger-servisler", label: "Diğer Servisler" },
-  { key: "finansal", label: "Finansal" },
+  { key: "diger", label: "Diğer" },
   { key: "tahsilat", label: "Tahsilat" },
   { key: "odeme", label: "Ödeme" },
   { key: "kar-zarar", label: "Kar/Zarar" },
@@ -658,6 +659,12 @@ export default function ProjectDetailPage() {
       doviz: ticket.doviz || "EUR",
       kur: ticket.kur || ticket.kur || 1.0,
       toplamTl: ticket.toplam_tl || ticket.toplamTl || 0,
+      satisPax: ticket.satis_pax || ticket.satisPax || 0,
+      ppSatis: ticket.pp_satis || ticket.ppSatis || 0,
+      toplamSatis: ticket.toplam_satis || ticket.toplamSatis || 0,
+      satisDoviz: ticket.satis_doviz || ticket.satisDoviz || "TRY",
+      satisKur: ticket.satis_kur || ticket.satisKur || 1.0,
+      toplamSatisTl: ticket.toplam_satis_tl || ticket.toplamSatisTl || 0,
       misafirler: ticket.misafirler || "",
       durum: ticket.durum || "aktif",
       islemler: ticket.islemler || "",
@@ -730,6 +737,9 @@ export default function ProjectDetailPage() {
     transferTotals,
     setTransferTotals,
   } = useTransferState();
+  const [projectOthers, setProjectOthers] = useState<any[]>([]);
+  const [isProjectOthersLoading, setIsProjectOthersLoading] = useState(true);
+
 
   // Etkinlik & Aktivite state'leri custom hook'tan alınıyor
   const {
@@ -1761,6 +1771,7 @@ export default function ProjectDetailPage() {
           ? formatDateAccommodation(item.check_out_date)
           : "",
         oda_no: item.room_number,
+        oda_no_2: item.room_number_2 || "",
         oda_tipi: item.room_type,
         yatak_tipi: item.bed_type,
         isim: item.first_name,
@@ -1768,9 +1779,11 @@ export default function ProjectDetailPage() {
         ucus_gelis: item.flight_arrival,
         ucus_gidis: item.flight_departure,
         gece_sayisi: item.nights,
+        geceleme: item.nights,
         paket: item.package,
         otel: item.hotel,
         ucus: item.flight,
+        ucak: item.flight,
         toplam: item.total,
         doviz: item.currency,
         oda_notu: item.room_note || "",
@@ -1780,7 +1793,6 @@ export default function ProjectDetailPage() {
         donus_ucus_kodu: item.return_flight_code || "",
         donus_ucak_kalkis: item.return_flight_departure || "",
         donus_ucak_inis: item.return_flight_arrival || "",
-        geceleme: item.nights || 1,
       }));
       setAccommodationItems(mappedAccommodationData);
     } catch (error) {
@@ -1796,6 +1808,7 @@ export default function ProjectDetailPage() {
       try {
         switch (activeTab) {
           case "konaklama":
+          case "transfer-tur":
             if (accommodationItems.length === 0) {
               await refetchAccommodation();
             }
@@ -2141,6 +2154,7 @@ export default function ProjectDetailPage() {
                 ? activeHotelId
                 : null),
             room_number: item.oda_no || "",
+            room_number_2: item.oda_no_2 || "",
             room_type: item.oda_tipi || "",
             bed_type: item.yatak_tipi || "",
             first_name: item.isim || "",
@@ -2154,7 +2168,7 @@ export default function ProjectDetailPage() {
             nights: Number(item.geceleme || item.gece_sayisi || 1),
             package: item.paket || "",
             hotel: item.otel || "",
-            flight: item.ucus || "",
+            flight: item.ucus || item.ucak || "",
             total: Number(item.toplam || 0) || 0,
             currency: item.doviz || "EUR",
             room_note: item.oda_notu || "",
@@ -3941,144 +3955,171 @@ export default function ProjectDetailPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      const ExcelJS = (await import("exceljs")).default;
-      const workbook = new ExcelJS.Workbook();
-      const buffer = await file.arrayBuffer();
-      await workbook.xlsx.load(buffer);
+    const inputElement = event.target;
 
-      const worksheet = workbook.worksheets[0];
-      if (!worksheet) {
-        showNotification("Excel dosyasında çalışma sayfası bulunamadı", "info");
-        return;
-      }
+    const processFile = async () => {
+      try {
+        const ExcelJS = (await import("exceljs")).default;
+        const workbook = new ExcelJS.Workbook();
+        const buffer = await file.arrayBuffer();
+        await workbook.xlsx.load(buffer);
 
-      const newItems: any[] = [];
+        const worksheet = workbook.worksheets[0];
+        if (!worksheet) {
+          showNotification("Excel dosyasında çalışma sayfası bulunamadı", "info");
+          inputElement.value = "";
+          return;
+        }
 
-      // SADECE GÜNCEL OTELİN VERİLERİNİ TEMİZLE
-      // Diğer otellerdeki veya tümündeki verileri koru
-      const otherHotelItems = accommodationItems.filter((item) => {
-        if (activeHotelId === "all") return false; // Eğer tümünde import yapılıyorsa her şeyin üzerine yazar
-        return item.hotel_id !== activeHotelId;
-      });
+        const newItems: any[] = [];
 
-      // Veri satırlarını oku (3. satırdan başla - 2 başlık satırını atla)
-      for (let rowNumber = 3; rowNumber <= worksheet.rowCount; rowNumber++) {
-        const row = worksheet.getRow(rowNumber);
+        // SADECE GÜNCEL OTELİN VERİLERİNİ TEMİZLE
+        // Diğer otellerdeki veya tümündeki verileri koru
+        const otherHotelItems = accommodationItems.filter((item) => {
+          if (activeHotelId === "all") return false; // Eğer tümünde import yapılıyorsa her şeyin üzerine yazar
+          return item.hotel_id !== activeHotelId;
+        });
 
-        // Satırın tamamen boş olup olmadığını kontrol et
-        let hasData = false;
-        for (let col = 1; col <= 28; col++) {
-          const cellValue = getCellValue(row.getCell(col));
-          if (cellValue && cellValue.trim() !== "") {
-            hasData = true;
-            break;
+        // Veri satırlarını oku (3. satırdan başla - 2 başlık satırını atla)
+        for (let rowNumber = 3; rowNumber <= worksheet.rowCount; rowNumber++) {
+          const row = worksheet.getRow(rowNumber);
+
+          // Satırın tamamen boş olup olmadığını kontrol et
+          let hasData = false;
+          for (let col = 1; col <= 28; col++) {
+            const cellValue = getCellValue(row.getCell(col));
+            if (cellValue && cellValue.trim() !== "") {
+              hasData = true;
+              break;
+            }
           }
+
+          if (!hasData) continue;
+
+          // Forecast bölümünü algıla - eğer sadece oda tipi var ve isim-soyisim yoksa forecast bölümü
+          const firstCellValue = getCellValue(row.getCell(1));
+          const secondCellValue = getCellValue(row.getCell(2)); // ODA TİPİ
+          const fourthCellValue = getCellValue(row.getCell(4)); // İSİM
+          const fifthCellValue = getCellValue(row.getCell(5)); // SOYİSİM
+
+          // Eğer ilk sütun oda tipi ise ve isim-soyisim sütunları boşsa forecast bölümü
+          if (
+            firstCellValue &&
+            (firstCellValue.toString().toUpperCase().includes("FORECAST") ||
+              firstCellValue.toString().toUpperCase().includes("ÖZET") ||
+              firstCellValue.toString().toUpperCase().includes("TOPLAM") ||
+              firstCellValue.toString().toUpperCase().includes("SUMMARY") ||
+              firstCellValue.toString().toUpperCase().includes("TOTAL") ||
+              // Oda tipi var ama isim-soyisim yoksa forecast bölümü
+              ([
+                "SNG",
+                "DBL",
+                "TRP",
+                "TRPL",
+                "DBL + INF",
+                "DBL + CHD",
+                "DBL + FREE CHD",
+              ].includes(firstCellValue.toString().toUpperCase()) &&
+                (!fourthCellValue || fourthCellValue === "") &&
+                (!fifthCellValue || fifthCellValue === "")))
+          ) {
+            break; // Forecast bölümüne geldik, döngüyü durdur
+          }
+
+          const rowData: any = {
+            id: Date.now() + Math.random(),
+            hotel_id:
+              activeHotelId !== "all" && activeHotelId !== "general"
+                ? activeHotelId
+                : null,
+            // Yeni sütun sırasına göre düzenlendi
+            oda_no: getCellValue(row.getCell(1)), // ODA #
+            oda_tipi: getCellValue(row.getCell(2)), // ODA TİPİ
+            yatak_tipi: getCellValue(row.getCell(3)), // YATAK TİPİ
+            isim: getCellValue(row.getCell(4)), // İSİM
+            soyisim: getCellValue(row.getCell(5)), // SOYİSİM
+            oda_no_2: getCellValue(row.getCell(6)), // ODA NO (tekrar)
+            oda_notu: getCellValue(row.getCell(7)), // ODA NOTU
+            gelis_tarihi: formatDateAccommodation(getCellValue(row.getCell(8))), // GİRİŞ TARİHİ
+            gelis_ucus_kodu: getCellValue(row.getCell(9)), // GELİŞ UÇUŞ KODU
+            gelis_ucak_kalkis: formatTimeAccommodation(
+              getCellValueForTime(row.getCell(10)),
+            ), // GELİŞ UÇAK KALKIŞ
+            gelis_ucak_inis: formatTimeAccommodation(
+              getCellValueForTime(row.getCell(11)),
+            ), // GELİŞ UÇAK İNİŞ
+            cikis_tarihi: formatDateAccommodation(getCellValue(row.getCell(12))), // ÇIKIŞ TARİHİ
+            donus_ucus_kodu: getCellValue(row.getCell(13)), // DÖNÜŞ UÇUŞ KODU
+            donus_ucak_kalkis: formatTimeAccommodation(
+              getCellValueForTime(row.getCell(14)),
+            ), // DÖNÜŞ UÇUŞ KALKIŞ
+            donus_ucak_inis: formatTimeAccommodation(
+              getCellValueForTime(row.getCell(15)),
+            ), // DÖNÜŞ UÇUŞ İNİŞ
+            tarih1: formatDateAccommodation(getCellValue(row.getCell(16))), // 1. TARİH
+            tarih2: formatDateAccommodation(getCellValue(row.getCell(17))), // 2. TARİH
+            tarih3: formatDateAccommodation(getCellValue(row.getCell(18))), // 3. TARİH
+            tarih4: formatDateAccommodation(getCellValue(row.getCell(19))), // 4. TARİH
+            tarih5: formatDateAccommodation(getCellValue(row.getCell(20))), // 5. TARİH
+            tarih6: formatDateAccommodation(getCellValue(row.getCell(21))), // 6. TARİH
+            tarih7: formatDateAccommodation(getCellValue(row.getCell(22))), // 7. TARİH
+            geceleme: getCellValue(row.getCell(23)), // GECELEME
+            paket: getCellValue(row.getCell(24)), // PAKET
+            otel: getCellValue(row.getCell(25)), // OTEL
+            ucak: getCellValue(row.getCell(26)), // UÇAK
+            toplam: getCellValue(row.getCell(27)), // TOPLAM
+            doviz: getCellValue(row.getCell(28)), // DÖVİZ
+          };
+
+          // Tarih sütunlarını hesapla
+          const dateColumns = calculateDateColumns(rowData);
+          const finalRowData = { ...rowData, ...dateColumns };
+
+          newItems.push(finalRowData);
         }
 
-        if (!hasData) continue;
+        // Tüm listeyi global en erken giriş tarihine göre re-bazla
+        const newItemsRebased = rebaseAccommodationByEarliest(newItems);
 
-        // Forecast bölümünü algıla - eğer sadece oda tipi var ve isim-soyisim yoksa forecast bölümü
-        const firstCellValue = getCellValue(row.getCell(1));
-        const secondCellValue = getCellValue(row.getCell(2)); // ODA TİPİ
-        const fourthCellValue = getCellValue(row.getCell(4)); // İSİM
-        const fifthCellValue = getCellValue(row.getCell(5)); // SOYİSİM
+        // Diğer otelleri koru ve üzerine yeni öğeleri ekle
+        const rebased = [...otherHotelItems, ...newItemsRebased];
+        setAccommodationItems(rebased);
 
-        // Eğer ilk sütun oda tipi ise ve isim-soyisim sütunları boşsa forecast bölümü
-        if (
-          firstCellValue &&
-          (firstCellValue.toString().toUpperCase().includes("FORECAST") ||
-            firstCellValue.toString().toUpperCase().includes("ÖZET") ||
-            firstCellValue.toString().toUpperCase().includes("TOPLAM") ||
-            firstCellValue.toString().toUpperCase().includes("SUMMARY") ||
-            firstCellValue.toString().toUpperCase().includes("TOTAL") ||
-            // Oda tipi var ama isim-soyisim yoksa forecast bölümü
-            ([
-              "SNG",
-              "DBL",
-              "TRP",
-              "TRPL",
-              "DBL + INF",
-              "DBL + CHD",
-              "DBL + FREE CHD",
-            ].includes(firstCellValue.toString().toUpperCase()) &&
-              (!fourthCellValue || fourthCellValue === "") &&
-              (!fifthCellValue || fifthCellValue === "")))
-        ) {
-          break; // Forecast bölümüne geldik, döngüyü durdur
-        }
+        // Supabase'e kaydet
+        await saveAccommodationItems(rebased);
 
-        const rowData: any = {
-          id: Date.now() + Math.random(),
-          hotel_id:
-            activeHotelId !== "all" && activeHotelId !== "general"
-              ? activeHotelId
-              : null,
-          // Yeni sütun sırasına göre düzenlendi
-          oda_no: getCellValue(row.getCell(1)), // ODA #
-          oda_tipi: getCellValue(row.getCell(2)), // ODA TİPİ
-          yatak_tipi: getCellValue(row.getCell(3)), // YATAK TİPİ
-          isim: getCellValue(row.getCell(4)), // İSİM
-          soyisim: getCellValue(row.getCell(5)), // SOYİSİM
-          oda_no_2: getCellValue(row.getCell(6)), // ODA NO (tekrar)
-          oda_notu: getCellValue(row.getCell(7)), // ODA NOTU
-          gelis_tarihi: formatDateAccommodation(getCellValue(row.getCell(8))), // GİRİŞ TARİHİ
-          gelis_ucus_kodu: getCellValue(row.getCell(9)), // GELİŞ UÇUŞ KODU
-          gelis_ucak_kalkis: formatTimeAccommodation(
-            getCellValueForTime(row.getCell(10)),
-          ), // GELİŞ UÇAK KALKIŞ
-          gelis_ucak_inis: formatTimeAccommodation(
-            getCellValueForTime(row.getCell(11)),
-          ), // GELİŞ UÇAK İNİŞ
-          cikis_tarihi: formatDateAccommodation(getCellValue(row.getCell(12))), // ÇIKIŞ TARİHİ
-          donus_ucus_kodu: getCellValue(row.getCell(13)), // DÖNÜŞ UÇUŞ KODU
-          donus_ucak_kalkis: formatTimeAccommodation(
-            getCellValueForTime(row.getCell(14)),
-          ), // DÖNÜŞ UÇUŞ KALKIŞ
-          donus_ucak_inis: formatTimeAccommodation(
-            getCellValueForTime(row.getCell(15)),
-          ), // DÖNÜŞ UÇUŞ İNİŞ
-          tarih1: formatDateAccommodation(getCellValue(row.getCell(16))), // 1. TARİH
-          tarih2: formatDateAccommodation(getCellValue(row.getCell(17))), // 2. TARİH
-          tarih3: formatDateAccommodation(getCellValue(row.getCell(18))), // 3. TARİH
-          tarih4: formatDateAccommodation(getCellValue(row.getCell(19))), // 4. TARİH
-          tarih5: formatDateAccommodation(getCellValue(row.getCell(20))), // 5. TARİH
-          tarih6: formatDateAccommodation(getCellValue(row.getCell(21))), // 6. TARİH
-          tarih7: formatDateAccommodation(getCellValue(row.getCell(22))), // 7. TARİH
-          geceleme: getCellValue(row.getCell(23)), // GECELEME
-          paket: getCellValue(row.getCell(24)), // PAKET
-          otel: getCellValue(row.getCell(25)), // OTEL
-          ucak: getCellValue(row.getCell(26)), // UÇAK
-          toplam: getCellValue(row.getCell(27)), // TOPLAM
-          doviz: getCellValue(row.getCell(28)), // DÖVİZ
-        };
-
-        // Tarih sütunlarını hesapla
-        const dateColumns = calculateDateColumns(rowData);
-        const finalRowData = { ...rowData, ...dateColumns };
-
-        newItems.push(finalRowData);
+        showNotification(
+          `${newItems.length} konaklama kaydı başarıyla import edildi`,
+          "success",
+        );
+      } catch (error: any) {
+        showNotification(
+          "Excel dosyası import edilirken hata oluştu: " + error.message,
+          "danger",
+        );
+      } finally {
+        inputElement.value = "";
       }
+    };
 
-      // Tüm listeyi global en erken giriş tarihine göre re-bazla
-      const newItemsRebased = rebaseAccommodationByEarliest(newItems);
-
-      // Diğer otelleri koru ve üzerine yeni öğeleri ekle
-      const rebased = [...otherHotelItems, ...newItemsRebased];
-      setAccommodationItems(rebased);
-
-      // Supabase'e kaydet
-      await saveAccommodationItems(rebased);
-
-      showNotification(
-        `${newItems.length} konaklama kaydı başarıyla import edildi`,
-        "success",
-      );
-    } catch (error: any) {
-      showNotification(
-        "Excel dosyası import edilirken hata oluştu: " + error.message,
-        "danger",
-      );
+    if (activeHotelId === "all" && project?.hotels_data && project.hotels_data.length > 1) {
+      setConfirmModal({
+        open: true,
+        title: "Tüm Otellere Konaklama Ekleme",
+        message: "Şu anda 'Tümü' sekmesindesiniz. Herhangi bir otel seçmediğiniz için içeri aktardığınız liste, projede bulunan TÜM otellerin listesine yansıyacaktır. Sadece tek bir otele eklemek istiyorsanız lütfen önce o otelin sekmesini seçin. Devam etmek istiyor musunuz?",
+        onConfirm: () => {
+          setConfirmModal((prev) => ({ ...prev, open: false }));
+          processFile();
+        },
+        onCancel: () => {
+          inputElement.value = "";
+          setConfirmModal((prev) => ({ ...prev, open: false }));
+        },
+        type: "info",
+        confirmText: "Evet, Devam Et",
+      });
+    } else {
+      processFile();
     }
   };
   // Excel hücre değerini güvenli şekilde al (formül sonuçlarını dahil)
@@ -4339,33 +4380,39 @@ export default function ProjectDetailPage() {
             (activeHotelId !== "all" && activeHotelId !== "general"
               ? activeHotelId
               : null),
-          project_id: projectId, // Ensure project_id is set
-          biletleme_tarihi: tempFlightItem.biletlemeTarihi,
-          tedarikci: tempFlightItem.tedarikci,
-          havayolu: tempFlightItem.havayolu,
-          pnr: tempFlightItem.pnr,
+          project_id: projectId,
+          biletleme_tarihi: tempFlightItem.biletlemeTarihi || null,
+          tedarikci: tempFlightItem.tedarikci || null,
+          havayolu: tempFlightItem.havayolu || null,
+          pnr: tempFlightItem.pnr || null,
           ucus_tipi:
             tempFlightItem.ucusTipi === "GRUP"
               ? "gidis-donus"
               : tempFlightItem.ucusTipi === "MÜNFERİT"
                 ? "tek-yon"
-                : tempFlightItem.ucusTipi || "",
-          gidis_tarihi: tempFlightItem.gidisTarihi,
-          gidis_saati: tempFlightItem.gidisSaati,
-          gidis_ucus_kodu: tempFlightItem.gidisUcusKodu,
-          donus_tarihi: tempFlightItem.donusTarihi,
-          donus_saati: tempFlightItem.donusSaati,
-          donus_ucus_kodu: tempFlightItem.donusUcusKodu,
-          guzergah: tempFlightItem.guzergah,
-          kisi_sayisi: tempFlightItem.kisiSayisi,
-          pp_maliyet: tempFlightItem.ppMaliyet,
-          toplam_maliyet: tempFlightItem.toplamMaliyet,
-          doviz: tempFlightItem.doviz,
-          kur: tempFlightItem.kur || 1.0,
-          toplam_tl: tempFlightItem.toplamTl || 0,
-          misafirler: tempFlightItem.misafirler,
-          durum: tempFlightItem.durum,
-          islemler: tempFlightItem.islemler,
+                : tempFlightItem.ucusTipi || null,
+          gidis_tarihi: tempFlightItem.gidisTarihi || null,
+          gidis_saati: tempFlightItem.gidisSaati || null,
+          gidis_ucus_kodu: tempFlightItem.gidisUcusKodu || null,
+          donus_tarihi: tempFlightItem.donusTarihi || null,
+          donus_saati: tempFlightItem.donusSaati || null,
+          donus_ucus_kodu: tempFlightItem.donusUcusKodu || null,
+          guzergah: tempFlightItem.guzergah || null,
+          kisi_sayisi: String(tempFlightItem.kisiSayisi) === "" || tempFlightItem.kisiSayisi === null ? 0 : Number(tempFlightItem.kisiSayisi),
+          pp_maliyet: String(tempFlightItem.ppMaliyet) === "" || tempFlightItem.ppMaliyet === null ? 0 : Number(tempFlightItem.ppMaliyet),
+          toplam_maliyet: String(tempFlightItem.toplamMaliyet) === "" || tempFlightItem.toplamMaliyet === null ? 0 : Number(tempFlightItem.toplamMaliyet),
+          doviz: tempFlightItem.doviz || "TRY",
+          kur: String(tempFlightItem.kur) === "" || tempFlightItem.kur === null ? 1.0 : Number(tempFlightItem.kur),
+          toplam_tl: String(tempFlightItem.toplamTl) === "" || tempFlightItem.toplamTl === null || tempFlightItem.toplamTl === undefined ? 0 : Number(tempFlightItem.toplamTl),
+          satis_pax: String(tempFlightItem.satisPax) === "" || tempFlightItem.satisPax == null ? 0 : Number(tempFlightItem.satisPax),
+          pp_satis: String(tempFlightItem.ppSatis) === "" || tempFlightItem.ppSatis == null ? 0 : Number(tempFlightItem.ppSatis),
+          toplam_satis: String(tempFlightItem.toplamSatis) === "" || tempFlightItem.toplamSatis == null ? 0 : Number(tempFlightItem.toplamSatis),
+          satis_doviz: tempFlightItem.satisDoviz || "TRY",
+          satis_kur: String(tempFlightItem.satisKur) === "" || tempFlightItem.satisKur == null ? 1.0 : Number(tempFlightItem.satisKur),
+          toplam_satis_tl: String(tempFlightItem.toplamSatisTl) === "" || tempFlightItem.toplamSatisTl == null ? 0 : Number(tempFlightItem.toplamSatisTl),
+          misafirler: tempFlightItem.misafirler || null,
+          durum: tempFlightItem.durum || null,
+          islemler: tempFlightItem.islemler || null,
         };
 
         let savedFlight;
@@ -4613,6 +4660,21 @@ export default function ProjectDetailPage() {
     }
   }, [activeTab, projectId]);
 
+  // Diğer (project_others) verilerini yükle
+  useEffect(() => {
+    if (activeTab === "diger" && projectId) {
+      const loadOthers = async () => {
+        try {
+          const data = await projectOthersService.getByProjectId(projectId);
+          setProjectOthers(data || []);
+        } catch (error) {
+          console.error("Error loading others:", error);
+        }
+      };
+      loadOthers();
+    }
+  }, [projectId, activeTab]);
+
   // Diğer Servisler verilerini yükle
   useEffect(() => {
     const loadOtherServices = async () => {
@@ -4712,7 +4774,7 @@ export default function ProjectDetailPage() {
     const loadHrExtras = async () => {
       try {
         const hrExtras =
-          await projectHumanResourcesService.getByProjectId(projectId);
+          await projectUsersService.getByProjectId(projectId);
 
         // Verileri formatla ve total_try'ı doğru hesapla: Toplam TL = Tutar * Kur
         const formattedHrExtras = hrExtras.map((item: any) => {
@@ -5131,7 +5193,7 @@ export default function ProjectDetailPage() {
 
         const worksheet = workbook.getWorksheet(1);
         if (!worksheet) {
-          alert("Excel dosyasında veri bulunamadı.");
+          toast.error("Excel dosyasında veri bulunamadı.");
           return;
         }
 
@@ -5218,7 +5280,7 @@ export default function ProjectDetailPage() {
         });
 
         if (!isDataRow || importedTickets.length === 0) {
-          alert("Excel dosyasında geçerli uçak bileti verisi bulunamadı.");
+          toast.error("Excel dosyasında geçerli uçak bileti verisi bulunamadı.");
           return;
         }
 
@@ -5247,6 +5309,12 @@ export default function ProjectDetailPage() {
               doviz: ticket.doviz,
               kur: ticket.kur,
               toplam_tl: ticket.toplamTl,
+              satis_pax: ticket.satisPax,
+              pp_satis: ticket.ppSatis,
+              toplam_satis: ticket.toplamSatis,
+              satis_doviz: ticket.satisDoviz,
+              satis_kur: ticket.satisKur,
+              toplam_satis_tl: ticket.toplamSatisTl,
               misafirler: ticket.misafirler,
               durum: ticket.durum,
               islemler: ticket.islemler,
@@ -5269,7 +5337,7 @@ export default function ProjectDetailPage() {
         }
 
         if (savedTickets.length === 0) {
-          alert("Hiçbir bilet kaydedilemedi. Lütfen verileri kontrol edin.");
+          toast("Hiçbir bilet kaydedilemedi. Lütfen verileri kontrol edin.");
           return;
         }
 
@@ -5291,7 +5359,7 @@ export default function ProjectDetailPage() {
         // Input'u temizle
         event.target.value = "";
       } catch (error) {
-        alert(
+        toast.error(
           "Excel dosyası okunurken hata oluştu. Lütfen dosya formatını kontrol edin.",
         );
       }
@@ -5332,9 +5400,9 @@ export default function ProjectDetailPage() {
           setIsNewFlightItem(false);
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Tüm Uçak Bileti verileri başarıyla silindi.");
+          toast.success("Tüm Uçak Bileti verileri başarıyla silindi.");
         } catch (error: any) {
-          alert("Uçak biletleri silinirken bir hata oluştu: " + error.message);
+          toast.error("Uçak biletleri silinirken bir hata oluştu: " + error.message);
         } finally {
           setLoading(false);
         }
@@ -5367,26 +5435,18 @@ export default function ProjectDetailPage() {
   const filteredFlightTickets = useMemo(() => {
     let filtered = flightTickets;
 
-    // Arama filtresi
+    // Arama filtresi (Multi-tag AND mantığı, boşlukla ayrılmış kelimeler için)
     if (flightTicketSearch) {
-      filtered = flightTickets.filter(
-        (ticket) =>
-          (ticket.tedarikci || "")
-            .toLowerCase()
-            .includes(flightTicketSearch?.toLowerCase() || "") ||
-          (ticket.havayolu || "")
-            .toLowerCase()
-            .includes(flightTicketSearch?.toLowerCase() || "") ||
-          (ticket.guzergah || "")
-            .toLowerCase()
-            .includes(flightTicketSearch?.toLowerCase() || "") ||
-          (ticket.pnr || "")
-            .toLowerCase()
-            .includes(flightTicketSearch?.toLowerCase() || "") ||
-          (ticket.misafirler || "")
-            .toLowerCase()
-            .includes(flightTicketSearch?.toLowerCase() || ""),
-      );
+      const searchTerms = flightTicketSearch.toLowerCase().split(' ').filter(term => term.trim() !== '');
+      filtered = flightTickets.filter((ticket) => {
+        return searchTerms.every((term) => 
+          (ticket.tedarikci || "").toLowerCase().includes(term) ||
+          (ticket.havayolu || "").toLowerCase().includes(term) ||
+          (ticket.guzergah || "").toLowerCase().includes(term) ||
+          (ticket.pnr || "").toLowerCase().includes(term) ||
+          (ticket.misafirler || "").toLowerCase().includes(term)
+        );
+      });
     }
 
     // Sıralama
@@ -6546,7 +6606,7 @@ export default function ProjectDetailPage() {
       setIsNewEventItem(false);
     } catch (error: any) {
       console.error("Event kaydetme hatası:", error);
-      alert("Event kaydedilirken hata oluştu.");
+      toast.error("Event kaydedilirken hata oluştu.");
     }
   }, [
     editingEventIndex,
@@ -6595,7 +6655,7 @@ export default function ProjectDetailPage() {
             setConfirmModal((prev) => ({ ...prev, open: false }));
           } catch (error) {
             console.error("Event silme hatası:", error);
-            alert("Event silinirken hata oluştu.");
+            toast.error("Event silinirken hata oluştu.");
           }
         },
       });
@@ -6862,7 +6922,7 @@ export default function ProjectDetailPage() {
       console.error("Otel ekstra kaydedilirken hata:", error);
       console.error("Hata detayları:", JSON.stringify(error, null, 2));
       console.error("tempHotelExtraItem:", tempHotelExtraItem);
-      alert(
+      toast.error(
         `Otel ekstra kaydedilirken bir hata oluştu: ${error.message || error}`,
       );
     }
@@ -6889,7 +6949,7 @@ export default function ProjectDetailPage() {
       // Hotel extras artık Supabase'de saklanacak
     } catch (error) {
       console.error("Otel ekstra silinirken hata:", error);
-      alert("Otel ekstra silinirken bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.error("Otel ekstra silinirken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
 
@@ -6947,10 +7007,10 @@ export default function ProjectDetailPage() {
           setHotelExtras([]);
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Tüm Otel Ekstra verileri başarıyla silindi.");
+          toast.success("Tüm Otel Ekstra verileri başarıyla silindi.");
         } catch (error: any) {
           console.error("Hata:", error);
-          alert(
+          toast.error(
             "Otel ekstra verileri silinirken hata oluştu: " + error.message,
           );
         } finally {
@@ -7220,7 +7280,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Otel Ekstra Excel export hatası:", error);
-      alert("Excel dosyası oluşturulurken bir hata oluştu.");
+      toast.error("Excel dosyası oluşturulurken bir hata oluştu.");
     }
   }, [
     hotelExtras,
@@ -7454,7 +7514,7 @@ export default function ProjectDetailPage() {
       console.log("🔍 Diğer Servis verisi kaydediliyor:", otherServiceData);
 
       if (!projectId || projectId === "undefined" || projectId === "null") {
-        alert("Proje ID geçersiz. Sayfayı yenileyin.");
+        toast.error("Proje ID geçersiz. Sayfayı yenileyin.");
         return;
       }
 
@@ -7592,10 +7652,10 @@ export default function ProjectDetailPage() {
           setOtherServices([]);
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Tüm Diğer Servisler verileri başarıyla silindi.");
+          toast.success("Tüm Diğer Servisler verileri başarıyla silindi.");
         } catch (error: any) {
           console.error("Hata:", error);
-          alert("Diğer servisler silinirken hata oluştu: " + error.message);
+          toast.error("Diğer servisler silinirken hata oluştu: " + error.message);
         } finally {
           setLoading(false);
         }
@@ -7846,7 +7906,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Diğer Servisler Excel export hatası:", error);
-      alert("Excel dosyası oluşturulurken bir hata oluştu.");
+      toast.error("Excel dosyası oluşturulurken bir hata oluştu.");
     }
   }, [
     filteredOtherServices,
@@ -8099,7 +8159,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Finansal Excel export hatası:", error);
-      alert("Excel dosyası oluşturulurken bir hata oluştu.");
+      toast.error("Excel dosyası oluşturulurken bir hata oluştu.");
     }
   }, [
     financialServices,
@@ -8128,10 +8188,10 @@ export default function ProjectDetailPage() {
           setFinancialServices([]);
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Tüm Finansal verileri başarıyla silindi.");
+          toast.success("Tüm Finansal verileri başarıyla silindi.");
         } catch (error: any) {
           console.error("Hata:", error);
-          alert("Finansal veriler silinirken hata oluştu: " + error.message);
+          toast.error("Finansal veriler silinirken hata oluştu: " + error.message);
         } finally {
           setLoading(false);
         }
@@ -8384,7 +8444,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Etkinlik & Aktivite Excel export hatası:", error);
-      alert("Excel dosyası oluşturulurken bir hata oluştu.");
+      toast.error("Excel dosyası oluşturulurken bir hata oluştu.");
     }
   }, [
     sortedEvents,
@@ -8413,10 +8473,10 @@ export default function ProjectDetailPage() {
           setEventsActivities([]);
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Tüm Etkinlik & Aktivite verileri başarıyla silindi!");
+          toast.success("Tüm Etkinlik & Aktivite verileri başarıyla silindi!");
         } catch (error: any) {
           console.error("Hata:", error);
-          alert(
+          toast.error(
             "Etkinlik & aktivite verileri silinirken hata oluştu: " +
               error.message,
           );
@@ -8668,7 +8728,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("İnsan Kaynakları Excel export hatası:", error);
-      alert("Excel dosyası oluşturulurken bir hata oluştu.");
+      toast.error("Excel dosyası oluşturulurken bir hata oluştu.");
     }
   }, [
     sortedHr,
@@ -8691,16 +8751,16 @@ export default function ProjectDetailPage() {
         try {
           setLoading(true);
           // Supabase'ten tüm insan kaynakları verilerini sil
-          await projectHumanResourcesService.deleteByProjectId(projectId);
+          await mockService.deleteByProjectId(projectId);
 
           // State'i temizle
           setHrExtras([]);
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Tüm İnsan Kaynakları verileri başarıyla silindi!");
+          toast.success("Tüm İnsan Kaynakları verileri başarıyla silindi!");
         } catch (error: any) {
           console.error("Hata:", error);
-          alert(
+          toast.error(
             "İnsan kaynakları verileri silinirken hata oluştu: " +
               error.message,
           );
@@ -9186,7 +9246,7 @@ export default function ProjectDetailPage() {
       }
 
       if (editingHrIndex === null) {
-        alert(
+        toast(
           "Düzenleme modu aktif değil. Lütfen önce bir satır ekleyin veya düzenleyin.",
         );
         return;
@@ -9197,7 +9257,7 @@ export default function ProjectDetailPage() {
         (typeof currentTempHrItem === "object" &&
           Object.keys(currentTempHrItem).length === 0)
       ) {
-        alert(
+        toast.error(
           "Kayıt verisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.",
         );
         return;
@@ -9252,7 +9312,7 @@ export default function ProjectDetailPage() {
         (typeof finalTempHrItem === "object" &&
           Object.keys(finalTempHrItem).length === 0)
       ) {
-        alert(
+        toast.error(
           "Kayıt verisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.",
         );
         return;
@@ -9351,7 +9411,7 @@ export default function ProjectDetailPage() {
       };
 
       if (isNewHrItem) {
-        const created = await projectHumanResourcesService.create(hrData);
+        const created = await mockService.create(hrData);
         // Supabase'den dönen veriyi doğrudan kullan, camelCase'e çevir
         const formattedCreated = {
           ...created,
@@ -9363,7 +9423,7 @@ export default function ProjectDetailPage() {
         };
         setHrExtras([...hrExtras, formattedCreated]);
       } else {
-        const updated = await projectHumanResourcesService.update(
+        const updated = await mockService.update(
           updatedTempHrItem.id,
           hrData,
         );
@@ -9400,7 +9460,7 @@ export default function ProjectDetailPage() {
         hint: error.hint,
         code: error.code,
       });
-      alert(
+      toast.error(
         "HR kaydedilirken hata oluştu: " + (error.message || "Bilinmeyen hata"),
       );
     } finally {
@@ -9428,7 +9488,7 @@ export default function ProjectDetailPage() {
     try {
       const hrItem = hrExtras[index];
       if (hrItem.id) {
-        await projectHumanResourcesService.delete(hrItem.id);
+        await mockService.delete(hrItem.id);
       }
 
       const updatedHrExtras = hrExtras.filter((_, i) => i !== index);
@@ -10035,7 +10095,7 @@ export default function ProjectDetailPage() {
         stack: error.stack,
         name: error.name,
       });
-      alert(`Transfer eklenirken hata oluştu: ${error.message}`);
+      toast.error(`Transfer eklenirken hata oluştu: ${error.message}`);
     }
   };
 
@@ -10095,7 +10155,6 @@ export default function ProjectDetailPage() {
       updateTransfer(transferId, {
         supplierId: supplierId,
         supplierName: supplierName,
-        vehicleAssigned: true,
       });
     }
 
@@ -10228,6 +10287,7 @@ export default function ProjectDetailPage() {
     value?: any,
   ) => {
     console.log("🔍 updateTransfer çağrıldı:", { id, field, value });
+    console.log("🔍 CALL STACK:", new Error().stack);
     const realIndex = transfers.findIndex((t) => t.id === id);
     if (realIndex === -1) return;
 
@@ -10332,6 +10392,9 @@ export default function ProjectDetailPage() {
         await projectTransfersService.update(transfer.id, updateData);
       } catch (error: any) {
         console.error("Transfer güncelleme hatası:", error);
+        if (error?.message) console.error("Hata Mesajı:", error.message);
+        if (error?.details) console.error("Hata Detayları:", error.details);
+        if (error?.code) console.error("Hata Kodu:", error.code);
         // Supabase foreign key hatası (23503) veya UUID hatası (22P02)
         if (error?.code === "23503" || error?.code === "22P02") {
           // Tedarikçi verisi senkronizasyon hatası durumunda kullanıcıyı bilgilendir
@@ -10412,7 +10475,7 @@ export default function ProjectDetailPage() {
       }, 0);
     } catch (error) {
       console.error("🔍 Satır altına transfer ekleme hatası:", error);
-      alert(`Transfer eklenirken hata oluştu: ${error.message}`);
+      toast.error(`Transfer eklenirken hata oluştu: ${error.message}`);
     }
   };
 
@@ -10518,11 +10581,16 @@ export default function ProjectDetailPage() {
     if (realIndex === -1) return;
     const transfer = transfers[realIndex];
 
-    if (!transfer.vehicleType || !transfer.supplierName) {
+    if (
+      !transfer.vehicleType ||
+      !transfer.supplierName ||
+      !transfer.costAmount ||
+      transfer.costAmount <= 0
+    ) {
       setConfirmModal({
         open: true,
         title: "Eksik Bilgi",
-        message: "Araç tipi ve tedarikçi seçimi zorunludur!",
+        message: "Araç ataması için Araç Tipi, Tedarikçi ve Maliyet Tutarı alanlarının doldurulması zorunludur!",
         onConfirm: () => setConfirmModal((prev) => ({ ...prev, open: false })),
         type: "info",
         showCancel: false,
@@ -10727,7 +10795,7 @@ export default function ProjectDetailPage() {
 
     setTransfers(updatedTransfers);
     // localStorage kullanimi kaldirildi
-    alert("Tüm transferlere uçuş kodu alanı eklendi!");
+    toast.success("Tüm transferlere uçuş kodu alanı eklendi!");
   };
 
   // Grup detaylarını aç/kapat
@@ -11013,7 +11081,7 @@ export default function ProjectDetailPage() {
       });
     } catch (error) {
       console.error("🔍 Grup oluşturma hatası (execute):", error);
-      alert("Grup oluşturulurken hata oluştu.");
+      toast.error("Grup oluşturulurken hata oluştu.");
     }
   };
 
@@ -11123,7 +11191,7 @@ export default function ProjectDetailPage() {
           });
         } catch (error) {
           console.error("🔍 Grup çözme hatası:", error);
-          alert("Grup çözülürken hata oluştu.");
+          toast.error("Grup çözülürken hata oluştu.");
         }
       },
     });
@@ -11137,7 +11205,7 @@ export default function ProjectDetailPage() {
 
     // Araç atanan gruplanan transferlerde düzenleme moduna geçme
     if (transfer.isGroup && transfer.vehicleAssigned) {
-      alert("Araç atanan gruplanan transferlerde düzenleme yapılamaz!");
+      toast.error("Araç atanan gruplanan transferlerde düzenleme yapılamaz!");
       return;
     }
 
@@ -11246,7 +11314,7 @@ export default function ProjectDetailPage() {
       setTransfers(sorted);
     } catch (error) {
       console.error("Transfer kaydetme hatası:", error);
-      alert("Transfer kaydedilirken hata oluştu.");
+      toast.error("Transfer kaydedilirken hata oluştu.");
     }
   };
 
@@ -14252,7 +14320,7 @@ export default function ProjectDetailPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export hatası:", error);
-      alert("Excel dosyası oluşturulurken hata oluştu: " + error.message);
+      toast.error("Excel dosyası oluşturulurken hata oluştu: " + error.message);
     }
   };
 
@@ -14260,7 +14328,7 @@ export default function ProjectDetailPage() {
   // Konaklama listesini temizle
   const handleAccommodationClear = useCallback(async () => {
     if (accommodationItems.length === 0) {
-      alert("Temizlenecek konaklama verisi yok.");
+      toast.error("Temizlenecek konaklama verisi yok.");
       return;
     }
 
@@ -14283,10 +14351,10 @@ export default function ProjectDetailPage() {
           // localStorage kullanimi kaldirildi
 
           setConfirmModal((prev) => ({ ...prev, open: false }));
-          alert("Konaklama listesi başarıyla temizlendi!");
+          toast.success("Konaklama listesi başarıyla temizlendi!");
         } catch (error: any) {
           console.error("Konaklama temizleme hatası:", error);
-          alert(
+          toast.error(
             "Konaklama listesi temizlenirken hata oluştu: " + error.message,
           );
         } finally {
@@ -14629,12 +14697,8 @@ export default function ProjectDetailPage() {
           // 3. Bağlı kalemleri temizle (CASCADING DELETE)
           const servicesToCleanup = [
             projectAccommodationItemsService,
-            projectHotelExtrasService,
-            projectTransfersService,
-            projectEventsActivitiesService,
-            projectHumanResourcesService,
-            projectOtherServicesService,
-          ];
+            projectTransfersService, projectOthersService,
+            ];
 
           // hotel_id bazlı silme (Accommodation, Extras, vs.)
           for (const service of servicesToCleanup) {
@@ -14770,7 +14834,7 @@ export default function ProjectDetailPage() {
         projectHotelExtrasService.getByProjectId(projectId),
         projectTransfersService.getByProjectId(projectId),
         projectEventsActivitiesService.getByProjectId(projectId),
-        projectHumanResourcesService.getByProjectId(projectId),
+        projectUsersService.getByProjectId(projectId),
         projectOtherServicesService.getByProjectId(projectId),
       ]);
 
@@ -14788,7 +14852,7 @@ export default function ProjectDetailPage() {
         cloneRecords(extras, projectHotelExtrasService),
         cloneRecords(transfers, projectTransfersService),
         cloneRecords(events, projectEventsActivitiesService),
-        cloneRecords(hr, projectHumanResourcesService),
+        cloneRecords(hr, projectUsersService),
         cloneRecords(other, projectOtherServicesService),
       ]);
 
@@ -14832,7 +14896,7 @@ export default function ProjectDetailPage() {
 
   const hotelsData = (project as any)?.hotels_data || [];
   return (
-    <div className="min-h-screen bg-transparent p-2 transition-colors duration-200">
+    <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
         <div>
@@ -14857,7 +14921,7 @@ export default function ProjectDetailPage() {
                 )
               }
               disabled={!isEditingProject || updatingRates}
-              className={`px-2 py-1 rounded-lg text-xs font-bold border outline-none w-32 transition-colors ${
+              className={`px-2 py-1 rounded-lg text-xs font-bold border outline-none w-44 transition-colors ${
                 isEditingProject && !updatingRates
                   ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-blue-500 cursor-pointer shadow-sm"
                   : "bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-80"
@@ -15278,7 +15342,10 @@ export default function ProjectDetailPage() {
               )}
             </div>
           ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">
+            <p 
+              className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate"
+              title={getProjectManagers(projectId) || "Atanmadı"}
+            >
               {getProjectManagers(projectId)}
             </p>
           )}
@@ -15416,7 +15483,7 @@ export default function ProjectDetailPage() {
             <button
               key={t.key}
               onClick={() => handleTabChange(t.key)}
-              className={`flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-black uppercase tracking-widest ${
+              className={`flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-semibold uppercase tracking-widest ${
                 activeTab === t.key
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent"
@@ -15454,7 +15521,7 @@ export default function ProjectDetailPage() {
                   groupedSalesItems={groupedSalesItems}
                   exportSalesToExcel={exportSalesOnlyByHotelToExcel}
                   exportSalesToPDF={() =>
-                    alert(
+                    toast(
                       "PDF export çoklu otel desteği için yakında güncellenecektir. Lütfen Excel raporunu kullanın.",
                     )
                   }
@@ -15552,6 +15619,7 @@ export default function ProjectDetailPage() {
               )}
               {activeTab === "konaklama" && (
                 <AccommodationTabOptimized
+                  activeHotelId={activeHotelId}
                   accommodationItems={accommodationItems}
                   setAccommodationItems={setAccommodationItems}
                   projectId={projectId}
@@ -17127,56 +17195,7 @@ export default function ProjectDetailPage() {
                   </div>
                 </div>
               )}
-              {activeTab === "otel-ekstra" && (
-                <OtelEkstraTab
-                  hotelExtras={hotelExtras}
-                  setHotelExtras={setHotelExtras}
-                  editingHotelExtraIndex={editingHotelExtraIndex}
-                  setEditingHotelExtraIndex={setEditingHotelExtraIndex}
-                  tempHotelExtraItem={tempHotelExtraItem}
-                  setTempHotelExtraItem={setTempHotelExtraItem}
-                  hotelExtraSearch={hotelExtraSearch}
-                  setHotelExtraSearch={setHotelExtraSearch}
-                  hotelExtraSortField={hotelExtraSortField}
-                  hotelExtraSortDirection={hotelExtraSortDirection}
-                  handleSort={handleSort}
-                  handleHotelExtraAdd={handleHotelExtraAdd}
-                  handleHotelExtraEdit={handleHotelExtraEdit}
-                  handleHotelExtraSave={handleHotelExtraSave}
-                  handleHotelExtraCancel={handleHotelExtraCancel}
-                  handleHotelExtraDelete={handleHotelExtraDelete}
-                  clearHotelExtraSearch={clearHotelExtraSearch}
-                  handleHotelExtraClear={handleHotelExtraClear}
-                  handleHotelExtraExport={handleHotelExtraExport}
-                  filteredHotelExtras={filteredHotelExtras}
-                  formatNumberForDisplay={formatNumberForDisplay}
-                  formatDateForDisplay={formatDateForDisplay}
-                  formatNumberForInput={formatNumberForInput}
-                  formatTRY={formatTRY}
-                  formatNumber={formatNumber}
-                  parseTurkishNumber={parseTurkishNumber}
-                  hotelExtraTotals={hotelExtraTotals}
-                  hotelSupplierSearch={hotelSupplierSearch}
-                  setHotelSupplierSearch={setHotelSupplierSearch}
-                  showHotelSupplierDropdown={showHotelSupplierDropdown}
-                  setShowHotelSupplierDropdown={setShowHotelSupplierDropdown}
-                  selectedSupplierIndex={selectedSupplierIndex}
-                  setSelectedSupplierIndex={setSelectedSupplierIndex}
-                  filteredHotelSuppliers={filteredHotelSuppliers}
-                  hotelExtraAmountInput={hotelExtraAmountInput}
-                  setHotelExtraAmountInput={setHotelExtraAmountInput}
-                  hotelExtraTotalTRYInput={hotelExtraTotalTRYInput}
-                  setHotelExtraTotalTRYInput={setHotelExtraTotalTRYInput}
-                  hotelExtraSubCategories={hotelExtraSubCategories}
-                  hotelExtraMainCategories={hotelExtraMainCategories}
-                  isNewHotelExtraItem={isNewHotelExtraItem}
-                  setIsNewHotelExtraItem={setIsNewHotelExtraItem}
-                  updateDropdownPosition={updateDropdownPosition}
-                  dropdownPosition={dropdownPosition}
-                  allSuppliers={allSuppliers}
-                  hotelSupplierInputRef={hotelSupplierInputRef}
-                />
-              )}
+              
               {activeTab === "otel-ekstra_old" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -18566,6 +18585,7 @@ export default function ProjectDetailPage() {
                         placeholder="Transfer ara..."
                         value={transferSearch}
                         onChange={(e) => setTransferSearch(e.target.value)}
+
                         className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -18585,7 +18605,7 @@ export default function ProjectDetailPage() {
                       <button
                         onClick={async () => {
                           if (transfers.length === 0) {
-                            alert("Temizlenecek transfer bulunmuyor.");
+                            toast.error("Temizlenecek transfer bulunmuyor.");
                             return;
                           }
                           if (
@@ -18601,10 +18621,10 @@ export default function ProjectDetailPage() {
                             );
                             setTransfers([]);
                             setSelectedTransfers([]);
-                            alert("Tüm transferler başarıyla silindi.");
+                            toast.success("Tüm transferler başarıyla silindi.");
                           } catch (error) {
                             console.error("Transfer temizleme hatası:", error);
-                            alert("Transferler silinirken hata oluştu.");
+                            toast.error("Transferler silinirken hata oluştu.");
                           }
                         }}
                         className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
@@ -20091,52 +20111,7 @@ export default function ProjectDetailPage() {
                   )}
                 </div>
               )}
-              {activeTab === "etkinlik-aktivite" && (
-                <EtkinlikAktiviteTab
-                  eventsActivities={eventsActivities}
-                  setEventsActivities={setEventsActivities}
-                  editingEventIndex={editingEventIndex}
-                  setEditingEventIndex={setEditingEventIndex}
-                  tempEventItem={tempEventItem}
-                  setTempEventItem={setTempEventItem}
-                  isNewEventItem={isNewEventItem}
-                  setIsNewEventItem={setIsNewEventItem}
-                  eventSearch={eventSearch}
-                  setEventSearch={setEventSearch}
-                  eventSortField={eventSortField}
-                  eventSortDirection={eventSortDirection}
-                  eventSubCategories={eventSubCategories}
-                  selectedEventMainCategory={selectedEventMainCategory}
-                  setSelectedEventMainCategory={setSelectedEventMainCategory}
-                  eventSupplierSearch={eventSupplierSearch}
-                  setEventSupplierSearch={setEventSupplierSearch}
-                  showEventSupplierDropdown={showEventSupplierDropdown}
-                  setShowEventSupplierDropdown={setShowEventSupplierDropdown}
-                  selectedEventSupplierIndex={selectedEventSupplierIndex}
-                  setSelectedEventSupplierIndex={setSelectedEventSupplierIndex}
-                  filteredEventSuppliers={filteredEventSuppliers}
-                  projectId={projectId}
-                  handleEventAdd={handleEventAdd}
-                  handleEventEdit={handleEventEdit}
-                  handleEventSave={handleEventSave}
-                  handleEventCancel={handleEventCancel}
-                  handleEventDelete={handleEventDelete}
-                  filteredEvents={filteredEvents}
-                  sortedEvents={sortedEvents}
-                  formatNumberForDisplay={formatNumberForDisplay}
-                  formatDateForDisplay={formatDateForDisplay}
-                  handleEventSort={handleEventSort}
-                  handleEventSupplierKeyDown={handleEventSupplierKeyDown}
-                  handleEventSupplierSelect={handleEventSupplierSelect}
-                  handleEventActivityClear={handleEventActivityClear}
-                  handleEventActivityExport={handleEventActivityExport}
-                  hotels={hotels}
-                  suppliers={suppliers}
-                  eventTotals={eventTotals}
-                  formatNumber={formatNumber}
-                  allSuppliers={allSuppliers}
-                />
-              )}
+              
               {activeTab === "etkinlik-aktivite_old" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -20521,7 +20496,7 @@ export default function ProjectDetailPage() {
                                             "❌ Tam hata objesi:",
                                             JSON.stringify(error, null, 2),
                                           );
-                                          alert(
+                                          toast.error(
                                             `Etkinlik oluşturulurken bir hata oluştu: ${error.message}\n\nDetaylar: ${JSON.stringify(error, null, 2)}`,
                                           );
                                         });
@@ -20672,7 +20647,7 @@ export default function ProjectDetailPage() {
                                               "❌ Tam hata objesi:",
                                               JSON.stringify(error, null, 2),
                                             );
-                                            alert(
+                                            toast.error(
                                               `Etkinlik oluşturulurken bir hata oluştu: ${error.message}\n\nDetaylar: ${JSON.stringify(error, null, 2)}`,
                                             );
                                           });
@@ -20697,7 +20672,7 @@ export default function ProjectDetailPage() {
                                               "Etkinlik güncelleme hatası:",
                                               error,
                                             );
-                                            alert(
+                                            toast.error(
                                               "Etkinlik güncellenirken bir hata oluştu",
                                             );
                                           });
@@ -21035,7 +21010,7 @@ export default function ProjectDetailPage() {
                                                       "Etkinlik oluşturma hatası:",
                                                       error,
                                                     );
-                                                    alert(
+                                                    toast.error(
                                                       "Etkinlik oluşturulurken bir hata oluştu",
                                                     );
                                                   });
@@ -21065,7 +21040,7 @@ export default function ProjectDetailPage() {
                                                       "Etkinlik güncelleme hatası:",
                                                       error,
                                                     );
-                                                    alert(
+                                                    toast.error(
                                                       "Etkinlik güncellenirken bir hata oluştu",
                                                     );
                                                   });
@@ -21161,7 +21136,7 @@ export default function ProjectDetailPage() {
                                                       "Etkinlik silme hatası:",
                                                       error,
                                                     );
-                                                    alert(
+                                                    toast.error(
                                                       "Etkinlik silinirken bir hata oluştu",
                                                     );
                                                   });
@@ -21276,61 +21251,7 @@ export default function ProjectDetailPage() {
                   )}
                 </div>
               )}
-              {activeTab === "insan-kaynaklari" && (
-                <InsanKaynaklariTab
-                  humanResources={humanResources}
-                  setHumanResources={setHumanResources}
-                  editingHrIndex={editingHrIndex}
-                  setEditingHrIndex={setEditingHrIndex}
-                  tempHrItem={tempHrItem}
-                  setTempHrItem={setTempHrItem}
-                  isNewHrItem={isNewHrItem}
-                  setIsNewHrItem={setIsNewHrItem}
-                  hrSearch={hrSearch}
-                  setHrSearch={setHrSearch}
-                  hrSortField={hrSortField}
-                  hrSortDirection={hrSortDirection}
-                  hrSubCategories={hrSubCategories}
-                  selectedHrMainCategory={selectedHrMainCategory}
-                  setSelectedHrMainCategory={setSelectedHrMainCategory}
-                  hrSupplierSearch={hrSupplierSearch}
-                  setHrSupplierSearch={setHrSupplierSearch}
-                  showHrSupplierDropdown={showHrSupplierDropdown}
-                  setShowHrSupplierDropdown={setShowHrSupplierDropdown}
-                  selectedHrSupplierIndex={selectedHrSupplierIndex}
-                  setSelectedHrSupplierIndex={setSelectedHrSupplierIndex}
-                  filteredHrSuppliers={filteredHrSuppliers}
-                  projectId={projectId}
-                  handleHrAdd={handleHrAdd}
-                  handleHrEdit={handleHrEdit}
-                  handleHrSave={handleHrSave}
-                  handleHrCancel={handleHrCancel}
-                  handleHrDelete={handleHrDelete}
-                  hrAmountInput={hrAmountInput}
-                  setHrAmountInput={setHrAmountInput}
-                  hrFxInput={hrFxInput}
-                  setHrFxInput={setHrFxInput}
-                  hrTotalTRYInput={hrTotalTRYInput}
-                  setHrTotalTRYInput={setHrTotalTRYInput}
-                  filteredHr={filteredHr}
-                  sortedHr={sortedHr}
-                  formatNumberForDisplay={formatNumberForDisplay}
-                  formatDateForDisplay={formatDateForDisplay}
-                  formatNumber={formatNumber}
-                  handleHrSort={handleHrSort}
-                  handleHrKeyDown={handleHrKeyDown}
-                  handleHrSupplierKeyDown={handleHrSupplierKeyDown}
-                  handleHrSupplierSelect={handleHrSupplierSelect}
-                  clearHrSearch={clearHrSearch}
-                  handleHrClear={handleHrClear}
-                  handleHrExport={handleHrExport}
-                  filteredHrExtras={filteredHrExtras}
-                  hrExtras={hrExtras}
-                  setHrExtras={setHrExtras}
-                  hrTotals={hrTotals}
-                  allSuppliers={allSuppliers}
-                />
-              )}
+              
               {activeTab === "insan-kaynaklari_old" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -22413,117 +22334,8 @@ export default function ProjectDetailPage() {
                     )}
                 </div>
               )}
-              {activeTab === "diger-servisler" && (
-                <OtherServicesTab
-                  otherServices={otherServices}
-                  setOtherServices={setOtherServices}
-                  projectId={projectId}
-                  otherServiceSearch={otherServiceSearch}
-                  setOtherServiceSearch={setOtherServiceSearch}
-                  editingOtherServiceIndex={editingOtherServiceIndex}
-                  setEditingOtherServiceIndex={setEditingOtherServiceIndex}
-                  tempOtherServiceItem={tempOtherServiceItem}
-                  setTempOtherServiceItem={setTempOtherServiceItem}
-                  otherServiceAmountInput={otherServiceAmountInput}
-                  setOtherServiceAmountInput={setOtherServiceAmountInput}
-                  otherServiceTotalTRYInput={otherServiceTotalTRYInput}
-                  setOtherServiceTotalTRYInput={setOtherServiceTotalTRYInput}
-                  otherServiceFxInput={otherServiceFxInput}
-                  setOtherServiceFxInput={setOtherServiceFxInput}
-                  otherServiceSupplierSearch={otherServiceSupplierSearch}
-                  setOtherServiceSupplierSearch={setOtherServiceSupplierSearch}
-                  showOtherServiceSupplierDropdown={
-                    showOtherServiceSupplierDropdown
-                  }
-                  setShowOtherServiceSupplierDropdown={
-                    setShowOtherServiceSupplierDropdown
-                  }
-                  selectedOtherServiceSupplierIndex={
-                    selectedOtherServiceSupplierIndex
-                  }
-                  setSelectedOtherServiceSupplierIndex={
-                    setSelectedOtherServiceSupplierIndex
-                  }
-                  otherSubCategories={otherSubCategories}
-                  allSuppliers={allSuppliers}
-                  dropdownPosition={dropdownPosition}
-                  updateDropdownPosition={updateDropdownPosition}
-                  setOtherServiceSupplierInputRef={
-                    setOtherServiceSupplierInputRef
-                  }
-                  handleOtherServiceAdd={handleOtherServiceAdd}
-                  handleOtherServiceSave={handleOtherServiceSave}
-                  handleOtherServiceCancel={handleOtherServiceCancel}
-                  handleOtherServiceEdit={handleOtherServiceEdit}
-                  handleOtherServiceDelete={handleOtherServiceDelete}
-                  clearOtherServiceSearch={clearOtherServiceSearch}
-                  handleOtherServiceClear={handleOtherServiceClear}
-                  handleOtherServiceExport={handleOtherServiceExport}
-                  handleOtherServiceSupplierSelect={
-                    handleOtherServiceSupplierSelect
-                  }
-                  handleOtherServiceKeyDown={handleOtherServiceKeyDown}
-                  parseTurkishNumber={parseTurkishNumber}
-                  formatNumberForDisplay={formatNumberForDisplay}
-                  formatExchangeRateForDisplay={formatExchangeRateForDisplay}
-                  formatNumberForInput={formatNumberForInput}
-                  formatNumber={formatNumber}
-                  formatTRY={formatTRY}
-                  formatDateForDisplay={formatDateForDisplay}
-                  getCategoryName={getCategoryName}
-                  otherServicesTotals={otherServicesTotals}
-                />
-              )}
-              {activeTab === "finansal" && (
-                <FinancialTab
-                  financialServices={financialServices}
-                  setFinancialServices={setFinancialServices}
-                  projectId={projectId}
-                  financialSearch={financialSearch}
-                  setFinancialSearch={setFinancialSearch}
-                  editingFinancialServiceIndex={editingFinancialServiceIndex}
-                  setEditingFinancialServiceIndex={
-                    setEditingFinancialServiceIndex
-                  }
-                  tempFinancialServiceItem={tempFinancialServiceItem}
-                  setTempFinancialServiceItem={setTempFinancialServiceItem}
-                  financialAmountInput={financialAmountInput}
-                  setFinancialAmountInput={setFinancialAmountInput}
-                  financialTotalTRYInput={financialTotalTRYInput}
-                  setFinancialTotalTRYInput={setFinancialTotalTRYInput}
-                  hotelSupplierSearch={hotelSupplierSearch}
-                  setHotelSupplierSearch={setHotelSupplierSearch}
-                  showHotelSupplierDropdown={showHotelSupplierDropdown}
-                  setShowHotelSupplierDropdown={setShowHotelSupplierDropdown}
-                  selectedSupplierIndex={selectedSupplierIndex}
-                  setSelectedSupplierIndex={setSelectedSupplierIndex}
-                  financialSubCategories={financialSubCategories}
-                  filteredHotelSuppliers={filteredHotelSuppliers}
-                  dropdownPosition={dropdownPosition}
-                  updateDropdownPosition={updateDropdownPosition}
-                  setFinancialSupplierInputRef={setFinancialSupplierInputRef}
-                  handleFinancialAdd={handleFinancialAdd}
-                  handleFinancialSave={handleFinancialSave}
-                  handleFinancialCancel={handleFinancialCancel}
-                  handleFinancialEdit={handleFinancialEdit}
-                  handleFinancialDelete={handleFinancialDelete}
-                  handleFinancialSupplierSelect={handleFinancialSupplierSelect}
-                  handleFinancialKeyDown={handleFinancialKeyDown}
-                  parseTurkishNumber={parseTurkishNumber}
-                  formatNumberForDisplay={formatNumberForDisplay}
-                  formatNumberForInput={formatNumberForInput}
-                  formatNumber={formatNumber}
-                  formatTRY={formatTRY}
-                  formatDateForDisplay={formatDateForDisplay}
-                  getCategoryName={getCategoryName}
-                  financialTotals={financialTotals}
-                  handleFinancialClear={handleFinancialClear}
-                  handleFinancialExport={handleFinancialExport}
-                  activeHotelId={activeHotelId}
-                  project={project}
-                  allSuppliers={allSuppliers}
-                />
-              )}
+              
+              {/* Finansal Tab removed */}
               {activeTab === "tahsilat" && (
                 <TahsilatTab
                   salesTotals={salesTotals}
@@ -24756,6 +24568,19 @@ export default function ProjectDetailPage() {
                   handlePaymentSupplierSelect={handlePaymentSupplierSelect}
                   handlePaymentKeyDown={handlePaymentKeyDown}
                 />
+              )}
+              {activeTab === "diger" && (
+                <div className="animate-fadeIn h-full w-full">
+                  <DigerTab
+                    others={projectOthers}
+                    categories={categories}
+                    suppliers={suppliers}
+                    hotels={hotels}
+                    projectId={projectId}
+                    onUpdate={(updatedList) => setProjectOthers(updatedList)}
+                    isLocked={project?.locked && !isSuperAdmin}
+                  />
+                </div>
               )}
               {activeTab === "kar-zarar" && (
                 <KarZararTab

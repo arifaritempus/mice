@@ -20,6 +20,12 @@ export interface FlightTicket {
   doviz: string;
   kur: number;
   toplamTl: number;
+  satisPax?: number | any;
+  ppSatis?: number | any;
+  toplamSatis?: number | any;
+  satisDoviz?: string;
+  satisKur?: number | any;
+  toplamSatisTl?: number | any;
   misafirler: string;
   durum: "aktif" | "iptal" | "iade" | "degistirildi";
   islemler?: string;

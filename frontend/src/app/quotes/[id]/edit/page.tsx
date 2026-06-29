@@ -967,7 +967,7 @@ export default function QuoteEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent transition-colors duration-200 compact">
+    <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent transition-colors duration-200 compact">
       <div className="p-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
@@ -978,9 +978,12 @@ export default function QuoteEditPage() {
           </div>
           <Link
             href="/quotes"
-            className="bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
           >
-            Geri Dön
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            GERİ DÖN
           </Link>
         </div>
 
@@ -1020,10 +1023,10 @@ export default function QuoteEditPage() {
               Teklif Bilgileri
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
               {/* Reference */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   KOD *
                 </label>
                 <input
@@ -1037,13 +1040,13 @@ export default function QuoteEditPage() {
                     }))
                   }
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                 />
               </div>
 
               {/* Agency */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div className="w-full">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   ACENTE *
                 </label>
                 <SearchableSelect
@@ -1058,8 +1061,8 @@ export default function QuoteEditPage() {
               </div>
 
               {/* Company Name */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div className="w-full">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   FİRMA ADI *
                 </label>
                 <input
@@ -1073,13 +1076,13 @@ export default function QuoteEditPage() {
                     }))
                   }
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                 />
               </div>
 
               {/* Status */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   DURUM *
                 </label>
                 <select
@@ -1089,7 +1092,7 @@ export default function QuoteEditPage() {
                     setFormData((prev) => ({ ...prev, status: e.target.value }))
                   }
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                 >
                   <option value="BEKLEMEDE">BEKLEMEDE</option>
                   <option value="KONFİRME">KONFİRME</option>
@@ -1099,7 +1102,7 @@ export default function QuoteEditPage() {
 
               {/* Quote Type */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   TEKLİF TÜRÜ *
                 </label>
                 <select
@@ -1112,7 +1115,7 @@ export default function QuoteEditPage() {
                     }))
                   }
                   required
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                 >
                   <option value="BİRİM">BİRİM</option>
                   <option value="PAKET">PAKET</option>
@@ -1121,7 +1124,7 @@ export default function QuoteEditPage() {
 
               {/* Operation Managers */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   OPERASYON SORUMLULARI
                 </label>
                 <div className="relative operation-managers-dropdown">
@@ -1188,45 +1191,12 @@ export default function QuoteEditPage() {
                     </div>
                   )}
                 </div>
-                {formData.operation_managers.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {formData.operation_managers.map((managerId) => {
-                      const user = users.find((u) => u.id === managerId);
-                      return (
-                        <span
-                          key={managerId}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
-                        >
-                          {user
-                            ? `${user.first_name} ${user.last_name}`
-                            : managerId}
-                          {!hasLinkedProject && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  operation_managers:
-                                    prev.operation_managers.filter(
-                                      (id) => id !== managerId,
-                                    ),
-                                }))
-                              }
-                              className="ml-1 text-blue-600 hover:text-blue-800"
-                            >
-                              ×
-                            </button>
-                          )}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
+                
               </div>
 
               {/* Notes */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div className="md:col-span-6">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                   NOTLAR
                 </label>
                 <textarea
@@ -1236,26 +1206,18 @@ export default function QuoteEditPage() {
                     setFormData((prev) => ({ ...prev, notes: e.target.value }))
                   }
                   rows={4}
-                  className="w-full px-3 h-24 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                  className="w-full px-3 py-2 h-24 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-xs text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                   placeholder="Teklif notlarını buraya yazın..."
                 />
               </div>
 
               {/* ─── Çoklu Otel Seçimi ─── */}
-              <div className="md:col-span-2 space-y-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="md:col-span-6 space-y-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mt-4">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                     Otel &amp; Konaklama Seçimleri
                   </h3>
-                  {!hasLinkedProject && (
-                    <button
-                      type="button"
-                      onClick={addHotelRow}
-                      className="text-xs font-medium bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded transition-colors"
-                    >
-                      + OTEL EKLE
-                    </button>
-                  )}
+
                 </div>
 
                 {/* Tab Bar */}
@@ -1381,9 +1343,9 @@ export default function QuoteEditPage() {
                           key={h.id}
                           className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-blue-500 ring-2 ring-blue-500/10 shadow-sm space-y-4"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                            <div className="md:col-span-4">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Otel *
                               </label>
                               <SearchableSelect
@@ -1396,8 +1358,8 @@ export default function QuoteEditPage() {
                                 placeholder="Otel seç..."
                               />
                             </div>
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Otel Konsepti
                               </label>
                               <input
@@ -1411,12 +1373,12 @@ export default function QuoteEditPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                                 placeholder="Konsept..."
                               />
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 C/IN Tarihi *
                               </label>
                               <input
@@ -1431,11 +1393,11 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 required
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 C/OUT Tarihi *
                               </label>
                               <input
@@ -1450,14 +1412,12 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 required
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border-t border-gray-50 dark:border-gray-700/50 pt-3">
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Oda Sayısı
                               </label>
                               <input
@@ -1472,11 +1432,11 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 min="1"
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Pax Sayısı
                               </label>
                               <input
@@ -1491,11 +1451,11 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 min="1"
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Opsiyon
                               </label>
                               <select
@@ -1508,15 +1468,15 @@ export default function QuoteEditPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               >
                                 <option value="1. OPSİYON">1. OPSİYON</option>
                                 <option value="2. OPSİYON">2. OPSİYON</option>
                                 <option value="SOR-SAT">SOR-SAT</option>
                               </select>
                             </div>
-                            <div className="md:col-span-3">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Opsiyon Tarihi
                               </label>
                               <input
@@ -1532,11 +1492,11 @@ export default function QuoteEditPage() {
                                 disabled={
                                   h.option === "SOR-SAT" || hasLinkedProject
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
-                            <div className="md:col-span-2">
-                              <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                            <div className="w-full">
+                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
                                 Durum
                               </label>
                               <select
@@ -1552,7 +1512,7 @@ export default function QuoteEditPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-10 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-2 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
                               >
                                 <option value="BEKLEMEDE">BEKLEMEDE</option>
                                 <option value="KONFİRME">KONFİRME</option>
@@ -1562,23 +1522,26 @@ export default function QuoteEditPage() {
                           </div>
 
                           <div className="mt-6 border-t border-gray-100 dark:border-gray-700 pt-6">
-                            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4 uppercase flex items-center">
-                              <svg
-                                className="w-4 h-4 mr-2 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-10V4a1 1 0 011-1h2a1 1 0 011 1v3M12 7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                />
-                              </svg>
-                              Otel Bazlı Hizmet Kalemleri
-                            </h3>
+                            
                             <QuoteServiceEditor
+                              title={
+                              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase flex items-center m-0">
+                                <svg
+                                  className="w-4 h-4 mr-2 text-blue-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-10V4a1 1 0 011-1h2a1 1 0 011 1v3M12 7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                  />
+                                </svg>
+                                Otel Bazlı Hizmet Kalemleri
+                              </h3>
+                            }
                               items={serviceItems.filter(
                                 (item) => item.hotel_id === h.id,
                               )}
@@ -1676,19 +1639,22 @@ export default function QuoteEditPage() {
           </div>
 
           {/* Submit */}
-          <div className="flex justify-end space-x-4 p-4">
+          <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">
             <Link
               href="/quotes"
-              className="bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
             >
-              İptal / Geri Dön
+              İPTAL
             </Link>
             {!hasLinkedProject && (
               <button
                 type="submit"
-                className="bg-green-600 dark:bg-green-700 text-white px-2 py-1 rounded text-xs hover:bg-green-700 dark:hover:bg-green-800 transition-colors"
+                className="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5"
               >
-                Teklifi Güncelle
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                TEKLİFİ GÜNCELLE
               </button>
             )}
           </div>

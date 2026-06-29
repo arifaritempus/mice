@@ -6,6 +6,7 @@ interface AccommodationTabProps {
   accommodationItems: any[];
   setAccommodationItems: (items: any[]) => void;
   projectId: string;
+  activeHotelId?: string;
   accommodationSearch: string;
   setAccommodationSearch: (search: string) => void;
   handleAccommodationImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -179,6 +180,7 @@ const AccommodationTabOptimized = memo(
     accommodationItems,
     setAccommodationItems,
     projectId,
+    activeHotelId,
     accommodationSearch,
     setAccommodationSearch,
     handleAccommodationImport,
@@ -243,18 +245,27 @@ const AccommodationTabOptimized = memo(
       [handleAccommodationSave, handleAccommodationCancel],
     );
 
+
+    const hotelFilteredItems = useMemo(() => {
+      if (activeHotelId && activeHotelId !== "all" && activeHotelId !== "general") {
+         return accommodationItems.filter(item => item.hotel_id === activeHotelId);
+      }
+      return accommodationItems;
+    }, [accommodationItems, activeHotelId]);
+
     // Filtrelenmiş veriler
+
     const filteredItems = useMemo(() => {
-      if (!accommodationSearch.trim()) return accommodationItems;
+      if (!accommodationSearch.trim()) return hotelFilteredItems;
 
       const searchLower = accommodationSearch.toLowerCase();
-      return accommodationItems.filter((item) =>
+      return hotelFilteredItems.filter((item) =>
         Object.values(item).some(
           (value) =>
             value && value.toString().toLowerCase().includes(searchLower),
         ),
       );
-    }, [accommodationItems, accommodationSearch]);
+    }, [hotelFilteredItems, accommodationSearch]);
 
     return (
       <div className="space-y-4">
@@ -352,7 +363,7 @@ const AccommodationTabOptimized = memo(
               <table className="min-w-full text-xs">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    {getDynamicHeaders(accommodationItems).map(
+                    {getDynamicHeaders(hotelFilteredItems).map(
                       (header, index) => {
                         const isHidden = hiddenColumns.has(header);
                         const isHidable = HIDABLE_COLUMNS.includes(header);
@@ -905,7 +916,7 @@ const AccommodationTabOptimized = memo(
                           };
 
                           let earliestDate: Date | null = null;
-                          accommodationItems.forEach((accItem) => {
+                          hotelFilteredItems.forEach((accItem) => {
                             const checkIn = parseDate(
                               accItem.gelis_tarihi ||
                                 accItem.giris_tarihi ||
@@ -921,7 +932,7 @@ const AccommodationTabOptimized = memo(
 
                           // En geç çıkış tarihini bul
                           let latestDate: Date | null = null;
-                          accommodationItems.forEach((accItem) => {
+                          hotelFilteredItems.forEach((accItem) => {
                             const checkOut = parseDate(
                               accItem.cikis_tarihi ||
                                 accItem.cikis_tarihi ||
@@ -1121,7 +1132,7 @@ const AccommodationTabOptimized = memo(
         )}
 
         {/* Forecast Tablosu - ODA # Bazında Hesaplama */}
-        {accommodationItems.length > 0 &&
+        {hotelFilteredItems.length > 0 &&
           (() => {
             // Tarih parse fonksiyonu
             const parseDate = (dateStr: string) => {
@@ -1169,7 +1180,7 @@ const AccommodationTabOptimized = memo(
 
             // ODA #'ya göre grupla
             const groupedByRoomNumber: { [key: string]: any[] } = {};
-            accommodationItems.forEach((item) => {
+            hotelFilteredItems.forEach((item) => {
               const roomNo = item.oda_no || "";
               if (roomNo) {
                 if (!groupedByRoomNumber[roomNo]) {

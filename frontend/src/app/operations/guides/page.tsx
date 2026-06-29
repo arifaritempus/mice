@@ -74,7 +74,7 @@ export default function GuidesPage() {
 
       const {
         projectsService,
-        projectHumanResourcesService,
+        projectUsersService,
         categoriesService,
         agenciesService,
         hotelsService,
@@ -110,7 +110,7 @@ export default function GuidesPage() {
           );
 
           // Proje HR extras verilerini Supabase'den al
-          const hrExtras = await projectHumanResourcesService.getByProjectId(
+          const hrExtras = await projectUsersService.getByProjectId(
             project.id,
           );
           console.log(`Proje ${project.id} HR extras sayısı:`, hrExtras.length);
