@@ -457,35 +457,88 @@ export default function SettingsPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   {[
-                    "Koyu Tema İkon Logo (Dark Icon)",
-                    "Koyu Tema Wordmark Logo (Dark Wordmark)",
-                    "Koyu Tema Menü Logo (Dark Menu)",
+                    { label: "Koyu Tema İkon Logo (Dark Icon)", key: "darkIconLogo" as const },
+                    { label: "Koyu Tema Wordmark (Dark Wordmark)", key: "darkWordmarkLogo" as const },
+                    { label: "Koyu Tema Menü Logo (Dark Menu)", key: "darkMenuLogo" as const },
                   ].map((l, i) => (
                     <div
                       key={i}
-                      className="border border-white/10 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center"
+                      className="border border-white/10 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center hover:border-white/20 transition-colors"
                     >
-                      <div className="w-full aspect-[4/3] bg-[#0a0f18] rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center text-slate-500">
-                        <svg
-                          className="w-8 h-8 mb-2 opacity-50"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="1"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                          />
-                        </svg>
-                        <span className="text-[10px] px-2">{l}</span>
-                      </div>
+                      <label className="w-full aspect-[4/3] bg-[#0a0f18] rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center text-slate-500 cursor-pointer group hover:border-blue-500/50 hover:bg-blue-500/5 transition-all overflow-hidden relative p-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const toastId = toast.loading("Yükleniyor...");
+                            try {
+                              const ext = file.name.split('.').pop();
+                              const filename = `${l.key}-${Date.now()}.${ext}`;
+                              const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
+                              if (error) throw error;
+                              const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
+                              setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                              toast.success("Logo başarıyla yüklendi!", { id: toastId });
+                            } catch (err: any) {
+                              toast.error(err.message || "Yükleme başarısız", { id: toastId });
+                            }
+                          }}
+                        />
+                        {(settings as any)[l.key] ? (
+                          <div className="absolute inset-0 flex items-center justify-center p-4">
+                            <img src={(settings as any)[l.key]} alt={l.label} className="w-full h-full object-contain" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                              <span className="text-white text-xs font-bold bg-blue-500/80 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                Değiştir
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <svg className="w-8 h-8 mb-2 opacity-50 group-hover:text-blue-400 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                            </svg>
+                            <span className="text-[10px] px-2">{l.label}</span>
+                            <span className="text-[9px] text-blue-400 mt-2 font-semibold bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">Görsel Seç</span>
+                          </>
+                        )}
+                      </label>
                       <div className="flex gap-2 w-full">
-                        <button className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all">
+                        <label className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all cursor-pointer text-center flex items-center justify-center">
                           Yükle
-                        </button>
-                        <button className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const toastId = toast.loading("Yükleniyor...");
+                              try {
+                                const ext = file.name.split('.').pop();
+                                const filename = `${l.key}-${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
+                                if (error) throw error;
+                                const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
+                                setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                                toast.success("Logo başarıyla yüklendi!", { id: toastId });
+                              } catch (err: any) {
+                                toast.error(err.message || "Yükleme başarısız", { id: toastId });
+                              }
+                            }}
+                          />
+                        </label>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSettings(prev => ({ ...prev, [l.key]: "" }));
+                          }}
+                          className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all"
+                        >
                           Kaldır
                         </button>
                       </div>
@@ -498,35 +551,88 @@ export default function SettingsPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
-                    "Açık Tema İkon Logo (Light Icon)",
-                    "Açık Tema Wordmark Logo (Light Wordmark)",
-                    "Açık Tema Menü Logo (Light Menu)",
+                    { label: "Açık Tema İkon Logo (Light Icon)", key: "lightIconLogo" as const },
+                    { label: "Açık Tema Wordmark (Light Wordmark)", key: "lightWordmarkLogo" as const },
+                    { label: "Açık Tema Menü Logo (Light Menu)", key: "lightMenuLogo" as const },
                   ].map((l, i) => (
                     <div
                       key={i}
-                      className="border border-white/10 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center"
+                      className="border border-white/10 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center hover:border-white/20 transition-colors"
                     >
-                      <div className="w-full aspect-[4/3] bg-white rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400">
-                        <svg
-                          className="w-8 h-8 mb-2 opacity-50"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="1"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                          />
-                        </svg>
-                        <span className="text-[10px] px-2">{l}</span>
-                      </div>
+                      <label className="w-full aspect-[4/3] bg-white rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-pointer group hover:border-blue-500/50 hover:bg-blue-50/50 transition-all overflow-hidden relative p-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const toastId = toast.loading("Yükleniyor...");
+                            try {
+                              const ext = file.name.split('.').pop();
+                              const filename = `${l.key}-${Date.now()}.${ext}`;
+                              const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
+                              if (error) throw error;
+                              const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
+                              setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                              toast.success("Logo başarıyla yüklendi!", { id: toastId });
+                            } catch (err: any) {
+                              toast.error(err.message || "Yükleme başarısız", { id: toastId });
+                            }
+                          }}
+                        />
+                        {(settings as any)[l.key] ? (
+                          <div className="absolute inset-0 flex items-center justify-center p-4">
+                            <img src={(settings as any)[l.key]} alt={l.label} className="w-full h-full object-contain" />
+                            <div className="absolute inset-0 bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                              <span className="text-white text-xs font-bold bg-blue-500/90 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                Değiştir
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <svg className="w-8 h-8 mb-2 opacity-50 group-hover:text-blue-500 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                            </svg>
+                            <span className="text-[10px] px-2">{l.label}</span>
+                            <span className="text-[9px] text-blue-500 mt-2 font-semibold bg-blue-50 px-2 py-1 rounded-full border border-blue-200 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">Görsel Seç</span>
+                          </>
+                        )}
+                      </label>
                       <div className="flex gap-2 w-full">
-                        <button className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all">
+                        <label className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all cursor-pointer text-center flex items-center justify-center">
                           Yükle
-                        </button>
-                        <button className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const toastId = toast.loading("Yükleniyor...");
+                              try {
+                                const ext = file.name.split('.').pop();
+                                const filename = `${l.key}-${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
+                                if (error) throw error;
+                                const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
+                                setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                                toast.success("Logo başarıyla yüklendi!", { id: toastId });
+                              } catch (err: any) {
+                                toast.error(err.message || "Yükleme başarısız", { id: toastId });
+                              }
+                            }}
+                          />
+                        </label>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSettings(prev => ({ ...prev, [l.key]: "" }));
+                          }}
+                          className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all"
+                        >
                           Kaldır
                         </button>
                       </div>
