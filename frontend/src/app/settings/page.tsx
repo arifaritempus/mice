@@ -65,6 +65,7 @@ export default function SettingsPage() {
   });
 
   const [activeTab, setActiveTab] = useState("company");
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -81,12 +82,14 @@ export default function SettingsPage() {
         }
       } catch (e) {
         console.error("Ayarlar yüklenirken hata:", e);
+      } finally {
+        setIsLoadingSettings(false);
       }
     };
     fetchSettings();
   }, []);
 
-  if (permissionsLoading) {
+  if (permissionsLoading || isLoadingSettings) {
     return <LoadingSpinner message="Yükleniyor..." />;
   }
 
@@ -123,9 +126,7 @@ export default function SettingsPage() {
       if (res.ok) {
         toast.success("Ayarlar başarıyla kaydedildi!", { id: loadingToast });
         if (typeof window !== "undefined") {
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
+          window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: { settings: settings } }));
         }
       } else {
         toast.error("Ayarlar kaydedilirken hata oluştu!", { id: loadingToast });
