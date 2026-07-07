@@ -477,10 +477,13 @@ export default function SettingsPage() {
                             try {
                               const ext = file.name.split('.').pop();
                               const filename = `${l.key}-${Date.now()}.${ext}`;
-                              const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
-                              if (error) throw error;
-                              const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
-                              setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              formData.append("filename", filename);
+                              const response = await fetch("/api/upload-logo", { method: "POST", body: formData });
+                              const result = await response.json();
+                              if (!response.ok) throw new Error(result.error || "Yükleme başarısız");
+                              setSettings(prev => ({ ...prev, [l.key]: result.publicUrl }));
                               toast.success("Logo başarıyla yüklendi!", { id: toastId });
                             } catch (err: any) {
                               toast.error(err.message || "Yükleme başarısız", { id: toastId });
@@ -521,10 +524,13 @@ export default function SettingsPage() {
                               try {
                                 const ext = file.name.split('.').pop();
                                 const filename = `${l.key}-${Date.now()}.${ext}`;
-                                const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
-                                if (error) throw error;
-                                const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
-                                setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("filename", filename);
+                                const response = await fetch("/api/upload-logo", { method: "POST", body: formData });
+                                const result = await response.json();
+                                if (!response.ok) throw new Error(result.error || "Yükleme başarısız");
+                                setSettings(prev => ({ ...prev, [l.key]: result.publicUrl }));
                                 toast.success("Logo başarıyla yüklendi!", { id: toastId });
                               } catch (err: any) {
                                 toast.error(err.message || "Yükleme başarısız", { id: toastId });
@@ -571,10 +577,13 @@ export default function SettingsPage() {
                             try {
                               const ext = file.name.split('.').pop();
                               const filename = `${l.key}-${Date.now()}.${ext}`;
-                              const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
-                              if (error) throw error;
-                              const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
-                              setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              formData.append("filename", filename);
+                              const response = await fetch("/api/upload-logo", { method: "POST", body: formData });
+                              const result = await response.json();
+                              if (!response.ok) throw new Error(result.error || "Yükleme başarısız");
+                              setSettings(prev => ({ ...prev, [l.key]: result.publicUrl }));
                               toast.success("Logo başarıyla yüklendi!", { id: toastId });
                             } catch (err: any) {
                               toast.error(err.message || "Yükleme başarısız", { id: toastId });
@@ -615,10 +624,13 @@ export default function SettingsPage() {
                               try {
                                 const ext = file.name.split('.').pop();
                                 const filename = `${l.key}-${Date.now()}.${ext}`;
-                                const { error } = await supabase.storage.from("logos").upload(filename, file, { upsert: true });
-                                if (error) throw error;
-                                const { data: urlData } = supabase.storage.from("logos").getPublicUrl(filename);
-                                setSettings(prev => ({ ...prev, [l.key]: urlData.publicUrl }));
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("filename", filename);
+                                const response = await fetch("/api/upload-logo", { method: "POST", body: formData });
+                                const result = await response.json();
+                                if (!response.ok) throw new Error(result.error || "Yükleme başarısız");
+                                setSettings(prev => ({ ...prev, [l.key]: result.publicUrl }));
                                 toast.success("Logo başarıyla yüklendi!", { id: toastId });
                               } catch (err: any) {
                                 toast.error(err.message || "Yükleme başarısız", { id: toastId });
