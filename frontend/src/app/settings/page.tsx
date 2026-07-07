@@ -66,6 +66,26 @@ export default function SettingsPage() {
 
   const [activeTab, setActiveTab] = useState("company");
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`/api/theme-settings?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.general_settings) {
+            setSettings(prev => ({
+              ...prev,
+              ...data.general_settings
+            }));
+          }
+        }
+      } catch (e) {
+        console.error("Ayarlar yüklenirken hata:", e);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
   }
