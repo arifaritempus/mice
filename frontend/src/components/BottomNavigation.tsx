@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Activity, BarChart2, Settings } from "lucide-react";
+import { usePermissions, Module, getModuleFromHref } from "@/lib/permissions";
 
 export default function BottomNavigation() {
   const pathname = usePathname();
@@ -14,10 +15,19 @@ export default function BottomNavigation() {
     { id: "settings", label: "Settings", href: "/settings", icon: Settings },
   ];
 
+  const { canView } = usePermissions();
+
+  const isHrefVisible = (href: string) => {
+    const mod = getModuleFromHref(href);
+    if (!mod) return true;
+    return canView(mod);
+  };
+
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 w-full h-[84px] z-50 px-6 pb-6 pt-2 bg-[#0a0f1c]/80 backdrop-blur-3xl border-t border-white/5">
       <div className="flex items-center justify-between h-full max-w-md mx-auto">
-        {navItems.map((item) => {
+        {navItems.filter(item => isHrefVisible(item.href)).map((item) => {
           const isActive =
             pathname === item.href ||
             (item.href !== "/" && pathname?.startsWith(item.href));

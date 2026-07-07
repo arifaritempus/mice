@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef } from "react";
+import { usePermissions, Module, Permission } from "@/lib/permissions";
+import FieldsetGuard from "@/components/permissions/FieldsetGuard";
+import PermissionBoundary from "@/components/permissions/PermissionBoundary";
 
 interface PurchaseTabProps {
   itemsPurchase: any[];
@@ -144,6 +147,7 @@ export default function PurchaseTab({
   hotelsData,
   hotels,
 }: PurchaseTabProps) {
+  const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
   const categoryModalRefPurchase = useRef<HTMLDivElement>(null);
 
   // Gelişmiş isim çözücü: Önce hotelsData (Tab UUID) kontrolü yapar
@@ -235,7 +239,7 @@ export default function PurchaseTab({
             <div className="w-36">OTEL / TEDARİKÇİ</div>
             <div className="w-24 flex items-center justify-between">
               <span>İŞLEMLER</span>
-              {canCreate && !isLocked && (
+              {permCreate(Module.PROJECTS) && !isLocked && (
                 <button
                   onClick={() => {
                     if (isLocked) {
@@ -1099,7 +1103,7 @@ export default function PurchaseTab({
                         )}
                       </div>
                       <div className="w-24 flex items-center gap-1 justify-end pr-1">
-                        {canEdit && !isLocked && (
+                        {permEdit(Module.PROJECTS) && !isLocked && (
                           <button
                             onClick={() => {
                               const updated = { ...it, isEditing: false };
@@ -1123,8 +1127,9 @@ export default function PurchaseTab({
                             </svg>
                           </button>
                         )}
-                        {canDelete && !isLocked && (
-                          <button
+                        {permDelete(Module.PROJECTS) && !isLocked && (
+                          <>{ permDelete(Module.PROJECTS) && (
+<button
                             onClick={() => removeItem("purchase", it.id)}
                             className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                             title="Sil"
@@ -1143,6 +1148,7 @@ export default function PurchaseTab({
                               />
                             </svg>
                           </button>
+) }</>
                         )}
                       </div>
                     </>
@@ -1184,7 +1190,7 @@ export default function PurchaseTab({
                         ) || "-"}
                       </div>
                       <div className="w-24 flex items-center gap-1 justify-end pr-1">
-                        {canCreate && !isLocked && (
+                        {permCreate(Module.PROJECTS) && !isLocked && (
                           <button
                             onClick={() => addBelow("purchase", it.id)}
                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
@@ -1205,8 +1211,9 @@ export default function PurchaseTab({
                             </svg>
                           </button>
                         )}
-                        {canEdit && !isLocked && (
-                          <button
+                        {permEdit(Module.PROJECTS) && !isLocked && (
+                          <>{ permEdit(Module.PROJECTS) && (
+<button
                             onClick={() => editRow("purchase", it.id)}
                             className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
                             title="Düzenle"
@@ -1225,9 +1232,11 @@ export default function PurchaseTab({
                               />
                             </svg>
                           </button>
+) }</>
                         )}
-                        {canDelete && !isLocked && (
-                          <button
+                        {permDelete(Module.PROJECTS) && !isLocked && (
+                          <>{ permDelete(Module.PROJECTS) && (
+<button
                             onClick={() => removeItem("purchase", it.id)}
                             className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                             title="Sil"
@@ -1246,6 +1255,7 @@ export default function PurchaseTab({
                               />
                             </svg>
                           </button>
+) }</>
                         )}
                       </div>
                     </>

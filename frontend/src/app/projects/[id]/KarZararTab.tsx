@@ -1,5 +1,9 @@
 "use client";
 
+import { usePermissions, Module, Permission } from "@/lib/permissions";
+import FieldsetGuard from "@/components/permissions/FieldsetGuard";
+import PermissionBoundary from "@/components/permissions/PermissionBoundary";
+
 interface KarZararTabProps {
   profitLossData: {
     rows: any[];

@@ -4816,18 +4816,9 @@ export const invoicesService = {
       const subCategoryName = subCat.name || (isUUID(item.sub_category) ? null : item.sub_category);
 
       const taggedVendorId = purchaseVendorIdFromDescription(item.description || '');
-      const supplierFromCol = item.supplier_id
-        ? (suppliersMap[item.supplier_id]?.name || 'Tedarikçi')
-        : null;
-      const vendorFromDescriptionTag = taggedVendorId
-        ? (suppliersMap[taggedVendorId]?.name || hotelsMap[taggedVendorId]?.name || null)
-        : null;
-      const tabHotelName = item.hotel_id ? (hotelsMap[item.hotel_id]?.name || 'Otel') : null;
-      const displayVendor =
-        supplierFromCol || vendorFromDescriptionTag || tabHotelName || 'Seçilmedi';
-
       let outSupplierId: string | null = item.supplier_id ?? null;
       let outHotelId: string | null = item.hotel_id ?? null;
+      
       if (taggedVendorId) {
         if (suppliersMap[taggedVendorId]) {
           outSupplierId = taggedVendorId;
@@ -4838,6 +4829,9 @@ export const invoicesService = {
         }
       }
 
+      const outSupplierName = outSupplierId ? (suppliersMap[outSupplierId]?.name || 'Tedarikçi') : null;
+      const outHotelName = outHotelId ? (hotelsMap[outHotelId]?.name || 'Otel') : null;
+
       return {
         ...item,
         category_name: categoryName,
@@ -4847,11 +4841,9 @@ export const invoicesService = {
         vat_rate: (item.vat !== null && item.vat !== undefined) ? item.vat : (subCat.expense_vat_rate ?? cat.expense_vat_rate ?? 0),
         supplier_id: outSupplierId,
         hotel_id: outHotelId,
-        project: proj ? {
-          ...proj,
-          company_name: displayVendor
-        } : null,
-        supplier_name: displayVendor,
+        project: proj, // Do not override company_name to keep the actual customer name
+        supplier_name: outSupplierName,
+        hotel_name: outHotelName,
         invoiced_amount: invoicedAmount,
         balance
       };

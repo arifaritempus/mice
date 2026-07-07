@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { usePermissions, Module, getModuleFromHref } from "@/lib/permissions";
 
 interface CommandCenterProps {
   isOpen: boolean;
@@ -37,6 +38,14 @@ export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  const { canView } = usePermissions();
+
+  const isHrefVisible = (href: string) => {
+    const mod = getModuleFromHref(href);
+    if (!mod) return true;
+    return canView(mod);
+  };
 
   // Klavye kısayolu (Cmd+K veya Escape)
   useEffect(() => {
@@ -224,7 +233,7 @@ export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
   const filteredGroups = menuGroups
     .map((group) => {
       const filteredItems = group.items.filter((item) =>
-        item.label.toLowerCase().includes(searchQuery.toLowerCase()),
+        isHrefVisible(item.href) && item.label.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       return { ...group, items: filteredItems };
     })

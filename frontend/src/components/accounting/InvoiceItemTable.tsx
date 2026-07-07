@@ -128,11 +128,14 @@ export default function InvoiceItemTable({
     return selectedCount > 0 && selectedCount < row.items.length;
   };
 
-  const formatCurrency = (amount: number, currency: string) =>
-    new Intl.NumberFormat("tr-TR", {
+  const formatCurrency = (amount: number, currency: string) => {
+    let curr = currency || "TRY";
+    if (curr === "TL") curr = "TRY";
+    return new Intl.NumberFormat("tr-TR", {
       style: "currency",
-      currency: currency || "TRY",
+      currency: curr,
     }).format(amount || 0);
+  };
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "-";
@@ -265,17 +268,17 @@ export default function InvoiceItemTable({
               const partial = isRowPartial(row);
 
               return (
-                <tr
-                  key={row.id}
-                  className={`transition-colors cursor-pointer ${
-                    selected
-                      ? "bg-blue-500/10/70 dark:bg-blue-900/20"
-                      : partial
-                        ? "bg-orange-50/30 dark:bg-orange-900/10"
-                        : "hover:bg-blue-500/10 transition-colors group border-b border-white/5 last:border-0"
-                  }`}
-                  onClick={() => toggleRow(row)}
-                >
+                  <tr
+                    key={row.id}
+                    className={`transition-colors cursor-pointer ${
+                      selected
+                        ? "bg-blue-500/20 dark:bg-blue-900/40"
+                        : partial
+                          ? "bg-orange-50/30 dark:bg-orange-900/10"
+                          : "hover:bg-blue-500/10 transition-colors group border-b border-white/5 last:border-0"
+                    }`}
+                    onClick={() => toggleRow(row)}
+                  >
                   <td
                     className="px-2.5 py-2.5"
                     onClick={(e) => e.stopPropagation()}

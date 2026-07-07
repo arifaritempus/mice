@@ -267,17 +267,30 @@ export default function InvoiceModal({
   const calculateTotals = () => {
     let matrahTRY = 0;
     let kdvTRY = 0;
+    const totalsByCurrency: Record<string, { matrah: number; kdv: number; total: number }> = {};
+    
     currentItems.forEach((item) => {
       const grossAmount = itemAmounts[item.id] || 0;
       const vatRate = itemVats[item.id] || 0;
       const er = itemExchangeRates[item.id] || 1;
+      const currency = itemCurrencies[item.id] || "TRY";
+
       const rowMatrahOriginal = grossAmount / (1 + vatRate / 100);
       const rowKdvOriginal = grossAmount - rowMatrahOriginal;
+      
       matrahTRY += rowMatrahOriginal * er;
       kdvTRY += rowKdvOriginal * er;
+
+      if (!totalsByCurrency[currency]) {
+        totalsByCurrency[currency] = { matrah: 0, kdv: 0, total: 0 };
+      }
+      totalsByCurrency[currency].matrah += rowMatrahOriginal;
+      totalsByCurrency[currency].kdv += rowKdvOriginal;
+      totalsByCurrency[currency].total += grossAmount;
     });
+
     const genelToplamTRY = matrahTRY + kdvTRY;
-    return { matrahTRY, kdvTRY, genelToplamTRY };
+    return { matrahTRY, kdvTRY, genelToplamTRY, totalsByCurrency };
   };
 
   const totals = calculateTotals();
@@ -655,35 +668,44 @@ export default function InvoiceModal({
               />
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800/80 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col justify-center space-y-4 shadow-sm">
-              <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400">
-                <span>Ara Toplam (Matrah)</span>
-                <span className="text-gray-900 dark:text-white">
-                  {new Intl.NumberFormat("tr-TR", {
-                    minimumFractionDigits: 2,
-                  }).format(totals.matrahTRY)}{" "}
-                  <span className="text-xs">TRY</span>
-                </span>
+            <div className="bg-gray-50 dark:bg-gray-800/80 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col justify-center shadow-sm">
+              <div className="space-y-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                {Object.entries(totals.totalsByCurrency).map(([curr, vals]) => (
+                  <div key={curr} className="flex flex-col gap-1.5 p-3 bg-white dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <span>Ara Toplam (Matrah)</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(vals.matrah)} <span className="text-xs font-semibold">{curr}</span>
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <span>KDV Toplamı</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(vals.kdv)} <span className="text-xs font-semibold">{curr}</span>
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center font-bold text-gray-800 dark:text-gray-200 mt-1 pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <span>Toplam</span>
+                      <span className="text-blue-600 dark:text-blue-400">
+                        {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(vals.total)} <span className="text-xs font-semibold">{curr}</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400 pb-4 border-b border-gray-200 dark:border-gray-700">
-                <span>KDV Toplamı</span>
-                <span className="text-gray-900 dark:text-white">
-                  {new Intl.NumberFormat("tr-TR", {
-                    minimumFractionDigits: 2,
-                  }).format(totals.kdvTRY)}{" "}
-                  <span className="text-xs">TRY</span>
-                </span>
-              </div>
-              <div className="flex justify-between items-end pt-2">
-                <span className="text-lg font-bold text-gray-900 dark:text-white">
-                  Genel Toplam
-                </span>
+              <div className="flex justify-between items-end pt-4">
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    Genel Toplam Karşılığı
+                  </span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">TRY Bazında</span>
+                </div>
                 <div className="text-right">
-                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400 leading-none mb-1">
+                  <div className="text-3xl font-black text-blue-600 dark:text-blue-400 leading-none mb-1">
                     {new Intl.NumberFormat("tr-TR", {
                       minimumFractionDigits: 2,
                     }).format(totals.genelToplamTRY)}{" "}
-                    <span className="text-base font-semibold">TRY</span>
+                    <span className="text-lg font-bold">TRY</span>
                   </div>
                 </div>
               </div>

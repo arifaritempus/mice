@@ -2089,7 +2089,7 @@ export default function TicketPaymentsPage() {
                     <input
                       type="number"
                       step="0.01"
-                      value={newPayment.amount}
+                      value={newPayment.amount === 0 ? "" : newPayment.amount}
                       onChange={(e) =>
                         setNewPayment((prev) => ({
                           ...prev,

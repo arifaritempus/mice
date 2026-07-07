@@ -144,7 +144,7 @@ export default function TicketOptionsPage() {
     };
 
     return (
-      <div className={`relative w-full ${className}`}>
+      <div className="relative w-full">
         <input
           type="text"
           value={display}
@@ -186,7 +186,7 @@ export default function TicketOptionsPage() {
           }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder={placeholder}
-          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+          className={className || "w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"}
         />
         {open && filtered.length > 0 && (
           <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
@@ -1626,7 +1626,7 @@ export default function TicketOptionsPage() {
                     {sortField === "status" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
-                  <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
+                  <th className="px-2.5 py-2.5 text-right text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer border-b border-white/10">
                     İŞLEMLER
                   </th>
                 </tr>
@@ -1637,11 +1637,11 @@ export default function TicketOptionsPage() {
                     key={option.id}
                     className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    <td className="py-2 px-2 font-mono text-blue-600 dark:text-blue-400 text-left whitespace-nowrap">
+                    <td className="py-2.5 px-2.5 font-mono text-blue-600 dark:text-blue-400 text-left whitespace-nowrap text-[11px]">
                       {option.voucher_no}
                     </td>
                     <td
-                      className="w-[7.5rem] min-w-[7.5rem] max-w-[7.5rem] py-2 px-2 text-left text-gray-700 dark:text-gray-300"
+                      className="w-[7.5rem] min-w-[7.5rem] max-w-[7.5rem] py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]"
                       title={(option.agent || "").trim() || undefined}
                     >
                       <div className="truncate">
@@ -1649,7 +1649,7 @@ export default function TicketOptionsPage() {
                       </div>
                     </td>
                     <td
-                      className="w-[8rem] min-w-[8rem] max-w-[8rem] py-2 px-2 text-left text-gray-700 dark:text-gray-300"
+                      className="w-[8rem] min-w-[8rem] max-w-[8rem] py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]"
                       title={(option.company_name || "").trim() || undefined}
                     >
                       <div className="truncate">
@@ -1657,23 +1657,23 @@ export default function TicketOptionsPage() {
                       </div>
                     </td>
                     <td
-                      className="w-[8.5rem] min-w-[8.5rem] max-w-[8.5rem] py-2 px-2 text-left text-gray-700 dark:text-gray-300"
+                      className="w-[8.5rem] min-w-[8.5rem] max-w-[8.5rem] py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]"
                       title={(option.supplier || "").trim() || undefined}
                     >
                       <div className="truncate">
                         {(option.supplier || "").trim() || "—"}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.airline}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.group_ref_no}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.flight_type}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       <div className="text-left">
                         <div>{formatDate(option.departure_date)}</div>
                         <div className="text-xs text-gray-300 dark:text-gray-200">
@@ -1681,7 +1681,7 @@ export default function TicketOptionsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       <div className="text-left">
                         <div>{formatDate(option.return_date)}</div>
                         <div className="text-xs text-gray-300 dark:text-gray-200">
@@ -1690,30 +1690,30 @@ export default function TicketOptionsPage() {
                       </div>
                     </td>
                     <td
-                      className="max-w-[14rem] py-2 px-2 text-left text-gray-700 dark:text-gray-300"
+                      className="max-w-[14rem] py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]"
                       title={(option.route || "").trim() || undefined}
                     >
                       <div className="truncate">
                         {(option.route || "").trim() || "—"}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-center text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-center text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.passenger_count}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-right text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-right text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.pp_cost.toLocaleString("tr-TR", {
                         minimumFractionDigits: 2,
                       })}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-right text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-right text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.total_cost.toLocaleString("tr-TR", {
                         minimumFractionDigits: 2,
                       })}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-center text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-center text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.currency}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       <div className="text-left">
                         <div>{formatDate(option.option_end_date)}</div>
                         <div className="text-xs text-gray-300 dark:text-gray-200">
@@ -1721,17 +1721,17 @@ export default function TicketOptionsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-left text-gray-700 dark:text-gray-300">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       {option.pnr}
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-center">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-center">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(option.status)}`}
                       >
                         {getStatusText(option.status)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap py-2 px-2 text-center">
+                    <td className="whitespace-nowrap py-2.5 px-2.5 text-center">
                       <div className="flex space-x-1">
                         {canEdit(Module.TICKETS) && (
                           <>
@@ -1859,123 +1859,128 @@ export default function TicketOptionsPage() {
 
       {/* Konfirme Modal */}
       {showConfirmModal && selectedTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Bilet Konfirme Et
-            </h3>
-
-            <div className="space-y-3">
-              {/* Voucher No */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xl bg-black/40 transition-all duration-300">
+          <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-3xl rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.3)] border border-white/20 dark:border-white/10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white dark:from-slate-900 dark:to-[#0f172a]">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Voucher No
-                </label>
-                <input
-                  type="text"
-                  value={selectedTicket.voucher_no}
-                  disabled
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                />
-              </div>
-
-              {/* Passenger Count */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Yolcu Sayısı
-                </label>
-                <input
-                  type="number"
-                  value={confirmPassengerCount}
-                  onChange={(e) =>
-                    setConfirmPassengerCount(parseInt(e.target.value) || 0)
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Talep edilen kişi sayısını değiştirebilirsiniz (örn: 40 → 38).
-                  PP Maliyet sabit kalır.
+                <h2 className="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400">
+                  Bilet Konfirme Et
+                </h2>
+                <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
+                  {selectedTicket.company_name || selectedTicket.agent || "Bilet"} - {selectedTicket.pnr || "Opsiyon"}
                 </p>
               </div>
-
-              {/* PP Cost */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  PP Maliyet (Sabit)
-                </label>
-                <input
-                  type="text"
-                  value={formatCurrency(
-                    selectedTicket.pp_cost,
-                    selectedTicket.currency,
-                  )}
-                  disabled
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                />
-              </div>
-
-              {/* Total Cost */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Toplam Maliyet
-                </label>
-                <input
-                  type="text"
-                  value={formatCurrency(
-                    confirmPassengerCount * selectedTicket.pp_cost,
-                    selectedTicket.currency,
-                  )}
-                  disabled
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Yolcu sayısı değiştiğinde otomatik güncellenir
-                </p>
-              </div>
-
-              {/* Confirm Date */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Konfirme Tarihi
-                </label>
-                <input
-                  type="datetime-local"
-                  value={confirmDate}
-                  onChange={(e) => setConfirmDate(e.target.value)}
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                />
-              </div>
-
-              {/* PNR */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  PNR *
-                </label>
-                <input
-                  type="text"
-                  placeholder="PNR kodunu girin"
-                  value={confirmPnr}
-                  onChange={(e) => setConfirmPnr(e.target.value)}
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                />
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-2 mt-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-3 py-1 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200 text-xs"
+                className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors group"
               >
-                İptal
+                <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              
+              {/* Grup 1: Temel Bilgiler */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                <h3 className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                  Bilet Detayları
+                </h3>
+                <div className="flex gap-3">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Voucher No</label>
+                    <input
+                      type="text"
+                      value={selectedTicket.voucher_no}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 cursor-not-allowed outline-none"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PNR Kodu *</label>
+                    <input
+                      type="text"
+                      placeholder="PNR girin..."
+                      value={confirmPnr}
+                      onChange={(e) => setConfirmPnr(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 2: Yolcu ve Maliyet */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                <h3 className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                  Yolcu & Maliyet
+                </h3>
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Yolcu Sayısı</label>
+                    <input
+                      type="number"
+                      value={confirmPassengerCount === 0 ? "" : confirmPassengerCount}
+                      onChange={(e) => setConfirmPassengerCount(parseInt(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PP Maliyet</label>
+                    <input
+                      type="text"
+                      value={formatCurrency(selectedTicket.pp_cost, selectedTicket.currency)}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 cursor-not-allowed outline-none"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-3 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl border border-purple-100 dark:border-purple-800/30 flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] text-purple-600 dark:text-purple-400 font-bold uppercase">Toplam Kesinleşen</p>
+                    <p className="text-xs text-purple-800 dark:text-purple-300">Yolcu sayısı üzerinden</p>
+                  </div>
+                  <div className="text-lg font-black text-purple-700 dark:text-purple-300">
+                    {formatCurrency(confirmPassengerCount * selectedTicket.pp_cost, selectedTicket.currency)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 3: Tarih */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Konfirme Tarihi</label>
+                  <input
+                    type="datetime-local"
+                    value={confirmDate}
+                    onChange={(e) => setConfirmDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-5 py-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                İptal Et
               </button>
               {canEdit(Module.TICKETS) && (
                 <button
                   onClick={handleConfirm}
                   disabled={!confirmPnr}
-                  className="px-3 py-1 text-white bg-purple-600 dark:bg-purple-500 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors duration-200 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-black rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  Konfirme Et
+                  Bileti Konfirme Et
                 </button>
               )}
             </div>
@@ -1983,389 +1988,164 @@ export default function TicketOptionsPage() {
         </div>
       )}
 
-      {/* Opsiyon Takip Ekle Modal */}
+            {/* Yeni Opsiyon Takip Ekle Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Yeni Opsiyon Takip Ekle
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Sol Taraf */}
-              <div className="space-y-3">
-                {/* Voucher No */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Voucher No *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTicketOption.voucher_no}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        voucher_no: e.target.value,
-                      })
-                    }
-                    placeholder="Voucher numarası girin"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Acente */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Acente *
-                  </label>
-                  <SearchableSelect
-                    options={agencies.map((agency) => ({
-                      id: agency.id,
-                      name: agency.name,
-                    }))}
-                    value={newTicketOption.agent}
-                    onChange={(value) =>
-                      setNewTicketOption({ ...newTicketOption, agent: value })
-                    }
-                    placeholder="Acente seçin veya arayın..."
-                  />
-                </div>
-
-                {/* Firma Adı */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Firma Adı *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTicketOption.company_name}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        company_name: e.target.value,
-                      })
-                    }
-                    placeholder="Firma adı girin"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Tedarikçi */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tedarikçi *
-                  </label>
-                  <SearchableSelect
-                    options={suppliers.map((supplier) => ({
-                      id: supplier.id,
-                      name: supplier.name,
-                    }))}
-                    value={newTicketOption.supplier}
-                    onChange={(value) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        supplier: value,
-                      })
-                    }
-                    placeholder="Tedarikçi seçin veya arayın..."
-                  />
-                </div>
-
-                {/* Havayolu */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Havayolu *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTicketOption.airline}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        airline: e.target.value,
-                      })
-                    }
-                    placeholder="Havayolu kodu girin"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Grup Ref No */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Grup Ref No
-                  </label>
-                  <input
-                    type="text"
-                    value={newTicketOption.group_ref_no}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        group_ref_no: e.target.value,
-                      })
-                    }
-                    placeholder="Grup referans numarası"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Sağ Taraf */}
-              <div className="space-y-3">
-                {/* Uçuş Tipi */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Uçuş Tipi *
-                  </label>
-                  <select
-                    value={newTicketOption.flight_type}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        flight_type: e.target.value,
-                      })
-                    }
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  >
-                    <option value="">Uçuş tipi seçin</option>
-                    <option value="Gidiş Dönüş">Gidiş Dönüş</option>
-                    <option value="Tek Yön">Tek Yön</option>
-                    <option value="Çok Segment">Çok Segment</option>
-                  </select>
-                </div>
-
-                {/* Gidiş Tarihi ve Saati */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Gidiş Tarihi *
-                    </label>
-                    <input
-                      type="date"
-                      value={newTicketOption.departure_date}
-                      onChange={(e) =>
-                        setNewTicketOption({
-                          ...newTicketOption,
-                          departure_date: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Gidiş Saati
-                    </label>
-                    <input
-                      type="time"
-                      value={newTicketOption.departure_time}
-                      onChange={(e) =>
-                        setNewTicketOption({
-                          ...newTicketOption,
-                          departure_time: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Dönüş Tarihi ve Saati */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Dönüş Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      value={newTicketOption.return_date}
-                      onChange={(e) =>
-                        setNewTicketOption({
-                          ...newTicketOption,
-                          return_date: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Dönüş Saati
-                    </label>
-                    <input
-                      type="time"
-                      value={newTicketOption.return_time}
-                      onChange={(e) =>
-                        setNewTicketOption({
-                          ...newTicketOption,
-                          return_time: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Güzergah */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Güzergah *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTicketOption.route}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        route: e.target.value,
-                      })
-                    }
-                    placeholder="Örn: IST-ECN-IST"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Kişi Sayısı */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Kişi Sayısı *
-                  </label>
-                  <input
-                    type="number"
-                    value={newTicketOption.passenger_count}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        passenger_count: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="Yolcu sayısı"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* PP Maliyet */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    PP Maliyet *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={newTicketOption.pp_cost}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        pp_cost: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="Kişi başı maliyet"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Döviz */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Döviz *
-                  </label>
-                  <select
-                    value={newTicketOption.currency}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        currency: e.target.value,
-                      })
-                    }
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  >
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                    <option value="TRY">TRY</option>
-                    <option value="GBP">GBP</option>
-                  </select>
-                </div>
-
-                {/* Opsiyon Bitiş Tarihi ve Saati */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Opsiyon Bitiş Tarihi *
-                    </label>
-                    <input
-                      type="date"
-                      value={newTicketOption.option_end_date}
-                      onChange={(e) =>
-                        setNewTicketOption({
-                          ...newTicketOption,
-                          option_end_date: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Opsiyon Bitiş Saati
-                    </label>
-                    <input
-                      type="time"
-                      value={newTicketOption.option_end_time}
-                      onChange={(e) =>
-                        setNewTicketOption({
-                          ...newTicketOption,
-                          option_end_time: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* PNR */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    PNR
-                  </label>
-                  <input
-                    type="text"
-                    value={newTicketOption.pnr}
-                    onChange={(e) =>
-                      setNewTicketOption({
-                        ...newTicketOption,
-                        pnr: e.target.value,
-                      })
-                    }
-                    placeholder="PNR kodu"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 w-full max-w-6xl mx-4 max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200/50 dark:border-gray-700/50">
+              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">
+                ✨ Yeni Opsiyon Takip Ekle
+              </h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30 text-gray-500 hover:text-red-500 transition-colors duration-200"
+              >
+                ✕
+              </button>
             </div>
 
-            {/* Toplam Maliyet Hesaplama */}
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-medium">Toplam Maliyet:</span>{" "}
-                {newTicketOption.total_cost.toLocaleString("tr-TR", {
-                  minimumFractionDigits: 2,
-                })}{" "}
-                {newTicketOption.currency}
-              </p>
+            <div className="space-y-5">
+              {/* Grup 1: Kurumsal Bilgiler */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-blue-200 dark:hover:border-blue-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>
+                  Kurumsal Bilgiler
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[2] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[2]">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Voucher No</label>
+                    <input type="text" value={newTicketOption.voucher_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Voucher" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Acente *</label>
+                    <SearchableSelect options={agencies.map((agency) => ({ id: agency.id, name: agency.name }))} value={newTicketOption.agent} onChange={(value) => setNewTicketOption({ ...newTicketOption, agent: value })} placeholder="Acente seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Firma Adı</label>
+                    <input type="text" value={newTicketOption.company_name} onChange={(e) => setNewTicketOption({ ...newTicketOption, company_name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Firma Adı" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Tedarikçi *</label>
+                    <SearchableSelect options={suppliers.map((supplier) => ({ id: supplier.id, name: supplier.name }))} value={newTicketOption.supplier} onChange={(value) => setNewTicketOption({ ...newTicketOption, supplier: value })} placeholder="Tedarikçi seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 2: Uçuş Detayları */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-emerald-200 dark:hover:border-emerald-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></span>
+                  Uçuş Detayları
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1.2] lg:[&>*:nth-child(2)]:flex-[1.2] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[1]">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Uçuş Tipi *</label>
+                    <select value={newTicketOption.flight_type} onChange={(e) => setNewTicketOption({ ...newTicketOption, flight_type: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                      <option value="">Seçiniz</option>
+                      <option value="Gidiş Dönüş">Gidiş Dönüş</option>
+                      <option value="Tek Yön">Tek Yön</option>
+                      <option value="Çok Segment">Çok Segment</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Havayolu</label>
+                    <input type="text" value={newTicketOption.airline} onChange={(e) => setNewTicketOption({ ...newTicketOption, airline: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: TK" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Grup Ref No</label>
+                    <input type="text" value={newTicketOption.group_ref_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, group_ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ref No" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Güzergah</label>
+                    <input type="text" value={newTicketOption.route} onChange={(e) => setNewTicketOption({ ...newTicketOption, route: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="IST-ECN" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PNR</label>
+                    <input type="text" value={newTicketOption.pnr} onChange={(e) => setNewTicketOption({ ...newTicketOption, pnr: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="PNR" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 3: Tarih ve Saatler */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-purple-200 dark:hover:border-purple-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
+                  Tarih ve Saat Planlaması
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full [&>*]:flex-1">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Tarihi *</label>
+                    <input type="date" value={newTicketOption.departure_date} onChange={(e) => setNewTicketOption({ ...newTicketOption, departure_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Saati</label>
+                    <input type="time" value={newTicketOption.departure_time} onChange={(e) => setNewTicketOption({ ...newTicketOption, departure_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Tarihi</label>
+                    <input type="date" value={newTicketOption.return_date} onChange={(e) => setNewTicketOption({ ...newTicketOption, return_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Saati</label>
+                    <input type="time" value={newTicketOption.return_time} onChange={(e) => setNewTicketOption({ ...newTicketOption, return_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 4: Opsiyon ve Maliyet */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-orange-200 dark:hover:border-orange-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-2"></span>
+                  Maliyet & Opsiyon Bitiş
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.2] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1.5]">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Kişi Sayısı</label>
+                    <input type="number" value={newTicketOption.passenger_count === 0 ? "" : newTicketOption.passenger_count} onChange={(e) => setNewTicketOption({ ...newTicketOption, passenger_count: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PP Maliyet</label>
+                    <input type="number" step="0.01" value={newTicketOption.pp_cost === 0 ? "" : newTicketOption.pp_cost} onChange={(e) => setNewTicketOption({ ...newTicketOption, pp_cost: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0.00" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Döviz</label>
+                    <select value={newTicketOption.currency} onChange={(e) => setNewTicketOption({ ...newTicketOption, currency: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none">
+                      <option value="EUR">EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="TRY">TRY</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Trh.</label>
+                    <input type="date" value={newTicketOption.option_end_date} onChange={(e) => setNewTicketOption({ ...newTicketOption, option_end_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Saat</label>
+                    <input type="time" value={newTicketOption.option_end_time} onChange={(e) => setNewTicketOption({ ...newTicketOption, option_end_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
+                  </div>
+                  <div className="flex flex-col justify-end pb-1 pl-2">
+                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Toplam Maliyet</p>
+                     <p className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400">
+                        {newTicketOption.total_cost.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} {newTicketOption.currency}
+                     </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-2 mt-4">
+            <div className="flex justify-end items-center space-x-3 mt-6 pt-5 border-t border-gray-200/50 dark:border-gray-700/50">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-3 py-1 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200 text-xs"
+                className="px-5 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl font-bold transition-colors duration-200 text-xs"
               >
-                İptal
+                İptal Et
               </button>
               {canCreate(Module.TICKETS) && (
                 <button
                   onClick={handleAddTicketOption}
-                  className="px-3 py-1 text-white bg-blue-500 dark:bg-blue-500 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200 text-xs"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Kaydet
                 </button>
@@ -2375,392 +2155,164 @@ export default function TicketOptionsPage() {
         </div>
       )}
 
-      {/* Düzenleme Modal */}
+            {/* Bilet Opsiyonu Düzenle Modal */}
       {showEditModal && editingTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Bilet Opsiyonu Düzenle
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Sol Taraf */}
-              <div className="space-y-3">
-                {/* Voucher No */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Voucher No *
-                  </label>
-                  <input
-                    type="text"
-                    value={editTicketOption.voucher_no}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        voucher_no: e.target.value,
-                      })
-                    }
-                    placeholder="Voucher numarası girin"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Acente */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Acente *
-                  </label>
-                  <SearchableSelect
-                    options={agencies.map((agency) => ({
-                      id: agency.id,
-                      name: agency.name,
-                    }))}
-                    value={editTicketOption.agent}
-                    onChange={(value) =>
-                      setEditTicketOption({ ...editTicketOption, agent: value })
-                    }
-                    placeholder="Acente seçin veya arayın..."
-                  />
-                </div>
-
-                {/* Firma Adı */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Firma Adı *
-                  </label>
-                  <input
-                    type="text"
-                    value={editTicketOption.company_name}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        company_name: e.target.value,
-                      })
-                    }
-                    placeholder="Firma adı girin"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Tedarikçi */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tedarikçi *
-                  </label>
-                  <SearchableSelect
-                    options={suppliers.map((supplier) => ({
-                      id: supplier.id,
-                      name: supplier.name,
-                    }))}
-                    value={editTicketOption.supplier}
-                    onChange={(value) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        supplier: value,
-                      })
-                    }
-                    placeholder="Tedarikçi seçin veya arayın..."
-                  />
-                </div>
-
-                {/* Havayolu */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Havayolu *
-                  </label>
-                  <input
-                    type="text"
-                    value={editTicketOption.airline}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        airline: e.target.value,
-                      })
-                    }
-                    placeholder="Havayolu kodu girin"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Grup Ref No */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Grup Ref No
-                  </label>
-                  <input
-                    type="text"
-                    value={editTicketOption.group_ref_no}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        group_ref_no: e.target.value,
-                      })
-                    }
-                    placeholder="Grup referans numarası"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Sağ Taraf */}
-              <div className="space-y-3">
-                {/* Uçuş Tipi */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Uçuş Tipi *
-                  </label>
-                  <select
-                    value={editTicketOption.flight_type}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        flight_type: e.target.value,
-                      })
-                    }
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  >
-                    <option value="">Uçuş tipi seçin</option>
-                    <option value="Gidiş Dönüş">Gidiş Dönüş</option>
-                    <option value="Tek Yön">Tek Yön</option>
-                    <option value="Çok Segment">Çok Segment</option>
-                  </select>
-                </div>
-
-                {/* Gidiş Tarihi ve Saati */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Gidiş Tarihi *
-                    </label>
-                    <input
-                      type="date"
-                      value={editTicketOption.departure_date}
-                      onChange={(e) =>
-                        setEditTicketOption({
-                          ...editTicketOption,
-                          departure_date: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Gidiş Saati
-                    </label>
-                    <input
-                      type="time"
-                      value={editTicketOption.departure_time}
-                      onChange={(e) =>
-                        setEditTicketOption({
-                          ...editTicketOption,
-                          departure_time: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Dönüş Tarihi ve Saati */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Dönüş Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      value={editTicketOption.return_date}
-                      onChange={(e) =>
-                        setEditTicketOption({
-                          ...editTicketOption,
-                          return_date: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Dönüş Saati
-                    </label>
-                    <input
-                      type="time"
-                      value={editTicketOption.return_time}
-                      onChange={(e) =>
-                        setEditTicketOption({
-                          ...editTicketOption,
-                          return_time: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Güzergah */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Güzergah *
-                  </label>
-                  <input
-                    type="text"
-                    value={editTicketOption.route}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        route: e.target.value,
-                      })
-                    }
-                    placeholder="Örn: IST-ECN-IST"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Kişi Sayısı */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Kişi Sayısı *
-                  </label>
-                  <input
-                    type="number"
-                    value={editTicketOption.passenger_count}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        passenger_count: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="Yolcu sayısı"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* PP Maliyet */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    PP Maliyet *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={editTicketOption.pp_cost}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        pp_cost: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="Kişi başı maliyet"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-
-                {/* Döviz */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Döviz *
-                  </label>
-                  <select
-                    value={editTicketOption.currency}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        currency: e.target.value,
-                      })
-                    }
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  >
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                    <option value="TRY">TRY</option>
-                    <option value="GBP">GBP</option>
-                  </select>
-                </div>
-
-                {/* Opsiyon Bitiş Tarihi ve Saati */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Opsiyon Bitiş Tarihi *
-                    </label>
-                    <input
-                      type="date"
-                      value={editTicketOption.option_end_date}
-                      onChange={(e) =>
-                        setEditTicketOption({
-                          ...editTicketOption,
-                          option_end_date: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Opsiyon Bitiş Saati
-                    </label>
-                    <input
-                      type="time"
-                      value={editTicketOption.option_end_time}
-                      onChange={(e) =>
-                        setEditTicketOption({
-                          ...editTicketOption,
-                          option_end_time: e.target.value,
-                        })
-                      }
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* PNR */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    PNR
-                  </label>
-                  <input
-                    type="text"
-                    value={editTicketOption.pnr}
-                    onChange={(e) =>
-                      setEditTicketOption({
-                        ...editTicketOption,
-                        pnr: e.target.value,
-                      })
-                    }
-                    placeholder="PNR kodu"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                  />
-                </div>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 w-full max-w-6xl mx-4 max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200/50 dark:border-gray-700/50">
+              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">
+                ✨ Bilet Opsiyonu Düzenle
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30 text-gray-500 hover:text-red-500 transition-colors duration-200"
+              >
+                ✕
+              </button>
             </div>
 
-            {/* Toplam Maliyet Hesaplama */}
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-medium">Toplam Maliyet:</span>{" "}
-                {editTicketOption.total_cost.toLocaleString("tr-TR", {
-                  minimumFractionDigits: 2,
-                })}{" "}
-                {editTicketOption.currency}
-              </p>
+            <div className="space-y-5">
+              {/* Grup 1: Kurumsal Bilgiler */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-blue-200 dark:hover:border-blue-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>
+                  Kurumsal Bilgiler
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[2] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[2]">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Voucher No</label>
+                    <input type="text" value={editTicketOption.voucher_no} onChange={(e) => setEditTicketOption({ ...editTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Voucher" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Acente *</label>
+                    <SearchableSelect options={agencies.map((agency) => ({ id: agency.id, name: agency.name }))} value={editTicketOption.agent} onChange={(value) => setEditTicketOption({ ...editTicketOption, agent: value })} placeholder="Acente seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Firma Adı</label>
+                    <input type="text" value={editTicketOption.company_name} onChange={(e) => setEditTicketOption({ ...editTicketOption, company_name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Firma Adı" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Tedarikçi *</label>
+                    <SearchableSelect options={suppliers.map((supplier) => ({ id: supplier.id, name: supplier.name }))} value={editTicketOption.supplier} onChange={(value) => setEditTicketOption({ ...editTicketOption, supplier: value })} placeholder="Tedarikçi seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 2: Uçuş Detayları */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-emerald-200 dark:hover:border-emerald-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></span>
+                  Uçuş Detayları
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1.2] lg:[&>*:nth-child(2)]:flex-[1.2] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[1]">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Uçuş Tipi *</label>
+                    <select value={editTicketOption.flight_type} onChange={(e) => setEditTicketOption({ ...editTicketOption, flight_type: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                      <option value="">Seçiniz</option>
+                      <option value="Gidiş Dönüş">Gidiş Dönüş</option>
+                      <option value="Tek Yön">Tek Yön</option>
+                      <option value="Çok Segment">Çok Segment</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Havayolu</label>
+                    <input type="text" value={editTicketOption.airline} onChange={(e) => setEditTicketOption({ ...editTicketOption, airline: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: TK" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Grup Ref No</label>
+                    <input type="text" value={editTicketOption.group_ref_no} onChange={(e) => setEditTicketOption({ ...editTicketOption, group_ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ref No" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Güzergah</label>
+                    <input type="text" value={editTicketOption.route} onChange={(e) => setEditTicketOption({ ...editTicketOption, route: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="IST-ECN" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PNR</label>
+                    <input type="text" value={editTicketOption.pnr} onChange={(e) => setEditTicketOption({ ...editTicketOption, pnr: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="PNR" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 3: Tarih ve Saatler */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-purple-200 dark:hover:border-purple-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
+                  Tarih ve Saat Planlaması
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full [&>*]:flex-1">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Tarihi *</label>
+                    <input type="date" value={editTicketOption.departure_date} onChange={(e) => setEditTicketOption({ ...editTicketOption, departure_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Saati</label>
+                    <input type="time" value={editTicketOption.departure_time} onChange={(e) => setEditTicketOption({ ...editTicketOption, departure_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Tarihi</label>
+                    <input type="date" value={editTicketOption.return_date} onChange={(e) => setEditTicketOption({ ...editTicketOption, return_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Saati</label>
+                    <input type="time" value={editTicketOption.return_time} onChange={(e) => setEditTicketOption({ ...editTicketOption, return_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grup 4: Opsiyon ve Maliyet */}
+              <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-orange-200 dark:hover:border-orange-800/50">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-2"></span>
+                  Maliyet & Opsiyon Bitiş
+                </h4>
+                <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.2] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1.5]">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Kişi Sayısı</label>
+                    <input type="number" value={editTicketOption.passenger_count === 0 ? "" : editTicketOption.passenger_count} onChange={(e) => setEditTicketOption({ ...editTicketOption, passenger_count: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PP Maliyet</label>
+                    <input type="number" step="0.01" value={editTicketOption.pp_cost === 0 ? "" : editTicketOption.pp_cost} onChange={(e) => setEditTicketOption({ ...editTicketOption, pp_cost: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0.00" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Döviz</label>
+                    <select value={editTicketOption.currency} onChange={(e) => setEditTicketOption({ ...editTicketOption, currency: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none">
+                      <option value="EUR">EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="TRY">TRY</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Trh.</label>
+                    <input type="date" value={editTicketOption.option_end_date} onChange={(e) => setEditTicketOption({ ...editTicketOption, option_end_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Saat</label>
+                    <input type="time" value={editTicketOption.option_end_time} onChange={(e) => setEditTicketOption({ ...editTicketOption, option_end_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
+                  </div>
+                  <div className="flex flex-col justify-end pb-1 pl-2">
+                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Toplam Maliyet</p>
+                     <p className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400">
+                        {editTicketOption.total_cost.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} {editTicketOption.currency}
+                     </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-2 mt-4">
+            <div className="flex justify-end items-center space-x-3 mt-6 pt-5 border-t border-gray-200/50 dark:border-gray-700/50">
               <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingTicket(null);
-                }}
-                className="px-3 py-1 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200 text-xs"
+                onClick={() => setShowEditModal(false)}
+                className="px-5 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl font-bold transition-colors duration-200 text-xs"
               >
-                İptal
+                İptal Et
               </button>
               {canEdit(Module.TICKETS) && (
                 <button
                   onClick={handleEditTicketOption}
-                  className="px-3 py-1 text-white bg-green-600 dark:bg-green-500 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Güncelle
                 </button>

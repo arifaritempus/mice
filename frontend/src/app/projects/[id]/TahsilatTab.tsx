@@ -1,7 +1,6 @@
+import { usePermissions, Module } from "@/lib/permissions";
 "use client";
-
 import React, { useCallback } from "react";
-
 interface TahsilatTabProps {
   projectId: string;
   salesTotals: {
@@ -52,8 +51,13 @@ interface TahsilatTabProps {
   balanceByCurrency: Record<string, number>;
   [key: string]: any;
 }
-
 export default function TahsilatTab(props: TahsilatTabProps) {
+  const {
+    canEdit,
+    isSuperAdmin
+  } = usePermissions();
+  const permEdit = canEdit(Module.PROJECTS);
+  const compIsLocked = (props as any)?.isLocked || (props as any)?.project?.locked || false;
   const {
     projectId,
     salesTotals,
@@ -94,12 +98,10 @@ export default function TahsilatTab(props: TahsilatTabProps) {
     paymentSummary,
     planByCurrency,
     collectedByCurrency,
-    balanceByCurrency,
+    balanceByCurrency
   } = props;
-
-    const [searchTags, setSearchTags] = React.useState<string[]>([]);
+  const [searchTags, setSearchTags] = React.useState<string[]>([]);
   const [searchInput, setSearchInput] = React.useState("");
-  
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchInput.trim() !== "") {
       e.preventDefault();
@@ -111,64 +113,61 @@ export default function TahsilatTab(props: TahsilatTabProps) {
       setSearchTags(searchTags.slice(0, -1));
     }
   };
-  
   const removeSearchTag = (tagToRemove: string) => {
     setSearchTags(searchTags.filter(tag => tag !== tagToRemove));
   };
-
-  const [sortConfigPlan, setSortConfigPlan] = React.useState<{key: string, direction: 'asc'|'desc'} | null>(null);
-  const [sortConfigActual, setSortConfigActual] = React.useState<{key: string, direction: 'asc'|'desc'} | null>(null);
-
+  const [sortConfigPlan, setSortConfigPlan] = React.useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
+  const [sortConfigActual, setSortConfigActual] = React.useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
   const handleSortPlan = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfigPlan && sortConfigPlan.key === key && sortConfigPlan.direction === 'asc') {
       direction = 'desc';
     }
-    setSortConfigPlan({ key, direction });
+    setSortConfigPlan({
+      key,
+      direction
+    });
   };
-
   const handleSortActual = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfigActual && sortConfigActual.key === key && sortConfigActual.direction === 'asc') {
       direction = 'desc';
     }
-    setSortConfigActual({ key, direction });
+    setSortConfigActual({
+      key,
+      direction
+    });
   };
-
   const getFilteredAndSortedPlans = useCallback(() => {
     let result = [...collectionPlans];
-    
     if (searchTags.length > 0) {
       result = result.filter(item => {
         return searchTags.every(tag => {
           const s = tag.toLowerCase();
-          return (item.description && item.description.toLowerCase().includes(s)) ||
-        (item.collectionType && item.collectionType.toLowerCase().includes(s)) ||
-        (item.currency && item.currency.toLowerCase().includes(s)) ||
-        (item.date && item.date.includes(s));
+          return item.description && item.description.toLowerCase().includes(s) || item.collectionType && item.collectionType.toLowerCase().includes(s) || item.currency && item.currency.toLowerCase().includes(s) || item.date && item.date.includes(s);
         });
       });
     }
     if (searchInput.trim() !== "") {
       const s = searchInput.toLowerCase();
       result = result.filter(item => {
-        return (item.description && item.description.toLowerCase().includes(s)) ||
-        (item.collectionType && item.collectionType.toLowerCase().includes(s)) ||
-        (item.currency && item.currency.toLowerCase().includes(s)) ||
-        (item.date && item.date.includes(s));
+        return item.description && item.description.toLowerCase().includes(s) || item.collectionType && item.collectionType.toLowerCase().includes(s) || item.currency && item.currency.toLowerCase().includes(s) || item.date && item.date.includes(s);
       });
     }
-    
     if (sortConfigPlan !== null) {
       result.sort((a, b) => {
         let aVal = a[sortConfigPlan.key];
         let bVal = b[sortConfigPlan.key];
-        
         if (sortConfigPlan.key === 'totalTRY') {
-           aVal = a.totalTRY || a.amount;
-           bVal = b.totalTRY || b.amount;
+          aVal = a.totalTRY || a.amount;
+          bVal = b.totalTRY || b.amount;
         }
-
         if (aVal < bVal) return sortConfigPlan.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfigPlan.direction === 'asc' ? 1 : -1;
         return 0;
@@ -176,41 +175,30 @@ export default function TahsilatTab(props: TahsilatTabProps) {
     }
     return result;
   }, [collectionPlans, searchTags, searchInput, sortConfigPlan]);
-
   const getFilteredAndSortedActuals = useCallback(() => {
     let result = [...collections];
-    
     if (searchTags.length > 0) {
       result = result.filter(item => {
         return searchTags.every(tag => {
           const s = tag.toLowerCase();
-          return (item.description && item.description.toLowerCase().includes(s)) ||
-        (item.collectionType && item.collectionType.toLowerCase().includes(s)) ||
-        (item.currency && item.currency.toLowerCase().includes(s)) ||
-        (item.date && item.date.includes(s));
+          return item.description && item.description.toLowerCase().includes(s) || item.collectionType && item.collectionType.toLowerCase().includes(s) || item.currency && item.currency.toLowerCase().includes(s) || item.date && item.date.includes(s);
         });
       });
     }
     if (searchInput.trim() !== "") {
       const s = searchInput.toLowerCase();
       result = result.filter(item => {
-        return (item.description && item.description.toLowerCase().includes(s)) ||
-        (item.collectionType && item.collectionType.toLowerCase().includes(s)) ||
-        (item.currency && item.currency.toLowerCase().includes(s)) ||
-        (item.date && item.date.includes(s));
+        return item.description && item.description.toLowerCase().includes(s) || item.collectionType && item.collectionType.toLowerCase().includes(s) || item.currency && item.currency.toLowerCase().includes(s) || item.date && item.date.includes(s);
       });
     }
-    
     if (sortConfigActual !== null) {
       result.sort((a, b) => {
         let aVal = a[sortConfigActual.key];
         let bVal = b[sortConfigActual.key];
-        
         if (sortConfigActual.key === 'totalTRY') {
-           aVal = a.totalTRY || a.amount;
-           bVal = b.totalTRY || b.amount;
+          aVal = a.totalTRY || a.amount;
+          bVal = b.totalTRY || b.amount;
         }
-
         if (aVal < bVal) return sortConfigActual.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfigActual.direction === 'asc' ? 1 : -1;
         return 0;
@@ -218,28 +206,54 @@ export default function TahsilatTab(props: TahsilatTabProps) {
     }
     return result;
   }, [collections, searchTags, searchInput, sortConfigActual]);
-
   const exportToExcel = async () => {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      
       const createSheet = (name, data) => {
         const sheet = workbook.addWorksheet(name);
-        
-        sheet.columns = [
-          { header: 'Tarih', key: 'date', width: 15 },
-          { header: 'Tip', key: 'collectionType', width: 20 },
-          { header: 'Açıklama', key: 'description', width: 30 },
-          { header: 'Tutar', key: 'amount', width: 15 },
-          { header: 'Döviz', key: 'currency', width: 10 },
-          { header: 'Kur', key: 'exchangeRate', width: 15 },
-          { header: 'Toplam TL', key: 'totalTRY', width: 20 },
-        ];
-
-        sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF10B981' } };
-
+        sheet.columns = [{
+          header: 'Tarih',
+          key: 'date',
+          width: 15
+        }, {
+          header: 'Tip',
+          key: 'collectionType',
+          width: 20
+        }, {
+          header: 'Açıklama',
+          key: 'description',
+          width: 30
+        }, {
+          header: 'Tutar',
+          key: 'amount',
+          width: 15
+        }, {
+          header: 'Döviz',
+          key: 'currency',
+          width: 10
+        }, {
+          header: 'Kur',
+          key: 'exchangeRate',
+          width: 15
+        }, {
+          header: 'Toplam TL',
+          key: 'totalTRY',
+          width: 20
+        }];
+        sheet.getRow(1).font = {
+          bold: true,
+          color: {
+            argb: 'FFFFFFFF'
+          }
+        };
+        sheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: {
+            argb: 'FF10B981'
+          }
+        };
         data.forEach(item => {
           sheet.addRow({
             date: item.date,
@@ -252,12 +266,12 @@ export default function TahsilatTab(props: TahsilatTabProps) {
           });
         });
       };
-
       createSheet('Tahsilat Planı', getFilteredAndSortedPlans());
       createSheet('Gerçekleşen Tahsilatlar', getFilteredAndSortedActuals());
-
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -269,201 +283,127 @@ export default function TahsilatTab(props: TahsilatTabProps) {
       alert("Excel çıktısı alınırken bir hata oluştu.");
     }
   };
-
-  const SortIcon = ({ sortConfig, columnKey }: { sortConfig: any, columnKey: string }) => {
+  const SortIcon = ({
+    sortConfig,
+    columnKey
+  }: {
+    sortConfig: any;
+    columnKey: string;
+  }) => {
     if (!sortConfig || sortConfig.key !== columnKey) {
       return <span className="ml-1 text-gray-400">↕</span>;
     }
     return sortConfig.direction === 'asc' ? <span className="ml-1 text-blue-500">↑</span> : <span className="ml-1 text-blue-500">↓</span>;
   };
-
   const resetPlanState = useCallback(() => {
     setEditingPlanIndex(null);
     setTempPlanItem(null);
     setPlanAmountInput("");
     setPlanTotalTRYInput("");
-  }, [
-    setEditingPlanIndex,
-    setTempPlanItem,
-    setPlanAmountInput,
-    setPlanTotalTRYInput,
-  ]);
-
+  }, [setEditingPlanIndex, setTempPlanItem, setPlanAmountInput, setPlanTotalTRYInput]);
   const resetCollectionState = useCallback(() => {
     setEditingCollectionIndex(null);
     setTempCollectionItem(null);
     setCollectionAmountInput("");
     setCollectionTotalTRYInput("");
-  }, [
-    setEditingCollectionIndex,
-    setTempCollectionItem,
-    setCollectionAmountInput,
-    setCollectionTotalTRYInput,
-  ]);
-
+  }, [setEditingCollectionIndex, setTempCollectionItem, setCollectionAmountInput, setCollectionTotalTRYInput]);
   const saveNewPlan = useCallback(async () => {
     if (!tempPlanItem) return;
     try {
       const saved = await handlePlanSave({
         ...tempPlanItem,
-        project_id: projectId,
+        project_id: projectId
       });
-      setCollectionPlans((prev) => [...prev, saved]);
+      setCollectionPlans(prev => [...prev, saved]);
       resetPlanState();
     } catch (error: any) {
       console.error("Plan kaydedilirken hata:", error);
-      alert(
-        "Plan kaydedilirken hata oluştu: " +
-          (error?.message || "Bilinmeyen hata"),
-      );
+      alert("Plan kaydedilirken hata oluştu: " + (error?.message || "Bilinmeyen hata"));
     }
-  }, [
-    handlePlanSave,
-    projectId,
-    resetPlanState,
-    setCollectionPlans,
-    tempPlanItem,
-  ]);
-
-  const saveExistingPlan = useCallback(
-    async (index: number, base: any) => {
-      const payload = { ...base, ...(tempPlanItem || {}) };
-      try {
-        const saved = await handlePlanSave({
-          ...payload,
-          project_id: projectId,
-        });
-        setCollectionPlans((prev) =>
-          prev.map((p, i) => (i === index ? saved : p)),
-        );
+  }, [handlePlanSave, projectId, resetPlanState, setCollectionPlans, tempPlanItem]);
+  const saveExistingPlan = useCallback(async (index: number, base: any) => {
+    const payload = {
+      ...base,
+      ...(tempPlanItem || {})
+    };
+    try {
+      const saved = await handlePlanSave({
+        ...payload,
+        project_id: projectId
+      });
+      setCollectionPlans(prev => prev.map((p, i) => i === index ? saved : p));
+      resetPlanState();
+    } catch (error: any) {
+      console.error("Plan güncellenirken hata:", error);
+      alert("Plan güncellenirken hata oluştu: " + (error?.message || "Bilinmeyen hata"));
+    }
+  }, [handlePlanSave, projectId, resetPlanState, setCollectionPlans, tempPlanItem]);
+  const deletePlan = useCallback(async (index: number, plan: any) => {
+    try {
+      if (plan?.id) {
+        await handlePlanDelete(plan);
+      }
+      setCollectionPlans(prev => prev.filter((_, i) => i !== index));
+      if (editingPlanIndex === index) {
         resetPlanState();
-      } catch (error: any) {
-        console.error("Plan güncellenirken hata:", error);
-        alert(
-          "Plan güncellenirken hata oluştu: " +
-            (error?.message || "Bilinmeyen hata"),
-        );
       }
-    },
-    [
-      handlePlanSave,
-      projectId,
-      resetPlanState,
-      setCollectionPlans,
-      tempPlanItem,
-    ],
-  );
-
-  const deletePlan = useCallback(
-    async (index: number, plan: any) => {
-      try {
-        if (plan?.id) {
-          await handlePlanDelete(plan);
-        }
-        setCollectionPlans((prev) => prev.filter((_, i) => i !== index));
-        if (editingPlanIndex === index) {
-          resetPlanState();
-        }
-      } catch (error: any) {
-        console.error("Plan silinirken hata:", error);
-        alert(
-          "Plan silinirken hata oluştu: " +
-            (error?.message || "Bilinmeyen hata"),
-        );
-      }
-    },
-    [editingPlanIndex, handlePlanDelete, resetPlanState, setCollectionPlans],
-  );
-
+    } catch (error: any) {
+      console.error("Plan silinirken hata:", error);
+      alert("Plan silinirken hata oluştu: " + (error?.message || "Bilinmeyen hata"));
+    }
+  }, [editingPlanIndex, handlePlanDelete, resetPlanState, setCollectionPlans]);
   const saveNewCollection = useCallback(async () => {
     if (!tempCollectionItem) return;
     try {
       const saved = await handleCollectionSave({
         ...tempCollectionItem,
-        project_id: projectId,
+        project_id: projectId
       });
-      setCollections((prev) => [...prev, saved]);
+      setCollections(prev => [...prev, saved]);
       resetCollectionState();
     } catch (error: any) {
       console.error("Tahsilat kaydedilirken hata:", error);
-      alert(
-        "Tahsilat kaydedilirken hata oluştu: " +
-          (error?.message || "Bilinmeyen hata"),
-      );
+      alert("Tahsilat kaydedilirken hata oluştu: " + (error?.message || "Bilinmeyen hata"));
     }
-  }, [
-    handleCollectionSave,
-    projectId,
-    resetCollectionState,
-    setCollections,
-    tempCollectionItem,
-  ]);
-
-  const saveExistingCollection = useCallback(
-    async (index: number, base: any) => {
-      const payload = { ...base, ...(tempCollectionItem || {}) };
-      try {
-        const saved = await handleCollectionSave({
-          ...payload,
-          project_id: projectId,
-        });
-        setCollections((prev) => prev.map((c, i) => (i === index ? saved : c)));
+  }, [handleCollectionSave, projectId, resetCollectionState, setCollections, tempCollectionItem]);
+  const saveExistingCollection = useCallback(async (index: number, base: any) => {
+    const payload = {
+      ...base,
+      ...(tempCollectionItem || {})
+    };
+    try {
+      const saved = await handleCollectionSave({
+        ...payload,
+        project_id: projectId
+      });
+      setCollections(prev => prev.map((c, i) => i === index ? saved : c));
+      resetCollectionState();
+    } catch (error: any) {
+      console.error("Tahsilat güncellenirken hata:", error);
+      alert("Tahsilat güncellenirken hata oluştu: " + (error?.message || "Bilinmeyen hata"));
+    }
+  }, [handleCollectionSave, projectId, resetCollectionState, setCollections, tempCollectionItem]);
+  const deleteCollection = useCallback(async (index: number, collection: any) => {
+    try {
+      if (collection?.id) {
+        await handleCollectionDelete(collection);
+      }
+      setCollections(prev => prev.filter((_, i) => i !== index));
+      if (editingCollectionIndex === index) {
         resetCollectionState();
-      } catch (error: any) {
-        console.error("Tahsilat güncellenirken hata:", error);
-        alert(
-          "Tahsilat güncellenirken hata oluştu: " +
-            (error?.message || "Bilinmeyen hata"),
-        );
       }
-    },
-    [
-      handleCollectionSave,
-      projectId,
-      resetCollectionState,
-      setCollections,
-      tempCollectionItem,
-    ],
-  );
-
-  const deleteCollection = useCallback(
-    async (index: number, collection: any) => {
-      try {
-        if (collection?.id) {
-          await handleCollectionDelete(collection);
-        }
-        setCollections((prev) => prev.filter((_, i) => i !== index));
-        if (editingCollectionIndex === index) {
-          resetCollectionState();
-        }
-      } catch (error: any) {
-        console.error("Tahsilat silinirken hata:", error);
-        alert(
-          "Tahsilat silinirken hata oluştu: " +
-            (error?.message || "Bilinmeyen hata"),
-        );
-      }
-    },
-    [
-      editingCollectionIndex,
-      handleCollectionDelete,
-      resetCollectionState,
-      setCollections,
-    ],
-  );
-
-  return (
-    <div className="space-y-4">
+    } catch (error: any) {
+      console.error("Tahsilat silinirken hata:", error);
+      alert("Tahsilat silinirken hata oluştu: " + (error?.message || "Bilinmeyen hata"));
+    }
+  }, [editingCollectionIndex, handleCollectionDelete, resetCollectionState, setCollections]);
+  return <div className="space-y-4">
       {/* Satış Genel Toplamları */}
       <div className="bg-blue-500 dark:bg-blue-700 rounded-md p-3">
         <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
           <div className="col-span-3 font-bold">Satış Genel Toplamları</div>
           <div className="col-span-6 text-right font-bold">
-            {Object.entries(salesTotals.totalByCurrency)
-              .map(
-                ([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`,
-              )
-              .join(" + ")}
+            {Object.entries(salesTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(" + ")}
           </div>
           <div className="col-span-2 text-right font-bold">
             {formatNumber(salesTotals.totalTRY)} TL
@@ -477,29 +417,17 @@ export default function TahsilatTab(props: TahsilatTabProps) {
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="relative w-full sm:w-96 group">
           <div className="flex flex-wrap items-center gap-1.5 w-full px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all shadow-inner">
-            {searchTags.map((tag, idx) => (
-              <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
+            {searchTags.map((tag, idx) => <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
                 {tag}
                 <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-600 dark:hover:text-blue-400">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
-              </span>
-            ))}
-            <input
-              type="text"
-              className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
-              placeholder={searchTags.length === 0 ? "Arama yap... (Enter ile çoğalt)" : "Yeni arama..."}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-            />
+              </span>)}
+            <input type="text" className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none" placeholder={searchTags.length === 0 ? "Arama yap... (Enter ile çoğalt)" : "Yeni arama..."} value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button
-            onClick={exportToExcel}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
-          >
+          <button onClick={exportToExcel} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -514,24 +442,21 @@ export default function TahsilatTab(props: TahsilatTabProps) {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             Ödeme Planı
           </h3>
-          <button
-            onClick={() => {
-              const item = {
-                date: "",
-                collectionType: "",
-                description: "",
-                amount: 0,
-                currency: "TRY",
-                exchangeRate: 1,
-                totalTRY: 0,
-              };
-              setTempPlanItem(item);
-              setEditingPlanIndex(collectionPlans.length);
-              setPlanAmountInput("");
-              setPlanTotalTRYInput("");
-            }}
-            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90"
-          >
+          <button onClick={() => {
+          const item = {
+            date: "",
+            collectionType: "",
+            description: "",
+            amount: 0,
+            currency: "TRY",
+            exchangeRate: 1,
+            totalTRY: 0
+          };
+          setTempPlanItem(item);
+          setEditingPlanIndex(collectionPlans.length);
+          setPlanAmountInput("");
+          setPlanTotalTRYInput("");
+        }} className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90">
             Yeni Plan
           </button>
         </div>
@@ -562,44 +487,34 @@ export default function TahsilatTab(props: TahsilatTabProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {editingPlanIndex !== null &&
-                editingPlanIndex === collectionPlans.length && (
-                  <tr>
+              {editingPlanIndex !== null && editingPlanIndex === collectionPlans.length && <tr>
                     <td className="px-2 py-2">
-                      <input
-                        type="date" value={tempPlanItem?.date || ""} onChange={(e) => setTempPlanItem((p: any) => ({ ...p, date: e.target.value }))} 
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="date" value={tempPlanItem?.date || ""} onChange={e => setTempPlanItem((p: any) => ({
+                  ...p,
+                  date: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={tempPlanItem?.collectionType || ""}
-                        onChange={(e) =>
-                          setTempPlanItem((p: any) => ({
-                            ...p,
-                            collectionType: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={tempPlanItem?.collectionType || ""} onChange={e => setTempPlanItem((p: any) => ({
+                  ...p,
+                  collectionType: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">Seçin</option>
                         <option value="banka">Banka Havalesi</option>
                         <option value="pos">Kredi Kartı / Pos</option>
@@ -608,92 +523,67 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={tempPlanItem?.description || ""}
-                        onChange={(e) =>
-                          setTempPlanItem((p: any) => ({
-                            ...p,
-                            description: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                        placeholder="Açıklama"
-                      />
+                      <input type="text" value={tempPlanItem?.description || ""} onChange={e => setTempPlanItem((p: any) => ({
+                  ...p,
+                  description: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={planAmountInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setPlanAmountInput(raw);
-                          const amount = cleanInputValue(raw) || 0;
-                          const rate = tempPlanItem?.exchangeRate || 1;
-                          const cur = tempPlanItem?.currency || "TRY";
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempPlanItem((p: any) => ({
-                            ...p,
-                            amount,
-                            totalTRY: tl,
-                          }));
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onBlur={(e) => {
-                          const amount = cleanInputValue(e.target.value) || 0;
-                          setPlanAmountInput(formatNumberForDisplay(amount));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={planAmountInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setPlanAmountInput(raw);
+                  const amount = cleanInputValue(raw) || 0;
+                  const rate = tempPlanItem?.exchangeRate || 1;
+                  const cur = tempPlanItem?.currency || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempPlanItem((p: any) => ({
+                    ...p,
+                    amount,
+                    totalTRY: tl
+                  }));
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onBlur={e => {
+                  const amount = cleanInputValue(e.target.value) || 0;
+                  setPlanAmountInput(formatNumberForDisplay(amount));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={tempPlanItem?.currency || "TRY"}
-                        onChange={(e) => {
-                          const cur = e.target.value;
-                          const amount = tempPlanItem?.amount || 0;
-                          const rate = tempPlanItem?.exchangeRate || 1;
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempPlanItem((p: any) => ({
-                            ...p,
-                            currency: cur,
-                            totalTRY: tl,
-                          }));
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={tempPlanItem?.currency || "TRY"} onChange={e => {
+                  const cur = e.target.value;
+                  const amount = tempPlanItem?.amount || 0;
+                  const rate = tempPlanItem?.exchangeRate || 1;
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempPlanItem((p: any) => ({
+                    ...p,
+                    currency: cur,
+                    totalTRY: tl
+                  }));
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -701,162 +591,103 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="number"
-                        step="0.0001"
-                        value={tempPlanItem?.exchangeRate || ""}
-                        onChange={(e) => {
-                          const r = parseFloat(e.target.value) || 0;
-                          const amount = tempPlanItem?.amount || 0;
-                          const cur = tempPlanItem?.currency || "TRY";
-                          const tl = cur === "TRY" ? amount : amount * r;
-                          setTempPlanItem((p: any) => ({
-                            ...p,
-                            exchangeRate: r,
-                            totalTRY: tl,
-                          }));
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="1.00"
-                      />
+                      <input type="number" step="0.0001" value={tempPlanItem?.exchangeRate || ""} onChange={e => {
+                  const r = parseFloat(e.target.value) || 0;
+                  const amount = tempPlanItem?.amount || 0;
+                  const cur = tempPlanItem?.currency || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * r;
+                  setTempPlanItem((p: any) => ({
+                    ...p,
+                    exchangeRate: r,
+                    totalTRY: tl
+                  }));
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={planTotalTRYInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setPlanTotalTRYInput(raw);
-                          const tl = cleanInputValue(raw) || 0;
-                          const rate = tempPlanItem?.exchangeRate || 1;
-                          const newAmount = rate > 0 ? tl / rate : 0;
-                          setTempPlanItem((p: any) => ({
-                            ...p,
-                            totalTRY: tl,
-                            amount: newAmount,
-                          }));
-                          setPlanAmountInput(formatNumberForDisplay(newAmount));
-                        }}
-                        onBlur={(e) => {
-                          const tl = cleanInputValue(e.target.value) || 0;
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewPlan();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={planTotalTRYInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setPlanTotalTRYInput(raw);
+                  const tl = cleanInputValue(raw) || 0;
+                  const rate = tempPlanItem?.exchangeRate || 1;
+                  const newAmount = rate > 0 ? tl / rate : 0;
+                  setTempPlanItem((p: any) => ({
+                    ...p,
+                    totalTRY: tl,
+                    amount: newAmount
+                  }));
+                  setPlanAmountInput(formatNumberForDisplay(newAmount));
+                }} onBlur={e => {
+                  const tl = cleanInputValue(e.target.value) || 0;
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewPlan();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={saveNewPlan}
-                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                          title="Kaydet"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
+                        <button onClick={saveNewPlan} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button
-                          onClick={resetPlanState}
-                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
-                          title="İptal"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
+                        <button onClick={resetPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr>
-                )}
-              {getFilteredAndSortedPlans().map((p, idx) =>
-                editingPlanIndex === idx ? (
-                  <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
-                    setEditingPlanIndex(idx);
-                    setTempPlanItem({ ...p });
-                    setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
-                    setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
-                  }}>
+                  </tr>}
+              {getFilteredAndSortedPlans().map((p, idx) => editingPlanIndex === idx ? <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+              setEditingPlanIndex(idx);
+              setTempPlanItem({
+                ...p
+              });
+              setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
+              setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
+            }}>
                     <td className="px-2 py-2">
-                      <input
-                        type="date" value={tempPlanItem?.date ?? p.date} onChange={(e) => setTempPlanItem((pp: any) => ({ ...pp, date: e.target.value }))} 
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="date" value={tempPlanItem?.date ?? p.date} onChange={e => setTempPlanItem((pp: any) => ({
+                  ...pp,
+                  date: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={
-                          (tempPlanItem?.collectionType ?? p.collectionType) ||
-                          ""
-                        }
-                        onChange={(e) =>
-                          setTempPlanItem((pp: any) => ({
-                            ...pp,
-                            collectionType: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={(tempPlanItem?.collectionType ?? p.collectionType) || ""} onChange={e => setTempPlanItem((pp: any) => ({
+                  ...pp,
+                  collectionType: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">Seçin</option>
                         <option value="banka">Banka Havalesi</option>
                         <option value="pos">Kredi Kartı / Pos</option>
@@ -865,96 +696,67 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={tempPlanItem?.description ?? p.description}
-                        onChange={(e) =>
-                          setTempPlanItem((pp: any) => ({
-                            ...pp,
-                            description: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                        placeholder="Açıklama"
-                      />
+                      <input type="text" value={tempPlanItem?.description ?? p.description} onChange={e => setTempPlanItem((pp: any) => ({
+                  ...pp,
+                  description: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={planAmountInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setPlanAmountInput(raw);
-                          const amount = cleanInputValue(raw) || 0;
-                          const rate =
-                            (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1;
-                          const cur =
-                            (tempPlanItem?.currency ?? p.currency) || "TRY";
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempPlanItem((pp: any) => ({
-                            ...pp,
-                            amount,
-                            totalTRY: tl,
-                          }));
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onBlur={(e) => {
-                          const amount = cleanInputValue(e.target.value) || 0;
-                          setPlanAmountInput(formatNumberForDisplay(amount));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={planAmountInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setPlanAmountInput(raw);
+                  const amount = cleanInputValue(raw) || 0;
+                  const rate = (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1;
+                  const cur = (tempPlanItem?.currency ?? p.currency) || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempPlanItem((pp: any) => ({
+                    ...pp,
+                    amount,
+                    totalTRY: tl
+                  }));
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onBlur={e => {
+                  const amount = cleanInputValue(e.target.value) || 0;
+                  setPlanAmountInput(formatNumberForDisplay(amount));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={tempPlanItem?.currency ?? p.currency}
-                        onChange={(e) => {
-                          const cur = e.target.value;
-                          const amount =
-                            (tempPlanItem?.amount ?? p.amount) || 0;
-                          const rate =
-                            (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1;
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempPlanItem((pp: any) => ({
-                            ...pp,
-                            currency: cur,
-                            totalTRY: tl,
-                          }));
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={tempPlanItem?.currency ?? p.currency} onChange={e => {
+                  const cur = e.target.value;
+                  const amount = (tempPlanItem?.amount ?? p.amount) || 0;
+                  const rate = (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1;
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempPlanItem((pp: any) => ({
+                    ...pp,
+                    currency: cur,
+                    totalTRY: tl
+                  }));
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -962,138 +764,80 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="number"
-                        step="0.0001"
-                        value={tempPlanItem?.exchangeRate ?? p.exchangeRate}
-                        onChange={(e) => {
-                          const r = parseFloat(e.target.value) || 0;
-                          const amount =
-                            (tempPlanItem?.amount ?? p.amount) || 0;
-                          const cur =
-                            (tempPlanItem?.currency ?? p.currency) || "TRY";
-                          const tl = cur === "TRY" ? amount : amount * r;
-                          setTempPlanItem((pp: any) => ({
-                            ...pp,
-                            exchangeRate: r,
-                            totalTRY: tl,
-                          }));
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="1.00"
-                      />
+                      <input type="number" step="0.0001" value={tempPlanItem?.exchangeRate ?? p.exchangeRate} onChange={e => {
+                  const r = parseFloat(e.target.value) || 0;
+                  const amount = (tempPlanItem?.amount ?? p.amount) || 0;
+                  const cur = (tempPlanItem?.currency ?? p.currency) || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * r;
+                  setTempPlanItem((pp: any) => ({
+                    ...pp,
+                    exchangeRate: r,
+                    totalTRY: tl
+                  }));
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={planTotalTRYInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setPlanTotalTRYInput(raw);
-                          const tl = cleanInputValue(raw) || 0;
-                          const rate =
-                            (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1;
-                          const newAmount = rate > 0 ? tl / rate : 0;
-                          setTempPlanItem((pp: any) => ({
-                            ...pp,
-                            totalTRY: tl,
-                            amount: newAmount,
-                          }));
-                          setPlanAmountInput(formatNumberForDisplay(newAmount));
-                        }}
-                        onBlur={(e) => {
-                          const tl = cleanInputValue(e.target.value) || 0;
-                          setPlanTotalTRYInput(formatNumberForDisplay(tl));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingPlan(idx, p);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetPlanState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={planTotalTRYInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setPlanTotalTRYInput(raw);
+                  const tl = cleanInputValue(raw) || 0;
+                  const rate = (tempPlanItem?.exchangeRate ?? p.exchangeRate) || 1;
+                  const newAmount = rate > 0 ? tl / rate : 0;
+                  setTempPlanItem((pp: any) => ({
+                    ...pp,
+                    totalTRY: tl,
+                    amount: newAmount
+                  }));
+                  setPlanAmountInput(formatNumberForDisplay(newAmount));
+                }} onBlur={e => {
+                  const tl = cleanInputValue(e.target.value) || 0;
+                  setPlanTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingPlan(idx, p);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetPlanState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={() => saveExistingPlan(idx, p)}
-                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                          title="Kaydet"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
+                        <button onClick={() => saveExistingPlan(idx, p)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button
-                          onClick={resetPlanState}
-                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
-                          title="İptal"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
+                        <button onClick={resetPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ) : (
-                  <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
-                    setEditingPlanIndex(idx);
-                    setTempPlanItem({ ...p });
-                    setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
-                    setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
-                  }}>
+                  </tr> : <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+              setEditingPlanIndex(idx);
+              setTempPlanItem({
+                ...p
+              });
+              setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
+              setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
+            }}>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
                       {formatDateForDisplay(p.date)}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
-                      {p.collectionType === "banka"
-                        ? "Banka Havalesi"
-                        : p.collectionType === "pos"
-                          ? "Kredi Kartı / Pos"
-                          : p.collectionType === "cek"
-                            ? "Çek / Senet"
-                            : p.collectionType === "nakit"
-                              ? "Nakit"
-                              : "-"}
+                      {p.collectionType === "banka" ? "Banka Havalesi" : p.collectionType === "pos" ? "Kredi Kartı / Pos" : p.collectionType === "cek" ? "Çek / Senet" : p.collectionType === "nakit" ? "Nakit" : "-"}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white max-w-xs truncate" title={p.description}>
                       {p.description}
@@ -1112,58 +856,26 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
                       <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={() => {
-                            setEditingPlanIndex(idx);
-                            setTempPlanItem({ ...p });
-                            setPlanAmountInput(
-                              formatNumberForDisplay(p.amount || 0),
-                            );
-                            setPlanTotalTRYInput(
-                              formatNumberForDisplay(p.totalTRY || 0),
-                            );
-                          }}
-                          className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
-                          title="Düzenle"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
+                        <button onClick={() => {
+                    setEditingPlanIndex(idx);
+                    setTempPlanItem({
+                      ...p
+                    });
+                    setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
+                    setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
+                  }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30" title="Düzenle">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => deletePlan(idx, p)}
-                          className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                          title="Sil"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
+                        <button onClick={() => deletePlan(idx, p)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ),
-              )}
+                  </tr>)}
             </tbody>
           </table>
         </div>
@@ -1175,24 +887,21 @@ export default function TahsilatTab(props: TahsilatTabProps) {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             Tahsilatlar
           </h3>
-          <button
-            onClick={() => {
-              const item = {
-                date: "",
-                collectionType: "",
-                description: "",
-                amount: 0,
-                currency: "TRY",
-                exchangeRate: 1,
-                totalTRY: 0,
-              };
-              setTempCollectionItem(item);
-              setEditingCollectionIndex(collections.length);
-              setCollectionAmountInput("");
-              setCollectionTotalTRYInput("");
-            }}
-            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-          >
+          <button onClick={() => {
+          const item = {
+            date: "",
+            collectionType: "",
+            description: "",
+            amount: 0,
+            currency: "TRY",
+            exchangeRate: 1,
+            totalTRY: 0
+          };
+          setTempCollectionItem(item);
+          setEditingCollectionIndex(collections.length);
+          setCollectionAmountInput("");
+          setCollectionTotalTRYInput("");
+        }} className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
             Yeni Tahsilat
           </button>
         </div>
@@ -1223,44 +932,34 @@ export default function TahsilatTab(props: TahsilatTabProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {editingCollectionIndex !== null &&
-                editingCollectionIndex === collections.length && (
-                  <tr>
+              {editingCollectionIndex !== null && editingCollectionIndex === collections.length && <tr>
                     <td className="px-2 py-2">
-                      <input
-                        type="date" value={tempCollectionItem?.date || ""} onChange={(e) => setTempCollectionItem((p: any) => ({ ...p, date: e.target.value }))} 
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="date" value={tempCollectionItem?.date || ""} onChange={e => setTempCollectionItem((p: any) => ({
+                  ...p,
+                  date: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={tempCollectionItem?.collectionType || ""}
-                        onChange={(e) =>
-                          setTempCollectionItem((p: any) => ({
-                            ...p,
-                            collectionType: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={tempCollectionItem?.collectionType || ""} onChange={e => setTempCollectionItem((p: any) => ({
+                  ...p,
+                  collectionType: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">Seçin</option>
                         <option value="banka">Banka Havalesi</option>
                         <option value="pos">Kredi Kartı / Pos</option>
@@ -1269,98 +968,67 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={tempCollectionItem?.description || ""}
-                        onChange={(e) =>
-                          setTempCollectionItem((p: any) => ({
-                            ...p,
-                            description: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                        placeholder="Açıklama"
-                      />
+                      <input type="text" value={tempCollectionItem?.description || ""} onChange={e => setTempCollectionItem((p: any) => ({
+                  ...p,
+                  description: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={collectionAmountInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setCollectionAmountInput(raw);
-                          const amount = cleanInputValue(raw) || 0;
-                          const rate = tempCollectionItem?.exchangeRate || 1;
-                          const cur = tempCollectionItem?.currency || "TRY";
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempCollectionItem((p: any) => ({
-                            ...p,
-                            amount,
-                            totalTRY: tl,
-                          }));
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onBlur={(e) => {
-                          const amount = cleanInputValue(e.target.value) || 0;
-                          setCollectionAmountInput(
-                            formatNumberForDisplay(amount),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={collectionAmountInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setCollectionAmountInput(raw);
+                  const amount = cleanInputValue(raw) || 0;
+                  const rate = tempCollectionItem?.exchangeRate || 1;
+                  const cur = tempCollectionItem?.currency || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempCollectionItem((p: any) => ({
+                    ...p,
+                    amount,
+                    totalTRY: tl
+                  }));
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onBlur={e => {
+                  const amount = cleanInputValue(e.target.value) || 0;
+                  setCollectionAmountInput(formatNumberForDisplay(amount));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={tempCollectionItem?.currency || "TRY"}
-                        onChange={(e) => {
-                          const cur = e.target.value;
-                          const amount = tempCollectionItem?.amount || 0;
-                          const rate = tempCollectionItem?.exchangeRate || 1;
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempCollectionItem((p: any) => ({
-                            ...p,
-                            currency: cur,
-                            totalTRY: tl,
-                          }));
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={tempCollectionItem?.currency || "TRY"} onChange={e => {
+                  const cur = e.target.value;
+                  const amount = tempCollectionItem?.amount || 0;
+                  const rate = tempCollectionItem?.exchangeRate || 1;
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempCollectionItem((p: any) => ({
+                    ...p,
+                    currency: cur,
+                    totalTRY: tl
+                  }));
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -1368,169 +1036,103 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="number"
-                        step="0.0001"
-                        value={tempCollectionItem?.exchangeRate || ""}
-                        onChange={(e) => {
-                          const r = parseFloat(e.target.value) || 0;
-                          const amount = tempCollectionItem?.amount || 0;
-                          const cur = tempCollectionItem?.currency || "TRY";
-                          const tl = cur === "TRY" ? amount : amount * r;
-                          setTempCollectionItem((p: any) => ({
-                            ...p,
-                            exchangeRate: r,
-                            totalTRY: tl,
-                          }));
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="1.00"
-                      />
+                      <input type="number" step="0.0001" value={tempCollectionItem?.exchangeRate || ""} onChange={e => {
+                  const r = parseFloat(e.target.value) || 0;
+                  const amount = tempCollectionItem?.amount || 0;
+                  const cur = tempCollectionItem?.currency || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * r;
+                  setTempCollectionItem((p: any) => ({
+                    ...p,
+                    exchangeRate: r,
+                    totalTRY: tl
+                  }));
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={collectionTotalTRYInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setCollectionTotalTRYInput(raw);
-                          const tl = cleanInputValue(raw) || 0;
-                          const rate = tempCollectionItem?.exchangeRate || 1;
-                          const newAmount = rate > 0 ? tl / rate : 0;
-                          setTempCollectionItem((p: any) => ({
-                            ...p,
-                            totalTRY: tl,
-                            amount: newAmount,
-                          }));
-                          setCollectionAmountInput(
-                            formatNumberForDisplay(newAmount),
-                          );
-                        }}
-                        onBlur={(e) => {
-                          const tl = cleanInputValue(e.target.value) || 0;
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveNewCollection();
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={collectionTotalTRYInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setCollectionTotalTRYInput(raw);
+                  const tl = cleanInputValue(raw) || 0;
+                  const rate = tempCollectionItem?.exchangeRate || 1;
+                  const newAmount = rate > 0 ? tl / rate : 0;
+                  setTempCollectionItem((p: any) => ({
+                    ...p,
+                    totalTRY: tl,
+                    amount: newAmount
+                  }));
+                  setCollectionAmountInput(formatNumberForDisplay(newAmount));
+                }} onBlur={e => {
+                  const tl = cleanInputValue(e.target.value) || 0;
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveNewCollection();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={saveNewCollection}
-                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                          title="Kaydet"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
+                        <button onClick={saveNewCollection} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button
-                          onClick={resetCollectionState}
-                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
-                          title="İptal"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
+                        <button onClick={resetCollectionState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr>
-                )}
-              {getFilteredAndSortedActuals().map((c, idx) =>
-                editingCollectionIndex === idx ? (
-                  <tr key={c.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
-                    setEditingCollectionIndex(idx);
-                    setTempCollectionItem({ ...c });
-                    setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
-                    setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
-                  }}>
+                  </tr>}
+              {getFilteredAndSortedActuals().map((c, idx) => editingCollectionIndex === idx ? <tr key={c.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+              setEditingCollectionIndex(idx);
+              setTempCollectionItem({
+                ...c
+              });
+              setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
+              setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
+            }}>
                     <td className="px-2 py-2">
-                      <input
-                        type="date" value={tempCollectionItem?.date ?? c.date} onChange={(e) => setTempCollectionItem((cc: any) => ({ ...cc, date: e.target.value }))} 
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="date" value={tempCollectionItem?.date ?? c.date} onChange={e => setTempCollectionItem((cc: any) => ({
+                  ...cc,
+                  date: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={
-                          (tempCollectionItem?.collectionType ??
-                            c.collectionType) ||
-                          ""
-                        }
-                        onChange={(e) =>
-                          setTempCollectionItem((cc: any) => ({
-                            ...cc,
-                            collectionType: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={(tempCollectionItem?.collectionType ?? c.collectionType) || ""} onChange={e => setTempCollectionItem((cc: any) => ({
+                  ...cc,
+                  collectionType: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">Seçin</option>
                         <option value="banka">Banka Havalesi</option>
                         <option value="pos">Kredi Kartı / Pos</option>
@@ -1539,107 +1141,67 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={tempCollectionItem?.description ?? c.description}
-                        onChange={(e) =>
-                          setTempCollectionItem((cc: any) => ({
-                            ...cc,
-                            description: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
-                        placeholder="Açıklama"
-                      />
+                      <input type="text" value={tempCollectionItem?.description ?? c.description} onChange={e => setTempCollectionItem((cc: any) => ({
+                  ...cc,
+                  description: e.target.value
+                }))} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={collectionAmountInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setCollectionAmountInput(raw);
-                          const amount = cleanInputValue(raw) || 0;
-                          const rate =
-                            (tempCollectionItem?.exchangeRate ??
-                              c.exchangeRate) ||
-                            1;
-                          const cur =
-                            (tempCollectionItem?.currency ?? c.currency) ||
-                            "TRY";
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempCollectionItem((cc: any) => ({
-                            ...cc,
-                            amount,
-                            totalTRY: tl,
-                          }));
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onBlur={(e) => {
-                          const amount = cleanInputValue(e.target.value) || 0;
-                          setCollectionAmountInput(
-                            formatNumberForDisplay(amount),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={collectionAmountInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setCollectionAmountInput(raw);
+                  const amount = cleanInputValue(raw) || 0;
+                  const rate = (tempCollectionItem?.exchangeRate ?? c.exchangeRate) || 1;
+                  const cur = (tempCollectionItem?.currency ?? c.currency) || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempCollectionItem((cc: any) => ({
+                    ...cc,
+                    amount,
+                    totalTRY: tl
+                  }));
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onBlur={e => {
+                  const amount = cleanInputValue(e.target.value) || 0;
+                  setCollectionAmountInput(formatNumberForDisplay(amount));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <select
-                        value={tempCollectionItem?.currency ?? c.currency}
-                        onChange={(e) => {
-                          const cur = e.target.value;
-                          const amount =
-                            (tempCollectionItem?.amount ?? c.amount) || 0;
-                          const rate =
-                            (tempCollectionItem?.exchangeRate ??
-                              c.exchangeRate) ||
-                            1;
-                          const tl = cur === "TRY" ? amount : amount * rate;
-                          setTempCollectionItem((cc: any) => ({
-                            ...cc,
-                            currency: cur,
-                            totalTRY: tl,
-                          }));
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
-                      >
+                      <select value={tempCollectionItem?.currency ?? c.currency} onChange={e => {
+                  const cur = e.target.value;
+                  const amount = (tempCollectionItem?.amount ?? c.amount) || 0;
+                  const rate = (tempCollectionItem?.exchangeRate ?? c.exchangeRate) || 1;
+                  const tl = cur === "TRY" ? amount : amount * rate;
+                  setTempCollectionItem((cc: any) => ({
+                    ...cc,
+                    currency: cur,
+                    totalTRY: tl
+                  }));
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -1647,149 +1209,80 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="number"
-                        step="0.0001"
-                        value={
-                          tempCollectionItem?.exchangeRate ?? c.exchangeRate
-                        }
-                        onChange={(e) => {
-                          const r = parseFloat(e.target.value) || 0;
-                          const amount =
-                            (tempCollectionItem?.amount ?? c.amount) || 0;
-                          const cur =
-                            (tempCollectionItem?.currency ?? c.currency) ||
-                            "TRY";
-                          const tl = cur === "TRY" ? amount : amount * r;
-                          setTempCollectionItem((cc: any) => ({
-                            ...cc,
-                            exchangeRate: r,
-                            totalTRY: tl,
-                          }));
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="1.00"
-                      />
+                      <input type="number" step="0.0001" value={tempCollectionItem?.exchangeRate ?? c.exchangeRate} onChange={e => {
+                  const r = parseFloat(e.target.value) || 0;
+                  const amount = (tempCollectionItem?.amount ?? c.amount) || 0;
+                  const cur = (tempCollectionItem?.currency ?? c.currency) || "TRY";
+                  const tl = cur === "TRY" ? amount : amount * r;
+                  setTempCollectionItem((cc: any) => ({
+                    ...cc,
+                    exchangeRate: r,
+                    totalTRY: tl
+                  }));
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
-                      <input
-                        type="text"
-                        value={collectionTotalTRYInput}
-                        onChange={(e) => {
-                          const raw = e.target.value
-                            .replace(/[^0-9.,]/g, "")
-                            .replace(/\./g, ",");
-                          setCollectionTotalTRYInput(raw);
-                          const tl = cleanInputValue(raw) || 0;
-                          const rate =
-                            (tempCollectionItem?.exchangeRate ??
-                              c.exchangeRate) ||
-                            1;
-                          const newAmount = rate > 0 ? tl / rate : 0;
-                          setTempCollectionItem((cc: any) => ({
-                            ...cc,
-                            totalTRY: tl,
-                            amount: newAmount,
-                          }));
-                          setCollectionAmountInput(
-                            formatNumberForDisplay(newAmount),
-                          );
-                        }}
-                        onBlur={(e) => {
-                          const tl = cleanInputValue(e.target.value) || 0;
-                          setCollectionTotalTRYInput(
-                            formatNumberForDisplay(tl),
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            saveExistingCollection(idx, c);
-                          } else if (e.key === "Escape") {
-                            e.preventDefault();
-                            resetCollectionState();
-                          }
-                        }}
-                        className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                      />
+                      <input type="text" value={collectionTotalTRYInput} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(/\./g, ",");
+                  setCollectionTotalTRYInput(raw);
+                  const tl = cleanInputValue(raw) || 0;
+                  const rate = (tempCollectionItem?.exchangeRate ?? c.exchangeRate) || 1;
+                  const newAmount = rate > 0 ? tl / rate : 0;
+                  setTempCollectionItem((cc: any) => ({
+                    ...cc,
+                    totalTRY: tl,
+                    amount: newAmount
+                  }));
+                  setCollectionAmountInput(formatNumberForDisplay(newAmount));
+                }} onBlur={e => {
+                  const tl = cleanInputValue(e.target.value) || 0;
+                  setCollectionTotalTRYInput(formatNumberForDisplay(tl));
+                }} onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveExistingCollection(idx, c);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    resetCollectionState();
+                  }
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={() => saveExistingCollection(idx, c)}
-                          className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                          title="Kaydet"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
+                        <button onClick={() => saveExistingCollection(idx, c)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button
-                          onClick={resetCollectionState}
-                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
-                          title="İptal"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
+                        <button onClick={resetCollectionState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ) : (
-                  <tr key={c.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
-                    setEditingCollectionIndex(idx);
-                    setTempCollectionItem({ ...c });
-                    setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
-                    setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
-                  }}>
+                  </tr> : <tr key={c.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+              setEditingCollectionIndex(idx);
+              setTempCollectionItem({
+                ...c
+              });
+              setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
+              setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
+            }}>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
                       {formatDateForDisplay(c.date)}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
-                      {c.collectionType === "banka"
-                        ? "Banka Havalesi"
-                        : c.collectionType === "pos"
-                          ? "Kredi Kartı / Pos"
-                          : c.collectionType === "cek"
-                            ? "Çek / Senet"
-                            : c.collectionType === "nakit"
-                              ? "Nakit"
-                              : "-"}
+                      {c.collectionType === "banka" ? "Banka Havalesi" : c.collectionType === "pos" ? "Kredi Kartı / Pos" : c.collectionType === "cek" ? "Çek / Senet" : c.collectionType === "nakit" ? "Nakit" : "-"}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white max-w-xs truncate" title={c.description}>
                       {c.description}
@@ -1808,58 +1301,26 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={() => {
-                            setEditingCollectionIndex(idx);
-                            setTempCollectionItem({ ...c });
-                            setCollectionAmountInput(
-                              formatNumberForDisplay(c.amount || 0),
-                            );
-                            setCollectionTotalTRYInput(
-                              formatNumberForDisplay(c.totalTRY || 0),
-                            );
-                          }}
-                          className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
-                          title="Düzenle"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
+                        <button onClick={() => {
+                    setEditingCollectionIndex(idx);
+                    setTempCollectionItem({
+                      ...c
+                    });
+                    setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
+                    setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
+                  }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30" title="Düzenle">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => deleteCollection(idx, c)}
-                          className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                          title="Sil"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
+                        <button onClick={() => deleteCollection(idx, c)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ),
-              )}
+                  </tr>)}
             </tbody>
           </table>
         </div>
@@ -1868,18 +1329,8 @@ export default function TahsilatTab(props: TahsilatTabProps) {
             {/* Bakiye Özeti (Döviz Bazında) */}
       <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-4 mt-6 border border-emerald-100 dark:border-emerald-800/50">
         <h3 className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-3 flex items-center gap-2">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2"
-            />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
           </svg>
           Bakiye Özeti (Döviz Bazında)
         </h3>
@@ -1903,21 +1354,11 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-50 dark:divide-emerald-800/30">
-                {Array.from(
-                  new Set([
-                    ...Object.keys(planByCurrency || {}),
-                    ...Object.keys(collectedByCurrency || {}),
-                  ]),
-                ).map((cur) => {
-                  const plan = planByCurrency?.[cur] || 0;
-                  const collected = collectedByCurrency?.[cur] || 0;
-                  const balance = balanceByCurrency?.[cur] || 0;
-
-                  return (
-                    <tr
-                      key={cur}
-                      className="hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors"
-                    >
+                {Array.from(new Set([...Object.keys(planByCurrency || {}), ...Object.keys(collectedByCurrency || {})])).map(cur => {
+                const plan = planByCurrency?.[cur] || 0;
+                const collected = collectedByCurrency?.[cur] || 0;
+                const balance = balanceByCurrency?.[cur] || 0;
+                return <tr key={cur} className="hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors">
                       <td className="px-3 py-2 font-medium text-gray-900 dark:text-white uppercase">
                         {cur}
                       </td>
@@ -1927,14 +1368,11 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                       <td className="px-3 py-2 text-right text-emerald-600 dark:text-emerald-400 font-medium">
                         {formatNumberForDisplay(collected)}
                       </td>
-                      <td
-                        className={`px-3 py-2 text-right font-bold ${balance > 0 ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}
-                      >
+                      <td className={`px-3 py-2 text-right font-bold ${balance > 0 ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
                         {formatNumberForDisplay(balance)}
                       </td>
-                    </tr>
-                  );
-                })}
+                    </tr>;
+              })}
               </tbody>
               <tfoot className="bg-emerald-50/30 dark:bg-emerald-900/30 border-t-2 border-emerald-100 dark:border-emerald-800/50">
                 <tr className="font-bold">
@@ -1945,23 +1383,10 @@ export default function TahsilatTab(props: TahsilatTabProps) {
                     {formatTRY(salesTotals.totalTRY)}
                   </td>
                   <td className="px-3 py-2 text-right text-emerald-600 dark:text-emerald-400">
-                    {formatTRY(
-                      Object.values(collections).reduce(
-                        (sum, c) => sum + (c.totalTRY || 0),
-                        0,
-                      ),
-                    )}
+                    {formatTRY(Object.values(collections).reduce((sum, c) => sum + (c.totalTRY || 0), 0))}
                   </td>
-                  <td
-                    className={`px-3 py-2 text-right ${salesTotals.totalTRY - Object.values(collections).reduce((sum, c) => sum + (c.totalTRY || 0), 0) > 0 ? "text-red-600 dark:text-red-400" : "text-emerald-900 dark:text-emerald-100"}`}
-                  >
-                    {formatTRY(
-                      salesTotals.totalTRY -
-                        Object.values(collections).reduce(
-                          (sum, c) => sum + (c.totalTRY || 0),
-                          0,
-                        ),
-                    )}
+                  <td className={`px-3 py-2 text-right ${salesTotals.totalTRY - Object.values(collections).reduce((sum, c) => sum + (c.totalTRY || 0), 0) > 0 ? "text-red-600 dark:text-red-400" : "text-emerald-900 dark:text-emerald-100"}`}>
+                    {formatTRY(salesTotals.totalTRY - Object.values(collections).reduce((sum, c) => sum + (c.totalTRY || 0), 0))}
                   </td>
                 </tr>
               </tfoot>
@@ -1969,6 +1394,5 @@ export default function TahsilatTab(props: TahsilatTabProps) {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }

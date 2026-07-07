@@ -7,6 +7,7 @@ import { RefreshCw, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
+import { usePermissions, Module } from "@/lib/permissions";
 
 type PeriodFilter = "today" | "week" | "month" | "year" | "custom";
 
@@ -55,6 +56,8 @@ const getPeriodRange = (
 };
 
 export default function ExchangeRatesPage() {
+  const { canEdit, loading: permsLoading } = usePermissions();
+  const permEdit = canEdit(Module.EXCHANGE_RATES);
   const [period, setPeriod] = useState<PeriodFilter>("today");
 
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
@@ -198,7 +201,7 @@ export default function ExchangeRatesPage() {
           {/* Fetch Button */}
           <button
             onClick={handleFetchRates}
-            disabled={fetching}
+            disabled={fetching || (!permEdit && !permsLoading)}
             className="flex items-center gap-2 px-4 h-10 bg-[#0f172a]/60 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
           >
             <RefreshCw

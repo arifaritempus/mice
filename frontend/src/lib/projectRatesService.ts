@@ -122,8 +122,8 @@ export async function updateProjectRates(projectId: string, strategy: string) {
       try { await applyToTable(table, r, tt, t, c); } catch (e) { console.error(`Error updating ${table}:`, e); }
     };
 
-    await safeApply('project_events_activities', 'fx', 'total_try', 'total_price', 'currency');
-    await safeApply('project_human_resources', 'fx', 'total_try', 'total_price', 'currency');
+    // project_events_activities removed as it does not exist
+    // project_human_resources removed as it does not exist
     await safeApply('project_other_services', 'fx', 'total_try', 'total_price', 'currency');
     await safeApply('project_financial_services', 'fx', 'total_try', 'total_price', 'currency');
     // Eğer transfer tablosu 'project_transfer_tour' ise:

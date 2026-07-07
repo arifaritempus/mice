@@ -451,10 +451,10 @@ export default function UltimateDashboard() {
         usersService.getAll().catch(() => []),
         supabase.from("project_transfer_tour").select("*"),
         supabase.from("project_flight_tickets").select("*"),
-        supabase.from("project_human_resources").select("*"),
+        Promise.resolve({ data: [] }),
         hotelsService.getAll(),
         suppliersService.getAll(),
-        supabase.from("project_events_activities").select("*"),
+        Promise.resolve({ data: [] }),
         supabase.from("project_accommodation_items").select("*"),
         projectUsersService.getAll().catch(() => []),
       ]);
@@ -949,14 +949,23 @@ export default function UltimateDashboard() {
       const end = parseDateSafe(endDate) || current;
       if (!current) return;
       
+      const startMs = new Date(current).setHours(0,0,0,0);
+      const endMs = new Date(end).setHours(0,0,0,0);
+      const opId = category + '-' + title + '-' + startMs;
+      
       // Prevent infinite loops if dates are somehow invalid but parsed
       let safetyCount = 0;
       while (current <= end && safetyCount < 365) {
+        const currMs = new Date(current).setHours(0,0,0,0);
         allOps.push({
+          id: opId,
           date: new Date(current),
           category,
           title,
-          color
+          color,
+          isStart: currMs === startMs,
+          isEnd: currMs === endMs,
+          endDate: new Date(endMs)
         });
         current.setDate(current.getDate() + 1);
         safetyCount++;
@@ -1042,6 +1051,54 @@ export default function UltimateDashboard() {
     });
     */
 
+    const opDurations: Record<string, {start: Date, end: Date}> = {};
+    allOps.forEach(op => {
+      if (!opDurations[op.id]) opDurations[op.id] = {start: op.date, end: op.date};
+      if (op.date < opDurations[op.id].start) opDurations[op.id].start = op.date;
+      if (op.date > opDurations[op.id].end) opDurations[op.id].end = op.date;
+    });
+
+    const assignedRows: Record<string, number> = {};
+    const getOccupiedRows = (date: Date) => {
+      const activeOps = Object.keys(opDurations).filter(id => {
+        return date.getTime() >= opDurations[id].start.getTime() && 
+               date.getTime() <= opDurations[id].end.getTime() && 
+               assignedRows[id] !== undefined;
+      });
+      return activeOps.map(id => assignedRows[id]);
+    };
+
+    const uniqueOpIds = Object.keys(opDurations).sort((a, b) => {
+      const startDiff = opDurations[a].start.getTime() - opDurations[b].start.getTime();
+      if (startDiff !== 0) return startDiff;
+      const durA = opDurations[a].end.getTime() - opDurations[a].start.getTime();
+      const durB = opDurations[b].end.getTime() - opDurations[b].start.getTime();
+      return durB - durA;
+    });
+
+    uniqueOpIds.forEach(id => {
+      const { start, end } = opDurations[id];
+      let row = 0;
+      let conflict = true;
+      while (conflict && row < 20) {
+        conflict = false;
+        let curr = new Date(start);
+        while (curr.getTime() <= end.getTime()) {
+          if (getOccupiedRows(curr).includes(row)) {
+            conflict = true;
+            break;
+          }
+          curr.setDate(curr.getDate() + 1);
+        }
+        if (conflict) row++;
+      }
+      assignedRows[id] = row;
+    });
+
+    allOps.forEach(op => {
+      op.rowIndex = assignedRows[op.id] || 0;
+    });
+
     return {
       totalRev,
       miceRev,
@@ -1066,6 +1123,9 @@ export default function UltimateDashboard() {
       conversionChartData,
       supplierCostData,
       monthlyFinancialData,
+
+
+
       allOps,
     };
   }, [
@@ -1787,6 +1847,13 @@ export default function UltimateDashboard() {
                     justify-content: flex-start;
                     align-items: flex-start;
                     padding: 4px;
+                    overflow: visible !important;
+                  }
+                  .dashboard-calendar .react-calendar__month-view__days {
+                    overflow: visible !important;
+                  }
+                  .dashboard-calendar .react-calendar__tile {
+                    overflow: visible !important;
                   }
                   .dashboard-calendar .react-calendar__month-view__days__day--neighboringMonth {
                     color: rgba(255, 255, 255, 0.2);
@@ -1851,23 +1918,64 @@ export default function UltimateDashboard() {
                       );
                       
                       if (dayOps.length > 0) {
-                        const visibleOps = dayOps.slice(0, 3);
-                        const hiddenCount = dayOps.length - 3;
+                        const maxDisplayRows = 3;
+                        const visibleOps = dayOps.filter((op: any) => op.rowIndex < maxDisplayRows);
+                        const hiddenCount = dayOps.length - visibleOps.length;
                         
                         return (
-                          <div className="flex flex-col gap-1 w-full max-h-[70px] overflow-hidden mt-1">
-                            {visibleOps.map((op: any, i: number) => (
-                              <div 
-                                key={i} 
-                                className={`text-[9px] leading-tight px-1.5 py-0.5 rounded-sm truncate text-white ${op.color} shadow-sm`}
-                                title={op.title}
-                              >
-                                {op.title}
-                              </div>
-                            ))}
+                          <div className="relative w-full h-[65px] mt-1 overflow-visible">
+                            {visibleOps.map((op: any) => {
+                              const currentDate = new Date(op.date);
+                              const currentDayOfWeek = currentDate.getDay(); // 0 is Sunday, 1 is Monday ...
+                              const isSegmentStart = op.isStart || currentDayOfWeek === 1;
+                              
+                              // ONLY render the div on the start of a segment (actual start or Monday)
+                              if (!isSegmentStart) {
+                                return null;
+                              }
+                              
+                              // Calculate how many days this segment spans
+                              let span = 1;
+                              const endDate = op.endDate ? new Date(op.endDate) : currentDate;
+                              let tempDate = new Date(currentDate);
+                              
+                              // Stop spanning if we hit the end date OR if we hit Sunday (0)
+                              while (tempDate.getTime() < endDate.getTime() && tempDate.getDay() !== 0) {
+                                span++;
+                                tempDate.setDate(tempDate.getDate() + 1);
+                              }
+                              
+                              let extraClasses = "rounded-sm z-20";
+                              if (!op.isStart && !op.isEnd) {
+                                extraClasses = "rounded-none z-20";
+                              } else if (!op.isStart && op.isEnd) {
+                                extraClasses = "rounded-l-none rounded-r-sm z-20";
+                              } else if (op.isStart && !op.isEnd) {
+                                extraClasses = "rounded-l-sm rounded-r-none z-20";
+                              }
+
+                              return (
+                                <div 
+                                  key={op.id} 
+                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-white ${op.color} shadow-sm ${extraClasses}`}
+                                  style={{ 
+                                    top: `${op.rowIndex * 19}px`,
+                                    width: `calc(${span * 100}% + ${(span - 1) * 8}px + ${(span - 1) * 2}px)`,
+                                    marginLeft: !op.isStart ? "-5px" : "0px",
+                                    paddingLeft: !op.isStart ? "5px" : "6px",
+                                  }}
+                                  title={op.title}
+                                >
+                                  {op.title}
+                                </div>
+                              );
+                            })}
                             {hiddenCount > 0 && (
-                              <div className="text-[9px] font-bold text-center text-slate-400 bg-slate-800/50 rounded-sm py-0.5 shadow-sm">
-                                +{hiddenCount} Operasyon
+                              <div 
+                                className="absolute left-0 right-0 h-[16px] text-[9px] leading-[16px] font-bold text-center text-slate-400 bg-slate-800/50 rounded-sm shadow-sm"
+                                style={{ top: `${maxDisplayRows * 19}px` }}
+                              >
+                                +{hiddenCount} DİĞER
                               </div>
                             )}
                           </div>

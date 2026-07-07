@@ -23,6 +23,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import Link from "next/link";
+import { usePermissions, Module, getModuleFromHref } from "@/lib/permissions";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -61,6 +62,14 @@ import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 type PeriodFilter = "today" | "week" | "month" | "year" | "custom";
 
 export default function HomePage() {
+  const { canView } = usePermissions();
+  const isHrefVisible = (href: string | undefined) => {
+    if (!href) return true;
+    const mod = getModuleFromHref(href);
+    if (!mod) return true;
+    return canView(mod);
+  };
+
   const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -114,7 +123,7 @@ export default function HomePage() {
         SejourService.getSejours(),
         supabase.from("quotes").select("*, agencies(name)"),
         supabase.from("project_transfer_tour").select("*"),
-        supabase.from("project_human_resources").select("*"),
+        Promise.resolve({ data: [] }),
         ticketPaymentPlansService.getAll(),
         projectCollectionPlansService.getAll(),
         projectPaymentPlansService.getAll(),
@@ -480,7 +489,7 @@ export default function HomePage() {
           daysLeft,
           icon: ShieldAlert,
           color: isUrgent ? "rose" : "orange",
-          link: "/operations/tickets",
+          link: "/tickets/options",
         });
       }
     });
@@ -741,7 +750,7 @@ export default function HomePage() {
                   </p>
                 </div>
               ) : (
-                timelineItems.map((item, idx) => (
+                timelineItems.filter(item => isHrefVisible(item.link)).map((item, idx) => (
                   <div
                     key={item.id}
                     className="relative flex items-start gap-4 group"
@@ -826,7 +835,7 @@ export default function HomePage() {
                 </p>
               </div>
             ) : (
-              warnings.map((warn) => (
+              warnings.filter(warn => isHrefVisible(warn.link)).map((warn) => (
                 <Link
                   key={warn.id}
                   href={warn.link}
@@ -917,7 +926,7 @@ export default function HomePage() {
                 </p>
               </div>
             ) : (
-              marketingAppts.map((appt) => (
+              marketingAppts.filter(appt => isHrefVisible(appt.link)).map((appt) => (
                 <Link
                   key={appt.id}
                   href={appt.link}

@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useRef } from "react";
+import { usePermissions, Module, Permission } from "@/lib/permissions";
+import FieldsetGuard from "@/components/permissions/FieldsetGuard";
+import PermissionBoundary from "@/components/permissions/PermissionBoundary";
 
 interface SalesTabProps {
   itemsSales: any[];
@@ -110,6 +113,7 @@ export default function SalesTab({
   hotelsData = [],
   hotels = [],
 }: SalesTabProps) {
+  const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
   const categoryModalRefSales = useRef<HTMLDivElement>(null);
 
   const getHotelNameFromData = (hotelId: string) => {
@@ -231,6 +235,7 @@ export default function SalesTab({
             <div className="w-36">OTEL</div>
             <div className="w-24 flex items-center justify-between">
               <span>İŞLEMLER</span>
+              {permCreate(Module.PROJECTS) && !isLocked && (
               <button
                 onClick={() => {
                   console.log(
@@ -255,6 +260,7 @@ export default function SalesTab({
                   />
                 </svg>
               </button>
+              )}
             </div>
           </div>
 
@@ -998,7 +1004,8 @@ export default function SalesTab({
                             />
                           </svg>
                         </button>
-                        <button
+                        <>{ permDelete(Module.PROJECTS) && (
+<button
                           onClick={() => removeItem("sales", it.id)}
                           className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                           title="Sil"
@@ -1017,6 +1024,7 @@ export default function SalesTab({
                             />
                           </svg>
                         </button>
+) }</>
                       </div>
                     </>
                   ) : (
@@ -1056,7 +1064,7 @@ export default function SalesTab({
                         {getHotelNameFromData(it.hotel_id)}
                       </div>
                       <div className="w-24 flex items-center gap-1 justify-end pr-1 group-hover:opacity-100 transition-opacity">
-                        {canCreate && !isLocked && (
+                        {permCreate(Module.PROJECTS) && !isLocked && (
                           <button
                             onClick={() => addBelow("sales", it.id)}
                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
@@ -1077,8 +1085,9 @@ export default function SalesTab({
                             </svg>
                           </button>
                         )}
-                        {canEdit && !isLocked && (
-                          <button
+                        {permEdit(Module.PROJECTS) && !isLocked && (
+                          <>{ permEdit(Module.PROJECTS) && (
+<button
                             onClick={() => editRow("sales", it.id)}
                             className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
                             title="Düzenle"
@@ -1097,9 +1106,11 @@ export default function SalesTab({
                               />
                             </svg>
                           </button>
+) }</>
                         )}
-                        {canDelete && !isLocked && (
-                          <button
+                        {permDelete(Module.PROJECTS) && !isLocked && (
+                          <>{ permDelete(Module.PROJECTS) && (
+<button
                             onClick={() => removeItem("sales", it.id)}
                             className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                             title="Sil"
@@ -1118,6 +1129,7 @@ export default function SalesTab({
                               />
                             </svg>
                           </button>
+) }</>
                         )}
                       </div>
                     </>

@@ -1,17 +1,30 @@
 const { createClient } = require('@supabase/supabase-js');
-const supabaseUrl = 'https://gzdfdnfkyedwnameflso.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6ZGZkbmZreWVkd25hbWVmbHNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDg5MjkxMiwiZXhwIjoyMDc2NDY4OTEyfQ.QIV75ynKo_W0n7N80udD5o5t8ecL6_CwXL4XSlZkSYA';
-const supabase = createClient(supabaseUrl, supabaseKey);
+require('dotenv').config({ path: '.env.local' });
 
-async function test() {
-  const { data: quotes } = await supabase.from('quotes').select('id, hotels_data').order('created_at', { ascending: false }).limit(2);
-  console.log("Quotes:", JSON.stringify(quotes, null, 2));
-  
-  if (quotes && quotes.length > 0) {
-    const quoteId = quotes[0].id;
-    console.log("Checking quote items for quote:", quoteId);
-    const { data: items } = await supabase.from('quote_items').select('id, hotel_id, main_category').eq('quote_id', quoteId);
-    console.log("Quote Items:", JSON.stringify(items, null, 2));
-  }
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
+
+const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false }
+});
+
+async function main() {
+    const { data: roles } = await adminClient.from('roles').select('*');
+    const { data: permissions } = await adminClient.from('permissions').select('*');
+    const { data: rolePermissions } = await adminClient.from('role_permissions').select('role_id, permission_id');
+
+    console.log("ROLES:", roles.map(r => r.name));
+
+    const userRole = roles.find(r => r.name.toLowerCase().includes('kullanıcı') || r.name.toLowerCase() === 'user');
+    if (!userRole) return console.log("User role not found!");
+
+    console.log("\nUser Role:", userRole.name, userRole.id);
+
+    const userPermIds = rolePermissions.filter(rp => rp.role_id === userRole.id).map(rp => rp.permission_id);
+    const userPerms = permissions.filter(p => userPermIds.includes(p.id));
+
+    console.log("\nUser Permissions (module -> action):");
+    userPerms.forEach(p => console.log(`${p.module} -> ${p.action}`));
 }
-test();
+
+main().catch(console.error);

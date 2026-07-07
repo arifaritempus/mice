@@ -27,8 +27,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import CommandCenter from "@/components/CommandCenter";
 import { supabase } from "@/lib/supabase";
+import { usePermissions, Module } from "@/lib/permissions";
 
 export default function TopNavigation() {
+  const { canCreate, canView } = usePermissions();
+
   const pathname = usePathname();
   const [unreadCount] = useState(3);
   const { t, language, setLanguage } = useLanguage();
@@ -93,20 +96,22 @@ export default function TopNavigation() {
   };
 
   const navItems = [
-    { id: "home", label: "Ana Sayfa", href: "/", icon: LayoutDashboard },
+    { id: "home", label: "Ana Sayfa", href: "/", icon: LayoutDashboard, module: Module.HOME },
     {
       id: "dashboard",
       label: t("nav.dashboard") || "Dashboard",
       href: "/dashboard",
       icon: BarChart3,
+      module: Module.DASHBOARD
     },
     {
       id: "reports",
       label: t("nav.reports") || "Raporlar",
       href: "/reports",
       icon: FileText,
+      module: Module.REPORTS
     },
-  ];
+  ].filter(item => !item.module || canView(item.module));
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -187,11 +192,13 @@ export default function TopNavigation() {
             })}
 
             {/* Yeni Oluştur Genişleyen Buton */}
+            {(canCreate(Module.QUOTES) || canCreate(Module.SEJOUR)) && (
             <div className="flex items-center gap-3 group ml-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full px-2 py-1.5 transition-all duration-300 cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500">
                 <Plus size={18} className="font-black" />
               </div>
               <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[220px] transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+                {canCreate(Module.QUOTES) && (
                 <Link
                   href="/quotes/create"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-emerald-300 hover:text-emerald-200 transition-colors"
@@ -199,6 +206,8 @@ export default function TopNavigation() {
                   <FilePlus size={14} />
                   <span className="text-xs font-bold">Yeni Teklif</span>
                 </Link>
+                )}
+                {canCreate(Module.SEJOUR) && (
                 <Link
                   href="/sejour/create"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-emerald-300 hover:text-emerald-200 transition-colors"
@@ -206,15 +215,19 @@ export default function TopNavigation() {
                   <Hotel size={14} />
                   <span className="text-xs font-bold">Yeni Sejour</span>
                 </Link>
+                )}
               </div>
             </div>
+            )}
 
             {/* Görüntüleme Genişleyen Buton */}
+            {(canView(Module.QUOTES) || canView(Module.PROJECTS) || canView(Module.SEJOUR)) && (
             <div className="flex items-center gap-3 group ml-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-full px-2 py-1.5 transition-all duration-300 cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500">
                 <Eye size={16} />
               </div>
               <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[280px] transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+                {canView(Module.QUOTES) && (
                 <Link
                   href="/quotes"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-blue-300 hover:text-blue-200 transition-colors"
@@ -222,6 +235,8 @@ export default function TopNavigation() {
                   <FileText size={14} />
                   <span className="text-xs font-bold">Teklif</span>
                 </Link>
+                )}
+                {canView(Module.PROJECTS) && (
                 <Link
                   href="/projects"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-blue-300 hover:text-blue-200 transition-colors"
@@ -229,6 +244,8 @@ export default function TopNavigation() {
                   <Briefcase size={14} />
                   <span className="text-xs font-bold">Proje</span>
                 </Link>
+                )}
+                {canView(Module.SEJOUR) && (
                 <Link
                   href="/sejour"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-blue-300 hover:text-blue-200 transition-colors"
@@ -236,8 +253,10 @@ export default function TopNavigation() {
                   <Hotel size={14} />
                   <span className="text-xs font-bold">Sejour</span>
                 </Link>
+                )}
               </div>
             </div>
+            )}
           </div>
 
           {/* Right: Actions */}
@@ -416,12 +435,14 @@ export default function TopNavigation() {
                   >
                     <User className="w-4 h-4" /> Profilim
                   </Link>
+                  {canView(Module.SETTINGS) && (
                   <Link
                     href="/settings"
                     className="flex items-center gap-2 px-3 py-2 text-sm text-white hover:text-white hover:bg-white/5 rounded-xl transition-colors"
                   >
                     <Settings className="w-4 h-4" /> Ayarlar
                   </Link>
+                  )}
                 </div>
                 <div className="p-2 border-t border-white/10">
                   <button

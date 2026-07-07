@@ -283,6 +283,7 @@ const getItemContext = (log: any, uuidMap: Record<string, string>) => {
 };
 
 export default function ProjectDetailPage() {
+  const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
   const {
     canView,
     canCreate,
@@ -15640,6 +15641,7 @@ export default function ProjectDetailPage() {
                   handleAccommodationCopy={handleAccommodationCopy}
                   formatDateAccommodation={formatDateAccommodation}
                   calculateDateColumns={calculateDateColumns}
+                  isLocked={project?.locked && !isSuperAdmin}
                 />
               )}
               {activeTab === "ucak-bileti" && (
@@ -15680,6 +15682,7 @@ export default function ProjectDetailPage() {
                   updateSupplierSearch={updateSupplierSearch}
                   selectFlightSupplier={selectFlightSupplier}
                   handleSupplierKeyDown={handleSupplierKeyDown}
+                  isLocked={project?.locked && !isSuperAdmin}
                 />
               )}
               {activeTab === "ucak-bileti_old" && (
@@ -16603,7 +16606,8 @@ export default function ProjectDetailPage() {
                                       </td>
                                       <td className="px-2 py-1">
                                         <div className="flex items-center gap-1">
-                                          <button
+                                          <>{ permEdit(Module.PROJECTS) && (
+<button
                                             onClick={() =>
                                               handleFlightEdit(index)
                                             }
@@ -16624,7 +16628,9 @@ export default function ProjectDetailPage() {
                                               />
                                             </svg>
                                           </button>
-                                          <button
+) }</>
+                                          <>{ permDelete(Module.PROJECTS) && (
+<button
                                             onClick={() =>
                                               handleFlightDelete(index)
                                             }
@@ -16645,6 +16651,7 @@ export default function ProjectDetailPage() {
                                               />
                                             </svg>
                                           </button>
+) }</>
                                         </div>
                                       </td>
                                     </>
@@ -18333,7 +18340,8 @@ export default function ProjectDetailPage() {
                                     </td>
                                     <td className="px-2 py-2">
                                       <div className="flex gap-1">
-                                        <button
+                                        <>{ permEdit(Module.PROJECTS) && (
+<button
                                           onClick={() =>
                                             handleHotelExtraEdit(extra.id)
                                           }
@@ -18354,7 +18362,9 @@ export default function ProjectDetailPage() {
                                             />
                                           </svg>
                                         </button>
-                                        <button
+) }</>
+                                        <>{ permCreate(Module.PROJECTS) && (
+<button
                                           onClick={() =>
                                             handleHotelExtraCopy(extra.id)
                                           }
@@ -18375,7 +18385,9 @@ export default function ProjectDetailPage() {
                                             />
                                           </svg>
                                         </button>
-                                        <button
+) }</>
+                                        <>{ permDelete(Module.PROJECTS) && (
+<button
                                           onClick={() =>
                                             handleHotelExtraDelete(extra.id)
                                           }
@@ -18396,6 +18408,7 @@ export default function ProjectDetailPage() {
                                             />
                                           </svg>
                                         </button>
+) }</>
                                       </div>
                                     </td>
                                   </>
@@ -19465,7 +19478,8 @@ export default function ProjectDetailPage() {
                                                 </svg>
                                               </button>
                                             )}
-                                            <button
+                                            <>{ permEdit(Module.PROJECTS) && (
+<button
                                               onClick={() =>
                                                 editTransfer(transfer.id)
                                               }
@@ -19486,6 +19500,7 @@ export default function ProjectDetailPage() {
                                                 />
                                               </svg>
                                             </button>
+) }</>
                                             <button
                                               onClick={() =>
                                                 ungroupTransfer(transfer.id)
@@ -19539,7 +19554,8 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                         )}
-                                        <button
+                                        <>{ permEdit(Module.PROJECTS) && (
+<button
                                           onClick={() =>
                                             editTransfer(transfer.id)
                                           }
@@ -19560,9 +19576,11 @@ export default function ProjectDetailPage() {
                                             />
                                           </svg>
                                         </button>
+) }</>
                                         {!transfer.vehicleAssigned && (
                                           <>
-                                            <button
+                                            <>{ permCreate(Module.PROJECTS) && (
+<button
                                               onClick={() =>
                                                 addTransferBelow(transfer.id)
                                               }
@@ -19583,7 +19601,9 @@ export default function ProjectDetailPage() {
                                                 />
                                               </svg>
                                             </button>
-                                            <button
+) }</>
+                                            <>{ permCreate(Module.PROJECTS) && (
+<button
                                               onClick={() =>
                                                 copyTransfer(transfer.id)
                                               }
@@ -19604,9 +19624,11 @@ export default function ProjectDetailPage() {
                                                 />
                                               </svg>
                                             </button>
+) }</>
                                           </>
                                         )}
-                                        <button
+                                        <>{ permDelete(Module.PROJECTS) && (
+<button
                                           onClick={() =>
                                             deleteTransfer(transfer.id)
                                           }
@@ -19627,6 +19649,7 @@ export default function ProjectDetailPage() {
                                             />
                                           </svg>
                                         </button>
+) }</>
                                       </>
                                     ) : (
                                       // Normal transferler için tüm butonlar
@@ -19656,7 +19679,8 @@ export default function ProjectDetailPage() {
                                             </svg>
                                           </button>
                                         )}
-                                        <button
+                                        <>{ permEdit(Module.PROJECTS) && (
+<button
                                           onClick={() =>
                                             editTransfer(transfer.id)
                                           }
@@ -19677,9 +19701,11 @@ export default function ProjectDetailPage() {
                                             />
                                           </svg>
                                         </button>
+) }</>
                                         {!transfer.vehicleAssigned && (
                                           <>
-                                            <button
+                                            <>{ permCreate(Module.PROJECTS) && (
+<button
                                               onClick={() =>
                                                 addTransferBelow(transfer.id)
                                               }
@@ -19700,7 +19726,9 @@ export default function ProjectDetailPage() {
                                                 />
                                               </svg>
                                             </button>
-                                            <button
+) }</>
+                                            <>{ permCreate(Module.PROJECTS) && (
+<button
                                               onClick={() =>
                                                 copyTransfer(transfer.id)
                                               }
@@ -19721,7 +19749,9 @@ export default function ProjectDetailPage() {
                                                 />
                                               </svg>
                                             </button>
-                                            <button
+) }</>
+                                            <>{ permDelete(Module.PROJECTS) && (
+<button
                                               onClick={() =>
                                                 deleteTransfer(transfer.id)
                                               }
@@ -19742,6 +19772,7 @@ export default function ProjectDetailPage() {
                                                 />
                                               </svg>
                                             </button>
+) }</>
                                           </>
                                         )}
                                       </>
@@ -21089,7 +21120,8 @@ export default function ProjectDetailPage() {
                                         </>
                                       ) : (
                                         <>
-                                          <button
+                                          <>{ permEdit(Module.PROJECTS) && (
+<button
                                             onClick={() => {
                                               setTempEventItem(event);
                                               setIsNewEventItem(false);
@@ -21115,7 +21147,9 @@ export default function ProjectDetailPage() {
                                               />
                                             </svg>
                                           </button>
-                                          <button
+) }</>
+                                          <>{ permDelete(Module.PROJECTS) && (
+<button
                                             onClick={() => {
                                               if (
                                                 confirm(
@@ -21159,6 +21193,7 @@ export default function ProjectDetailPage() {
                                               />
                                             </svg>
                                           </button>
+) }</>
                                         </>
                                       )}
                                     </div>
@@ -22209,7 +22244,8 @@ export default function ProjectDetailPage() {
                                     </div>
                                   ) : (
                                     <div className="flex space-x-2">
-                                      <button
+                                      <>{ permEdit(Module.PROJECTS) && (
+<button
                                         onClick={() => handleHrEdit(index)}
                                         className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
                                         title="Düzenle"
@@ -22228,7 +22264,9 @@ export default function ProjectDetailPage() {
                                           />
                                         </svg>
                                       </button>
-                                      <button
+) }</>
+                                      <>{ permDelete(Module.PROJECTS) && (
+<button
                                         onClick={() => handleHrDelete(index)}
                                         className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
                                         title="Sil"
@@ -22247,6 +22285,7 @@ export default function ProjectDetailPage() {
                                           />
                                         </svg>
                                       </button>
+) }</>
                                     </div>
                                   )}
                                 </td>
@@ -23355,7 +23394,8 @@ export default function ProjectDetailPage() {
                                 </td>
                                 <td className="px-2 py-2">
                                   <div className="flex gap-1 justify-center">
-                                    <button
+                                    <>{ permEdit(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         setEditingPlanIndex(idx);
                                         setTempPlanItem({ ...p });
@@ -23385,7 +23425,9 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
-                                    <button
+) }</>
+                                    <>{ permDelete(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         const list = collectionPlans.filter(
                                           (_, i) => i !== idx,
@@ -23410,6 +23452,7 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
+) }</>
                                   </div>
                                 </td>
                               </tr>
@@ -24389,7 +24432,8 @@ export default function ProjectDetailPage() {
                                 </td>
                                 <td className="px-2 py-2">
                                   <div className="flex gap-1 justify-center">
-                                    <button
+                                    <>{ permEdit(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         setEditingCollectionIndex(idx);
                                         setTempCollectionItem({ ...c });
@@ -24419,7 +24463,9 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
-                                    <button
+) }</>
+                                    <>{ permDelete(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         const list = collections.filter(
                                           (_, i) => i !== idx,
@@ -24447,6 +24493,7 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
+) }</>
                                   </div>
                                 </td>
                               </tr>
@@ -25577,7 +25624,8 @@ export default function ProjectDetailPage() {
                                 </td>
                                 <td className="px-2 py-2 text-center">
                                   <div className="flex gap-1 justify-center">
-                                    <button
+                                    <>{ permEdit(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         setTempPaymentPlanItem(p);
                                         setEditingPaymentPlanIndex(idx);
@@ -25607,7 +25655,9 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
-                                    <button
+) }</>
+                                    <>{ permDelete(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         const list = paymentPlans.filter(
                                           (_, i) => i !== idx,
@@ -25635,6 +25685,7 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
+) }</>
                                   </div>
                                 </td>
                               </tr>
@@ -26596,7 +26647,8 @@ export default function ProjectDetailPage() {
                                 </td>
                                 <td className="px-2 py-2 text-center">
                                   <div className="flex gap-1 justify-center">
-                                    <button
+                                    <>{ permEdit(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         setTempPaymentItem(p);
                                         setEditingPaymentIndex(idx);
@@ -26626,7 +26678,9 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
-                                    <button
+) }</>
+                                    <>{ permDelete(Module.PROJECTS) && (
+<button
                                       onClick={() => {
                                         const list = payments.filter(
                                           (_, i) => i !== idx,
@@ -26654,6 +26708,7 @@ export default function ProjectDetailPage() {
                                         />
                                       </svg>
                                     </button>
+) }</>
                                   </div>
                                 </td>
                               </tr>
@@ -27683,7 +27738,8 @@ export default function ProjectDetailPage() {
               if (!h) return null;
               return (
                 <>
-                  <button
+                  <>{ permEdit(Module.PROJECTS) && (
+<button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenEditHotelModal(h);
@@ -27706,7 +27762,9 @@ export default function ProjectDetailPage() {
                       />
                     </svg>
                   </button>
-                  <button
+) }</>
+                  <>{ permCreate(Module.PROJECTS) && (
+<button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopyHotelTab(h);
@@ -27729,7 +27787,9 @@ export default function ProjectDetailPage() {
                       />
                     </svg>
                   </button>
-                  <button
+) }</>
+                  <>{ permDelete(Module.PROJECTS) && (
+<button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteHotelTab(h.id);
@@ -27752,6 +27812,7 @@ export default function ProjectDetailPage() {
                       />
                     </svg>
                   </button>
+) }</>
                 </>
               );
             })()}

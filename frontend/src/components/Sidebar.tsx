@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "./providers/ThemeProvider";
 import { supabase } from "../lib/supabase";
 import { authService } from "../lib/auth";
-import { usePermissions, Module } from "../lib/permissions";
+import { usePermissions, Module, getModuleFromHref } from "../lib/permissions";
 import NotificationModal from "./NotificationModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Bell } from "lucide-react";
@@ -44,6 +44,14 @@ export default function Sidebar() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const isHrefVisible = (href: string | undefined, explicitModule?: Module) => {
+    if (explicitModule) return canView(explicitModule);
+    if (!href) return true;
+    const mod = getModuleFromHref(href);
+    if (!mod) return true;
+    return canView(mod);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -354,7 +362,7 @@ export default function Sidebar() {
   const filteredNavigation = useMemo(() => {
     const filterItems = (items: MenuItem[]): MenuItem[] => {
       return items.filter((item) => {
-        if (item.module && !canView(item.module)) return false;
+        if (!isHrefVisible(item.href, item.module)) return false;
         if (item.children) {
           const filteredChildren = filterItems(item.children);
           item.children = filteredChildren;

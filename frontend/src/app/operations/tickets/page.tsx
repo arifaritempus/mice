@@ -1082,10 +1082,10 @@ export default function TicketsPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Bilet Opsiyon Takip
+              Bilet Devre
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Uçak biletlerinin opsiyon tarihlerini ve detaylarını yönetin
+              Uçak biletlerinin devre listelerini ve detaylarını yönetin
             </p>
           </div>
 

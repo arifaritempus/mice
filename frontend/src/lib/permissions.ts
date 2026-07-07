@@ -134,14 +134,22 @@ const ACTION_ALIASES: Record<string, Permission> = {
   view: Permission.VIEW,
   read: Permission.VIEW,
   list: Permission.VIEW,
+  goruntuleme: Permission.VIEW,
+  goruntule: Permission.VIEW,
   create: Permission.CREATE,
   add: Permission.CREATE,
   insert: Permission.CREATE,
+  ekleme: Permission.CREATE,
+  ekle: Permission.CREATE,
   edit: Permission.EDIT,
   update: Permission.EDIT,
   write: Permission.EDIT,
+  duzenleme: Permission.EDIT,
+  duzenle: Permission.EDIT,
   delete: Permission.DELETE,
-  remove: Permission.DELETE
+  remove: Permission.DELETE,
+  silme: Permission.DELETE,
+  sil: Permission.DELETE
 };
 
 const normalizeKey = (value: string): string =>
@@ -461,24 +469,33 @@ export const usePermissions = (explicitRole?: string) => {
 
   return useMemo(() => ({
     canView: (module: Module) => {
-      if (loading) return false;
       if (isSuperAdminRole(resolvedRole)) return true;
-      return !!grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.VIEW);
+      if (grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.VIEW)) return true;
+      if (loading) return false;
+      return false;
     },
     canEdit: (module: Module) => {
-      if (loading) return false;
       if (isSuperAdminRole(resolvedRole)) return true;
-      return !!grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.EDIT);
+      const roleKey = normalizeRole(resolvedRole);
+      const hasPerm = grantMap[roleKey]?.[module]?.has(Permission.EDIT);
+      if (module === 'projects') {
+          console.log(`[DEBUG] canEdit(projects): roleKey=${roleKey}, loading=${loading}, hasPerm=${hasPerm}, map=`, grantMap[roleKey]);
+      }
+      if (hasPerm) return true;
+      if (loading) return false;
+      return false;
     },
     canCreate: (module: Module) => {
-      if (loading) return false;
       if (isSuperAdminRole(resolvedRole)) return true;
-      return !!grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.CREATE);
+      if (grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.CREATE)) return true;
+      if (loading) return false;
+      return false;
     },
     canDelete: (module: Module) => {
-      if (loading) return false;
       if (isSuperAdminRole(resolvedRole)) return true;
-      return !!grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.DELETE);
+      if (grantMap[normalizeRole(resolvedRole)]?.[module]?.has(Permission.DELETE)) return true;
+      if (loading) return false;
+      return false;
     },
     getModulePermissions: (module: Module) => {
       if (isSuperAdminRole(resolvedRole)) {
@@ -499,4 +516,42 @@ export const usePermissions = (explicitRole?: string) => {
     isSuperAdmin: isSuperAdminRole(resolvedRole),
     loading
   }), [resolvedRole, grantMap, loading]);
+};
+
+export const getModuleFromHref = (href: string): Module | null => {
+  if (href === '/') return Module.HOME;
+  
+  // Exact paths or specific sub-paths
+  if (href.startsWith('/operations/tickets')) return Module.TICKETS;
+  if (href.startsWith('/operations/transfers')) return Module.TRANSFERS;
+  if (href.startsWith('/operations/guides')) return Module.GUIDES;
+  if (href.startsWith('/operations/part-time')) return Module.PART_TIME;
+  if (href.startsWith('/operations')) return Module.OPERATIONS;
+  
+  if (href.startsWith('/accounting/cash-flow')) return Module.CASH_FLOW;
+  if (href.startsWith('/accounting/invoices')) return Module.INVOICES;
+  if (href.startsWith('/accounting/exchange-rates')) return Module.EXCHANGE_RATES;
+  if (href.startsWith('/accounting')) return Module.ACCOUNTING;
+  
+  if (href.startsWith('/tickets')) return Module.TICKETS;
+  
+  const part = href.split('/')[1];
+  switch (part) {
+    case 'dashboard': return Module.DASHBOARD;
+    case 'reports': return Module.REPORTS;
+    case 'quotes': 
+    case 'quotes.current': return Module.QUOTES;
+    case 'projects': return Module.PROJECTS;
+    case 'sejour': return Module.SEJOUR;
+    case 'marketing': return Module.MARKETING;
+    case 'profile': return Module.PROFILE;
+    case 'settings': return Module.SETTINGS;
+    case 'agencies': return Module.AGENCIES;
+    case 'hotels': return Module.HOTELS;
+    case 'suppliers': return Module.SUPPLIERS;
+    case 'categories': return Module.CATEGORIES;
+    case 'users': return Module.USERS;
+    case 'permissions': return Module.SETTINGS; // Permissions are usually under settings
+    default: return null;
+  }
 };

@@ -40,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning className={outfit.variable}>
       <head>
+        <link rel="stylesheet" href="/styles.css" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -749,28 +749,15 @@ export default function CreateSejourPage() {
 
   // Collections Management
   const addCollection = () => {
-    if (!newCollection.type || !newCollection.amount || !newCollection.date) {
-      return; // Validation
-    }
-
     const collection: Collection = {
       id: Date.now().toString(),
-      type: newCollection.type,
-      amount: parseTrAmount(newCollection.amount) || 0,
-      date: newCollection.date,
-      description: newCollection.description,
-      currency: newCollection.currency,
+      type: "Banka Havalesi",
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      description: "",
+      currency: "TRY",
     };
     setCollections([...collections, collection]);
-
-    // Reset form
-    setNewCollection({
-      type: "",
-      amount: "",
-      date: "",
-      currency: "TRY",
-      description: "",
-    });
   };
 
   const updateCollection = (
@@ -1052,7 +1039,7 @@ export default function CreateSejourPage() {
   }
 
   return (
-    <div className="p-2 bg-gray-50 dark:bg-[#030712] min-h-screen transition-all duration-300">
+    <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-1 animate-in fade-in slide-in-from-top-1 duration-500">
@@ -1412,7 +1399,7 @@ export default function CreateSejourPage() {
 
                 {/* Accommodation Section */}
                 {showAccommodation && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500">
                     <div className="px-2 py-1.5 bg-blue-500/10/50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30">
@@ -1463,7 +1450,7 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 responsive-filter-grid">
+                          <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[3] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1.5]">
                             <div className="md:col-span-2">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Otel Seçimi
@@ -1616,7 +1603,7 @@ export default function CreateSejourPage() {
                   </div>
                 )}
                 {showFlight && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
                     <div className="px-3 py-2 bg-emerald-50/60 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-emerald-500/30">
@@ -1700,7 +1687,7 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                          <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[3.5] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.5]">
                             <div>
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Uçuş Tarihi
@@ -1918,7 +1905,7 @@ export default function CreateSejourPage() {
                 )}
                 {/* Transfer Information */}
                 {showTransfer && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-purple-100 dark:border-purple-900/30 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-purple-100 dark:border-purple-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
                     <div className="px-3 py-2 bg-purple-50/60 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-purple-500/30">
@@ -1977,7 +1964,7 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div>
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Tarih
@@ -1995,7 +1982,7 @@ export default function CreateSejourPage() {
                                 }
                               />
                             </div>
-                            <div className="xl:col-span-2">
+                            <div className="flex-[2]">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi
                               </label>
@@ -2137,7 +2124,7 @@ export default function CreateSejourPage() {
                 )}
                 {/* Extra Services Information */}
                 {showExtraServices && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-orange-100 dark:border-orange-900/30 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-orange-100 dark:border-orange-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
                     <div className="px-3 py-2 bg-orange-50/60 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-orange-500/30">
@@ -2188,8 +2175,8 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-3">
-                            <div className="xl:col-span-3">
+                          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <div className="flex-[2]">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Hizmet Tipi
                               </label>
@@ -2212,7 +2199,7 @@ export default function CreateSejourPage() {
                                 ))}
                               </select>
                             </div>
-                            <div className="xl:col-span-3">
+                            <div className="flex-[2]">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi
                               </label>
@@ -2244,7 +2231,7 @@ export default function CreateSejourPage() {
                                 placeholder="Örn: Rehberlik"
                               />
                             </div>
-                            <div className="xl:col-span-2">
+                            <div className="flex-[2]">
                               <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
@@ -2313,7 +2300,7 @@ export default function CreateSejourPage() {
                 )}
 
                 {/* Summary */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg overflow-hidden transition-all duration-300">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg transition-all duration-300">
                   <div className="px-2 py-1 bg-gray-50/50 dark:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-[10px] font-black text-gray-900 dark:text-white flex items-center tracking-widest uppercase">
                       <span className="mr-2">📊</span>
@@ -2390,11 +2377,11 @@ export default function CreateSejourPage() {
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 responsive-filter-grid">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   <div className="lg:col-span-3 space-y-6">
                     {/* Accommodation Costs */}
                     {showAccommodation && (
-                      <div className="bg-white dark:bg-gray-800 border-2 border-red-100 dark:border-red-900/30 rounded shadow-xl overflow-hidden">
+                      <div className="bg-white dark:bg-gray-800 border-2 border-red-100 dark:border-red-900/30 rounded shadow-xl">
                         <div className="px-2 py-1.5 bg-red-50/50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/20 flex justify-between items-center">
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-red-500/30">
@@ -2411,7 +2398,7 @@ export default function CreateSejourPage() {
                               key={room.id}
                               className="group bg-gray-50/50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg p-1 transition-all duration-300 hover:border-red-300"
                             >
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-1 items-center">
+                              <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.5]">
                                 <div className="md:col-span-2">
                                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                                     Otel & Oda
@@ -2495,7 +2482,7 @@ export default function CreateSejourPage() {
 
                     {/* Flight Costs */}
                     {showFlight && (
-                      <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded shadow-xl overflow-hidden">
+                      <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded shadow-xl">
                         <div className="px-2 py-1.5 bg-emerald-50/50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex items-center">
                           <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-emerald-500/30">
                             <span className="text-lg">✈️</span>
@@ -2510,7 +2497,7 @@ export default function CreateSejourPage() {
                               key={flight.id}
                               className="group bg-gray-50/50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg p-1 transition-all duration-300 hover:border-emerald-300"
                             >
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-1 items-center">
+                              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                                 <div className="md:col-span-2">
                                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                                     {flight.type === "departure"
@@ -2684,7 +2671,7 @@ export default function CreateSejourPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 responsive-filter-grid">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   <div className="lg:col-span-3 space-y-6">
                     {/* Mevcut Tahsilat Kayıtları */}
                     {collections.length > 0 && (

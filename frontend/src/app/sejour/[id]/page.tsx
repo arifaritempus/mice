@@ -430,7 +430,7 @@ export default function SejourDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen">
+      <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
         <div className="max-w-7xl mx-auto animate-pulse">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
@@ -445,7 +445,7 @@ export default function SejourDetailPage() {
 
   if (error || !sejour) {
     return (
-      <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen">
+      <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
         <div className="max-w-7xl mx-auto">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-6 py-4 rounded-lg shadow-sm">
             <span className="font-medium">{error || "Sejour bulunamadı"}</span>
@@ -464,7 +464,7 @@ export default function SejourDetailPage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen">
+    <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
       {/* PDF Voucher - Hidden area for capture */}
       <div
         ref={voucherRef}
