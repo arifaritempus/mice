@@ -1,5 +1,5 @@
-import { usePermissions, Module } from "@/lib/permissions";
 "use client";
+import { usePermissions, Module } from "@/lib/permissions";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { projectOthersService } from "@/lib/supabaseService";
 import ConfirmModal from "@/components/ConfirmModal";

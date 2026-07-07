@@ -1,5 +1,5 @@
-import { usePermissions, Module } from "@/lib/permissions";
 "use client";
+import { usePermissions, Module } from "@/lib/permissions";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { projectTransfersService } from "@/lib/supabaseService";

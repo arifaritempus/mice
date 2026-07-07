@@ -1,5 +1,5 @@
-import { usePermissions, Module } from "@/lib/permissions";
 "use client";
+import { usePermissions, Module } from "@/lib/permissions";
 import { useMemo, useCallback, memo, useState } from "react";
 interface AccommodationTabProps {
   isLocked?: boolean;

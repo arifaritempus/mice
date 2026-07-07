@@ -1,5 +1,5 @@
-import { usePermissions, Module } from "@/lib/permissions";
 "use client";
+import { usePermissions, Module } from "@/lib/permissions";
 import React, { useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 interface OdemeTabProps {

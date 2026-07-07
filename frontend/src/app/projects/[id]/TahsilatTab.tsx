@@ -1,5 +1,5 @@
-import { usePermissions, Module } from "@/lib/permissions";
 "use client";
+import { usePermissions, Module } from "@/lib/permissions";
 import React, { useCallback } from "react";
 interface TahsilatTabProps {
   projectId: string;

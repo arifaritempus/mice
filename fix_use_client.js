@@ -1,28 +1,24 @@
 const fs = require('fs');
 
-const filesToFix = [
-  'frontend/src/app/operations/guides/page.tsx',
-  'frontend/src/app/operations/part-time/page.tsx',
-  'frontend/src/app/operations/tickets/page.tsx',
-  'frontend/src/app/operations/transfers/page.tsx',
-  'frontend/src/app/projects/page.tsx',
-  'frontend/src/app/quotes/page.tsx',
-  'frontend/src/app/sejour/page.tsx',
-  'frontend/src/app/sejour/services/page.tsx',
-  'frontend/src/app/tickets/options/page.tsx',
-  'frontend/src/app/tickets/payments/page.tsx'
+const files = [
+  "frontend/src/app/projects/[id]/AccommodationTabOptimized.tsx",
+  "frontend/src/app/projects/[id]/DigerTab.tsx",
+  "frontend/src/app/projects/[id]/OdemeTab.tsx",
+  "frontend/src/app/projects/[id]/TahsilatTab.tsx",
+  "frontend/src/app/projects/[id]/TransferTurTab.tsx",
+  "frontend/src/app/projects/[id]/UcakBiletiTab.tsx"
 ];
 
-for (const file of filesToFix) {
+for (const file of files) {
   let content = fs.readFileSync(file, 'utf8');
-
-  // If the file starts with the import, AND has 'use client' later
-  if (content.startsWith("import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';\n'use client'")) {
-    content = content.replace(
-      "import ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';\n'use client'",
-      "'use client'\nimport ResponsiveDateRangeField from '@/components/ResponsiveDateRangeField';"
-    );
-    fs.writeFileSync(file, content);
+  const lines = content.split('\n');
+  if (lines[0].includes('import { usePermissions') && lines[1].includes('"use client";')) {
+    const temp = lines[0];
+    lines[0] = lines[1];
+    lines[1] = temp;
+    fs.writeFileSync(file, lines.join('\n'));
     console.log('Fixed', file);
+  } else {
+    console.log('Skipped', file);
   }
 }
