@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { usePermissions, Module } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -91,6 +92,7 @@ export default function SettingsPage() {
   }
 
   const handleSave = async () => {
+    const loadingToast = toast.loading("Ayarlar kaydediliyor...");
     try {
       const res = await fetch("/api/theme-settings", {
         method: "POST",
@@ -98,18 +100,22 @@ export default function SettingsPage() {
         body: JSON.stringify(settings),
       });
       if (res.ok) {
-        alert("Ayarlar başarıyla kaydedildi! Sayfa yenileniyor...");
-        window.location.reload();
+        toast.success("Ayarlar başarıyla kaydedildi!", { id: loadingToast });
+        if (typeof window !== "undefined") {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
       } else {
-        alert("Kaydetme hatası!");
+        toast.error("Ayarlar kaydedilirken hata oluştu!", { id: loadingToast });
       }
     } catch (e) {
-      alert("Hata oluştu!");
+      toast.error("Beklenmeyen bir hata oluştu!", { id: loadingToast });
     }
   };
 
   const handleTestMail = () => {
-    alert("Test maili gönderildi!");
+    toast.success("Test maili başarıyla gönderildi!");
   };
 
   const tabs = [
