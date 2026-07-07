@@ -647,31 +647,31 @@ export default function Sidebar() {
     if (isDark) {
       if (isCollapsed && !isHovered && !isMobileOpen) {
         return (
-          generalSettings.dark_icon_logo ||
-          generalSettings.dark_menu_logo ||
-          generalSettings.dark_wordmark_logo ||
+          generalSettings.darkIconLogo ||
+          generalSettings.darkMenuLogo ||
+          generalSettings.darkWordmarkLogo ||
           "/LOGO_OFFWHITE.png"
         );
       }
       return (
-        generalSettings.dark_menu_logo ||
-        generalSettings.dark_wordmark_logo ||
-        generalSettings.dark_icon_logo ||
+        generalSettings.darkMenuLogo ||
+        generalSettings.darkWordmarkLogo ||
+        generalSettings.darkIconLogo ||
         "/LOGO_OFFWHITE.png"
       );
     } else {
       if (isCollapsed && !isHovered && !isMobileOpen) {
         return (
-          generalSettings.light_icon_logo ||
-          generalSettings.light_menu_logo ||
-          generalSettings.light_wordmark_logo ||
+          generalSettings.lightIconLogo ||
+          generalSettings.lightMenuLogo ||
+          generalSettings.lightWordmarkLogo ||
           "/LOGO_NAVY.png"
         );
       }
       return (
-        generalSettings.light_menu_logo ||
-        generalSettings.light_wordmark_logo ||
-        generalSettings.light_icon_logo ||
+        generalSettings.lightMenuLogo ||
+        generalSettings.lightWordmarkLogo ||
+        generalSettings.lightIconLogo ||
         "/LOGO_NAVY.png"
       );
     }

@@ -28,6 +28,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import CommandCenter from "@/components/CommandCenter";
 import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
+import { SettingsService } from "@/lib/supabaseService";
 
 export default function TopNavigation() {
   const { canCreate, canView } = usePermissions();
@@ -40,11 +41,35 @@ export default function TopNavigation() {
   const [activeSegment, setActiveSegment] = useState<string | null>(null);
   const [isCommandCenterOpen, setIsCommandCenterOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [generalSettings, setGeneralSettings] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<{
     name: string;
     email: string;
     initial: string;
   } | null>(null);
+
+  
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settings = await SettingsService.getSettings();
+        if (settings?.general_settings) {
+          setGeneralSettings(settings.general_settings);
+        }
+      } catch (err) {
+        console.error("TopNav settings error:", err);
+      }
+    };
+    fetchSettings();
+
+    const handleSettingsUpdate = (e: any) => {
+      if (e?.detail?.settings) {
+        setGeneralSettings(e.detail.settings);
+      }
+    };
+    window.addEventListener("settingsUpdated", handleSettingsUpdate);
+    return () => window.removeEventListener("settingsUpdated", handleSettingsUpdate);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -140,16 +165,20 @@ export default function TopNavigation() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 group-hover:scale-105 transition-all duration-300 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:-translate-y-full transition-transform duration-500 ease-in-out" />
-                <span className="text-white font-black text-xl relative z-10">
-                  N
-                </span>
+                {generalSettings?.darkIconLogo ? (
+                  <img src={generalSettings.darkIconLogo} alt="Logo" className="w-8 h-8 object-contain relative z-10" />
+                ) : (
+                  <span className="text-white font-black text-xl relative z-10">
+                    {generalSettings?.companyName?.charAt(0) || "N"}
+                  </span>
+                )}
               </div>
               <div className="flex flex-col opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out whitespace-nowrap">
                 <span className="text-white font-black text-sm tracking-widest leading-none">
-                  NEXUS
+                  {generalSettings?.companyName?.split(" ")[0] || "NEXUS"}
                 </span>
                 <span className="text-blue-400 text-[10px] font-bold tracking-widest uppercase mt-0.5">
-                  Analytics
+                  {generalSettings?.companyName?.split(" ").slice(1).join(" ") || "Analytics"}
                 </span>
               </div>
             </Link>

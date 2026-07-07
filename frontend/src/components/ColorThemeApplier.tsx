@@ -5,30 +5,30 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { SettingsService } from "@/lib/supabaseService";
 
 interface ThemeSettings {
-  primary_color?: string;
-  secondary_color?: string;
-  success_color?: string;
-  warning_color?: string;
-  error_color?: string;
-  info_color?: string;
-  dark_bg_primary?: string;
-  light_bg_primary?: string;
-  dark_bg_secondary?: string;
-  light_bg_secondary?: string;
-  dark_card_bg?: string;
-  light_card_bg?: string;
-  dark_sidebar_bg?: string;
-  light_sidebar_bg?: string;
-  dark_sidebar_header_bg?: string;
-  light_sidebar_header_bg?: string;
-  dark_text_color?: string;
-  light_text_color?: string;
-  dark_sidebar_border?: string;
-  light_sidebar_border?: string;
-  dark_icon_logo?: string;
-  light_icon_logo?: string;
-  dark_menu_logo?: string;
-  light_menu_logo?: string;
+  colorPrimary?: string;
+  colorSecondary?: string;
+  colorSuccess?: string;
+  colorWarning?: string;
+  colorError?: string;
+  colorInfo?: string;
+  darkBgMain?: string;
+  lightBgMain?: string;
+  darkBgSecondary?: string;
+  lightBgSecondary?: string;
+  darkCard?: string;
+  lightCard?: string;
+  darkSidebar?: string;
+  lightSidebar?: string;
+  darkSidebarHeader?: string;
+  lightSidebarHeader?: string;
+  darkText?: string;
+  lightText?: string;
+  darkSidebarBorder?: string;
+  lightSidebarBorder?: string;
+  darkIconLogo?: string;
+  lightIconLogo?: string;
+  darkMenuLogo?: string;
+  lightMenuLogo?: string;
 }
 
 interface SettingsUpdateEvent extends CustomEvent {
@@ -53,41 +53,41 @@ export default function ColorThemeApplier() {
         const root = document.documentElement;
 
         // Genel renkler
-        if (settings.primary_color)
-          root.style.setProperty("--color-primary", settings.primary_color);
-        if (settings.secondary_color)
-          root.style.setProperty("--color-secondary", settings.secondary_color);
-        if (settings.success_color)
-          root.style.setProperty("--color-success", settings.success_color);
-        if (settings.warning_color)
-          root.style.setProperty("--color-warning", settings.warning_color);
-        if (settings.error_color)
-          root.style.setProperty("--color-error", settings.error_color);
-        if (settings.info_color)
-          root.style.setProperty("--color-info", settings.info_color);
+        if (settings.colorPrimary)
+          root.style.setProperty("--color-primary", settings.colorPrimary);
+        if (settings.colorSecondary)
+          root.style.setProperty("--color-secondary", settings.colorSecondary);
+        if (settings.colorSuccess)
+          root.style.setProperty("--color-success", settings.colorSuccess);
+        if (settings.colorWarning)
+          root.style.setProperty("--color-warning", settings.colorWarning);
+        if (settings.colorError)
+          root.style.setProperty("--color-error", settings.colorError);
+        if (settings.colorInfo)
+          root.style.setProperty("--color-info", settings.colorInfo);
 
         // Tema bazlı renkleri belirle
         const themeBgPrimary = isDark
-          ? settings.dark_bg_primary
-          : settings.light_bg_primary;
+          ? settings.darkBgMain
+          : settings.lightBgMain;
         const themeBgSecondary = isDark
-          ? settings.dark_bg_secondary
-          : settings.light_bg_secondary;
+          ? settings.darkBgSecondary
+          : settings.lightBgSecondary;
         const themeCardBg = isDark
-          ? settings.dark_card_bg
-          : settings.light_card_bg;
+          ? settings.darkCard
+          : settings.lightCard;
         const themeSidebarBg = isDark
-          ? settings.dark_sidebar_bg
-          : settings.light_sidebar_bg;
+          ? settings.darkSidebar
+          : settings.lightSidebar;
         const themeSidebarHeaderBg = isDark
-          ? settings.dark_sidebar_header_bg
-          : settings.light_sidebar_header_bg;
+          ? settings.darkSidebarHeader
+          : settings.lightSidebarHeader;
         const themeTextColor = isDark
-          ? settings.dark_text_color
-          : settings.light_text_color;
+          ? settings.darkText
+          : settings.lightText;
         const themeSidebarBorder = isDark
-          ? settings.dark_sidebar_border
-          : settings.light_sidebar_border;
+          ? settings.darkSidebarBorder
+          : settings.lightSidebarBorder;
 
         // CSS Değişkenlerini root'a ekle
         if (themeBgPrimary)
@@ -109,11 +109,11 @@ export default function ColorThemeApplier() {
 
         // Dinamik favicon güncellemesi
         const faviconUrl = isDark
-          ? settings.dark_icon_logo ||
-            settings.dark_menu_logo ||
+          ? settings.darkIconLogo ||
+            settings.darkMenuLogo ||
             "/LOGO_NAVY.png"
-          : settings.light_icon_logo ||
-            settings.light_menu_logo ||
+          : settings.lightIconLogo ||
+            settings.lightMenuLogo ||
             "/LOGO_NAVY.png";
 
         if (faviconUrl) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
 

@@ -41,8 +41,8 @@ export default function DraggableAIAssistant() {
     const fetchSettings = async () => {
       try {
         const settings = await SettingsService.getSettings();
-        if (settings.general_settings?.ai_assistant_enabled !== undefined) {
-          setIsEnabled(settings.general_settings.ai_assistant_enabled);
+        if (settings.general_settings?.aiAssistantEnabled !== undefined) {
+          setIsEnabled(settings.general_settings.aiAssistantEnabled);
         }
       } catch (e) {
         console.error("Failed to load AI assistant settings", e);
@@ -51,8 +51,8 @@ export default function DraggableAIAssistant() {
     fetchSettings();
 
     const handleSettingsUpdate = (e: any) => {
-      if (e.detail?.settings?.ai_assistant_enabled !== undefined) {
-        setIsEnabled(e.detail.settings.ai_assistant_enabled);
+      if (e.detail?.settings?.aiAssistantEnabled !== undefined) {
+        setIsEnabled(e.detail.settings.aiAssistantEnabled);
       }
     };
 
