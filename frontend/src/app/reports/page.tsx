@@ -810,7 +810,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-2rem)] flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 lg:p-8 max-w-[1920px] mx-auto w-full overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col h-full overflow-auto pt-4 pb-4 px-4 lg:px-8 gap-4 max-w-[1920px] mx-auto w-full custom-scrollbar text-slate-900 dark:text-slate-100 transition-colors duration-300">
       {/* Header Section */}
       <div className="flex flex-row items-center justify-between gap-4 mb-4 shrink-0 w-full overflow-x-auto custom-scrollbar">
         {/* Title Area */}
@@ -1038,9 +1038,9 @@ export default function ReportsPage() {
       </div>
 
       {/* Content Container */}
-      <div className="bg-white dark:bg-[#0f172a] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col min-h-[600px]">
+      <div className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl flex flex-col mb-4">
         {/* Table Area */}
-        <div className="flex-1 overflow-auto custom-scrollbar relative">
+        <div className="flex-1 overflow-visible relative w-full">
           {loading && (
             <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
