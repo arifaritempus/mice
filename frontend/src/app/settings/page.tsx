@@ -94,10 +94,11 @@ export default function SettingsPage() {
   const handleSave = async () => {
     const loadingToast = toast.loading("Ayarlar kaydediliyor...");
     try {
-      const res = await fetch("/api/theme-settings", {
+      const res = await fetch(`/api/theme-settings?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
+        cache: "no-store",
       });
       if (res.ok) {
         toast.success("Ayarlar başarıyla kaydedildi!", { id: loadingToast });
