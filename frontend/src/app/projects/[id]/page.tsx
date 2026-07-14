@@ -15002,7 +15002,7 @@ export default function ProjectDetailPage() {
                             title: "Satış Kalemlerini İçe Aktar",
                             message: "Emin misiniz? Bu işlem mevcut satış kalemlerinizi alış tarafına aktaracaktır.",
                             onConfirm: () => {
-                              importSalesItemsToPurchase();
+                              importSalesItemsToPurchase(false);
                               setConfirmModal(prev => ({ ...prev, open: false }));
                             },
                             type: "info",
