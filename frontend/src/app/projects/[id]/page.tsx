@@ -294,6 +294,9 @@ export default function ProjectDetailPage() {
     loading: permissionsLoading,
   } = usePermissions();
 
+  // Main Tab State
+  const [activeMainTab, setActiveMainTab] = useState<'info' | 'details'>('info');
+
   // Logs state
   const [showLogsModal, setShowLogsModal] = useState(false);
   const [logsData, setLogsData] = useState<any[]>([]);
@@ -1124,6 +1127,7 @@ export default function ProjectDetailPage() {
       company_name: project?.company_name || "",
       agency_id: project?.agency_id || "",
       hotel_id: project?.hotel_id || "",
+      hotels_data: project?.hotels_data ? JSON.parse(JSON.stringify(project.hotels_data)) : [],
       room_pax: project?.room_pax || "",
       quote_type: project?.quote_type || "",
       status: project?.status || "active",
@@ -1143,6 +1147,15 @@ export default function ProjectDetailPage() {
   const handleSaveProject = useCallback(async () => {
     try {
       let finalData = { ...projectFormData };
+
+      // Eğer hotels_data içindeki otellerin id'si yoksa oluştur (sekme silme vs için zorunlu)
+      if (finalData.hotels_data && Array.isArray(finalData.hotels_data)) {
+        finalData.hotels_data = finalData.hotels_data.map((h: any) => ({
+          ...h,
+          id: h.id || crypto.randomUUID(),
+          hotel_status: h.hotel_status || "BEKLEMEDE"
+        }));
+      }
 
       // Boş stringleri null'a çevir (Postgres UUID ve Date hatalarını önlemek için)
       if (finalData.agency_id === "") finalData.agency_id = null;
@@ -14689,7 +14702,7 @@ export default function ProjectDetailPage() {
 
           // 2. hotels_data'dan çıkar
           const updatedHotels = currentHotels.filter(
-            (h: any) => h.id !== tabId,
+            (h: any) => (h.id || h.hotel_id) !== tabId,
           );
           await projectsService.update(projectId, {
             hotels_data: updatedHotels,
@@ -14898,156 +14911,183 @@ export default function ProjectDetailPage() {
   const hotelsData = (project as any)?.hotels_data || [];
   return (
     <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
-        <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200">
-            Proje Detayı
-          </h1>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <select
-              value={
-                isEditingProject
-                  ? projectFormData?.exchange_rate_strategy ||
-                    project?.exchange_rate_strategy ||
-                    "manuel"
-                  : project?.exchange_rate_strategy || "manuel"
-              }
-              onChange={(e) =>
-                handleProjectFormChange(
-                  "exchange_rate_strategy",
-                  e.target.value,
-                )
-              }
-              disabled={!isEditingProject || updatingRates}
-              className={`px-2 py-1 rounded-lg text-xs font-bold border outline-none w-44 transition-colors ${
-                isEditingProject && !updatingRates
-                  ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-blue-500 cursor-pointer shadow-sm"
-                  : "bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-80"
-              }`}
-              title="Kur Stratejisi (Sadece düzenleme modunda değiştirilebilir)"
-            >
-              <option value="manuel">Manuel</option>
-              <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
-              <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
-              <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
-              <option value="tcmb_banknote_selling">TCMB Efektif Satış</option>
-            </select>
+            {/* NEW: Sticky Main Tabs - Full Width Minimal */}
+      <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-white/5" style={{ backgroundColor: "rgb(var(--theme-bg-main, 15, 23, 42))" }}>
+        <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
+          {/* Left placeholder to balance the flex layout */}
+          <div className="w-[100px]"></div>
+          
+          {/* Center Tabs */}
+          <div className="flex bg-transparent p-1 rounded-xl border border-white/5 w-full max-w-[350px]">
+             <button 
+               onClick={() => setActiveMainTab('info')} 
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+             >
+               PROJE BİLGİLERİ
+             </button>
+             <button 
+               onClick={() => setActiveMainTab('details')} 
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+             >
+               PROJE DETAYLARI
+             </button>
           </div>
-
-          <button
-            onClick={() => {
-              setShowLogsModal(true);
-              fetchLogs();
-            }}
-            className="bg-purple-600 dark:bg-purple-500 text-white px-2 py-1 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors duration-200 flex items-center text-xs font-bold gap-1"
-            title="Log Kayıtları"
-          >
-            <ScrollText size={14} />
-            Loglar
-          </button>
-
-          {/* Excel Export Butonu - kilitli projelerde de aktif kalmalı */}
-          <button
-            onClick={exportProjectFullToExcel}
-            className="bg-green-600 dark:bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs flex items-center gap-1 font-bold"
-            title="Tüm Otelleri Excel'e Aktar"
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            Excel (Tam Rapor)
-          </button>
-          {isEditingProject ? (
-            <>
-              {canEdit(Module.PROJECTS) &&
-                (!project?.locked || isSuperAdmin) && (
-                  <button
-                    onClick={handleSaveProject}
-                    className="bg-green-600 dark:bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 text-xs flex items-center gap-1"
-                  >
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Kaydet
-                  </button>
-                )}
-              {canEdit(Module.PROJECTS) &&
-                (!project?.locked || isSuperAdmin) && (
-                  <button
-                    onClick={handleCancelEdit}
-                    className="bg-gray-600 dark:bg-gray-500 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 text-xs flex items-center gap-1"
-                  >
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                    İptal
-                  </button>
-                )}
-            </>
-          ) : (
-            canEdit(Module.PROJECTS) &&
-            (!project?.locked || isSuperAdmin) && (
-              <button
-                onClick={handleEditProject}
-                className="bg-blue-500 dark:bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200 text-xs flex items-center gap-1"
-              >
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                Düzenle
+          
+          {/* Right Action (Settings) Button */}
+          <div className="w-[100px] flex justify-end">
+            <div className="flex-shrink-0 relative group z-50">
+              <button className="bg-transparent border border-gray-600/50 hover:bg-white/5 text-gray-300 hover:text-white p-2 rounded-xl transition-all duration-200" title="İşlemler">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
               </button>
-            )
-          )}
+              <div className="absolute right-0 top-full mt-2 w-64 bg-[#1e293b] rounded-xl shadow-2xl border border-gray-700 p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100">
+                <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-1">İşlemler</div>
+                
+                {activeMainTab === 'info' ? (
+                  <>
+                    <select
+                      value={isEditingProject ? projectFormData?.exchange_rate_strategy || project?.exchange_rate_strategy || "manuel" : project?.exchange_rate_strategy || "manuel"}
+                      onChange={(e) => handleProjectFormChange("exchange_rate_strategy", e.target.value)}
+                      disabled={!isEditingProject || updatingRates}
+                      className={`w-full px-2 py-1.5 rounded-lg text-xs font-bold border outline-none transition-colors ${isEditingProject && !updatingRates ? "bg-[#0f172a] text-white border-blue-500 cursor-pointer" : "bg-[#0f172a]/50 text-gray-500 border-gray-700/50 cursor-not-allowed"}`}
+                      title="Kur Stratejisi"
+                    >
+                      <option value="manuel">Kur: Manuel</option>
+                      <option value="tcmb_forex_buying">Kur: TCMB Döviz Alış</option>
+                      <option value="tcmb_forex_selling">Kur: TCMB Döviz Satış</option>
+                      <option value="tcmb_banknote_buying">Kur: TCMB Efektif Alış</option>
+                      <option value="tcmb_banknote_selling">Kur: TCMB Efektif Satış</option>
+                    </select>
+                    <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Loglar
+                    </button>
+                    <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Excel (Tam Rapor)
+                    </button>
+                    {isEditingProject ? (
+                      <>
+                        {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
+                          <button onClick={handleSaveProject} className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-xs font-bold flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Kaydet
+                          </button>
+                        )}
+                        {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
+                          <button onClick={handleCancelEdit} className="w-full text-left bg-gray-700 text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors text-xs font-bold flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> İptal
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
+                        <button onClick={handleEditProject} className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-xs font-bold flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Düzenle
+                        </button>
+                      )
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {activeTab === 'satis' && (
+                      <>
+                        <button onClick={() => setShowCategoryModalSales(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Satış Kalemi</button>
+                        <button onClick={handleCreateSalesLink} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Mutabakat Linki</button>
+                        <button onClick={exportSalesOnlyByHotelToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                    {activeTab === 'alis' && (
+                      <>
+                        <button onClick={() => setShowCategoryModalPurchase(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Alış Kalemi</button>
+                        <button onClick={() => {
+                          setConfirmModal({
+                            open: true,
+                            title: "Satış Kalemlerini İçe Aktar",
+                            message: "Emin misiniz? Bu işlem mevcut satış kalemlerinizi alış tarafına aktaracaktır.",
+                            onConfirm: () => {
+                              importSalesItemsToPurchase();
+                              setConfirmModal(prev => ({ ...prev, open: false }));
+                            },
+                            type: "info",
+                            showCancel: true,
+                          });
+                        }} className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Satış Kalemlerini İçe Aktar</button>
+                        <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                    {activeTab === 'konaklama' && (
+                      <>
+                        <button onClick={() => handleAccommodationAdd("")} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Oda Ekle</button>
+                        <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
+                          <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleAccommodationImport} />
+                          Excel İçe Aktar
+                        </label>
+                        <button onClick={handleAccommodationExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={handleAccommodationClear} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Listeyi Temizle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-toggle-collapse-accommodation'))} className="w-full text-left bg-gray-500/10 text-gray-400 px-3 py-2 rounded-lg hover:bg-gray-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Genişlet/Daralt</button>
+                      </>
+                    )}
+                    {activeTab === 'ucak-bileti' && (
+                      <>
+                        <button onClick={() => handleFlightAdd("")} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Bilet Ekle</button>
+                        <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
+                          <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFlightImport} />
+                          Excel İçe Aktar
+                        </label>
+                        <button onClick={handleFlightExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                    {activeTab === 'transfer-tur' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'giris' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Giriş Transferi Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'ara' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Ara Transfer Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'cikis' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Çıkış Transferi Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-create-transfer'))} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Konaklamadan Transfer Oluştur</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-transfer'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-clear-transfer'))} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Temizle</button>
+                      </>
+                    )}
+                    {activeTab === 'diger' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-other'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Kayıt Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-other'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                    {activeTab === 'tahsilat' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-tahsilat'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-tahsilat'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Tahsilat</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-tahsilat'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                    {activeTab === 'odeme' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-odeme'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-odeme'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Ödeme</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-odeme'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                    {activeTab === 'kar-zarar' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-karzarar'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      {activeMainTab === 'info' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full">
 
-      {/* Stats (özet) */}
-      <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-10 gap-1.5 mb-2">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+                {/* 3 Premium Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4">
+      
+        {/* Card 1: Temel Bilgiler */}
+        <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
+
+          
+          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Referans
           </p>
           {isEditingProject ? (
@@ -15057,54 +15097,45 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("reference", e.target.value)
               }
-              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
             />
           ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
+            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
               {project?.reference || projectId}
             </p>
           )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
-            Başlangıç
+          </div>
+          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            Proje Durum
           </p>
           {isEditingProject ? (
-            <input
-              type="date"
-              value={projectFormData.start_date || ""}
+            <select
+              value={projectFormData.status || ""}
               onChange={(e) =>
-                handleProjectFormChange("start_date", e.target.value)
+                handleProjectFormChange("status", e.target.value)
               }
-              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
-            />
+              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+            >
+              <option value="active">Aktif</option>
+              <option value="completed">Tamamlandı</option>
+              <option value="on_hold">Beklemede</option>
+              <option value="cancelled">İptal</option>
+            </select>
           ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-              {formatDate(headerDisplayData.start_date)}
+            <p className="text-xs font-semibold text-gray-900 dark:text-white">
+              {getStatusText(project?.status || "active")}
             </p>
           )}
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
-            Bitiş
-          </p>
-          {isEditingProject ? (
-            <input
-              type="date"
-              value={projectFormData.end_date || ""}
-              onChange={(e) =>
-                handleProjectFormChange("end_date", e.target.value)
-              }
-              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
-            />
-          ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-              {formatDate(headerDisplayData.end_date)}
-            </p>
-          )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+
+        {/* Card 2: Paydaşlar */}
+        <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+
+          
+          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Firma Adı
           </p>
           {isEditingProject ? (
@@ -15114,16 +15145,16 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("company_name", e.target.value)
               }
-              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
             />
           ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">
+            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate">
               {project?.company_name || project?.company?.name || "-"}
             </p>
           )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200 relative agency-dropdown">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+          </div>
+          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Acente Adı
           </p>
           {isEditingProject ? (
@@ -15138,7 +15169,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowAgencyDropdown(true)}
                 onKeyDown={handleAgencyKeyDown}
-                className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
                 placeholder="Acente ara..."
                 autoComplete="off"
               />
@@ -15161,116 +15192,13 @@ export default function ProjectDetailPage() {
               )}
             </div>
           ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">
+            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate">
               {getAgencyName(project?.agency_id) || "-"}
             </p>
           )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200 relative hotel-dropdown">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
-            Otel Adı
-          </p>
-          {isEditingProject ? (
-            <div className="relative">
-              <input
-                type="text"
-                value={hotelSearch}
-                onChange={(e) => {
-                  setHotelSearch(e.target.value);
-                  setShowHotelDropdown(true);
-                  setSelectedHotelIndex(-1);
-                }}
-                onFocus={() => setShowHotelDropdown(true)}
-                onKeyDown={handleHotelKeyDown}
-                className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
-                placeholder="Otel ara..."
-                autoComplete="off"
-              />
-              {showHotelDropdown && filteredHotels.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                  {filteredHotels.map((hotel: any, index: number) => (
-                    <div
-                      key={hotel.id}
-                      onClick={() => handleHotelSelect(hotel)}
-                      className={`px-2 py-1.5 text-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ${
-                        index === selectedHotelIndex
-                          ? "bg-blue-500/10 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100"
-                          : "text-gray-900 dark:text-gray-100"
-                      }`}
-                    >
-                      {hotel.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate">
-              {(() => {
-                const primaryHotelId = headerDisplayData.hotel_id;
-                if (!primaryHotelId) return "-";
-
-                const tabHotel = project?.hotels_data?.find(
-                  (h: any) =>
-                    h.id === primaryHotelId || h.hotel_id === primaryHotelId,
-                );
-                if (tabHotel) {
-                  if (tabHotel.hotel_name) return tabHotel.hotel_name;
-                  const masterHotel = hotels?.find(
-                    (mh: any) => mh.id === tabHotel.hotel_id,
-                  );
-                  if (masterHotel) return masterHotel.name;
-                }
-
-                return getHotelName(primaryHotelId) || "-";
-              })()}
-            </p>
-          )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
-            Oda | Pax
-          </p>
-          {isEditingProject ? (
-            <input
-              type="text"
-              value={projectFormData.room_pax || ""}
-              onChange={(e) =>
-                handleProjectFormChange("room_pax", e.target.value)
-              }
-              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
-              placeholder="Oda | Pax"
-            />
-          ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-              {headerDisplayData.room_pax}
-            </p>
-          )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
-            Teklif Türü
-          </p>
-          {isEditingProject ? (
-            <select
-              value={projectFormData.quote_type || ""}
-              onChange={(e) =>
-                handleProjectFormChange("quote_type", e.target.value)
-              }
-              className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
-            >
-              <option value="">Teklif Türü Seçin</option>
-              <option value="BİRİM">BİRİM</option>
-              <option value="PAKET">PAKET</option>
-            </select>
-          ) : (
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-              {project?.quote_type || "-"}
-            </p>
-          )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 transition-colors duration-200 relative user-dropdown">
-          <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+          </div>
+          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Proje Sorumlusu
           </p>
           {isEditingProject ? (
@@ -15307,7 +15235,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowUserDropdown(true)}
                 onKeyDown={handleUserKeyDown}
-                className="w-full text-xs font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+                className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
                 placeholder="Kullanıcı ara..."
                 autoComplete="off"
               />
@@ -15344,47 +15272,212 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <p 
-              className="text-xs font-bold text-gray-900 dark:text-white leading-tight truncate"
+              className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate"
               title={getProjectManagers(projectId) || "Atanmadı"}
             >
               {getProjectManagers(projectId)}
             </p>
           )}
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
-            Proje Durum
+
+        {/* Card 3: İçerik Detayları */}
+        <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+
+          
+          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+          {isEditingProject ? (
+            <div className="space-y-3">
+              <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                OTELLER VE KONAKLAMA TARİHLERİ
+              </p>
+              
+              {/* Mevcut Oteller */}
+              <div className="flex flex-col gap-2">
+                {projectFormData.hotels_data && projectFormData.hotels_data.length > 0 ? (
+                  projectFormData.hotels_data.map((h: any, idx: number) => {
+                    return (
+                      <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-[#1e293b] p-2 rounded-xl border border-gray-700/50">
+                        <div className="flex-1 min-w-[150px]">
+                          <select
+                            value={h.hotel_id || ""}
+                            onChange={(e) => {
+                              const newHotels = [...(projectFormData.hotels_data || [])];
+                              const selectedHotel = hotels?.find((mh: any) => mh.id === e.target.value);
+                              newHotels[idx].hotel_id = e.target.value;
+                              newHotels[idx].hotel_name = selectedHotel ? selectedHotel.name : "";
+                              setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
+                            }}
+                            className="w-full bg-[#0f172a] text-white text-[11px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
+                          >
+                            <option value="">Otel Seçiniz</option>
+                            {hotels?.map((mh: any) => (
+                              <option key={mh.id} value={mh.id}>{mh.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <input
+                            type="date"
+                            value={h.check_in_date ? h.check_in_date.substring(0, 10) : ""}
+                            onChange={(e) => {
+                              const newHotels = [...(projectFormData.hotels_data || [])];
+                              newHotels[idx].check_in_date = e.target.value;
+                              setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
+                            }}
+                            className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                            title="Giriş Tarihi"
+                          />
+                          <span className="text-gray-500 font-bold">-</span>
+                          <input
+                            type="date"
+                            value={h.check_out_date ? h.check_out_date.substring(0, 10) : ""}
+                            onChange={(e) => {
+                              const newHotels = [...(projectFormData.hotels_data || [])];
+                              newHotels[idx].check_out_date = e.target.value;
+                              setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
+                            }}
+                            className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                            title="Çıkış Tarihi"
+                          />
+                          <button
+                            onClick={() => {
+                              const newHotels = [...(projectFormData.hotels_data || [])];
+                              newHotels.splice(idx, 1);
+                              setProjectFormData((prev: any) => ({ 
+                                ...prev, 
+                                hotels_data: newHotels,
+                                hotel_id: newHotels.length > 0 ? newHotels[0].hotel_id : null 
+                              }));
+                            }}
+                            className="p-1.5 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors"
+                            title="Oteli Kaldır"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-[10px] text-gray-500 italic">Otel eklenmemiş.</div>
+                )}
+              </div>
+
+              {/* Yeni Otel Ekleme Butonu */}
+              <button
+                onClick={() => {
+                  const newHotels = [...(projectFormData.hotels_data || [])];
+                  newHotels.push({
+                    id: crypto.randomUUID(),
+                    hotel_id: "",
+                    hotel_name: "",
+                    hotel_status: "BEKLEMEDE",
+                    check_in_date: projectFormData.start_date || "",
+                    check_out_date: projectFormData.end_date || ""
+                  });
+                  setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
+                }}
+                className="w-full mt-2 py-2 bg-[#0f172a] hover:bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-gray-700/50 hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                Yeni Otel Satırı Ekle
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                OTELLER VE KONAKLAMA TARİHLERİ
+              </p>
+              <div className="flex flex-col gap-2">
+                {project?.hotels_data && project.hotels_data.length > 0 ? (
+                  project.hotels_data.map((h: any, idx: number) => {
+                    const hObj = hotels?.find((mh: any) => mh.id === h.hotel_id);
+                    const hName = hObj?.name || h.hotel_name || "-";
+                    const sDate = h.check_in_date || h.start_date || project?.start_date;
+                    const eDate = h.check_out_date || h.end_date || project?.end_date;
+                    const dateText = `${sDate ? formatDate(sDate).substring(0, 10) : "?"} - ${eDate ? formatDate(eDate).substring(0, 10) : "?"}`;
+                    
+                    return (
+                      <div key={idx} className="flex items-center justify-between bg-[#1e293b] px-3 py-2.5 rounded-xl border border-gray-700/50">
+                        <span className="text-[11px] font-bold text-white truncate max-w-[220px]">
+                          {hName}
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-300 bg-[#0f172a] px-2.5 py-1 rounded-md border border-gray-700/30">
+                          {dateText}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-xs font-medium text-gray-500 py-2">
+                    Otel bulunamadı
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+              <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            Oda | Pax
+          </p>
+          {isEditingProject ? (
+            <input
+              type="text"
+              value={projectFormData.room_pax || ""}
+              onChange={(e) =>
+                handleProjectFormChange("room_pax", e.target.value)
+              }
+              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+              placeholder="Oda | Pax"
+            />
+          ) : (
+            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+              {headerDisplayData.room_pax}
+            </p>
+          )}
+            </div>
+            <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+              <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            Teklif Türü
           </p>
           {isEditingProject ? (
             <select
-              value={projectFormData.status || ""}
+              value={projectFormData.quote_type || ""}
               onChange={(e) =>
-                handleProjectFormChange("status", e.target.value)
+                handleProjectFormChange("quote_type", e.target.value)
               }
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
             >
-              <option value="active">Aktif</option>
-              <option value="completed">Tamamlandı</option>
-              <option value="on_hold">Beklemede</option>
-              <option value="cancelled">İptal</option>
+              <option value="">Teklif Türü Seçin</option>
+              <option value="BİRİM">BİRİM</option>
+              <option value="PAKET">PAKET</option>
             </select>
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">
-              {getStatusText(project?.status || "active")}
+            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+              {project?.quote_type || "-"}
             </p>
           )}
-        </div>
-      </div>
+            </div>
+          </div>
+        </div>      </div>
 
       {/* Financial Summary Cards removed for privacy - visible in dashboard only if needed */}
 
+              </div>
+      )}
+
+      {activeMainTab === 'details' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
       {/* Otel Sekmeleri (Çoklu Otel Desteği) - Premium Quote Style */}
       {project?.hotels_data && project.hotels_data.length > 0 && (
         <div className="mb-4">
-          <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto shadow-sm">
+          <div className="flex md:justify-center bg-gray-50 dark:bg-[#0f172a]/70 dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-gray-700/50 space-x-2 overflow-x-auto shadow-sm">
             <button
               onClick={() => handleHotelChange("all")}
-              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[10px] ${
+              className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
                 activeHotelId === "all"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -15400,28 +15493,30 @@ export default function ProjectDetailPage() {
                   className="flex items-center group relative"
                 >
                   <button
-                    onClick={() => handleHotelChange(h.id)}
+                    onClick={() => handleHotelChange((h.id || h.hotel_id))}
                     className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm group ${
-                      activeHotelId === h.id
+                      activeHotelId === (h.id || h.hotel_id)
                         ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
                         : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   >
-                    <span className="text-[10px] font-black mr-2 uppercase tracking-tight">
-                      {idx + 1}. OTEL:
+                    <span className="text-[10px] font-black uppercase tracking-tight" title={hObj?.name || h.hotel_name || ""}>
+                      {((hObj?.name || h.hotel_name || "") as string).length > 15 ? ((hObj?.name || h.hotel_name || "") as string).substring(0, 15) + "..." : (hObj?.name || h.hotel_name || "")}
                     </span>
-                    <span className="text-[10px] opacity-80 max-w-[100px] truncate uppercase font-bold tracking-tight">
-                      {hObj?.name || h.hotel_name || ""}
-                    </span>
+                    {(h.check_in_date || h.check_out_date) && (
+                      <span className="text-[10px] font-bold opacity-80 ml-2 tracking-tighter">
+                        {h.check_in_date ? h.check_in_date.substring(8, 10) + "." + h.check_in_date.substring(5, 7) : "??"}-{h.check_out_date ? h.check_out_date.substring(8, 10) + "." + h.check_out_date.substring(5, 7) : "??"}
+                      </span>
+                    )}
                   </button>
 
                   {/* Action Dropdown for Hotel Tab */}
                   {canEdit(Module.PROJECTS) && (
                     <div className="relative hotel-action-menu ml-1">
                       <button
-                        onClick={(e) => handleOpenHotelMenu(e, h.id)}
+                        onClick={(e) => handleOpenHotelMenu(e, (h.id || h.hotel_id))}
                         className={`p-1.5 rounded-lg transition-all duration-200 ${
-                          activeHotelMenuId === h.id
+                          activeHotelMenuId === (h.id || h.hotel_id)
                             ? "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
                             : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"
                         }`}
@@ -15465,7 +15560,7 @@ export default function ProjectDetailPage() {
 
             <button
               onClick={() => handleHotelChange("general")}
-              className={`flex items-center px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
+              className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
                 activeHotelId === "general"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -15479,21 +15574,23 @@ export default function ProjectDetailPage() {
 
       {/* Tabs - Premium Style */}
       <div className="mb-4">
-        <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1 rounded-xl border border-gray-100 dark:border-gray-700 space-x-1.5 overflow-x-auto shadow-sm no-scrollbar">
+        <div className="flex md:justify-center w-full bg-[#0f172a]/70 backdrop-blur-md p-1.5 rounded-xl border border-gray-700/50 space-x-2 overflow-x-auto shadow-xl no-scrollbar">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => handleTabChange(t.key)}
-              className={`flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-semibold uppercase tracking-widest ${
+              className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-semibold uppercase tracking-widest ${
                 activeTab === t.key
-                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                  : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
               }`}
             >
               {t.label}
             </button>
           ))}
         </div>
+
+
 
         <div className="p-3">
           {loading ? (
@@ -26805,6 +26902,9 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
+        </div>
+      )}
+
       {/* Transfer Zamanlama Modal */}
       {showTransferTimingModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
@@ -27733,7 +27833,7 @@ export default function ProjectDetailPage() {
           >
             {(() => {
               const h = project?.hotels_data?.find(
-                (x: any) => x.id === activeHotelMenuId,
+                (x: any) => (x.id || x.hotel_id) === activeHotelMenuId,
               );
               if (!h) return null;
               return (
@@ -27792,7 +27892,7 @@ export default function ProjectDetailPage() {
 <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteHotelTab(h.id);
+                      handleDeleteHotelTab(h.id || h.hotel_id);
                       setActiveHotelMenuId(null);
                     }}
                     title="Sil"

@@ -303,6 +303,35 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     return () => window.removeEventListener("scroll", handleScroll, true);
   }, [showAddTransferMenu, supplierDropdowns]);
 
+  useEffect(() => {
+    const handler_action_add_transfer = (e: any) => addManualTransfer(e.detail);
+    window.addEventListener('action-add-transfer', handler_action_add_transfer);
+    const handler_action_create_transfer = () => createTransfersFromAccommodation();
+    window.addEventListener('action-create-transfer', handler_action_create_transfer);
+    const handler_action_export_transfer = () => exportTransfersToExcel();
+    window.addEventListener('action-export-transfer', handler_action_export_transfer);
+    const handler_action_clear_transfer = () => {
+        if (transfers.length === 0) return;
+        openConfirm("Tüm Transferleri Temizle", `Tüm transferleri (${transfers.length} adet) kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`, async () => {
+          try {
+            await projectTransfersService.deleteByProjectId(projectId);
+            setTransfers([]);
+            setSelectedTransfers([]);
+          } catch (error) {
+            console.error("Transfer temizleme hatası:", error);
+          }
+        });
+    };
+    window.addEventListener('action-clear-transfer', handler_action_clear_transfer);
+    
+    return () => {
+      window.removeEventListener('action-add-transfer', handler_action_add_transfer);
+      window.removeEventListener('action-create-transfer', handler_action_create_transfer);
+      window.removeEventListener('action-export-transfer', handler_action_export_transfer);
+      window.removeEventListener('action-clear-transfer', handler_action_clear_transfer);
+    };
+  }, [projectId, transfers.length]);
+
   // Onay modalı state'i (callback tabanlı — her işlem için kullanılabilir)
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
@@ -365,28 +394,6 @@ export default function TransferTurTab(props: TransferTurTabProps) {
       <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-3 mb-2 bg-gray-100 dark:bg-[#0f172a]/40 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl p-3 shadow-sm shrink-0">
         <div className="flex-1 mr-4">
           <input type="text" placeholder="Transfer ara..." value={transferSearch} onChange={e => setTransferSearch(e.target.value)} className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-        </div>
-        <div className="flex gap-2">
-          <button onClick={createTransfersFromAccommodation} className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
-            Konaklamadan Transfer Oluştur
-          </button>
-          <button onClick={() => exportTransfersToExcel()} className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90 transition-colors">
-            Excel Dışa Aktar
-          </button>
-          <button onClick={() => {
-          if (transfers.length === 0) return;
-          openConfirm("Tüm Transferleri Temizle", `Tüm transferleri (${transfers.length} adet) kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`, async () => {
-            try {
-              await projectTransfersService.deleteByProjectId(projectId);
-              setTransfers([]);
-              setSelectedTransfers([]);
-            } catch (error) {
-              console.error("Transfer temizleme hatası:", error);
-            }
-          });
-        }} className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors">
-            Temizle
-          </button>
         </div>
       </div>
 

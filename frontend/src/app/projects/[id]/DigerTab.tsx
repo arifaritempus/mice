@@ -529,6 +529,18 @@ export default function DigerTab(props: DigerTabProps) {
     });
     return totals;
   }, [filteredOthers]);
+
+  useEffect(() => {
+    const handler_action_add_other = () => addManualRecord();
+    window.addEventListener('action-add-other', handler_action_add_other);
+    const handler_action_export_other = () => exportToExcel();
+    window.addEventListener('action-export-other', handler_action_export_other);
+    return () => {
+      window.removeEventListener('action-add-other', handler_action_add_other);
+      window.removeEventListener('action-export-other', handler_action_export_other);
+    };
+  }, [filteredOthers]);
+
   return <div className="space-y-4">
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
@@ -557,20 +569,6 @@ export default function DigerTab(props: DigerTabProps) {
           </div>
         </div>
 
-        <div className="flex gap-2 whitespace-nowrap">
-          <button onClick={exportToExcel} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded hover:bg-emerald-700 transition-colors shadow-sm">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Excel Export
-          </button>
-          {!isLocked && <button onClick={addManualRecord} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700 transition-colors shadow-sm">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Kayıt Ekle
-            </button>}
-        </div>
       </div>
 
       {/* Main Table */}

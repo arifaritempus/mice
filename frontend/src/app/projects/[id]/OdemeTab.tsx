@@ -1,6 +1,6 @@
 "use client";
 import { usePermissions, Module } from "@/lib/permissions";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo , useEffect} from "react";
 import { createPortal } from "react-dom";
 interface OdemeTabProps {
   projectId: string;
@@ -332,7 +332,51 @@ export default function OdemeTab(props: OdemeTabProps) {
     }
     return result;
   }, [payments, searchTags, searchInput, sortConfigActual]);
-  const exportToExcel = async () => {
+  
+  useEffect(() => {
+    const handleAddPlan = () => {
+      const item = {
+        date: "",
+        paymentType: "",
+        description: "",
+        amount: 0,
+        currency: "TRY",
+        exchangeRate: 1,
+        totalTRY: 0
+      };
+      setTempPaymentPlanItem(item);
+      setEditingPaymentPlanIndex(paymentPlans.length);
+      setPaymentPlanAmountInput("");
+      setPaymentPlanTotalTRYInput("");
+    };
+
+    const handleAddOdeme = () => {
+      const item = {
+        date: "",
+        paymentType: "",
+        description: "",
+        amount: 0,
+        currency: "TRY",
+        exchangeRate: 1,
+        totalTRY: 0
+      };
+      setTempPaymentItem(item);
+      setEditingPaymentIndex(payments.length);
+      setPaymentAmountInput("");
+      setPaymentTotalTRYInput("");
+    };
+
+    window.addEventListener('action-add-plan-odeme', handleAddPlan);
+    window.addEventListener('action-add-odeme', handleAddOdeme);
+    window.addEventListener('action-export-odeme', exportToExcel);
+
+    return () => {
+      window.removeEventListener('action-add-plan-odeme', handleAddPlan);
+      window.removeEventListener('action-add-odeme', handleAddOdeme);
+      window.removeEventListener('action-export-odeme', exportToExcel);
+    };
+  }, [projectId, paymentPlans.length, payments.length]);
+const exportToExcel = async () => {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
@@ -545,28 +589,7 @@ export default function OdemeTab(props: OdemeTabProps) {
       </div>
 
       
-      {/* Üst İşlem Barı (Arama ve Excel) */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <div className="relative w-full sm:w-96 group">
-          <div className="flex flex-wrap items-center gap-1.5 w-full px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all shadow-inner">
-            {searchTags.map((tag, idx) => <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
-                {tag}
-                <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-600 dark:hover:text-blue-400">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </span>)}
-            <input type="text" className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none" placeholder={searchTags.length === 0 ? "Arama yap... (Enter ile çoğalt)" : "Yeni arama..."} value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-          </div>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <button onClick={exportToExcel} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Excel Export
-          </button>
-        </div>
-      </div>
+      
 
       
       {/* Ödeme Planı (Alış) */}
@@ -575,24 +598,7 @@ export default function OdemeTab(props: OdemeTabProps) {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             Ödeme Planı
           </h3>
-          <button onClick={() => {
-          const item = {
-            date: "",
-            hotel: "",
-            paymentType: "",
-            description: "",
-            amount: 0,
-            currency: "TRY",
-            exchangeRate: 1,
-            totalTRY: 0
-          };
-          setTempPaymentPlanItem(item);
-          setEditingPaymentPlanIndex(paymentPlans.length);
-          setPaymentPlanAmountInput("");
-          setPaymentPlanTotalTRYInput("");
-        }} className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90">
-            Yeni Plan
-          </button>
+          
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs table-fixed">
@@ -1090,24 +1096,7 @@ export default function OdemeTab(props: OdemeTabProps) {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             Ödemeler
           </h3>
-          <button onClick={() => {
-          const item = {
-            date: "",
-            hotel: "",
-            paymentType: "",
-            description: "",
-            amount: 0,
-            currency: "TRY",
-            exchangeRate: 1,
-            totalTRY: 0
-          };
-          setTempPaymentItem(item);
-          setEditingPaymentIndex(payments.length);
-          setPaymentAmountInput("");
-          setPaymentTotalTRYInput("");
-        }} className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
-            Yeni Ödeme
-          </button>
+          
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs table-fixed">

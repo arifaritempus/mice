@@ -1,6 +1,6 @@
 "use client";
 import { usePermissions, Module } from "@/lib/permissions";
-import { useMemo, useCallback, memo, useState } from "react";
+import { useMemo, useCallback, memo, useState, useEffect } from "react";
 interface AccommodationTabProps {
   isLocked?: boolean;
   accommodationItems: any[];
@@ -177,7 +177,14 @@ const AccommodationTabOptimized = memo(({
   const compIsLocked = isLocked || false;
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set(HIDABLE_COLUMNS));
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const toggleColumnVisibility = useCallback((column: string) => {
+    useEffect(() => {
+    const toggleCollapse = () => setIsCollapsed(prev => !prev);
+    window.addEventListener('action-toggle-collapse-accommodation', toggleCollapse);
+    return () => {
+      window.removeEventListener('action-toggle-collapse-accommodation', toggleCollapse);
+    };
+  }, []);
+const toggleColumnVisibility = useCallback((column: string) => {
     setHiddenColumns(prev => {
       const newSet = new Set(prev);
       if (newSet.has(column)) {
@@ -234,35 +241,7 @@ const AccommodationTabOptimized = memo(({
           </div>
 
           {/* Buton Grupları */}
-          <div className="flex flex-wrap items-center gap-2">
-            <input type="file" accept=".xlsx,.xls" onChange={handleAccommodationImport} className="hidden" id="accommodation-import" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
-            <label htmlFor="accommodation-import" className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-500/90 cursor-pointer transition-colors whitespace-nowrap">
-              Excel İçe Aktar
-            </label>
-
-            <button onClick={handleAccommodationExport} className="px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors whitespace-nowrap">
-              Excel Dışa Aktar
-            </button>
-
-            <button onClick={handleAccommodationClear} className="px-3 py-1.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors whitespace-nowrap">
-              Listeyi Temizle
-            </button>
-
-            {/* Daralt/Genişlet Butonu */}
-            <button onClick={toggleCollapse} className="px-3 py-1.5 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors flex items-center gap-1 whitespace-nowrap">
-              {isCollapsed ? <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Genişlet
-                </> : <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
-                  </svg>
-                  Daralt
-                </>}
-            </button>
-          </div>
+          
         </div>
 
         {/* Tablo */}
@@ -292,7 +271,15 @@ const AccommodationTabOptimized = memo(({
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                   {filteredItems.map((item, index) => {
               const originalIndex = accommodationItems.findIndex((x: any) => x.id === item.id);
-              return <tr key={item.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              return <tr 
+                key={item.id || index} 
+                className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${permEdit && (!compIsLocked || isSuperAdmin) ? 'cursor-pointer' : ''}`}
+                onDoubleClick={() => {
+                  if (permEdit && (!compIsLocked || isSuperAdmin)) {
+                    handleAccommodationEdit(item.id);
+                  }
+                }}
+              >
                         {/* İşlemler Sütunu */}
                         <td className="w-40 px-2 py-1 sticky left-0 bg-white dark:bg-gray-800 z-10">
                           <div className="flex justify-center space-x-1">

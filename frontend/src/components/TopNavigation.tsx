@@ -20,6 +20,7 @@ import {
   FilePlus,
   Hotel,
   Eye,
+  Edit,
   Briefcase,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -150,7 +151,7 @@ export default function TopNavigation() {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="pointer-events-auto flex items-center justify-between bg-[#0f172a]/65 backdrop-blur-2xl border border-white/10 rounded-full px-4 py-2 shadow-[0_8px_32px_rgba(59,130,246,0.15)] min-w-[800px] w-auto transition-all"
+          className="pointer-events-auto flex items-center justify-between bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-full px-4 py-2 shadow-[0_8px_32px_rgba(59,130,246,0.15)] w-auto transition-all"
         >
           {/* Left: App Grid & Logo Area */}
           <div className="flex items-center mr-8 gap-4">
@@ -186,47 +187,41 @@ export default function TopNavigation() {
 
           {/* Center: Fluid Navigation */}
           <div className="flex items-center gap-2">
-            {navItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/" && pathname?.startsWith(item.href));
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`relative px-4 py-2.5 flex items-center gap-2 rounded-full transition-all duration-300 group ${
-                    isActive ? "text-white" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <item.icon
-                    className={`w-[18px] h-[18px] group-hover:-translate-y-0.5 transition-transform duration-300 ${isActive ? "text-blue-400" : ""}`}
-                  />
-                  <span className="text-sm font-bold tracking-wide">
-                    {item.label}
-                  </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNavBubble"
-                      className="absolute inset-0 bg-white/10 rounded-full border border-white/5 shadow-[inset_0_0_12px_rgba(255,255,255,0.05)]"
-                      initial={false}
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+            {/* Görüntüleme Genişleyen Buton (Ana Sayfa, Dashboard, Raporlar) */}
+            <div className="flex items-center group bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500">
+                <Eye size={16} />
+              </div>
+              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[350px] group-hover:ml-2 group-hover:mr-1 transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+                {navItems.map((item) => {
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href !== "/" && pathname?.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                        isActive 
+                          ? "bg-blue-500/30 text-white border border-blue-500/30" 
+                          : "bg-white/10 hover:bg-white/20 text-blue-300 hover:text-blue-200"
+                      }`}
+                    >
+                      <item.icon size={14} />
+                      <span className="text-xs font-bold">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Yeni Oluştur Genişleyen Buton */}
             {(canCreate(Module.QUOTES) || canCreate(Module.SEJOUR)) && (
-            <div className="flex items-center gap-3 group ml-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full px-2 py-1.5 transition-all duration-300 cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500">
+            <div className="flex items-center group ml-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500">
                 <Plus size={18} className="font-black" />
               </div>
-              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[220px] transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[230px] group-hover:ml-2 group-hover:mr-1 transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
                 {canCreate(Module.QUOTES) && (
                 <Link
                   href="/quotes/create"
@@ -249,17 +244,17 @@ export default function TopNavigation() {
             </div>
             )}
 
-            {/* Görüntüleme Genişleyen Buton */}
+            {/* Düzenleme/Listeleme Genişleyen Buton */}
             {(canView(Module.QUOTES) || canView(Module.PROJECTS) || canView(Module.SEJOUR)) && (
-            <div className="flex items-center gap-3 group ml-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-full px-2 py-1.5 transition-all duration-300 cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500">
-                <Eye size={16} />
+            <div className="flex items-center group ml-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-500">
+                <Edit size={16} />
               </div>
-              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[280px] transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[290px] group-hover:ml-2 group-hover:mr-1 transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
                 {canView(Module.QUOTES) && (
                 <Link
                   href="/quotes"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-blue-300 hover:text-blue-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-purple-300 hover:text-purple-200 transition-colors"
                 >
                   <FileText size={14} />
                   <span className="text-xs font-bold">Teklif</span>
@@ -268,7 +263,7 @@ export default function TopNavigation() {
                 {canView(Module.PROJECTS) && (
                 <Link
                   href="/projects"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-blue-300 hover:text-blue-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-purple-300 hover:text-purple-200 transition-colors"
                 >
                   <Briefcase size={14} />
                   <span className="text-xs font-bold">Proje</span>
@@ -277,7 +272,7 @@ export default function TopNavigation() {
                 {canView(Module.SEJOUR) && (
                 <Link
                   href="/sejour"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-blue-300 hover:text-blue-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-purple-300 hover:text-purple-200 transition-colors"
                 >
                   <Hotel size={14} />
                   <span className="text-xs font-bold">Sejour</span>

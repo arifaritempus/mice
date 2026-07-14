@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef , useEffect} from "react";
 import { usePermissions, Module, Permission } from "@/lib/permissions";
 import FieldsetGuard from "@/components/permissions/FieldsetGuard";
 import PermissionBoundary from "@/components/permissions/PermissionBoundary";
@@ -142,74 +142,7 @@ export default function SalesTab({
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
           Satış
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          {handleCreateLink && (
-            <button
-              onClick={handleCreateLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                />
-              </svg>
-              Mutabakat Linki
-            </button>
-          )}
-          {!isLocked && canCreate && (
-            <button
-              onClick={() => {
-                console.log(
-                  "Başlık ekleme ikonuna tıklandı - kategori seçim modalı açılmalı",
-                );
-                setShowCategoryModalSales(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-500/90 text-white text-xs font-bold rounded-lg transition-all shadow-sm"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Yeni Satış Kalemi
-            </button>
-          )}
-          <button
-            onClick={exportSalesToExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600/10 text-green-600 hover:bg-green-600 hover:text-white text-xs font-bold rounded-lg transition-all border border-green-600/20"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            Excel Dışa Aktar
-          </button>
-        </div>
+        
       </div>
       {/* Tablo Yatay Kaydırma Sarmalayıcısı */}
       <div className="overflow-x-auto custom-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0">
@@ -675,7 +608,12 @@ export default function SalesTab({
               return (
                 <div
                   key={it.id}
-                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"}`}
+                  onDoubleClick={() => {
+                    if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
+                      editRow("sales", it.id);
+                    }
+                  }}
+                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"}`}
                 >
                   {it.isEditing ? (
                     // Düzenleme modu

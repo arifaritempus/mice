@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef , useEffect} from "react";
 import { usePermissions, Module, Permission } from "@/lib/permissions";
 import FieldsetGuard from "@/components/permissions/FieldsetGuard";
 import PermissionBoundary from "@/components/permissions/PermissionBoundary";
@@ -187,33 +187,7 @@ export default function PurchaseTab({
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
           Alış
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          {!isLocked && (
-            <button
-              onClick={() => {
-                if (isLocked) {
-                  alert(
-                    "Bu proje kilitli olduğu için satış kalemleri içe aktarılamaz. Önce Projeler listesinden kilidi kaldırmanız gerekir.",
-                  );
-                  return;
-                }
-                importSalesItemsToPurchase(true);
-              }}
-              className="px-2 py-1 text-xs rounded bg-blue-500 text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLocked || isImportingSalesToPurchase}
-            >
-              {isImportingSalesToPurchase
-                ? "Aktarılıyor..."
-                : "Satış Kalemlerini İçe Aktar"}
-            </button>
-          )}
-          <button
-            onClick={exportPurchaseToExcel}
-            className="px-2 py-1 text-xs rounded bg-green-500 text-white hover:bg-green-600"
-          >
-            Excel'e Aktar
-          </button>
-        </div>
+        
       </div>
       {/* Tablo Yatay Kaydırma Sarmalayıcısı */}
       <div className="overflow-x-auto custom-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0">
@@ -691,7 +665,12 @@ export default function PurchaseTab({
               return (
                 <div
                   key={it.id}
-                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"}`}
+                  onDoubleClick={() => {
+                    if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
+                      editRow("purchase", it.id);
+                    }
+                  }}
+                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"}`}
                 >
                   {it.isEditing ? (
                     <>
