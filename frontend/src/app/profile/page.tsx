@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useState, useEffect } from "react";
@@ -287,12 +288,12 @@ export default function ProfilePage() {
           <p className="text-sm text-slate-400 mb-6">
             Profil sayfasına erişim için yetkiniz bulunmuyor.
           </p>
-          <a
+          <Link
             href="/"
             className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase inline-block"
           >
             Ana Sayfaya Dön
-          </a>
+          </Link>
         </div>
       </div>
     );
