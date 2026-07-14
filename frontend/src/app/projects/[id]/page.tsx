@@ -15026,7 +15026,7 @@ export default function ProjectDetailPage() {
                     )}
                     {activeTab === 'ucak-bileti' && (
                       <>
-                        <button onClick={() => handleFlightAdd("")} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Bilet Ekle</button>
+                        <button onClick={() => handleFlightAdd()} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Bilet Ekle</button>
                         <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
                           <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFlightImport} />
                           Excel İçe Aktar
