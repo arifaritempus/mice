@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   quotesService,
@@ -232,6 +232,9 @@ export default function QuoteViewPage() {
   const [linkPassword, setLinkPassword] = useState("");
   const [linkExpiryDate, setLinkExpiryDate] = useState("");
   const [linkIsActive, setLinkIsActive] = useState(true);
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'details' ? 'details' : 'info';
+  const [activeMainTab, setActiveMainTab] = useState<'info' | 'details'>(initialTab);
   const [generatedLink, setGeneratedLink] = useState("");
   const [quoteLinks, setQuoteLinks] = useState<any[]>([]);
   const [visiblePasswords, setVisiblePasswords] = useState<
@@ -486,8 +489,7 @@ export default function QuoteViewPage() {
     try {
       const ExcelJS = (await import("exceljs")).default;
       const workbook = new ExcelJS.Workbook();
-      const { iconLogoBase64, wordmarkLogoBase64 } =
-        await getLogosForExcel(true);
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (d: string): "png" | "jpeg" =>
         (d || "").includes("image/png") ? "png" : "jpeg";
@@ -538,7 +540,7 @@ export default function QuoteViewPage() {
             }),
             {
               tl: { col: 0.15, row: 0.15 },
-              ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+              ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) },
             },
           );
         if (wordmarkLogoBase64)
@@ -549,7 +551,7 @@ export default function QuoteViewPage() {
             }),
             {
               tl: { col: 7.9, row: 0.23 },
-              ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+              ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) },
             },
           );
 
@@ -1247,218 +1249,225 @@ export default function QuoteViewPage() {
         </div>
       )}
 
-      <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent transition-colors duration-200 compact">
-        <div className="p-4">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Teklif Detayı
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-0.5 text-xs">
-                Referans: {quote.reference}
-              </p>
+      <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
+        {/* NEW: Sticky Main Tabs - Full Width Minimal */}
+        <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-white/5" style={{ backgroundColor: "rgb(var(--theme-bg-main, 15, 23, 42))" }}>
+          <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
+            {/* Left placeholder to balance the flex layout */}
+            <div className="w-[150px] flex items-center">
+              <Link href="/quotes" className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors flex items-center border border-white/10">
+                GERİ DÖN
+              </Link>
             </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setShowLinkModal(true)}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-wider transition-colors shadow-sm flex items-center"
+            
+            {/* Center Tabs */}
+            <div className="flex bg-transparent p-1 rounded-xl border border-white/5 w-full max-w-[350px]">
+              <button 
+                onClick={() => setActiveMainTab('info')} 
+                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
               >
-                <svg
-                  className="w-3 h-3 mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                  />
-                </svg>
-                Link
+                TEKLİF BİLGİLERİ
               </button>
-              <button
-                onClick={handleExportExcel}
-                disabled={exporting}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-wider transition-colors shadow-sm disabled:opacity-50 flex items-center"
+              <button 
+                onClick={() => setActiveMainTab('details')} 
+                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
               >
-                <svg
-                  className="w-3 h-3 mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                {exporting ? "İşleniyor..." : "Excel"}
+                TEKLİF DETAYLARI
               </button>
-              <button
-                onClick={() => {
-                  setShowLogsModal(true);
-                  fetchLogs();
-                }}
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-wider transition-colors shadow-sm flex items-center"
-                title="Log Kayıtları"
-              >
-                <ScrollText size={12} className="mr-1" />
-                Loglar
-              </button>
-              <Link
-                href={`/quotes/${quote.id}/edit`}
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-wider transition-colors shadow-sm flex items-center"
-              >
-                Düzenle
-              </Link>
-              <Link
-                href="/quotes"
-                className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-wider transition-colors shadow-sm flex items-center"
-              >
-                Geri Dön
-              </Link>
+            </div>
+            
+            {/* Right Action (Settings) Button */}
+            <div className="w-[150px] flex justify-end">
+              <div className="flex-shrink-0 relative group z-50">
+                <button className="bg-transparent border border-gray-600/50 hover:bg-white/5 text-gray-300 hover:text-white p-2 rounded-xl transition-all duration-200" title="İşlemler">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                </button>
+                <div className="absolute right-0 top-full mt-2 w-48 bg-[#1e293b] rounded-xl shadow-2xl border border-gray-700 p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100">
+                  <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-1">İşlemler</div>
+                  <Link href={`/quotes/${quote.id}/edit?tab=${activeMainTab}`} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                    Düzenle
+                  </Link>
+                  <button onClick={() => setShowLinkModal(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                    Link Oluştur
+                  </button>
+                  <button onClick={handleExportExcel} disabled={exporting} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 disabled:opacity-50">
+                    {exporting ? "Excel İşleniyor..." : "Excel İndir"}
+                  </button>
+                  <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                    Log Kayıtları
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="p-4 max-w-[1920px] mx-auto">
 
           <div className="space-y-4">
-            {/* Teklif Bilgileri */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Teklif Bilgileri
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-                {/* Reference */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    KOD
-                  </label>
-                  <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
-                    {quote.reference}
+            
+            {/* ─── INFO TAB ─── */}
+            {activeMainTab === 'info' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full">
+                {/* 3 Premium Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4">
+                  
+                  {/* Card 1: Temel Bilgiler */}
+                  <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
+                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        REFERANS
+                      </p>
+                      <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                        {quote.reference}
+                      </p>
+                    </div>
+                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        TEKLİF DURUM
+                      </p>
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-md ${getStatusColor(quote.status)}`}>
+                          {quote.status}
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Agency */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    ACENTE
-                  </label>
-                  <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
-                    {getAgencyName(quote.agency_id) || "-"}
+                  {/* Card 2: Paydaşlar */}
+                  <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        FİRMA ADI
+                      </p>
+                      <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                        {quote.company_name || "-"}
+                      </p>
+                    </div>
+                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        ACENTE ADI
+                      </p>
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                        {getAgencyName(quote.agency_id) || "-"}
+                      </p>
+                    </div>
+                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        OPERASYON SORUMLUSU
+                      </p>
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                        {quote.operation_managers && quote.operation_managers.length > 0 ? (
+                          quote.operation_managers.map((id: string) => users.find((x: any) => x.id === id)?.first_name).filter(Boolean).join(", ")
+                        ) : (
+                          "-"
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Company Name */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    FİRMA ADI
-                  </label>
-                  <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
-                    {quote.company_name || "-"}
+                  {/* Card 3: Teklif Bilgileri */}
+                  <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors flex-1 flex flex-col min-h-[100px] overflow-hidden">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-shrink-0">
+                        OTELLER VE KONAKLAMA TARİHLERİ
+                      </p>
+                      <div className="space-y-2 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+                        {hotelsData && hotelsData.length > 0 ? (
+                          hotelsData.map((h: any, idx: number) => (
+                            <div key={idx} className="flex justify-between items-center bg-[#1e293b]/50 p-2 rounded-lg border border-gray-700/30">
+                              <span className="text-[11px] font-bold text-gray-300 truncate mr-2" title={getHotelName(h.hotel_id)}>
+                                {getHotelName(h.hotel_id)}
+                              </span>
+                              <span className="text-[10px] font-black text-gray-500 whitespace-nowrap bg-black/20 px-2 py-0.5 rounded-full">
+                                {h.check_in_date ? new Date(h.check_in_date).toLocaleDateString('tr-TR') : '-'} - {h.check_out_date ? new Date(h.check_out_date).toLocaleDateString('tr-TR') : '-'}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-gray-500 italic mt-2">Otel bilgisi bulunmuyor</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                        <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                          ODA | PAX
+                        </p>
+                        <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                          {hotelsData ? hotelsData.reduce((acc: number, h: any) => acc + (Number(h.room_count) || 0), 0) : 0} | {hotelsData ? hotelsData.reduce((acc: number, h: any) => acc + (Number(h.pax_count) || 0), 0) : 0}
+                        </p>
+                      </div>
+                      <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                        <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                          TEKLİF TÜRÜ
+                        </p>
+                        <p className="text-base font-bold text-gray-900 dark:text-white leading-tight uppercase">
+                          {quote.quote_type || "BİRİM"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Status */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    DURUM
-                  </label>
-                  <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
-                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-md ${getStatusColor(quote.status)}`}>
-                      {quote.status}
-                    </span>
-                  </div>
                 </div>
-
-                {/* Quote Type */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    TEKLİF TÜRÜ
-                  </label>
-                  <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
-                    {quote.quote_type || "BİRİM"}
+                
+                {/* Notlar Section */}
+                {quote.notes && (
+                  <div className="px-4 mb-6">
+                    <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl">
+                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        NOTLAR
+                      </p>
+                      <div className="text-sm font-semibold text-gray-300 whitespace-pre-wrap">
+                        {quote.notes}
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                {/* Operation Managers */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    OPERASYON SORUMLULARI
-                  </label>
-                  <div className="w-full px-3 h-8 flex gap-1 items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white overflow-hidden whitespace-nowrap">
-                    {quote.operation_managers && quote.operation_managers.length > 0 ? (
-                      quote.operation_managers.map((id: string, index: number) => {
-                        const u = users.find((x: any) => x.id === id);
-                        if (!u) return null;
-                        if (index < 2) {
-                          return <span key={id} className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-1 py-0.5 rounded text-[10px] leading-none truncate max-w-[65px]">{u.first_name}</span>;
-                        }
-                        if (index === 2) {
-                          return <span key="more" className="bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300 px-1 py-0.5 rounded text-[10px] leading-none font-medium">+{quote.operation_managers.length - 2}</span>;
-                        }
-                        return null;
-                      })
-                    ) : (
-                      <span className="text-gray-400 font-normal text-xs">-</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Notes */}
-                <div className="md:col-span-6 mt-4">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    NOTLAR
-                  </label>
-                  <div className="w-full px-3 py-2 h-24 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white whitespace-pre-wrap overflow-y-auto">
-                    {quote.notes || "-"}
-                  </div>
-                </div>
+                )}
               </div>
-            </div>
+            )}
 
-            {/* Hizmet Kalemleri */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Otel & Konaklama Seçimleri
-              </h2>
+            {/* ─── DETAILS TAB ─── */}
+            {activeMainTab === 'details' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full px-4">
+                <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-700/50 p-6 transition-colors duration-200 mb-6">
+                  
+                  {/* Hotel filter tabs */}
+                  <div className="flex justify-center flex-wrap gap-2 bg-transparent p-1.5 rounded-lg border border-white/5 custom-scrollbar mb-6">                    {hotelsData.map((h: any) => (
+                      <div
+                        key={h.id}
+                        onClick={() => setActiveViewHotelId(h.id)}
+                        className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap group ${
+                          activeViewHotelId === h.id
+                            ? "bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                            : "bg-[#1e293b]/80 border border-gray-700/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
+                        }`}
+                      >
+                        <span className="text-[10px] font-black uppercase tracking-tight truncate max-w-[150px]">
+                          {getHotelName(h.hotel_id) !== "-"
+                            ? getHotelName(h.hotel_id).length > 15
+                              ? getHotelName(h.hotel_id).substring(0, 15) + "..."
+                              : getHotelName(h.hotel_id)
+                            : "Otel"}
+                        </span>
+                        <span className="ml-2 text-[9px] opacity-60 font-mono bg-black/20 px-1.5 py-0.5 rounded">
+                          {h.check_in_date ? new Date(h.check_in_date).toLocaleDateString('tr-TR', {day: '2-digit', month:'2-digit'}) : ''}
+                          {h.check_out_date ? '-' + new Date(h.check_out_date).toLocaleDateString('tr-TR', {day: '2-digit', month:'2-digit'}) : ''}
+                        </span>
+                      </div>
+                    ))}
 
-              {/* Hotel filter tabs – same style as create/edit page */}
-              <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto mb-4">
-                {hotelsData.map((h: any, index: number) => (
-                  <div
-                    key={h.id}
-                    onClick={() => setActiveViewHotelId(h.id)}
-                    className={`flex items-center px-4 py-2 rounded-md cursor-pointer transition-all duration-200 whitespace-nowrap group ${
-                      activeViewHotelId === h.id
-                        ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    <span className="text-xs font-semibold mr-2">
-                      {index + 1}. OTEL
-                    </span>
-                    <span className="text-[10px] opacity-80 max-w-[100px] truncate">
-                      {getHotelName(h.hotel_id) !== "-"
-                        ? getHotelName(h.hotel_id)
-                        : "Otel"}
-                    </span>
+                    <div
+                      onClick={() => setActiveViewHotelId("general")}
+                      className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap ${
+                        activeViewHotelId === "general"
+                          ? "bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                          : "bg-[#1e293b]/80 border border-gray-700/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
+                      }`}
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-tight">GENEL HİZMETLER</span>
+                    </div>
                   </div>
-                ))}
-                <div
-                  onClick={() => setActiveViewHotelId("general")}
-                  className={`flex items-center px-4 py-2 rounded-md cursor-pointer transition-all duration-200 whitespace-nowrap ${
-                    activeViewHotelId === "general"
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  <span className="text-xs font-semibold">GENEL HİZMETLER</span>
-                </div>
-              </div>
 
               {/* Active Hotel Info Panel (Read-only version of Create/Edit layout) */}
               {activeViewHotelId &&
@@ -1472,26 +1481,26 @@ export default function QuoteViewPage() {
                     <div className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-blue-500 ring-2 ring-blue-500/10 shadow-sm space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end">
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Otel
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {getHotelName(currentHotel.hotel_id)}
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Otel Konsepti
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.hotel_concept || "-"}
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             C/IN Tarihi
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.check_in_date
                               ? new Date(
                                   currentHotel.check_in_date,
@@ -1500,10 +1509,10 @@ export default function QuoteViewPage() {
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             C/OUT Tarihi
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.check_out_date
                               ? new Date(
                                   currentHotel.check_out_date,
@@ -1512,34 +1521,34 @@ export default function QuoteViewPage() {
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Oda Sayısı
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.room_count || 0}
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Pax Sayısı
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.pax_count || 0}
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Opsiyon
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.option || "-"}
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Opsiyon Tarihi
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             {currentHotel.option_date
                               ? new Date(
                                   currentHotel.option_date,
@@ -1548,10 +1557,10 @@ export default function QuoteViewPage() {
                           </div>
                         </div>
                         <div className="w-full">
-                          <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Durum
                           </label>
-                          <div className="w-full px-4 h-8 flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-xs text-gray-900 dark:text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
                             <span
                               className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${getStatusColor(currentHotel.hotel_status || (currentHotel.is_confirmed ? "KONFİRME" : "BEKLEMEDE"))}`}
                             >
@@ -1580,6 +1589,8 @@ export default function QuoteViewPage() {
                 setNewItem={setNewServiceItem}
               />
             </div>
+            </div>
+            )}
           </div>
         </div>
       </div>

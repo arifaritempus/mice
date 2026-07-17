@@ -377,8 +377,7 @@ export default function CreateSejourPage() {
 
   const loadLogos = async () => {
     try {
-      const { iconLogoBase64, wordmarkLogoBase64 } =
-        await getLogosForExcel(true);
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
       if (iconLogoBase64) setDarkIconLogo(iconLogoBase64);
       if (wordmarkLogoBase64) setDarkWordmarkLogo(wordmarkLogoBase64);
     } catch (error) {
@@ -392,15 +391,15 @@ export default function CreateSejourPage() {
       const generalSettings = settings.general_settings || {};
       setCompanyInfo({
         company_name:
-          generalSettings.company_name ||
+          generalSettings.companyName || generalSettings.company_name ||
           (typeof document !== "undefined"
             ? document.title.split("-")[0].trim()
             : "Firma"),
-        company_email: generalSettings.company_email || "info@tempustravel.co",
-        company_phone: generalSettings.company_phone || "",
-        company_address: generalSettings.company_address || "",
+        company_email: generalSettings.companyEmail || generalSettings.company_email || "info@tempustravel.co",
+        company_phone: generalSettings.companyPhone || generalSettings.company_phone || "",
+        company_address: generalSettings.companyAddress || generalSettings.company_address || "",
         company_website:
-          generalSettings.company_website || "www.tempustravel.co",
+          generalSettings.companyWebsite || generalSettings.company_website || "www.tempustravel.co",
       });
     } catch (error) {
       console.error("Error loading company info:", error);

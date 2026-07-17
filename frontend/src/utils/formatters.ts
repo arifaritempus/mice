@@ -33,11 +33,11 @@ export const formatDateRange = (startDate: string | Date, endDate: string | Date
 };
 
 // Kısa gün adını döndür (Örn: Pzt, Sal, vs.)
-export const getDayNameShort = (date: string | Date) => {
+export const getDayNameShort = (date: string | Date, locale: string = 'tr-TR') => {
   try {
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('tr-TR', { weekday: 'short' });
+    return d.toLocaleDateString(locale, { weekday: 'short' });
   } catch (e) {
     return '';
   }

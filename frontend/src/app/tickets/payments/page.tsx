@@ -22,6 +22,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { DEFAULT_PAGE_SIZE, paginateItems } from "@/types/pagination";
 import Modal from "@/components/Modal";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { toast } from "react-hot-toast";
 import {
   Plus,
@@ -107,6 +108,7 @@ const parseTypedDate = (value: string): string | null => {
 
 export default function TicketPaymentsPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
+  const { t, language } = useLanguage();
   const toCalendarYmd = useCallback(
     (value: string | Date | null | undefined): string => {
       if (value == null) return "";
@@ -436,10 +438,10 @@ export default function TicketPaymentsPage() {
           ],
         });
 
-        toast.success("Ödeme planı başarıyla oluşturuldu!");
+        toast.success(t('ticketsPayments.msgPlanCreated') || "Ödeme planı başarıyla oluşturuldu!");
       } catch (error) {
         console.error("Ödeme planı oluşturma hatası:", error);
-        toast.error("Ödeme planı oluşturulurken hata oluştu!");
+        toast.error(t('ticketsPayments.msgPlanCreateError') || "Ödeme planı oluşturulurken hata oluştu!");
       }
     },
     [],
@@ -450,7 +452,7 @@ export default function TicketPaymentsPage() {
       try {
         const index = paymentPlans.findIndex((plan) => plan.id === planId);
         if (index === -1) {
-          toast.error("Ödeme planı bulunamadı!");
+          toast.error(t('ticketsPayments.msgPlanNotFound') || "Ödeme planı bulunamadı!");
           return;
         }
 
@@ -498,10 +500,10 @@ export default function TicketPaymentsPage() {
           ],
         });
 
-        toast.success("Ödeme planı başarıyla güncellendi!");
+        toast.success(t('ticketsPayments.msgPlanUpdated') || "Ödeme planı başarıyla güncellendi!");
       } catch (error) {
         console.error("Ödeme planı güncelleme hatası:", error);
-        toast.error("Ödeme planı güncellenirken hata oluştu!");
+        toast.error(t('ticketsPayments.msgPlanUpdateError') || "Ödeme planı güncellenirken hata oluştu!");
       }
     },
     [paymentPlans],
@@ -512,17 +514,17 @@ export default function TicketPaymentsPage() {
 
     // Validation ekleyelim
     if (!newPayment.amount || newPayment.amount <= 0) {
-      alert("Lütfen geçerli bir tutar girin!");
+      toast.error(t('ticketsPayments.msgInvalidAmount') || "Lütfen geçerli bir tutar girin!");
       return;
     }
 
     if (!newPayment.payment_date) {
-      toast.error("Lütfen ödeme tarihi seçin!");
+      toast.error(t('ticketsPayments.msgSelectDate') || "Lütfen ödeme tarihi seçin!");
       return;
     }
 
     if (!newPayment.recipient.trim()) {
-      toast.error("Lütfen alıcı bilgisini girin!");
+      toast.error(t('ticketsPayments.msgEnterRecipient') || "Lütfen alıcı bilgisini girin!");
       return;
     }
 
@@ -558,7 +560,7 @@ export default function TicketPaymentsPage() {
           );
         });
 
-        toast.success("Ödeme başarıyla güncellendi!");
+        toast.success(t('ticketsPayments.msgPaymentUpdated') || "Ödeme başarıyla güncellendi!");
       } else {
         // YENİ ÖDEME KAYDI OLUŞTUR
         const ticket = confirmedTickets.find(
@@ -588,7 +590,7 @@ export default function TicketPaymentsPage() {
           ...prev,
         ]);
 
-        toast.success("Ödeme başarıyla kaydedildi!");
+        toast.success(t('ticketsPayments.msgPaymentSaved') || "Ödeme başarıyla kaydedildi!");
       }
 
       setShowPaymentModal(false);
@@ -601,10 +603,10 @@ export default function TicketPaymentsPage() {
         recipient: "",
         notes: "",
       });
-      toast.success("Ödeme başarıyla kaydedildi!");
+      toast.success(t('ticketsPayments.msgPaymentSaved') || "Ödeme başarıyla kaydedildi!");
     } catch (error) {
       console.error("Ödeme kaydetme hatası:", error);
-      toast.error("Ödeme kaydedilirken hata oluştu!");
+      toast.error(t('ticketsPayments.msgPaymentSaveError') || "Ödeme kaydedilirken hata oluştu!");
     }
   }, [selectedPaymentPlan, newPayment, selectedPaymentRecord, toCalendarYmd]);
 
@@ -764,7 +766,7 @@ export default function TicketPaymentsPage() {
         setPaymentPlans((prev) =>
           prev.filter((plan) => plan.id !== deleteConfirm.id),
         );
-        toast.success("Ödeme planı başarıyla silindi!");
+        toast.success(t('ticketsPayments.msgPlanDeleted') || "Ödeme planı başarıyla silindi!");
       } else {
         await ticketPaymentRecordsService.delete(deleteConfirm.id);
         setPaymentRecords((prev) =>
@@ -782,7 +784,7 @@ export default function TicketPaymentsPage() {
             notes: "",
           });
         }
-        toast.success("Ödeme kaydı başarıyla silindi!");
+        toast.success(t('ticketsPayments.msgPaymentDeleted') || "Ödeme kaydı başarıyla silindi!");
       }
       setDeleteConfirm({
         show: false,
@@ -792,11 +794,11 @@ export default function TicketPaymentsPage() {
       });
     } catch (error) {
       console.error("Silme hatası:", error);
-      toast.error(
-        deleteConfirm.type === "plan"
-          ? "Ödeme planı silinirken hata oluştu!"
-          : "Ödeme silinirken hata oluştu!",
-      );
+        toast.error(
+          deleteConfirm.type === "plan"
+            ? (t('ticketsPayments.msgPlanDeleteError') || "Ödeme planı silinirken hata oluştu!")
+            : (t('ticketsPayments.msgPaymentDeleteError') || "Ödeme silinirken hata oluştu!")
+        );
     } finally {
       setDeleteConfirm((prev) => ({ ...prev, isDeleting: false }));
     }
@@ -807,7 +809,7 @@ export default function TicketPaymentsPage() {
     const ExcelJS = (await import("exceljs")).default;
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet(
-      `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Bilet Ödemeleri`,
+      `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - ${t('ticketsPayments.excelFilenameSuffix') || "Bilet Ödemeleri"}`,
     );
     sheet.pageSetup = {
       orientation: "landscape",
@@ -859,7 +861,7 @@ export default function TicketPaymentsPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.15, row: 0.15 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: 120, height: 60 } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -869,29 +871,29 @@ export default function TicketPaymentsPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 13.5, row: 0.23 },
-        ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
+        ext: { width: 120, height: 60 } as any,
       } as any);
     }
 
     // Columns
     sheet.columns = [
-      { header: "VOUCHER NO", key: "voucher_no", width: 16 },
-      { header: "ACENTE", key: "agent", width: 20 },
-      { header: "FİRMA ADI", key: "company_name", width: 22 },
-      { header: "TEDARİKÇİ", key: "supplier", width: 20 },
-      { header: "HAVAYOLU", key: "airline", width: 12 },
-      { header: "GÜZERGAH", key: "route", width: 16 },
-      { header: "GİDİŞ TARİHİ", key: "departure_date", width: 14 },
-      { header: "GİDİŞ SAATİ", key: "departure_time", width: 12 },
-      { header: "DÖNÜŞ TARİHİ", key: "return_date", width: 14 },
-      { header: "DÖNÜŞ SAATİ", key: "return_time", width: 12 },
-      { header: "KİŞİ SAYISI", key: "passenger_count", width: 12 },
-      { header: "TOPLAM MALİYET", key: "total_cost", width: 14 },
-      { header: "ÖDENEN", key: "paid_amount", width: 12 },
-      { header: "KALAN", key: "remaining_amount", width: 12 },
-      { header: "İLERLEME %", key: "progress_percentage", width: 12 },
-      { header: "DURUM", key: "status", width: 12 },
-      { header: "DÖVİZ", key: "currency", width: 8 },
+      { header: t('ticketsPayments.excelVoucherNo') || "VOUCHER NO", key: "voucher_no", width: 16 },
+      { header: t('ticketsPayments.excelAgent') || "ACENTE", key: "agent", width: 20 },
+      { header: t('ticketsPayments.excelCompanyName') || "FİRMA ADI", key: "company_name", width: 22 },
+      { header: t('ticketsPayments.excelSupplier') || "TEDARİKÇİ", key: "supplier", width: 20 },
+      { header: t('ticketsPayments.excelAirline') || "HAVAYOLU", key: "airline", width: 12 },
+      { header: t('ticketsPayments.excelRoute') || "GÜZERGAH", key: "route", width: 16 },
+      { header: t('ticketsPayments.excelDepDate') || "GİDİŞ TARİHİ", key: "departure_date", width: 14 },
+      { header: t('ticketsPayments.excelDepTime') || "GİDİŞ SAATİ", key: "departure_time", width: 12 },
+      { header: t('ticketsPayments.excelRetDate') || "DÖNÜŞ TARİHİ", key: "return_date", width: 14 },
+      { header: t('ticketsPayments.excelRetTime') || "DÖNÜŞ SAATİ", key: "return_time", width: 12 },
+      { header: t('ticketsPayments.excelPaxCount') || "KİŞİ SAYISI", key: "passenger_count", width: 12 },
+      { header: t('ticketsPayments.excelTotalCost') || "TOPLAM MALİYET", key: "total_cost", width: 14 },
+      { header: t('ticketsPayments.excelPaid') || "ÖDENEN", key: "paid_amount", width: 12 },
+      { header: t('ticketsPayments.excelRemaining') || "KALAN", key: "remaining_amount", width: 12 },
+      { header: t('ticketsPayments.excelProgress') || "İLERLEME %", key: "progress_percentage", width: 12 },
+      { header: t('ticketsPayments.excelStatus') || "DURUM", key: "status", width: 12 },
+      { header: t('ticketsPayments.excelCurrency') || "DÖVİZ", key: "currency", width: 8 },
     ];
     const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
     sheet.getRow(headerRow.number).height = 18;
@@ -932,11 +934,11 @@ export default function TicketPaymentsPage() {
     const getStatusText = (status: string) => {
       switch (status) {
         case "completed":
-          return "Tamamlandı";
+          return t('ticketsPayments.excelStatusCompleted') || "Tamamlandı";
         case "partial":
-          return "Kısmi";
+          return t('ticketsPayments.excelStatusPartial') || "Kısmi";
         case "pending":
-          return "Beklemede";
+          return t('ticketsPayments.excelStatusPending') || "Beklemede";
         default:
           return status;
       }
@@ -1189,7 +1191,7 @@ export default function TicketPaymentsPage() {
   }
 
   if (loading) {
-    return <LoadingSpinner message="Bilet ödemeleri yükleniyor..." />;
+    return <LoadingSpinner message={t('ticketsPayments.loading') || "Bilet ödemeleri yükleniyor..."} />;
   }
 
   return (
@@ -1200,10 +1202,10 @@ export default function TicketPaymentsPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Bilet Ödemeleri
+              {t('ticketsPayments.title') || "Bilet Ödemeleri"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Biletin ödeme planlarını yönetin
+              {t('ticketsPayments.desc') || "Biletin ödeme planlarını yönetin"}
             </p>
           </div>
 
@@ -1212,7 +1214,7 @@ export default function TicketPaymentsPage() {
             {/* Dates */}
             <div className="w-[240px] shrink-0">
               <ResponsiveDateRangeField
-                label="Ödeme Tarihi"
+                label={t('ticketsPayments.filterPaymentDate') || "Ödeme Tarihi"}
                 startValue={paymentDateRange.startDate}
                 endValue={paymentDateRange.endDate}
                 onStartChange={(v) =>
@@ -1226,7 +1228,7 @@ export default function TicketPaymentsPage() {
             </div>
             <div className="w-[240px] shrink-0">
               <ResponsiveDateRangeField
-                label="Uçuş Tarihi"
+                label={t('ticketsPayments.filterFlightDate') || "Uçuş Tarihi"}
                 startValue={departureDateRange.startDate}
                 endValue={departureDateRange.endDate}
                 onStartChange={(v) =>
@@ -1242,7 +1244,7 @@ export default function TicketPaymentsPage() {
             {/* Search */}
             <div className="flex-[2] min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Voucher, PNR, Firma vb.)"
+                label={t('ticketsPayments.filterGeneralSearch') || "Genel Arama (Voucher, PNR, Firma vb.)"}
                 tokens={voucherTokens}
                 inputValue={voucherInput}
                 suggestions={voucherSuggestions}
@@ -1254,37 +1256,7 @@ export default function TicketPaymentsPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setVoucherTokens([]);
-                  setVoucherInput("");
-                  setDepartureDateRange({ startDate: "", endDate: "" });
-                  setPaymentDateRange({ startDate: "", endDate: "" });
-                  setSortBy("flight");
-                  setPage(1);
-                  setFilterKey((k) => k + 1);
-                }}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -1292,7 +1264,7 @@ export default function TicketPaymentsPage() {
                 type="button"
                 onClick={exportPaymentsExcel}
                 className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2"
-                title="Excel İndir"
+                title={t('ticketsPayments.btnDownloadExcel') || "Excel İndir"}
               >
                 <svg
                   className="w-4 h-4"
@@ -1307,7 +1279,7 @@ export default function TicketPaymentsPage() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Excel İndir
+                {t('ticketsPayments.btnDownloadExcel') || "Excel İndir"}
               </button>
             </div>
           </div>
@@ -1317,32 +1289,32 @@ export default function TicketPaymentsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
-              SIRALAMA / FİLTRE:
+              {t('ticketsPayments.sortBy') || "SIRALAMA / FİLTRE"}:
             </span>
             <button
               onClick={() => setSortBy("payment")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${sortBy === "payment" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>ÖDEME TARİHİ</span>
+              <span>{t('ticketsPayments.sortPayment') || "ÖDEME TARİHİ"}</span>
             </button>
             <button
               onClick={() => setSortBy("flight")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${sortBy === "flight" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>UÇUŞ TARİHİ</span>
+              <span>{t('ticketsPayments.sortFlight') || "UÇUŞ TARİHİ"}</span>
             </button>
             <button
               onClick={() => setSortBy("balance")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${sortBy === "balance" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>BAKİYESİ OLAN</span>
+              <span>{t('ticketsPayments.sortBalance') || "BAKİYESİ OLAN"}</span>
             </button>
           </div>
           <div className="flex items-center gap-2 border-l border-white/10 pl-4 text-slate-400">
             <span className="font-medium text-white">
               {filteredTickets.length} / {confirmedTickets.length}
             </span>{" "}
-            bilet gösteriliyor
+            {t('ticketsPayments.showingTickets') || "bilet gösteriliyor"}
           </div>
         </div>
 
@@ -1350,7 +1322,7 @@ export default function TicketPaymentsPage() {
         {!confirmedTickets || confirmedTickets.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-slate-400 text-sm">
-              Henüz konfirme edilmiş bilet bulunmuyor.
+              {t('ticketsPayments.noConfirmedTickets') || "Henüz konfirme edilmiş bilet bulunmuyor."}
             </p>
           </div>
         ) : (
@@ -1359,7 +1331,7 @@ export default function TicketPaymentsPage() {
               {filteredTickets.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-slate-400 text-sm">
-                    Arama kriterlerine uygun bilet bulunamadı.
+                    {t('ticketsPayments.noFilteredTickets') || "Arama kriterlerine uygun bilet bulunamadı."}
                   </p>
                 </div>
               ) : (
@@ -1463,7 +1435,7 @@ export default function TicketPaymentsPage() {
                           <div className="flex items-center gap-6">
                             <div className="text-center">
                               <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                Ödenen
+                                {t('ticketsPayments.lblPaid') || "Ödenen"}
                               </div>
                               <div className="text-base font-bold text-green-600 dark:text-green-400">
                                 {formatCurrency(
@@ -1474,7 +1446,7 @@ export default function TicketPaymentsPage() {
                             </div>
                             <div className="text-center">
                               <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                Kalan
+                                {t('ticketsPayments.lblRemaining') || "Kalan"}
                               </div>
                               <div className="text-base font-bold text-red-600 dark:text-red-400">
                                 {formatCurrency(
@@ -1485,7 +1457,7 @@ export default function TicketPaymentsPage() {
                             </div>
                             <div className="text-center">
                               <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                İlerleme
+                                {t('ticketsPayments.lblProgress') || "İlerleme"}
                               </div>
                               <div className="text-base font-bold text-blue-600 dark:text-blue-400">
                                 %
@@ -1500,7 +1472,7 @@ export default function TicketPaymentsPage() {
                             </div>
                             <div className="text-center">
                               <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                Durum
+                                {t('ticketsPayments.lblStatus') || "Durum"}
                               </div>
                               <span
                                 className={`inline-block px-2 py-1 rounded-full text-sm font-medium ${
@@ -1529,7 +1501,7 @@ export default function TicketPaymentsPage() {
                               <>
                                 <span className="text-xs text-slate-400">
                                   📋 {ticketPlans[0]?.installments?.length || 0}{" "}
-                                  Taksit
+                                  {t('ticketsPayments.lblInstallment') || "Taksit"}
                                 </span>
                                 <span className="text-xs text-slate-400">
                                   💰{" "}
@@ -1541,7 +1513,7 @@ export default function TicketPaymentsPage() {
                                       ),
                                     ).length
                                   }{" "}
-                                  Ödeme
+                                  {t('ticketsPayments.lblPaymentCount') || "Ödeme"}
                                 </span>
                               </>
                             ) : (
@@ -1549,7 +1521,7 @@ export default function TicketPaymentsPage() {
                                 onClick={() => openPaymentPlanModal(ticket)}
                                 className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-1.5 rounded-lg text-[11px] font-semibold tracking-wide hover:bg-blue-500/30 transition-all duration-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
                               >
-                                🚀 Plan Oluştur
+                                {t('ticketsPayments.btnCreatePlan') || "🚀 Plan Oluştur"}
                               </button>
                             )}
                           </div>
@@ -1562,10 +1534,10 @@ export default function TicketPaymentsPage() {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="text-blue-600 dark:text-blue-400 font-bold text-base">
-                                📋 Ödeme Planı:
+                                {t('ticketsPayments.lblPaymentPlan') || "📋 Ödeme Planı:"}
                               </span>
                               <span className="text-base text-slate-400">
-                                Toplam:{" "}
+                                {t('ticketsPayments.lblTotal') || "Toplam:"}{" "}
                                 {formatCurrency(
                                   ticketPlans[0]?.total_amount || 0,
                                   ticket.currency,
@@ -1579,7 +1551,7 @@ export default function TicketPaymentsPage() {
                                 }
                                 className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-md text-[10px] font-semibold tracking-wide hover:bg-blue-500/30 transition-all duration-300"
                               >
-                                ✏️ Düzenle
+                                {t('ticketsPayments.btnEdit') || "✏️ Düzenle"}
                               </button>
                               <button
                                 onClick={() =>
@@ -1587,7 +1559,7 @@ export default function TicketPaymentsPage() {
                                 }
                                 className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-md text-[10px] font-semibold tracking-wide hover:bg-emerald-500/30 transition-all duration-300"
                               >
-                                💰 Ödeme
+                                {t('ticketsPayments.btnPay') || "💰 Ödeme"}
                               </button>
                               <button
                                 onClick={() =>
@@ -1595,7 +1567,7 @@ export default function TicketPaymentsPage() {
                                 }
                                 className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-md text-[10px] font-semibold tracking-wide hover:bg-red-500/30 transition-all duration-300"
                               >
-                                🗑️ Sil
+                                {t('ticketsPayments.btnDelete') || "🗑️ Sil"}
                               </button>
                             </div>
                           </div>
@@ -1615,7 +1587,7 @@ export default function TicketPaymentsPage() {
                                   >
                                     <div className="flex items-center gap-3">
                                       <span className="bg-blue-500/20 text-blue-300 text-[11px] font-medium px-2 py-1 rounded-full">
-                                        {originalIndex + 1}. Taksit
+                                        {originalIndex + 1}. {t('ticketsPayments.lblInstallmentIndex') || "Taksit"}
                                       </span>
                                       <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[70px]">
                                         {formatDate(installment.date)}
@@ -1643,8 +1615,7 @@ export default function TicketPaymentsPage() {
                       {/* Ödeme Geçmişi Bölümü */}
                       <div className="px-3 py-2">
                         <h4 className="font-bold text-white flex items-center gap-2 text-base mb-2">
-                          <span className="text-green-500">💰</span>
-                          Ödeme Geçmişi
+                          {t('ticketsPayments.lblPaymentHistory') || "💰 Ödeme Geçmişi"}
                         </h4>
                         {(() => {
                           const ticketPayments = paymentRecords.filter(
@@ -1658,7 +1629,7 @@ export default function TicketPaymentsPage() {
                             return (
                               <div className="text-center py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                 <p className="text-sm text-slate-400">
-                                  Henüz ödeme yapılmamış
+                                  {t('ticketsPayments.noPaymentsYet') || "Henüz ödeme yapılmamış"}
                                 </p>
                               </div>
                             );
@@ -1689,7 +1660,7 @@ export default function TicketPaymentsPage() {
                                   >
                                     <div className="flex items-center gap-3">
                                       <span className="bg-emerald-500/20 text-emerald-300 text-[11px] font-medium px-2 py-1 rounded-full">
-                                        {originalIndex + 1}. Ödeme
+                                        {originalIndex + 1}. {t('ticketsPayments.lblPaymentIndex') || "Ödeme"}
                                       </span>
                                       <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[70px]">
                                         {formatDate(payment.payment_date)}
@@ -1697,13 +1668,13 @@ export default function TicketPaymentsPage() {
                                       <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[100px]">
                                         {payment.payment_method ===
                                         "credit_card"
-                                          ? "💳 Kredi Kartı"
+                                          ? t('ticketsPayments.methodCreditCard') || "💳 Kredi Kartı"
                                           : payment.payment_method ===
                                               "bank_transfer"
-                                            ? "🏦 Banka Transferi"
+                                            ? t('ticketsPayments.methodBankTransfer') || "🏦 Banka Transferi"
                                             : payment.payment_method === "cash"
-                                              ? "💵 Nakit"
-                                              : "🌐 Online Ödeme"}
+                                              ? t('ticketsPayments.methodCash') || "💵 Nakit"
+                                              : t('ticketsPayments.methodOnline') || "🌐 Online Ödeme"}
                                       </span>
                                       {payment.recipient && (
                                         <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[80px]">
@@ -1730,7 +1701,7 @@ export default function TicketPaymentsPage() {
                                           }
                                           className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-md text-[10px] font-semibold tracking-wide hover:bg-blue-500/30 transition-all duration-300"
                                         >
-                                          ✏️ Düzenle
+                                          {t('ticketsPayments.btnEdit') || "✏️ Düzenle"}
                                         </button>
                                         <button
                                           onClick={() =>
@@ -1738,7 +1709,7 @@ export default function TicketPaymentsPage() {
                                           }
                                           className="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-md text-[10px] font-semibold tracking-wide hover:bg-red-500/30 transition-all duration-300"
                                         >
-                                          🗑️ Sil
+                                          {t('ticketsPayments.btnDelete') || "🗑️ Sil"}
                                         </button>
                                       </div>
                                     </div>
@@ -1788,8 +1759,8 @@ export default function TicketPaymentsPage() {
                   <div>
                     <h3 className="text-lg font-bold text-white">
                       {selectedPaymentPlan
-                        ? "Ödeme Planını Düzenle"
-                        : "Yeni Ödeme Planı"}
+                        ? t('ticketsPayments.modalEditPlan') || "Ödeme Planını Düzenle"
+                        : t('ticketsPayments.modalNewPlan') || "Yeni Ödeme Planı"}
                     </h3>
                     <p className="text-xs text-slate-400">
                       {selectedTicket.voucher_no} - {selectedTicket.agent}
@@ -1809,7 +1780,7 @@ export default function TicketPaymentsPage() {
                 <div className="mb-6 p-4 rounded-xl bg-blue-500/10/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 grid grid-cols-3 gap-4">
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold mb-1">
-                      Toplam Tutar
+                      {t('ticketsPayments.lblTotalCost') || "Toplam Tutar"}
                     </span>
                     <span className="text-lg font-black text-blue-700 dark:text-blue-300">
                       {formatCurrency(
@@ -1820,7 +1791,7 @@ export default function TicketPaymentsPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold mb-1">
-                      Havayolu
+                      {t('ticketsPayments.lblAirline') || "Havayolu"}
                     </span>
                     <span className="text-sm font-semibold text-white">
                       {selectedTicket.airline || "N/A"}
@@ -1828,7 +1799,7 @@ export default function TicketPaymentsPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold mb-1">
-                      PNR
+                      {t('ticketsPayments.lblPNR') || "PNR"}
                     </span>
                     <span className="text-sm font-semibold text-white font-mono">
                       {selectedTicket.pnr || "N/A"}
@@ -1839,14 +1810,14 @@ export default function TicketPaymentsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <Percent className="w-4 h-4 text-blue-400" />
-                    Taksit Yapılandırması
+                    {t('ticketsPayments.lblInstallmentConfig') || "Taksit Yapılandırması"}
                   </h4>
                   <button
                     onClick={addInstallment}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-500/90 text-white text-xs font-bold transition-all shadow-sm hover:shadow-md"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Taksit Ekle
+                    {t('ticketsPayments.btnAddInstallment') || "Taksit Ekle"}
                   </button>
                 </div>
 
@@ -1863,7 +1834,7 @@ export default function TicketPaymentsPage() {
                       <div className="w-full sm:flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 pl-2">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">
-                            Vade Tarihi
+                            {t('ticketsPayments.lblDueDate') || "Vade Tarihi"}
                           </label>
                           <div className="relative">
                             <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -1880,7 +1851,7 @@ export default function TicketPaymentsPage() {
 
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">
-                            Yüzde (%)
+                            {t('ticketsPayments.lblPercentage') || "Yüzde (%)"}
                           </label>
                           <div className="relative">
                             <Percent className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -1903,7 +1874,7 @@ export default function TicketPaymentsPage() {
 
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">
-                            Tutar
+                            {t('ticketsPayments.lblAmount') || "Tutar"}
                           </label>
                           <div className="relative">
                             <Banknote className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -1929,7 +1900,7 @@ export default function TicketPaymentsPage() {
                         <button
                           onClick={() => removeInstallment(index)}
                           className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all self-end sm:self-center"
-                          title="Taksiti Kaldır"
+                          title={t('ticketsPayments.btnRemoveInstallment') || "Taksiti Kaldır"}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1943,7 +1914,7 @@ export default function TicketPaymentsPage() {
                   <div className="flex gap-8">
                     <div>
                       <span className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">
-                        Toplam Yüzde
+                        {t('ticketsPayments.lblTotalPercentage') || "Toplam Yüzde"}
                       </span>
                       <div className="flex items-center gap-2">
                         <div
@@ -1966,7 +1937,7 @@ export default function TicketPaymentsPage() {
                     <div className="w-px h-10 bg-gray-800" />
                     <div>
                       <span className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">
-                        Planlanan Toplam
+                        {t('ticketsPayments.lblPlannedTotal') || "Planlanan Toplam"}
                       </span>
                       <span className="text-xl font-black text-blue-400">
                         {formatCurrency(
@@ -1988,7 +1959,7 @@ export default function TicketPaymentsPage() {
                   ) > 0.01 && (
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-[10px] font-bold border border-red-500/20 animate-pulse">
                       <AlertCircle className="w-3.5 h-3.5" />
-                      TOPLAM YÜZDE %100 OLMALIDIR
+                      {t('ticketsPayments.errPercentageMustBe100') || "TOPLAM YÜZDE %100 OLMALIDIR"}
                     </div>
                   )}
                 </div>
@@ -2000,7 +1971,7 @@ export default function TicketPaymentsPage() {
                   onClick={() => setShowPaymentPlanModal(false)}
                   className="w-full sm:w-auto px-6 py-2 rounded-xl text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                 >
-                  İptal
+                  {t('ticketsPayments.btnCancel') || "İptal"}
                 </button>
                 <button
                   onClick={() => {
@@ -2014,7 +1985,7 @@ export default function TicketPaymentsPage() {
                     );
 
                     if (Math.abs(totalPercentage - 100) > 0.01) {
-                      toast.error("Toplam yüzde 100 olmalıdır!");
+                      toast.error(t('ticketsPayments.msgTotalPercentage100') || "Toplam yüzde 100 olmalıdır!");
                       return;
                     }
 
@@ -2022,7 +1993,7 @@ export default function TicketPaymentsPage() {
                       Math.abs(totalAmount - selectedTicket.total_cost) > 0.1
                     ) {
                       toast.error(
-                        "Toplam tutar bilet tutarı ile eşleşmelidir!",
+                        t('ticketsPayments.msgTotalMatchTicketCost') || "Toplam tutar bilet tutarı ile eşleşmelidir!",
                       );
                       return;
                     }
@@ -2042,7 +2013,7 @@ export default function TicketPaymentsPage() {
                   className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-6 py-2 rounded-xl bg-blue-500 hover:bg-blue-500/90 text-white font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
                 >
                   <Save className="w-4 h-4" />
-                  {selectedPaymentPlan ? "Planı Güncelle" : "Planı Kaydet"}
+                  {selectedPaymentPlan ? (t('ticketsPayments.btnUpdatePlan') || "Planı Güncelle") : (t('ticketsPayments.btnSavePlan') || "Planı Kaydet")}
                 </button>
               </div>
             </div>
@@ -2066,8 +2037,8 @@ export default function TicketPaymentsPage() {
                   <div>
                     <h3 className="text-lg font-bold text-white">
                       {selectedPaymentRecord
-                        ? "Ödemeyi Düzenle"
-                        : "Ödeme Kaydet"}
+                        ? t('ticketsPayments.modalEditPayment') || "Ödemeyi Düzenle"
+                        : t('ticketsPayments.modalNewPayment') || "Ödeme Kaydet"}
                     </h3>
                   </div>
                 </div>
@@ -2083,7 +2054,7 @@ export default function TicketPaymentsPage() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                     <Banknote className="w-3.5 h-3.5" />
-                    Tutar
+                    {t('ticketsPayments.lblAmount') || "Tutar"}
                   </label>
                   <div className="relative">
                     <input
@@ -2105,7 +2076,7 @@ export default function TicketPaymentsPage() {
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />
-                      Tarih
+                      {t('ticketsPayments.lblDate') || "Tarih"}
                     </label>
                     <input
                       type="date"
@@ -2123,7 +2094,7 @@ export default function TicketPaymentsPage() {
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                       <CreditCard className="w-3.5 h-3.5" />
-                      Yöntem
+                      {t('ticketsPayments.lblMethod') || "Yöntem"}
                     </label>
                     <select
                       value={newPayment.payment_method}
@@ -2135,10 +2106,10 @@ export default function TicketPaymentsPage() {
                       }
                       className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 text-xs text-white focus:ring-2 focus:ring-green-500/20 outline-none transition-all appearance-none"
                     >
-                      <option value="credit_card">💳 Kredi Kartı</option>
-                      <option value="bank_transfer">🏦 Banka Transferi</option>
-                      <option value="cash">💵 Nakit</option>
-                      <option value="online">🌐 Online</option>
+                      <option value="credit_card">{t('ticketsPayments.methodCreditCard') || "💳 Kredi Kartı"}</option>
+                      <option value="bank_transfer">{t('ticketsPayments.methodBankTransfer') || "🏦 Banka Transferi"}</option>
+                      <option value="cash">{t('ticketsPayments.methodCash') || "💵 Nakit"}</option>
+                      <option value="online">{t('ticketsPayments.methodOnline') || "🌐 Online"}</option>
                     </select>
                   </div>
                 </div>
@@ -2146,7 +2117,7 @@ export default function TicketPaymentsPage() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5" />
-                    Alıcı / Açıklama
+                    {t('ticketsPayments.lblRecipient') || "Alıcı / Açıklama"}
                   </label>
                   <input
                     type="text"
@@ -2157,7 +2128,7 @@ export default function TicketPaymentsPage() {
                         recipient: e.target.value,
                       }))
                     }
-                    placeholder="Alıcı ismi veya firma..."
+                    placeholder={t('ticketsPayments.phRecipient') || "Alıcı ismi veya firma..."}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 text-xs text-white focus:ring-2 focus:ring-green-500/20 outline-none transition-all placeholder:text-gray-500"
                   />
                 </div>
@@ -2165,7 +2136,7 @@ export default function TicketPaymentsPage() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5" />
-                    Notlar
+                    {t('ticketsPayments.lblNotes') || "Notlar"}
                   </label>
                   <textarea
                     value={newPayment.notes}
@@ -2176,7 +2147,7 @@ export default function TicketPaymentsPage() {
                       }))
                     }
                     rows={2}
-                    placeholder="Ek detaylar..."
+                    placeholder={t('ticketsPayments.phNotes') || "Ek detaylar..."}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 text-xs text-white focus:ring-2 focus:ring-green-500/20 outline-none transition-all resize-none placeholder:text-gray-500"
                   />
                 </div>
@@ -2187,14 +2158,14 @@ export default function TicketPaymentsPage() {
                   onClick={() => setShowPaymentModal(false)}
                   className="flex-1 px-4 py-2 rounded-xl text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                 >
-                  İptal
+                  {t('ticketsPayments.btnCancel') || "İptal"}
                 </button>
                 <button
                   onClick={recordPayment}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-all shadow-lg shadow-green-500/20"
                 >
                   <Check className="w-4 h-4" />
-                  {selectedPaymentRecord ? "Güncelle" : "Kaydet"}
+                  {selectedPaymentRecord ? (t('ticketsPayments.btnUpdate') || "Güncelle") : (t('ticketsPayments.btnSave') || "Kaydet")}
                 </button>
               </div>
             </div>
@@ -2209,24 +2180,19 @@ export default function TicketPaymentsPage() {
           }
           title={
             deleteConfirm.type === "plan"
-              ? "Ödeme Planını Sil"
-              : "Ödeme Kaydını Sil"
+              ? t('ticketsPayments.modalDeletePlan') || "Ödeme Planını Sil"
+              : t('ticketsPayments.modalDeletePayment') || "Ödeme Kaydını Sil"
           }
         >
           <div className="p-6 text-center">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Emin misiniz?</h3>
+            <h3 className="text-lg font-bold text-white mb-2">{t('ticketsPayments.lblAreYouSure') || "Emin misiniz?"}</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Bu{" "}
               {deleteConfirm.type === "plan"
-                ? "ödeme planını"
-                : "ödeme kaydını"}{" "}
-              silmek istediğinizden emin misiniz?
-              {deleteConfirm.type === "plan"
-                ? " Plan silindiğinde tüm taksitler kaldırılır."
-                : " Bu işlem geri alınamaz."}
+                ? (t('ticketsPayments.descDeletePlan') || "Bu ödeme planını silmek istediğinizden emin misiniz? Plan silindiğinde tüm taksitler kaldırılır.")
+                : (t('ticketsPayments.descDeletePayment') || "Bu ödeme kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")}
             </p>
             <div className="flex gap-3 justify-center">
               <button
@@ -2236,7 +2202,7 @@ export default function TicketPaymentsPage() {
                 disabled={deleteConfirm.isDeleting}
                 className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-medium"
               >
-                Vazgeç
+                {t('ticketsPayments.btnGiveUp') || "Vazgeç"}
               </button>
               <button
                 onClick={confirmDelete}
@@ -2246,10 +2212,10 @@ export default function TicketPaymentsPage() {
                 {deleteConfirm.isDeleting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Siliniyor...
+                    {t('ticketsPayments.btnDeleting') || "Siliniyor..."}
                   </>
                 ) : (
-                  "Evet, Sil"
+                  t('ticketsPayments.btnYesDelete') || "Evet, Sil"
                 )}
               </button>
             </div>

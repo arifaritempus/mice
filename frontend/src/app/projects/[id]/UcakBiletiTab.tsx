@@ -1,4 +1,5 @@
 "use client";
+import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
 import React from "react";
 import { createPortal } from "react-dom";
@@ -348,19 +349,23 @@ export default function UcakBiletiTab({
     return totals;
   }, [filteredFlightTickets]);
   return <div className="space-y-3">
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <div className="relative w-full sm:w-96 group">
-          <div className="flex flex-wrap items-center gap-1.5 w-full px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all shadow-inner">
-            {searchTags.map((tag, idx) => <span key={idx} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
-                {tag}
-                <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-600 dark:hover:text-blue-400">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </span>)}
-            <input type="text" className="flex-1 min-w-[100px] bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none" placeholder={searchTags.length === 0 ? "Arama yap... (Enter ile çoğalt)" : "Yeni arama..."} value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-          </div>
+      <div className="w-full mb-4">
+        <div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+          <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
+              {tag}
+              <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-900 dark:hover:text-blue-100 ml-1 transition-colors">
+                <X className="w-3 h-3" />
+              </button>
+            </span>)}
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={searchTags.length === 0 ? "Uçak bileti ara... (Enter ile çoğalt)" : "Yeni arama..."} className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 min-w-[120px] py-0.5 focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
+          {searchTags.length > 0 && <button onClick={() => {
+            setSearchTags([]);
+            setFlightTicketSearch("");
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+            <X className="w-4 h-4" />
+          </button>}
         </div>
-        
       </div>
 
       {/* Uçak Bileti Tablosu */}

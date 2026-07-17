@@ -11,6 +11,7 @@ import {
   type SetStateAction,
 } from "react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatNumber } from "@/utils/formatters";
 import { getLogosForExcel } from "@/utils/logoUtils";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -164,6 +165,7 @@ interface Sejour {
 }
 
 export default function TicketsPage() {
+  const { t } = useLanguage();
   const { canView, loading: permissionsLoading } = usePermissions();
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<"detail" | "summary">("detail");
@@ -297,7 +299,7 @@ export default function TicketsPage() {
     const ExcelJS = (await import("exceljs")).default;
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet(
-      `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Biletler (Detay)`,
+      `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - ${t('tickets.excelDetailTitle')}`,
     );
     sheet.pageSetup = {
       orientation: "landscape",
@@ -328,8 +330,7 @@ export default function TicketsPage() {
       } as any;
     }
     // Logos - yeni sistem (URL'den base64'e çevirir)
-    const { iconLogoBase64, wordmarkLogoBase64 } =
-      await getLogosForExcel(isDark);
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(isDark);
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -340,7 +341,7 @@ export default function TicketsPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.15, row: 0.15 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -350,30 +351,30 @@ export default function TicketsPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 14.5, row: 0.23 },
-        ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 
     // Columns matching Detay tab order (MICE alanlarıyla uyumlu)
     sheet.columns = [
-      { header: "Voucher", key: "voucher", width: 16 },
-      { header: "BİLETLEME TARİHİ", key: "ticketing", width: 16 },
-      { header: "Tür", key: "type", width: 10 },
-      { header: "C-IN / C-OUT", key: "checkInOut", width: 20 },
-      { header: "FİRMA ADI", key: "company", width: 20 },
-      { header: "ACENTE/MÜŞTERİ", key: "customer", width: 24 },
-      { header: "Misafir Adı", key: "guest", width: 28 },
-      { header: "PNR", key: "pnr", width: 16 },
-      { header: "Uçuş Tarihi", key: "flight_date", width: 14 },
-      { header: "GİDİŞ SAATİ", key: "dep_time", width: 12 },
-      { header: "DÖNÜŞ TARİHİ", key: "ret_date", width: 14 },
-      { header: "DÖNÜŞ SAATİ", key: "ret_time", width: 12 },
-      { header: "HAVAYOLU", key: "airline", width: 12 },
-      { header: "GÜZERGAH", key: "route", width: 16 },
-      { header: "UÇUŞ NO", key: "flight_no", width: 12 },
-      { header: "TEDARİKÇİ", key: "supplier", width: 20 },
-      { header: "MALİYET", key: "cost", width: 12 },
-      { header: "MALİYET DÖVİZİ", key: "cost_cur", width: 14 },
+      { header: t("tickets.colVoucher") || "Voucher", key: "voucher", width: 16 },
+      { header: t("tickets.colTicketingDate") || "BİLETLEME TARİHİ", key: "ticketing", width: 16 },
+      { header: t("tickets.colType") || "Tür", key: "type", width: 10 },
+      { header: t("tickets.colCinCout") || "C-IN / C-OUT", key: "checkInOut", width: 20 },
+      { header: t("tickets.colCompanyName") || "FİRMA ADI", key: "company", width: 20 },
+      { header: t("tickets.colCustomer") || "ACENTE/MÜŞTERİ", key: "customer", width: 24 },
+      { header: t("tickets.colGuest") || "Misafir Adı", key: "guest", width: 28 },
+      { header: t("tickets.colPNR") || "PNR", key: "pnr", width: 16 },
+      { header: t("tickets.colDepDate") || "Uçuş Tarihi", key: "flight_date", width: 14 },
+      { header: t("tickets.colDepTime") || "GİDİŞ SAATİ", key: "dep_time", width: 12 },
+      { header: t("tickets.colRetDate") || "DÖNÜŞ TARİHİ", key: "ret_date", width: 14 },
+      { header: t("tickets.colRetTime") || "DÖNÜŞ SAATİ", key: "ret_time", width: 12 },
+      { header: t("tickets.colAirline") || "HAVAYOLU", key: "airline", width: 12 },
+      { header: t("tickets.colRoute") || "GÜZERGAH", key: "route", width: 16 },
+      { header: t("tickets.colFlightNo") || "UÇUŞ NO", key: "flight_no", width: 12 },
+      { header: t("tickets.colSupplier") || "TEDARİKÇİ", key: "supplier", width: 20 },
+      { header: t("tickets.colCost") || "MALİYET", key: "cost", width: 12 },
+      { header: t("tickets.colCostCur") || "MALİYET DÖVİZİ", key: "cost_cur", width: 14 },
     ];
     const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
     sheet.getRow(headerRow.number).height = 18;
@@ -449,7 +450,7 @@ export default function TicketsPage() {
     const ExcelJS = (await import("exceljs")).default;
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet(
-      `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Biletler (Özet)`,
+      `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - ${t('tickets.excelSummaryTitle')}`,
     );
     sheet.pageSetup = {
       orientation: "landscape",
@@ -479,8 +480,7 @@ export default function TicketsPage() {
       } as any;
     }
     // Logos - yeni sistem (URL'den base64'e çevirir)
-    const { iconLogoBase64, wordmarkLogoBase64 } =
-      await getLogosForExcel(isDark);
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(isDark);
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -491,7 +491,7 @@ export default function TicketsPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.15, row: 0.15 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -501,29 +501,29 @@ export default function TicketsPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 14.5, row: 0.23 },
-        ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 
     sheet.columns = [
-      { header: "Voucher", key: "voucher", width: 16 },
-      { header: "BİLETLEME TARİHİ", key: "ticketing", width: 16 },
-      { header: "Tür", key: "type", width: 10 },
-      { header: "C-IN / C-OUT", key: "checkInOut", width: 20 },
-      { header: "FİRMA ADI", key: "company", width: 20 },
-      { header: "ACENTE/MÜŞTERİ", key: "customer", width: 24 },
-      { header: "Misafir Adı", key: "guest", width: 28 },
-      { header: "PNR", key: "pnr", width: 16 },
-      { header: "Gidiş Tarihi", key: "dep_date", width: 14 },
-      { header: "GİDİŞ SAATİ", key: "dep_time", width: 12 },
-      { header: "Dönüş Tarihi", key: "ret_date", width: 14 },
-      { header: "DÖNÜŞ SAATİ", key: "ret_time", width: 12 },
-      { header: "HAVAYOLU", key: "airline", width: 12 },
-      { header: "GÜZERGAH", key: "route", width: 16 },
-      { header: "UÇUŞ NO", key: "flight_no", width: 12 },
-      { header: "TEDARİKÇİ", key: "supplier", width: 20 },
-      { header: "MALİYET", key: "cost", width: 12 },
-      { header: "MALİYET DÖVİZİ", key: "cost_cur", width: 14 },
+      { header: t("tickets.colVoucher") || "Voucher", key: "voucher", width: 16 },
+      { header: t("tickets.colTicketingDate") || "BİLETLEME TARİHİ", key: "ticketing", width: 16 },
+      { header: t("tickets.colType") || "Tür", key: "type", width: 10 },
+      { header: t("tickets.colCinCout") || "C-IN / C-OUT", key: "checkInOut", width: 20 },
+      { header: t("tickets.colCompanyName") || "FİRMA ADI", key: "company", width: 20 },
+      { header: t("tickets.colCustomer") || "ACENTE/MÜŞTERİ", key: "customer", width: 24 },
+      { header: t("tickets.colGuest") || "Misafir Adı", key: "guest", width: 28 },
+      { header: t("tickets.colPNR") || "PNR", key: "pnr", width: 16 },
+      { header: t("tickets.colDepDate") || "Gidiş Tarihi", key: "dep_date", width: 14 },
+      { header: t("tickets.colDepTime") || "GİDİŞ SAATİ", key: "dep_time", width: 12 },
+      { header: t("tickets.colRetDate") || "Dönüş Tarihi", key: "ret_date", width: 14 },
+      { header: t("tickets.colRetTime") || "DÖNÜŞ SAATİ", key: "ret_time", width: 12 },
+      { header: t("tickets.colAirline") || "HAVAYOLU", key: "airline", width: 12 },
+      { header: t("tickets.colRoute") || "GÜZERGAH", key: "route", width: 16 },
+      { header: t("tickets.colFlightNo") || "UÇUŞ NO", key: "flight_no", width: 12 },
+      { header: t("tickets.colSupplier") || "TEDARİKÇİ", key: "supplier", width: 20 },
+      { header: t("tickets.colCost") || "MALİYET", key: "cost", width: 12 },
+      { header: t("tickets.colCostCur") || "MALİYET DÖVİZİ", key: "cost_cur", width: 14 },
     ];
     const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
     sheet.getRow(headerRow.number).height = 18;
@@ -1046,7 +1046,7 @@ export default function TicketsPage() {
   ]);
 
   if (permissionsLoading) {
-    return <LoadingSpinner message="Yükleniyor..." />;
+    return <LoadingSpinner message={t('tickets.loading') || "Yükleniyor..."} />;
   }
 
   if (!canView(Module.TICKETS)) {
@@ -1054,16 +1054,16 @@ export default function TicketsPage() {
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Yetki Gerekli
+            {t('tickets.authRequired') || "Yetki Gerekli"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Bu sayfaya erişim yetkiniz bulunmuyor.
+            {t('tickets.noPermission') || "Bu sayfaya erişim yetkiniz bulunmuyor."}
           </p>
           <a
             href="/operations"
             className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
           >
-            Operasyonlara Dön
+            {t('tickets.backToOps') || "Operasyonlara Dön"}
           </a>
         </div>
       </div>
@@ -1071,7 +1071,7 @@ export default function TicketsPage() {
   }
 
   if (!initialFetchDone && loading) {
-    return <LoadingSpinner message="Operasyon biletleri yükleniyor..." />;
+    return <LoadingSpinner message={t('tickets.loadingTickets') || "Operasyon biletleri yükleniyor..."} />;
   }
 
   return (
@@ -1082,10 +1082,10 @@ export default function TicketsPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Bilet Devre
+              {t('tickets.title') || "Bilet Devre"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Uçak biletlerinin devre listelerini ve detaylarını yönetin
+              {t('tickets.description') || "Uçak biletlerinin devre listelerini ve detaylarını yönetin"}
             </p>
           </div>
 
@@ -1094,7 +1094,7 @@ export default function TicketsPage() {
             {/* Dates */}
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Opsiyon Tarihi"
+                label={t('tickets.optionDate') || "Opsiyon Tarihi"}
                 startValue={dateRange.startDate}
                 endValue={dateRange.endDate}
                 onStartChange={(v) => setDraftTicketingStart(v)}
@@ -1104,7 +1104,7 @@ export default function TicketsPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Uçuş Tarihi"
+                label={t('tickets.flightDate') || "Uçuş Tarihi"}
                 startValue={flightDateRange.startDate}
                 endValue={flightDateRange.endDate}
                 onStartChange={(v) => setDraftFlightStart(v)}
@@ -1116,7 +1116,7 @@ export default function TicketsPage() {
             {/* Search */}
             <div className="flex-1 min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (PNR, Voucher, Firma, Misafir)"
+                label={t('tickets.searchPlaceholder') || "Genel Arama (PNR, Voucher, Firma, Misafir)"}
                 tokens={pnrTokens}
                 inputValue={pnrInput}
                 suggestions={pnrSuggestions}
@@ -1126,28 +1126,7 @@ export default function TicketsPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                onClick={clearFilters}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -1184,7 +1163,7 @@ export default function TicketsPage() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Detay Excel
+                {t('tickets.exportDetail') || "Detay Excel"}
               </button>
               <button
                 type="button"
@@ -1207,7 +1186,7 @@ export default function TicketsPage() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Özet Excel
+                {t('tickets.exportSummary') || "Özet Excel"}
               </button>
             </div>
           </div>
@@ -1217,7 +1196,7 @@ export default function TicketsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
-              BİLET KAYNAĞI:
+              {t('tickets.ticketSource') || "BİLET KAYNAĞI:"}
             </span>
             <button
               onClick={() => {
@@ -1226,7 +1205,7 @@ export default function TicketsPage() {
               }}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>TÜMÜ</span>
+              <span>{t('tickets.all') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
             </button>
             <button
@@ -1253,19 +1232,19 @@ export default function TicketsPage() {
 
           <div className="flex items-center gap-2 border-l border-white/10 pl-4">
             <span className="text-slate-400 font-medium uppercase tracking-wider">
-              GÖRÜNÜM:
+              {t('tickets.viewMode') || "GÖRÜNÜM:"}
             </span>
             <button
               onClick={() => setActiveTab("detail")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "detail" ? "bg-purple-500/20 border border-purple-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>📋 DETAY</span>
+              <span>{t('tickets.viewDetail') || "📋 DETAY"}</span>
             </button>
             <button
               onClick={() => setActiveTab("summary")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "summary" ? "bg-pink-500/20 border border-pink-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>📊 ÖZET</span>
+              <span>{t('tickets.viewSummary') || "📊 ÖZET"}</span>
             </button>
           </div>
         </div>
@@ -1295,7 +1274,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("voucherNumber")}
                       >
                         <div className="flex items-center">
-                          Voucher
+                          {t('tickets.colVoucher') || "VOUCHER"}
                           {sortField === "voucherNumber" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1308,7 +1287,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("ticketingDate")}
                       >
                         <div className="flex items-center">
-                          BİLETLEME TARİHİ
+                          {t('tickets.colTicketingDate') || "BİLETLEME TARİHİ"}
                           {sortField === "ticketingDate" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1321,7 +1300,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("sejourId")}
                       >
                         <div className="flex items-center">
-                          Tür
+                          {t('tickets.colType') || "TÜR"}
                           {sortField === "sejourId" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1334,7 +1313,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("checkInOut")}
                       >
                         <div className="flex items-center gap-0.5">
-                          <div className="flex items-center">C-IN / C-OUT</div>
+                          <div className="flex items-center">{t('tickets.colCinCout') || "C-IN / C-OUT"}</div>
                           {sortField === "checkInOut" && (
                             <span className="shrink-0 self-center text-xs">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1347,7 +1326,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("companyName")}
                       >
                         <div className="flex items-center">
-                          FİRMA ADI
+                          {t('tickets.colCompanyName') || "FİRMA ADI"}
                           {sortField === "companyName" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1361,7 +1340,7 @@ export default function TicketsPage() {
                       >
                         <div className="flex items-center gap-0.5">
                           <div className="flex items-center">
-                            Acente / Müşteri
+                            {t('tickets.colCustomer') || "ACENTE / MÜŞTERİ"}
                           </div>
                           {sortField === "customerName" && (
                             <span className="shrink-0 self-center text-xs">
@@ -1371,14 +1350,14 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200">
-                        <div className="flex items-center">Misafir Adı</div>
+                        <div className="flex items-center">{t('tickets.colGuest') || "MİSAFİR ADI"}</div>
                       </th>
                       <th
                         className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                         onClick={() => handleSort("pnr")}
                       >
                         <div className="flex items-center">
-                          PNR
+                          {t('tickets.colPNR') || "PNR"}
                           {sortField === "pnr" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1391,7 +1370,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("flightDate")}
                       >
                         <div className="flex items-center">
-                          Uçuş Tarihi
+                          {t('tickets.colDepDate') || "GİDİŞ TARİHİ"}
                           {sortField === "flightDate" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1400,14 +1379,14 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
-                        <div className="flex items-center">GİDİŞ SAATİ</div>
+                        <div className="flex items-center">{t('tickets.colDepTime') || "GİDİŞ SAATİ"}</div>
                       </th>
                       {/* MICE özel sütunları */}
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200">
-                        Dönüş Tarihi
+                        {t('tickets.colRetDate') || "DÖNÜŞ TARİHİ"}
                       </th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200">
-                        DÖNÜŞ SAATİ
+                        {t('tickets.colRetTime') || "DÖNÜŞ SAATİ"}
                       </th>
 
                       <th
@@ -1415,7 +1394,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("airline")}
                       >
                         <div className="flex items-center">
-                          HAVAYOLU
+                          {t('tickets.colAirline') || "HAVAYOLU"}
                           {sortField === "airline" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1428,7 +1407,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("route")}
                       >
                         <div className="flex items-center">
-                          GÜZERGAH
+                          {t('tickets.colRoute') || "GÜZERGAH"}
                           {sortField === "airline" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1441,7 +1420,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("flightNo")}
                       >
                         <div className="flex items-center">
-                          UÇUŞ NO
+                          {t('tickets.colFlightNo') || "UÇUŞ NO"}
                           {sortField === "flightNo" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1455,7 +1434,7 @@ export default function TicketsPage() {
                       >
                         <div className="flex items-center gap-0.5">
                           <span className="text-xs tracking-wide leading-tight">
-                            TEDARİKÇİ
+                            {t('tickets.colSupplier') || "TEDARİKÇİ"}
                           </span>
                           {sortField === "ticketingProvider" && (
                             <span className="shrink-0 text-xs">
@@ -1470,7 +1449,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("costPrice")}
                       >
                         <div className="flex items-center">
-                          MALİYET
+                          {t('tickets.colCost') || "MALİYET"}
                           {sortField === "costPrice" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1483,7 +1462,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("costCurrency")}
                       >
                         <div className="flex items-center">
-                          MALİYET DÖVİZİ
+                          {t('tickets.colCostCur') || "MALİYET DÖVİZİ"}
                           {sortField === "costCurrency" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1499,7 +1478,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("voucherNumber")}
                       >
                         <div className="flex items-center">
-                          VOUCHER
+                          {t('tickets.colVoucher') || "VOUCHER"}
                           {sortField === "voucherNumber" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1512,7 +1491,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("ticketingDate")}
                       >
                         <div className="flex items-center">
-                          BİLETLEME TARİHİ
+                          {t('tickets.colTicketingDate') || "BİLETLEME TARİHİ"}
                           {sortField === "ticketingDate" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1525,7 +1504,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("sejourId")}
                       >
                         <div className="flex items-center">
-                          TÜR
+                          {t('tickets.colType') || "TÜR"}
                           {sortField === "sejourId" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1538,7 +1517,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("checkInOut")}
                       >
                         <div className="flex items-center gap-0.5">
-                          <div className="flex items-center">C-IN / C-OUT</div>
+                          <div className="flex items-center">{t('tickets.colCinCout') || "C-IN / C-OUT"}</div>
                           {sortField === "checkInOut" && (
                             <span className="shrink-0 self-center text-xs">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1551,7 +1530,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("companyName")}
                       >
                         <div className="flex items-center">
-                          FİRMA ADI
+                          {t('tickets.colCompanyName') || "FİRMA ADI"}
                           {sortField === "companyName" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1565,7 +1544,7 @@ export default function TicketsPage() {
                       >
                         <div className="flex items-center gap-0.5">
                           <div className="flex items-center">
-                            Acente / Müşteri
+                            {t('tickets.colCustomer') || "ACENTE / MÜŞTERİ"}
                           </div>
                           {sortField === "customerName" && (
                             <span className="shrink-0 self-center text-xs">
@@ -1575,14 +1554,14 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200">
-                        <div className="flex items-center">Misafir Adı</div>
+                        <div className="flex items-center">{t('tickets.colGuest') || "MİSAFİR ADI"}</div>
                       </th>
                       <th
                         className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                         onClick={() => handleSort("pnr")}
                       >
                         <div className="flex items-center">
-                          PNR
+                          {t('tickets.colPNR') || "PNR"}
                           {sortField === "pnr" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1595,7 +1574,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("flightDate")}
                       >
                         <div className="flex items-center">
-                          GİDİŞ TARİHİ
+                          {t('tickets.colDepDate') || "GİDİŞ TARİHİ"}
                           {sortField === "flightDate" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1604,13 +1583,13 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
-                        <div className="flex items-center">GİDİŞ SAATİ</div>
+                        <div className="flex items-center">{t('tickets.colDepTime') || "GİDİŞ SAATİ"}</div>
                       </th>
                       <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
-                        <div className="flex items-center">DÖNÜŞ TARİHİ</div>
+                        <div className="flex items-center">{t('tickets.colRetDate') || "DÖNÜŞ TARİHİ"}</div>
                       </th>
                       <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
-                        <div className="flex items-center">DÖNÜŞ SAATİ</div>
+                        <div className="flex items-center">{t('tickets.colRetTime') || "DÖNÜŞ SAATİ"}</div>
                       </th>
 
                       <th
@@ -1618,7 +1597,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("airline")}
                       >
                         <div className="flex items-center">
-                          Havayolu
+                          {t('tickets.colAirline') || "HAVAYOLU"}
                           {sortField === "airline" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1631,7 +1610,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("route")}
                       >
                         <div className="flex items-center">
-                          Güzergah
+                          {t('tickets.colRoute') || "GÜZERGAH"}
                           {sortField === "route" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1644,7 +1623,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("flightNo")}
                       >
                         <div className="flex items-center">
-                          Uçuş No
+                          {t('tickets.colFlightNo') || "UÇUŞ NO"}
                           {sortField === "flightNo" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1658,7 +1637,7 @@ export default function TicketsPage() {
                       >
                         <div className="flex items-center gap-0.5">
                           <span className="text-xs tracking-wide leading-tight">
-                            TEDARİKÇİ
+                            {t('tickets.colSupplier') || "TEDARİKÇİ"}
                           </span>
                           {sortField === "ticketingProvider" && (
                             <span className="shrink-0 text-xs">
@@ -1673,7 +1652,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("costPrice")}
                       >
                         <div className="flex items-center">
-                          Maliyet
+                          {t('tickets.colCost') || "MALİYET"}
                           {sortField === "costPrice" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1686,7 +1665,7 @@ export default function TicketsPage() {
                         onClick={() => handleSort("costCurrency")}
                       >
                         <div className="flex items-center">
-                          Maliyet Dövizi
+                          {t('tickets.colCostCur') || "MALİYET DÖVİZİ"}
                           {sortField === "costCurrency" && (
                             <span className="ml-1">
                               {sortDirection === "asc" ? "↑" : "↓"}
@@ -1943,7 +1922,7 @@ export default function TicketsPage() {
                       colSpan={20}
                       className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                     >
-                      Filtrelere uygun kayıt bulunamadı.
+                      {t('tickets.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>
                   </tr>
                 )}

@@ -43,6 +43,7 @@ import {
 } from "@/lib/supabaseService";
 import { supabase } from "@/lib/supabase";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   AreaChart,
   Area,
@@ -77,11 +78,13 @@ const CountUp = ({
   prefix = "",
   suffix = "",
   decimals = 0,
+  language = "tr",
 }: {
   value: number;
   prefix?: string;
   suffix?: string;
   decimals?: number;
+  language?: string;
 }) => {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -104,7 +107,7 @@ const CountUp = ({
   return (
     <span>
       {prefix}
-      {new Intl.NumberFormat("tr-TR", {
+      {new Intl.NumberFormat(language === "en" ? "en-US" : "tr-TR", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       }).format(count)}
@@ -114,13 +117,13 @@ const CountUp = ({
 };
 
 // --- Formatters ---
-const formatMoney = (n: number) =>
-  new Intl.NumberFormat("tr-TR", {
+const formatMoney = (n: number, language: string = "tr") =>
+  new Intl.NumberFormat(language === "en" ? "en-US" : "tr-TR", {
     style: "currency",
     currency: "TRY",
     maximumFractionDigits: 0,
   }).format(n || 0);
-const formatInt = (n: number) => new Intl.NumberFormat("tr-TR").format(n || 0);
+const formatInt = (n: number, language: string = "tr") => new Intl.NumberFormat(language === "en" ? "en-US" : "tr-TR").format(n || 0);
 const parseDateSafe = (value: any) => {
   if (!value) return null;
   const dt = new Date(value);
@@ -209,7 +212,7 @@ const COLORS = [
 ];
 
 // --- Chart Custom Tooltips ---
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) => k }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     // Check if data is an object with our custom fields (Ciro, Maliyet, Kar/Zarar, Marj vb.)
@@ -218,21 +221,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     
     // Check for our custom fields (from hotelData, agencyData, projectEfficiencyData, sejourEfficiencyData)
     if (data && ('Ciro' in data || 'Satış' in data || 'Maliyet' in data || 'Kar/Zarar' in data || 'Adet' in data)) {
-      const formatMoneySafe = (val: any) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(val || 0);
+      const formatMoneySafe = (val: any) => formatMoney(val, language);
       return (
         <div className="bg-[#0f172a]/95 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-2xl z-50 relative min-w-[150px]">
           <p className="text-white font-bold mb-2 pb-2 border-b border-white/10">{label}</p>
-          {('Proje Ref' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>Ref:</span> <span>{data['Proje Ref']}</span></p>}
-          {('Firma' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>Firma:</span> <span className="truncate max-w-[120px]">{data['Firma']}</span></p>}
-          {('Tarih' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-2 border-b border-white/10 pb-2"><span>Tarih:</span> <span>{data['Tarih']}</span></p>}
-          {('Ciro' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>Ciro:</span> <span>{formatMoneySafe(data['Ciro'])}</span></p>}
-          {('Satış' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>Satış:</span> <span>{formatMoneySafe(data['Satış'])}</span></p>}
-          {('Maliyet' in data) && <p className="text-rose-400 text-[11px] flex justify-between gap-4 font-mono"><span>Maliyet:</span> <span>{formatMoneySafe(data['Maliyet'])}</span></p>}
-          {('Kar/Zarar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar/Zarar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>Kar/Zarar:</span> <span>{formatMoneySafe(data['Kar/Zarar'])}</span></p>}
-          {('Kar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>Kâr:</span> <span>{formatMoneySafe(data['Kar'])}</span></p>}
-          {('Marj' in data) && <p className="text-amber-400 text-[11px] flex justify-between gap-4 font-mono"><span>Marj:</span> <span>%{data['Marj']}</span></p>}
-          {('Adet' in data) && <p className="text-cyan-400 text-[11px] flex justify-between gap-4 font-mono"><span>Adet:</span> <span>{data['Adet']}</span></p>}
-          {('value' in data && !('Ciro' in data) && !('Adet' in data)) && <p className="text-white text-[11px] flex justify-between gap-4 font-mono"><span>Değer:</span> <span>{data['value']}</span></p>}
+          {('Proje Ref' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('dashboard.projectRef') || "Ref:"}</span> <span>{data['Proje Ref']}</span></p>}
+          {('Firma' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('home.company') || "Firma:"}</span> <span className="truncate max-w-[120px]">{data['Firma']}</span></p>}
+          {('Tarih' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-2 border-b border-white/10 pb-2"><span>{t('home.date') || "Tarih:"}</span> <span>{data['Tarih']}</span></p>}
+          {('Ciro' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.totalRevShort') || "Ciro:"}</span> <span>{formatMoneySafe(data['Ciro'])}</span></p>}
+          {('Satış' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.sales') || "Satış:"}</span> <span>{formatMoneySafe(data['Satış'])}</span></p>}
+          {('Maliyet' in data) && <p className="text-rose-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.totalCostShort') || "Maliyet:"}</span> <span>{formatMoneySafe(data['Maliyet'])}</span></p>}
+          {('Kar/Zarar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar/Zarar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>{t('dashboard.profitLoss') || "Kar/Zarar:"}</span> <span>{formatMoneySafe(data['Kar/Zarar'])}</span></p>}
+          {('Kar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>{t('dashboard.profit') || "Kâr:"}</span> <span>{formatMoneySafe(data['Kar'])}</span></p>}
+          {('Marj' in data) && <p className="text-amber-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.margin') || "Marj:"}</span> <span>%{data['Marj']}</span></p>}
+          {('Adet' in data) && <p className="text-cyan-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.count') || "Adet:"}</span> <span>{data['Adet']}</span></p>}
+          {('value' in data && !('Ciro' in data) && !('Adet' in data)) && <p className="text-white text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.value') || "Değer:"}</span> <span>{data['value']}</span></p>}
         </div>
       );
     }
@@ -262,7 +265,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               ></span>
               <span className="text-slate-300">{entry.name}:</span>
               <span className="text-white font-bold">
-                {isMoney ? formatMoney(entry.value) : formatInt(entry.value)}
+                {isMoney ? formatMoney(entry.value, language) : formatInt(entry.value, language)}
               </span>
             </p>
           );
@@ -296,6 +299,7 @@ const KPICard = ({
   suffix = "",
   decimals = 0,
   trend,
+  language = "tr",
 }: any) => {
   const colors: Record<string, string> = {
     blue: "text-blue-400 bg-blue-500/20 border-blue-500/30",
@@ -337,9 +341,9 @@ const KPICard = ({
         </p>
         <h4 className="text-xl lg:text-2xl font-black text-white mt-1 tracking-tight truncate">
           {isMoney ? (
-            <CountUp value={value} prefix="₺" decimals={decimals} />
+            <CountUp value={value} prefix="₺" decimals={decimals} language={language} />
           ) : (
-            <CountUp value={value} suffix={suffix} decimals={decimals} />
+            <CountUp value={value} suffix={suffix} decimals={decimals} language={language} />
           )}
         </h4>
       </div>
@@ -348,6 +352,7 @@ const KPICard = ({
 };
 
 export default function UltimateDashboard() {
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodFilter>("year");
   const [customDate, setCustomDate] = useState({ start: "", end: "" });
@@ -494,6 +499,7 @@ export default function UltimateDashboard() {
   }, []);
 
   const m = useMemo(() => {
+    const loc = language === 'en' ? 'en-US' : 'tr-TR';
     const range = getPeriodRange(period, customDate.start, customDate.end);
 
     // Filtering base data
@@ -604,12 +610,12 @@ export default function UltimateDashboard() {
 
     const funnelData = [
       {
-        name: "Etkileşim (Toplantı/Mail)",
+        name: t('dashboard.interaction') || "Etkileşim (Toplantı/Mail)",
         value: totalMkt,
         fill: "#8b5cf6",
       },
-      { name: "Oluşturulan Teklif", value: pendingQts, fill: "#3b82f6" },
-      { name: "Kazanılan Proje", value: wonQts, fill: "#10b981" },
+      { name: t('dashboard.createdQuote') || "Oluşturulan Teklif", value: pendingQts, fill: "#3b82f6" },
+      { name: t('dashboard.wonProject') || "Kazanılan Proje", value: wonQts, fill: "#10b981" },
     ];
 
     // Agency Analysis
@@ -625,13 +631,13 @@ export default function UltimateDashboard() {
     };
 
     fProj.forEach((p: any) => {
-      const a = p.acente || getAgencyName(p.agency_id, p.musteri_adi || p.acente_adi || "Bilinmeyen Acente");
+      const a = p.acente || getAgencyName(p.agency_id, p.musteri_adi || p.acente_adi || (t('dashboard.unknownAgency') || "Bilinmeyen Acente"));
       if (!agnMap[a]) agnMap[a] = { name: a, ciro: 0, maliyet: 0 };
       agnMap[a].ciro += Number(p.satis_tl) || 0;
       agnMap[a].maliyet += Number(p.maliyet_tl) || 0;
     });
     fSej.forEach((s: any) => {
-      const a = s.acente || getAgencyName(s.agency_id, s.acente_adi || s.musteri_adi || "Bilinmeyen Acente");
+      const a = s.acente || getAgencyName(s.agency_id, s.acente_adi || s.musteri_adi || (t('dashboard.unknownAgency') || "Bilinmeyen Acente"));
       if (!agnMap[a]) agnMap[a] = { name: a, ciro: 0, maliyet: 0 };
       agnMap[a].ciro += Number(s.satis_tl) || 0;
       agnMap[a].maliyet += Number(s.maliyet_tl) || 0;
@@ -659,19 +665,19 @@ export default function UltimateDashboard() {
     const projPurchInRange = data.purchaseItems.filter((p: any) => projectIdsInRange.includes(p.project_id));
     
     projSalesInRange.forEach((si: any) => {
-      const h = getHotelName(si.hotel_id, "Bilinmeyen Otel (Proje)");
+      const h = getHotelName(si.hotel_id, t('dashboard.unknownHotelProject') || "Bilinmeyen Otel (Proje)");
       if (!htlMap[h]) htlMap[h] = { ciro: 0, maliyet: 0 };
       htlMap[h].ciro += (Number(si.total_try) || (Number(si.total_price) * Number(si.fx)) || 0);
     });
     
     projPurchInRange.forEach((pi: any) => {
-      const h = getHotelName(pi.hotel_id, "Bilinmeyen Otel (Proje)");
+      const h = getHotelName(pi.hotel_id, t('dashboard.unknownHotelProject') || "Bilinmeyen Otel (Proje)");
       if (!htlMap[h]) htlMap[h] = { ciro: 0, maliyet: 0 };
       htlMap[h].maliyet += (Number(pi.total_try) || (Number(pi.total_price) * Number(pi.fx)) || 0);
     });
 
     fSej.forEach((s: any) => {
-      const h = s.otel || s.hotel_name || s.hotelName || getHotelName(s.hotel_id, "Bilinmeyen Otel");
+      const h = s.otel || s.hotel_name || s.hotelName || getHotelName(s.hotel_id, t('dashboard.unknownHotel') || "Bilinmeyen Otel");
       if (!htlMap[h]) htlMap[h] = { ciro: 0, maliyet: 0 };
       htlMap[h].ciro += (Number(s.satis_tl) || 0);
       htlMap[h].maliyet += (Number(s.maliyet_tl) || 0);
@@ -692,7 +698,7 @@ export default function UltimateDashboard() {
     // Airline Distribution
     const airMap: Record<string, number> = {};
     fFlights.forEach((f: any) => {
-      const a = f.airline || f.havayolu || "Diğer";
+      const a = f.airline || f.havayolu || t('home.other') || "Diğer";
       airMap[a] = (airMap[a] || 0) + 1;
     });
     const airlineData = Object.keys(airMap)
@@ -701,8 +707,8 @@ export default function UltimateDashboard() {
 
     // Vehicle Types
     const vehMap: Record<string, number> = {};
-    fTransfers.forEach((t: any) => {
-      const v = t.vehicle_type || t.arac_tipi || "Diğer";
+    fTransfers.forEach((transferItem: any) => {
+      const v = transferItem.vehicle_type || transferItem.arac_tipi || t('home.other') || "Diğer";
       vehMap[v] = (vehMap[v] || 0) + 1;
     });
     const vehicleData = Object.keys(vehMap)
@@ -712,7 +718,7 @@ export default function UltimateDashboard() {
     // HR Types
     const hrMap: Record<string, number> = {};
     fHr.forEach((h: any) => {
-      const r = h.role || h.personnel_type || h.type || "Diğer";
+      const r = h.role || h.personnel_type || h.type || t('home.other') || "Diğer";
       hrMap[r] = (hrMap[r] || 0) + 1;
     });
     const hrData = Object.keys(hrMap)
@@ -727,7 +733,7 @@ export default function UltimateDashboard() {
       const dateStr = p.organizasyon_tarihi || p.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
-      const monthKey = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
       
       if (!projMonthlyMap[monthKey]) {
         projMonthlyMap[monthKey] = { name: monthKey, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
@@ -750,7 +756,7 @@ export default function UltimateDashboard() {
       const dateStr = s.giris_tarihi || s.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
-      const monthKey = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
       
       if (!sejMonthlyMap[monthKey]) {
         sejMonthlyMap[monthKey] = { name: monthKey, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
@@ -775,7 +781,7 @@ export default function UltimateDashboard() {
       if (!dateStr) return;
       const date = new Date(dateStr);
       const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-      const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      const monthName = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
       
       if (!monthlyFinMap[sortKey]) {
         monthlyFinMap[sortKey] = { sortKey, name: monthName, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
@@ -792,7 +798,7 @@ export default function UltimateDashboard() {
       if (!dateStr) return;
       const date = new Date(dateStr);
       const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-      const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      const monthName = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
       
       if (!monthlyFinMap[sortKey]) {
         monthlyFinMap[sortKey] = { sortKey, name: monthName, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
@@ -809,7 +815,7 @@ export default function UltimateDashboard() {
       if (!dateStr) return;
       const date = new Date(dateStr);
       const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-      const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      const monthName = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
       
       if (!monthlyFinMap[sortKey]) {
         monthlyFinMap[sortKey] = { sortKey, name: monthName, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
@@ -839,7 +845,7 @@ export default function UltimateDashboard() {
     const addConversion = (dateStr: string, type: string) => {
       if (!dateStr) return;
       const date = new Date(dateStr);
-      const monthKey = date.toLocaleDateString("tr-TR", { month: "short", year: "numeric" });
+      const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
       const ts = new Date(date.getFullYear(), date.getMonth(), 1).getTime();
       
       if (!conversionMap[monthKey]) {
@@ -933,8 +939,8 @@ export default function UltimateDashboard() {
       Maliyet: Math.round(supplierCostMap[k])
     })).sort((a,b) => b.Maliyet - a.Maliyet).slice(0, 10);
     const supMap: Record<string, number> = {};
-    fTransfers.forEach((t: any) => {
-      const s = getSupplierName(t.supplier_id, "Bilinmeyen Tedarikçi");
+    fTransfers.forEach((transferItem: any) => {
+      const s = getSupplierName(transferItem.supplier_id, t('dashboard.unknownSupplier') || "Bilinmeyen Tedarikçi");
       supMap[s] = (supMap[s] || 0) + 1;
     });
     const transferSupplierData = Object.keys(supMap)
@@ -979,10 +985,10 @@ export default function UltimateDashboard() {
       const acente = acenteObj?.name || p.agency_name || "-";
       const sd = p.start_date || p.created_at;
       const ed = p.end_date || sd;
-      const cIn = new Date(sd).toLocaleDateString("tr-TR");
-      const cOut = new Date(ed).toLocaleDateString("tr-TR");
+      const cIn = new Date(sd).toLocaleDateString(loc);
+      const cOut = new Date(ed).toLocaleDateString(loc);
       
-      addOp(sd, ed, "Proje", `Proje: ${code} | C-IN: ${cIn} | C-OUT: ${cOut} | Firma: ${firma} | Acente: ${acente}`, "bg-blue-500");
+      addOp(sd, ed, t('home.project') || "Proje", `${t('home.project') || "Proje"}: ${code} | C-IN: ${cIn} | C-OUT: ${cOut} | ${t('home.company') || "Firma"}: ${firma} | ${t('home.agency') || "Acente"}: ${acente}`, "bg-blue-500");
       // Ekip
       if (p.team_members || p.manager_id) {
         const hotel = getHotelName(p.hotel_id, "-");
@@ -1009,7 +1015,7 @@ export default function UltimateDashboard() {
         
         const sorumlular = sorumluList.length > 0 ? sorumluList.join(", ") : "Belirtilmemiş";
         
-        addOp(sd, ed, "Ekip", `Ekip: ${code} | Sorumlu: ${sorumlular} | Otel: ${hotel} | Firma: ${firma} | Acente: ${acente}`, "bg-indigo-500");
+        addOp(sd, ed, t('dashboard.team') || "Ekip", `${t('dashboard.team') || "Ekip"}: ${code} | ${t('home.manager') || "Sorumlu"}: ${sorumlular} | ${t('home.hotel') || "Otel"}: ${hotel} | ${t('home.company') || "Firma"}: ${firma} | ${t('home.agency') || "Acente"}: ${acente}`, "bg-indigo-500");
       }
     });
 
@@ -1020,10 +1026,10 @@ export default function UltimateDashboard() {
       const ed = s.checkOutDate || s.check_out_date || sd;
       const voucher = s.voucherNumber || s.voucher_number || "-";
       const customer = s.customerName || s.customer_name || "-";
-      const cIn = new Date(sd).toLocaleDateString("tr-TR");
-      const cOut = new Date(ed).toLocaleDateString("tr-TR");
+      const cIn = new Date(sd).toLocaleDateString(loc);
+      const cOut = new Date(ed).toLocaleDateString(loc);
       
-      addOp(sd, ed, "Sejour", `Sejour: Voucher: ${voucher} | C-IN: ${cIn} | C-OUT: ${cOut} | Misafir: ${customer} | Acente: ${acente} | Otel: ${hotel}`, "bg-emerald-500");
+      addOp(sd, ed, "Sejour", `Sejour: Voucher: ${voucher} | C-IN: ${cIn} | C-OUT: ${cOut} | ${t('home.guest') || "Misafir"}: ${customer} | ${t('home.agency') || "Acente"}: ${acente} | ${t('home.hotel') || "Otel"}: ${hotel}`, "bg-emerald-500");
     });
 
     // Sadece Proje, Sejour ve Ekip istendiği için diğerleri yoruma alındı:
@@ -1163,10 +1169,10 @@ export default function UltimateDashboard() {
         <div className="flex flex-wrap items-center justify-start gap-8">
           <div>
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Dashboard
+              {t('dashboard.title') || "Dashboard"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Detaylı Ciro, Hacim ve Operasyon Haritası.
+              {t('dashboard.subtitle')}
             </p>
           </div>
 
@@ -1174,13 +1180,13 @@ export default function UltimateDashboard() {
             <div className="flex items-center gap-2 p-1 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl w-fit h-[40px]">
               {(
                 [
-                  { id: "today", label: "Bugün" },
-                  { id: "week", label: "Bu Hafta" },
-                  { id: "month", label: "Bu Ay" },
-                  { id: "lastMonth", label: "Geçen Ay" },
-                  { id: "year", label: "Bu Yıl" },
-                  { id: "lastYear", label: "Geçen Yıl" },
-                  { id: "all", label: "Tümü" },
+                  { id: "today", label: t('home.today') || "Bugün" },
+                  { id: "week", label: t('home.thisWeek') || "Bu Hafta" },
+                  { id: "month", label: t('home.thisMonth') || "Bu Ay" },
+                  { id: "lastMonth", label: t('home.lastMonth') || "Geçen Ay" },
+                  { id: "year", label: t('home.thisYear') || "Bu Yıl" },
+                  { id: "lastYear", label: t('home.lastYear') || "Geçen Yıl" },
+                  { id: "all", label: t('home.all') || "Tümü" },
                 ] as const
               ).map((item) => (
                 <button
@@ -1210,7 +1216,7 @@ export default function UltimateDashboard() {
                 }`}
               >
                 <Calendar size={14} />
-                Özel Tarih
+                {t('home.customDate') || "Özel Tarih"}
               </button>
             </div>
 
@@ -1224,7 +1230,7 @@ export default function UltimateDashboard() {
                 >
                   <div className="w-64">
                     <ResponsiveDateRangeField
-                      label="Tarih Aralığı"
+                      label={t('home.dateRange') || "Tarih Aralığı"}
                       startValue={customDate.start}
                       endValue={customDate.end}
                       onStartChange={(val) =>
@@ -1245,7 +1251,7 @@ export default function UltimateDashboard() {
               className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-              Yenile
+              {t('home.refresh') || "Yenile"}
             </button>
           </div>
         </div>
@@ -1254,12 +1260,12 @@ export default function UltimateDashboard() {
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 relative custom-scrollbar pr-2 relative">
         {/* ROW 1: KONSOLİDE FİNANS & CİRO DAĞILIMI */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6 relative z-10">
-          <KPICard title="Toplam Ciro" value={m.totalRev} isMoney icon={Landmark} color="emerald" />
-          <KPICard title="Toplam Maliyet" value={m.totalCost} isMoney icon={TrendingDown} color="rose" />
-          <KPICard title="MICE (Proje) Ciro" value={m.miceRev} isMoney icon={Briefcase} color="blue" />
-          <KPICard title="Sejour (Otel) Ciro" value={m.sejRev} isMoney icon={Hotel} color="cyan" />
-          <KPICard title="Bilet Ciro" value={m.flightRev} isMoney icon={Ticket} color="amber" />
-          <KPICard title="Toplam Kâr" value={m.totalProfit} isMoney icon={Award} color="fuchsia" />
+          <KPICard title={t('dashboard.totalRevenue')} value={m.totalRev} isMoney icon={Landmark} color="emerald" language={language} />
+          <KPICard title={t('dashboard.totalCost')} value={m.totalCost} isMoney icon={TrendingDown} color="rose" language={language} />
+          <KPICard title={t('dashboard.miceRevenue')} value={m.miceRev} isMoney icon={Briefcase} color="blue" language={language} />
+          <KPICard title={t('dashboard.sejourRevenue')} value={m.sejRev} isMoney icon={Hotel} color="cyan" language={language} />
+          <KPICard title={t('dashboard.flightRevenue')} value={m.flightRev} isMoney icon={Ticket} color="amber" language={language} />
+          <KPICard title={t('dashboard.totalProfit')} value={m.totalProfit} isMoney icon={Award} color="fuchsia" language={language} />
         </div>
 
         {/* ROW 1.5: AYLIK FİNANSAL ÖZET */}
@@ -1267,10 +1273,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-12 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <BarChart3 size={18} className="text-fuchsia-400" /> Aylık Finansal Özet
+                <BarChart3 size={18} className="text-fuchsia-400" /> {t('dashboard.monthlyFinSummary') || "Aylık Finansal Özet"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                Toplam Ciro, Maliyet, Kâr Tutarı ve Kâr Marjı Analizi (Takvim Yılı)
+                {t('dashboard.monthlyFinSummaryDesc')}
               </p>
               <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-4 pt-2">
                 {m.monthlyFinancialData.map((row: any, i: number) => (
@@ -1282,20 +1288,20 @@ export default function UltimateDashboard() {
                     
                     <div className="flex flex-col gap-1.5 relative z-10">
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-slate-400">Ciro</span>
-                        <span className="text-emerald-400 font-mono font-medium">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(row.Ciro)}</span>
+                        <span className="text-slate-400">{t('dashboard.totalRevShort') || "Ciro"}</span>
+                        <span className="text-emerald-400 font-mono font-medium">{formatMoney(row.Ciro, language)}</span>
                       </div>
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-slate-400">Maliyet</span>
-                        <span className="text-rose-400 font-mono font-medium">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(row.Maliyet)}</span>
+                        <span className="text-slate-400">{t('dashboard.totalCostShort') || "Maliyet"}</span>
+                        <span className="text-rose-400 font-mono font-medium">{formatMoney(row.Maliyet, language)}</span>
                       </div>
                     </div>
                     
                     <div className="mt-auto pt-2 border-t border-white/10 flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-1">Kâr/Zarar</p>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-1">{t('dashboard.profitLoss') || "Kâr/Zarar"}</p>
                         <p className={`font-black text-xs ${row['Kar/Zarar'] >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(row['Kar/Zarar'])}
+                          {formatMoney(row['Kar/Zarar'], language)}
                         </p>
                       </div>
                       <div className="bg-[#0f172a]/80 px-1.5 py-0.5 rounded-lg border border-white/10 shadow-inner">
@@ -1307,7 +1313,7 @@ export default function UltimateDashboard() {
 
                 {m.monthlyFinancialData.length === 0 && (
                   <div className="w-full p-8 text-center text-slate-500 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">
-                    Bu tarih aralığı için finansal veri bulunmuyor.
+                    {t('dashboard.noFinData') || "Bu tarih aralığı için finansal veri bulunmuyor."}
                   </div>
                 )}
 
@@ -1316,24 +1322,24 @@ export default function UltimateDashboard() {
                     <div className="absolute -right-6 -bottom-6 text-fuchsia-500/10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                       <BarChart3 size={80} />
                     </div>
-                    <h3 className="font-black text-fuchsia-100 text-sm relative z-10">Yıllık Toplam</h3>
+                    <h3 className="font-black text-fuchsia-100 text-sm relative z-10">{t('dashboard.annualTotal') || "Yıllık Toplam"}</h3>
                     
                     <div className="flex flex-col gap-1.5 relative z-10">
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-fuchsia-200/70">Top. Ciro</span>
-                        <span className="text-emerald-300 font-mono font-bold">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0))}</span>
+                        <span className="text-fuchsia-200/70">{t('dashboard.totalRevShort') || "Top. Ciro"}</span>
+                        <span className="text-emerald-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0), language)}</span>
                       </div>
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-fuchsia-200/70">Top. Mal.</span>
-                        <span className="text-rose-300 font-mono font-bold">{new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0))}</span>
+                        <span className="text-fuchsia-200/70">{t('dashboard.totalCostShort') || "Top. Mal."}</span>
+                        <span className="text-rose-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0), language)}</span>
                       </div>
                     </div>
                     
                     <div className="mt-auto pt-2 border-t border-fuchsia-500/30 flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[9px] text-fuchsia-300/70 uppercase tracking-widest mb-1">Net Kâr</p>
+                        <p className="text-[9px] text-fuchsia-300/70 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "Net Kâr"}</p>
                         <p className={`font-black text-sm ${m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
-                          {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0))}
+                          {formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0), language)}
                         </p>
                       </div>
                       <div className="bg-[#4a044e]/50 px-1.5 py-0.5 rounded-lg border border-fuchsia-500/30 backdrop-blur-md">
@@ -1355,18 +1361,17 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col gap-4">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="violet">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Target size={18} className="text-violet-400" /> Pazarlama
-                Hunisi
+                <Target size={18} className="text-violet-400" /> {t('dashboard.marketingFunnel') || "Pazarlama Hunisi"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                Etkileşimden Projeye Dönüşüm
+                {t('dashboard.marketingFunnelDesc')}
               </p>
               <div className="flex-1 min-h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   {m.funnelData.reduce((a:number, b:any) => a + (b.value||0), 0) === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full opacity-50">
                       <AlertCircle size={32} className="text-violet-500 mb-2" />
-                      <span className="text-xs font-bold text-center">Henüz Pazarlama Verisi Yok</span>
+                      <span className="text-xs font-bold text-center">{t('dashboard.noMarketingData') || "Henüz Pazarlama Verisi Yok"}</span>
                     </div>
                   ) : (
                   <FunnelChart>
@@ -1390,23 +1395,23 @@ export default function UltimateDashboard() {
               <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/10">
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                    Bekleyen Teklif Ciro
+                    {t('dashboard.pendingQuoteRev') || "Bekleyen Teklif Ciro"}
                   </p>
                   <p className="text-xl font-black text-amber-400 mt-1">
-                    {formatMoney(m.pendingQtsValue)}
+                    {formatMoney(m.pendingQtsValue, language)}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {m.pendingQts} Adet Teklif
+                    {m.pendingQts} {t('dashboard.quoteCountText') || "Adet Teklif"}
                   </p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                    Kazanılan Teklif
+                    {t('dashboard.wonQuote') || "Kazanılan Teklif"}
                   </p>
                   <p className="text-xl font-black text-emerald-400 mt-1">
-                    {m.wonQts} Adet
+                    {m.wonQts} {t('dashboard.projectedCountText') || "Adet"}
                   </p>
-                  <p className="text-xs text-slate-500">Projeleşen</p>
+                  <p className="text-xs text-slate-500">{t('dashboard.projectedLabel') || "Projeleşen"}</p>
                 </div>
               </div>
             </GlassCard>
@@ -1416,11 +1421,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-8 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Building2 size={18} className="text-blue-400" /> Acente Bazlı
-                Hacim ve Kârlılık
+                <Building2 size={18} className="text-blue-400" /> {t('dashboard.agencyVolume') || "Acente Bazlı Hacim ve Kârlılık"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                En çok ciro üreten ilk 10 acente (MICE + Sejour)
+                {t('dashboard.agencyVolumeDesc')}
               </p>
               <div className="flex-1 min-h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1473,6 +1477,7 @@ export default function UltimateDashboard() {
                     <Bar
                       yAxisId="left"
                       dataKey="Ciro"
+                      name={t('dashboard.sales') || "Ciro"}
                       fill="#3b82f6"
                       radius={[4, 4, 0, 0]}
                       barSize={24}
@@ -1481,6 +1486,7 @@ export default function UltimateDashboard() {
                       yAxisId="right"
                       type="monotone"
                       dataKey="Marj"
+                      name={t('dashboard.margin') || "Marj"}
                       stroke="#10b981"
                       strokeWidth={3}
                       dot={{
@@ -1503,11 +1509,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="cyan">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Hotel size={18} className="text-cyan-400" /> Otel Bazlı Ciro
-                Analizi
+                <Hotel size={18} className="text-cyan-400" /> {t('dashboard.hotelRevenue') || "Otel Bazlı Ciro Analizi"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                En Yüksek Cirolu 10 Otel
+                {t('dashboard.hotelRevenueDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1544,6 +1549,7 @@ export default function UltimateDashboard() {
                     />
                     <Bar
                       dataKey="Satış"
+                      name={t('dashboard.sales') || "Satış"}
                       fill="#06b6d4"
                       radius={[0, 4, 4, 0]}
                       barSize={16}
@@ -1566,10 +1572,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Target size={18} className="text-emerald-400" /> Proje Verimliliği
+                <Target size={18} className="text-emerald-400" /> {t('dashboard.projectEfficiency') || "Proje Verimliliği"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                En Yüksek Cirolu MICE Projeleri
+                {t('dashboard.projectEfficiencyDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1583,9 +1589,9 @@ export default function UltimateDashboard() {
                     <YAxis type="category" dataKey="name" stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} width={100} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Bar dataKey="Ciro" fill="#10b981" radius={[0, 4, 4, 0]} barSize={8} />
-                    <Bar dataKey="Maliyet" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={8} />
-                    <Bar dataKey="Kar/Zarar" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={8} />
+                    <Bar dataKey="Ciro" name={t('dashboard.sales') || "Ciro"} fill="#10b981" radius={[0, 4, 4, 0]} barSize={8} />
+                    <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={8} />
+                    <Bar dataKey="Kar/Zarar" name={t('dashboard.profitLoss') || "Kar/Zarar"} fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={8} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1596,10 +1602,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Hotel size={18} className="text-blue-400" /> Sejour Verimliliği
+                <Hotel size={18} className="text-blue-400" /> {t('dashboard.sejourEfficiency') || "Sejour Verimliliği"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                Konfirme Sejour Rezervasyonları
+                {t('dashboard.sejourEfficiencyDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1613,9 +1619,9 @@ export default function UltimateDashboard() {
                     <YAxis type="category" dataKey="name" stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} width={100} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Bar dataKey="Ciro" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={8} />
-                    <Bar dataKey="Maliyet" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={8} />
-                    <Bar dataKey="Kar/Zarar" fill="#10b981" radius={[0, 4, 4, 0]} barSize={8} />
+                    <Bar dataKey="Ciro" name={t('dashboard.sales') || "Ciro"} fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={8} />
+                    <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={8} />
+                    <Bar dataKey="Kar/Zarar" name={t('dashboard.profitLoss') || "Kar/Zarar"} fill="#10b981" radius={[0, 4, 4, 0]} barSize={8} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1629,7 +1635,7 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="amber">
               <h2 className="text-md font-black text-white flex items-center gap-2">
-                <Plane size={16} className="text-amber-400" /> Havayolu Dağılımı
+                <Plane size={16} className="text-amber-400" /> {t('dashboard.airlineDistribution') || "Havayolu Dağılımı"}
               </h2>
               <div className="flex-1 min-h-[180px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1663,7 +1669,7 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia">
               <h2 className="text-md font-black text-white flex items-center gap-2">
-                <Bus size={16} className="text-fuchsia-400" /> Araç Tipi Kullanımı
+                <Bus size={16} className="text-fuchsia-400" /> {t('dashboard.vehicleUsage') || "Araç Tipi Kullanımı"}
               </h2>
               <div className="flex-1 min-h-[180px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1697,7 +1703,7 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose">
               <h2 className="text-md font-black text-white flex items-center gap-2">
-                <Building2 size={16} className="text-rose-400" /> Transfer Tedarikçi Dağılımı
+                <Building2 size={16} className="text-rose-400" /> {t('dashboard.transferSuppliers') || "Transfer Tedarikçi Dağılımı"}
               </h2>
               <div className="flex-1 min-h-[180px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1736,10 +1742,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-8 flex flex-col mb-4">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Target size={18} className="text-emerald-400" /> Teklif & Proje Dönüşüm Grafiği
+                <Target size={18} className="text-emerald-400" /> {t('dashboard.conversionChart') || "Teklif & Proje Dönüşüm Grafiği"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                Aylık Teklif Durumları ve Tamamlanan Projeler
+                {t('dashboard.conversionChartDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1752,10 +1758,10 @@ export default function UltimateDashboard() {
                     <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} allowDecimals={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Bar dataKey="Bekleyen Teklif" fill="#fbbf24" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
-                    <Bar dataKey="İptal Olan Teklif" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
-                    <Bar dataKey="Konfirme Teklif" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
-                    <Bar dataKey="Tamamlanan Proje" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} stackId="b" />
+                    <Bar dataKey="Bekleyen Teklif" name={t('dashboard.pendingQuote') || "Bekleyen Teklif"} fill="#fbbf24" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
+                    <Bar dataKey="İptal Olan Teklif" name={t('dashboard.canceledQuote') || "İptal Olan Teklif"} fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
+                    <Bar dataKey="Konfirme Teklif" name={t('dashboard.confirmedQuote') || "Konfirme Teklif"} fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
+                    <Bar dataKey="Tamamlanan Proje" name={t('dashboard.completedProject') || "Tamamlanan Proje"} fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} stackId="b" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1766,10 +1772,10 @@ export default function UltimateDashboard() {
           <div className="xl:col-span-4 flex flex-col mb-4">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Building2 size={18} className="text-rose-400" /> Tedarikçi Gider Analizi
+                <Building2 size={18} className="text-rose-400" /> {t('dashboard.supplierCost') || "Tedarikçi Gider Analizi"}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
-                MICE ve Sejour Tedarikçi Maliyetleri (En Yüksek 10)
+                {t('dashboard.supplierCostDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1782,7 +1788,7 @@ export default function UltimateDashboard() {
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 }).format(value)} />
                     <YAxis dataKey="name" type="category" width={80} stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
-                    <Bar dataKey="Maliyet" fill="#fb7185" radius={[0, 4, 4, 0]} barSize={12}>
+                    <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#fb7185" radius={[0, 4, 4, 0]} barSize={12}>
                       {m.supplierCostData.map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={index % 2 === 0 ? "#fb7185" : "#f43f5e"} />
                       ))}
@@ -1798,14 +1804,14 @@ export default function UltimateDashboard() {
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
                 <div>
                   <h2 className="text-lg font-black text-white flex items-center gap-2">
-                    <Clock size={18} className="text-blue-400" /> Operasyonel Takvim
+                    <Clock size={18} className="text-blue-400" /> {t('dashboard.calendar') || "Operasyonel Takvim"}
                   </h2>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                    Proje, Sejour, Uçuş, Transfer ve İK Akışı
+                    {t('dashboard.calendarDesc')}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {["Tümü", "Proje", "Sejour", "Ekip"].map((f) => (
+                  {[t('home.all') || "Tümü", t('home.project') || "Proje", "Sejour", t('dashboard.team') || "Ekip"].map((f) => (
                     <button
                       key={f}
                       onClick={() => setCalendarFilter(f)}
@@ -1888,6 +1894,7 @@ export default function UltimateDashboard() {
                   }
                 `}} />
                 <CalendarComponent
+                  locale={language === 'en' ? 'en-US' : 'tr-TR'}
                   className="dashboard-calendar w-full border-none shadow-sm rounded-xl p-2 bg-white/50 backdrop-blur-sm"
                   view={calendarViewMode}
                   onViewChange={({ view }) => setCalendarViewMode(view as any)}
@@ -1975,7 +1982,7 @@ export default function UltimateDashboard() {
                                 className="absolute left-0 right-0 h-[16px] text-[9px] leading-[16px] font-bold text-center text-slate-400 bg-slate-800/50 rounded-sm shadow-sm"
                                 style={{ top: `${maxDisplayRows * 19}px` }}
                               >
-                                +{hiddenCount} DİĞER
+                                +{hiddenCount} {t('dashboard.other') || "DİĞER"}
                               </div>
                             )}
                           </div>
@@ -2024,13 +2031,13 @@ export default function UltimateDashboard() {
                 {(() => {
                   const ops = m.allOps.filter((op:any) => op.date.toDateString() === selectedCalendarDate.toDateString());
                   if (ops.length === 0) {
-                    return <div className="text-center text-slate-500 py-8">Bu tarihte herhangi bir operasyon kaydı bulunmuyor.</div>;
+                    return <div className="text-center text-slate-500 py-8">{t('dashboard.noOpData') || "Bu tarihte herhangi bir operasyon kaydı bulunmuyor."}</div>;
                   }
                   
                   const filteredOps = calendarFilter === "Tümü" ? ops : ops.filter((op: any) => op.category === calendarFilter);
                   
                   if (filteredOps.length === 0) {
-                    return <div className="text-center text-slate-500 py-8">Seçili filtreye uygun kayıt bulunmuyor.</div>;
+                    return <div className="text-center text-slate-500 py-8">{t('dashboard.noFilterData') || "Seçili filtreye uygun kayıt bulunmuyor."}</div>;
                   }
 
                   return filteredOps.map((op: any, i: number) => (

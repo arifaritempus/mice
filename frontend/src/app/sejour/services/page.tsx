@@ -625,8 +625,7 @@ export default function SejourServicesPage() {
     }
 
     // Logos - yeni sistem (URL'den base64'e çevirir)
-    const { iconLogoBase64, wordmarkLogoBase64 } =
-      await getLogosForExcel(false); // Açık tema logosu kullan
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(false); // Açık tema logosu kullan
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -637,7 +636,7 @@ export default function SejourServicesPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.15, row: 0.15 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -647,7 +646,7 @@ export default function SejourServicesPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 11.5, row: 0.23 },
-        ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 
@@ -771,8 +770,7 @@ export default function SejourServicesPage() {
     }
 
     // Logos - yeni sistem (URL'den base64'e çevirir)
-    const { iconLogoBase64, wordmarkLogoBase64 } =
-      await getLogosForExcel(false); // Açık tema logosu kullan
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(false); // Açık tema logosu kullan
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -783,7 +781,7 @@ export default function SejourServicesPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.15, row: 0.15 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -793,7 +791,7 @@ export default function SejourServicesPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 11.5, row: 0.23 },
-        ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 
@@ -1081,28 +1079,7 @@ export default function SejourServicesPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                onClick={clearServicesFilters}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">

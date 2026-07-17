@@ -24,13 +24,53 @@ function GlobalLoader() {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: "NEXUS Analytics",
-  description: "Premium Workspace Management",
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
+import { createClient } from "@supabase/supabase-js";
+
+export async function generateMetadata(): Promise<Metadata> {
+  let title = "NEXUS Analytics";
+  let icon = "/favicon.ico";
+
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (url && key) {
+      const client = createClient(url, key, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data } = await client
+        .from("settings")
+        .select("value")
+        .eq("key", "general_settings")
+        .maybeSingle();
+
+      let parsed = data?.value;
+      if (typeof parsed === "string") {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch (e) {}
+      }
+
+      if (parsed) {
+        if (parsed.companyName) title = parsed.companyName;
+        if (parsed.darkIconLogo) icon = parsed.darkIconLogo;
+        else if (parsed.lightIconLogo) icon = parsed.lightIconLogo;
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching metadata settings:", error);
+  }
+
+  return {
+    title,
+    description: "Premium Workspace Management",
+    icons: {
+      icon,
+    },
+  };
+}
 
 export default function RootLayout({
   children,

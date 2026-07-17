@@ -72,7 +72,7 @@ export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
       icon: <LayoutDashboard className="w-5 h-5 text-blue-400" />,
       color: "blue",
       items: [
-        { label: "Dashboard", href: "/", icon: <LayoutDashboard size={16} /> },
+        { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={16} /> },
         {
           label: "Pazarlama & CRM",
           href: "/marketing",

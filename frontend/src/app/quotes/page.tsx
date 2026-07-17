@@ -993,26 +993,7 @@ export default function QuotesPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <button
-              onClick={clearAllFilters}
-              className="w-10 h-10 shrink-0 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-              title="Tüm Filtreleri Temizle"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -1577,12 +1558,47 @@ export default function QuotesPage() {
                       </span>
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200 max-w-[160px]">
-                      <span
-                        className="block truncate"
-                        title={getHotelName(quote.hotel_id) || "-"}
-                      >
-                        {getHotelName(quote.hotel_id)}
-                      </span>
+                      {(() => {
+                        let tooltipNames: string[] = [];
+                        let firstHotelName = "";
+                        
+                        if (quote.hotels_data && Array.isArray(quote.hotels_data) && quote.hotels_data.length > 0) {
+                          firstHotelName = getHotelName(quote.hotels_data[0].hotel_id) || quote.hotels_data[0].hotel_name || "Bilinmeyen Otel";
+                          tooltipNames = quote.hotels_data.map((h: any) => {
+                            const name = getHotelName(h.hotel_id) || h.hotel_name || "Bilinmeyen Otel";
+                            const inDate = h.check_in_date ? formatDate(h.check_in_date) : "";
+                            const outDate = h.check_out_date ? formatDate(h.check_out_date) : "";
+                            let text = name;
+                            if (inDate && outDate) text = `${name} (${inDate} - ${outDate})`;
+                            return text.replace(/ /g, "\u00A0").replace(/-/g, "\u2011");
+                          });
+                        } else if (quote.hotel_id) {
+                          firstHotelName = getHotelName(quote.hotel_id) || "Bilinmeyen Otel";
+                          const inDate = quote.check_in_date ? formatDate(quote.check_in_date) : "";
+                          const outDate = quote.check_out_date ? formatDate(quote.check_out_date) : "";
+                          let text = firstHotelName;
+                          if (inDate && outDate) {
+                            text = `${firstHotelName} (${inDate} - ${outDate})`;
+                          }
+                          tooltipNames = [text.replace(/ /g, "\u00A0").replace(/-/g, "\u2011")];
+                        }
+                        
+                        if (tooltipNames.length === 0) return <span>-</span>;
+                        
+                        const additionalCount = tooltipNames.length - 1;
+                        const allHotelsText = tooltipNames.join("\n");
+                        
+                        return (
+                          <div className="flex items-center gap-1 group" title={allHotelsText}>
+                            <span className="truncate block max-w-[120px] cursor-help">{firstHotelName}</span>
+                            {additionalCount > 0 && (
+                              <span className="text-[9px] bg-blue-500/20 text-blue-400 font-bold px-1.5 py-0.5 rounded cursor-help whitespace-nowrap flex-shrink-0">
+                                +{additionalCount}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">

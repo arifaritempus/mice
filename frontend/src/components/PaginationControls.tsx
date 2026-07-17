@@ -2,6 +2,7 @@
 
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/pagination";
 import { useEffect } from "react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface PaginationControlsProps {
   page: number;
@@ -37,6 +38,8 @@ export default function PaginationControls({
   compactRight = false,
   loadingHint = null,
 }: PaginationControlsProps) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     const cookieSize = Number(getCookie(preferenceKey) || "");
     if (
@@ -54,10 +57,10 @@ export default function PaginationControls({
     return (
       <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2 border-t border-gray-200 p-2 dark:border-gray-700 sm:gap-3 bg-white dark:bg-gray-800 rounded-b-lg">
         <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-          Toplam 0 kayıt
+          {t('pagination.totalZeroRecords') || "Toplam 0 kayıt"}
         </span>
         <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-          Sayfa başına
+          {t('pagination.perPage') || "Sayfa başına"}
         </span>
         <select
           value={pageSize}
@@ -80,7 +83,7 @@ export default function PaginationControls({
             className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-40 dark:border-gray-600"
             disabled={true}
           >
-            Önceki
+            {t('pagination.previous') || "Önceki"}
           </button>
           <span className="px-1 text-xs text-gray-700 dark:text-gray-200">
             1 / 1
@@ -90,7 +93,7 @@ export default function PaginationControls({
             className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-40 dark:border-gray-600"
             disabled={true}
           >
-            Sonraki
+            {t('pagination.next') || "Sonraki"}
           </button>
         </div>
       </div>
@@ -111,10 +114,10 @@ export default function PaginationControls({
         </span>
       ) : null}
       <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-        {total > 0 ? `${start}-${end} / ${total} kayıt` : "Toplam 0 kayıt"}
+        {total > 0 ? `${start}-${end} / ${total} ${t('pagination.records') || "kayıt"}` : (t('pagination.totalZeroRecords') || "Toplam 0 kayıt")}
       </span>
       <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-        Sayfa başına
+        {t('pagination.perPage') || "Sayfa başına"}
       </span>
       <select
         value={pageSize}
@@ -138,7 +141,7 @@ export default function PaginationControls({
           disabled={page <= 1 || total <= 0}
           onClick={() => onPageChange(page - 1)}
         >
-          Önceki
+          {t('pagination.previous') || "Önceki"}
         </button>
         <span className="px-1 text-xs text-gray-700 dark:text-gray-200">
           {page} / {Math.max(1, totalPages)}
@@ -149,7 +152,7 @@ export default function PaginationControls({
           disabled={page >= totalPages || total <= 0}
           onClick={() => onPageChange(page + 1)}
         >
-          Sonraki
+          {t('pagination.next') || "Sonraki"}
         </button>
       </div>
     </div>

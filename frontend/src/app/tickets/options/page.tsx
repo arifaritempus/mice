@@ -22,6 +22,7 @@ import {
 } from "date-fns";
 import { tr } from "date-fns/locale";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   ticketOptionsService,
   AgencyService,
@@ -104,6 +105,7 @@ function toCalendarYmd(value: string | Date | null | undefined): string {
 }
 
 export default function TicketOptionsPage() {
+  const { t, language } = useLanguage();
   const { canCreate, canEdit, canDelete } = usePermissions();
   const [ticketOptions, setTicketOptions] = useState<TicketOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -352,8 +354,7 @@ export default function TicketOptionsPage() {
     }
 
     // Logos - yeni sistem (URL'den base64'e çevirir)
-    const { iconLogoBase64, wordmarkLogoBase64 } =
-      await getLogosForExcel(false); // Açık tema logosu kullan
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(false); // Açık tema logosu kullan
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -364,7 +365,7 @@ export default function TicketOptionsPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.15, row: 0.15 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -374,29 +375,29 @@ export default function TicketOptionsPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 14.5, row: 0.23 },
-        ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 
     // Columns
     sheet.columns = [
-      { header: "VOUCHER NO", key: "voucher_no", width: 16 },
-      { header: "ACENTE", key: "agent", width: 20 },
-      { header: "FİRMA ADI", key: "company_name", width: 22 },
-      { header: "TEDARİKÇİ", key: "supplier", width: 20 },
-      { header: "HAVAYOLU", key: "airline", width: 12 },
-      { header: "GRUP REF NO", key: "group_ref_no", width: 16 },
-      { header: "UÇUŞ TİPİ", key: "flight_type", width: 14 },
-      { header: "GİDİŞ TARİHİ", key: "departure_date", width: 14 },
-      { header: "GİDİŞ SAATİ", key: "departure_time", width: 12 },
-      { header: "DÖNÜŞ TARİHİ", key: "return_date", width: 14 },
-      { header: "DÖNÜŞ SAATİ", key: "return_time", width: 12 },
-      { header: "GÜZERGAH", key: "route", width: 16 },
-      { header: "KİŞİ SAYISI", key: "passenger_count", width: 12 },
-      { header: "PP MALİYET", key: "pp_cost", width: 12 },
-      { header: "TOPLAM MALİYET", key: "total_cost", width: 14 },
-      { header: "DÖVİZ", key: "currency", width: 8 },
-      { header: "DURUM", key: "status", width: 12 },
+      { header: t('ticketsOptions.colVoucher') || "VOUCHER NO", key: "voucher_no", width: 16 },
+      { header: t('ticketsOptions.colAgent') || "ACENTE", key: "agent", width: 20 },
+      { header: t('ticketsOptions.colCompany') || "FİRMA ADI", key: "company_name", width: 22 },
+      { header: t('ticketsOptions.colSupplier') || "TEDARİKÇİ", key: "supplier", width: 20 },
+      { header: t('ticketsOptions.colAirline') || "HAVAYOLU", key: "airline", width: 12 },
+      { header: t('ticketsOptions.colGroupRef') || "GRUP REF NO", key: "group_ref_no", width: 16 },
+      { header: t('ticketsOptions.colFlightType') || "UÇUŞ TİPİ", key: "flight_type", width: 14 },
+      { header: (t('ticketsOptions.colDepartureDate') || "GİDİŞ TARİHİ").split(' ')[0] + ' TARİHİ', key: "departure_date", width: 14 },
+      { header: (t('ticketsOptions.colDepartureDate') || "GİDİŞ SAATİ").split(' ')[0] + ' SAATİ', key: "departure_time", width: 12 },
+      { header: (t('ticketsOptions.colReturnDate') || "DÖNÜŞ TARİHİ").split(' ')[0] + ' TARİHİ', key: "return_date", width: 14 },
+      { header: (t('ticketsOptions.colReturnDate') || "DÖNÜŞ SAATİ").split(' ')[0] + ' SAATİ', key: "return_time", width: 12 },
+      { header: t('ticketsOptions.colRoute') || "GÜZERGAH", key: "route", width: 16 },
+      { header: t('ticketsOptions.colPaxCount') || "KİŞİ SAYISI", key: "passenger_count", width: 12 },
+      { header: t('ticketsOptions.colPpCost') || "PP MALİYET", key: "pp_cost", width: 12 },
+      { header: t('ticketsOptions.colTotalCost') || "TOPLAM MALİYET", key: "total_cost", width: 14 },
+      { header: t('ticketsOptions.colCurrency') || "DÖVİZ", key: "currency", width: 8 },
+      { header: t('ticketsOptions.colStatus') || "DURUM", key: "status", width: 12 },
     ];
     const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
     sheet.getRow(headerRow.number).height = 18;
@@ -435,13 +436,13 @@ export default function TicketOptionsPage() {
     const getStatusText = (status: string) => {
       switch (status) {
         case "active":
-          return "Aktif";
+          return t('ticketsOptions.tabActive') || "Aktif";
         case "expired":
-          return "Süresi Dolmuş";
+          return t('ticketsOptions.tabExpired') || "Süresi Dolmuş";
         case "confirmed":
-          return "Konfirme";
+          return t('ticketsOptions.tabConfirmed') || "Konfirme";
         case "cancelled":
-          return "İptal";
+          return t('ticketsOptions.tabCancelled') || "İptal";
         default:
           return status;
       }
@@ -880,13 +881,13 @@ export default function TicketOptionsPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "active":
-        return "Aktif";
+        return t('ticketsOptions.tabActive') || "Aktif";
       case "expired":
-        return "Süresi Dolmuş";
+        return t('ticketsOptions.tabExpired') || "Süresi Dolmuş";
       case "confirmed":
-        return "Konfirme";
+        return t('ticketsOptions.tabConfirmed') || "Konfirme";
       case "cancelled":
-        return "İptal";
+        return t('ticketsOptions.tabCancelled') || "İptal";
       default:
         return status;
     }
@@ -1055,7 +1056,7 @@ export default function TicketOptionsPage() {
     } catch (error) {
       console.error("Bilet opsiyonu eklenirken hata:", error);
       toast.error(
-        "Bilet opsiyonu eklenirken bir hata oluştu. Lütfen tekrar deneyin.",
+        t('ticketsOptions.toastAddError') || "Bilet opsiyonu eklenirken bir hata oluştu. Lütfen tekrar deneyin.",
       );
     }
   };
@@ -1077,12 +1078,12 @@ export default function TicketOptionsPage() {
         (option) => option.id !== ticketToDelete,
       );
       setTicketOptions(updatedOptions);
-      toast.success("Bilet opsiyonu başarıyla silindi.");
+      toast.success(t('ticketsOptions.toastDeleteSuccess') || "Bilet opsiyonu başarıyla silindi.");
       setShowDeleteConfirm(false);
     } catch (error) {
       console.error("Bilet opsiyonu silinirken hata:", error);
       toast.error(
-        "Bilet opsiyonu silinirken bir hata oluştu. Lütfen tekrar deneyin.",
+        t('ticketsOptions.toastDeleteError') || "Bilet opsiyonu silinirken bir hata oluştu. Lütfen tekrar deneyin.",
       );
     } finally {
       setIsDeleting(false);
@@ -1173,7 +1174,7 @@ export default function TicketOptionsPage() {
     } catch (error) {
       console.error("Bilet opsiyonu güncellenirken hata:", error);
       toast.error(
-        "Bilet opsiyonu güncellenirken bir hata oluştu. Lütfen tekrar deneyin.",
+        t('ticketsOptions.toastUpdateError') || "Bilet opsiyonu güncellenirken bir hata oluştu. Lütfen tekrar deneyin.",
       );
     }
   };
@@ -1244,7 +1245,7 @@ export default function TicketOptionsPage() {
     } catch (error) {
       console.error("Bilet opsiyonu konfirme edilirken hata:", error);
       toast.error(
-        "Bilet opsiyonu konfirme edilirken bir hata oluştu. Lütfen tekrar deneyin.",
+        t('ticketsOptions.toastConfirmError') || "Bilet opsiyonu konfirme edilirken bir hata oluştu. Lütfen tekrar deneyin.",
       );
     }
   };
@@ -1287,13 +1288,13 @@ export default function TicketOptionsPage() {
     } catch (error) {
       console.error("Bilet opsiyonu durumu değiştirilirken hata:", error);
       toast.error(
-        "Bilet opsiyonu durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.",
+        t('ticketsOptions.toastStatusError') || "Bilet opsiyonu durumu değiştirilirken bir hata oluştu. Lütfen tekrar deneyin.",
       );
     }
   };
 
   if (!initialFetchDone && loading) {
-    return <LoadingSpinner message="Bilet opsiyonları yükleniyor..." />;
+    return <LoadingSpinner message={t('ticketsOptions.loading') || "Bilet opsiyonları yükleniyor..."} />;
   }
 
   return (
@@ -1304,10 +1305,10 @@ export default function TicketOptionsPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Bilet Opsiyon Takip
+              {t('ticketsOptions.title') || "Bilet Opsiyon Takip"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              MICE rezervasyonlarındaki bilet opsiyonlarını takip edin
+              {t('ticketsOptions.description') || "MICE rezervasyonlarındaki bilet opsiyonlarını takip edin"}
             </p>
           </div>
 
@@ -1316,7 +1317,7 @@ export default function TicketOptionsPage() {
             {/* Dates */}
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Gidiş Dönüş Tarihi"
+                label={t('ticketsOptions.filterDateInOut') || "Gidiş Dönüş Tarihi"}
                 startValue={dateRange.startDate}
                 endValue={dateRange.endDate}
                 onStartChange={(value) =>
@@ -1330,7 +1331,7 @@ export default function TicketOptionsPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Opsiyon Bitiş Tarihi"
+                label={t('ticketsOptions.filterDateOptionEnd') || "Opsiyon Bitiş Tarihi"}
                 startValue={flightDateRange.startDate}
                 endValue={flightDateRange.endDate}
                 onStartChange={(value) =>
@@ -1346,7 +1347,7 @@ export default function TicketOptionsPage() {
             {/* Search */}
             <div className="flex-1 min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Voucher, PNR, Firma vb.)"
+                label={t('ticketsOptions.searchPlaceholder') || "Genel Arama (Voucher, PNR, Firma vb.)"}
                 tokens={voucherTokens}
                 inputValue={voucherInput}
                 suggestions={voucherSuggestions}
@@ -1358,29 +1359,7 @@ export default function TicketOptionsPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -1388,7 +1367,7 @@ export default function TicketOptionsPage() {
                 type="button"
                 onClick={exportOptionsExcel}
                 className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2"
-                title="Excel İndir"
+                title={t('ticketsOptions.exportExcel') || "Excel İndir"}
               >
                 <svg
                   className="w-4 h-4"
@@ -1410,7 +1389,7 @@ export default function TicketOptionsPage() {
                   onClick={openAddModal}
                   className="bg-blue-500 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide"
                 >
-                  Opsiyon Ekle
+                  {t('ticketsOptions.addOption') || "Opsiyon Ekle"}
                 </button>
               )}
             </div>
@@ -1421,41 +1400,41 @@ export default function TicketOptionsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
-              DURUM:
+              {t('ticketsOptions.statusFilter') || "DURUM:"}
             </span>
             <button
               onClick={() => setStatusFilter("all")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>TÜMÜ</span>
+              <span className="uppercase">{t('ticketsOptions.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{statusCardCounts.all}</span>
             </button>
             <button
               onClick={() => setStatusFilter("confirmed")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "confirmed" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-400" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>KONFİRME</span>
+              <span className="uppercase">{t('ticketsOptions.tabConfirmed') || "KONFİRME"}</span>
               <span className="font-bold">{statusCardCounts.confirmed}</span>
             </button>
             <button
               onClick={() => setStatusFilter("active")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "active" ? "bg-purple-500/20 border border-purple-500/50 text-purple-400" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>AKTİF</span>
+              <span className="uppercase">{t('ticketsOptions.tabActive') || "AKTİF"}</span>
               <span className="font-bold">{statusCardCounts.active}</span>
             </button>
             <button
               onClick={() => setStatusFilter("expired")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "expired" ? "bg-orange-500/20 border border-orange-500/50 text-orange-400" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>SÜRESİ DOLMUŞ</span>
+              <span className="uppercase">{t('ticketsOptions.tabExpired') || "SÜRESİ DOLMUŞ"}</span>
               <span className="font-bold">{statusCardCounts.expired}</span>
             </button>
             <button
               onClick={() => setStatusFilter("cancelled")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "cancelled" ? "bg-red-500/20 border border-red-500/50 text-red-400" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>İPTAL</span>
+              <span className="uppercase">{t('ticketsOptions.tabCancelled') || "İPTAL"}</span>
               <span className="font-bold">{statusCardCounts.cancelled}</span>
             </button>
           </div>
@@ -1463,7 +1442,7 @@ export default function TicketOptionsPage() {
             <span className="font-medium text-white">
               {sortedOptions.length}
             </span>{" "}
-            kayıt gösteriliyor
+            {t('ticketsOptions.showingRecords') || "kayıt gösteriliyor"}
           </div>
         </div>
 
@@ -1476,7 +1455,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("voucher_no")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    VOUCHER NO{" "}
+                    {t('ticketsOptions.colVoucher') || "VOUCHER NO"}{" "}
                     {sortField === "voucher_no" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1484,7 +1463,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("agent")}
                     className="w-[7.5rem] px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    ACENTE{" "}
+                    {t('ticketsOptions.colAgent') || "ACENTE"}{" "}
                     {sortField === "agent" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1492,7 +1471,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("company_name")}
                     className="w-[8rem] px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    FİRMA ADI{" "}
+                    {t('ticketsOptions.colCompany') || "FİRMA ADI"}{" "}
                     {sortField === "company_name" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1500,7 +1479,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("supplier")}
                     className="w-[8.5rem] px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    TEDARİKÇİ{" "}
+                    {t('ticketsOptions.colSupplier') || "TEDARİKÇİ"}{" "}
                     {sortField === "supplier" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1508,7 +1487,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("airline")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    HAVAYOLU{" "}
+                    {t('ticketsOptions.colAirline') || "HAVAYOLU"}{" "}
                     {sortField === "airline" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1516,7 +1495,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("group_ref_no")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    GRUP REF NO{" "}
+                    {t('ticketsOptions.colGroupRef') || "GRUP REF NO"}{" "}
                     {sortField === "group_ref_no" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1524,7 +1503,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("flight_type")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    UÇUŞ TİPİ{" "}
+                    {t('ticketsOptions.colFlightType') || "UÇUŞ TİPİ"}{" "}
                     {sortField === "flight_type" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1533,8 +1512,7 @@ export default function TicketOptionsPage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
                     <div className="text-left">
-                      <div>GİDİŞ TARİHİ</div>
-                      <div>VE SAATİ</div>
+                      <div>{t('ticketsOptions.colDepartureDate') || "GİDİŞ TARİHİ VE SAATİ"}</div>
                     </div>
                     {sortField === "departure_date" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
@@ -1544,8 +1522,7 @@ export default function TicketOptionsPage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
                     <div className="text-left">
-                      <div>DÖNÜŞ TARİHİ</div>
-                      <div>VE SAATİ</div>
+                      <div>{t('ticketsOptions.colReturnDate') || "DÖNÜŞ TARİHİ VE SAATİ"}</div>
                     </div>
                     {sortField === "return_date" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
@@ -1554,7 +1531,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("route")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    GÜZERGAH{" "}
+                    {t('ticketsOptions.colRoute') || "GÜZERGAH"}{" "}
                     {sortField === "route" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1563,8 +1540,7 @@ export default function TicketOptionsPage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
                     <div className="text-left">
-                      <div>KİŞİ</div>
-                      <div>SAYISI</div>
+                      <div>{t('ticketsOptions.colPaxCount') || "KİŞİ SAYISI"}</div>
                     </div>
                     {sortField === "passenger_count" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
@@ -1574,8 +1550,7 @@ export default function TicketOptionsPage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
                     <div className="text-left">
-                      <div>PP</div>
-                      <div>MALİYET</div>
+                      <div>{t('ticketsOptions.colPpCost') || "PP MALİYET"}</div>
                     </div>
                     {sortField === "pp_cost" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
@@ -1585,8 +1560,7 @@ export default function TicketOptionsPage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
                     <div className="text-left">
-                      <div>TOPLAM</div>
-                      <div>MALİYET</div>
+                      <div>{t('ticketsOptions.colTotalCost') || "TOPLAM MALİYET"}</div>
                     </div>
                     {sortField === "total_cost" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
@@ -1595,7 +1569,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("currency")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    DÖVİZ{" "}
+                    {t('ticketsOptions.colCurrency') || "DÖVİZ"}{" "}
                     {sortField === "currency" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1604,8 +1578,7 @@ export default function TicketOptionsPage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
                     <div className="text-left">
-                      <div>OPSİYON BİTİŞ</div>
-                      <div>TARİHİ VE SAATİ</div>
+                      <div>{t('ticketsOptions.colOptionEnd') || "OPSİYON BİTİŞ TARİHİ VE SAATİ"}</div>
                     </div>
                     {sortField === "option_end_date" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
@@ -1614,7 +1587,7 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("pnr")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    PNR{" "}
+                    {t('ticketsOptions.colPnr') || "PNR"}{" "}
                     {sortField === "pnr" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
@@ -1622,12 +1595,12 @@ export default function TicketOptionsPage() {
                     onClick={() => handleSort("status")}
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                   >
-                    DURUM{" "}
+                    {t('ticketsOptions.colStatus') || "DURUM"}{" "}
                     {sortField === "status" &&
                       (sortDirection === "asc" ? "↑" : "↓")}
                   </th>
                   <th className="px-2.5 py-2.5 text-right text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer border-b border-white/10">
-                    İŞLEMLER
+                    {t('ticketsOptions.colActions') || "İŞLEMLER"}
                   </th>
                 </tr>
               </thead>
@@ -1671,7 +1644,10 @@ export default function TicketOptionsPage() {
                       {option.group_ref_no}
                     </td>
                     <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
-                      {option.flight_type}
+                      {option.flight_type === "Gidiş Dönüş" ? t('ticketsOptions.optRoundTrip') || "Gidiş Dönüş" :
+                       option.flight_type === "Tek Yön" ? t('ticketsOptions.optOneWay') || "Tek Yön" :
+                       option.flight_type === "Çok Segment" ? t('ticketsOptions.optMulti') || "Çok Segment" :
+                       option.flight_type}
                     </td>
                     <td className="whitespace-nowrap py-2.5 px-2.5 text-left text-gray-700 dark:text-gray-300 text-[11px]">
                       <div className="text-left">
@@ -1738,7 +1714,7 @@ export default function TicketOptionsPage() {
                             <button
                               onClick={() => openConfirmModal(option)}
                               className="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 p-1 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors duration-200"
-                              title="Konfirme Et"
+                              title={t('ticketsOptions.actConfirm') || "Konfirme Et"}
                             >
                               <svg
                                 className="w-3 h-3"
@@ -1757,7 +1733,7 @@ export default function TicketOptionsPage() {
                             <button
                               onClick={() => openStatusChangeModal(option)}
                               className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 p-1 rounded hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors duration-200"
-                              title="Durum Değiştir"
+                              title={t('ticketsOptions.actChangeStatus') || "Durum Değiştir"}
                             >
                               <svg
                                 className="w-3 h-3"
@@ -1776,7 +1752,7 @@ export default function TicketOptionsPage() {
                             <button
                               onClick={() => openEditModal(option)}
                               className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors duration-200"
-                              title="Düzenle"
+                              title={t('ticketsOptions.actEdit') || "Düzenle"}
                             >
                               <svg
                                 className="w-3 h-3"
@@ -1798,7 +1774,7 @@ export default function TicketOptionsPage() {
                           <button
                             onClick={() => handleDeleteClick(option.id)}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
-                            title="Sil"
+                            title={t('ticketsOptions.actDelete') || "Sil"}
                           >
                             <svg
                               className="w-3 h-3"
@@ -1832,8 +1808,8 @@ export default function TicketOptionsPage() {
                       airlineTerms.length ||
                       dateRange.startDate ||
                       dateRange.endDate
-                        ? "Filtrelere uygun bilet opsiyonu bulunamadı."
-                        : "Kayıtlı bilet opsiyonu bulunamadı."}
+                        ? (t('ticketsOptions.noDataFilters') || "Filtrelere uygun bilet opsiyonu bulunamadı.")
+                        : (t('ticketsOptions.noData') || "Kayıtlı bilet opsiyonu bulunamadı.")}
                     </td>
                   </tr>
                 )}
@@ -1865,10 +1841,10 @@ export default function TicketOptionsPage() {
             <div className="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white dark:from-slate-900 dark:to-[#0f172a]">
               <div>
                 <h2 className="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400">
-                  Bilet Konfirme Et
+                  {t('ticketsOptions.modalConfirmTitle') || "Bilet Konfirme Et"}
                 </h2>
                 <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
-                  {selectedTicket.company_name || selectedTicket.agent || "Bilet"} - {selectedTicket.pnr || "Opsiyon"}
+                  {selectedTicket.company_name || selectedTicket.agent || (t('ticketsOptions.modalConfirmTicket') || "Bilet")} - {selectedTicket.pnr || (t('ticketsOptions.modalConfirmOption') || "Opsiyon")}
                 </p>
               </div>
               <button
@@ -1888,11 +1864,11 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                 <h3 className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-                  Bilet Detayları
+                  {t('ticketsOptions.modalConfirmTicketDetails') || "Bilet Detayları"}
                 </h3>
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Voucher No</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">{t('ticketsOptions.colVoucher') || "Voucher No"}</label>
                     <input
                       type="text"
                       value={selectedTicket.voucher_no}
@@ -1901,10 +1877,10 @@ export default function TicketOptionsPage() {
                     />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PNR Kodu *</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">{t('ticketsOptions.colPnr') || "PNR Kodu"} *</label>
                     <input
                       type="text"
-                      placeholder="PNR girin..."
+                      placeholder={t('ticketsOptions.plcEnterPnr') || "PNR girin..."}
                       value={confirmPnr}
                       onChange={(e) => setConfirmPnr(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none"
@@ -1917,11 +1893,11 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                 <h3 className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                  Yolcu & Maliyet
+                  {t('ticketsOptions.modalConfirmPaxCost') || "Yolcu & Maliyet"}
                 </h3>
                 <div className="flex gap-3 items-end">
                   <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Yolcu Sayısı</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">{t('ticketsOptions.colPaxCount') || "Yolcu Sayısı"}</label>
                     <input
                       type="number"
                       value={confirmPassengerCount === 0 ? "" : confirmPassengerCount}
@@ -1930,7 +1906,7 @@ export default function TicketOptionsPage() {
                     />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PP Maliyet</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">{t('ticketsOptions.colPpCost') || "PP Maliyet"}</label>
                     <input
                       type="text"
                       value={formatCurrency(selectedTicket.pp_cost, selectedTicket.currency)}
@@ -1942,8 +1918,8 @@ export default function TicketOptionsPage() {
                 
                 <div className="mt-3 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl border border-purple-100 dark:border-purple-800/30 flex justify-between items-center">
                   <div>
-                    <p className="text-[10px] text-purple-600 dark:text-purple-400 font-bold uppercase">Toplam Kesinleşen</p>
-                    <p className="text-xs text-purple-800 dark:text-purple-300">Yolcu sayısı üzerinden</p>
+                    <p className="text-[10px] text-purple-600 dark:text-purple-400 font-bold uppercase">{t('ticketsOptions.modalConfirmTotalPax') || "Toplam Kesinleşen"}</p>
+                    <p className="text-xs text-purple-800 dark:text-purple-300">{t('ticketsOptions.modalConfirmPaxBased') || "Yolcu sayısı üzerinden"}</p>
                   </div>
                   <div className="text-lg font-black text-purple-700 dark:text-purple-300">
                     {formatCurrency(confirmPassengerCount * selectedTicket.pp_cost, selectedTicket.currency)}
@@ -1954,7 +1930,7 @@ export default function TicketOptionsPage() {
               {/* Grup 3: Tarih */}
               <div className="bg-gray-50/50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Konfirme Tarihi</label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">{t('ticketsOptions.modalConfirmDate') || "Konfirme Tarihi"}</label>
                   <input
                     type="datetime-local"
                     value={confirmDate}
@@ -1972,7 +1948,7 @@ export default function TicketOptionsPage() {
                 onClick={() => setShowConfirmModal(false)}
                 className="px-5 py-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
-                İptal Et
+                {t('ticketsOptions.modalConfirmCancel') || "İptal Et"}
               </button>
               {canEdit(Module.TICKETS) && (
                 <button
@@ -1980,7 +1956,7 @@ export default function TicketOptionsPage() {
                   disabled={!confirmPnr}
                   className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-black rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  Bileti Konfirme Et
+                  {t('ticketsOptions.modalConfirmBtn') || "Bileti Konfirme Et"}
                 </button>
               )}
             </div>
@@ -1994,7 +1970,7 @@ export default function TicketOptionsPage() {
           <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 w-full max-w-6xl mx-4 max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200/50 dark:border-gray-700/50">
               <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">
-                ✨ Yeni Opsiyon Takip Ekle
+                {t('ticketsOptions.modalAddTitle') || "✨ Yeni Opsiyon Takip Ekle"}
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
@@ -2009,24 +1985,24 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-blue-200 dark:hover:border-blue-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>
-                  Kurumsal Bilgiler
+                  {t('ticketsOptions.grpCorporate') || "Kurumsal Bilgiler"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[2] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[2]">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Voucher No</label>
-                    <input type="text" value={newTicketOption.voucher_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Voucher" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblVoucher') || "Voucher No"}</label>
+                    <input type="text" value={newTicketOption.voucher_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder={t('ticketsOptions.lblVoucher') || "Voucher"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Acente *</label>
-                    <SearchableSelect options={agencies.map((agency) => ({ id: agency.id, name: agency.name }))} value={newTicketOption.agent} onChange={(value) => setNewTicketOption({ ...newTicketOption, agent: value })} placeholder="Acente seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblAgent') || "Acente *"}</label>
+                    <SearchableSelect options={agencies.map((agency) => ({ id: agency.id, name: agency.name }))} value={newTicketOption.agent} onChange={(value) => setNewTicketOption({ ...newTicketOption, agent: value })} placeholder={t('ticketsOptions.phAgent') || "Acente seçin..."} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Firma Adı</label>
-                    <input type="text" value={newTicketOption.company_name} onChange={(e) => setNewTicketOption({ ...newTicketOption, company_name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Firma Adı" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblCompany') || "Firma Adı"}</label>
+                    <input type="text" value={newTicketOption.company_name} onChange={(e) => setNewTicketOption({ ...newTicketOption, company_name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder={t('ticketsOptions.phCompany') || "Firma Adı"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Tedarikçi *</label>
-                    <SearchableSelect options={suppliers.map((supplier) => ({ id: supplier.id, name: supplier.name }))} value={newTicketOption.supplier} onChange={(value) => setNewTicketOption({ ...newTicketOption, supplier: value })} placeholder="Tedarikçi seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblSupplier') || "Tedarikçi *"}</label>
+                    <SearchableSelect options={suppliers.map((supplier) => ({ id: supplier.id, name: supplier.name }))} value={newTicketOption.supplier} onChange={(value) => setNewTicketOption({ ...newTicketOption, supplier: value })} placeholder={t('ticketsOptions.phSupplier') || "Tedarikçi seçin..."} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
                 </div>
               </div>
@@ -2035,33 +2011,33 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-emerald-200 dark:hover:border-emerald-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></span>
-                  Uçuş Detayları
+                  {t('ticketsOptions.grpFlight') || "Uçuş Detayları"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1.2] lg:[&>*:nth-child(2)]:flex-[1.2] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[1]">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Uçuş Tipi *</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblFlightType') || "Uçuş Tipi *"}</label>
                     <select value={newTicketOption.flight_type} onChange={(e) => setNewTicketOption({ ...newTicketOption, flight_type: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none">
-                      <option value="">Seçiniz</option>
-                      <option value="Gidiş Dönüş">Gidiş Dönüş</option>
-                      <option value="Tek Yön">Tek Yön</option>
-                      <option value="Çok Segment">Çok Segment</option>
+                      <option value="">{t('ticketsOptions.optSelect') || "Seçiniz"}</option>
+                      <option value="Gidiş Dönüş">{t('ticketsOptions.optRoundTrip') || "Gidiş Dönüş"}</option>
+                      <option value="Tek Yön">{t('ticketsOptions.optOneWay') || "Tek Yön"}</option>
+                      <option value="Çok Segment">{t('ticketsOptions.optMulti') || "Çok Segment"}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Havayolu</label>
-                    <input type="text" value={newTicketOption.airline} onChange={(e) => setNewTicketOption({ ...newTicketOption, airline: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: TK" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblAirline') || "Havayolu"}</label>
+                    <input type="text" value={newTicketOption.airline} onChange={(e) => setNewTicketOption({ ...newTicketOption, airline: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phAirline') || "Örn: TK"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Grup Ref No</label>
-                    <input type="text" value={newTicketOption.group_ref_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, group_ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ref No" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblGroupRef') || "Grup Ref No"}</label>
+                    <input type="text" value={newTicketOption.group_ref_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, group_ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phGroupRef') || "Ref No"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Güzergah</label>
-                    <input type="text" value={newTicketOption.route} onChange={(e) => setNewTicketOption({ ...newTicketOption, route: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="IST-ECN" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblRoute') || "Güzergah"}</label>
+                    <input type="text" value={newTicketOption.route} onChange={(e) => setNewTicketOption({ ...newTicketOption, route: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phRoute') || "IST-ECN"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PNR</label>
-                    <input type="text" value={newTicketOption.pnr} onChange={(e) => setNewTicketOption({ ...newTicketOption, pnr: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="PNR" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPnr') || "PNR"}</label>
+                    <input type="text" value={newTicketOption.pnr} onChange={(e) => setNewTicketOption({ ...newTicketOption, pnr: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phPnr') || "PNR"} />
                   </div>
                 </div>
               </div>
@@ -2070,23 +2046,23 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-purple-200 dark:hover:border-purple-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
-                  Tarih ve Saat Planlaması
+                  {t('ticketsOptions.grpDate') || "Tarih ve Saat Planlaması"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full [&>*]:flex-1">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Tarihi *</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblDepDate') || "Gidiş Tarihi *"}</label>
                     <input type="date" value={newTicketOption.departure_date} onChange={(e) => setNewTicketOption({ ...newTicketOption, departure_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Saati</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblDepTime') || "Gidiş Saati"}</label>
                     <input type="time" value={newTicketOption.departure_time} onChange={(e) => setNewTicketOption({ ...newTicketOption, departure_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Tarihi</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblRetDate') || "Dönüş Tarihi"}</label>
                     <input type="date" value={newTicketOption.return_date} onChange={(e) => setNewTicketOption({ ...newTicketOption, return_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Saati</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblRetTime') || "Dönüş Saati"}</label>
                     <input type="time" value={newTicketOption.return_time} onChange={(e) => setNewTicketOption({ ...newTicketOption, return_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                 </div>
@@ -2096,19 +2072,19 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-orange-200 dark:hover:border-orange-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-2"></span>
-                  Maliyet & Opsiyon Bitiş
+                  {t('ticketsOptions.grpCost') || "Maliyet & Opsiyon Bitiş"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.2] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1.5]">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Kişi Sayısı</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPaxCount') || "Kişi Sayısı"}</label>
                     <input type="number" value={newTicketOption.passenger_count === 0 ? "" : newTicketOption.passenger_count} onChange={(e) => setNewTicketOption({ ...newTicketOption, passenger_count: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PP Maliyet</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPpCost') || "PP Maliyet"}</label>
                     <input type="number" step="0.01" value={newTicketOption.pp_cost === 0 ? "" : newTicketOption.pp_cost} onChange={(e) => setNewTicketOption({ ...newTicketOption, pp_cost: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0.00" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Döviz</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblCurrency') || "Döviz"}</label>
                     <select value={newTicketOption.currency} onChange={(e) => setNewTicketOption({ ...newTicketOption, currency: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none">
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
@@ -2117,15 +2093,15 @@ export default function TicketOptionsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Trh.</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblOptEndDate') || "Son Opsiyon Trh."}</label>
                     <input type="date" value={newTicketOption.option_end_date} onChange={(e) => setNewTicketOption({ ...newTicketOption, option_end_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Saat</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblOptEndTime') || "Son Opsiyon Saat"}</label>
                     <input type="time" value={newTicketOption.option_end_time} onChange={(e) => setNewTicketOption({ ...newTicketOption, option_end_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
                   </div>
                   <div className="flex flex-col justify-end pb-1 pl-2">
-                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Toplam Maliyet</p>
+                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{t('ticketsOptions.lblTotalCost') || "Toplam Maliyet"}</p>
                      <p className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400">
                         {newTicketOption.total_cost.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} {newTicketOption.currency}
                      </p>
@@ -2140,14 +2116,14 @@ export default function TicketOptionsPage() {
                 onClick={() => setShowAddModal(false)}
                 className="px-5 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl font-bold transition-colors duration-200 text-xs"
               >
-                İptal Et
+                {t('ticketsOptions.btnCancel') || "İptal Et"}
               </button>
               {canCreate(Module.TICKETS) && (
                 <button
                   onClick={handleAddTicketOption}
                   className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  Kaydet
+                  {t('ticketsOptions.btnSave') || "Kaydet"}
                 </button>
               )}
             </div>
@@ -2161,7 +2137,7 @@ export default function TicketOptionsPage() {
           <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl p-6 w-full max-w-6xl mx-4 max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200/50 dark:border-gray-700/50">
               <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">
-                ✨ Bilet Opsiyonu Düzenle
+                {t('ticketsOptions.modalEditTitle') || "✨ Bilet Opsiyonu Düzenle"}
               </h3>
               <button
                 onClick={() => setShowEditModal(false)}
@@ -2176,24 +2152,24 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-blue-200 dark:hover:border-blue-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>
-                  Kurumsal Bilgiler
+                  {t('ticketsOptions.grpCorporate') || "Kurumsal Bilgiler"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[2] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[2]">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Voucher No</label>
-                    <input type="text" value={editTicketOption.voucher_no} onChange={(e) => setEditTicketOption({ ...editTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Voucher" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblVoucher') || "Voucher No"}</label>
+                    <input type="text" value={editTicketOption.voucher_no} onChange={(e) => setEditTicketOption({ ...editTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder={t('ticketsOptions.lblVoucher') || "Voucher"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Acente *</label>
-                    <SearchableSelect options={agencies.map((agency) => ({ id: agency.id, name: agency.name }))} value={editTicketOption.agent} onChange={(value) => setEditTicketOption({ ...editTicketOption, agent: value })} placeholder="Acente seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblAgent') || "Acente *"}</label>
+                    <SearchableSelect options={agencies.map((agency) => ({ id: agency.id, name: agency.name }))} value={editTicketOption.agent} onChange={(value) => setEditTicketOption({ ...editTicketOption, agent: value })} placeholder={t('ticketsOptions.phAgent') || "Acente seçin..."} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Firma Adı</label>
-                    <input type="text" value={editTicketOption.company_name} onChange={(e) => setEditTicketOption({ ...editTicketOption, company_name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Firma Adı" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblCompany') || "Firma Adı"}</label>
+                    <input type="text" value={editTicketOption.company_name} onChange={(e) => setEditTicketOption({ ...editTicketOption, company_name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder={t('ticketsOptions.phCompany') || "Firma Adı"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Tedarikçi *</label>
-                    <SearchableSelect options={suppliers.map((supplier) => ({ id: supplier.id, name: supplier.name }))} value={editTicketOption.supplier} onChange={(value) => setEditTicketOption({ ...editTicketOption, supplier: value })} placeholder="Tedarikçi seçin..." className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblSupplier') || "Tedarikçi *"}</label>
+                    <SearchableSelect options={suppliers.map((supplier) => ({ id: supplier.id, name: supplier.name }))} value={editTicketOption.supplier} onChange={(value) => setEditTicketOption({ ...editTicketOption, supplier: value })} placeholder={t('ticketsOptions.phSupplier') || "Tedarikçi seçin..."} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
                   </div>
                 </div>
               </div>
@@ -2202,33 +2178,33 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-emerald-200 dark:hover:border-emerald-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></span>
-                  Uçuş Detayları
+                  {t('ticketsOptions.grpFlight') || "Uçuş Detayları"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1.2] lg:[&>*:nth-child(2)]:flex-[1.2] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[1]">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Uçuş Tipi *</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblFlightType') || "Uçuş Tipi *"}</label>
                     <select value={editTicketOption.flight_type} onChange={(e) => setEditTicketOption({ ...editTicketOption, flight_type: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none">
-                      <option value="">Seçiniz</option>
-                      <option value="Gidiş Dönüş">Gidiş Dönüş</option>
-                      <option value="Tek Yön">Tek Yön</option>
-                      <option value="Çok Segment">Çok Segment</option>
+                      <option value="">{t('ticketsOptions.optSelect') || "Seçiniz"}</option>
+                      <option value="Gidiş Dönüş">{t('ticketsOptions.optRoundTrip') || "Gidiş Dönüş"}</option>
+                      <option value="Tek Yön">{t('ticketsOptions.optOneWay') || "Tek Yön"}</option>
+                      <option value="Çok Segment">{t('ticketsOptions.optMulti') || "Çok Segment"}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Havayolu</label>
-                    <input type="text" value={editTicketOption.airline} onChange={(e) => setEditTicketOption({ ...editTicketOption, airline: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: TK" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblAirline') || "Havayolu"}</label>
+                    <input type="text" value={editTicketOption.airline} onChange={(e) => setEditTicketOption({ ...editTicketOption, airline: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phAirline') || "Örn: TK"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Grup Ref No</label>
-                    <input type="text" value={editTicketOption.group_ref_no} onChange={(e) => setEditTicketOption({ ...editTicketOption, group_ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ref No" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblGroupRef') || "Grup Ref No"}</label>
+                    <input type="text" value={editTicketOption.group_ref_no} onChange={(e) => setEditTicketOption({ ...editTicketOption, group_ref_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phGroupRef') || "Ref No"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Güzergah</label>
-                    <input type="text" value={editTicketOption.route} onChange={(e) => setEditTicketOption({ ...editTicketOption, route: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="IST-ECN" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblRoute') || "Güzergah"}</label>
+                    <input type="text" value={editTicketOption.route} onChange={(e) => setEditTicketOption({ ...editTicketOption, route: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phRoute') || "IST-ECN"} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PNR</label>
-                    <input type="text" value={editTicketOption.pnr} onChange={(e) => setEditTicketOption({ ...editTicketOption, pnr: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="PNR" />
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPnr') || "PNR"}</label>
+                    <input type="text" value={editTicketOption.pnr} onChange={(e) => setEditTicketOption({ ...editTicketOption, pnr: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder={t('ticketsOptions.phPnr') || "PNR"} />
                   </div>
                 </div>
               </div>
@@ -2237,23 +2213,23 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-purple-200 dark:hover:border-purple-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
-                  Tarih ve Saat Planlaması
+                  {t('ticketsOptions.grpDate') || "Tarih ve Saat Planlaması"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full [&>*]:flex-1">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Tarihi *</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblDepDate') || "Gidiş Tarihi *"}</label>
                     <input type="date" value={editTicketOption.departure_date} onChange={(e) => setEditTicketOption({ ...editTicketOption, departure_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Gidiş Saati</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblDepTime') || "Gidiş Saati"}</label>
                     <input type="time" value={editTicketOption.departure_time} onChange={(e) => setEditTicketOption({ ...editTicketOption, departure_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Tarihi</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblRetDate') || "Dönüş Tarihi"}</label>
                     <input type="date" value={editTicketOption.return_date} onChange={(e) => setEditTicketOption({ ...editTicketOption, return_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Dönüş Saati</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblRetTime') || "Dönüş Saati"}</label>
                     <input type="time" value={editTicketOption.return_time} onChange={(e) => setEditTicketOption({ ...editTicketOption, return_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                 </div>
@@ -2263,19 +2239,19 @@ export default function TicketOptionsPage() {
               <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 hover:border-orange-200 dark:hover:border-orange-800/50">
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-2"></span>
-                  Maliyet & Opsiyon Bitiş
+                  {t('ticketsOptions.grpCost') || "Maliyet & Opsiyon Bitiş"}
                 </h4>
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.2] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1.5]">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Kişi Sayısı</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPaxCount') || "Kişi Sayısı"}</label>
                     <input type="number" value={editTicketOption.passenger_count === 0 ? "" : editTicketOption.passenger_count} onChange={(e) => setEditTicketOption({ ...editTicketOption, passenger_count: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">PP Maliyet</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPpCost') || "PP Maliyet"}</label>
                     <input type="number" step="0.01" value={editTicketOption.pp_cost === 0 ? "" : editTicketOption.pp_cost} onChange={(e) => setEditTicketOption({ ...editTicketOption, pp_cost: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0.00" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Döviz</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblCurrency') || "Döviz"}</label>
                     <select value={editTicketOption.currency} onChange={(e) => setEditTicketOption({ ...editTicketOption, currency: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none">
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
@@ -2284,15 +2260,15 @@ export default function TicketOptionsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Trh.</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblOptEndDate') || "Son Opsiyon Trh."}</label>
                     <input type="date" value={editTicketOption.option_end_date} onChange={(e) => setEditTicketOption({ ...editTicketOption, option_end_date: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Opsiyon Saat</label>
+                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblOptEndTime') || "Son Opsiyon Saat"}</label>
                     <input type="time" value={editTicketOption.option_end_time} onChange={(e) => setEditTicketOption({ ...editTicketOption, option_end_time: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" />
                   </div>
                   <div className="flex flex-col justify-end pb-1 pl-2">
-                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Toplam Maliyet</p>
+                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{t('ticketsOptions.lblTotalCost') || "Toplam Maliyet"}</p>
                      <p className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400">
                         {editTicketOption.total_cost.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} {editTicketOption.currency}
                      </p>
@@ -2307,14 +2283,14 @@ export default function TicketOptionsPage() {
                 onClick={() => setShowEditModal(false)}
                 className="px-5 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl font-bold transition-colors duration-200 text-xs"
               >
-                İptal Et
+                {t('ticketsOptions.btnCancel') || "İptal Et"}
               </button>
               {canEdit(Module.TICKETS) && (
                 <button
                   onClick={handleEditTicketOption}
                   className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  Güncelle
+                  {t('ticketsOptions.btnUpdate') || "Güncelle"}
                 </button>
               )}
             </div>
@@ -2327,14 +2303,14 @@ export default function TicketOptionsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Bilet Durumu Değiştir
+              {t('ticketsOptions.statusModalTitle') || "Bilet Durumu Değiştir"}
             </h3>
 
             <div className="space-y-3">
               {/* Voucher No */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Voucher No
+                  {t('ticketsOptions.lblVoucher') || "Voucher No"}
                 </label>
                 <input
                   type="text"
@@ -2347,7 +2323,7 @@ export default function TicketOptionsPage() {
               {/* Mevcut Durum */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Mevcut Durum
+                  {t('ticketsOptions.lblCurrentStatus') || "Mevcut Durum"}
                 </label>
                 <input
                   type="text"
@@ -2360,7 +2336,7 @@ export default function TicketOptionsPage() {
               {/* Yeni Durum */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Yeni Durum *
+                  {t('ticketsOptions.lblNewStatus') || "Yeni Durum *"}
                 </label>
                 <select
                   value={newStatus}
@@ -2375,10 +2351,10 @@ export default function TicketOptionsPage() {
                   }
                   className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                 >
-                  <option value="active">Aktif</option>
-                  <option value="expired">Süresi Dolmuş</option>
-                  <option value="confirmed">Konfirme Edildi</option>
-                  <option value="cancelled">İptal Edildi</option>
+                  <option value="active">{t('ticketsOptions.optStatusActive') || "Aktif"}</option>
+                  <option value="expired">{t('ticketsOptions.optStatusExpired') || "Süresi Dolmuş"}</option>
+                  <option value="confirmed">{t('ticketsOptions.optStatusConfirmed') || "Konfirme Edildi"}</option>
+                  <option value="cancelled">{t('ticketsOptions.optStatusCancelled') || "İptal Edildi"}</option>
                 </select>
               </div>
             </div>
@@ -2392,14 +2368,14 @@ export default function TicketOptionsPage() {
                 }}
                 className="px-3 py-1 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200 text-xs"
               >
-                İptal
+                {t('ticketsOptions.btnCancel') || "İptal"}
               </button>
               {canEdit(Module.TICKETS) && (
                 <button
                   onClick={handleStatusChange}
                   className="px-3 py-1 text-white bg-orange-600 dark:bg-orange-500 rounded-lg hover:bg-orange-700 dark:hover:bg-orange-600 transition-colors duration-200 text-xs"
                 >
-                  Durumu Değiştir
+                  {t('ticketsOptions.btnStatusChange') || "Durumu Değiştir"}
                 </button>
               )}
             </div>
@@ -2411,18 +2387,17 @@ export default function TicketOptionsPage() {
       <Modal
         isOpen={showDeleteConfirm}
         onClose={() => !isDeleting && setShowDeleteConfirm(false)}
-        title="Bilet Opsiyonunu Sil"
+        title={t('ticketsOptions.delModalTitle') || "Bilet Opsiyonunu Sil"}
       >
         <div className="p-6 text-center">
           <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-            Emin misiniz?
+            {t('ticketsOptions.delModalSubtitle') || "Emin misiniz?"}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Bu bilet opsiyonunu silmek istediğinizden emin misiniz? Bu işlem
-            geri alınamaz.
+            {t('ticketsOptions.delModalText') || "Bu bilet opsiyonunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."}
           </p>
           <div className="flex gap-3 justify-center">
             <button
@@ -2430,7 +2405,7 @@ export default function TicketOptionsPage() {
               disabled={isDeleting}
               className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-medium"
             >
-              Vazgeç
+              {t('ticketsOptions.btnGiveUp') || "Vazgeç"}
             </button>
             <button
               onClick={handleDelete}
@@ -2440,10 +2415,10 @@ export default function TicketOptionsPage() {
               {isDeleting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Siliniyor...
+                  {t('ticketsOptions.btnDeleting') || "Siliniyor..."}
                 </>
               ) : (
-                "Evet, Sil"
+                t('ticketsOptions.btnYesDelete') || "Evet, Sil"
               )}
             </button>
           </div>

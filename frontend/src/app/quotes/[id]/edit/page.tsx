@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   agenciesService,
@@ -299,6 +299,10 @@ export default function QuoteEditPage() {
     type: "success" | "error" | "info";
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'details' ? 'details' : 'info';
+  const [activeMainTab, setActiveMainTab] = useState<'info' | 'details'>(initialTab);
   const [showAddServiceRow, setShowAddServiceRow] = useState(false);
   const [hasLinkedProject, setHasLinkedProject] = useState(false);
 
@@ -403,8 +407,11 @@ export default function QuoteEditPage() {
 
         const hData = (q as any).hotels_data;
         if (hData && Array.isArray(hData) && hData.length > 0) {
-          setSelectedHotels(hData);
-          setActiveHotelId(hData[0].id);
+          const konfirme = hData.filter((h: any) => h.hotel_status === "KONFİRME" || h.is_confirmed);
+          const others = hData.filter((h: any) => h.hotel_status !== "KONFİRME" && !h.is_confirmed);
+          const sortedHData = [...konfirme, ...others];
+          setSelectedHotels(sortedHData);
+          setActiveHotelId(sortedHData[0].id);
         } else {
           const initialId =
             Date.now().toString() + Math.random().toString(36).slice(2, 7);
@@ -462,13 +469,19 @@ export default function QuoteEditPage() {
     }
   };
 
+  const sortHotels = (hotels: SelectedHotel[]) => {
+    const konfirme = hotels.filter((h) => h.hotel_status === "KONFİRME" || h.is_confirmed);
+    const others = hotels.filter((h) => h.hotel_status !== "KONFİRME" && !h.is_confirmed);
+    return [...konfirme, ...others];
+  };
+
   const handleHotelListChange = (
     id: string,
     field: keyof SelectedHotel,
     value: string | number | boolean,
   ) => {
-    setSelectedHotels((prev) =>
-      prev.map((h) => {
+    setSelectedHotels((prev) => {
+      const updated = prev.map((h) => {
         if (h.id !== id) return h;
         if (field === "hotel_id") {
           const hotel = hotels.find((x) => x.id === value);
@@ -491,8 +504,35 @@ export default function QuoteEditPage() {
             hotel_status: value ? "KONFİRME" : "BEKLEMEDE",
           };
         return { ...h, [field]: value as any };
-      }),
-    );
+      });
+      if (field === "hotel_status" || field === "is_confirmed") {
+        return sortHotels(updated);
+      }
+      return updated;
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (hasLinkedProject) return;
+    e.dataTransfer.setData("tabIndex", index.toString());
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    if (hasLinkedProject) return;
+    const dragIndex = Number(e.dataTransfer.getData("tabIndex"));
+    if (dragIndex === dropIndex || isNaN(dragIndex)) return;
+    
+    setSelectedHotels((prev) => {
+      const newHotels = [...prev];
+      const draggedItem = newHotels[dragIndex];
+      newHotels.splice(dragIndex, 1);
+      newHotels.splice(dropIndex, 0, draggedItem);
+      return sortHotels(newHotels);
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
   };
 
   const addHotelRow = () => {
@@ -783,6 +823,7 @@ export default function QuoteEditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
 
     if (hasLinkedProject) {
       setNotification({
@@ -793,6 +834,20 @@ export default function QuoteEditPage() {
     }
 
     try {
+      if (
+        !formData.reference ||
+        !formData.agency_id ||
+        !formData.company_name
+      ) {
+        setActiveMainTab('info');
+        setNotification({
+          message:
+            "Lütfen zorunlu alanları doldurunuz (KOD, Acente, Firma Adı).",
+          type: "error",
+        });
+        setSubmitting(false);
+        return;
+      }
       const activeHotels = selectedHotels.filter(
         (h) => h.hotel_id && h.check_in_date && h.check_out_date,
       );
@@ -801,6 +856,7 @@ export default function QuoteEditPage() {
           message: "Lütfen en az bir otel seçiniz ve tarihlerini doldurunuz.",
           type: "error",
         });
+        setSubmitting(false);
         return;
       }
 
@@ -914,13 +970,15 @@ export default function QuoteEditPage() {
         });
       }
 
-      router.push("/quotes");
+      router.push(`/quotes/${quoteId}?tab=${activeMainTab}`);
     } catch (error: any) {
       console.error("Error updating quote:", error);
       setNotification({
         message: `Hata: ${error?.message || "Bilinmeyen hata"}`,
         type: "error",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
   if (permissionsLoading) {
@@ -968,24 +1026,63 @@ export default function QuoteEditPage() {
 
   return (
     <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent transition-colors duration-200 compact">
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Teklif Düzenle
-            </h1>
+      {/* NEW: Sticky Main Tabs - Full Width Minimal */}
+      <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-white/5 bg-[#0a0f18]/90 backdrop-blur-xl">
+        <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
+          {/* Left Back Button */}
+          <div className="w-[120px]">
+            <Link
+              href="/quotes"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              GERİ DÖN
+            </Link>
           </div>
-          <Link
-            href="/quotes"
-            className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            GERİ DÖN
-          </Link>
+          
+          {/* Center Tabs */}
+          <div className="flex bg-transparent p-1 rounded-xl border border-white/5 w-full max-w-[350px]">
+             <button 
+               type="button"
+               onClick={() => setActiveMainTab('info')} 
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+             >
+               TEKLİF BİLGİLERİ
+             </button>
+             <button 
+               type="button"
+               onClick={() => setActiveMainTab('details')} 
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+             >
+               TEKLİF DETAYLARI
+             </button>
+          </div>
+          
+          {/* Right Actions */}
+          <div className="w-[150px] flex justify-end gap-2">
+            <Link
+              href={`/quotes/${quoteId}?tab=${activeMainTab}`}
+              className="px-3 py-1.5 bg-gray-500/10 hover:bg-gray-500/20 text-gray-300 hover:text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors border border-gray-500/20"
+            >
+              Vazgeç
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                const form = document.getElementById("quote-edit-form") as HTMLFormElement;
+                if (form) form.requestSubmit();
+              }}
+              disabled={submitting}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors border border-blue-500/50 flex items-center disabled:opacity-50"
+            >
+              {submitting ? "Kaydediliyor..." : "Kaydet"}
+            </button>
+          </div>
         </div>
+      </div>
+      <div className="p-4">
 
         {hasLinkedProject && (
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-4 flex items-start gap-3 shadow-lg shadow-amber-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -1016,187 +1113,266 @@ export default function QuoteEditPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="quote-edit-form" onSubmit={handleSubmit} className="space-y-4">
           {/* Teklif Bilgileri */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div className={activeMainTab === 'info' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
+          <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-700/50 p-6 transition-colors duration-200 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Teklif Bilgileri
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-              {/* Reference */}
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                  KOD *
-                </label>
-                <input
-                  type="text"
-                  value={formData.reference}
-                  disabled={hasLinkedProject}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      reference: e.target.value,
-                    }))
-                  }
-                  required
-                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
-                />
-              </div>
-
-              {/* Agency */}
-              <div className="w-full">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                  ACENTE *
-                </label>
-                <SearchableSelect
-                  options={agencies}
-                  value={formData.agency_id}
-                  disabled={hasLinkedProject}
-                  onChange={(id) =>
-                    setFormData((prev) => ({ ...prev, agency_id: id }))
-                  }
-                  placeholder="Acente seç / ara..."
-                />
-              </div>
-
-              {/* Company Name */}
-              <div className="w-full">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                  FİRMA ADI *
-                </label>
-                <input
-                  type="text"
-                  value={formData.company_name}
-                  disabled={hasLinkedProject}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      company_name: e.target.value,
-                    }))
-                  }
-                  required
-                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
-                />
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                  DURUM *
-                </label>
-                <select
-                  value={formData.status}
-                  disabled={hasLinkedProject}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, status: e.target.value }))
-                  }
-                  required
-                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
-                >
-                  <option value="BEKLEMEDE">BEKLEMEDE</option>
-                  <option value="KONFİRME">KONFİRME</option>
-                  <option value="İPTAL">İPTAL</option>
-                </select>
-              </div>
-
-              {/* Quote Type */}
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                  TEKLİF TÜRÜ *
-                </label>
-                <select
-                  value={formData.quote_type}
-                  disabled={hasLinkedProject}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      quote_type: e.target.value,
-                    }))
-                  }
-                  required
-                  className="w-full px-4 h-8 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
-                >
-                  <option value="BİRİM">BİRİM</option>
-                  <option value="PAKET">PAKET</option>
-                </select>
-              </div>
-
-              {/* Operation Managers */}
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                  OPERASYON SORUMLULARI
-                </label>
-                <div className="relative operation-managers-dropdown">
-                  <button
-                    type="button"
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Card 1: Temel Bilgiler */}
+              <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-blue-500/30 transition-all duration-300">
+                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    KOD *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.reference}
                     disabled={hasLinkedProject}
-                    onClick={() =>
-                      !hasLinkedProject &&
-                      setShowOperationManagersDropdown(
-                        !showOperationManagersDropdown,
-                      )
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        reference: e.target.value,
+                      }))
                     }
-                    className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-left flex justify-between items-center text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400"
-                  >
-                    <span>
-                      {formData.operation_managers.length > 0
-                        ? `${formData.operation_managers.length} kullanıcı seçildi`
-                        : "Kullanıcı seçin..."}
-                    </span>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-                  {showOperationManagersDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {users.map((user) => (
-                        <label
-                          key={user.id}
-                          className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={formData.operation_managers.includes(
-                              user.id,
-                            )}
-                            onChange={(e) => {
-                              const managers = e.target.checked
-                                ? [...formData.operation_managers, user.id]
-                                : formData.operation_managers.filter(
-                                    (id) => id !== user.id,
-                                  );
-                              setFormData((prev) => ({
-                                ...prev,
-                                operation_managers: managers,
-                              }));
-                            }}
-                            className="mr-2 text-blue-600"
-                          />
-                          <span className="text-sm text-gray-900 dark:text-white">
-                            {user.first_name} {user.last_name} ({user.email})
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
+                    placeholder="Teklif kodu giriniz..."
+                    className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400"
+                  />
                 </div>
-                
+                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    DURUM *
+                  </label>
+                  <select
+                    value={formData.status}
+                    disabled={hasLinkedProject}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, status: e.target.value }))
+                    }
+                    className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400"
+                  >
+                    <option value="BEKLEMEDE">BEKLEMEDE</option>
+                    <option value="KONFİRME">KONFİRME</option>
+                    <option value="İPTAL">İPTAL</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Notes */}
-              <div className="md:col-span-6">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+              {/* Card 2: Firma & Paydaşlar */}
+              <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-purple-500/30 transition-all duration-300">
+                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    FİRMA ADI *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.company_name}
+                    disabled={hasLinkedProject}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        company_name: e.target.value,
+                      }))
+                    }
+                    placeholder="Firma adını giriniz..."
+                    className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400"
+                  />
+                </div>
+                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    ACENTE *
+                  </label>
+                  <SearchableSelect
+                    options={agencies}
+                    value={formData.agency_id}
+                    disabled={hasLinkedProject}
+                    onChange={(id) =>
+                      setFormData((prev) => ({ ...prev, agency_id: id }))
+                    }
+                    placeholder="Acente seç / ara..."
+                  />
+                </div>
+                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    OPERASYON SORUMLULARI
+                  </label>
+                  <div className="relative operation-managers-dropdown">
+                    <button
+                      type="button"
+                      disabled={hasLinkedProject}
+                      onClick={() =>
+                        !hasLinkedProject &&
+                        setShowOperationManagersDropdown(!showOperationManagersDropdown)
+                      }
+                      className="w-full text-left text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 flex justify-between items-center disabled:text-gray-400"
+                    >
+                      <span className="flex-1 overflow-hidden">
+                        {formData.operation_managers.length > 0 ? (
+                          <div className="flex gap-1 overflow-hidden whitespace-nowrap items-center h-full">
+                            {formData.operation_managers.map((id, index) => {
+                              const u = users.find(x => x.id === id);
+                              if (!u) return null;
+                              if (index < 2) {
+                                return <span key={id} className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-1 py-0.5 rounded text-[10px] leading-none truncate max-w-[65px]">{u.first_name}</span>;
+                              }
+                              if (index === 2) {
+                                return <span key="more" className="bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300 px-1 py-0.5 rounded text-[10px] leading-none font-medium">+{formData.operation_managers.length - 2}</span>;
+                              }
+                              return null;
+                            })}
+                          </div>
+                        ) : "Kullanıcı seçin..."}
+                      </span>
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {showOperationManagersDropdown && (
+                      <div className="absolute z-10 w-full mt-2 bg-[#1e293b] border border-gray-700 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                        {users.map((user) => (
+                          <label key={user.id} className="flex items-center px-4 py-3 hover:bg-gray-800 cursor-pointer border-b border-gray-800/50 last:border-0">
+                            <input
+                              type="checkbox"
+                              checked={formData.operation_managers.includes(user.id)}
+                              onChange={(e) => {
+                                const managers = e.target.checked
+                                  ? [...formData.operation_managers, user.id]
+                                  : formData.operation_managers.filter((id) => id !== user.id);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  operation_managers: managers,
+                                }));
+                              }}
+                              className="mr-3 text-blue-600 focus:ring-blue-500 rounded border-gray-600 bg-gray-900"
+                            />
+                            <span className="text-xs font-semibold text-gray-300">
+                              {user.first_name} {user.last_name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Teklif Bilgileri */}
+              <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors flex-1 flex flex-col min-h-[100px] overflow-hidden">
+                  <div className="flex justify-between items-center mb-2 flex-shrink-0">
+                    <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest flex items-center gap-1.5">
+                      OTELLER VE KONAKLAMA TARİHLERİ
+                    </p>
+                  </div>
+                  <div className="space-y-2 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+                    {/* Mevcut Oteller */}
+                    <div className="flex flex-col gap-2">
+                      {selectedHotels && selectedHotels.length > 0 ? (
+                        selectedHotels.map((h: any, idx: number) => {
+                          return (
+                            <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-[#1e293b] p-2 rounded-xl border border-gray-700/50">
+                              <div className="flex-1 min-w-[150px]">
+                                <select
+                                  value={h.hotel_id || ""}
+                                  disabled={hasLinkedProject}
+                                  onChange={(e) => handleHotelListChange(h.id, 'hotel_id', e.target.value)}
+                                  className="w-full bg-[#0f172a] text-white text-[11px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
+                                >
+                                  <option value="">Otel Seçiniz</option>
+                                  {hotels?.map((mh: any) => (
+                                    <option key={mh.id} value={mh.id}>{mh.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <input
+                                  type="date"
+                                  value={h.check_in_date ? h.check_in_date.substring(0, 10) : ""}
+                                  disabled={hasLinkedProject}
+                                  onChange={(e) => handleHotelListChange(h.id, 'check_in_date', e.target.value)}
+                                  className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                                  title="Giriş Tarihi"
+                                />
+                                <span className="text-gray-500 font-bold">-</span>
+                                <input
+                                  type="date"
+                                  value={h.check_out_date ? h.check_out_date.substring(0, 10) : ""}
+                                  disabled={hasLinkedProject}
+                                  onChange={(e) => handleHotelListChange(h.id, 'check_out_date', e.target.value)}
+                                  className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                                  title="Çıkış Tarihi"
+                                />
+                                {!hasLinkedProject && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeHotelRow(h.id)}
+                                    className="p-1.5 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors"
+                                    title="Oteli Kaldır"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-[10px] text-gray-500 italic">Otel eklenmemiş.</div>
+                      )}
+                    </div>
+                    
+                    {!hasLinkedProject && (
+                      <button
+                        type="button"
+                        onClick={addHotelRow}
+                        className="w-full mt-2 py-2 bg-[#0f172a] hover:bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-gray-700/50 hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                        Yeni Otel Satırı Ekle
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                    <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      ODA | PAX
+                    </p>
+                    <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                      {selectedHotels.reduce((acc, h) => acc + (Number(h.room_count) || 0), 0)} | {selectedHotels.reduce((acc, h) => acc + (Number(h.pax_count) || 0), 0)}
+                    </p>
+                  </div>
+                  <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+                    <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      TEKLİF TÜRÜ *
+                    </p>
+                    <select
+                      value={formData.quote_type}
+                      disabled={hasLinkedProject}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          quote_type: e.target.value,
+                        }))
+                      }
+                      className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400 p-0"
+                    >
+                      <option value="BİRİM">BİRİM</option>
+                      <option value="PAKET">PAKET</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tam Genişlik: Notlar */}
+            <div className="mt-6 bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-emerald-500/30 transition-all duration-300">
+              <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors flex flex-col">
+                <label className="block text-[10px] font-black text-emerald-500/80 dark:text-emerald-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   NOTLAR
                 </label>
                 <textarea
@@ -1205,14 +1381,18 @@ export default function QuoteEditPage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, notes: e.target.value }))
                   }
-                  rows={4}
-                  className="w-full px-3 py-2 h-24 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-xs text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                  className="w-full min-h-[120px] text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 resize-y disabled:text-gray-400"
                   placeholder="Teklif notlarını buraya yazın..."
                 />
               </div>
+            </div>
+          </div>
+          </div>
 
+          {/* ─── DETAYLAR TAB ─── */}
+          <div className={activeMainTab === 'details' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
               {/* ─── Çoklu Otel Seçimi ─── */}
-              <div className="md:col-span-6 space-y-3 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mt-4">
+              <div className="md:col-span-6 space-y-4 bg-[#0f172a]/50 p-4 rounded-xl border border-gray-700/50 mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                     Otel &amp; Konaklama Seçimleri
@@ -1221,26 +1401,34 @@ export default function QuoteEditPage() {
                 </div>
 
                 {/* Tab Bar */}
-                <div className="flex bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 space-x-2 overflow-x-auto">
+                <div className="flex overflow-x-auto custom-scrollbar gap-2 bg-gray-50 dark:bg-[#0f172a]/70 dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-sm">
                   {selectedHotels.map((h, index) => (
                     <div
                       key={h.id}
+                      draggable={!hasLinkedProject}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragOver={handleDragOver}
                       onClick={() => setActiveHotelId(h.id)}
                       className={`flex items-center px-4 py-2 rounded-md cursor-pointer transition-all duration-200 whitespace-nowrap group ${
                         activeHotelId === h.id
-                          ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-                          : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          ? "bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                          : "bg-[#1e293b]/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
                       }`}
                     >
-                      <span className="text-xs font-semibold mr-2">
-                        {index + 1}. OTEL
+                      <span className="text-[10px] font-black uppercase tracking-tight truncate max-w-[150px]">
+                        {hotels.find((x) => x.id === h.hotel_id)?.name
+                          ? hotels.find((x) => x.id === h.hotel_id)!.name.length > 15
+                            ? hotels.find((x) => x.id === h.hotel_id)!.name.substring(0, 15) + "..."
+                            : hotels.find((x) => x.id === h.hotel_id)!.name
+                          : "Otel Seçin"}
                       </span>
-                      <span className="text-[10px] opacity-80 max-w-[100px] truncate">
-                        {hotels.find((x) => x.id === h.hotel_id)?.name ||
-                          "Otel Seçin"}
+                      <span className="ml-2 text-[9px] opacity-60 font-mono bg-black/20 px-1.5 py-0.5 rounded">
+                        {h.check_in_date ? new Date(h.check_in_date).toLocaleDateString('tr-TR', {day: '2-digit', month:'2-digit'}) : ''}
+                        {h.check_out_date ? '-' + new Date(h.check_out_date).toLocaleDateString('tr-TR', {day: '2-digit', month:'2-digit'}) : ''}
                       </span>
                       {!hasLinkedProject && (
-                        <div className="flex items-center ml-3 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center ml-3 space-x-1">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -1298,11 +1486,11 @@ export default function QuoteEditPage() {
                     onClick={() => setActiveHotelId("general")}
                     className={`flex items-center px-4 py-2 rounded-md cursor-pointer transition-all duration-200 whitespace-nowrap ${
                       activeHotelId === "general"
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        ? "bg-indigo-600/90 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]"
+                        : "bg-[#1e293b]/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
                     }`}
                   >
-                    <span className="text-xs font-semibold">
+                    <span className="text-[10px] font-black uppercase tracking-tight">
                       GENEL HİZMETLER
                     </span>
                   </div>
@@ -1343,9 +1531,9 @@ export default function QuoteEditPage() {
                           key={h.id}
                           className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-blue-500 ring-2 ring-blue-500/10 shadow-sm space-y-4"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end">
+                          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end animate-in fade-in duration-300">
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Otel *
                               </label>
                               <SearchableSelect
@@ -1359,7 +1547,7 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Otel Konsepti
                               </label>
                               <input
@@ -1378,7 +1566,7 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 C/IN Tarihi *
                               </label>
                               <input
@@ -1397,7 +1585,7 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 C/OUT Tarihi *
                               </label>
                               <input
@@ -1417,7 +1605,7 @@ export default function QuoteEditPage() {
                             </div>
                           
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Oda Sayısı
                               </label>
                               <input
@@ -1436,7 +1624,7 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Pax Sayısı
                               </label>
                               <input
@@ -1455,7 +1643,7 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-yellow-500/90 uppercase tracking-widest mb-1.5">
                                 Opsiyon
                               </label>
                               <select
@@ -1476,7 +1664,7 @@ export default function QuoteEditPage() {
                               </select>
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-yellow-500/90 uppercase tracking-widest mb-1.5">
                                 Opsiyon Tarihi
                               </label>
                               <input
@@ -1496,7 +1684,7 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Durum
                               </label>
                               <select
@@ -1521,9 +1709,8 @@ export default function QuoteEditPage() {
                             </div>
                           </div>
 
-                          <div className="mt-6 border-t border-gray-100 dark:border-gray-700 pt-6">
-                            
-                            <QuoteServiceEditor
+                          <div className="mt-6 pt-2">
+                              <QuoteServiceEditor
                               title={
                               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase flex items-center m-0">
                                 <svg
@@ -1636,7 +1823,6 @@ export default function QuoteEditPage() {
                 )}
               </div>
             </div>
-          </div>
 
           {/* Submit */}
           <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">

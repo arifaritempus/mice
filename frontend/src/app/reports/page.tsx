@@ -13,6 +13,7 @@ import { usePermissions, Module } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import MultiTokenFilterInput from "@/components/MultiTokenFilterInput";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type DatePreset = "bu_hafta" | "bu_ay" | "bu_yil" | "ozel";
 type DataRow = Record<string, string | number | null>;
@@ -169,7 +170,7 @@ const COLUMN_LABELS: Record<string, string> = {
   aralik: "ARALIK",
 };
 
-const formatDateWithDay = (dateVal: unknown): string => {
+const formatDateWithDay = (dateVal: unknown, language: string): string => {
   if (!dateVal) return "-";
   const str = String(dateVal).split("T")[0];
   const parts = str.split("-");
@@ -182,7 +183,7 @@ const formatDateWithDay = (dateVal: unknown): string => {
   if (isNaN(date.getTime())) return String(dateVal);
 
   const formattedDate = `${parts[2].padStart(2, "0")}.${parts[1].padStart(2, "0")}.${parts[0]}`;
-  const dayName = date.toLocaleDateString("tr-TR", { weekday: "long" });
+  const dayName = date.toLocaleDateString(language === "en" ? "en-US" : "tr-TR", { weekday: "long" });
 
   return `${formattedDate}, ${dayName}`;
 };
@@ -196,8 +197,19 @@ const statusBadgeClass = (value: unknown) => {
   return "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800";
 };
 
-const formatCell = (value: unknown, columnKey?: string) => {
+const formatCell = (value: unknown, columnKey?: string, t?: any) => {
   if (value === null || value === undefined || value === "") return "-";
+  
+  if (t && (columnKey?.includes("durum") || columnKey?.includes("status") || columnKey?.includes("opsiyon"))) {
+    const strVal = String(value).toUpperCase();
+    if (strVal === "1. OPSİYON" || strVal === "1. OPSIYON") return t('reports.opt1') || value;
+    if (strVal === "2. OPSİYON" || strVal === "2. OPSIYON") return t('reports.opt2') || value;
+    if (strVal === "SOR-SAT") return t('reports.optSorSat') || value;
+    if (strVal === "KONFİRME" || strVal === "KONFIRME") return t('reports.statusConfirmed') || value;
+    if (strVal === "BEKLEMEDE") return t('reports.statusPending') || value;
+    if (strVal === "İPTAL" || strVal === "IPTAL") return t('reports.statusCancelled') || value;
+  }
+
   if (columnKey === "kar_marj_yuzde") {
     const n = typeof value === "number" ? value : Number(value);
     if (!Number.isFinite(n)) return String(value);
@@ -245,6 +257,7 @@ const parseIsoDate = (value: string) => {
 };
 
 export default function ReportsPage() {
+  const { t, language } = useLanguage();
   const { canView, loading: permissionsLoading } = usePermissions();
   const [activeReportId, setActiveReportId] = useState(
     REPORT_GROUPS[0].reports[0].id,
@@ -537,8 +550,7 @@ export default function ReportsPage() {
       );
 
       // 1. LOGOS & TOP BAND (Row 1)
-      const { iconLogoBase64, wordmarkLogoBase64 } =
-        await getLogosForExcel(true); // Dark logos for dark band
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true); // Dark logos for dark band
       const guessExt = (dataUrl: string): "png" | "jpeg" =>
         (dataUrl || "").includes("image/png") ? "png" : "jpeg";
       const inchToPx = (inch: number) => Math.round(inch * 96);
@@ -565,7 +577,7 @@ export default function ReportsPage() {
         });
         worksheet.addImage(iconId, {
           tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) },
         });
       }
 
@@ -576,7 +588,7 @@ export default function ReportsPage() {
         });
         worksheet.addImage(wordmarkId, {
           tl: { col: Math.max(2, colCount - 2.8), row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) },
         });
       }
 
@@ -593,7 +605,7 @@ export default function ReportsPage() {
 
       worksheet.mergeCells(4, 1, 4, colCount);
       const metaCell = worksheet.getCell(4, 1);
-      metaCell.value = `Rapor Dönemi: ${formatDate(startDate)} - ${formatDate(endDate)} | Oluşturulma: ${new Date().toLocaleString("tr-TR")}`;
+      metaCell.value = `${t('reports.reportPeriod') || 'Rapor Dönemi'}: ${formatDate(startDate)} - ${formatDate(endDate)} | ${t('reports.createdAt') || 'Oluşturulma'}: ${new Date().toLocaleString(language === 'en' ? 'en-US' : 'tr-TR')}`;
       metaCell.font = {
         name: "Arial",
         size: 10,
@@ -606,7 +618,7 @@ export default function ReportsPage() {
       const startRow = 6;
       const headerRow = worksheet.getRow(startRow);
       headerRow.values = columns.map(
-        (col) => COLUMN_LABELS[col] || col.replace(/_/g, " ").toUpperCase(),
+        (col) => t(`reports.col_${col}` as any) || COLUMN_LABELS[col] || col.replace(/_/g, " ").toUpperCase(),
       );
       headerRow.height = 25;
 
@@ -630,13 +642,15 @@ export default function ReportsPage() {
       rows.forEach((row, index) => {
         const rowData = columns.map((col) => {
           if (col === "cin_cout_tarihi") {
-            return `${formatDateWithDay(row.cin_tarihi)}\n${formatDateWithDay(row.cout_tarihi)}`;
+            return `${formatDateWithDay(row.cin_tarihi, language)}\n${formatDateWithDay(row.cout_tarihi, language)}`;
           }
           if (col === "organizasyon_cikis_tarihi") {
-            return `${formatDateWithDay(row.organizasyon_tarihi)}\n${formatDateWithDay(row.cikis_tarihi)}`;
+            return `${formatDateWithDay(row.organizasyon_tarihi, language)}\n${formatDateWithDay(row.cikis_tarihi, language)}`;
           }
           const val = row[col];
-          // Money/Number formatting
+          if (col.includes("durum") || col.includes("status") || col.includes("opsiyon_durumu")) {
+             return formatCell(val, col, t);
+          }
           if (
             col.includes("tutar") ||
             col.includes("satis") ||
@@ -792,17 +806,16 @@ export default function ReportsPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            Erişim Engellendi
+            {t('reports.accessDenied') || "Erişim Engellendi"}
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mb-8">
-            Raporlar sayfasına erişim için yetkiniz bulunmuyor. Lütfen yönetici
-            ile iletişime geçin.
+            {t('reports.noPermission') || "Raporlar sayfasına erişim için yetkiniz bulunmuyor. Lütfen yönetici ile iletişime geçin."}
           </p>
           <a
             href="/"
             className="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-500 hover:bg-blue-500/90 text-white font-semibold rounded-2xl transition-all duration-200 shadow-lg shadow-blue-500/20"
           >
-            Ana Sayfaya Dön
+            {t('reports.backToHome') || "Ana Sayfaya Dön"}
           </a>
         </div>
       </div>
@@ -832,10 +845,10 @@ export default function ReportsPage() {
           </div>
           <div>
             <h1 className="text-xl font-light tracking-wide text-white glow-text whitespace-nowrap">
-              Rapor Merkezi
+              {t('reports.title') || "Rapor Merkezi"}
             </h1>
             <p className="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap">
-              Sistem verilerinizi analiz edin
+              {t('reports.description') || "Sistem verilerinizi analiz edin"}
             </p>
           </div>
         </div>
@@ -856,12 +869,12 @@ export default function ReportsPage() {
                   }`}
                 >
                   {preset === "bu_hafta"
-                    ? "HAFTA"
+                    ? t('reports.datePreset_bu_hafta') || "Bu Hafta"
                     : preset === "bu_ay"
-                      ? "AY"
+                      ? t('reports.datePreset_bu_ay') || "Bu Ay"
                       : preset === "bu_yil"
-                        ? "YIL"
-                        : "ÖZEL"}
+                        ? t('reports.datePreset_bu_yil') || "Bu Yıl"
+                        : t('reports.datePreset_ozel') || "Özel Tarih"}
                 </button>
               ),
             )}
@@ -889,7 +902,7 @@ export default function ReportsPage() {
           <div className="flex-1 min-w-[200px] max-w-sm h-10 shrink-0">
             <MultiTokenFilterInput
               label=""
-              placeholder="Yaz, Enter ile ekle"
+              placeholder={t('reports.searchPlaceholder') || "Yaz, Enter ile ekle"}
               inputValue={searchInput}
               onInputChange={setSearchInput}
               tokens={searchTokens}
@@ -944,7 +957,7 @@ export default function ReportsPage() {
                 list="report-hotels-list"
                 value={otelFilterInput}
                 onChange={(e) => setOtelFilterInput(e.target.value)}
-                placeholder="Otel seçin..."
+                placeholder={t('reports.selectHotel') || "Otel seçin..."}
                 className="w-full h-full bg-[#0f172a]/60 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               />
             </div>
@@ -955,7 +968,7 @@ export default function ReportsPage() {
             onClick={() => fetchReport()}
             className="h-10 shrink-0 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-md text-[10px] font-black uppercase tracking-widest transition-all"
           >
-            SORGULA
+            {t('reports.query') || "SORGULA"}
           </button>
           <button
             onClick={handleExportExcel}
@@ -988,7 +1001,7 @@ export default function ReportsPage() {
                 }`}
               ></span>
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                {group.title}
+                {t(`reports.group_${group.id}` as any) || group.title}
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-2">
@@ -1015,7 +1028,7 @@ export default function ReportsPage() {
                   }`}
                 >
                   <span className="text-xs font-bold leading-tight">
-                    {report.title}
+                    {t(`reports.rep_${report.id}` as any) || report.title}
                   </span>
                   <svg
                     className={`w-4 h-4 transition-transform duration-200 ${activeReportId === report.id ? "translate-x-1" : "group-hover:translate-x-1 opacity-50"}`}
@@ -1045,7 +1058,7 @@ export default function ReportsPage() {
             <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm font-bold text-blue-600">Yükleniyor...</p>
+                <p className="text-sm font-bold text-blue-600">{t('reports.loading') || "Yükleniyor..."}</p>
               </div>
             </div>
           )}
@@ -1060,7 +1073,7 @@ export default function ReportsPage() {
                     className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none group"
                   >
                     <div className="flex items-center gap-2 group-hover:text-blue-400 transition-colors">
-                      {COLUMN_LABELS[col] ||
+                      {t(`reports.col_${col}` as any) || COLUMN_LABELS[col] ||
                         col.replace(/_/g, " ").toUpperCase()}
                       <div className="flex flex-col scale-75 opacity-50">
                         <svg
@@ -1108,21 +1121,21 @@ export default function ReportsPage() {
                           >
                             {col === "cin_cout_tarihi" ? (
                               <div className="flex flex-col gap-0.5">
-                                <div>{formatDateWithDay(row.cin_tarihi)}</div>
-                                <div>{formatDateWithDay(row.cout_tarihi)}</div>
+                                <div>{formatDateWithDay(row.cin_tarihi, language)}</div>
+                                <div>{formatDateWithDay(row.cout_tarihi, language)}</div>
                               </div>
                             ) : col === "organizasyon_cikis_tarihi" ? (
                               <div className="flex flex-col gap-0.5">
                                 <div>
-                                  {formatDateWithDay(row.organizasyon_tarihi)}
+                                  {formatDateWithDay(row.organizasyon_tarihi, language)}
                                 </div>
-                                <div>{formatDateWithDay(row.cikis_tarihi)}</div>
+                                <div>{formatDateWithDay(row.cikis_tarihi, language)}</div>
                               </div>
                             ) : isStatus ? (
                               <span
                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass(cellValue)}`}
                               >
-                                {formatCell(cellValue, col)}
+                                {formatCell(cellValue, col, t)}
                               </span>
                             ) : isMargin ? (
                               <div className="flex items-center gap-2">
@@ -1141,7 +1154,7 @@ export default function ReportsPage() {
                                       : "text-red-600 dark:text-red-400 font-bold"
                                   }
                                 >
-                                  {formatCell(cellValue, col)}
+                                  {formatCell(cellValue, col, t)}
                                 </span>
                               </div>
                             ) : (
@@ -1157,6 +1170,7 @@ export default function ReportsPage() {
                                       ? (cellValue ?? "-")
                                       : cellValue,
                                   col,
+                                  t
                                 )}
                               </span>
                             )}
@@ -1186,7 +1200,7 @@ export default function ReportsPage() {
                             ></path>
                           </svg>
                           <p className="text-sm font-bold uppercase tracking-widest">
-                            Kayıt Bulunmadı
+                            {t('reports.noData') || "Kayıt Bulunmadı"}
                           </p>
                         </div>
                       </td>
@@ -1199,9 +1213,9 @@ export default function ReportsPage() {
         {/* Pagination Footer */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
           <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-            Toplam{" "}
+            {t('reports.total') || "Toplam"}{" "}
             <span className="text-slate-900 dark:text-white">{totalCount}</span>{" "}
-            Kayıt
+            {t('reports.records') || "Kayıt"}
           </div>
           <div className="flex items-center gap-1.5">
             <button
@@ -1238,7 +1252,7 @@ export default function ReportsPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-slate-400 uppercase">
-              Satır
+              {t('reports.rows') || "Satır"}
             </span>
             <select
               value={pageSize}

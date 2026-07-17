@@ -1,4 +1,5 @@
 "use client";
+import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
@@ -217,6 +218,38 @@ export default function TransferTurTab(props: TransferTurTabProps) {
   // Grup detaylarını açık/kapalı tutmak için state
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
+  const [searchTags, setSearchTags] = useState<string[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+
+  useEffect(() => {
+    if (transferSearch && searchTags.length === 0) {
+      setSearchTags(transferSearch.split(" ").filter((t: string) => t.trim() !== ""));
+    }
+  }, [transferSearch]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchInput.trim()) {
+      e.preventDefault();
+      if (!searchTags.includes(searchInput.trim())) {
+        const newTags = [...searchTags, searchInput.trim()];
+        setSearchTags(newTags);
+        setTransferSearch(newTags.join(" "));
+      }
+      setSearchInput("");
+    } else if (e.key === "Backspace" && !searchInput && searchTags.length > 0) {
+      const newTags = searchTags.slice(0, -1);
+      setSearchTags(newTags);
+      setTransferSearch(newTags.join(" "));
+    }
+  };
+
+  const removeSearchTag = (tagToRemove: string) => {
+    const newTags = searchTags.filter(tag => tag !== tagToRemove);
+    setSearchTags(newTags);
+    setTransferSearch(newTags.join(" "));
+  };
+
+
   // Dropdown pozisyonu state'i
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
@@ -391,11 +424,22 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     }
   };
   return <div className="space-y-3">
-      <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-3 mb-2 bg-gray-100 dark:bg-[#0f172a]/40 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl p-3 shadow-sm shrink-0">
-        <div className="flex-1 mr-4">
-          <input type="text" placeholder="Transfer ara..." value={transferSearch} onChange={e => setTransferSearch(e.target.value)} className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-        </div>
-      </div>
+      <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+          <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
+              {tag}
+              <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-900 dark:hover:text-blue-100 ml-1 transition-colors">
+                <X className="w-3 h-3" />
+              </button>
+            </span>)}
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={searchTags.length === 0 ? "Transfer ara... (Enter ile çoğalt)" : "Yeni arama..."} className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 min-w-[120px] py-0.5 focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
+          {searchTags.length > 0 && <button onClick={() => {
+            setSearchTags([]);
+            setTransferSearch("");
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+            <X className="w-4 h-4" />
+          </button>}
+        </div></div>
 
       {/* Transfer Listesi */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">

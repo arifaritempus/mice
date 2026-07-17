@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import DatePicker from 'react-datepicker';
 import { format as formatDateFns, parse as parseDateFns, isValid as isValidDate, parseISO, getYear, getMonth } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 import { Calendar, X } from 'lucide-react';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -29,6 +30,8 @@ const toIsoDate = (date: Date | null) => (date ? formatDateFns(date, 'yyyy-MM-dd
 export default function ResponsiveDateRangeField({ 
   label, startValue, endValue, onStartChange, onEndChange, onApply, className = "" 
 }: ResponsiveDateRangeFieldProps) {
+  const { t, language } = useLanguage();
+  const locale = language === 'en' ? enUS : tr;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -134,11 +137,11 @@ export default function ResponsiveDateRangeField({
   const calEnd = isCalendarOpen ? pickerRange[1] : toDate(endValue);
 
   // Formatted display text
-  let displayText = "Tarih Seçin";
+  let displayText = t('home.selectDate');
   if (startValue && endValue) {
-    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yyyy', {locale: tr})} - ${formatDateFns(toDate(endValue)!, 'dd MMM yyyy', {locale: tr})}`;
+    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yyyy', {locale})} - ${formatDateFns(toDate(endValue)!, 'dd MMM yyyy', {locale})}`;
   } else if (startValue) {
-    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yyyy', {locale: tr})} - Belirsiz`;
+    displayText = `${formatDateFns(toDate(startValue)!, 'dd MMM yyyy', {locale})} - ${t('home.unspecified')}`;
   }
 
   const renderCalendarContent = () => (
@@ -146,7 +149,7 @@ export default function ResponsiveDateRangeField({
       <div className="flex-1 overflow-y-auto w-full flex items-center justify-center p-2 sm:p-5 custom-datepicker-wrapper">
                 <DatePicker
           inline
-          locale={tr}
+          locale={locale}
           monthsShown={isMobile ? 1 : 2}
           selectsRange
           startDate={calStart || undefined}
@@ -181,10 +184,9 @@ export default function ResponsiveDateRangeField({
             changeYear,
             changeMonth,
           }) => {
-            const months = [
-              "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-              "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
-            ];
+            const months = language === 'en' 
+              ? ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+              : ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
             const years = [];
             const currentYear = new Date().getFullYear();
             for (let i = currentYear - 10; i <= currentYear + 10; i++) {
@@ -288,14 +290,6 @@ export default function ResponsiveDateRangeField({
           <Calendar size={16} className="text-slate-400 dark:text-slate-400 shrink-0" />
           <span className="truncate">{displayText}</span>
         </div>
-        {(startValue || endValue) && (
-          <div 
-            onClick={handleClear}
-            className="shrink-0 p-1 ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-          >
-            <X size={14} />
-          </div>
-        )}
       </button>
 
       {/* Calendar Portal / Modal */}
@@ -309,7 +303,7 @@ export default function ResponsiveDateRangeField({
               ref={calendarRef}
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{label || "Tarih Seçin"}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{label || t('home.selectDate')}</h3>
                 <button onClick={closeCalendar} className="p-2 -mr-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                   <X size={18} />
                 </button>

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function Error({
   error,
@@ -11,6 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
 
   useEffect(() => {
     console.error(error);
@@ -35,16 +37,16 @@ export default function Error({
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Bir Hata Oluştu
+          {t('error.title') || "Bir Hata Oluştu"}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          {error.message || "Beklenmeyen bir hata oluştu"}
+          {error.message || t('error.unexpected') || "Beklenmeyen bir hata oluştu"}
         </p>
         <button
           onClick={reset}
           className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
         >
-          Tekrar Dene
+          {t('error.retry') || "Tekrar Dene"}
         </button>
       </div>
     </div>

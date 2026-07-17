@@ -89,18 +89,18 @@ export class ExcelUtils {
       }
 
       // Logos - yeni sistem (URL'den base64'e çevirir)
-      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true); // Koyu tema logosu kullan
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true); // Koyu tema logosu kullan
 
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
 
       if (iconLogoBase64) {
         const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
-        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any);
+        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any } as any);
       }
       if (wordmarkLogoBase64) {
         const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
-        sheet.addImage(markId, { tl: { col: 12.5, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any } as any);
+        sheet.addImage(markId, { tl: { col: 12.5, row: 0.23 }, ext: { width: (typeof wordmarkWidth !== "undefined" ? wordmarkWidth : 180), height: (typeof wordmarkHeight !== "undefined" ? wordmarkHeight : 45) } as any } as any);
       }
 
       // Kapsamlı sütunlar - tüm bilgileri içerir
@@ -216,14 +216,14 @@ export class ExcelUtils {
       for (let c = 1; c <= 15; c++) {
         sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any;
       }
-      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
 
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
       if (iconLogoBase64) { const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
-        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any); }
+        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any } as any); }
       if (wordmarkLogoBase64) { const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
-        sheet.addImage(markId, { tl: { col: 12.5, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any } as any); }
+        sheet.addImage(markId, { tl: { col: 12.5, row: 0.23 }, ext: { width: (typeof wordmarkWidth !== "undefined" ? wordmarkWidth : 180), height: (typeof wordmarkHeight !== "undefined" ? wordmarkHeight : 45) } as any } as any); }
 
       // Kolonlar (Detay başlık sırası)
       sheet.columns = [
@@ -300,14 +300,14 @@ export class ExcelUtils {
       for (let c = 1; c <= 15; c++) {
         sheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any;
       }
-      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
 
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
       if (iconLogoBase64) { const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
-        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any); }
+        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any } as any); }
       if (wordmarkLogoBase64) { const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
-        sheet.addImage(markId, { tl: { col: 12.5, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any } as any); }
+        sheet.addImage(markId, { tl: { col: 12.5, row: 0.23 }, ext: { width: (typeof wordmarkWidth !== "undefined" ? wordmarkWidth : 180), height: (typeof wordmarkHeight !== "undefined" ? wordmarkHeight : 45) } as any } as any); }
 
       // Özet kolonları (Voucher ve PNR dahil)
       sheet.columns = [
@@ -395,17 +395,17 @@ export class ExcelUtils {
       }
 
       // Logos - yeni sistem (URL'den base64'e çevirir)
-      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true); // Koyu tema logosu kullan
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true); // Koyu tema logosu kullan
 
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
       if (iconLogoBase64) {
         const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
-        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any);
+        sheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any } as any);
       }
       if (wordmarkLogoBase64) {
         const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
-        sheet.addImage(markId, { tl: { col: 7.90, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any } as any);
+        sheet.addImage(markId, { tl: { col: 7.90, row: 0.23 }, ext: { width: (typeof wordmarkWidth !== "undefined" ? wordmarkWidth : 180), height: (typeof wordmarkHeight !== "undefined" ? wordmarkHeight : 45) } as any } as any);
       }
 
       const agencyName = (id: string) => agencies.find((a: any) => a.id === id)?.name || '';
@@ -512,17 +512,17 @@ export class ExcelUtils {
         summarySheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any;
       }
 
-      const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
       const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (dataUrl: string): 'png' | 'jpeg' => (dataUrl || '').includes('image/png') ? 'png' : 'jpeg';
 
       if (iconLogoBase64) {
         const iconId = workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) });
-        summarySheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } as any } as any);
+        summarySheet.addImage(iconId, { tl: { col: 0.15, row: 0.15 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any } as any);
       }
       if (wordmarkLogoBase64) {
         const markId = workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) });
-        summarySheet.addImage(markId, { tl: { col: 7.5, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any } as any);
+        summarySheet.addImage(markId, { tl: { col: 7.5, row: 0.23 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any } as any);
       }
 
       summarySheet.columns = [
@@ -594,8 +594,8 @@ export class ExcelUtils {
         const dTopBand = detailSheet.addRow([]); dTopBand.height = 70; detailSheet.mergeCells('A1:H1');
         for (let c = 1; c <= 8; c++) detailSheet.getRow(1).getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } } as any;
         
-        if (iconLogoBase64) detailSheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.15, row: 0.15 }, ext: { width: inchToPx(1.25), height: inchToPx(0.70) } } as any);
-        if (wordmarkLogoBase64) detailSheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 5.5, row: 0.23 }, ext: { width: inchToPx(2.4), height: inchToPx(0.55) } } as any);
+        if (iconLogoBase64) detailSheet.addImage(workbook.addImage({ base64: iconLogoBase64, extension: guessExt(iconLogoBase64) }), { tl: { col: 0.15, row: 0.15 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } } as any);
+        if (wordmarkLogoBase64) detailSheet.addImage(workbook.addImage({ base64: wordmarkLogoBase64, extension: guessExt(wordmarkLogoBase64) }), { tl: { col: 5.5, row: 0.23 }, ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } } as any);
 
         // Proje Üst Bilgileri
         detailSheet.addRow(['PROJE DETAYI', '', '', '', '', '', 'TARİH', fmtDate(new Date().toISOString())]);

@@ -828,9 +828,20 @@ router.get('/guides', async (req, res) => {
 
     const [
       { data: sejourExtras, count: sejourCount, error: sejourError },
-      { data: projectHr, count: projectCount, error: projectError }
+      { data: projectHrRaw, count: projectCount, error: projectError }
     ] = await Promise.all([sejourExtrasQuery, projectHrQuery]);
-    if (sejourError || projectError) throw sejourError || projectError;
+    
+    if (sejourError) throw sejourError;
+    
+    let projectHr = projectHrRaw;
+    if (projectError) {
+      if (projectError.code === 'PGRST205' || String(projectError.message).includes('Could not find the table')) {
+        console.warn('⚠️ project_human_resources tablosu bulunamadı, MICE rehber kayıtları boş olarak dönülecek.');
+        projectHr = [];
+      } else {
+        throw projectError;
+      }
+    }
 
     const categoryIds = Array.from(new Set((projectHr || []).map((row) => row.sub_category_id).filter(Boolean)));
     let categoryMap = {};
@@ -1073,9 +1084,20 @@ router.get('/part-time', async (req, res) => {
 
     const [
       { data: sejourExtras, count: sejourCount, error: sejourError },
-      { data: projectHr, count: projectCount, error: projectError }
+      { data: projectHrRaw, count: projectCount, error: projectError }
     ] = await Promise.all([sejourExtrasQuery, projectHrQuery]);
-    if (sejourError || projectError) throw sejourError || projectError;
+    
+    if (sejourError) throw sejourError;
+    
+    let projectHr = projectHrRaw;
+    if (projectError) {
+      if (projectError.code === 'PGRST205' || String(projectError.message).includes('Could not find the table')) {
+        console.warn('⚠️ project_human_resources tablosu bulunamadı, MICE part-time kayıtları boş olarak dönülecek.');
+        projectHr = [];
+      } else {
+        throw projectError;
+      }
+    }
 
     const categoryIds = Array.from(new Set((projectHr || []).map((row) => row.sub_category_id).filter(Boolean)));
     let categoryMap = {};

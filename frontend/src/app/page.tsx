@@ -215,6 +215,14 @@ export default function HomePage() {
     return dt >= range.start && dt <= range.end;
   };
 
+  const localizeTitle = (text: string) => {
+    if (!text || language === "tr") return text;
+    return text
+      .replace(/Çoklu Konaklama/gi, "Multiple Accommodation")
+      .replace(/ÇOKLU KONAKLAMA/g, "Multiple Accommodation")
+      .replace(/(\d+)\s+Otel/gi, "$1 Hotel(s)");
+  };
+
   // 1. Timeline Items (Hotels, Flights, Transfers)
   const timelineItems = useMemo(() => {
     const range = getFilterRange();
@@ -236,9 +244,9 @@ export default function HomePage() {
           id: `s-${s.id}`,
           date: d,
           type: "sejour",
-          module: "sejour",
-          title: `Otel: ${uniqueHotels || s.hotel_name || s.hotelName || "Belirtilmemiş"}`,
-          subtitle: `Acente: ${s.agencyName || s.customerName || "Belirtilmemiş"} ${uniqueGuests ? `| Konuk: ${uniqueGuests}` : ""}`,
+          module: "SEJOUR",
+          title: `${t('home.hotel')}: ${uniqueHotels || s.hotel_name || s.hotelName || t('home.unspecified')}`,
+          subtitle: `${t('home.agency')}: ${s.agencyName || s.customerName || t('home.unspecified')} ${uniqueGuests ? `| ${t('home.guest')}: ${uniqueGuests}` : ""}`,
           icon: Hotel,
           color: "teal",
           link: `/sejour`,
@@ -259,13 +267,13 @@ export default function HomePage() {
           p.marketing_clients?.name ||
           p.agencies?.name ||
           p.company_name ||
-          "Firma/Acente";
+          `${t('home.company')}/${t('home.agency')}`;
         items.push({
           id: `p-${p.id}`,
           date: d,
           type: "hotel",
-          module: "mice",
-          title: `Proje: ${p.title || p.referans_no || "İsimsiz"}`,
+          module: "MICE",
+          title: `${t('home.project')}: ${localizeTitle(p.title || p.referans_no) || t('home.unspecified')}`,
           subtitle: `${agencyName} | C-In: ${p.start_date} C-Out: ${p.end_date}`,
           icon: Briefcase,
           color: "blue",
@@ -279,14 +287,14 @@ export default function HomePage() {
       const d = parseDateSafe(f.gidis_tarihi);
       if (d && isInRange(d, range)) {
         const p = data.projects.find((pr) => pr.id === f.project_id);
-        const projName = p ? p.title || p.agencies?.name || p.company_name : "";
+        const projName = p ? localizeTitle(p.title || p.agencies?.name || p.company_name) : "";
         items.push({
           id: `f-${f.id}`,
           date: d,
           type: "flight",
-          module: "ticket",
-          title: `Uçuş: ${f.nereden || "?"} ➔ ${f.nereye || "?"}`,
-          subtitle: `${f.havayolu || "Havayolu"} ${projName ? ` | ${projName}` : ""}`,
+          module: "TICKET",
+          title: `${t('home.flight')}: ${f.nereden || "?"} ➔ ${f.nereye || "?"}`,
+          subtitle: `${f.havayolu || t('home.airline')} ${projName ? ` | ${projName}` : ""}`,
           icon: Plane,
           color: "amber",
           link: "/operations/tickets",
@@ -304,9 +312,9 @@ export default function HomePage() {
           id: `sf-${f.sejourId}-${idx}`,
           date: d,
           type: "flight",
-          module: "sejour",
-          title: `Uçuş: ${f.departure_airport || "?"} ➔ ${f.arrival_airport || "?"} (${f.departure_time?.slice(0, 5) || ""})`,
-          subtitle: `Acente/Misafir: ${f.agencyName || f.sejourRef}`,
+          module: "SEJOUR",
+          title: `${t('home.flight')}: ${f.departure_airport || "?"} ➔ ${f.arrival_airport || "?"} (${f.departure_time?.slice(0, 5) || ""})`,
+          subtitle: `${t('home.agencyGuest')}: ${f.agencyName || f.sejourRef}`,
           icon: Plane,
           color: "amber",
           link: "/sejour",
@@ -324,18 +332,18 @@ export default function HomePage() {
       if (d && isInRange(d, range)) {
         const p = data.projects.find((pr) => pr.id === trItem.project_id);
         const projName = p
-          ? p.title || p.agencies?.name || p.company_name || "İsimsiz Proje"
-          : "Proje Belirtilmemiş";
+          ? localizeTitle(p.title || p.agencies?.name || p.company_name) || `${t('home.unspecified')} ${t('home.project')}`
+          : `${t('home.project')} ${t('home.unspecified')}`;
 
         let cin = "",
           cout = "";
         if (p?.start_date) {
           const sd = parseDateSafe(p.start_date);
-          if (sd) cin = format(sd, "dd MMM yyyy", { locale: tr });
+          if (sd) cin = format(sd, "dd MMM yyyy", { locale: language === "en" ? enUS : tr });
         }
         if (p?.end_date) {
           const ed = parseDateSafe(p.end_date);
-          if (ed) cout = format(ed, "dd MMM yyyy", { locale: tr });
+          if (ed) cout = format(ed, "dd MMM yyyy", { locale: language === "en" ? enUS : tr });
         }
 
         const dateKey = format(d, "yyyy-MM-dd");
@@ -358,9 +366,9 @@ export default function HomePage() {
         id: `tr-group-${key}`,
         date: val.date,
         type: "transfer",
-        module: "transfer",
-        title: `Proje Transferleri: ${val.projName}`,
-        subtitle: `${val.cin && val.cout ? `C/in-C/out: ${val.cin} - ${val.cout} | ` : ""}Toplam ${val.count} transfer planlı.`,
+        module: "TRANSFER",
+        title: `${t('home.projectTransfers')}: ${val.projName}`,
+        subtitle: `${val.cin && val.cout ? `C/in-C/out: ${val.cin} - ${val.cout} | ` : ""}${t('home.total')} ${val.count} ${t('home.totalTransfersPlanned')}.`,
         icon: Bus,
         color: "violet",
         link: "/operations/transfers",
@@ -382,8 +390,8 @@ export default function HomePage() {
       if (d && isInRange(d, range)) {
         const p = data.projects.find((pr) => pr.id === hr.project_id);
         const projName = p
-          ? p.title || p.agencies?.name || p.company_name || "İsimsiz Proje"
-          : "Proje Belirtilmemiş";
+          ? localizeTitle(p.title || p.agencies?.name || p.company_name) || `${t('home.unspecified')} ${t('home.project')}`
+          : `${t('home.project')} ${t('home.unspecified')}`;
         const dateKey = format(d, "yyyy-MM-dd");
         const isGuide =
           (hr.sub_category_name || "").toLowerCase().includes("rehber") ||
@@ -406,7 +414,7 @@ export default function HomePage() {
 
     groupedHR.forEach((val, key) => {
       const subtitleParts = [];
-      if (val.guideCount > 0) subtitleParts.push(`${val.guideCount} Rehber`);
+      if (val.guideCount > 0) subtitleParts.push(`${val.guideCount} ${t('home.guide')}`);
       if (val.partTimeCount > 0)
         subtitleParts.push(`${val.partTimeCount} Part-Time`);
 
@@ -414,9 +422,9 @@ export default function HomePage() {
         id: `hr-group-${key}`,
         date: val.date,
         type: "hr",
-        module: "İK",
-        title: `Görevlendirme: ${val.projName}`,
-        subtitle: subtitleParts.join(" | ") || "Görevli personel planlı.",
+        module: t('home.hrModule'),
+        title: `${t('home.assignment')}: ${val.projName}`,
+        subtitle: subtitleParts.join(" | ") || t('home.unspecified'),
         icon: Users,
         color: "fuchsia",
         link: "/operations/human-resources",
@@ -425,7 +433,7 @@ export default function HomePage() {
 
     // Sort by date asc
     return items.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [data, period]);
+  }, [data, period, language, t]);
 
   // 2. Warnings Items (Expiring Options & Pending Payments)
   const warnings = useMemo(() => {
@@ -448,13 +456,13 @@ export default function HomePage() {
             q.marketing_clients?.name ||
             q.agencies?.name ||
             q.company_name ||
-            "Firma Belirtilmemiş";
+            t('home.unspecified');
           items.push({
             id: `q-${q.id}`,
             date: d,
             type: "option",
-            title: `Teklif Opsiyonu: ${q.title || "İsimsiz"}`,
-            subtitle: `Firma/Acente: ${agencyName}`,
+            title: `${t('home.quoteOption')}: ${q.title || t('home.unspecified')}`,
+            subtitle: `${t('home.company')}/${t('home.agency')}: ${agencyName}`,
             amount: q.total_price
               ? formatCurrency(q.total_price, language, q.currency || "EUR")
               : undefined,
@@ -475,13 +483,13 @@ export default function HomePage() {
         const daysLeft = differenceInDays(d, new Date());
         const isUrgent = daysLeft <= 1;
         const timeStr = o.option_end_time ? o.option_end_time.slice(0, 5) : "";
-        const exactDate = format(d, "dd MMM", { locale: tr });
+        const exactDate = format(d, "dd MMM", { locale: language === "en" ? enUS : tr });
         items.push({
           id: `to-${o.id}`,
           date: d,
           type: "option",
-          title: `Bilet Opsiyonu: ${o.company_name || o.agent || "Bilinmiyor"}`,
-          subtitle: `PNR: ${o.pnr || "-"} | Opsiyon: ${exactDate} ${timeStr}`,
+          title: `${t('home.ticketOption')}: ${o.company_name || o.agent || t('home.unknown')}`,
+          subtitle: `PNR: ${o.pnr || "-"} | ${t('home.option')}: ${exactDate} ${timeStr}`,
           amount: o.total_cost
             ? formatCurrency(o.total_cost, language, o.currency || "EUR")
             : undefined,
@@ -513,15 +521,15 @@ export default function HomePage() {
                 ? ticket.projects?.title ||
                   ticket.company_name ||
                   ticket.tedarikci ||
-                  "Bilet"
-                : "Bilet";
-              const exactDate = format(d, "dd MMM", { locale: tr });
+                  t('home.ticketPayment').split(' ')[0]
+                : t('home.ticketPayment').split(' ')[0];
+              const exactDate = format(d, "dd MMM", { locale: language === "en" ? enUS : tr });
               items.push({
                 id: `tp-${plan.id}-${idx}`,
                 date: d,
                 type: "payment",
-                title: `Bilet Ödemesi: ${tName}`,
-                subtitle: `Son Ödeme: ${exactDate} | Tutar: ${inst.amount} ${inst.currency || plan.currency || "EUR"}`,
+                title: `${t('home.ticketPayment')}: ${tName}`,
+                subtitle: `${t('home.dueDate')}: ${exactDate} | ${t('home.amount')}: ${inst.amount} ${inst.currency || plan.currency || "EUR"}`,
                 amount: inst.amount
                   ? formatCurrency(
                       inst.amount,
@@ -550,12 +558,12 @@ export default function HomePage() {
 
           // Try to find the project name for better context
           const proj = data.projects.find((pr) => pr.id === p.project_id);
-          const projName = proj ? proj.title || "Proje" : "Proje";
+          const projName = proj ? localizeTitle(proj.title) || t('home.project') : t('home.project');
           const agencyName = proj
             ? proj.marketing_clients?.name ||
               proj.agencies?.name ||
               proj.company_name
-            : "Belirtilmemiş";
+            : t('home.unspecified');
           const datesInfo = proj
             ? `C-In: ${proj.start_date} C-Out: ${proj.end_date}`
             : "";
@@ -564,8 +572,8 @@ export default function HomePage() {
             id: `cp-${p.id}`,
             date: d,
             type: "collection",
-            title: `Tahsilat: ${projName}`,
-            subtitle: `Firma: ${agencyName} | ${datesInfo}`,
+            title: `${t('home.collection')}: ${projName}`,
+            subtitle: `${t('home.company')}: ${agencyName} | ${datesInfo}`,
             amount: p.amount
               ? formatCurrency(p.amount, language, p.currency || "TRY")
               : undefined,
@@ -584,7 +592,7 @@ export default function HomePage() {
       if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1;
       return a.date.getTime() - b.date.getTime();
     });
-  }, [data, period, language]);
+  }, [data, period, language, t]);
 
   // 3. Marketing Appointments
   const marketingAppts = useMemo(() => {
@@ -607,9 +615,9 @@ export default function HomePage() {
           items.push({
             id: `m-${m.id}`,
             date: d,
-            title: m.marketing_clients?.name || "Firma Belirtilmemiş",
-            subtitle: m.type || "Görüşme",
-            contacts: contactNames || "İlgili kişi belirtilmemiş",
+            title: m.marketing_clients?.name || t('home.unspecified'),
+            subtitle: m.type || t('home.meeting'),
+            contacts: contactNames || t('home.unspecified'),
             icon: Target,
             link: "/marketing",
           });
@@ -618,10 +626,10 @@ export default function HomePage() {
     });
 
     return items.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [data, period]);
+  }, [data, period, language, t]);
 
   if (!mounted) return null;
-  if (loading) return <LoadingSpinner message="Operasyonlar Yükleniyor..." />;
+  if (loading) return <LoadingSpinner message={t('home.loading')} />;
 
   const getFormatStrDate = () =>
     period === "today" ? "HH:mm" : "dd MMM EEE, HH:mm";
@@ -635,10 +643,10 @@ export default function HomePage() {
         <div className="flex flex-wrap items-center justify-start gap-8">
           <div>
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Operasyon Merkezi
+              {t('home.title')}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Yaklaşan tüm operasyonel akışları ve bildirimler
+              {t('home.subtitle')}
             </p>
           </div>
 
@@ -646,10 +654,10 @@ export default function HomePage() {
             <div className="flex items-center gap-2 p-1 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl w-fit h-[40px]">
               {(
                 [
-                  { id: "today", label: "Bugün" },
-                  { id: "week", label: "Bu Hafta" },
-                  { id: "month", label: "Bu Ay" },
-                  { id: "year", label: "Bu Yıl" },
+                  { id: "today", label: t('home.today') },
+                  { id: "week", label: t('home.thisWeek') },
+                  { id: "month", label: t('home.thisMonth') },
+                  { id: "year", label: t('home.thisYear') },
                 ] as const
               ).map((item) => (
                 <button
@@ -679,7 +687,7 @@ export default function HomePage() {
                 }`}
               >
                 <Calendar size={14} />
-                Özel Tarih
+                {t('home.customDate')}
               </button>
             </div>
 
@@ -693,7 +701,7 @@ export default function HomePage() {
                 >
                   <div className="w-64">
                     <ResponsiveDateRangeField
-                      label="Tarih Aralığı"
+                      label={t('home.dateRange')}
                       startValue={customDate.start}
                       endValue={customDate.end}
                       onStartChange={(val) =>
@@ -714,7 +722,7 @@ export default function HomePage() {
               className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-              Yenile
+              {t('home.refresh')}
             </button>
           </div>
         </div>
@@ -730,10 +738,10 @@ export default function HomePage() {
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-wide">
-                Operasyon Akışı
+                {t('home.operationFlow')}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                {timelineItems.length} Yaklaşan İşlem
+                {timelineItems.length} {t('home.upcomingTasksCount')}
               </p>
             </div>
           </div>
@@ -746,7 +754,7 @@ export default function HomePage() {
                 <div className="text-center py-10 opacity-50">
                   <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-emerald-500 opacity-50" />
                   <p className="text-sm font-medium">
-                    Bu döneme ait operasyon bulunamadı.
+                    {t('home.noOperations')}
                   </p>
                 </div>
               ) : (
@@ -818,10 +826,10 @@ export default function HomePage() {
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-wide">
-                Kritik Uyarılar
+                {t('home.criticalWarnings')}
               </h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                {warnings.length} Bekleyen Eylem
+                {warnings.length} {t('home.pendingActions')}
               </p>
             </div>
           </div>
@@ -831,7 +839,7 @@ export default function HomePage() {
               <div className="text-center py-10 opacity-50">
                 <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-emerald-500 opacity-50" />
                 <p className="text-sm font-medium">
-                  Harika! Bekleyen kritik işlem yok.
+                  {t('home.noWarnings')}
                 </p>
               </div>
             ) : (
@@ -882,10 +890,10 @@ export default function HomePage() {
                           }`}
                         >
                           {warn.daysLeft < 0
-                            ? `${Math.abs(warn.daysLeft)} Gün Geçti`
+                            ? `${Math.abs(warn.daysLeft)} ${t('home.daysPassed')}`
                             : warn.daysLeft === 0
-                              ? "Bugün Son!"
-                              : `${warn.daysLeft} Gün Kaldı`}
+                              ? t('home.todayEnd')
+                              : `${warn.daysLeft} ${t('home.daysLeft')}`}
                         </span>
                         <span className="text-[10px] text-slate-500 ml-auto whitespace-nowrap">
                           {format(
@@ -910,9 +918,9 @@ export default function HomePage() {
               <Target size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-wide">Pazarlama</h2>
+              <h2 className="text-lg font-bold tracking-wide">{t('home.marketing')}</h2>
               <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                {marketingAppts.length} Randevu
+                {marketingAppts.length} {t('home.appointments')}
               </p>
             </div>
           </div>
@@ -922,7 +930,7 @@ export default function HomePage() {
               <div className="text-center py-10 opacity-50">
                 <Target className="w-12 h-12 mx-auto mb-3 text-slate-500 opacity-50" />
                 <p className="text-sm font-medium">
-                  Planlı randevu bulunmuyor.
+                  {t('home.noAppointments')}
                 </p>
               </div>
             ) : (
@@ -958,12 +966,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <Link
-            href="/marketing"
-            className="mt-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-center transition-colors uppercase tracking-widest text-white hover:text-white flex items-center justify-center gap-2 shrink-0"
-          >
-            Pazarlama Modülü <ArrowRight size={14} />
-          </Link>
+
         </div>
       </div>
     </div>

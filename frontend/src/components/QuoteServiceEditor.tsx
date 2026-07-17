@@ -83,7 +83,7 @@ export default function QuoteServiceEditor({
     new Set(),
   );
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+    const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Modal dışına tıklanınca kapat
@@ -1378,16 +1378,22 @@ export default function QuoteServiceEditor({
                           {formatTRY(it.total_try || 0)}
                         </div>
 
-                        <div className="w-32 text-xs text-gray-900 dark:text-white ml-2">
-                          {it.hotel_id &&
-                          hotels.find((h) => h.id === it.hotel_id) ? (
-                            <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-[10px] font-medium border border-blue-200 dark:border-blue-800">
-                              {hotels.find((h) => h.id === it.hotel_id)?.name ||
-                                "Seçili Otel"}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
+                        <div className="w-32 text-xs text-gray-900 dark:text-white ml-2 flex items-center">
+                          {(() => {
+                            if (!it.hotel_id) return "-";
+                            const hotel = hotels.find((h) => h.id === it.hotel_id);
+                            if (!hotel) return "-";
+                            const fullName = hotel.name || "Seçili Otel";
+                            const displayName = fullName.length > 15 ? fullName.substring(0, 15) + "..." : fullName;
+                            return (
+                              <span 
+                                title={fullName}
+                                className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-[10px] font-medium border border-blue-200 dark:border-blue-800 whitespace-nowrap inline-block"
+                              >
+                                {displayName}
+                              </span>
+                            );
+                          })()}
                         </div>
 
                         <div className="flex-1 min-w-0 text-xs text-gray-900 dark:text-white">

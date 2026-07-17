@@ -923,7 +923,7 @@ export default function CashFlowPage() {
     }
 
     // Logos
-    const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true);
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -934,7 +934,7 @@ export default function CashFlowPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.1, row: 0.1 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -944,7 +944,7 @@ export default function CashFlowPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 10.2, row: 0.23 },
-        ext: { width: inchToPx(1.8), height: inchToPx(0.45) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 

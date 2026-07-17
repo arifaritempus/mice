@@ -25,12 +25,18 @@ export default function ForgotPasswordPage() {
         setAppSettings(generalSettings);
 
         const currentLogo =
+          generalSettings.darkMenuLogo ||
           generalSettings.dark_menu_logo ||
-          generalSettings.dark_wordmark_logo ||
+          generalSettings.darkIconLogo ||
           generalSettings.dark_icon_logo ||
+          generalSettings.darkWordmarkLogo ||
+          generalSettings.dark_wordmark_logo ||
+          generalSettings.lightMenuLogo ||
           generalSettings.light_menu_logo ||
-          generalSettings.light_wordmark_logo ||
-          generalSettings.light_icon_logo;
+          generalSettings.lightIconLogo ||
+          generalSettings.light_icon_logo ||
+          generalSettings.lightWordmarkLogo ||
+          generalSettings.light_wordmark_logo;
         setMenuLogo(currentLogo || "");
       } catch {
         setMenuLogo("");
@@ -62,49 +68,45 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col justify-center py-6 sm:px-4 lg:px-6 relative overflow-hidden">
-      {/* Dekoratif arka plan */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-slate-700/20 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-[#020617] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[20%] left-[10%] w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[120px] mix-blend-screen" />
+        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[100px] mix-blend-screen" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617] z-0" />
       </div>
 
-      <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          {logoLoading ? (
-            <div className="h-32 w-32" />
-          ) : menuLogo ? (
-            <img
-              src={menuLogo}
-              alt="Logo"
-              className="h-32 w-auto object-contain drop-shadow-2xl"
-              key={menuLogo}
-            />
-          ) : (
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
-              <span className="text-white text-2xl font-bold">
-                {appSettings?.company_name
-                  ? appSettings.company_name.substring(0, 2).toUpperCase()
-                  : process.env.NEXT_PUBLIC_AGENCY_NAME
-                    ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(
-                        0,
-                        2,
-                      ).toUpperCase()
-                    : "TT"}
-              </span>
-            </div>
-          )}
-        </div>
+      <div className="relative sm:mx-auto sm:w-full sm:max-w-md z-10">
+        <div className="glass-panel backdrop-blur-2xl bg-white/5 border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-2xl p-8 sm:p-10 relative overflow-hidden group">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-        {/* Kart */}
-        <div className="bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 px-8 py-8">
-          <div className="mb-6">
-            <h1 className="text-xl font-bold text-white text-center">
+          <div className="text-center mb-8 flex flex-col items-center">
+            {!logoLoading && menuLogo ? (
+              <div className="mb-6 relative h-16 w-full flex justify-center">
+                <img
+                  src={menuLogo}
+                  alt="System Logo"
+                  className="h-full object-contain drop-shadow-2xl"
+                  key={menuLogo}
+                />
+              </div>
+            ) : !logoLoading ? (
+              <div className="mb-6 w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
+                <span className="text-white text-2xl font-bold">
+                  {appSettings?.company_name
+                    ? appSettings.company_name.substring(0, 2).toUpperCase()
+                    : process.env.NEXT_PUBLIC_AGENCY_NAME
+                      ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(0, 2).toUpperCase()
+                      : "TT"}
+                </span>
+              </div>
+            ) : (
+              <div className="mb-6 h-16 w-16" />
+            )}
+            
+            <h1 className="text-3xl font-light tracking-[0.2em] text-white mb-2">
               Şifremi Unuttum
             </h1>
-            <p className="text-sm text-slate-400 text-center mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               {success
                 ? "Sıfırlama bağlantısı gönderildi"
                 : "Kayıtlı e-posta adresinizi girin"}
@@ -119,13 +121,13 @@ export default function ForgotPasswordPage() {
 
           {success ? (
             <div className="text-center space-y-5">
-              <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl">
+              <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl text-sm">
                 E-posta adresinize şifre sıfırlama bağlantısı gönderdik. Lütfen
                 gelen kutunuzu kontrol edin.
               </div>
               <Link
                 href="/login"
-                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-500 hover:bg-blue-500 shadow-lg shadow-blue-500/25 flex items-center justify-center transition-all duration-200"
+                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all flex items-center justify-center"
               >
                 Giriş Ekranına Dön
               </Link>
@@ -135,19 +137,36 @@ export default function ForgotPasswordPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-xs font-medium text-white mb-1.5"
+                  className="block text-xs font-medium text-slate-400 mb-1.5"
                 >
                   E-posta Adresi
                 </label>
-                <input
-                  id="email"
-                  type="email"
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg
+                      className="h-4 w-4 text-slate-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
-                  placeholder="ornek@mail.com"
+                  className="block w-full pl-10 pr-3 py-2.5 bg-[#0f172a]/80 border border-white/10 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                  placeholder="e.g., alex.chen@nexus.co"
                 />
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
@@ -161,8 +180,8 @@ export default function ForgotPasswordPage() {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-500 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center"
+                disabled={loading || !email}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-[#020617] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-none"
               >
                 {loading ? "Gönderiliyor..." : "Sıfırlama Bağlantısı Gönder"}
               </button>

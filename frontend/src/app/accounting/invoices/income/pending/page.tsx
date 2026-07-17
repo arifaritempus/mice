@@ -191,22 +191,7 @@ export default function IncomePendingPage() {
             </div>
 
             <div className="shrink-0 flex items-center gap-3 ml-auto">
-              {(dateRange.start ||
-                dateRange.end ||
-                globalTokens.length > 0 ||
-                globalInput.trim().length > 0) && (
-                <button
-                  onClick={() => {
-                    setDateRange({ start: "", end: "" });
-                    setGlobalTokens([]);
-                    setGlobalInput("");
-                  }}
-                  className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                  title="Filtreleri Temizle"
-                >
-                  <X size={16} strokeWidth={2.5} />
-                </button>
-              )}
+
               <button
                 onClick={exportToExcel}
                 className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"

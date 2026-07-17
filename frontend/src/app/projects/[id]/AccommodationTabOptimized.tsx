@@ -1,4 +1,5 @@
 "use client";
+import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
 import { useMemo, useCallback, memo, useState, useEffect } from "react";
 interface AccommodationTabProps {
@@ -177,6 +178,69 @@ const AccommodationTabOptimized = memo(({
   const compIsLocked = isLocked || false;
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set(HIDABLE_COLUMNS));
   const [isCollapsed, setIsCollapsed] = useState(true);
+
+  const [searchTags, setSearchTags] = useState<string[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+
+  useEffect(() => {
+    if (editingAccommodationIndex !== null && tempAccommodationItem) {
+      const parseDate = (dateStr: string) => {
+        if (!dateStr) return null;
+        if (dateStr.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+          const [day, month, year] = dateStr.split(".");
+          return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0, 0);
+        }
+        const parsed = new Date(dateStr);
+        return isNaN(parsed.getTime()) ? null : parsed;
+      };
+
+      const checkIn = parseDate(tempAccommodationItem.gelis_tarihi || "");
+      const checkOut = parseDate(tempAccommodationItem.cikis_tarihi || "");
+
+      if (checkIn && checkOut && checkOut > checkIn) {
+        const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Sadece eğer geceleme değişmesi gerekiyorsa state'i güncelle (Sonsuz döngüyü engellemek için)
+        if (String(tempAccommodationItem.geceleme) !== String(diffDays)) {
+          setTempAccommodationItem(prev => ({
+            ...prev,
+            geceleme: String(diffDays)
+          }));
+        }
+      }
+    }
+  }, [tempAccommodationItem?.gelis_tarihi, tempAccommodationItem?.cikis_tarihi, editingAccommodationIndex]);
+
+  // Click outside handler for editing
+  useEffect(() => {
+    if (accommodationSearch && searchTags.length === 0) {
+      setSearchTags(accommodationSearch.split(" ").filter((t: string) => t.trim() !== ""));
+    }
+  }, [accommodationSearch]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchInput.trim()) {
+      e.preventDefault();
+      if (!searchTags.includes(searchInput.trim())) {
+        const newTags = [...searchTags, searchInput.trim()];
+        setSearchTags(newTags);
+        setAccommodationSearch(newTags.join(" "));
+      }
+      setSearchInput("");
+    } else if (e.key === "Backspace" && !searchInput && searchTags.length > 0) {
+      const newTags = searchTags.slice(0, -1);
+      setSearchTags(newTags);
+      setAccommodationSearch(newTags.join(" "));
+    }
+  };
+
+  const removeSearchTag = (tagToRemove: string) => {
+    const newTags = searchTags.filter(tag => tag !== tagToRemove);
+    setSearchTags(newTags);
+    setAccommodationSearch(newTags.join(" "));
+  };
+
     useEffect(() => {
     const toggleCollapse = () => setIsCollapsed(prev => !prev);
     window.addEventListener('action-toggle-collapse-accommodation', toggleCollapse);
@@ -234,15 +298,22 @@ const toggleColumnVisibility = useCallback((column: string) => {
   }, [hotelFilteredItems, accommodationSearch]);
   return <div className="space-y-4">
         {/* Üst Kontroller - Responsive */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          {/* Arama Barı */}
-          <div className="w-full md:flex-1 min-w-0">
-            <input type="text" placeholder="Konaklama ara..." value={accommodationSearch} onChange={e => setAccommodationSearch(e.target.value)} className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
-          </div>
-
-          {/* Buton Grupları */}
-          
-        </div>
+        <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+          <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
+              {tag}
+              <button onClick={() => removeSearchTag(tag)} className="hover:text-blue-900 dark:hover:text-blue-100 ml-1 transition-colors">
+                <X className="w-3 h-3" />
+              </button>
+            </span>)}
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={searchTags.length === 0 ? "Konaklama ara... (Enter ile çoğalt)" : "Yeni arama..."} className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 min-w-[120px] py-0.5 focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
+          {searchTags.length > 0 && <button onClick={() => {
+            setSearchTags([]);
+            setAccommodationSearch("");
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+            <X className="w-4 h-4" />
+          </button>}
+        </div></div>
 
         {/* Tablo */}
         {filteredItems.length > 0 ? <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">

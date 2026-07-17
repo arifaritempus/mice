@@ -341,19 +341,21 @@ export default function QuoteViewPublicPage() {
       let iconLogoBase64 = iconLogo;
       let wordmarkLogoBase64 = wordmarkLogo;
 
+      let logosData: any = {};
       if (!iconLogoBase64 || !wordmarkLogoBase64) {
         try {
-          const logos = await getLogosForExcel(true, appSettings);
-          if (!iconLogoBase64) iconLogoBase64 = logos.iconLogoBase64 || null;
-          if (!wordmarkLogoBase64)
-            wordmarkLogoBase64 =
-              logos.wordmarkLogoBase64 || logos.iconLogoBase64 || null;
+          logosData = await getLogosForExcel(true, appSettings);
+          if (!iconLogoBase64) iconLogoBase64 = logosData.iconLogoBase64 || null;
+          if (!wordmarkLogoBase64) wordmarkLogoBase64 = logosData.wordmarkLogoBase64 || null;
         } catch (logoError) {
           console.error("Logo loading error for excel:", logoError);
         }
       }
 
-      const inchToPx = (inch: number) => Math.round(inch * 96);
+      const iconWidth = logosData.iconWidth || 60; // default 60 (since aspect ratio gets preserved, 60 is standard height)
+      const iconHeight = logosData.iconHeight || 60;
+      const wordmarkWidth = logosData.wordmarkWidth || 120;
+      const wordmarkHeight = logosData.wordmarkHeight || 60;const inchToPx = (inch: number) => Math.round(inch * 96);
       const guessExt = (d: string): "png" | "jpeg" =>
         (d || "").includes("image/png") ? "png" : "jpeg";
 
@@ -403,7 +405,7 @@ export default function QuoteViewPublicPage() {
               }),
               {
                 tl: { col: 0.15, row: 0.15 },
-                ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+                ext: { width: iconWidth, height: iconHeight },
               },
             );
           } catch (e) {
@@ -419,7 +421,7 @@ export default function QuoteViewPublicPage() {
               }),
               {
                 tl: { col: 5.9, row: 0.23 },
-                ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+                ext: { width: wordmarkWidth, height: wordmarkHeight },
               },
             );
           } catch (e) {
@@ -718,12 +720,12 @@ export default function QuoteViewPublicPage() {
   useEffect(() => {
     const loadLogos = async () => {
       try {
-        const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(
+        const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(
           true,
           appSettings,
         );
         setIconLogo(iconLogoBase64 || null);
-        setWordmarkLogo(wordmarkLogoBase64 || iconLogoBase64 || null);
+        setWordmarkLogo(wordmarkLogoBase64 || null);
       } catch {}
     };
     if (!showPasswordForm && quote) loadLogos();
@@ -889,9 +891,9 @@ export default function QuoteViewPublicPage() {
 
   if (showPasswordForm) {
     const loginLogo =
-      appSettings?.dark_menu_logo ||
-      appSettings?.light_menu_logo ||
-      appSettings?.dark_icon_logo ||
+      appSettings?.darkMenuLogo ||
+      appSettings?.lightMenuLogo ||
+      appSettings?.darkIconLogo ||
       "";
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4 relative overflow-hidden">
@@ -963,14 +965,14 @@ export default function QuoteViewPublicPage() {
 
   return (
     <div
-      className="min-h-screen p-4 md:p-8 transition-colors duration-500"
-      style={{ backgroundColor: appSettings?.light_bg_primary || "#f8fafc" }}
+      className="min-h-screen h-full overflow-y-auto p-4 md:p-8 transition-colors duration-500"
+      style={{ backgroundColor: appSettings?.lightBgMain || "#f8fafc" }}
     >
       <div
         className="max-w-6xl mx-auto rounded-2xl shadow-xl overflow-hidden border transition-all duration-500"
         style={{
-          backgroundColor: appSettings?.light_card_bg || "#ffffff",
-          borderColor: appSettings?.light_sidebar_border || "#e2e8f0",
+          backgroundColor: appSettings?.lightCard || "#ffffff",
+          borderColor: appSettings?.lightSidebarBorder || "#e2e8f0",
         }}
       >
         {/* Banner - Dark Theme */}
@@ -979,15 +981,15 @@ export default function QuoteViewPublicPage() {
           style={{ backgroundColor: "#232f38" }}
         >
           <div className="flex items-center gap-3">
-            {(appSettings?.dark_icon_logo || appSettings?.light_icon_logo) && (
+            {(appSettings?.darkIconLogo || appSettings?.lightIconLogo) && (
               <img
-                src={appSettings.dark_icon_logo || appSettings.light_icon_logo}
+                src={appSettings?.darkIconLogo || appSettings?.lightIconLogo}
                 alt="Logo"
                 className="h-10 w-auto"
               />
             )}
             <span className="text-white text-lg font-bold tracking-tight">
-              {appSettings?.company_name ||
+              {appSettings?.companyName ||
                 process.env.NEXT_PUBLIC_AGENCY_NAME ||
                 "COOP EVENT"}
             </span>
@@ -1027,20 +1029,20 @@ export default function QuoteViewPublicPage() {
           <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10 p-8 rounded-2xl border transition-colors duration-500"
             style={{
-              backgroundColor: appSettings?.light_bg_secondary || "#f8fafc",
-              borderColor: appSettings?.light_sidebar_border || "#f1f5f9",
+              backgroundColor: appSettings?.lightBgSecondary || "#f8fafc",
+              borderColor: appSettings?.lightSidebarBorder || "#f1f5f9",
             }}
           >
             <div>
               <label
                 className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                style={{ color: appSettings?.secondary_color || "#94a3b8" }}
+                style={{ color: appSettings?.colorSecondary || "#94a3b8" }}
               >
                 MÜŞTERİ | FİRMA
               </label>
               <p
                 className="text-sm font-bold"
-                style={{ color: appSettings?.light_text_color || "#1e293b" }}
+                style={{ color: appSettings?.lightText || "#1e293b" }}
               >
                 {getAgencyName(quote?.agency_id || "")} | {quote?.company_name}
               </p>
@@ -1105,8 +1107,8 @@ export default function QuoteViewPublicPage() {
           <div
             className="flex relative group transition-colors"
             style={{
-              backgroundColor: appSettings?.light_bg_primary || "#f1f5f9",
-              borderColor: appSettings?.light_sidebar_border || "#e2e8f0",
+              backgroundColor: appSettings?.lightBgMain || "#f1f5f9",
+              borderColor: appSettings?.lightSidebarBorder || "#e2e8f0",
               borderBottomWidth: "1px",
             }}
           >
@@ -1119,7 +1121,7 @@ export default function QuoteViewPublicPage() {
                   style={{
                     backgroundColor:
                       activeViewHotelId === h.id
-                        ? appSettings?.light_bg_secondary || "#ffffff"
+                        ? appSettings?.lightBgSecondary || "#ffffff"
                         : "transparent",
                     minWidth: "fit-content",
                   }}
@@ -1135,7 +1137,7 @@ export default function QuoteViewPublicPage() {
                 style={{
                   backgroundColor:
                     activeViewHotelId === "general"
-                      ? appSettings?.light_bg_secondary || "#ffffff"
+                      ? appSettings?.lightBgSecondary || "#ffffff"
                       : "transparent",
                   minWidth: "fit-content",
                 }}
@@ -1161,16 +1163,16 @@ export default function QuoteViewPublicPage() {
                     className="grid grid-cols-1 md:grid-cols-5 gap-6 p-6 rounded-xl mb-8 border shadow-sm items-center transition-colors duration-500"
                     style={{
                       backgroundColor:
-                        appSettings?.light_bg_secondary || "#f8fafc",
+                        appSettings?.lightBgSecondary || "#f8fafc",
                       borderColor:
-                        appSettings?.light_sidebar_border || "#f1f5f9",
+                        appSettings?.lightSidebarBorder || "#f1f5f9",
                     }}
                   >
                     <div>
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
                         style={{
-                          color: appSettings?.secondary_color || "#94a3b8",
+                          color: appSettings?.colorSecondary || "#94a3b8",
                         }}
                       >
                         OTEL KONSEPTİ
@@ -1178,7 +1180,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="text-sm font-bold"
                         style={{
-                          color: appSettings?.light_text_color || "#1e293b",
+                          color: appSettings?.lightText || "#1e293b",
                         }}
                       >
                         {h.hotel_concept || "-"}
@@ -1188,7 +1190,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
                         style={{
-                          color: appSettings?.secondary_color || "#94a3b8",
+                          color: appSettings?.colorSecondary || "#94a3b8",
                         }}
                       >
                         GİRİŞ / ÇIKIŞ
@@ -1196,7 +1198,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="text-sm font-bold whitespace-nowrap"
                         style={{
-                          color: appSettings?.light_text_color || "#1e293b",
+                          color: appSettings?.lightText || "#1e293b",
                         }}
                       >
                         {h.check_in_date
@@ -1216,7 +1218,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
                         style={{
-                          color: appSettings?.secondary_color || "#94a3b8",
+                          color: appSettings?.colorSecondary || "#94a3b8",
                         }}
                       >
                         ODA / PAX
@@ -1224,7 +1226,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="text-sm font-bold"
                         style={{
-                          color: appSettings?.light_text_color || "#1e293b",
+                          color: appSettings?.lightText || "#1e293b",
                         }}
                       >
                         {h.room_count} Oda / {h.pax_count} Pax
@@ -1234,7 +1236,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
                         style={{
-                          color: appSettings?.secondary_color || "#94a3b8",
+                          color: appSettings?.colorSecondary || "#94a3b8",
                         }}
                       >
                         OPSİYON
@@ -1242,7 +1244,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="text-sm font-bold"
                         style={{
-                          color: appSettings?.light_text_color || "#1e293b",
+                          color: appSettings?.lightText || "#1e293b",
                         }}
                       >
                         {h.option || "-"}{" "}
@@ -1263,7 +1265,7 @@ export default function QuoteViewPublicPage() {
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 italic underline decoration-blue-600/30"
                         style={{
-                          color: appSettings?.secondary_color || "#94a3b8",
+                          color: appSettings?.colorSecondary || "#94a3b8",
                         }}
                       >
                         OTEL DURUMU (GÜNCELLE)
@@ -1317,20 +1319,20 @@ export default function QuoteViewPublicPage() {
               <table className="w-full text-left">
                 <thead
                   style={{
-                    backgroundColor: appSettings?.light_bg_primary || "#f8fafc",
+                    backgroundColor: appSettings?.lightBgMain || "#f8fafc",
                   }}
                 >
                   <tr
                     className="border-b-2"
                     style={{
                       borderColor:
-                        appSettings?.light_sidebar_border || "#e2e8f0",
+                        appSettings?.lightSidebarBorder || "#e2e8f0",
                     }}
                   >
                     <th
                       className="py-4 px-4 text-[10px] font-black uppercase tracking-tighter"
                       style={{
-                        color: appSettings?.secondary_color || "#94a3b8",
+                        color: appSettings?.colorSecondary || "#94a3b8",
                       }}
                     >
                       HİZMET DETAYI / AÇIKLAMA

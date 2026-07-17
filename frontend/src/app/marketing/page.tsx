@@ -36,6 +36,7 @@ import { format, isWithinInterval, parseISO } from "date-fns";
 import { tr } from "date-fns/locale";
 import { marketingService } from "@/lib/supabaseService";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
@@ -71,6 +72,7 @@ export default function MarketingPage() {
     canDelete,
     loading: permissionsLoading,
   } = usePermissions();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<
     "clients" | "interactions" | "appointments"
   >("clients");
@@ -202,10 +204,10 @@ export default function MarketingPage() {
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950 p-6">
         <div className="text-center">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Erişim Engellendi
+            {t('marketing.accessDenied') || "Erişim Engellendi"}
           </h1>
           <p className="text-gray-500 mt-2">
-            Bu sayfayı görüntüleme yetkiniz bulunmamaktadır.
+            {t('marketing.accessDeniedDesc') || "Bu sayfayı görüntüleme yetkiniz bulunmamaktadır."}
           </p>
         </div>
       </div>
@@ -223,15 +225,15 @@ export default function MarketingPage() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 shrink-0">
             <div className="shrink-0">
               <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-                Pazarlama Yönetimi
+                {t('marketing.title') || "Pazarlama Yönetimi"}
               </h1>
               <p className="text-xs text-slate-400 mt-1">
-                Pazarlama verilerinizi analiz edin ve yönetin
+                {t('marketing.subtitle') || "Pazarlama verilerinizi analiz edin ve yönetin"}
               </p>
             </div>
             <div className="w-[240px] shrink-0">
               <ResponsiveDateRangeField
-                label="Tarih Aralığı"
+                label={t('marketing.dateRange') || "Tarih Aralığı"}
                 startValue={startDate}
                 endValue={endDate}
                 onStartChange={setStartDate}
@@ -245,7 +247,7 @@ export default function MarketingPage() {
           <div className="flex flex-wrap items-end gap-3 flex-1 xl:justify-end">
             <div className="flex-[2] min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Firma, Sektör vb.)"
+                label={t('marketing.search') || "Genel Arama (Firma, Sektör vb.)"}
                 tokens={searchTokens}
                 inputValue={globalSearchTerm}
                 suggestions={[]}
@@ -281,7 +283,7 @@ export default function MarketingPage() {
                 }}
                 className="bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105"
               >
-                <Plus size={14} /> YENİ EKLE
+                <Plus size={14} /> {t('marketing.addNew') || "YENİ EKLE"}
               </button>
             </div>
           </div>
@@ -290,41 +292,41 @@ export default function MarketingPage() {
         {/* Main KPI Grid - Single Row Style */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
           <DashboardStatBox
-            label="TOPLAM PORTFÖY"
+            label={t('marketing.totalPortfolio') || "TOPLAM PORTFÖY"}
             value={clients.length}
             icon={Users}
             color="blue"
-            subValue="Dönemsel Toplam"
+            subValue={t('marketing.periodTotal') || "Dönemsel Toplam"}
             trend={{ type: "up", text: "5%" }}
             active={clientTypeFilter === null}
             onClick={() => setClientTypeFilter(null)}
           />
           <DashboardStatBox
-            label="ACENTELER"
+            label={t('marketing.agencies') || "ACENTELER"}
             value={clients.filter((c) => c.type === "acenta").length}
             icon={Briefcase}
             color="purple"
-            subValue="Aktif Acenteler"
+            subValue={t('marketing.activeAgencies') || "Aktif Acenteler"}
             trend={{ type: "up", text: "2%" }}
             active={clientTypeFilter === "acenta"}
             onClick={() => setClientTypeFilter("acenta")}
           />
           <DashboardStatBox
-            label="GÖRÜŞMELER"
+            label={t('marketing.interactions') || "GÖRÜŞMELER"}
             value={filteredInteractions.length}
             icon={MessageSquare}
             color="emerald"
-            subValue="Bu Ayki Etkileşim"
+            subValue={t('marketing.thisMonthInteraction') || "Bu Ayki Etkileşim"}
             trend={{ type: "up", text: "12%" }}
             active={activeTab === "interactions"}
             onClick={() => setActiveTab("interactions")}
           />
           <DashboardStatBox
-            label="RANDEVULAR"
+            label={t('marketing.appointments') || "RANDEVULAR"}
             value={appointments.length}
             icon={Calendar}
             color="amber"
-            subValue="Bekleyen Planlar"
+            subValue={t('marketing.pendingPlans') || "Bekleyen Planlar"}
             active={activeTab === "appointments"}
             onClick={() => setActiveTab("appointments")}
           />
@@ -337,19 +339,19 @@ export default function MarketingPage() {
               onClick={() => setActiveTab("clients")}
               className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "clients" ? "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
             >
-              FİRMALAR & ACENTELER
+              {t('marketing.firmsAndAgencies') || "FİRMALAR & ACENTELER"}
             </button>
             <button
               onClick={() => setActiveTab("interactions")}
               className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "interactions" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
             >
-              GÖRÜŞME GEÇMİŞİ
+              {t('marketing.interactionHistory') || "GÖRÜŞME GEÇMİŞİ"}
             </button>
             <button
               onClick={() => setActiveTab("appointments")}
               className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "appointments" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
             >
-              RANDEVULAR
+              {t('marketing.appointments') || "RANDEVULAR"}
             </button>
           </div>
 
@@ -386,7 +388,7 @@ export default function MarketingPage() {
                 {filteredClients.length === 0 && (
                   <div className="col-span-full py-20 text-center">
                     <p className="text-gray-400 font-bold">
-                      Kriterlere uygun kayıt bulunamadı.
+                      {t('marketing.noRecords') || "Kriterlere uygun kayıt bulunamadı."}
                     </p>
                   </div>
                 )}
@@ -398,7 +400,7 @@ export default function MarketingPage() {
                 {filteredInteractions.length === 0 ? (
                   <div className="col-span-full py-20 text-center">
                     <p className="text-gray-400 font-bold">
-                      Görüşme kaydı bulunmuyor.
+                      {t('marketing.noInteractions') || "Görüşme kaydı bulunmuyor."}
                     </p>
                   </div>
                 ) : (
@@ -431,7 +433,7 @@ export default function MarketingPage() {
                 {appointments.length === 0 ? (
                   <div className="col-span-full py-20 text-center">
                     <p className="text-gray-400 font-bold">
-                      Bekleyen randevu bulunmuyor.
+                      {t('marketing.noAppointments') || "Bekleyen randevu bulunmuyor."}
                     </p>
                   </div>
                 ) : (
@@ -528,8 +530,8 @@ export default function MarketingPage() {
         {deleteConfirm && (
           <ConfirmModal
             isOpen={true}
-            title="Kaydı Sil"
-            message={`Bu ${deleteConfirm.type === "client" ? "firma/acenta" : "görüşme"} kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`}
+            title={t('marketing.deleteRecord') || "Kaydı Sil"}
+            message={deleteConfirm.type === "client" ? (t('marketing.deleteClientMsg') || "Bu firma/acenta kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.") : (t('marketing.deleteInteractionMsg') || "Bu görüşme kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")}
             onConfirm={handleDelete}
             onCancel={() => setDeleteConfirm(null)}
           />
@@ -638,6 +640,7 @@ function ModernClientCard({
   onAddInteraction,
   onAddContact,
 }: any) {
+  const { t } = useLanguage();
   const [showContacts, setShowContacts] = useState(false);
 
   return (
@@ -680,7 +683,7 @@ function ModernClientCard({
       <h3 className="font-medium text-white truncate">{client.name}</h3>
       <div className="flex items-center gap-1 mt-1">
         <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider truncate">
-          {client.industry || "Sektör Belirtilmemiş"}
+          {client.industry || t('marketing.industryNotSpecified') || "Sektör Belirtilmemiş"}
         </p>
         {client.city && <span className="text-[10px] text-slate-600">•</span>}
         {client.city && (
@@ -696,7 +699,7 @@ function ModernClientCard({
           onClick={() => setShowContacts(!showContacts)}
           className="flex items-center gap-2 text-[10px] font-semibold text-blue-400 uppercase hover:text-blue-300 transition-colors"
         >
-          {contacts.length} İLGİLİ KİŞİ{" "}
+          {contacts.length} {t('marketing.relatedContacts') || "İLGİLİ KİŞİ"} 
           {showContacts ? (
             <ChevronDown size={12} className="rotate-180" />
           ) : (
@@ -708,7 +711,7 @@ function ModernClientCard({
           <div className="mt-2 space-y-2 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-xl border border-white/10 custom-scrollbar">
             {contacts.length === 0 ? (
               <p className="text-[9px] text-slate-500 italic">
-                Henüz kişi eklenmemiş.
+                {t('marketing.noContacts') || "Henüz kişi eklenmemiş."}
               </p>
             ) : (
               contacts.map((c: any) => (
@@ -742,13 +745,13 @@ function ModernClientCard({
           onClick={onAddContact}
           className="flex-1 py-1.5 bg-white/5 rounded-xl text-[9px] font-semibold text-white hover:bg-white/10 hover:text-white transition-all border border-white/10 uppercase"
         >
-          Kişi Ekle
+          {t('marketing.addContact') || "Kişi Ekle"}
         </button>
         <button
           onClick={onAddInteraction}
           className="flex-1 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-xl text-[9px] font-semibold text-blue-300 hover:bg-blue-500/30 transition-all uppercase"
         >
-          Görüşme
+          {t('marketing.interaction') || "Görüşme"}
         </button>
       </div>
     </motion.div>
@@ -756,6 +759,7 @@ function ModernClientCard({
 }
 
 function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
+  const { t } = useLanguage();
   const type =
     INTERACTION_TYPES.find((t) => t.value === interaction.type) ||
     INTERACTION_TYPES[4];
@@ -832,7 +836,7 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
                 : "bg-amber-500/20 text-amber-300 border-amber-500/30"
             }`}
           >
-            {interaction.status === "completed" ? "TAMAMLANDI" : "RANDEVU"}
+            {interaction.status === "completed" ? (t('marketing.completed') || "TAMAMLANDI") : (t('marketing.appointment') || "RANDEVU")}
           </span>
         </div>
       </div>
@@ -863,6 +867,7 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
 }
 
 function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
+  const { t } = useLanguage();
   const involvedContacts = contacts.filter((c: any) =>
     appointment.contact_ids?.includes(c.id),
   );
@@ -890,7 +895,7 @@ function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
           </div>
           <div className="text-right">
             <div className="text-[9px] font-medium text-slate-400 uppercase tracking-wider">
-              VAKİT
+              {t('marketing.time') || "VAKİT"}
             </div>
             <div className="text-xs font-semibold text-amber-400">
               {appointment.appointment_date
@@ -943,6 +948,7 @@ function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
 }
 
 function ClientModal({ client, onClose, onSave }: any) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: client?.name || "",
     type: client?.type || "firma",
@@ -964,18 +970,31 @@ function ClientModal({ client, onClose, onSave }: any) {
     }));
   };
 
+  const getServiceLabel = (srv: string) => {
+    switch (srv) {
+      case "Konaklama": return t('marketing.srvAccommodation') || srv;
+      case "Uçak Bileti": return t('marketing.srvFlightTicket') || srv;
+      case "Transfer": return t('marketing.srvTransfer') || srv;
+      case "Organizasyon": return t('marketing.srvOrganization') || srv;
+      case "Kongre": return t('marketing.srvCongress') || srv;
+      case "Yurt Dışı Tur": return t('marketing.srvInternationalTour') || srv;
+      case "Yurt İçi Tur": return t('marketing.srvDomesticTour') || srv;
+      default: return srv;
+    }
+  };
+
   return (
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={client ? "Kaydı Düzenle" : "Yeni Kayıt Ekle"}
+      title={client ? (t('marketing.editRecord') || "Kaydı Düzenle") : (t('marketing.addRecord') || "Yeni Kayıt Ekle")}
       maxWidth="max-w-3xl"
     >
       <div className="space-y-6 text-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
-              <Building2 size={12} /> FİRMA ADI
+              <Building2 size={12} /> {t('marketing.companyName') || "FİRMA ADI"}
             </label>
             <input
               type="text"
@@ -987,15 +1006,15 @@ function ClientModal({ client, onClose, onSave }: any) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1">TÜR</label>
+            <label className="text-xs font-semibold text-white ml-1">{t('marketing.type') || "TÜR"}</label>
             <div className="flex p-1 bg-[#0f172a]/40 rounded-xl border border-white/10">
-              {["firma", "acenta"].map((t) => (
+              {["firma", "acenta"].map((typeValue) => (
                 <button
-                  key={t}
-                  onClick={() => setFormData({ ...formData, type: t as any })}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all uppercase ${formData.type === t ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "text-slate-400 border border-transparent hover:text-white hover:bg-white/5"}`}
+                  key={typeValue}
+                  onClick={() => setFormData({ ...formData, type: typeValue as any })}
+                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all uppercase ${formData.type === typeValue ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "text-slate-400 border border-transparent hover:text-white hover:bg-white/5"}`}
                 >
-                  {t === "firma" ? "FİRMA" : "ACENTA"}
+                  {typeValue === "firma" ? (t('marketing.firm') || "FİRMA") : (t('marketing.agency') || "ACENTA")}
                 </button>
               ))}
             </div>
@@ -1005,7 +1024,7 @@ function ClientModal({ client, onClose, onSave }: any) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
-              <AtSign size={12} /> E-POSTA
+              <AtSign size={12} /> {t('marketing.emailLabel') || "E-POSTA"}
             </label>
             <input
               type="email"
@@ -1018,7 +1037,7 @@ function ClientModal({ client, onClose, onSave }: any) {
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1">
-              SEKTÖR
+              {t('marketing.industry') || "SEKTÖR"}
             </label>
             <input
               type="text"
@@ -1034,7 +1053,7 @@ function ClientModal({ client, onClose, onSave }: any) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
-              <Map size={12} /> ŞEHİR
+              <Map size={12} /> {t('marketing.city') || "ŞEHİR"}
             </label>
             <input
               type="text"
@@ -1047,7 +1066,7 @@ function ClientModal({ client, onClose, onSave }: any) {
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
-              <MapPin size={12} /> İLÇE
+              <MapPin size={12} /> {t('marketing.district') || "İLÇE"}
             </label>
             <input
               type="text"
@@ -1061,7 +1080,7 @@ function ClientModal({ client, onClose, onSave }: any) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-white ml-1">ADRES</label>
+          <label className="text-xs font-semibold text-white ml-1">{t('marketing.address') || "ADRES"}</label>
           <textarea
             rows={2}
             className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all resize-none"
@@ -1074,7 +1093,7 @@ function ClientModal({ client, onClose, onSave }: any) {
 
         <div className="space-y-3">
           <label className="text-xs font-semibold text-white ml-1">
-            HİZMET KALEMLERİ
+            {t('marketing.serviceItems') || "HİZMET KALEMLERİ"}
           </label>
           <div className="flex flex-wrap gap-2">
             {SERVICE_ITEMS.map((service) => (
@@ -1087,7 +1106,7 @@ function ClientModal({ client, onClose, onSave }: any) {
                     : "bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10"
                 }`}
               >
-                {service}
+                {getServiceLabel(service)}
               </button>
             ))}
           </div>
@@ -1098,13 +1117,13 @@ function ClientModal({ client, onClose, onSave }: any) {
             onClick={onClose}
             className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors"
           >
-            İPTAL
+            {t('marketing.cancel') || "İPTAL"}
           </button>
           <button
             onClick={() => onSave(formData)}
             className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
           >
-            KAYDET
+            {t('marketing.save') || "KAYDET"}
           </button>
         </div>
       </div>
@@ -1113,6 +1132,7 @@ function ClientModal({ client, onClose, onSave }: any) {
 }
 
 function InteractionModal({ client, interaction, onClose, onSave }: any) {
+  const { t } = useLanguage();
   const [contacts, setContacts] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     client_id: client?.id || "",
@@ -1210,7 +1230,11 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                   >
                     <type.icon size={16} />
                     <span className="text-[9px] font-semibold uppercase">
-                      {type.label}
+                      {type.value === 'yuz_yuze' ? (t('marketing.faceToFace') || "Yüz Yüze") :
+                       type.value === 'telefon' ? (t('marketing.phone') || "Telefon") :
+                       type.value === 'e_posta' ? (t('marketing.email') || "E-Posta") :
+                       type.value === 'online' ? (t('marketing.onlineMeeting') || "Online Toplantı") :
+                       (t('home.other') || "Diğer")}
                     </span>
                   </button>
                 ))}
@@ -1221,7 +1245,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-white ml-1">
-                DURUM
+                {t('marketing.status') || "DURUM"}
               </label>
               <div className="flex p-1 bg-[#0f172a]/40 rounded-xl border border-white/10">
                 <button
@@ -1230,7 +1254,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                   }
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${formData.status === "completed" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-slate-400 border border-transparent hover:bg-white/5"}`}
                 >
-                  TAMAMLANDI
+                  {t('marketing.completed') || "TAMAMLANDI"}
                 </button>
                 <button
                   onClick={() =>
@@ -1238,7 +1262,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                   }
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${formData.status === "planned" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "text-slate-400 border border-transparent hover:bg-white/5"}`}
                 >
-                  RANDEVU
+                  {t('marketing.appointment') || "RANDEVU"}
                 </button>
               </div>
             </div>
@@ -1246,7 +1270,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
             {formData.status === "planned" && (
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-amber-400 ml-1">
-                  RANDEVU TARİHİ
+                  {t('marketing.appointmentDate') || "RANDEVU TARİHİ"}
                 </label>
                 <input
                   type="datetime-local"
@@ -1264,7 +1288,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-white ml-1">
-                KAYIT TARİHİ
+                {t('marketing.recordDate') || "KAYIT TARİHİ"}
               </label>
               <input
                 type="datetime-local"
@@ -1280,7 +1304,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-white ml-1">
-            GÖRÜŞME ÖZETİ & NOTLAR
+            {t('marketing.interactionSummary') || "GÖRÜŞME ÖZETİ & NOTLAR"}
           </label>
           <textarea
             rows={4}
@@ -1298,13 +1322,13 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
             onClick={onClose}
             className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors"
           >
-            İPTAL
+            {t('marketing.cancel') || "İPTAL"}
           </button>
           <button
             onClick={() => onSave(formData)}
             className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
           >
-            KAYDET
+            {t('marketing.save') || "KAYDET"}
           </button>
         </div>
       </div>
@@ -1313,6 +1337,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
 }
 
 function ContactModal({ client, onClose, onSave }: any) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     client_id: client?.id,
     full_name: "",
@@ -1326,7 +1351,7 @@ function ContactModal({ client, onClose, onSave }: any) {
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="İlgili Kişi Ekle"
+      title={t('marketing.addContactTitle') || "İlgili Kişi Ekle"}
       maxWidth="max-w-md"
     >
       <div className="space-y-6 text-white">
@@ -1337,7 +1362,7 @@ function ContactModal({ client, onClose, onSave }: any) {
         <div className="space-y-5">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1">
-              AD SOYAD
+              {t('marketing.fullName') || "AD SOYAD"}
             </label>
             <input
               type="text"
@@ -1350,7 +1375,7 @@ function ContactModal({ client, onClose, onSave }: any) {
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-white ml-1">
-              POZİSYON
+              {t('marketing.position') || "POZİSYON"}
             </label>
             <input
               type="text"
@@ -1364,7 +1389,7 @@ function ContactModal({ client, onClose, onSave }: any) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-white ml-1">
-                TELEFON
+                {t('marketing.telephone') || "TELEFON"}
               </label>
               <input
                 type="text"
@@ -1377,7 +1402,7 @@ function ContactModal({ client, onClose, onSave }: any) {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-white ml-1">
-                E-POSTA
+                {t('marketing.emailLabel') || "E-POSTA"}
               </label>
               <input
                 type="email"
@@ -1397,13 +1422,13 @@ function ContactModal({ client, onClose, onSave }: any) {
             onClick={onClose}
             className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors"
           >
-            İPTAL
+            {t('marketing.cancel') || "İPTAL"}
           </button>
           <button
             onClick={() => onSave(formData)}
-            className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all"
+            className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
           >
-            EKLE
+            {t('marketing.save') || "KAYDET"}
           </button>
         </div>
       </div>

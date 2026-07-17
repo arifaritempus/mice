@@ -23,13 +23,37 @@ async function urlToBase64(url: string): Promise<string> {
 }
 
 /**
+ * Resmin base64 datasından orijinal boyutlarını alıp orantılı bir şekilde hedeflenen yüksekliğe göre yeniden boyutlandırır.
+ */
+async function getScaledDimensions(base64: string, targetHeight: number = 60): Promise<{ width: number; height: number }> {
+  if (typeof window === 'undefined') {
+    return { width: targetHeight * 2, height: targetHeight }; // Fallback
+  }
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      resolve({ width: Math.round(targetHeight * aspectRatio), height: targetHeight });
+    };
+    img.onerror = () => {
+      resolve({ width: targetHeight * 2, height: targetHeight });
+    };
+    img.src = base64;
+  });
+}
+
+/**
  * Excel export için logoları al (URL'den base64'e çevirir)
  * @param isDark - Koyu tema mı? (koyu tema için dark logolar, açık tema için light logolar)
  * @returns { iconLogoBase64, wordmarkLogoBase64 } - Base64 formatında logolar
  */
 export async function getLogosForExcel(isDark: boolean = false, appSettings?: any): Promise<{
   iconLogoBase64?: string;
+  iconWidth?: number;
+  iconHeight?: number;
   wordmarkLogoBase64?: string;
+  wordmarkWidth?: number;
+  wordmarkHeight?: number;
 }> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gzdfdnfkyedwnameflso.supabase.co';
@@ -53,20 +77,16 @@ export async function getLogosForExcel(isDark: boolean = false, appSettings?: an
 
     if (appSettings) {
       iconLogoUrl = isDark 
-        ? (appSettings.dark_icon_logo || appSettings.light_icon_logo || iconLogoUrl) 
-        : (appSettings.light_icon_logo || appSettings.dark_icon_logo || iconLogoUrl);
+        ? (appSettings.darkIconLogo || appSettings.dark_icon_logo || appSettings.lightIconLogo || appSettings.light_icon_logo || '') 
+        : (appSettings.lightIconLogo || appSettings.light_icon_logo || appSettings.darkIconLogo || appSettings.dark_icon_logo || '');
       
       wordmarkLogoUrl = isDark 
-        ? (appSettings.dark_wordmark_logo || appSettings.dark_menu_logo || appSettings.dark_icon_logo || wordmarkLogoUrl) 
-        : (appSettings.light_wordmark_logo || appSettings.light_menu_logo || appSettings.light_icon_logo || wordmarkLogoUrl);
+        ? (appSettings.darkWordmarkLogo || appSettings.dark_wordmark_logo || appSettings.dark_menu_logo || '') 
+        : (appSettings.lightWordmarkLogo || appSettings.light_wordmark_logo || appSettings.light_menu_logo || '');
     } else {
       // Fallback if appSettings is not provided
-      iconLogoUrl = isDark 
-        ? `${supabaseUrl}/storage/v1/object/public/logos/dark_icon_logo.png` 
-        : `${supabaseUrl}/storage/v1/object/public/logos/light_icon_logo.png`;
-      wordmarkLogoUrl = isDark 
-        ? `${supabaseUrl}/storage/v1/object/public/logos/dark_wordmark_logo.png` 
-        : `${supabaseUrl}/storage/v1/object/public/logos/light_wordmark_logo.png`;
+      iconLogoUrl = '';
+      wordmarkLogoUrl = '';
     }
     
     // Eğer tarayıcı ortamındaysak ve URL '/' ile başlıyorsa, fetch'in çalışabilmesi için tam URL'ye çevir
@@ -104,9 +124,32 @@ export async function getLogosForExcel(isDark: boolean = false, appSettings?: an
       wordmarkLogoBase64 = finalWordmarkUrl;
     }
     
+    let iconWidth, iconHeight, wordmarkWidth, wordmarkHeight;
+
+    if (iconLogoBase64) {
+      const dims = await getScaledDimensions(iconLogoBase64, 60);
+      iconWidth = dims.width;
+      iconHeight = dims.height;
+    }
+
+    if (wordmarkLogoBase64) {
+      const dims = await getScaledDimensions(wordmarkLogoBase64, 50); // Wordmark is usually a bit shorter
+      wordmarkWidth = dims.width;
+      wordmarkHeight = dims.height;
+    }
+
+    // Only return wordmark if it actually exists (don't fallback to icon if user requested B option specifically)
+    // Wait, earlier we fell back: wordmarkLogoUrl = (appSettings.darkWordmarkLogo || appSettings.darkIconLogo). 
+    // The user explicitly requested: "sol taraflara ikon logo sağ taraflara wordmark logo yoksa koymayacak"
+    // We should NOT fallback to icon logo!
+    
     return {
       iconLogoBase64,
-      wordmarkLogoBase64
+      iconWidth,
+      iconHeight,
+      wordmarkLogoBase64,
+      wordmarkWidth,
+      wordmarkHeight
     };
   } catch (error) {
     console.error('Error getting logos for Excel:', error);

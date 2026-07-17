@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { usePermissions, Module, Permission } from "@/lib/permissions";
 import FieldsetGuard from "@/components/permissions/FieldsetGuard";
 import PermissionBoundary from "@/components/permissions/PermissionBoundary";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface KarZararTabProps {
   profitLossData: {
@@ -41,10 +42,11 @@ export default function KarZararTab({
   formatNumber,
   formatByCurrencySummary,
 }: KarZararTabProps) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-        Kar/Zarar Analizi
+        {t('projects.profitAndLossAnalysis') || "Kar/Zarar Analizi"}
       </h2>
 
       {/* Tablo Yatay Kaydırma Sarmalayıcısı */}
@@ -52,15 +54,15 @@ export default function KarZararTab({
         <div className="min-w-max md:min-w-full">
           {/* Başlık satırı - Kar/Zarar için optimize edilmiş */}
           <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-gray-900 dark:text-white">
-            <div className="w-48">ALT KATEGORİ</div>
-            <div className="w-32 text-right pr-1">SATIŞ DÖVİZ</div>
-            <div className="w-20 text-right pr-1">KUR</div>
-            <div className="w-32 text-right pr-1">SATIŞ TL</div>
-            <div className="w-32 text-right pr-1">ALIŞ DÖVİZ</div>
-            <div className="w-20 text-right pr-1">KUR</div>
-            <div className="w-32 text-right pr-1">ALIŞ TL</div>
-            <div className="w-32 text-right pr-1">KAR/ZARAR</div>
-            <div className="w-24 text-right pr-1">KAR MARJI</div>
+            <div className="w-48">{t('projects.subCategoryUpper') || "ALT KATEGORİ"}</div>
+            <div className="w-32 text-right pr-1">{t('projects.salesCurrencyUpper') || "SATIŞ DÖVİZ"}</div>
+            <div className="w-20 text-right pr-1">{t('projects.exchangeRateUpper') || "KUR"}</div>
+            <div className="w-32 text-right pr-1">{t('projects.salesTRYUpper') || "SATIŞ TL"}</div>
+            <div className="w-32 text-right pr-1">{t('projects.purchaseCurrencyUpper') || "ALIŞ DÖVİZ"}</div>
+            <div className="w-20 text-right pr-1">{t('projects.exchangeRateUpper') || "KUR"}</div>
+            <div className="w-32 text-right pr-1">{t('projects.purchaseTRYUpper') || "ALIŞ TL"}</div>
+            <div className="w-32 text-right pr-1">{t('projects.profitAndLossUpper') || "KAR/ZARAR"}</div>
+            <div className="w-24 text-right pr-1">{t('projects.profitMarginUpper') || "KAR MARJI"}</div>
           </div>
 
           {/* Veri satırları - Satış tabı ile aynı yapı */}
@@ -69,7 +71,7 @@ export default function KarZararTab({
               salesTotals.totalTRY > 0 || purchaseTotals.totalTRY > 0 ? (
                 <div className="rounded-md p-2 flex flex-nowrap items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
                   <div className="w-48 text-xs text-gray-900 dark:text-white">
-                    TOPLAM (fallback)
+                    {t('projects.totalFallbackUpper') || "TOPLAM (fallback)"}
                   </div>
                   <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
                     {formatByCurrencySummary(salesTotals.totalByCurrency)}
@@ -110,7 +112,7 @@ export default function KarZararTab({
                 </div>
               ) : (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">
-                  Veri yok
+                  {t('projects.noData') || "Veri yok"}
                 </div>
               )
             ) : (
@@ -181,7 +183,7 @@ export default function KarZararTab({
                 <div className="mt-4 bg-blue-500 dark:bg-blue-700 rounded-md p-3">
                   <div className="flex flex-nowrap items-center gap-2">
                     <div className="w-48 text-sm font-bold text-white">
-                      GENEL TOPLAM
+                      {t('projects.grandTotalUpper') || "GENEL TOPLAM"}
                     </div>
                     <div className="w-32 text-sm font-bold text-white text-right pr-1">
                       {formatByCurrencySummary(

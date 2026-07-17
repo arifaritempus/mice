@@ -1,0 +1,926 @@
+diff --git a/frontend/src/app/projects/[id]/page.tsx b/frontend/src/app/projects/[id]/page.tsx
+index 0459fdd..d6e496d 100644
+--- a/frontend/src/app/projects/[id]/page.tsx
++++ b/frontend/src/app/projects/[id]/page.tsx
+@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+ import { createPortal } from "react-dom";
+ import { useParams } from "next/navigation";
+ import Link from "next/link";
++import { useLanguage } from "@/components/providers/LanguageProvider";
+ import {
+   TrendingUp,
+   TrendingDown,
+@@ -140,14 +141,14 @@ const fieldTranslations: Record<string, string> = {
+   unit_quantity: "Miktar",
+   sefer: "Tekrar/Sefer",
+   vat: "KDV (%)",
+-  fx: "Döviz Kuru",
++  fx: "Döviz" + " Kuru",
+   currency: "Döviz",
+   total_try: "Toplam (TL)",
+   total_price: "Toplam Fiyat",
+   created_at: "Oluşturulma Tarihi",
+   updated_at: "Güncellenme Tarihi",
+-  supplier_id: "Tedarikçi ID",
+-  supplier_name: "Tedarikçi Adı",
++  supplier_id: "Tedarikçi" + " ID",
++  supplier_name: "Tedarikçi" + " Adı",
+   status: "Durum",
+   title: "Başlık",
+   start_date: "Başlangıç Tarihi",
+@@ -275,7 +276,7 @@ const getItemContext = (log: any, uuidMap: Record<string, string>) => {
+   if (data.hotel_id && uuidMap[data.hotel_id])
+     details.push(`Otel: ${uuidMap[data.hotel_id]}`);
+   if (data.supplier_id && uuidMap[data.supplier_id])
+-    details.push(`Tedarikçi: ${uuidMap[data.supplier_id]}`);
++    details.push(`$Tedarikçi: ${uuidMap[data.supplier_id]}`);
+   if (data.category && uuidMap[data.category])
+     details.push(`Kategori: ${uuidMap[data.category]}`);
+ 
+@@ -283,6 +284,7 @@ const getItemContext = (log: any, uuidMap: Record<string, string>) => {
+ };
+ 
+ export default function ProjectDetailPage() {
++  const { t } = useLanguage();
+   const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
+   const {
+     canView,
+@@ -817,12 +819,12 @@ export default function ProjectDetailPage() {
+     const keyOf = (t: any) =>
+       t.sortKey || `${t.date || "9999-12-31"} ${t.time || "23:59"}`;
+     const arrivals = items.filter(
+-      (t) => t.typeLabel !== "Ara Transfer" && t.direction === "arrival",
++      (t) => t.typeLabel !== (t('projects.intermediateTransfer') || "Ara Transfer") && t.direction === "arrival",
+     );
+     const departures = items.filter(
+-      (t) => t.typeLabel !== "Ara Transfer" && t.direction === "departure",
++      (t) => t.typeLabel !== (t('projects.intermediateTransfer') || "Ara Transfer") && t.direction === "departure",
+     );
+-    const intermediates = items.filter((t) => t.typeLabel === "Ara Transfer");
++    const intermediates = items.filter((t) => t.typeLabel === (t('projects.intermediateTransfer') || "Ara Transfer"));
+     arrivals.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
+     intermediates.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
+     departures.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
+@@ -3841,22 +3843,22 @@ export default function ProjectDetailPage() {
+   const getStatusText = (status: string) => {
+     switch (status) {
+       case "active":
+-        return "Aktif";
++        return t('projects.statusActive') || "Aktif";
+       case "completed":
+-        return "Tamamlandı";
++        return t('projects.statusCompleted') || "Tamamlandı";
+       case "on_hold":
+       case "on-hold":
+-        return "Beklemede";
++        return t('projects.statusOnHold') || "Beklemede";
+       case "cancelled":
+-        return "İptal";
++        return t('projects.statusCancelled') || "İptal";
+       case "approved":
+-        return "Onaylandı";
++        return t('projects.statusApproved') || "Onaylandı";
+       case "rejected":
+-        return "Reddedildi";
++        return t('projects.statusRejected') || "Reddedildi";
+       case "pending":
+-        return "Beklemede";
++        return t('projects.statusPending') || "Beklemede";
+       case "draft":
+-        return "Taslak";
++        return t('projects.statusDraft') || "Taslak";
+       default:
+         return status || "Aktif";
+     }
+@@ -9945,8 +9947,8 @@ export default function ProjectDetailPage() {
+         result.departure.byVehicle[vehicleType].transfers++;
+         result.departure.byVehicle[vehicleType].passengers += passengerCount;
+       } else if (
+-        transfer.typeLabel === "Ara Transfer" ||
+-        transfer.typeLabel === "Grup Ara"
++        transfer.typeLabel === (t('projects.intermediateTransfer') || "Ara Transfer") ||
++        transfer.typeLabel === (t('projects.groupIntermediate') || "Grup Ara")
+       ) {
+         result.intermediate.count++;
+         result.intermediate.passengers += passengerCount;
+@@ -9984,7 +9986,7 @@ export default function ProjectDetailPage() {
+       direction: "arrival",
+       date: "",
+       time: "",
+-      route: "Otel → Otel",
++      route: (t('projects.fixme') || "Otel → Otel"),
+       passengerCount: 1,
+       transferType: "private",
+       vehicleType: "",
+@@ -9996,7 +9998,7 @@ export default function ProjectDetailPage() {
+       vehicleAssigned: false,
+       isEditing: true,
+       isNew: true,
+-      typeLabel: "Ara Transfer",
++      typeLabel: (t('projects.intermediateTransfer') || "Ara Transfer"),
+     } as any;
+     const updated = [newTransfer, ...transfers];
+     const sorted = sortTransfers(updated);
+@@ -10034,15 +10036,15 @@ export default function ProjectDetailPage() {
+             ? "Giriş"
+             : kind === "departure"
+               ? "Çıkış"
+-              : "Ara Transfer",
++              : (t('projects.intermediateTransfer') || "Ara Transfer"),
+         date: null, // Boş tarih için null
+         time: null, // Boş saat için null
+         route:
+           kind === "arrival"
+-            ? "Havalimanı → Otel"
++            ? (t('projects.fixme') || "Havalimanı → Otel")
+             : kind === "departure"
+-              ? "Otel → Havalimanı"
+-              : "Otel → Otel",
++              ? (t('projects.fixme') || "Otel → Havalimanı")
++              : (t('projects.fixme') || "Otel → Otel"),
+         passenger_count: 1,
+         transfer_type: "private",
+         vehicle_type: null, // Boş araç tipi için null
+@@ -10330,11 +10332,11 @@ export default function ProjectDetailPage() {
+             break;
+           case "otobus":
+             maxCapacity = 48;
+-            vehicleName = "Otobüs";
++            vehicleName = (t('projects.fixme') || "Otobüs");
+             break;
+           case "binek":
+             maxCapacity = 3;
+-            vehicleName = "Binek";
++            vehicleName = (t('projects.fixme') || "Binek");
+             break;
+           case "s-class":
+             maxCapacity = 3;
+@@ -10930,13 +10932,13 @@ export default function ProjectDetailPage() {
+ 
+       // Ara transfer kontrolü ve grup etiketi belirleme
+       const isIntermediateGroup = selectedTransferObjects.some(
+-        (t) => t.typeLabel === "Ara Transfer",
++        (t) => t.typeLabel === (t('projects.intermediateTransfer') || "Ara Transfer"),
+       );
+       const groupTypeLabel = isIntermediateGroup
+-        ? "Grup Ara"
++        ? (t('projects.groupIntermediate') || "Grup Ara")
+         : firstTransfer.direction === "arrival"
+-          ? "Grup Giriş"
+-          : "Grup Çıkış";
++          ? (t('projects.fixme') || "Grup Giriş")
++          : (t('projects.fixme') || "Grup Çıkış");
+ 
+       // Uçuş saatleri arasında yarım saatten fazla fark varsa uyarı
+       const times = selectedTransferObjects.map((t) => t.time).filter((t) => t);
+@@ -11219,7 +11221,7 @@ export default function ProjectDetailPage() {
+ 
+     // Araç atanan gruplanan transferlerde düzenleme moduna geçme
+     if (transfer.isGroup && transfer.vehicleAssigned) {
+-      toast.error("Araç atanan gruplanan transferlerde düzenleme yapılamaz!");
++      toast.error((t('projects.fixme') || "Araç atanan gruplanan transferlerde düzenleme yapılamaz!"));
+       return;
+     }
+ 
+@@ -11788,8 +11790,8 @@ export default function ProjectDetailPage() {
+     const vehicleTypeMap: { [key: string]: string } = {
+       vito: "Vito",
+       sprinter: "Sprinter",
+-      otobus: "Otobüs",
+-      binek: "Binek",
++      otobus: t('projects.vehicleBus') || (t('projects.vehicleBus') || "Otobüs"),
++      binek: t('projects.vehicleCar') || (t('projects.vehicleCar') || "Binek"),
+       "s-class": "S Class",
+     };
+     return vehicleTypeMap[vehicleTypeCode] || vehicleTypeCode || "-";
+@@ -11993,7 +11995,7 @@ export default function ProjectDetailPage() {
+         groupArrivals.forEach((transfer) => {
+           // Grup başlığı
+           const groupRow = worksheet.addRow([
+-            "Grup Giriş",
++            (t('projects.groupArrival') || "Grup Giriş"),
+             transfer.date || "-",
+             transfer.time || "-",
+             transfer.flightCode || "-",
+@@ -12146,7 +12148,7 @@ export default function ProjectDetailPage() {
+         groupIntermediates.forEach((transfer) => {
+           // Grup başlığı
+           const groupRow = worksheet.addRow([
+-            "Grup Ara",
++            (t('projects.groupIntermediate') || "Grup Ara"),
+             transfer.date || "-",
+             transfer.time || "-",
+             transfer.flightCode || "-",
+@@ -12173,7 +12175,7 @@ export default function ProjectDetailPage() {
+             transfer.originalTransfers.forEach(
+               (originalTransfer: any, index: number) => {
+                 const detailRow = worksheet.addRow([
+-                  "Ara Transfer",
++                  (t('projects.intermediateTransfer') || "Ara Transfer"),
+                   originalTransfer.date || "-",
+                   originalTransfer.time || "-",
+                   originalTransfer.flightCode || "-",
+@@ -12207,7 +12209,7 @@ export default function ProjectDetailPage() {
+         // Bireysel transferler
+         individualIntermediates.forEach((transfer) => {
+           const dataRow = worksheet.addRow([
+-            transfer.typeLabel || "Ara Transfer",
++            transfer.typeLabel || (t('projects.intermediateTransfer') || "Ara Transfer"),
+             transfer.date || "-",
+             transfer.time || "-",
+             transfer.flightCode || "-",
+@@ -12297,7 +12299,7 @@ export default function ProjectDetailPage() {
+         groupDepartures.forEach((transfer) => {
+           // Grup başlığı
+           const groupRow = worksheet.addRow([
+-            "Grup Çıkış",
++            (t('projects.groupDeparture') || "Grup Çıkış"),
+             transfer.date || "-",
+             transfer.time || "-",
+             transfer.flightCode || "-",
+@@ -12450,26 +12452,26 @@ export default function ProjectDetailPage() {
+       const summaryData = [
+         ["Toplam Vito Giriş:", vehicleCounts.vito.giris],
+         ["Toplam Sprinter Giriş:", vehicleCounts.sprinter.giris],
+-        ["Toplam Otobüs Giriş:", vehicleCounts.otobus.giris],
+-        ["Toplam Binek Giriş:", vehicleCounts.binek.giris],
++        [(t('projects.totalBusArrival') || "Toplam Otobüs Giriş:"), vehicleCounts.otobus.giris],
++        [(t('projects.totalCarArrival') || "Toplam Binek Giriş:"), vehicleCounts.binek.giris],
+         ["Toplam S-Class Giriş:", vehicleCounts.sClass.giris],
+         ["Toplam Giriş:", arrivalTransfers.length],
+         ["Toplam Vito Ara:", vehicleCounts.vito.ara],
+         ["Toplam Sprinter Ara:", vehicleCounts.sprinter.ara],
+-        ["Toplam Otobüs Ara:", vehicleCounts.otobus.ara],
+-        ["Toplam Binek Ara:", vehicleCounts.binek.ara],
++        [(t('projects.totalBusInter') || "Toplam Otobüs Ara:"), vehicleCounts.otobus.ara],
++        [(t('projects.totalCarInter') || "Toplam Binek Ara:"), vehicleCounts.binek.ara],
+         ["Toplam S-Class Ara:", vehicleCounts.sClass.ara],
+         ["Toplam Ara:", intermediateTransfers.length],
+         ["Toplam Vito Çıkış:", vehicleCounts.vito.cikis],
+         ["Toplam Sprinter Çıkış:", vehicleCounts.sprinter.cikis],
+-        ["Toplam Otobüs Çıkış:", vehicleCounts.otobus.cikis],
+-        ["Toplam Binek Çıkış:", vehicleCounts.binek.cikis],
++        [(t('projects.totalBusDeparture') || "Toplam Otobüs Çıkış:"), vehicleCounts.otobus.cikis],
++        [(t('projects.totalCarDeparture') || "Toplam Binek Çıkış:"), vehicleCounts.binek.cikis],
+         ["Toplam S-Class Çıkış:", vehicleCounts.sClass.cikis],
+         ["Toplam Çıkış:", departureTransfers.length],
+         ["Toplam Vito:", totalVito],
+         ["Toplam Sprinter:", totalSprinter],
+-        ["Toplam Otobüs:", totalOtobus],
+-        ["Toplam Binek:", totalBinek],
++        [(t('projects.totalBus') || "Toplam Otobüs:"), totalOtobus],
++        [(t('projects.totalCar') || "Toplam Binek:"), totalBinek],
+         ["Toplam S-Class:", totalSClass],
+         [
+           "TOPLAM:",
+@@ -14901,7 +14903,7 @@ export default function ProjectDetailPage() {
+             href="/projects"
+             className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
+           >
+-            Proje Listesine Dön
++            {t('projects.backToList') || "Proje Listesine Dön"}
+           </Link>
+         </div>
+       </div>
+@@ -14923,20 +14925,20 @@ export default function ProjectDetailPage() {
+                onClick={() => setActiveMainTab('info')} 
+                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              >
+-               PROJE BİLGİLERİ
++               {t('projects.projectInfo') || "PROJE BİLGİLERİ"}
+              </button>
+              <button 
+                onClick={() => setActiveMainTab('details')} 
+                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              >
+-               PROJE DETAYLARI
++               {t('projects.projectDetails') || "PROJE DETAYLARI"}
+              </button>
+           </div>
+           
+           {/* Right Action (Settings) Button */}
+           <div className="w-[100px] flex justify-end">
+             <div className="flex-shrink-0 relative group z-50">
+-              <button className="bg-transparent border border-gray-600/50 hover:bg-white/5 text-gray-300 hover:text-white p-2 rounded-xl transition-all duration-200" title="İşlemler">
++              <button className="bg-transparent border border-gray-600/50 hover:bg-white/5 text-gray-300 hover:text-white p-2 rounded-xl transition-all duration-200" title={t('common.actions') || "İşlemler"}>
+                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+               </button>
+               <div className="absolute right-0 top-full mt-2 w-64 bg-[#1e293b] rounded-xl shadow-2xl border border-gray-700 p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100">
+@@ -14951,35 +14953,35 @@ export default function ProjectDetailPage() {
+                       className={`w-full px-2 py-1.5 rounded-lg text-xs font-bold border outline-none transition-colors ${isEditingProject && !updatingRates ? "bg-[#0f172a] text-white border-blue-500 cursor-pointer" : "bg-[#0f172a]/50 text-gray-500 border-gray-700/50 cursor-not-allowed"}`}
+                       title="Kur Stratejisi"
+                     >
+-                      <option value="manuel">Kur: Manuel</option>
+-                      <option value="tcmb_forex_buying">Kur: TCMB Döviz Alış</option>
+-                      <option value="tcmb_forex_selling">Kur: TCMB Döviz Satış</option>
+-                      <option value="tcmb_banknote_buying">Kur: TCMB Efektif Alış</option>
+-                      <option value="tcmb_banknote_selling">Kur: TCMB Efektif Satış</option>
++                      <option value="manuel">{t('projects.fxManual') || "Kur: Manuel"}</option>
++                      <option value="tcmb_forex_buying">{t('projects.fxTcmbForexBuying') || "Kur: TCMB Döviz Alış"}</option>
++                      <option value="tcmb_forex_selling">{t('projects.fxTcmbForexSelling') || "Kur: TCMB Döviz Satış"}</option>
++                      <option value="tcmb_banknote_buying">{t('projects.fxTcmbBanknoteBuying') || "Kur: TCMB Efektif Alış"}</option>
++                      <option value="tcmb_banknote_selling">{t('projects.fxTcmbBanknoteSelling') || "Kur: TCMB Efektif Satış"}</option>
+                     </select>
+-                    <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Loglar
++                    <button onClick={() => setShowLogViewer(true)} className="w-full text-left bg-gray-500/10 text-gray-400 px-3 py-2 rounded-lg hover:bg-gray-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
++                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> {t('common.logs') || "Loglar"}
+                     </button>
+                     <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Excel (Tam Rapor)
++                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> {t('projects.excelFullReport') || "Excel (Tam Rapor)"}
+                     </button>
+                     {isEditingProject ? (
+                       <>
+                         {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
+                           <button onClick={handleSaveProject} className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-xs font-bold flex items-center gap-2">
+-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Kaydet
++                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> {t('common.save') || "Kaydet"}
+                           </button>
+                         )}
+                         {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
+                           <button onClick={handleCancelEdit} className="w-full text-left bg-gray-700 text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors text-xs font-bold flex items-center gap-2">
+-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> İptal
++                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> {t('common.cancel') || "İptal"}
+                           </button>
+                         )}
+                       </>
+                     ) : (
+                       canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
+                         <button onClick={handleEditProject} className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-xs font-bold flex items-center gap-2">
+-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Düzenle
++                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> {t('common.edit') || "Düzenle"}
+                         </button>
+                       )
+                     )}
+@@ -14988,19 +14990,19 @@ export default function ProjectDetailPage() {
+                   <>
+                     {activeTab === 'satis' && (
+                       <>
+-                        <button onClick={() => setShowCategoryModalSales(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Satış Kalemi</button>
+-                        <button onClick={handleCreateSalesLink} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Mutabakat Linki</button>
+-                        <button onClick={exportSalesOnlyByHotelToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        <button onClick={() => setShowCategoryModalSales(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newSalesItem') || "Yeni Satış Kalemi"}</button>
++                        <button onClick={handleCreateSalesLink} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.reconciliationLink') || "Mutabakat Linki"}</button>
++                        <button onClick={exportSalesOnlyByHotelToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                     {activeTab === 'alis' && (
+                       <>
+-                        <button onClick={() => setShowCategoryModalPurchase(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Alış Kalemi</button>
++                        <button onClick={() => setShowCategoryModalPurchase(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newPurchaseItem') || "Yeni Alış Kalemi"}</button>
+                         <button onClick={() => {
+                           setConfirmModal({
+                             open: true,
+-                            title: "Satış Kalemlerini İçe Aktar",
+-                            message: "Emin misiniz? Bu işlem mevcut satış kalemlerinizi alış tarafına aktaracaktır.",
++                            title: t('projects.importSalesItems') || "Satış Kalemlerini İçe Aktar",
++                            message: t('projects.importSalesItemsConfirm') || "Emin misiniz? Bu işlem mevcut satış kalemlerinizi alış tarafına aktaracaktır.",
+                             onConfirm: () => {
+                               importSalesItemsToPurchase(false);
+                               setConfirmModal(prev => ({ ...prev, open: false }));
+@@ -15008,65 +15010,65 @@ export default function ProjectDetailPage() {
+                             type: "info",
+                             showCancel: true,
+                           });
+-                        }} className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Satış Kalemlerini İçe Aktar</button>
+-                        <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        }} className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.importSalesItems') || "Satış Kalemlerini İçe Aktar"}</button>
++                        <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                     {activeTab === 'konaklama' && (
+                       <>
+-                        <button onClick={() => handleAccommodationAdd("")} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Oda Ekle</button>
++                        <button onClick={() => handleAccommodationAdd("")} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newRoom') || "Yeni Oda Ekle"}</button>
+                         <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
+                           <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleAccommodationImport} />
+-                          Excel İçe Aktar
++                          {t('projects.importExcel') || "Excel İçe Aktar"}
+                         </label>
+-                        <button onClick={handleAccommodationExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+-                        <button onClick={handleAccommodationClear} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Listeyi Temizle</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-toggle-collapse-accommodation'))} className="w-full text-left bg-gray-500/10 text-gray-400 px-3 py-2 rounded-lg hover:bg-gray-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Genişlet/Daralt</button>
++                        <button onClick={handleAccommodationExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
++                        <button onClick={handleAccommodationClear} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.clearList') || "Listeyi Temizle"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-toggle-collapse-accommodation'))} className="w-full text-left bg-gray-500/10 text-gray-400 px-3 py-2 rounded-lg hover:bg-gray-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.expandCollapse') || "Genişlet/Daralt"}</button>
+                       </>
+                     )}
+                     {activeTab === 'ucak-bileti' && (
+                       <>
+-                        <button onClick={() => handleFlightAdd()} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Bilet Ekle</button>
++                        <button onClick={() => handleFlightAdd()} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newTicket') || "Yeni Bilet Ekle"}</button>
+                         <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
+                           <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFlightImport} />
+-                          Excel İçe Aktar
++                          {t('projects.importExcel') || "Excel İçe Aktar"}
+                         </label>
+-                        <button onClick={handleFlightExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        <button onClick={handleFlightExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                     {activeTab === 'transfer-tur' && (
+                       <>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'giris' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Giriş Transferi Ekle</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'ara' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Ara Transfer Ekle</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'cikis' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Çıkış Transferi Ekle</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-create-transfer'))} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Konaklamadan Transfer Oluştur</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-transfer'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-clear-transfer'))} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Temizle</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'giris' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newArrivalTransfer') || "Giriş Transferi Ekle"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'ara' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newInterTransfer') || "Ara Transfer Ekle"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'cikis' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newDepartureTransfer') || "Çıkış Transferi Ekle"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-create-transfer'))} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.createTransferFromAccommodation') || "Konaklamadan Transfer Oluştur"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-transfer'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-clear-transfer'))} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.clearList') || "Temizle"}</button>
+                       </>
+                     )}
+                     {activeTab === 'diger' && (
+                       <>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-other'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Kayıt Ekle</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-other'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-other'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.addRecord') || "Kayıt Ekle"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-other'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                     {activeTab === 'tahsilat' && (
+                       <>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-tahsilat'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-tahsilat'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Tahsilat</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-tahsilat'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-tahsilat'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newPlan') || "Yeni Plan"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-tahsilat'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newCollection') || "Yeni Tahsilat"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-tahsilat'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                     {activeTab === 'odeme' && (
+                       <>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-odeme'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-odeme'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Ödeme</button>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-odeme'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-odeme'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newPlan') || "Yeni Plan"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-odeme'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('projects.newPayment') || "Yeni Ödeme"}</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-odeme'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                     {activeTab === 'kar-zarar' && (
+                       <>
+-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-karzarar'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
++                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-karzarar'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">{t('common.exportExcel') || "Excel Dışa Aktar"}</button>
+                       </>
+                     )}
+                   </>
+@@ -15107,7 +15109,7 @@ export default function ProjectDetailPage() {
+           </div>
+           <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+             <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-            Proje Durum
++            {t('common.status') || "Proje Durum"}
+           </p>
+           {isEditingProject ? (
+             <select
+@@ -15117,10 +15119,10 @@ export default function ProjectDetailPage() {
+               }
+               className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+             >
+-              <option value="active">Aktif</option>
+-              <option value="completed">Tamamlandı</option>
+-              <option value="on_hold">Beklemede</option>
+-              <option value="cancelled">İptal</option>
++              <option value="active">{t('common.active') || "Aktif"}</option>
++              <option value="completed">{t('common.completed') || "Tamamlandı"}</option>
++              <option value="on_hold">{t('common.onHold') || "Beklemede"}</option>
++              <option value="cancelled">{t('common.cancelled') || "İptal"}</option>
+             </select>
+           ) : (
+             <p className="text-xs font-semibold text-gray-900 dark:text-white">
+@@ -15136,7 +15138,7 @@ export default function ProjectDetailPage() {
+           
+           <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+             <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-            Firma Adı
++            {t('home.companyName') || "Firma Adı"}
+           </p>
+           {isEditingProject ? (
+             <input
+@@ -15155,7 +15157,7 @@ export default function ProjectDetailPage() {
+           </div>
+           <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+             <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-            Acente Adı
++            {t('home.agency') || "Acente Adı"}
+           </p>
+           {isEditingProject ? (
+             <div className="relative">
+@@ -15170,7 +15172,7 @@ export default function ProjectDetailPage() {
+                 onFocus={() => setShowAgencyDropdown(true)}
+                 onKeyDown={handleAgencyKeyDown}
+                 className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+-                placeholder="Acente ara..."
++                placeholder={t('projects.searchAgency') || "Acente ara..."}
+                 autoComplete="off"
+               />
+               {showAgencyDropdown && filteredAgencies.length > 0 && (
+@@ -15199,7 +15201,7 @@ export default function ProjectDetailPage() {
+           </div>
+           <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+             <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-            Proje Sorumlusu
++            {t('home.manager') || "Proje Sorumlusu"}
+           </p>
+           {isEditingProject ? (
+             <div className="relative">
+@@ -15236,7 +15238,7 @@ export default function ProjectDetailPage() {
+                 onFocus={() => setShowUserDropdown(true)}
+                 onKeyDown={handleUserKeyDown}
+                 className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+-                placeholder="Kullanıcı ara..."
++                placeholder={t('projects.searchUser') || "Kullanıcı ara..."}
+                 autoComplete="off"
+               />
+ 
+@@ -15273,7 +15275,7 @@ export default function ProjectDetailPage() {
+           ) : (
+             <p 
+               className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate"
+-              title={getProjectManagers(projectId) || "Atanmadı"}
++              title={getProjectManagers(projectId) || (t('projects.unassigned') || "Atanmadı")}
+             >
+               {getProjectManagers(projectId)}
+             </p>
+@@ -15289,7 +15291,7 @@ export default function ProjectDetailPage() {
+           {isEditingProject ? (
+             <div className="space-y-3">
+               <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-                OTELLER VE KONAKLAMA TARİHLERİ
++                {t('projects.hotelsAndDates') || "OTELLER VE KONAKLAMA TARİHLERİ"}
+               </p>
+               
+               {/* Mevcut Oteller */}
+@@ -15310,7 +15312,7 @@ export default function ProjectDetailPage() {
+                             }}
+                             className="w-full bg-[#0f172a] text-white text-[11px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
+                           >
+-                            <option value="">Otel Seçiniz</option>
++                            <option value="">{t('projects.selectHotel') || "Otel Seçiniz"}</option>
+                             {hotels?.map((mh: any) => (
+                               <option key={mh.id} value={mh.id}>{mh.name}</option>
+                             ))}
+@@ -15326,7 +15328,7 @@ export default function ProjectDetailPage() {
+                               setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
+                             }}
+                             className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+-                            title="Giriş Tarihi"
++                            title={t('projects.checkInDate') || "Giriş Tarihi"}
+                           />
+                           <span className="text-gray-500 font-bold">-</span>
+                           <input
+@@ -15338,7 +15340,7 @@ export default function ProjectDetailPage() {
+                               setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
+                             }}
+                             className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+-                            title="Çıkış Tarihi"
++                            title={t('projects.checkOutDate') || "Çıkış Tarihi"}
+                           />
+                           <button
+                             onClick={() => {
+@@ -15351,7 +15353,7 @@ export default function ProjectDetailPage() {
+                               }));
+                             }}
+                             className="p-1.5 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors"
+-                            title="Oteli Kaldır"
++                            title={t('projects.removeHotel') || "Oteli Kaldır"}
+                           >
+                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                           </button>
+@@ -15360,7 +15362,7 @@ export default function ProjectDetailPage() {
+                     );
+                   })
+                 ) : (
+-                  <div className="text-[10px] text-gray-500 italic">Otel eklenmemiş.</div>
++                  <div className="text-[10px] text-gray-500 italic">{t('projects.noHotelAdded') || "Otel eklenmemiş."}</div>
+                 )}
+               </div>
+ 
+@@ -15381,13 +15383,13 @@ export default function ProjectDetailPage() {
+                 className="w-full mt-2 py-2 bg-[#0f172a] hover:bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-gray-700/50 hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
+               >
+                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+-                Yeni Otel Satırı Ekle
++                {t('projects.addHotelRow') || "Yeni Otel Satırı Ekle"}
+               </button>
+             </div>
+           ) : (
+             <>
+               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+-                OTELLER VE KONAKLAMA TARİHLERİ
++                {t('projects.hotelsAndDates') || "OTELLER VE KONAKLAMA TARİHLERİ"}
+               </p>
+               <div className="flex flex-col gap-2">
+                 {project?.hotels_data && project.hotels_data.length > 0 ? (
+@@ -15411,7 +15413,7 @@ export default function ProjectDetailPage() {
+                   })
+                 ) : (
+                   <div className="text-xs font-medium text-gray-500 py-2">
+-                    Otel bulunamadı
++                    {t('projects.noHotelFound') || "Otel bulunamadı"}
+                   </div>
+                 )}
+               </div>
+@@ -15421,7 +15423,7 @@ export default function ProjectDetailPage() {
+           <div className="grid grid-cols-2 gap-4">
+             <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+               <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-            Oda | Pax
++            {t('projects.roomPax') || "Oda | Pax"}
+           </p>
+           {isEditingProject ? (
+             <input
+@@ -15431,7 +15433,7 @@ export default function ProjectDetailPage() {
+                 handleProjectFormChange("room_pax", e.target.value)
+               }
+               className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+-              placeholder="Oda | Pax"
++              placeholder={t('projects.roomPax') || "Oda | Pax"}
+             />
+           ) : (
+             <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+@@ -15441,7 +15443,7 @@ export default function ProjectDetailPage() {
+             </div>
+             <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+               <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+-            Teklif Türü
++            {t('projects.quoteType') || "Teklif Türü"}
+           </p>
+           {isEditingProject ? (
+             <select
+@@ -15451,13 +15453,19 @@ export default function ProjectDetailPage() {
+               }
+               className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+             >
+-              <option value="">Teklif Türü Seçin</option>
+-              <option value="BİRİM">BİRİM</option>
+-              <option value="PAKET">PAKET</option>
++              <option value="">{t('projects.selectQuoteType') || "Teklif Türü Seçin"}</option>
++              <option value="BİRİM">{t('projects.quoteUnit') || "BİRİM"}</option>
++              <option value="PAKET">{t('projects.quotePackage') || "PAKET"}</option>
+             </select>
+           ) : (
+             <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+-              {project?.quote_type || "-"}
++              {project?.quote_type ? (
++                project.quote_type.toLowerCase() === "konaklamalı" ? (t('projects.quoteWithAccommodation') || "Konaklamalı") :
++                project.quote_type.toLowerCase() === "konaklamasız" ? (t('projects.quoteWithoutAccommodation') || "Konaklamasız") :
++                project.quote_type.toLowerCase() === "birim" || project.quote_type.toLowerCase() === "bi̇ri̇m" ? (t('projects.quoteUnit') || "BİRİM") :
++                project.quote_type.toLowerCase() === "paket" ? (t('projects.quotePackage') || "PAKET") :
++                project.quote_type
++              ) : "-"}
+             </p>
+           )}
+             </div>
+@@ -15483,7 +15491,7 @@ export default function ProjectDetailPage() {
+                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+               }`}
+             >
+-              TÜMÜ
++              {t('common.all') || "TÜMÜ"}
+             </button>
+             {project.hotels_data.map((h: any, idx: number) => {
+               const hObj = hotels.find((ht) => ht.id === h.hotel_id);
+@@ -15539,7 +15547,7 @@ export default function ProjectDetailPage() {
+             {canEdit(Module.PROJECTS) && (
+               <button
+                 onClick={() => setIsAddHotelModalOpen(true)}
+-                title="Yeni Otel Ekle"
++                title={t('projects.addNewHotel') || "Yeni Otel Ekle"}
+                 className="flex items-center px-3 py-2 bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500 hover:text-white transition-all rounded-lg border border-dashed border-green-500/30 group ml-2"
+               >
+                 <svg
+@@ -15566,7 +15574,7 @@ export default function ProjectDetailPage() {
+                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+               }`}
+             >
+-              GENEL HİZMETLER
++              {t('projects.generalServices') || "GENEL HİZMETLER"}
+             </button>
+           </div>
+         </div>
+@@ -15575,17 +15583,17 @@ export default function ProjectDetailPage() {
+       {/* Tabs - Premium Style */}
+       <div className="mb-4">
+         <div className="flex md:justify-center w-full bg-[#0f172a]/70 backdrop-blur-md p-1.5 rounded-xl border border-gray-700/50 space-x-2 overflow-x-auto shadow-xl no-scrollbar">
+-          {TABS.map((t) => (
++          {TABS.map((tab) => (
+             <button
+-              key={t.key}
+-              onClick={() => handleTabChange(t.key)}
++              key={tab.key}
++              onClick={() => handleTabChange(tab.key)}
+               className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-semibold uppercase tracking-widest ${
+-                activeTab === t.key
++                activeTab === tab.key
+                   ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                   : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+               }`}
+             >
+-              {t.label}
++              {t(`projects.tab_${tab.key.replace('-', '_')}`) || tab.label}
+             </button>
+           ))}
+         </div>
+@@ -15595,7 +15603,7 @@ export default function ProjectDetailPage() {
+         <div className="p-3">
+           {loading ? (
+             <div className="text-xs text-gray-500 dark:text-gray-400">
+-              Yükleniyor...
++              {t('common.loading') || "Yükleniyor..."}
+             </div>
+           ) : (
+             <>
+@@ -16509,7 +16517,7 @@ export default function ProjectDetailPage() {
+                                               misafirler: e.target.value,
+                                             }))
+                                           }
+-                                          placeholder="Misafirler (virgülle ayırın)"
++                                          placeholder={`$Misafirler (virgülle ayırın)`}
+                                           className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                         />
+                                       </td>
+@@ -16667,7 +16675,7 @@ export default function ProjectDetailPage() {
+                                                 )
+                                               }
+                                               className="ml-2 p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded"
+-                                              title="Misafirleri göster/gizle"
++                                              title={`$Misafirleri göster/gizle`}
+                                             >
+                                               <svg
+                                                 className={`w-3 h-3 transition-transform ${expandedFlightTickets.has(ticket.id) ? "rotate-180" : ""}`}
+@@ -18796,19 +18804,19 @@ export default function ProjectDetailPage() {
+                               Transfer Tipi
+                             </th>
+                             <th className="px-2 py-2 text-left font-semibold">
+-                              Tarih
++                              {t('common.date') || "Tarih"}
+                             </th>
+                             <th className="px-2 py-2 text-left font-semibold">
+-                              Saat
++                              {t('common.time') || "Saat"}
+                             </th>
+                             <th className="px-2 py-2 text-left font-semibold">
+-                              Uçuş Kodu
++                              {t('projects.flightCode') || "Uçuş Kodu"}
+                             </th>
+                             <th className="px-2 py-2 text-left font-semibold">
+-                              Güzergah
++                              {t('projects.route') || "Güzergah"}
+                             </th>
+                             <th className="px-2 py-2 text-left font-semibold">
+-                              Yolcu Sayısı
++                              {t('projects.passengerCount') || "Yolcu Sayısı"}
+                             </th>
+                             <th className="px-2 py-2 text-left font-semibold">
+                               Transfer Tipi
+@@ -18837,7 +18845,7 @@ export default function ProjectDetailPage() {
+                                       setShowAddTransferMenu((prev) => !prev)
+                                     }
+                                     className="p-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
+-                                    title="Manuel Transfer Ekle"
++                                    title={t('projects.addManualTransfer') || "Manuel Transfer Ekle"}
+                                   >
+                                     <svg
+                                       className="w-5 h-5"
+@@ -18862,7 +18870,7 @@ export default function ProjectDetailPage() {
+                                         }
+                                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                                       >
+-                                        Giriş Transferi Ekle
++                                        {t('projects.addArrivalTransfer') || "Giriş Transferi Ekle"}
+                                       </button>
+                                       <button
+                                         onClick={() =>
+@@ -18870,7 +18878,7 @@ export default function ProjectDetailPage() {
+                                         }
+                                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                                       >
+-                                        Çıkış Transferi Ekle
++                                        {t('projects.addDepartureTransfer') || "Çıkış Transferi Ekle"}
+                                       </button>
+                                       <button
+                                         onClick={() =>
+@@ -18878,7 +18886,7 @@ export default function ProjectDetailPage() {
+                                         }
+                                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                                       >
+-                                        Ara Transfer Ekle
++                                        {t('projects.addIntermediateTransfer') || "Ara Transfer Ekle"}
+                                       </button>
+                                     </div>
+                                   )}
+@@ -18918,27 +18926,24 @@ export default function ProjectDetailPage() {
+                                     )}
+                                 </td>
+                                 <td className="px-2 py-2">
+-                                  {transfer.typeLabel === "Ara Transfer" ? (
++                                  {transfer.typeLabel === (t('projects.intermediateTransfer') || "Ara Transfer") ? (
+                                     <span
+                                       className={`px-2 py-1 rounded-md text-xs font-medium inline-block bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700`}
+                                     >
+-                                      Ara Transfer
++                                      {t('projects.intermediateTransfer') || (t('projects.intermediateTransfer') || "Ara Transfer")}
+                                     </span>
+                                   ) : transfer.isGroup ? (
+                                     <div className="flex items-center gap-2">
+                                       <span
+                                         className={`px-2 py-1 rounded-md text-xs font-medium inline-block ${
+-                                          transfer.typeLabel === "Grup Ara"
++                                          transfer.typeLabel === (t('projects.groupIntermediate') || "Grup Ara")
+                                             ? "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700"
+                                             : transfer.direction === "arrival"
+                                               ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700"
+                                               : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700"
+                                         }`}
+                                       >
+-                                        {transfer.typeLabel ||
+-                                          (transfer.direction === "arrival"
+-                                            ? "Grup Giriş"
+-                                            : "Grup Çıkış")}
++                                        {transfer.typeLabel === (t('projects.groupArrival') || "Grup Giriş") ? (t('projects.fixme') || "Grup Giriş") : transfer.typeLabel === (t('projects.groupDeparture') || "Grup Çıkış") ? (t('projects.fixme') || "Grup Çıkış") : transfer.typeLabel === (t('projects.groupIntermediate') || "Grup Ara") ? (t('projects.fixme') || "Grup Ara") : transfer.typeLabel === (t('projects.intermediateTransfer') || "Ara Transfer") ? (t('projects.fixme') || "Ara Transfer") : transfer.typeLabel || (transfer.direction === "arrival" ? (t('projects.fixme') || "Grup Giriş") : (t('projects.fixme') || "Grup Çıkış"))}
+                                       </span>
+                                       <button
+                                         onClick={() =>
+@@ -18947,8 +18952,8 @@ export default function ProjectDetailPage() {
+                                         className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                         title={
+                                           expandedGroups.has(transfer.id)
+-                                            ? "Detayları Gizle"
+-                                            : "Detayları Göster"
++                                            ? (t('common.hideDetails') || "Detayları Gizle")
++                                            : (t('common.showDetails') || "Detayları Göster")
+                                         }
+                                       >
+                                         <svg
+@@ -19071,7 +19076,7 @@ export default function ProjectDetailPage() {
+                                     </span>
+                                   )}
+                                 </td>
+-                                <td className="px-2 py-2">{transfer.route}</td>
++                                <td className="px-2 py-2">{(transfer.route === (t('projects.routeAirportHotel') || 'Havalimanı → Otel') || transfer.route === 'Havaalanı → Otel') ? t('projects.routeAirportHotel') || (t('projects.routeAirportHotel') || 'Havalimanı → Otel') : (transfer.route === (t('projects.routeHotelAirport') || 'Otel → Havalimanı') || transfer.route === 'Otel → Havaalanı') ? t('projects.routeHotelAirport') || (t('projects.routeHotelAirport') || 'Otel → Havalimanı') : transfer.route === (t('projects.routeHotelHotel') || 'Otel → Otel') ? t('projects.routeHotelHotel') || (t('projects.routeHotelHotel') || 'Otel → Otel') : transfer.route}</td>
+                                 <td className="px-2 py-2">
+                                   {transfer.isEditing ? (
+                                     <input
+@@ -19139,8 +19144,8 @@ export default function ProjectDetailPage() {
+                                     <option value="">Seçiniz</option>
+                                     <option value="vito">Vito</option>
+                                     <option value="sprinter">Sprinter</option>
+-                                    <option value="otobus">Otobüs</option>
+-                                    <option value="binek">Binek</option>
++                                    <option value="otobus">{t('projects.vehicleBus') || (t('projects.vehicleBus') || "Otobüs")}</option>
++                                    <option value="binek">{t('projects.vehicleCar') || (t('projects.vehicleCar') || "Binek")}</option>
+                                     <option value="s-class">S Class</option>
+                                   </select>
+                                 </td>
+@@ -19623,7 +19628,7 @@ export default function ProjectDetailPage() {
+                                         )}
+                                       </>
+                                     ) : transfer.typeLabel ===
+-                                      "Ara Transfer" ? (
++                                      (t('projects.intermediateTransfer') || "Ara Transfer") ? (
+                                       // Ara transferler için tam özellik seti
+                                       <>
+                                         {!transfer.vehicleAssigned && (
+@@ -19926,7 +19931,7 @@ export default function ProjectDetailPage() {
+                                                       "-"}
+                                                   </span>
+                                                   <span className="text-gray-600 dark:text-gray-300">
+-                                                    {originalTransfer.route}
++                                                    {(originalTransfer.route === (t('projects.routeAirportHotel') || 'Havalimanı → Otel') || originalTransfer.route === 'Havaalanı → Otel') ? t('projects.routeAirportHotel') || (t('projects.routeAirportHotel') || 'Havalimanı → Otel') : (originalTransfer.route === (t('projects.routeHotelAirport') || 'Otel → Havalimanı') || originalTransfer.route === 'Otel → Havaalanı') ? t('projects.routeHotelAirport') || (t('projects.routeHotelAirport') || 'Otel → Havalimanı') : originalTransfer.route === (t('projects.routeHotelHotel') || 'Otel → Otel') ? t('projects.routeHotelHotel') || (t('projects.routeHotelHotel') || 'Otel → Otel') : originalTransfer.route}
+                                                   </span>
+                                                   <span className="text-gray-500 dark:text-gray-400">
+                                                     {originalTransfer.passengers?.join(
+@@ -27845,7 +27850,7 @@ export default function ProjectDetailPage() {
+                       handleOpenEditHotelModal(h);
+                       setActiveHotelMenuId(null);
+                     }}
+-                    title="Düzenle"
++                    title={t('common.edit') || "Düzenle"}
+                     className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-500 hover:text-white dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-500 dark:hover:text-white rounded-lg transition-all"
+                   >
+                     <svg
+@@ -27870,7 +27875,7 @@ export default function ProjectDetailPage() {
+                       handleCopyHotelTab(h);
+                       setActiveHotelMenuId(null);
+                     }}
+-                    title="Kopyala"
++                    title={t('common.copy') || "Kopyala"}
+                     className="p-1.5 bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white rounded-lg transition-all"
+                   >
+                     <svg
+@@ -27895,7 +27900,7 @@ export default function ProjectDetailPage() {
+                       handleDeleteHotelTab(h.id || h.hotel_id);
+                       setActiveHotelMenuId(null);
+                     }}
+-                    title="Sil"
++                    title={t('common.delete') || "Sil"}
+                     className="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white rounded-lg transition-all"
+                   >
+                     <svg

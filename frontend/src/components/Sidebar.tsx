@@ -6,6 +6,7 @@ import "moment/locale/tr";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "./providers/ThemeProvider";
+import { useLanguage } from "./providers/LanguageProvider";
 import { supabase } from "../lib/supabase";
 import { authService } from "../lib/auth";
 import { usePermissions, Module, getModuleFromHref } from "../lib/permissions";
@@ -35,6 +36,7 @@ export default function Sidebar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [generalSettings, setGeneralSettings] = useState<any>(null);
   const { isDark } = useTheme();
+  const { t } = useLanguage();
 
   // Notifications State
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -76,30 +78,30 @@ export default function Sidebar() {
   }, [unreadCount]);
 
   const navigation: MenuItem[] = [
-    { id: "home", label: "Ana Sayfa", icon: "🏠", href: "/" },
+    { id: "home", label: t('menu.home') || "Ana Sayfa", icon: "🏠", href: "/" },
     {
       id: "dashboard",
-      label: "Dashboard",
+      label: t('menu.dashboard') || "Dashboard",
       icon: "📊",
       href: "/dashboard",
       module: Module.DASHBOARD,
     },
     {
       id: "mice",
-      label: "MICE",
+      label: t('menu.mice') || "MICE",
       icon: "🎯",
       module: Module.QUOTES,
       children: [
         {
           id: "quotes",
-          label: "Teklif",
+          label: t('menu.quotes') || "Teklif",
           icon: "📋",
           href: "/quotes",
           module: Module.QUOTES,
         },
         {
           id: "projects",
-          label: "Proje",
+          label: t('menu.projects') || "Proje",
           icon: "📁",
           href: "/projects",
           module: Module.PROJECTS,
@@ -108,20 +110,20 @@ export default function Sidebar() {
     },
     {
       id: "sejour",
-      label: "Sejour",
+      label: t('menu.sejour') || "Sejour",
       icon: "🏖️",
       module: Module.SEJOUR,
       children: [
         {
           id: "sejour-list",
-          label: "Sejour Listesi",
+          label: t('menu.sejourList') || "Sejour Listesi",
           icon: "📋",
           href: "/sejour",
           module: Module.SEJOUR,
         },
         {
           id: "sejour-services",
-          label: "Sejour Hizmet Listesi",
+          label: t('menu.sejourServices') || "Sejour Hizmet Listesi",
           icon: "🔧",
           href: "/sejour/services",
           module: Module.SEJOUR,
@@ -130,34 +132,34 @@ export default function Sidebar() {
     },
     {
       id: "operations",
-      label: "Operasyon",
+      label: t('menu.operations') || "Operasyon",
       icon: "⚙️",
       module: Module.OPERATIONS,
       children: [
         {
           id: "op-tickets",
-          label: "Bilet",
+          label: t('menu.opTickets') || "Bilet",
           icon: "✈️",
           href: "/operations/tickets",
           module: Module.TICKETS,
         },
         {
           id: "transfers",
-          label: "Transfer",
+          label: t('menu.transfers') || "Transfer",
           icon: "🚐",
           href: "/operations/transfers",
           module: Module.TRANSFERS,
         },
         {
           id: "guides",
-          label: "Kokartlı Rehber",
+          label: t('menu.guides') || "Kokartlı Rehber",
           icon: "👨‍💼",
           href: "/operations/guides",
           module: Module.GUIDES,
         },
         {
           id: "part-time",
-          label: "Part-Time",
+          label: t('menu.partTime') || "Part-Time",
           icon: "⏰",
           href: "/operations/part-time",
           module: Module.PART_TIME,
@@ -166,27 +168,27 @@ export default function Sidebar() {
     },
     {
       id: "tickets-group",
-      label: "Bilet",
+      label: t('menu.ticketsGroup') || "Bilet",
       icon: "✈️",
       module: Module.TICKETS,
       children: [
         {
           id: "ticket-options",
-          label: "Bilet Opsiyon Takip",
+          label: t('menu.ticketOptions') || "Bilet Opsiyon Takip",
           icon: "📋",
           href: "/tickets/options",
           module: Module.TICKETS,
         },
         {
           id: "ticket-payments",
-          label: "Bilet Ödeme Takip",
+          label: t('menu.ticketPayments') || "Bilet Ödeme Takip",
           icon: "💳",
           href: "/tickets/payments",
           module: Module.TICKETS,
         },
         {
           id: "ticket-calendar",
-          label: "Bilet Takvim Takip",
+          label: t('menu.ticketCalendar') || "Bilet Takvim Takip",
           icon: "📅",
           href: "/tickets/calendar",
           module: Module.TICKETS,
@@ -195,39 +197,39 @@ export default function Sidebar() {
     },
     {
       id: "marketing",
-      label: "Pazarlama",
+      label: t('menu.marketing') || "Pazarlama",
       icon: "📢",
       href: "/marketing",
       module: Module.MARKETING,
     },
     {
       id: "accounting",
-      label: "Muhasebe",
+      label: t('menu.accounting') || "Muhasebe",
       icon: "💰",
       module: Module.ACCOUNTING,
       children: [
         {
           id: "cash-flow",
-          label: "Nakit Akış",
+          label: t('menu.cashFlow') || "Nakit Akış",
           icon: "💵",
           href: "/accounting/cash-flow",
           module: Module.CASH_FLOW,
         },
         {
           id: "income-invoices",
-          label: "Gelir Faturaları",
+          label: t('menu.incomeInvoices') || "Gelir Faturaları",
           icon: "📄",
           children: [
             {
               id: "income-pending",
-              label: "Bekleyen",
+              label: t('menu.incomePending') || "Bekleyen",
               icon: "⏳",
               href: "/accounting/invoices/income/pending",
               module: Module.INVOICES,
             },
             {
               id: "income-completed",
-              label: "Tamamlanan",
+              label: t('menu.incomeCompleted') || "Tamamlanan",
               icon: "✅",
               href: "/accounting/invoices/income/completed",
               module: Module.INVOICES,
@@ -236,19 +238,19 @@ export default function Sidebar() {
         },
         {
           id: "expense-invoices",
-          label: "Gider Faturaları",
+          label: t('menu.expenseInvoices') || "Gider Faturaları",
           icon: "🧾",
           children: [
             {
               id: "expense-pending",
-              label: "Bekleyen",
+              label: t('menu.expensePending') || "Bekleyen",
               icon: "⏳",
               href: "/accounting/invoices/expense/pending",
               module: Module.INVOICES,
             },
             {
               id: "expense-completed",
-              label: "Tamamlanan",
+              label: t('menu.expenseCompleted') || "Tamamlanan",
               icon: "✅",
               href: "/accounting/invoices/expense/completed",
               module: Module.INVOICES,
@@ -257,7 +259,7 @@ export default function Sidebar() {
         },
         {
           id: "exchange-rates",
-          label: "Döviz Kurları",
+          label: t('menu.exchangeRates') || "Döviz Kurları",
           icon: "💱",
           href: "/accounting/exchange-rates",
           module: Module.EXCHANGE_RATES,
@@ -266,62 +268,62 @@ export default function Sidebar() {
     },
     {
       id: "reports",
-      label: "Raporlar",
+      label: t('menu.reports') || "Raporlar",
       icon: "📈",
       href: "/reports",
       module: Module.REPORTS,
     },
     {
       id: "definitions",
-      label: "Tanımlamalar",
+      label: t('menu.definitions') || "Tanımlamalar",
       icon: "📝",
       module: Module.SETTINGS,
       children: [
         {
           id: "hotels",
-          label: "Otel",
+          label: t('menu.hotels') || "Otel",
           icon: "🏨",
           href: "/hotels",
           module: Module.HOTELS,
         },
         {
           id: "suppliers",
-          label: "Tedarikçi",
+          label: t('menu.suppliers') || "Tedarikçi",
           icon: "🏢",
           href: "/suppliers",
           module: Module.SUPPLIERS,
         },
         {
           id: "agencies",
-          label: "Acente",
+          label: t('menu.agencies') || "Acente",
           icon: "🏛️",
           href: "/agencies",
           module: Module.AGENCIES,
         },
         {
           id: "categories",
-          label: "Kategori",
+          label: t('menu.categories') || "Kategori",
           icon: "🏷️",
           href: "/categories",
           module: Module.CATEGORIES,
         },
         {
           id: "supplier-categories",
-          label: "Tedarikçi Hizmet Kategorisi",
+          label: t('menu.supplierCategories') || "Tedarikçi Hizmet Kategorisi",
           icon: "🏷️",
           href: "/suppliers/service-types",
           module: Module.SUPPLIERS,
         },
         {
           id: "users",
-          label: "Kullanıcı",
+          label: t('menu.users') || "Kullanıcı",
           icon: "👥",
           href: "/users",
           module: Module.USERS,
         },
         {
           id: "roles",
-          label: "Yetkilendirme",
+          label: t('menu.roles') || "Yetkilendirme",
           icon: "🛡️",
           href: "/permissions/roles",
           module: Module.USERS,
@@ -330,20 +332,20 @@ export default function Sidebar() {
     },
     {
       id: "settings-group",
-      label: "Ayarlar",
+      label: t('menu.settingsGroup') || "Ayarlar",
       icon: "⚙️",
       module: Module.SETTINGS,
       children: [
         {
           id: "settings-gen",
-          label: "Genel Ayarlar",
+          label: t('menu.settingsGen') || "Genel Ayarlar",
           icon: "🔧",
           href: "/settings/general",
           module: Module.SETTINGS,
         },
         {
           id: "settings-sec",
-          label: "Güvenlik Ayarları",
+          label: t('menu.settingsSec') || "Güvenlik Ayarları",
           icon: "🔒",
           href: "/settings/security",
           module: Module.SETTINGS,
@@ -352,7 +354,7 @@ export default function Sidebar() {
     },
     {
       id: "profile",
-      label: "Profil",
+      label: t('menu.profile') || "Profil",
       icon: "👤",
       href: "/profile",
       module: Module.PROFILE,

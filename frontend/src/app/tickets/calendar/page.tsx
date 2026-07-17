@@ -23,6 +23,7 @@ import {
 import LoadingSpinner from "@/components/LoadingSpinner";
 import MultiTokenFilterInput from "@/components/MultiTokenFilterInput";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import Modal from "@/components/Modal";
 import { getLogosForExcel } from "@/utils/logoUtils";
@@ -123,6 +124,8 @@ interface CalendarPeriod {
 type ViewMode = "daily" | "weekly" | "monthly" | "yearly";
 
 export default function TicketCalendarPage() {
+  const { t, language } = useLanguage();
+  const locale = language === "en" ? "en-US" : "tr-TR";
   const { canView, loading: permissionsLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const hasLoadedRef = useRef(false);
@@ -204,6 +207,17 @@ export default function TicketCalendarPage() {
     setSearchQuery("");
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+        setIsPeriodModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Veri yükleme
   useEffect(() => {
     const loadData = async () => {
@@ -225,7 +239,7 @@ export default function TicketCalendarPage() {
           (records || []).map((r: any) => ({
             ...r,
             payment_date: toCalendarYmd(r.payment_date),
-            currency: r.currency || "TRY",
+            currency: r.currency,
           })),
         );
       } catch (error) {
@@ -319,7 +333,7 @@ export default function TicketCalendarPage() {
     allInstallments.forEach((inst) => {
       const dStr = toCalendarYmd(inst.date);
       if (dStr >= startStr && dStr <= endStr) {
-        const curr = (inst.currency || "TRY") as keyof typeof instTotals;
+        const curr = (inst.currency || inst.ticket.currency || "TRY") as keyof typeof instTotals;
         if (instTotals[curr] !== undefined) instTotals[curr] += inst.amount;
       }
     });
@@ -330,7 +344,7 @@ export default function TicketCalendarPage() {
 
       const dStr = toCalendarYmd(rec.payment_date);
       if (dStr >= startStr && dStr <= endStr) {
-        const curr = (rec.currency || "TRY") as keyof typeof payTotals;
+        const curr = (rec.currency || ticket.currency || "TRY") as keyof typeof payTotals;
         if (payTotals[curr] !== undefined) payTotals[curr] += rec.amount;
       }
     });
@@ -356,7 +370,7 @@ export default function TicketCalendarPage() {
     for (let month = 0; month < 12; month++) {
       const monthStart = new Date(year, month, 1);
       const monthEnd = new Date(year, month + 1, 0);
-      const monthStr = monthStart.toLocaleDateString("tr-TR", {
+      const monthStr = monthStart.toLocaleDateString(locale, {
         month: "long",
       });
 
@@ -529,7 +543,7 @@ export default function TicketCalendarPage() {
   }, [viewMode, currentDate, allInstallments, paymentRecords, filteredTickets]);
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("tr-TR", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: currency || "TRY",
     }).format(amount || 0);
@@ -537,7 +551,7 @@ export default function TicketCalendarPage() {
 
   const formatDate = (dateString: string) => {
     const parsed = parseCalendarDate(dateString);
-    return parsed ? parsed.toLocaleDateString("tr-TR") : "-";
+    return parsed ? parsed.toLocaleDateString(locale) : "-";
   };
 
   const goToPreviousPeriod = () => {
@@ -568,7 +582,7 @@ export default function TicketCalendarPage() {
 
   const getViewTitle = () => {
     if (viewMode === "daily")
-      return currentDate.toLocaleDateString("tr-TR", {
+      return currentDate.toLocaleDateString(locale, {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -578,10 +592,10 @@ export default function TicketCalendarPage() {
       s.setDate(s.getDate() - s.getDay() + (s.getDay() === 0 ? -6 : 1));
       const e = new Date(s);
       e.setDate(e.getDate() + 6);
-      return `${s.toLocaleDateString("tr-TR", { day: "numeric", month: "short" })} - ${e.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}`;
+      return `${s.toLocaleDateString(locale, { day: "numeric", month: "short" })} - ${e.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`;
     }
     if (viewMode === "monthly")
-      return currentDate.toLocaleDateString("tr-TR", {
+      return currentDate.toLocaleDateString(locale, {
         month: "long",
         year: "numeric",
       });
@@ -623,7 +637,7 @@ export default function TicketCalendarPage() {
     }
 
     // Logos - yeni sistem (URL'den base64'e çevirir)
-    const { iconLogoBase64, wordmarkLogoBase64 } = await getLogosForExcel(true); // Koyu band için dark (beyaz) logolar
+    const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true); // Koyu band için dark (beyaz) logolar
     const inchToPx = (inch: number) => Math.round(inch * 96);
     const guessExt = (dataUrl: string): "png" | "jpeg" =>
       (dataUrl || "").includes("image/png") ? "png" : "jpeg";
@@ -634,7 +648,7 @@ export default function TicketCalendarPage() {
       });
       sheet.addImage(iconId, {
         tl: { col: 0.1, row: 0.1 },
-        ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
     if (wordmarkLogoBase64) {
@@ -644,20 +658,20 @@ export default function TicketCalendarPage() {
       });
       sheet.addImage(markId, {
         tl: { col: 6.8, row: 0.23 },
-        ext: { width: inchToPx(2.1), height: inchToPx(0.5) } as any,
+        ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) } as any,
       } as any);
     }
 
     const columns = [
-      { header: "TARİH", key: "date", width: 14 },
-      { header: "TÜR", key: "type", width: 12 },
-      { header: "VOUCHER NO", key: "voucher_no", width: 18 },
-      { header: "ACENTE", key: "agent", width: 25 },
-      { header: "FİRMA ADI", key: "company_name", width: 25 },
-      { header: "TUTAR", key: "amount", width: 16 },
-      { header: "DÖVİZ", key: "currency", width: 10 },
-      { header: "GÜZERGAH", key: "route", width: 30 },
-      { header: "PNR", key: "pnr", width: 15 },
+      { header: t('ticketsCalendar.colDate') || "TARİH", key: "date", width: 14 },
+      { header: t('ticketsCalendar.colType') || "TÜR", key: "type", width: 12 },
+      { header: t('ticketsPayments.excelVoucherNo') || "VOUCHER NO", key: "voucher_no", width: 16 },
+      { header: t('ticketsPayments.excelAgent') || "ACENTE", key: "agent", width: 20 },
+      { header: t('ticketsCalendar.colCompany') || "FİRMA ADI", key: "company_name", width: 25 },
+      { header: t('ticketsCalendar.colAmount') || "TUTAR", key: "amount", width: 14 },
+      { header: t('ticketsCalendar.colCurrency') || "DÖVİZ", key: "currency", width: 10 },
+      { header: t('ticketsCalendar.colRoute') || "GÜZERGAH", key: "route", width: 30 },
+      { header: t('ticketsPayments.excelPNR') || "PNR", key: "pnr", width: 15 },
     ];
     sheet.columns = columns;
 
@@ -679,7 +693,7 @@ export default function TicketCalendarPage() {
       if (filterCurr && inst.currency !== filterCurr) return;
       data.push({
         date: toCalendarYmd(inst.date),
-        type: "Taksit",
+        type: t('ticketsCalendar.lblInstallment') || "Taksit",
         voucher_no: inst.ticket.voucher_no,
         agent: inst.ticket.agent,
         company_name: inst.ticket.company_name || "",
@@ -696,7 +710,7 @@ export default function TicketCalendarPage() {
       if (!ticket) return;
       data.push({
         date: toCalendarYmd(pay.payment_date),
-        type: "Ödeme",
+        type: t('ticketsCalendar.lblPayment') || "Ödeme",
         voucher_no: ticket.voucher_no,
         agent: ticket.agent,
         company_name: ticket.company_name || "",
@@ -713,7 +727,7 @@ export default function TicketCalendarPage() {
     data.forEach((row) => {
       const dataRow = sheet.addRow({
         ...row,
-        date: row.date ? new Date(row.date).toLocaleDateString("tr-TR") : "",
+        date: row.date ? new Date(row.date).toLocaleDateString(locale) : "",
       });
       dataRow.getCell("amount").numFmt = "#,##0.00";
       dataRow.getCell("amount").alignment = { horizontal: "right" };
@@ -735,11 +749,11 @@ export default function TicketCalendarPage() {
   };
 
   if (permissionsLoading || loading)
-    return <LoadingSpinner message="Bilet takvimi hazırlanıyor..." />;
+    return <LoadingSpinner message={t('ticketsCalendar.loading') || "Bilet takvimi hazırlanıyor..."} />;
   if (!canView(Module.TICKETS))
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-transparent font-black uppercase text-gray-400">
-        Yetki Gerekli
+        {t('common.unauthorized') || "Yetki Gerekli"}
       </div>
     );
 
@@ -751,10 +765,10 @@ export default function TicketCalendarPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Bilet Takvimi
+              {t('ticketsCalendar.title') || "Bilet Takvimi"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Takvim üzerinden bilet hareketlerinizi yönetin
+              {t('ticketsCalendar.desc') || "Takvim üzerinden bilet hareketlerinizi yönetin"}
             </p>
           </div>
 
@@ -791,12 +805,12 @@ export default function TicketCalendarPage() {
                     className={`px-3 rounded-lg text-[10px] font-semibold transition-all uppercase flex items-center justify-center ${viewMode === mode ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "text-slate-400 hover:text-white"}`}
                   >
                     {mode === "daily"
-                      ? "GÜN"
+                      ? t('ticketsCalendar.viewDaily') || "GÜN"
                       : mode === "weekly"
-                        ? "HAFTA"
+                        ? t('ticketsCalendar.viewWeekly') || "HAFTA"
                         : mode === "monthly"
-                          ? "AY"
-                          : "YIL"}
+                          ? t('ticketsCalendar.viewMonthly') || "AY"
+                          : t('ticketsCalendar.viewYearly') || "YIL"}
                   </button>
                 ),
               )}
@@ -805,7 +819,7 @@ export default function TicketCalendarPage() {
             {/* Search */}
             <div className="flex-[2] min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Voucher, PNR, Firma vb.)"
+                label={t('ticketsCalendar.phSearch') || "Genel Arama (Voucher, PNR, Firma vb.)"}
                 tokens={searchTokens}
                 inputValue={searchQuery}
                 suggestions={[]}
@@ -829,7 +843,7 @@ export default function TicketCalendarPage() {
                 type="button"
                 onClick={clearAllFilters}
                 className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
+                title={t('ticketsCalendar.filterClear') || "Filtreleri Temizle"}
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -843,7 +857,7 @@ export default function TicketCalendarPage() {
                 className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
-                Excel İndir
+                {t('ticketsCalendar.btnDownloadExcel') || "Excel İndir"}
               </button>
             </div>
           </div>
@@ -862,14 +876,14 @@ export default function TicketCalendarPage() {
                     <div className="p-2 bg-blue-500/20 text-blue-400 rounded-xl">
                       <TrendingUp className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      {curr} ÖZETİ
-                    </span>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+                      {curr} {t('ticketsCalendar.summary') || "ÖZETİ"}
+                    </h3>
                   </div>
                   <button
                     onClick={() => exportCalendarExcel(curr)}
-                    className="p-2 text-slate-400 hover:text-green-400 hover:bg-green-500/20 rounded-xl transition-all"
-                    title={`${curr} Bazlı Excel İndir`}
+                    className="absolute top-2 right-2 p-1.5 text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-500/30 rounded-lg transition-all border border-blue-500/20"
+                    title={`${curr} Bazlı ${t('ticketsCalendar.btnDownloadExcel') || "Excel İndir"}`}
                   >
                     <Download className="w-4 h-4" />
                   </button>
@@ -880,9 +894,11 @@ export default function TicketCalendarPage() {
                   </p>
                   <p className="text-xl font-bold text-white">
                     {formatCurrency(
-                      statsTotals.instTotals[
+                      (statsTotals.instTotals[
                         curr as keyof typeof statsTotals.instTotals
-                      ],
+                      ] || 0) + (statsTotals.payTotals[
+                        curr as keyof typeof statsTotals.payTotals
+                      ] || 0),
                       curr,
                     )}
                   </p>
@@ -895,15 +911,17 @@ export default function TicketCalendarPage() {
           <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 flex-1 min-h-0 flex flex-col overflow-hidden">
             {(viewMode === "monthly" || viewMode === "weekly") && (
               <div className="grid grid-cols-7 border-b border-white/5 bg-[#0f172a]/40 shrink-0">
-                {[
-                  "Pazartesi",
-                  "Salı",
-                  "Çarşamba",
-                  "Perşembe",
-                  "Cuma",
-                  "Cumartesi",
-                  "Pazar",
-                ].map((day) => (
+                {(
+                  [
+                    t('common.dayMon') || "Pazartesi",
+                    t('common.dayTue') || "Salı",
+                    t('common.dayWed') || "Çarşamba",
+                    t('common.dayThu') || "Perşembe",
+                    t('common.dayFri') || "Cuma",
+                    t('common.daySat') || "Cumartesi",
+                    t('common.daySun') || "Pazar",
+                  ] as string[]
+                ).map((day) => (
                   <div key={day} className="py-3 text-center">
                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                       {day}
@@ -953,10 +971,10 @@ export default function TicketCalendarPage() {
                           className={`text-[11px] font-semibold tracking-wider ${isToday ? "px-2 py-0.5 bg-blue-500/40 text-white rounded-md" : isCurrentMonth || viewMode === "yearly" ? "text-white" : "text-slate-500"}`}
                         >
                           {viewMode === "yearly"
-                            ? period.startDate.toLocaleDateString("tr-TR", {
+                            ? period.startDate.toLocaleDateString(locale, {
                                 month: "long",
                               })
-                            : `${period.startDate.getDate()} ${period.startDate.toLocaleDateString("tr-TR", { month: "short" })}`}
+                            : `${period.startDate.getDate()} ${period.startDate.toLocaleDateString(locale, { month: "short" })}`}
                         </span>
                       </div>
 
@@ -997,6 +1015,7 @@ export default function TicketCalendarPage() {
                                       0,
                                     ticket.installment?.currency ||
                                       ticket.payment?.currency ||
+                                      ticket.currency ||
                                       "TRY",
                                   )}
                                 </span>
@@ -1035,7 +1054,7 @@ export default function TicketCalendarPage() {
                           {period.tickets.length > 0 &&
                             period.tickets.length <= 3 && (
                               <div className="text-[8px] font-bold text-slate-500 uppercase px-1 pt-1 flex items-center gap-1 group-hover:text-blue-400 transition-colors">
-                                <Plus className="w-2 h-2" /> DETAYLAR
+                                <Plus className="w-2 h-2" /> {t('common.details') || "DETAYLAR"}
                               </div>
                             )}
                         </div>
@@ -1079,11 +1098,11 @@ export default function TicketCalendarPage() {
                             <h2 className="text-2xl font-black text-white tracking-tight">
                               {selectedTicket.voucher_no}
                             </h2>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">
+                            <h3 className="font-semibold text-lg text-white">
                               {selectedTicket.type === "installment"
-                                ? "Taksit Detayı"
-                                : "Ödeme Detayı"}
-                            </p>
+                                ? t('ticketsCalendar.modalTitleInstallment') || "Taksit Detayı"
+                                : t('ticketsCalendar.modalTitlePayment') || "Ödeme Detayı"}
+                            </h3>
                           </div>
                         </div>
                         <button
@@ -1097,7 +1116,7 @@ export default function TicketCalendarPage() {
                         <div className="space-y-6">
                           <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                              ACENTA / FİRMA / TEDARİKÇİ
+                              {t('ticketsCalendar.lblAgentCompany') || "ACENTA / FİRMA / TEDARİKÇİ"}
                             </p>
                             <p className="text-sm font-bold text-white leading-tight">
                               {selectedTicket.agent}
@@ -1107,14 +1126,14 @@ export default function TicketCalendarPage() {
                               </span>
                               <br />
                               <span className="text-[10px] font-black text-blue-600/50 tracking-widest">
-                                Tedarikçi: {selectedTicket.supplier || "-"}
+                                {t('ticketsCalendar.lblSupplier') || "Tedarikçi:"} {selectedTicket.supplier || "-"}
                               </span>
                             </p>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
-                                HAVAYOLU
+                                {t('home.airline') || "HAVAYOLU"}
                               </p>
                               <p className="text-[11px] font-bold text-white">
                                 {selectedTicket.airline || "-"}
@@ -1122,7 +1141,7 @@ export default function TicketCalendarPage() {
                             </div>
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
-                                UÇUŞ TİPİ
+                                {t('ticketsCalendar.lblFlightType') || "UÇUŞ TİPİ"}
                               </p>
                               <p className="text-[11px] font-bold text-white">
                                 {selectedTicket.flight_type || "-"}
@@ -1131,7 +1150,7 @@ export default function TicketCalendarPage() {
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
-                              GÜZERGAH / PNR
+                              {t('ticketsCalendar.lblRoutePNR') || "GÜZERGAH / PNR"}
                             </p>
                             <p className="text-sm font-bold text-white tracking-tighter">
                               {selectedTicket.route || "-"}
@@ -1144,7 +1163,7 @@ export default function TicketCalendarPage() {
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
-                                YOLCU SAYISI
+                                {t('ticketsPayments.excelPaxCount') || "YOLCU SAYISI"}
                               </p>
                               <p className="text-[11px] font-bold text-white">
                                 {selectedTicket.passenger_count || 0} PAX
@@ -1152,7 +1171,7 @@ export default function TicketCalendarPage() {
                             </div>
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
-                                KAYIT TARİHİ
+                                {t('ticketsCalendar.lblRegDate') || "KAYIT TARİHİ"}
                               </p>
                               <p className="text-[11px] font-bold text-white">
                                 {formatDate(selectedTicket.entry_date || "")}
@@ -1162,7 +1181,7 @@ export default function TicketCalendarPage() {
                           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
-                                PROJE KODU
+                                {t('ticketsCalendar.lblProjectCode') || "PROJE KODU"}
                               </p>
                               <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
                                 {selectedTicket.project_code || "-"}
@@ -1170,7 +1189,7 @@ export default function TicketCalendarPage() {
                             </div>
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
-                                REF. KODU
+                                {t('ticketsCalendar.lblRefCode') || "REF. KODU"}
                               </p>
                               <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
                                 {selectedTicket.reference_code || "-"}
@@ -1181,7 +1200,7 @@ export default function TicketCalendarPage() {
                         <div className="space-y-6 bg-white/5 p-6 rounded-[2rem]">
                           <div>
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
-                              HAREKET TUTARI
+                              {t('ticketsCalendar.lblTransactionAmount') || "HAREKET TUTARI"}
                             </p>
                             <p className="text-2xl font-black text-blue-600 dark:text-blue-400">
                               {formatCurrency(
@@ -1190,13 +1209,14 @@ export default function TicketCalendarPage() {
                                   0,
                                 selectedTicket.installment?.currency ||
                                   selectedTicket.payment?.currency ||
+                                  selectedTicket.currency ||
                                   "TRY",
                               )}
                             </p>
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
-                              TOPLAM BİLET MALİYETİ
+                              {t('ticketsCalendar.lblTotalCost') || "TOPLAM BİLET MALİYETİ"}
                             </p>
                             <p className="text-sm font-black text-white">
                               {formatCurrency(
@@ -1207,7 +1227,7 @@ export default function TicketCalendarPage() {
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
-                              İŞLEM TARİHİ
+                              {t('ticketsCalendar.lblTransactionDate') || "İŞLEM TARİHİ"}
                             </p>
                             <p className="text-sm font-black text-white">
                               {formatDate(
@@ -1223,7 +1243,7 @@ export default function TicketCalendarPage() {
                         onClick={() => setIsModalOpen(false)}
                         className="w-full py-5 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-[2rem] font-black text-[11px] tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
                       >
-                        KAPAT
+                        {t('common.close') || "KAPAT"}
                       </button>
                     </div>
                   </motion.div>
@@ -1259,7 +1279,7 @@ export default function TicketCalendarPage() {
                         </div>
                         <div>
                           <h2 className="text-[10px] font-black text-gray-400 tracking-[0.2em]">
-                            DÖNEM HAREKETLERİ
+                            {t('ticketsCalendar.lblPeriodMovements') || "DÖNEM HAREKETLERİ"}
                           </h2>
                           <p className="text-xl font-black text-white">
                             {formatDate(selectedPeriod.startDate.toISOString())}
@@ -1274,20 +1294,20 @@ export default function TicketCalendarPage() {
                       </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar">
-                      {selectedPeriod.tickets.map((t, i) => (
+                      {selectedPeriod.tickets.map((item, i) => (
                         <div
                           key={i}
                           onClick={() => {
-                            setSelectedTicket(t);
+                            setSelectedTicket(item);
                             setIsModalOpen(true);
                           }}
                           className="group p-5 bg-white/5 rounded-3xl border border-transparent hover:border-blue-500/50 hover:bg-white dark:hover:bg-gray-800 transition-all cursor-pointer flex items-center justify-between"
                         >
                           <div className="flex items-center gap-4">
                             <div
-                              className={`p-3 rounded-2xl ${t.type === "installment" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"}`}
+                              className={`p-3 rounded-2xl ${item.type === "installment" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"}`}
                             >
-                              {t.type === "installment" ? (
+                              {item.type === "installment" ? (
                                 <TicketIcon className="w-5 h-5" />
                               ) : (
                                 <CreditCard className="w-5 h-5" />
@@ -1295,24 +1315,25 @@ export default function TicketCalendarPage() {
                             </div>
                             <div>
                               <p className="text-[10px] font-black text-gray-400 mb-0.5">
-                                {t.type === "installment" ? "TAKSİT" : "ÖDEME"}
+                                {item.type === "installment" ? (t('ticketsCalendar.lblInstallment') || "TAKSİT").toUpperCase() : (t('ticketsCalendar.lblPayment') || "ÖDEME").toUpperCase()}
                               </p>
                               <p className="text-sm font-black text-white">
-                                {t.voucher_no} • {t.agent}
+                                {item.voucher_no} • {item.agent}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-black text-white">
                               {formatCurrency(
-                                t.installment?.amount || t.payment?.amount || 0,
-                                t.installment?.currency ||
-                                  t.payment?.currency ||
+                                item.installment?.amount || item.payment?.amount || 0,
+                                item.installment?.currency ||
+                                  item.payment?.currency ||
+                                  item.currency ||
                                   "TRY",
                               )}
                             </p>
                             <div className="flex items-center justify-end gap-1 text-[8px] font-black text-blue-400 tracking-tighter mt-1">
-                              DETAY <ArrowUpRight className="w-2 h-2" />
+                              {t('common.detail') || "DETAY"} <ArrowUpRight className="w-2 h-2" />
                             </div>
                           </div>
                         </div>

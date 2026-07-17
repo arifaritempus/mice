@@ -1,4 +1,5 @@
 "use client";
+import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { projectOthersService } from "@/lib/supabaseService";
@@ -542,33 +543,22 @@ export default function DigerTab(props: DigerTabProps) {
   }, [filteredOthers]);
 
   return <div className="space-y-4">
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2 whitespace-nowrap">
-          <svg className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-          Diğer Kayıtlar
-        </h2>
-        
-        {/* Search Bar */}
-        <div className="flex-1 w-full max-w-2xl px-4">
-          <div className="relative flex flex-wrap items-center gap-2 px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:border-indigo-500 transition-all">
-            <div className="flex flex-wrap gap-1.5 pl-2 flex-1 items-center">
-              {searchTerms.map(term => <span key={term} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
-                  {term}
-                  <button onClick={() => setSearchTerms(searchTerms.filter(t => t !== term))} className="hover:text-indigo-900 dark:hover:text-indigo-100">
-                    &times;
-                  </button>
-                </span>)}
-              <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={searchTerms.length === 0 ? "Arama yap... (Enter'a basarak ekle)" : "Arama ekle..."} className="flex-1 bg-transparent border-none outline-none text-sm text-gray-800 dark:text-gray-200 min-w-[120px] py-0.5 focus:ring-0 placeholder:text-gray-400" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-            </div>
-            {searchTerms.length > 0 && <button onClick={() => setSearchTerms([])} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pr-1">
-                Temizle
-              </button>}
-          </div>
+      <div className="w-full mb-4">
+        <div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+          <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          {searchTerms.map((term, idx) => <span key={`${term}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
+              {term}
+              <button onClick={() => setSearchTerms(searchTerms.filter(t => t !== term))} className="hover:text-blue-900 dark:hover:text-blue-100 ml-1 transition-colors">
+                <X className="w-3 h-3" />
+              </button>
+            </span>)}
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={searchTerms.length === 0 ? "Diğer ara... (Enter ile çoğalt)" : "Yeni arama..."} className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 min-w-[120px] py-0.5 focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
+          {searchTerms.length > 0 && <button onClick={() => {
+            setSearchTerms([]);
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+            <X className="w-4 h-4" />
+          </button>}
         </div>
-
       </div>
 
       {/* Main Table */}

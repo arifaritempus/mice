@@ -1,6 +1,8 @@
 "use client";
 import { usePermissions, Module } from "@/lib/permissions";
 import React, { useCallback , useEffect} from "react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+
 interface TahsilatTabProps {
   projectId: string;
   salesTotals: {
@@ -52,6 +54,7 @@ interface TahsilatTabProps {
   [key: string]: any;
 }
 export default function TahsilatTab(props: TahsilatTabProps) {
+  const { t } = useLanguage();
   const {
     canEdit,
     isSuperAdmin
@@ -324,7 +327,7 @@ const exportToExcel = async () => {
       window.URL.revokeObjectURL(url);
     } catch (e) {
       console.error("Excel export error:", e);
-      alert("Excel çıktısı alınırken bir hata oluştu.");
+      alert(t('projects.excelExportError') || "Excel çıktısı alınırken bir hata oluştu.");
     }
   };
   const SortIcon = ({
@@ -445,7 +448,7 @@ const exportToExcel = async () => {
       {/* Satış Genel Toplamları */}
       <div className="bg-blue-500 dark:bg-blue-700 rounded-md p-3">
         <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
-          <div className="col-span-3 font-bold">Satış Genel Toplamları</div>
+          <div className="col-span-3 font-bold">{t('projects.salesGrandTotals') || "Satış Genel Toplamları"}</div>
           <div className="col-span-6 text-right font-bold">
             {Object.entries(salesTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(" + ")}
           </div>
@@ -463,7 +466,7 @@ const exportToExcel = async () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="p-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Ödeme Planı
+            {t('projects.paymentPlanTitle') || "Ödeme Planı"}
           </h3>
           
         </div>
@@ -481,15 +484,15 @@ const exportToExcel = async () => {
             </colgroup>
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th onClick={() => handleSortPlan("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TARİH <SortIcon sortConfig={sortConfigPlan} columnKey="date" /></th>
-                <th onClick={() => handleSortPlan("collectionType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TAHSİLAT TİPİ <SortIcon sortConfig={sortConfigPlan} columnKey="collectionType" /></th>
-                <th onClick={() => handleSortPlan("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">AÇIKLAMA <SortIcon sortConfig={sortConfigPlan} columnKey="description" /></th>
-                <th onClick={() => handleSortPlan("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TUTAR <SortIcon sortConfig={sortConfigPlan} columnKey="amount" /></th>
-                <th onClick={() => handleSortPlan("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">DÖVİZ <SortIcon sortConfig={sortConfigPlan} columnKey="currency" /></th>
-                <th onClick={() => handleSortPlan("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">KUR <SortIcon sortConfig={sortConfigPlan} columnKey="exchangeRate" /></th>
-                <th onClick={() => handleSortPlan("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TOPLAM TL <SortIcon sortConfig={sortConfigPlan} columnKey="totalTRY" /></th>
+                <th onClick={() => handleSortPlan("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.dateUpper') || "TARİH"} <SortIcon sortConfig={sortConfigPlan} columnKey="date" /></th>
+                <th onClick={() => handleSortPlan("collectionType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.collectionTypeUpper') || "TAHSİLAT TİPİ"} <SortIcon sortConfig={sortConfigPlan} columnKey="collectionType" /></th>
+                <th onClick={() => handleSortPlan("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.descriptionUpper') || "AÇIKLAMA"} <SortIcon sortConfig={sortConfigPlan} columnKey="description" /></th>
+                <th onClick={() => handleSortPlan("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.amountUpper') || "TUTAR"} <SortIcon sortConfig={sortConfigPlan} columnKey="amount" /></th>
+                <th onClick={() => handleSortPlan("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.currencyUpper') || "DÖVİZ"} <SortIcon sortConfig={sortConfigPlan} columnKey="currency" /></th>
+                <th onClick={() => handleSortPlan("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.exchangeRateUpper') || "KUR"} <SortIcon sortConfig={sortConfigPlan} columnKey="exchangeRate" /></th>
+                <th onClick={() => handleSortPlan("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.totalTRYUpper') || "TOPLAM TL"} <SortIcon sortConfig={sortConfigPlan} columnKey="totalTRY" /></th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
-                  İŞLEMLER
+                  {t('common.actionsUpper') || "İŞLEMLER"}
                 </th>
               </tr>
             </thead>
@@ -522,11 +525,11 @@ const exportToExcel = async () => {
                     resetPlanState();
                   }
                 }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="">Seçin</option>
-                        <option value="banka">Banka Havalesi</option>
-                        <option value="pos">Kredi Kartı / Pos</option>
-                        <option value="cek">Çek / Senet</option>
-                        <option value="nakit">Nakit</option>
+                        <option value="">{t('common.select') || "Seçin"}</option>
+                        <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
+                        <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
+                        <option value="cek">{t('projects.checkPromissoryNote') || "Çek / Senet"}</option>
+                        <option value="nakit">{t('projects.cash') || "Nakit"}</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -541,7 +544,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={planAmountInput} onChange={e => {
@@ -647,12 +650,12 @@ const exportToExcel = async () => {
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button onClick={saveNewPlan} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                        <button onClick={saveNewPlan} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title={t('common.save') || "Kaydet"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                        <button onClick={resetPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -695,11 +698,11 @@ const exportToExcel = async () => {
                     resetPlanState();
                   }
                 }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="">Seçin</option>
-                        <option value="banka">Banka Havalesi</option>
-                        <option value="pos">Kredi Kartı / Pos</option>
-                        <option value="cek">Çek / Senet</option>
-                        <option value="nakit">Nakit</option>
+                        <option value="">{t('common.select') || "Seçin"}</option>
+                        <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
+                        <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
+                        <option value="cek">{t('projects.checkPromissoryNote') || "Çek / Senet"}</option>
+                        <option value="nakit">{t('projects.cash') || "Nakit"}</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -714,7 +717,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={planAmountInput} onChange={e => {
@@ -820,12 +823,12 @@ const exportToExcel = async () => {
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button onClick={() => saveExistingPlan(idx, p)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                        <button onClick={() => saveExistingPlan(idx, p)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title={t('common.save') || "Kaydet"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                        <button onClick={resetPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -844,7 +847,7 @@ const exportToExcel = async () => {
                       {formatDateForDisplay(p.date)}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
-                      {p.collectionType === "banka" ? "Banka Havalesi" : p.collectionType === "pos" ? "Kredi Kartı / Pos" : p.collectionType === "cek" ? "Çek / Senet" : p.collectionType === "nakit" ? "Nakit" : "-"}
+                      {p.collectionType === "banka" ? (t('projects.bankTransfer') || "Banka Havalesi") : p.collectionType === "pos" ? (t('projects.creditCard') || "Kredi Kartı / Pos") : p.collectionType === "cek" ? (t('projects.checkPromissoryNote') || "Çek / Senet") : p.collectionType === "nakit" ? (t('projects.cash') || "Nakit") : "-"}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white max-w-xs truncate" title={p.description}>
                       {p.description}
@@ -870,12 +873,12 @@ const exportToExcel = async () => {
                     });
                     setPlanAmountInput(formatNumberForDisplay(p.amount || 0));
                     setPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
-                  }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30" title="Düzenle">
+                  }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30" title={t('common.edit') || "Düzenle"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button onClick={() => deletePlan(idx, p)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil">
+                        <button onClick={() => deletePlan(idx, p)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title={t('common.delete') || "Sil"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -892,7 +895,7 @@ const exportToExcel = async () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="p-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Tahsilatlar
+            {t('projects.collectionsTitle') || "Tahsilatlar"}
           </h3>
           
         </div>
@@ -910,15 +913,15 @@ const exportToExcel = async () => {
             </colgroup>
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th onClick={() => handleSortActual("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TARİH <SortIcon sortConfig={sortConfigActual} columnKey="date" /></th>
-                <th onClick={() => handleSortActual("collectionType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TAHSİLAT TİPİ <SortIcon sortConfig={sortConfigActual} columnKey="collectionType" /></th>
-                <th onClick={() => handleSortActual("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">AÇIKLAMA <SortIcon sortConfig={sortConfigActual} columnKey="description" /></th>
-                <th onClick={() => handleSortActual("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TUTAR <SortIcon sortConfig={sortConfigActual} columnKey="amount" /></th>
-                <th onClick={() => handleSortActual("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">DÖVİZ <SortIcon sortConfig={sortConfigActual} columnKey="currency" /></th>
-                <th onClick={() => handleSortActual("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">KUR <SortIcon sortConfig={sortConfigActual} columnKey="exchangeRate" /></th>
-                <th onClick={() => handleSortActual("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">TOPLAM TL <SortIcon sortConfig={sortConfigActual} columnKey="totalTRY" /></th>
+                <th onClick={() => handleSortActual("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.dateUpper') || "TARİH"} <SortIcon sortConfig={sortConfigActual} columnKey="date" /></th>
+                <th onClick={() => handleSortActual("collectionType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.collectionTypeUpper') || "TAHSİLAT TİPİ"} <SortIcon sortConfig={sortConfigActual} columnKey="collectionType" /></th>
+                <th onClick={() => handleSortActual("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.descriptionUpper') || "AÇIKLAMA"} <SortIcon sortConfig={sortConfigActual} columnKey="description" /></th>
+                <th onClick={() => handleSortActual("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.amountUpper') || "TUTAR"} <SortIcon sortConfig={sortConfigActual} columnKey="amount" /></th>
+                <th onClick={() => handleSortActual("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.currencyUpper') || "DÖVİZ"} <SortIcon sortConfig={sortConfigActual} columnKey="currency" /></th>
+                <th onClick={() => handleSortActual("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.exchangeRateUpper') || "KUR"} <SortIcon sortConfig={sortConfigActual} columnKey="exchangeRate" /></th>
+                <th onClick={() => handleSortActual("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.totalTRYUpper') || "TOPLAM TL"} <SortIcon sortConfig={sortConfigActual} columnKey="totalTRY" /></th>
                 <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
-                  İŞLEMLER
+                  {t('common.actionsUpper') || "İŞLEMLER"}
                 </th>
               </tr>
             </thead>
@@ -951,11 +954,11 @@ const exportToExcel = async () => {
                     resetCollectionState();
                   }
                 }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="">Seçin</option>
-                        <option value="banka">Banka Havalesi</option>
-                        <option value="pos">Kredi Kartı / Pos</option>
-                        <option value="cek">Çek / Senet</option>
-                        <option value="nakit">Nakit</option>
+                        <option value="">{t('common.select') || "Seçin"}</option>
+                        <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
+                        <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
+                        <option value="cek">{t('projects.checkPromissoryNote') || "Çek / Senet"}</option>
+                        <option value="nakit">{t('projects.cash') || "Nakit"}</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -970,7 +973,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetCollectionState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={collectionAmountInput} onChange={e => {
@@ -1076,12 +1079,12 @@ const exportToExcel = async () => {
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button onClick={saveNewCollection} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                        <button onClick={saveNewCollection} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title={t('common.save') || "Kaydet"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetCollectionState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                        <button onClick={resetCollectionState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -1124,11 +1127,11 @@ const exportToExcel = async () => {
                     resetCollectionState();
                   }
                 }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="">Seçin</option>
-                        <option value="banka">Banka Havalesi</option>
-                        <option value="pos">Kredi Kartı / Pos</option>
-                        <option value="cek">Çek / Senet</option>
-                        <option value="nakit">Nakit</option>
+                        <option value="">{t('common.select') || "Seçin"}</option>
+                        <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
+                        <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
+                        <option value="cek">{t('projects.checkPromissoryNote') || "Çek / Senet"}</option>
+                        <option value="nakit">{t('projects.cash') || "Nakit"}</option>
                       </select>
                     </td>
                     <td className="px-2 py-2">
@@ -1143,7 +1146,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetCollectionState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={collectionAmountInput} onChange={e => {
@@ -1249,12 +1252,12 @@ const exportToExcel = async () => {
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
-                        <button onClick={() => saveExistingCollection(idx, c)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title="Kaydet">
+                        <button onClick={() => saveExistingCollection(idx, c)} className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30" title={t('common.save') || "Kaydet"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetCollectionState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                        <button onClick={resetCollectionState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -1273,7 +1276,7 @@ const exportToExcel = async () => {
                       {formatDateForDisplay(c.date)}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white">
-                      {c.collectionType === "banka" ? "Banka Havalesi" : c.collectionType === "pos" ? "Kredi Kartı / Pos" : c.collectionType === "cek" ? "Çek / Senet" : c.collectionType === "nakit" ? "Nakit" : "-"}
+                      {c.collectionType === "banka" ? (t('projects.bankTransfer') || "Banka Havalesi") : c.collectionType === "pos" ? (t('projects.creditCard') || "Kredi Kartı / Pos") : c.collectionType === "cek" ? (t('projects.checkPromissoryNote') || "Çek / Senet") : c.collectionType === "nakit" ? (t('projects.cash') || "Nakit") : "-"}
                     </td>
                     <td className="px-2 py-2 text-gray-900 dark:text-white max-w-xs truncate" title={c.description}>
                       {c.description}
@@ -1299,12 +1302,12 @@ const exportToExcel = async () => {
                     });
                     setCollectionAmountInput(formatNumberForDisplay(c.amount || 0));
                     setCollectionTotalTRYInput(formatNumberForDisplay(c.totalTRY || 0));
-                  }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30" title="Düzenle">
+                  }} className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30" title={t('common.edit') || "Düzenle"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button onClick={() => deleteCollection(idx, c)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="Sil">
+                        <button onClick={() => deleteCollection(idx, c)} className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title={t('common.delete') || "Sil"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -1323,7 +1326,7 @@ const exportToExcel = async () => {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
           </svg>
-          Bakiye Özeti (Döviz Bazında)
+          {t('projects.balanceSummary') || "Bakiye Özeti (Döviz Bazında)"}
         </h3>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-emerald-100 dark:border-emerald-800/30 overflow-hidden">
           <div className="overflow-x-auto">
@@ -1331,16 +1334,16 @@ const exportToExcel = async () => {
               <thead className="bg-emerald-50/50 dark:bg-emerald-900/40 border-b border-emerald-100 dark:border-emerald-800/50">
                 <tr>
                   <th className="px-3 py-2 text-left font-bold text-emerald-900 dark:text-emerald-100">
-                    DÖVİZ
+                    {t('projects.currencyUpper') || "DÖVİZ"}
                   </th>
                   <th className="px-3 py-2 text-right font-bold text-emerald-900 dark:text-emerald-100">
-                    PLANLANAN
+                    {t('projects.plannedUpper') || "PLANLANAN"}
                   </th>
                   <th className="px-3 py-2 text-right font-bold text-emerald-900 dark:text-emerald-100">
-                    TAHSİL EDİLEN
+                    {t('projects.collectedUpper') || "TAHSİL EDİLEN"}
                   </th>
                   <th className="px-3 py-2 text-right font-bold text-emerald-900 dark:text-emerald-100">
-                    BAKİYE
+                    {t('projects.balanceUpper') || "BAKİYE"}
                   </th>
                 </tr>
               </thead>
@@ -1368,7 +1371,7 @@ const exportToExcel = async () => {
               <tfoot className="bg-emerald-50/30 dark:bg-emerald-900/30 border-t-2 border-emerald-100 dark:border-emerald-800/50">
                 <tr className="font-bold">
                   <td className="px-3 py-2 text-left text-emerald-900 dark:text-emerald-100">
-                    TOPLAM (TRY)
+                    {t('projects.totalTRYUpper') || "TOPLAM (TRY)"}
                   </td>
                   <td className="px-3 py-2 text-right text-emerald-900 dark:text-emerald-100">
                     {formatTRY(salesTotals.totalTRY)}

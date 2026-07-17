@@ -24,6 +24,7 @@ import PaginationControls from "@/components/PaginationControls";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface PartTimeService {
   id: string;
@@ -62,6 +63,7 @@ interface DateRangeFieldProps {
 }
 
 export default function PartTimePage() {
+  const { t, language } = useLanguage();
   const { canView, loading: permissionsLoading } = usePermissions();
   const [partTimeServices, setPartTimeServices] = useState<PartTimeService[]>(
     [],
@@ -226,7 +228,7 @@ export default function PartTimePage() {
       );
       const result = await response.json();
       if (!response.ok || !result?.success) {
-        throw new Error(result?.message || "Part-time verileri alinamadi");
+        throw new Error(result?.message || t('parttime.fetchError') || "Part-time verileri alınamadı");
       }
       setPartTimeServices(Array.isArray(result.data) ? result.data : []);
       setTotalCount(Number(result.total || 0));
@@ -292,7 +294,7 @@ export default function PartTimePage() {
       const ExcelJS = (await import("exceljs")).default;
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet(
-        `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Part-Time Hizmetler`,
+        `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - ${t('parttime.excelFilenameSuffix') || "Part-Time Hizmetler"}`,
       );
       sheet.pageSetup = {
         orientation: "landscape",
@@ -346,7 +348,7 @@ export default function PartTimePage() {
         });
         sheet.addImage(iconId, {
           tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+          ext: { width: 120, height: 60 } as any,
         } as any);
       }
       if (wordmarkLogoBase64) {
@@ -356,26 +358,26 @@ export default function PartTimePage() {
         });
         sheet.addImage(markId, {
           tl: { col: 11.5, row: 0.23 },
-          ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
+          ext: { width: 120, height: 60 } as any,
         } as any);
       }
 
       // Sütun tanımları
       sheet.columns = [
-        { header: "Voucher", key: "voucher_number", width: 16 },
-        { header: "Tarih", key: "check_in_date", width: 14 },
-        { header: "Tür", key: "customer_type", width: 12 },
-        { header: "C-IN / C-OUT", key: "check_in_out", width: 20 },
-        { header: "Firma Adı", key: "company_name", width: 20 },
-        { header: "Acente/Müşteri", key: "customer_name", width: 20 },
-        { header: "Otel", key: "hotel_name", width: 18 },
-        { header: "Hizmet Türü", key: "service_type", width: 18 },
-        { header: "Tedarikçi", key: "supplier", width: 18 },
-        { header: "Çalışan Adı", key: "employee_name", width: 18 },
-        { header: "Maliyet", key: "cost_price", width: 12 },
-        { header: "Döviz", key: "currency", width: 8 },
-        { header: "Kur", key: "fx", width: 10 },
-        { header: "Toplam TL", key: "totalTRY", width: 12 },
+        { header: t('parttime.colVoucher') || "Voucher", key: "voucher_number", width: 16 },
+        { header: t('parttime.colDate') || "Tarih", key: "check_in_date", width: 14 },
+        { header: t('parttime.colType') || "Tür", key: "customer_type", width: 12 },
+        { header: t('parttime.colCheckInOut') || "C-IN / C-OUT", key: "check_in_out", width: 20 },
+        { header: t('parttime.colCompanyName') || "Firma Adı", key: "company_name", width: 20 },
+        { header: t('parttime.colAgencyCustomer') || "Acente/Müşteri", key: "customer_name", width: 20 },
+        { header: t('parttime.colHotel') || "Otel", key: "hotel_name", width: 18 },
+        { header: t('parttime.colServiceType') || "Hizmet Türü", key: "service_type", width: 18 },
+        { header: t('parttime.colSupplier') || "Tedarikçi", key: "supplier", width: 18 },
+        { header: t('parttime.colEmployee') || "Çalışan Adı", key: "employee_name", width: 18 },
+        { header: t('parttime.colCost') || "Maliyet", key: "cost_price", width: 12 },
+        { header: t('parttime.colCurrency') || "Döviz", key: "currency", width: 8 },
+        { header: t('parttime.colFx') || "Kur", key: "fx", width: 10 },
+        { header: t('parttime.colTotalTRY') || "Toplam TL", key: "totalTRY", width: 12 },
       ];
 
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
@@ -454,11 +456,11 @@ export default function PartTimePage() {
       link.click();
       window.URL.revokeObjectURL(url);
 
-      setSuccess("Part-Time hizmetler Excel dosyası olarak indirildi!");
+      setSuccess(t('parttime.exportSuccess') || "Part-Time hizmetler Excel dosyası olarak indirildi!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error("Excel export hatası:", error);
-      setError("Excel dosyası oluşturulurken bir hata oluştu!");
+      setError(t('parttime.exportError') || "Excel dosyası oluşturulurken bir hata oluştu!");
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -550,7 +552,7 @@ export default function PartTimePage() {
   ]);
 
   if (permissionsLoading) {
-    return <LoadingSpinner message="Yükleniyor..." />;
+    return <LoadingSpinner message={t('parttime.loading') || "Yükleniyor..."} />;
   }
 
   if (!canView(Module.PART_TIME)) {
@@ -558,16 +560,16 @@ export default function PartTimePage() {
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Yetki Gerekli
+            {t('parttime.authRequired') || "Yetki Gerekli"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Bu sayfaya erişim yetkiniz bulunmuyor.
+            {t('parttime.noPermission') || "Bu sayfaya erişim yetkiniz bulunmuyor."}
           </p>
           <a
             href="/operations"
             className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
           >
-            Operasyonlara Dön
+            {t('parttime.backToOps') || "Operasyonlara Dön"}
           </a>
         </div>
       </div>
@@ -575,7 +577,7 @@ export default function PartTimePage() {
   }
 
   if (!initialFetchDone && loading) {
-    return <LoadingSpinner message="Part-time kayıtları yükleniyor..." />;
+    return <LoadingSpinner message={t('parttime.loadingData') || "Part-time kayıtları yükleniyor..."} />;
   }
 
   return (
@@ -586,10 +588,10 @@ export default function PartTimePage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Yarı Zamanlı Çalışan Yönetimi
+              {t('parttime.title') || "Yarı Zamanlı Çalışan Yönetimi"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin
+              {t('parttime.description') || "MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin"}
             </p>
           </div>
 
@@ -598,7 +600,7 @@ export default function PartTimePage() {
             {/* Dates */}
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Hizmet Tarihi"
+                label={t('parttime.filterDate') || "Hizmet Tarihi"}
                 startValue={dateRange.startDate}
                 endValue={dateRange.endDate}
                 onStartChange={(v) => setDraftStart(v)}
@@ -610,7 +612,7 @@ export default function PartTimePage() {
             {/* Search */}
             <div className="flex-1 min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Voucher, Çalışan, Otel vb.)"
+                label={t('parttime.searchPlaceholder') || "Genel Arama (Voucher, Çalışan, Otel vb.)"}
                 tokens={voucherTokens}
                 inputValue={voucherInput}
                 suggestions={voucherSuggestions}
@@ -622,29 +624,7 @@ export default function PartTimePage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                type="button"
-                onClick={clearPartTimeFilters}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -652,7 +632,7 @@ export default function PartTimePage() {
                 type="button"
                 onClick={exportPartTimeToExcel}
                 className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
-                title="Excel İndir"
+                title={t('parttime.exportExcel') || "Excel İndir"}
               >
                 <svg
                   className="w-4 h-4"
@@ -667,7 +647,7 @@ export default function PartTimePage() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Excel İndir
+                {t('parttime.exportExcel') || "Excel İndir"}
               </button>
             </div>
           </div>
@@ -677,7 +657,7 @@ export default function PartTimePage() {
         <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
-              KAYNAK:
+              {t('parttime.source') || "KAYNAK:"}
             </span>
             <button
               onClick={() => {
@@ -686,7 +666,7 @@ export default function PartTimePage() {
               }}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>TÜMÜ</span>
+              <span className="uppercase">{t('parttime.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
             </button>
             <button
@@ -696,7 +676,7 @@ export default function PartTimePage() {
               }}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>MICE</span>
+              <span className="uppercase">{t('parttime.tabMice') || "MICE"}</span>
               <span className="font-bold">{typeCounts.mice}</span>
             </button>
             <button
@@ -706,7 +686,7 @@ export default function PartTimePage() {
               }}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>SEJOUR</span>
+              <span className="uppercase">{t('parttime.tabSejour') || "SEJOUR"}</span>
               <span className="font-bold">{typeCounts.sejour}</span>
             </button>
           </div>
@@ -723,7 +703,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("voucher_number")}
                   >
-                    Voucher No
+                    {t('parttime.colVoucher') || "Voucher No"}
                     {sortField === "voucher_number" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -734,7 +714,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("check_in_date")}
                   >
-                    Tarih
+                    {t('parttime.colDate') || "Tarih"}
                     {sortField === "check_in_date" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -745,7 +725,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("customer_type")}
                   >
-                    Tür
+                    {t('parttime.colType') || "Tür"}
                     {sortField === "customer_type" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -756,7 +736,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("check_in_date")}
                   >
-                    C-IN / C-OUT
+                    {t('parttime.colCheckInOut') || "C-IN / C-OUT"}
                     {sortField === "check_in_date" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -767,7 +747,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("company_name")}
                   >
-                    FİRMA ADI
+                    {t('parttime.colCompanyName') || "FİRMA ADI"}
                     {sortField === "company_name" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -778,7 +758,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("customer_name")}
                   >
-                    ACENTE/MÜŞTERİ
+                    {t('parttime.colAgencyCustomer') || "ACENTE/MÜŞTERİ"}
                     {sortField === "customer_name" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -789,7 +769,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("hotel_name")}
                   >
-                    Otel
+                    {t('parttime.colHotel') || "OTEL"}
                     {sortField === "hotel_name" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -800,7 +780,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("service_type")}
                   >
-                    Hizmet Türü
+                    {t('parttime.colServiceType') || "HİZMET TÜRÜ"}
                     {sortField === "service_type" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -811,7 +791,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("supplier")}
                   >
-                    Tedarikçi
+                    {t('parttime.colSupplier') || "TEDARİKÇİ"}
                     {sortField === "supplier" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -822,7 +802,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("employee_name")}
                   >
-                    Çalışan Adı
+                    {t('parttime.colEmployee') || "ÇALIŞAN ADI"}
                     {sortField === "employee_name" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -833,7 +813,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("cost_price")}
                   >
-                    Maliyet
+                    {t('parttime.colCost') || "MALİYET"}
                     {sortField === "cost_price" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -844,7 +824,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("cost_currency")}
                   >
-                    Döviz
+                    {t('parttime.colCurrency') || "DÖVİZ"}
                     {sortField === "cost_currency" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -855,7 +835,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("fx")}
                   >
-                    Kur
+                    {t('parttime.colFx') || "KUR"}
                     {sortField === "fx" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -866,7 +846,7 @@ export default function PartTimePage() {
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
                     onClick={() => handleSort("totalTRY")}
                   >
-                    Toplam TL
+                    {t('parttime.colTotalTRY') || "TOPLAM TL"}
                     {sortField === "totalTRY" && (
                       <span className="ml-1">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -973,7 +953,7 @@ export default function PartTimePage() {
                       colSpan={20}
                       className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                     >
-                      Filtrelere uygun kayıt bulunamadı.
+                      {t('parttime.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>
                   </tr>
                 )}

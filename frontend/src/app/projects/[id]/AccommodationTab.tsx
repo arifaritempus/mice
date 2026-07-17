@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useCallback, memo , useEffect} from "react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface AccommodationTabProps {
   accommodationItems: any[];
@@ -259,6 +260,7 @@ export default function AccommodationTab({
   canEdit = true,
   canDelete = true,
 }: AccommodationTabProps) {
+  const { t } = useLanguage();
   // Konaklama verilerini optimize et - çok basit hesaplama
   const accommodationStats = useMemo(() => {
     if (!accommodationItems || accommodationItems.length === 0) {
@@ -365,7 +367,7 @@ export default function AccommodationTab({
     <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-          Konaklama
+          {t('projects.accommodation') || "Konaklama"}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -380,21 +382,21 @@ export default function AccommodationTab({
               htmlFor="accommodation-import"
               className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 cursor-pointer transition-colors"
             >
-              Excel İçe Aktar
+              {t('projects.importExcel') || "Excel İçe Aktar"}
             </label>
           )}
           <button
             onClick={handleAccommodationExport}
             className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90 transition-colors"
           >
-            Excel Dışa Aktar
+            {t('projects.exportExcel') || "Excel Dışa Aktar"}
           </button>
           {canDelete && accommodationItems.length > 0 && (
             <button
               onClick={handleAccommodationClear}
               className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
             >
-              Listeyi Temizle
+              {t('projects.clearList') || "Listeyi Temizle"}
             </button>
           )}
         </div>
@@ -409,7 +411,7 @@ export default function AccommodationTab({
                 type="text"
                 value={accommodationSearch}
                 onChange={(e) => setAccommodationSearch(e.target.value)}
-                placeholder="Listede ara (tüm sütunlar)"
+                placeholder={t('projects.searchListAllColumns') || "Listede ara (tüm sütunlar)"}
                 className="w-full md:w-[36rem] px-3 py-2 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -417,16 +419,29 @@ export default function AccommodationTab({
               <table className="w-full text-xs">
                 <thead className="bg-gray-100 dark:bg-gray-700">
                   <tr>
-                    {FIXED_HEADERS.map((header, index) => (
-                      <th
-                        key={`header-${index}-${header}`}
-                        className="px-3 py-2 text-left font-semibold"
-                      >
-                        {header}
-                      </th>
-                    ))}
+                    {FIXED_HEADERS.map((header, index) => {
+                      let trans = header;
+                      if (header === "ODA #") trans = t('projects.roomNo') || header;
+                      else if (header === "ODA TİPİ") trans = t('projects.roomType') || header;
+                      else if (header === "İSİM") trans = t('common.firstName') || header;
+                      else if (header === "SOYİSİM") trans = t('common.lastName') || header;
+                      else if (header === "GİRİŞ TARİHİ") trans = t('projects.checkInDate') || header;
+                      else if (header === "ÇIKIŞ TARİHİ") trans = t('projects.checkOutDate') || header;
+                      else if (header === "OTEL") trans = t('projects.hotel') || header;
+                      else if (header === "UÇAK") trans = t('projects.flight') || header;
+                      else if (header === "TOPLAM") trans = t('projects.total') || header;
+                      else if (header === "DÖVİZ") trans = t('projects.currency') || header;
+                      return (
+                        <th
+                          key={`header-${index}-${header}`}
+                          className="px-3 py-2 text-left font-semibold"
+                        >
+                          {trans}
+                        </th>
+                      );
+                    })}
                     <th className="px-3 py-2 text-center font-semibold">
-                      İşlemler
+                      {t('common.actions') || "İşlemler"}
                     </th>
                   </tr>
                 </thead>
@@ -822,14 +837,14 @@ export default function AccommodationTab({
                                   onClick={handleAccommodationSave}
                                   className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 mr-1"
                                 >
-                                  Kaydet
+                                  {t('common.save') || "Kaydet"}
                                 </button>
                               )}
                               <button
                                 onClick={handleAccommodationCancel}
                                 className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
                               >
-                                İptal
+                                {t('common.cancel') || "İptal"}
                               </button>
                             </td>
                           </>
@@ -893,7 +908,7 @@ export default function AccommodationTab({
                                   onClick={() => handleAccommodationEdit(index)}
                                   className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-500/90 mr-1"
                                 >
-                                  Düzenle
+                                  {t('common.edit') || "Düzenle"}
                                 </button>
                               )}
                               {canDelete && (
@@ -903,7 +918,7 @@ export default function AccommodationTab({
                                   }
                                   className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                                 >
-                                  Sil
+                                  {t('common.delete') || "Sil"}
                                 </button>
                               )}
                             </td>
@@ -922,13 +937,13 @@ export default function AccommodationTab({
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Günlük Inhouse Kontrolü
+                  {t('projects.dailyInhouseControl') || "Günlük Inhouse Kontrolü"}
                 </h3>
               </div>
               <div className="p-4">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Toplam Oda: {accommodationStats.grandTotalRooms} | Toplam Pax:{" "}
-                  {accommodationStats.grandTotalPax} | Tarih Sayısı:{" "}
+                  {t('projects.totalRooms') || "Toplam Oda:"} {accommodationStats.grandTotalRooms} | {t('projects.totalPax') || "Toplam Pax:"}{" "}
+                  {accommodationStats.grandTotalPax} | {t('projects.dateCount') || "Tarih Sayısı:"}{" "}
                   {accommodationStats.allDates.length}
                 </p>
               </div>
@@ -938,7 +953,7 @@ export default function AccommodationTab({
       ) : (
         <div className="text-center py-8">
           <p className="text-xs text-gray-600 dark:text-gray-300">
-            Henüz konaklama verisi yok. Excel dosyasından içe aktarabilirsiniz.
+            {t('projects.noAccommodationData') || "Henüz konaklama verisi yok. Excel dosyasından içe aktarabilirsiniz."}
           </p>
         </div>
       )}

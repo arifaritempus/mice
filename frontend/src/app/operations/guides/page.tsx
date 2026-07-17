@@ -15,6 +15,7 @@ import PaginationControls from "@/components/PaginationControls";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { DEFAULT_PAGE_SIZE, paginateItems } from "@/types/pagination";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface Guide {
   id: string;
@@ -44,6 +45,7 @@ interface Guide {
 }
 
 export default function GuidesPage() {
+  const { t } = useLanguage();
   const { canView, loading: permissionsLoading } = usePermissions();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -475,19 +477,19 @@ export default function GuidesPage() {
         startDate: dateRange.startDate || "",
         endDate: dateRange.endDate || "",
         voucherTerms: JSON.stringify(
-          voucherInput ? [...voucherTerms, voucherInput] : voucherTerms,
+          voucherInput ? [...voucherTokens, voucherInput] : voucherTokens,
         ),
         customerTerms: JSON.stringify(
-          customerInput ? [...customerTerms, customerInput] : customerTerms,
+          customerInput ? [...customerTokens, customerInput] : customerTokens,
         ),
         hotelTerms: JSON.stringify(
-          hotelInput ? [...hotelTerms, hotelInput] : hotelTerms,
+          hotelInput ? [...hotelTokens, hotelInput] : hotelTokens,
         ),
         supplierTerms: JSON.stringify(
-          supplierInput ? [...supplierTerms, supplierInput] : supplierTerms,
+          supplierInput ? [...supplierTokens, supplierInput] : supplierTokens,
         ),
         guideTerms: JSON.stringify(
-          guideInput ? [...guideTerms, guideInput] : guideTerms,
+          guideInput ? [...guideTokens, guideInput] : guideTokens,
         ),
       });
       const response = await fetch(
@@ -496,7 +498,7 @@ export default function GuidesPage() {
       const result = await response.json();
       if (!response.ok || !result?.success) {
         throw new Error(
-          result?.message || "Kokartli rehber verileri alinamadi",
+          result?.message || t('guides.fetchError') || "Kokartlı rehber verileri alınamadı",
         );
       }
       setGuides(Array.isArray(result.data) ? result.data : []);
@@ -580,7 +582,7 @@ export default function GuidesPage() {
       const ExcelJS = (await import("exceljs")).default;
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet(
-        `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - Kokartlı Rehberler`,
+        `${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} - ${t('guides.excelFilenameSuffix') || "Kokartlı Rehberler"}`,
       );
       sheet.pageSetup = {
         orientation: "landscape",
@@ -634,7 +636,7 @@ export default function GuidesPage() {
         });
         sheet.addImage(iconId, {
           tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+          ext: { width: 120, height: 60 } as any,
         } as any);
       }
       if (wordmarkLogoBase64) {
@@ -644,26 +646,26 @@ export default function GuidesPage() {
         });
         sheet.addImage(markId, {
           tl: { col: 11.8, row: 0.23 },
-          ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
+          ext: { width: 120, height: 60 } as any,
         } as any);
       }
 
       // Sütun tanımları
       sheet.columns = [
-        { header: "Voucher", key: "voucher_number", width: 18 },
-        { header: "Tarih", key: "check_in_date", width: 12 },
-        { header: "Tür", key: "customer_type", width: 10 },
-        { header: "C-IN / C-OUT", key: "check_in_out", width: 22 },
-        { header: "Firma Adı", key: "company_name", width: 25 },
-        { header: "Acente/Müşteri", key: "customer_name", width: 25 },
-        { header: "Otel", key: "hotel_name", width: 20 },
-        { header: "Hizmet Türü", key: "service_type", width: 18 },
-        { header: "Tedarikçi", key: "supplier", width: 20 },
-        { header: "Rehber Adı", key: "guide_name", width: 20 },
-        { header: "Maliyet", key: "cost_price", width: 14 },
-        { header: "Döviz", key: "currency", width: 8 },
-        { header: "Kur", key: "fx", width: 10 },
-        { header: "Toplam TL", key: "totalTRY", width: 14 },
+        { header: t('guides.colVoucher') || "Voucher", key: "voucher_number", width: 18 },
+        { header: t('guides.colDate') || "Tarih", key: "check_in_date", width: 12 },
+        { header: t('guides.colType') || "Tür", key: "customer_type", width: 10 },
+        { header: t('guides.colCheckInOut') || "C-IN / C-OUT", key: "check_in_out", width: 22 },
+        { header: t('guides.colCompanyName') || "Firma Adı", key: "company_name", width: 25 },
+        { header: t('guides.colAgencyCustomer') || "Acente/Müşteri", key: "customer_name", width: 25 },
+        { header: t('guides.colHotel') || "Otel", key: "hotel_name", width: 20 },
+        { header: t('guides.colServiceType') || "Hizmet Türü", key: "service_type", width: 18 },
+        { header: t('guides.colSupplier') || "Tedarikçi", key: "supplier", width: 20 },
+        { header: t('guides.colGuideName') || "Rehber Adı", key: "guide_name", width: 20 },
+        { header: t('guides.colCost') || "Maliyet", key: "cost_price", width: 14 },
+        { header: t('guides.colCurrency') || "Döviz", key: "currency", width: 8 },
+        { header: t('guides.colFx') || "Kur", key: "fx", width: 10 },
+        { header: t('guides.colTotalTRY') || "Toplam TL", key: "totalTRY", width: 14 },
       ];
 
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
@@ -744,11 +746,11 @@ export default function GuidesPage() {
       link.click();
       window.URL.revokeObjectURL(url);
 
-      setSuccess("Kokartlı rehberler Excel dosyası olarak indirildi!");
+      setSuccess(t('guides.exportSuccess') || "Kokartlı rehberler Excel dosyası olarak indirildi!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error("Excel export hatası:", error);
-      setError("Excel dosyası oluşturulurken bir hata oluştu!");
+      setError(t('guides.exportError') || "Excel indirme sırasında bir hata oluştu.");
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -823,7 +825,7 @@ export default function GuidesPage() {
   ]);
 
   if (permissionsLoading) {
-    return <LoadingSpinner message="Yükleniyor..." />;
+    return <LoadingSpinner message={t('guides.loading') || "Yükleniyor..."} />;
   }
 
   if (!canView(Module.GUIDES)) {
@@ -831,16 +833,16 @@ export default function GuidesPage() {
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Yetki Gerekli
+            {t('guides.authRequired') || "Yetki Gerekli"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Bu sayfaya erişim yetkiniz bulunmuyor.
+            {t('guides.authMessage') || "Bu sayfaya erişim yetkiniz bulunmuyor."}
           </p>
           <a
             href="/operations"
             className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
           >
-            Operasyonlara Dön
+            {t('guides.authReturn') || "Operasyonlara Dön"}
           </a>
         </div>
       </div>
@@ -848,7 +850,7 @@ export default function GuidesPage() {
   }
 
   if (!initialFetchDone && loading) {
-    return <LoadingSpinner message="Kokartlı rehberler yükleniyor..." />;
+    return <LoadingSpinner message={t('guides.loadingGuides') || "Kokartlı rehberler yükleniyor..."} />;
   }
 
   return (
@@ -859,10 +861,10 @@ export default function GuidesPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Kokartlı Rehber Yönetimi
+              {t('guides.title') || "Kokartlı Rehber Yönetimi"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              MICE ve Sejour rehber operasyonlarını tek ekrandan yönetin
+              {t('guides.description') || "MICE ve Sejour rehber operasyonlarını tek ekrandan yönetin"}
             </p>
           </div>
 
@@ -871,7 +873,7 @@ export default function GuidesPage() {
             {/* Dates */}
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Hizmet Tarihi"
+                label={t('guides.filterServiceDate') || "Hizmet Tarihi"}
                 startValue={dateRange.startDate}
                 endValue={dateRange.endDate}
                 onStartChange={(v) => setDraftStart(v)}
@@ -883,7 +885,7 @@ export default function GuidesPage() {
             {/* Search */}
             <div className="flex-1 min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Voucher, Rehber, Otel vb.)"
+                label={t('guides.searchPlaceholder') || "Genel Arama (Voucher, Rehber, Otel vb.)"}
                 tokens={voucherTokens}
                 inputValue={voucherInput}
                 suggestions={voucherSuggestions}
@@ -895,29 +897,7 @@ export default function GuidesPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                type="button"
-                onClick={clearGuidesFilters}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -925,7 +905,7 @@ export default function GuidesPage() {
                 type="button"
                 onClick={exportGuidesToExcel}
                 className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
-                title="Excel İndir"
+                title={t('guides.exportExcel') || "Excel İndir"}
               >
                 <svg
                   className="w-4 h-4"
@@ -940,7 +920,7 @@ export default function GuidesPage() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Excel İndir
+                {t('guides.exportExcel') || "Excel İndir"}
               </button>
             </div>
           </div>
@@ -950,7 +930,7 @@ export default function GuidesPage() {
         <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
-              KAYNAK:
+              {t('guides.source') || "KAYNAK:"}
             </span>
             <button
               onClick={() => {
@@ -959,7 +939,7 @@ export default function GuidesPage() {
               }}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>TÜMÜ</span>
+              <span>{t('guides.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
             </button>
             <button
@@ -969,7 +949,7 @@ export default function GuidesPage() {
               }}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>MICE</span>
+              <span>{t('guides.tabMice') || "MICE"}</span>
               <span className="font-bold">{typeCounts.mice}</span>
             </button>
             <button
@@ -977,9 +957,9 @@ export default function GuidesPage() {
                 setFilter("sejour");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-teal-500/20 border border-teal-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>SEJOUR</span>
+              <span>{t('guides.tabSejour') || "SEJOUR"}</span>
               <span className="font-bold">{typeCounts.sejour}</span>
             </button>
           </div>
@@ -998,7 +978,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("voucher_number")}
                   >
                     <div className="flex items-center">
-                      Voucher
+                      {t('guides.colVoucher') || "Voucher"}
                       {sortField === "voucher_number" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1021,7 +1001,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("check_in_date")}
                   >
                     <div className="flex items-center">
-                      Tarih
+                      {t('guides.colDate') || "Tarih"}
                       {sortField === "check_in_date" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1044,7 +1024,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("customer_type")}
                   >
                     <div className="flex items-center">
-                      Tür
+                      {t('guides.colType') || "Tür"}
                       {sortField === "customer_type" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1064,25 +1044,9 @@ export default function GuidesPage() {
                   </th>
                   <th
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
-                    onClick={() => handleSort("check_in_date")}
                   >
                     <div className="flex items-center">
-                      C-IN / C-OUT
-                      {sortField === "check_in_date" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
+                      {t('guides.colCheckInOut') || "C-IN / C-OUT"}
                     </div>
                   </th>
                   <th
@@ -1090,7 +1054,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("company_name")}
                   >
                     <div className="flex items-center">
-                      Firma Adı
+                      {t('guides.colCompanyName') || "Firma Adı"}
                       {sortField === "company_name" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1113,7 +1077,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("customer_name")}
                   >
                     <div className="flex items-center">
-                      Acente/Müşteri
+                      {t('guides.colAgencyCustomer') || "Acente/Müşteri"}
                       {sortField === "customer_name" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1136,7 +1100,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("hotel_name")}
                   >
                     <div className="flex items-center">
-                      Otel
+                      {t('guides.colHotel') || "Otel"}
                       {sortField === "hotel_name" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1159,7 +1123,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("service_type")}
                   >
                     <div className="flex items-center">
-                      Hizmet Türü
+                      {t('guides.colServiceType') || "Hizmet Türü"}
                       {sortField === "service_type" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1182,7 +1146,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("supplier")}
                   >
                     <div className="flex items-center">
-                      Tedarikçi
+                      {t('guides.colSupplier') || "Tedarikçi"}
                       {sortField === "supplier" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1205,7 +1169,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("guide_name")}
                   >
                     <div className="flex items-center">
-                      Rehber Adı
+                      {t('guides.colGuideName') || "Rehber Adı"}
                       {sortField === "guide_name" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1228,7 +1192,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("cost_price")}
                   >
                     <div className="flex items-center">
-                      Maliyet
+                      {t('guides.colCost') || "Maliyet"}
                       {sortField === "cost_price" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1251,7 +1215,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("currency")}
                   >
                     <div className="flex items-center">
-                      Döviz
+                      {t('guides.colCurrency') || "Döviz"}
                       {sortField === "currency" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1274,7 +1238,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("fx")}
                   >
                     <div className="flex items-center">
-                      Kur
+                      {t('guides.colFx') || "Kur"}
                       {sortField === "fx" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1297,7 +1261,7 @@ export default function GuidesPage() {
                     onClick={() => handleSort("totalTRY")}
                   >
                     <div className="flex items-center">
-                      Toplam TL
+                      {t('guides.colTotalTRY') || "Toplam TL"}
                       {sortField === "totalTRY" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1399,7 +1363,7 @@ export default function GuidesPage() {
                       colSpan={20}
                       className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                     >
-                      Filtrelere uygun kayıt bulunamadı.
+                      {t('guides.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>
                   </tr>
                 )}

@@ -4,6 +4,7 @@ import { useMemo, useRef , useEffect} from "react";
 import { usePermissions, Module, Permission } from "@/lib/permissions";
 import FieldsetGuard from "@/components/permissions/FieldsetGuard";
 import PermissionBoundary from "@/components/permissions/PermissionBoundary";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface SalesTabProps {
   itemsSales: any[];
@@ -114,6 +115,7 @@ export default function SalesTab({
   hotels = [],
 }: SalesTabProps) {
   const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
+  const { t } = useLanguage();
   const categoryModalRefSales = useRef<HTMLDivElement>(null);
 
   const getHotelNameFromData = (hotelId: string) => {
@@ -140,7 +142,7 @@ export default function SalesTab({
     <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-          Satış
+          {t('projects.sales') || "Satış"}
         </h2>
         
       </div>
@@ -149,25 +151,25 @@ export default function SalesTab({
         <div className="min-w-max md:min-w-full">
           {/* Başlık satırı */}
           <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-gray-800 dark:text-gray-200">
-            <div className="w-44">KATEGORİ</div>
+            <div className="w-44">{t('projects.category') || "KATEGORİ"}</div>
             <div className="w-16 flex flex-col justify-center items-end pr-1">
-              <div>BİRİM</div>
-              <div>ADET</div>
+              <div>{t('projects.unit') || "BİRİM"}</div>
+              <div>{t('projects.quantity') || "ADET"}</div>
             </div>
             <div className="w-20 flex flex-col justify-center items-end pr-1">
-              <div>SEFER</div>
-              <div>TEKRAR</div>
+              <div>{t('projects.flight') || "SEFER"}</div>
+              <div>{t('projects.repeat') || "TEKRAR"}</div>
             </div>
-            <div className="w-24 text-right pr-1">BİRİM FİYAT</div>
-            <div className="w-28 text-right pr-1">TOPLAM FİYAT</div>
-            <div className="w-16">DÖVİZ</div>
-            <div className="w-16">KDV</div>
-            <div className="w-16 text-right pr-1">KUR</div>
-            <div className="w-32 text-right pr-1">TOPLAM TL</div>
-            <div className="flex-1 min-w-[10rem]">AÇIKLAMA</div>
-            <div className="w-36">OTEL</div>
+            <div className="w-24 text-right pr-1">{t('projects.unitPrice') || "BİRİM FİYAT"}</div>
+            <div className="w-28 text-right pr-1">{t('projects.totalPrice') || "TOPLAM FİYAT"}</div>
+            <div className="w-16">{t('projects.currency') || "DÖVİZ"}</div>
+            <div className="w-16">{t('projects.vat') || "KDV"}</div>
+            <div className="w-16 text-right pr-1">{t('projects.exchangeRate') || "KUR"}</div>
+            <div className="w-32 text-right pr-1">{t('projects.totalTry') || "TOPLAM TL"}</div>
+            <div className="flex-1 min-w-[10rem]">{t('projects.descriptionField') || "AÇIKLAMA"}</div>
+            <div className="w-36">{t('projects.hotel') || "OTEL"}</div>
             <div className="w-24 flex items-center justify-between">
-              <span>İŞLEMLER</span>
+              <span>{t('common.actionsUpper') || "İŞLEMLER"}</span>
               {permCreate(Module.PROJECTS) && !isLocked && (
               <button
                 onClick={() => {
@@ -177,7 +179,7 @@ export default function SalesTab({
                   setShowCategoryModalSales(true);
                 }}
                 className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                title="Kategori Seç ve Ekle"
+                title={t('projects.selectAndAddCategory') || "Kategori Seç ve Ekle"}
               >
                 <svg
                   className="w-4 h-4"
@@ -238,7 +240,7 @@ export default function SalesTab({
                     }}
                     className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="">Ana Kategori Seç</option>
+                    <option value="">{t('projects.selectMainCategory') || "Ana Kategori Seç"}</option>
                     {categories
                       .filter((c: any) => c.parent_id === null)
                       .map((c: any) => (
@@ -275,7 +277,7 @@ export default function SalesTab({
                         ? "text-green-600 hover:text-green-800"
                         : "text-gray-400 cursor-not-allowed"
                     }`}
-                    title="Kaydet"
+                    title={t('common.save') || "Kaydet"}
                   >
                     <svg
                       className="w-3 h-3"
@@ -526,7 +528,7 @@ export default function SalesTab({
                 {/* Modal Footer */}
                 <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedCategoriesSales.size} kategori seçildi
+                    {selectedCategoriesSales.size} {t('projects.categoriesSelected') || "kategori seçildi"}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -536,14 +538,14 @@ export default function SalesTab({
                       }}
                       className="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
                     >
-                      İptal
+                      {t('common.cancel') || "İptal"}
                     </button>
                     <button
                       onClick={() => handleAddSelectedCategories("sales")}
                       disabled={selectedCategoriesSales.size === 0}
                       className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                      Seçili Kategorileri Ekle ({selectedCategoriesSales.size})
+                      {t('projects.addSelectedCategories') || "Seçili Kategorileri Ekle"} ({selectedCategoriesSales.size})
                     </button>
                   </div>
                 </div>
@@ -577,7 +579,7 @@ export default function SalesTab({
                     className="mt-1 bg-gray-100 dark:bg-gray-700 rounded-md p-2"
                   >
                     <div className="flex flex-nowrap items-center gap-2 text-xs font-semibold text-gray-800 dark:text-gray-200">
-                      <div className="w-44">ARA TOPLAM</div>
+                      <div className="w-44">{t('projects.subTotal') || "ARA TOPLAM"}</div>
                       <div className="w-16 flex flex-col justify-center items-end pr-1"></div>
                       <div className="w-20 flex flex-col justify-center items-end pr-1"></div>
                       <div className="w-24 text-right pr-1"></div>
@@ -631,7 +633,7 @@ export default function SalesTab({
                         }}
                         className="w-44 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       >
-                        <option value="">Alt Kategori</option>
+                        <option value="">{t('projects.subCategory') || "Alt Kategori"}</option>
                         {categories
                           .filter((c: any) => c.parent_id === it.main_category)
                           .map((c: any) => (
@@ -917,7 +919,7 @@ export default function SalesTab({
                           }
                         }}
                         className="flex-1 min-w-[10rem] px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                        placeholder="Açıklama"
+                        placeholder={t('projects.descriptionField') || "Açıklama"}
                       />
                       <div className="w-24 flex items-center gap-1 justify-end pr-1">
                         <button
@@ -926,7 +928,7 @@ export default function SalesTab({
                             saveItems("sales", [updated]);
                           }}
                           className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                          title="Kaydet"
+                          title={t('common.save') || "Kaydet"}
                         >
                           <svg
                             className="w-4 h-4"
@@ -946,7 +948,7 @@ export default function SalesTab({
 <button
                           onClick={() => removeItem("sales", it.id)}
                           className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                          title="Sil"
+                          title={t('common.delete') || "Sil"}
                         >
                           <svg
                             className="w-4 h-4"
@@ -1006,7 +1008,7 @@ export default function SalesTab({
                           <button
                             onClick={() => addBelow("sales", it.id)}
                             className="p-1 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                            title="Satır Ekle"
+                            title={t('projects.addRow') || "Satır Ekle"}
                           >
                             <svg
                               className="w-4 h-4"
@@ -1028,7 +1030,7 @@ export default function SalesTab({
 <button
                             onClick={() => editRow("sales", it.id)}
                             className="p-1 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-900/30"
-                            title="Düzenle"
+                            title={t('common.edit') || "Düzenle"}
                           >
                             <svg
                               className="w-4 h-4"
@@ -1051,7 +1053,7 @@ export default function SalesTab({
 <button
                             onClick={() => removeItem("sales", it.id)}
                             className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                            title="Sil"
+                            title={t('common.delete') || "Sil"}
                           >
                             <svg
                               className="w-4 h-4"
@@ -1081,7 +1083,7 @@ export default function SalesTab({
               <div className="mt-4 bg-blue-500 dark:bg-blue-700 rounded-md p-3">
                 <div className="flex flex-nowrap items-center gap-2">
                   <div className="w-44 text-sm font-bold text-white">
-                    GENEL TOPLAM
+                    {t('projects.grandTotal') || "GENEL TOPLAM"}
                   </div>
                   <div className="w-16"></div>
                   <div className="w-20"></div>

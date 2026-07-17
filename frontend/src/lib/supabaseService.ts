@@ -2749,7 +2749,10 @@ export const projectAccommodationItemsService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('🔍 Supabase Konaklama create hatası:', JSON.stringify(error, null, 2));
+      throw error;
+    }
     return data;
   },
 
@@ -2761,7 +2764,10 @@ export const projectAccommodationItemsService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('🔍 Supabase Konaklama update hatası:', JSON.stringify(error, null, 2));
+      throw error;
+    }
     return data;
   },
 

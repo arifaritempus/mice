@@ -147,6 +147,36 @@ export default function TopNavigation() {
   return (
     <>
       <div className="hidden md:flex fixed top-0 left-0 right-0 z-50 pointer-events-none justify-center pt-4 px-4 transition-all duration-500">
+        <style dangerouslySetInnerHTML={{ __html: `
+          .nav-expand-container {
+            max-width: 0px;
+            opacity: 0;
+            margin-left: 0;
+            margin-right: 0;
+            overflow: hidden;
+            transition: all 0.5s ease-in-out;
+            white-space: nowrap;
+          }
+          .group:hover .nav-expand-container {
+            max-width: 500px;
+            opacity: 1;
+            margin-left: 8px;
+            margin-right: 4px;
+          }
+          .logo-expand-container {
+            max-width: 0px;
+            opacity: 0;
+            margin-left: 0;
+            overflow: hidden;
+            transition: all 0.5s ease-in-out;
+            white-space: nowrap;
+          }
+          .group:hover .logo-expand-container {
+            max-width: 200px;
+            opacity: 1;
+            margin-left: 12px;
+          }
+        `}} />
         <motion.nav
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -163,7 +193,7 @@ export default function TopNavigation() {
               <LayoutGrid className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
 
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center group">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 group-hover:scale-105 transition-all duration-300 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:-translate-y-full transition-transform duration-500 ease-in-out" />
                 {generalSettings?.darkIconLogo ? (
@@ -174,7 +204,7 @@ export default function TopNavigation() {
                   </span>
                 )}
               </div>
-              <div className="flex flex-col opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-auto transition-all duration-300 ease-in-out whitespace-nowrap">
+              <div className="flex flex-col logo-expand-container">
                 <span className="text-white font-black text-sm tracking-widest leading-none">
                   {generalSettings?.companyName?.split(" ")[0] || "NEXUS"}
                 </span>
@@ -187,12 +217,12 @@ export default function TopNavigation() {
 
           {/* Center: Fluid Navigation */}
           <div className="flex items-center gap-2">
-            {/* Görüntüleme Genişleyen Buton (Ana Sayfa, Dashboard, Raporlar) */}
+            {/* Görüntüleme Genişleyen Buton */}
             <div className="flex items-center group bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
-              <div className="w-8 h-8 shrink-0 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500 relative z-10">
                 <Eye size={16} />
               </div>
-              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[350px] group-hover:ml-2 group-hover:mr-1 transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+              <div className="flex items-center nav-expand-container gap-2">
                 {navItems.map((item) => {
                   const isActive =
                     pathname === item.href ||
@@ -218,10 +248,10 @@ export default function TopNavigation() {
             {/* Yeni Oluştur Genişleyen Buton */}
             {(canCreate(Module.QUOTES) || canCreate(Module.SEJOUR)) && (
             <div className="flex items-center group ml-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
-              <div className="w-8 h-8 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500 relative z-10">
                 <Plus size={18} className="font-black" />
               </div>
-              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[230px] group-hover:ml-2 group-hover:mr-1 transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+              <div className="flex items-center nav-expand-container gap-2">
                 {canCreate(Module.QUOTES) && (
                 <Link
                   href="/quotes/create"
@@ -247,10 +277,10 @@ export default function TopNavigation() {
             {/* Düzenleme/Listeleme Genişleyen Buton */}
             {(canView(Module.QUOTES) || canView(Module.PROJECTS) || canView(Module.SEJOUR)) && (
             <div className="flex items-center group ml-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
-              <div className="w-8 h-8 shrink-0 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-500">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-500 relative z-10">
                 <Edit size={16} />
               </div>
-              <div className="flex items-center opacity-0 w-0 overflow-hidden group-hover:opacity-100 group-hover:w-[290px] group-hover:ml-2 group-hover:mr-1 transition-all duration-500 ease-in-out whitespace-nowrap gap-2">
+              <div className="flex items-center nav-expand-container gap-2">
                 {canView(Module.QUOTES) && (
                 <Link
                   href="/quotes"

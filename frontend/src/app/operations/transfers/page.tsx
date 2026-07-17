@@ -22,6 +22,7 @@ import {
 import { tr } from "date-fns/locale";
 import { formatNumber, formatDate } from "@/utils/formatters";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100, 200, 1000] as const;
@@ -73,6 +74,8 @@ function PaginationControls({
   preferenceKey?: string;
   loadingHint?: string | null;
 }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     const cookieSize = Number(getCookie(preferenceKey) || "");
     if (
@@ -100,10 +103,10 @@ function PaginationControls({
         </span>
       ) : null}
       <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-        {total > 0 ? `${start}-${end} / ${total} kayıt` : "Toplam 0 kayıt"}
+        {total > 0 ? `${start}-${end} / ${total} ${t('pagination.records') || "kayıt"}` : (t('pagination.totalZeroRecords') || "Toplam 0 kayıt")}
       </span>
       <span className="shrink-0 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
-        Sayfa başına
+        {t('pagination.perPage') || "Sayfa başına"}
       </span>
       <select
         value={pageSize}
@@ -127,7 +130,7 @@ function PaginationControls({
           disabled={page <= 1 || total <= 0}
           onClick={() => onPageChange(page - 1)}
         >
-          Önceki
+          {t('pagination.previous') || "Önceki"}
         </button>
         <span className="px-1 text-xs text-gray-700 dark:text-gray-200">
           {page} / {totalPages}
@@ -138,7 +141,7 @@ function PaginationControls({
           disabled={page >= totalPages || total <= 0}
           onClick={() => onPageChange(page + 1)}
         >
-          Sonraki
+          {t('pagination.next') || "Sonraki"}
         </button>
       </div>
     </div>
@@ -209,6 +212,7 @@ interface Transfer {
 
 export default function TransfersPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
+  const { t } = useLanguage();
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
@@ -1094,7 +1098,7 @@ export default function TransfersPage() {
         });
         sheet.addImage(iconId, {
           tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
+          ext: { width: 120, height: 60 } as any,
         } as any);
       }
       if (wordmarkLogoBase64) {
@@ -1104,29 +1108,29 @@ export default function TransfersPage() {
         });
         sheet.addImage(markId, {
           tl: { col: 14.2, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) } as any,
+          ext: { width: 120, height: 60 } as any,
         } as any);
       }
 
       // Sütun tanımları
       sheet.columns = [
         { header: "Referans", key: "reference", width: 16 },
-        { header: "Tarih", key: "transfer_date", width: 14 },
-        { header: "Transfer Saati", key: "transfer_time", width: 12 },
-        { header: "Tür", key: "project_type", width: 12 },
-        { header: "C-IN / C-OUT", key: "check_in_out", width: 20 },
-        { header: "Firma Adı", key: "company_name", width: 20 },
-        { header: "Acente/Müşteri", key: "customer_name", width: 20 },
-        { header: "Otel", key: "hotel_name", width: 18 },
-        { header: "Tedarikçi", key: "supplier_name", width: 18 },
-        { header: "Transfer Güzergahı", key: "transfer_type", width: 16 },
-        { header: "Transfer Tipi", key: "service_type", width: 12 },
-        { header: "Araç Tipi", key: "vehicle_type", width: 14 },
-        { header: "Yolcu", key: "passenger_count", width: 12 },
-        { header: "Misafir Adı", key: "notes", width: 24 },
-        { header: "Uçuş Kodu", key: "flight_number", width: 12 },
-        { header: "Maliyet", key: "total_amount", width: 12 },
-        { header: "Döviz", key: "currency", width: 8 },
+        { header: t('transfers.colDate') || "Tarih", key: "transfer_date", width: 14 },
+        { header: t('transfers.colTime') || "Transfer Saati", key: "transfer_time", width: 12 },
+        { header: t('transfers.colType') || "Tür", key: "project_type", width: 12 },
+        { header: t('transfers.colCinCout') || "C-IN / C-OUT", key: "check_in_out", width: 20 },
+        { header: t('transfers.colCompanyName') || "Firma Adı", key: "company_name", width: 20 },
+        { header: t('transfers.colCustomer') || "Acente/Müşteri", key: "customer_name", width: 20 },
+        { header: t('transfers.colHotel') || "Otel", key: "hotel_name", width: 18 },
+        { header: t('transfers.colSupplier') || "Tedarikçi", key: "supplier_name", width: 18 },
+        { header: t('transfers.colRoute') || "Transfer Güzergahı", key: "transfer_type", width: 16 },
+        { header: t('transfers.colServiceType') || "Transfer Tipi", key: "service_type", width: 12 },
+        { header: t('transfers.colVehicleType') || "Araç Tipi", key: "vehicle_type", width: 14 },
+        { header: t('transfers.colPassengerCount') || "Yolcu", key: "passenger_count", width: 12 },
+        { header: t('transfers.colGuest') || "Misafir Adı", key: "notes", width: 24 },
+        { header: t('transfers.colFlightCode') || "Uçuş Kodu", key: "flight_number", width: 12 },
+        { header: t('transfers.colCost') || "Maliyet", key: "total_amount", width: 12 },
+        { header: t('transfers.colCurrency') || "Döviz", key: "currency", width: 8 },
       ];
 
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
@@ -1182,19 +1186,19 @@ export default function TransfersPage() {
           supplier_name: transfer.supplier_name,
           transfer_type:
             transfer.transfer_type === "airport_hotel"
-              ? "Havalimanı-Otel"
+              ? t('transfers.routeAirportHotel') || "Havaalanı → Otel"
               : transfer.transfer_type === "hotel_airport"
-                ? "Otel-Havalimanı"
+                ? t('transfers.routeHotelAirport') || "Otel → Havaalanı"
                 : transfer.transfer_type === "hotel_hotel"
-                  ? "Otel-Otel"
+                  ? t('transfers.routeHotelHotel') || "Otel → Otel"
                   : transfer.transfer_type === "airport_airport"
-                    ? "Havalimanı-Havalimanı"
+                    ? t('transfers.routeAirportAirport') || "Havaalanı → Havaalanı"
                     : "",
           service_type:
             transfer.service_type === "private"
-              ? "Özel"
+              ? t('transfers.servicePrivate') || "Özel"
               : transfer.service_type === "economic"
-                ? "Ekonomik"
+                ? t('transfers.serviceEconomic') || "Ekonomik"
                 : "",
           vehicle_type: transfer.vehicle_type || "",
           passenger_count: transfer.passenger_count || "",
@@ -1257,16 +1261,16 @@ export default function TransfersPage() {
     setForceReload((prev) => prev + 1);
   };
 
-  const getTransferTypeDisplayName = (type: string) => {
-    switch (type) {
-      case "airport_hotel":
-        return "Havaalanı → Otel";
-      case "hotel_airport":
-        return "Otel → Havaalanı";
-      case "hotel_hotel":
-        return "Otel → Otel";
-      case "airport_airport":
-        return "Havaalanı → Havaalanı";
+    const getTransferTypeDisplayName = (type: string) => {
+      switch (type) {
+        case "airport_hotel":
+          return t('transfers.routeAirportHotel') || "Havaalanı → Otel";
+        case "hotel_airport":
+          return t('transfers.routeHotelAirport') || "Otel → Havaalanı";
+        case "hotel_hotel":
+          return t('transfers.routeHotelHotel') || "Otel → Otel";
+        case "airport_airport":
+          return t('transfers.routeAirportAirport') || "Havaalanı → Havaalanı";
       default:
         return type;
     }
@@ -1455,10 +1459,10 @@ export default function TransfersPage() {
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
             <h1 className="text-2xl font-light tracking-wide text-white glow-text">
-              Transfer Yönetimi
+              {t('transfers.title') || "Transfer Yönetimi"}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              MICE ve Sejour Transfer Operasyonlarını Yönetin
+              {t('transfers.description') || "MICE ve Sejour Transfer Operasyonlarını Yönetin"}
             </p>
           </div>
 
@@ -1467,7 +1471,7 @@ export default function TransfersPage() {
             {/* Dates */}
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Transfer Tarihi"
+                label={t('transfers.filterTransferDate') || "Transfer Tarihi"}
                 startValue={draftTransferStart}
                 endValue={draftTransferEnd}
                 onStartChange={setDraftTransferStart}
@@ -1477,7 +1481,7 @@ export default function TransfersPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <ResponsiveDateRangeField
-                label="Konaklama Tarihi"
+                label={t('transfers.filterStayDate') || "Konaklama Tarihi"}
                 startValue={draftStayStart}
                 endValue={draftStayEnd}
                 onStartChange={setDraftStayStart}
@@ -1489,7 +1493,7 @@ export default function TransfersPage() {
             {/* Search */}
             <div className="flex-1 min-w-[300px]">
               <MultiTokenFilterInput
-                label="Genel Arama (Referans, Firma, Acente, Tedarikçi vb.)"
+                label={t('transfers.searchPlaceholder') || "Genel Arama (Referans, Firma, Acente, Tedarikçi vb.)"}
                 tokens={referenceTokens}
                 inputValue={referenceInput}
                 suggestions={referenceSuggestions}
@@ -1501,29 +1505,6 @@ export default function TransfersPage() {
               />
             </div>
 
-            {/* Clear Button */}
-            <div className="shrink-0">
-              <button
-                type="button"
-                onClick={clearTransfersFilters}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
-                title="Filtreleri Temizle"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
@@ -1531,7 +1512,7 @@ export default function TransfersPage() {
                 type="button"
                 onClick={exportTransfersToExcel}
                 className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
-                title="Excel İndir"
+                title={t('transfers.exportExcel') || "Excel İndir"}
               >
                 <svg
                   className="w-4 h-4"
@@ -1546,7 +1527,7 @@ export default function TransfersPage() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Excel İndir
+                {t('transfers.exportExcel') || "Excel İndir"}
               </button>
             </div>
           </div>
@@ -1556,13 +1537,13 @@ export default function TransfersPage() {
         <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
-              KAYNAK:
+              {t('transfers.source') || "KAYNAK:"}
             </span>
             <button
               onClick={() => setFilter("all")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
             >
-              <span>TÜMÜ</span>
+              <span>{t('transfers.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
             </button>
             <button
@@ -1596,7 +1577,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("reference")}
                   >
                     <div className="flex items-center">
-                      Referans
+                      {t('transfers.colReference') || "REFERANS"}
                       {sortField === "reference" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1619,7 +1600,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("transfer_date")}
                   >
                     <div className="flex items-center">
-                      Tarih
+                      {t('transfers.colDate') || "Tarih"}
                       {sortField === "transfer_date" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1642,7 +1623,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("transfer_time")}
                   >
                     <div className="flex items-center">
-                      Transfer Saati
+                      {t('transfers.colTime') || "Transfer Saati"}
                       {sortField === "transfer_time" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1665,7 +1646,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("project_reference")}
                   >
                     <div className="flex items-center">
-                      TÜR
+                      {t('transfers.colType') || "TÜR"}
                       {sortField === "project_reference" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1688,7 +1669,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("check_in_out")}
                   >
                     <div className="flex items-center gap-0.5">
-                      <div className="flex items-center">C-IN / C-OUT</div>
+                      <div className="flex items-center">{t('transfers.colCinCout') || "C-IN / C-OUT"}</div>
                       {sortField === "check_in_out" && (
                         <svg
                           className={`ml-0.5 h-3 w-3 shrink-0 self-center ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1711,7 +1692,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("company_name")}
                   >
                     <div className="flex items-center">
-                      FİRMA ADI
+                      {t('transfers.colCompanyName') || "FİRMA ADI"}
                       {sortField === "company_name" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1734,7 +1715,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("customer_name")}
                   >
                     <div className="flex items-center gap-0.5">
-                      <div className="flex items-center">Acente / Müşteri</div>
+                      <div className="flex items-center">{t('transfers.colCustomer') || "Acente / Müşteri"}</div>
                       {sortField === "customer_name" && (
                         <svg
                           className={`ml-0.5 h-3 w-3 shrink-0 self-center ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1757,7 +1738,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("hotel_name")}
                   >
                     <div className="flex items-center">
-                      Otel
+                      {t('transfers.colHotel') || "Otel"}
                       {sortField === "hotel_name" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1781,7 +1762,7 @@ export default function TransfersPage() {
                   >
                     <div className="flex items-center gap-0.5">
                       <span className="text-xs tracking-wide leading-tight">
-                        TEDARİKÇİ
+                        {t('transfers.colSupplier') || "TEDARİKÇİ"}
                       </span>
                       {sortField === "supplier_name" && (
                         <svg
@@ -1805,7 +1786,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("transfer_type")}
                   >
                     <div className="flex items-center">
-                      Transfer Güzergahı
+                      {t('transfers.colRoute') || "Transfer Güzergahı"}
                       {sortField === "transfer_type" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1828,7 +1809,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("service_type")}
                   >
                     <div className="flex items-center">
-                      Transfer Tipi
+                      {t('transfers.colServiceType') || "Transfer Tipi"}
                       {sortField === "service_type" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1851,7 +1832,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("vehicle_type")}
                   >
                     <div className="flex items-center">
-                      Araç Tipi
+                      {t('transfers.colVehicleType') || "Araç Tipi"}
                       {sortField === "vehicle_type" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1874,7 +1855,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("passenger_count")}
                   >
                     <div className="flex items-center">
-                      Yolcu
+                      {t('transfers.colPassengerCount') || "Yolcu"}
                       {sortField === "passenger_count" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1897,7 +1878,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("notes")}
                   >
                     <div className="flex items-center gap-0.5">
-                      <div className="flex items-center">Misafir Adı</div>
+                      <div className="flex items-center">{t('transfers.colGuest') || "Misafir Adı"}</div>
                       {sortField === "notes" && (
                         <svg
                           className={`ml-0.5 h-3 w-3 shrink-0 self-center ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1920,7 +1901,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("flight_info.flight_number")}
                   >
                     <div className="flex items-center">
-                      Uçuş Kodu
+                      {t('transfers.colFlightCode') || "Uçuş Kodu"}
                       {sortField === "flight_info.flight_number" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1943,7 +1924,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("total_amount")}
                   >
                     <div className="flex items-center">
-                      Maliyet
+                      {t('transfers.colCost') || "Maliyet"}
                       {sortField === "total_amount" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -1966,7 +1947,7 @@ export default function TransfersPage() {
                     onClick={() => handleSort("currency")}
                   >
                     <div className="flex items-center">
-                      Döviz
+                      {t('transfers.colCurrency') || "Döviz"}
                       {sortField === "currency" && (
                         <svg
                           className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
@@ -2071,9 +2052,9 @@ export default function TransfersPage() {
                     </td>
                     <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
                       {transfer.service_type === "private"
-                        ? "Özel"
+                        ? t('transfers.servicePrivate') || "Özel"
                         : transfer.service_type === "economic"
-                          ? "Ekonomik"
+                          ? t('transfers.serviceEconomic') || "Ekonomik"
                           : "-"}
                     </td>
                     <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
@@ -2153,7 +2134,7 @@ export default function TransfersPage() {
                       colSpan={20}
                       className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                     >
-                      Filtrelere uygun kayıt bulunamadı.
+                      {t('transfers.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>
                   </tr>
                 )}
@@ -2186,14 +2167,14 @@ export default function TransfersPage() {
               onClick={() => setError("")}
               className="absolute top-0 bottom-0 right-0 px-2 py-2"
             >
-              <span className="sr-only">Kapat</span>
+              <span className="sr-only">{t('transfers.close') || "Kapat"}</span>
               <svg
                 className="fill-current h-4 w-4"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
               >
-                <title>Kapat</title>
+                <title>{t('transfers.close') || "Kapat"}</title>
                 <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
               </svg>
             </button>
@@ -2207,14 +2188,14 @@ export default function TransfersPage() {
               onClick={() => setSuccess("")}
               className="absolute top-0 bottom-0 right-0 px-2 py-2"
             >
-              <span className="sr-only">Kapat</span>
+              <span className="sr-only">{t('transfers.close') || "Kapat"}</span>
               <svg
                 className="fill-current h-4 w-4"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
               >
-                <title>Kapat</title>
+                <title>{t('transfers.close') || "Kapat"}</title>
                 <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
               </svg>
             </button>

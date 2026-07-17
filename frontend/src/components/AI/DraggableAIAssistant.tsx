@@ -23,7 +23,8 @@ export default function DraggableAIAssistant() {
   >([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const pathname = usePathname();
 
@@ -46,6 +47,8 @@ export default function DraggableAIAssistant() {
         }
       } catch (e) {
         console.error("Failed to load AI assistant settings", e);
+      } finally {
+        setIsLoaded(true);
       }
     };
     fetchSettings();
@@ -64,8 +67,8 @@ export default function DraggableAIAssistant() {
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
 
-  // Eğer kullanıcı login sayfasındaysa veya asistan ayarlardan kapalıysa hiçbir şey gösterme
-  if (!isEnabled || pathname?.startsWith("/login")) return null;
+  // Eğer ayarlar henüz yüklenmediyse, login sayfasındaysa veya asistan ayarlardan kapalıysa hiçbir şey gösterme
+  if (!isLoaded || !isEnabled || pathname?.startsWith("/login")) return null;
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
