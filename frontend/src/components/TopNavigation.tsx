@@ -22,17 +22,55 @@ import {
   Eye,
   Edit,
   Briefcase,
+  Menu,
+  Check,
+  ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import CommandCenter from "@/components/CommandCenter";
 import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
 import { SettingsService } from "@/lib/supabaseService";
 
+const SYSTEM_PAGES = [
+  { title: "Dashboard", href: "/dashboard", keywords: "ana menü anasayfa" },
+  { title: "Pazarlama & CRM", href: "/marketing", keywords: "pazarlama crm" },
+  { title: "Raporlar", href: "/reports", keywords: "rapor analiz" },
+  { title: "Projeler", href: "/projects", keywords: "mice proje" },
+  { title: "Teklifler", href: "/quotes", keywords: "mice teklif" },
+  { title: "Sejour Yönetimi", href: "/sejour", keywords: "sejour tur" },
+  { title: "Servisler", href: "/sejour/services", keywords: "sejour servis" },
+  { title: "Uçuş & Biletler", href: "/operations/tickets", keywords: "operasyon bilet uçuş" },
+  { title: "Transferler", href: "/operations/transfers", keywords: "operasyon transfer araç" },
+  { title: "Rehberler", href: "/operations/guides", keywords: "operasyon rehber" },
+  { title: "Part-Time", href: "/operations/part-time", keywords: "operasyon part-time personel" },
+  { title: "Bilet Opsiyonları", href: "/tickets/options", keywords: "bilet opsiyon" },
+  { title: "Bilet Ödemeleri", href: "/tickets/payments", keywords: "bilet ödeme finans" },
+  { title: "Bilet Takvim", href: "/tickets/calendar", keywords: "bilet takvim uçuş" },
+  { title: "Nakit Akış", href: "/accounting/cash-flow", keywords: "finans muhasebe nakit akış" },
+  { title: "Bekleyen Gelir Faturaları", href: "/accounting/invoices/income/pending", keywords: "finans fatura gelir bekleyen" },
+  { title: "Tamamlanan Gelir Faturaları", href: "/accounting/invoices/income/completed", keywords: "finans fatura gelir tamamlanan" },
+  { title: "Bekleyen Gider Faturaları", href: "/accounting/invoices/expense/pending", keywords: "finans fatura gider bekleyen" },
+  { title: "Tamamlanan Gider Faturaları", href: "/accounting/invoices/expense/completed", keywords: "finans fatura gider tamamlanan" },
+  { title: "Döviz Kurları", href: "/accounting/exchange-rates", keywords: "finans kur döviz" },
+  { title: "Oteller", href: "/hotels", keywords: "tanımlamalar otel konaklama" },
+  { title: "Acentalar", href: "/agencies", keywords: "tanımlamalar acenta acente" },
+  { title: "Tedarikçiler", href: "/suppliers", keywords: "tanımlamalar tedarikçi" },
+  { title: "Kategoriler", href: "/categories", keywords: "tanımlamalar kategori" },
+  { title: "Hizmet Tipleri", href: "/suppliers/service-types", keywords: "tanımlamalar hizmet" },
+  { title: "Kullanıcılar", href: "/users", keywords: "tanımlamalar kullanıcı personel" },
+  { title: "Yetkilendirme", href: "/permissions/roles", keywords: "tanımlamalar yetki rol güvenlik" },
+  { title: "Sistem Ayarları", href: "/settings", keywords: "tanımlamalar ayar sistem" },
+  { title: "Profil", href: "/profile", keywords: "hesap profil şifre" },
+];
+
 export default function TopNavigation() {
   const { canCreate, canView } = usePermissions();
+  const router = useRouter();
 
   const pathname = usePathname();
   const [unreadCount] = useState(3);
@@ -41,7 +79,12 @@ export default function TopNavigation() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [activeSegment, setActiveSegment] = useState<string | null>(null);
   const [isCommandCenterOpen, setIsCommandCenterOpen] = useState(false);
+  const [headerSearchQuery, setHeaderSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [searchSelectedIndex, setSearchSelectedIndex] = useState(-1);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [generalSettings, setGeneralSettings] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<{
     name: string;
@@ -102,10 +145,67 @@ export default function TopNavigation() {
   }, []);
 
   useEffect(() => {
+    if (headerSearchQuery.length < 2) {
+      setSearchResults([]);
+      setSearchSelectedIndex(-1);
+      return;
+    }
+    
+    const timeoutId = setTimeout(async () => {
+      setIsSearchLoading(true);
+      try {
+        const queryLower = headerSearchQuery.toLowerCase();
+        const matchedPages = SYSTEM_PAGES
+          .filter(p => p.title.toLowerCase().includes(queryLower) || p.keywords.includes(queryLower))
+          .map(p => ({
+            type: "page",
+            id: p.href,
+            title: p.title,
+            subtitle: "Sayfa / Modül",
+            href: p.href
+          }));
+
+        const res = await fetch(`/api/search?q=${encodeURIComponent(headerSearchQuery)}`);
+        const data = await res.json();
+        
+        setSearchResults([...matchedPages, ...(data.results || [])]);
+        setSearchSelectedIndex(-1); // Reset selection when results change
+      } catch (err) {
+        console.error("Global search error:", err);
+      } finally {
+        setIsSearchLoading(false);
+      }
+    }, 400);
+    
+    return () => clearTimeout(timeoutId);
+  }, [headerSearchQuery]);
+
+  useEffect(() => {
     if (isSearchExpanded && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, [isSearchExpanded]);
+
+  useEffect(() => {
+    // Sayfa değiştiğinde arama durumunu sıfırla
+    setIsSearchExpanded(false);
+    setHeaderSearchQuery("");
+    setSearchResults([]);
+    setSearchSelectedIndex(-1);
+  }, [pathname]);
+
+  // Click outside listener for the search container
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchExpanded(false);
+        setHeaderSearchQuery("");
+        setSearchResults([]);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const toggleFullscreen = async () => {
     try {
@@ -316,45 +416,118 @@ export default function TopNavigation() {
           {/* Right: Actions */}
           <div className="flex items-center gap-4 ml-8">
             {/* Expandable Search */}
-            <motion.div
-              animate={{ width: isSearchExpanded ? 240 : 40 }}
-              className={`relative flex items-center h-10 rounded-full overflow-hidden transition-colors duration-300 ${isSearchExpanded ? "bg-white/10 border border-white/20" : "bg-transparent border border-transparent hover:bg-white/5"}`}
-            >
-              <button
-                onClick={() => setIsSearchExpanded(true)}
-                className="absolute left-0 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white z-10"
+            <div className="relative" ref={searchContainerRef}>
+              <motion.div
+                animate={{ width: isSearchExpanded ? 260 : 40 }}
+                className={`relative flex items-center h-10 rounded-full overflow-hidden transition-colors duration-300 ${isSearchExpanded ? "bg-white/10 border border-white/20" : "bg-transparent border border-transparent hover:bg-white/5"}`}
               >
-                <Search className="w-[18px] h-[18px]" />
-              </button>
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Herhangi bir şey ara..."
-                className={`w-full h-full bg-transparent pl-10 pr-10 text-sm text-white placeholder:text-slate-400 outline-none transition-opacity duration-300 ${isSearchExpanded ? "opacity-100" : "opacity-0"}`}
-                onBlur={() => {
-                  if (!searchInputRef.current?.value)
-                    setIsSearchExpanded(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setIsCommandCenterOpen(true);
-                  }
-                }}
-              />
-              {isSearchExpanded && (
                 <button
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    if (searchInputRef.current)
-                      searchInputRef.current.value = "";
-                    setIsSearchExpanded(false);
+                  onClick={() => {
+                    if (isSearchExpanded && headerSearchQuery) {
+                      setIsCommandCenterOpen(true);
+                    } else {
+                      setIsSearchExpanded(true);
+                    }
                   }}
-                  className="absolute right-0 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white z-10"
+                  className="absolute left-0 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white z-10"
                 >
-                  <X className="w-4 h-4" />
+                  <Search className="w-[18px] h-[18px]" />
                 </button>
-              )}
-            </motion.div>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={headerSearchQuery}
+                  onChange={(e) => setHeaderSearchQuery(e.target.value)}
+                  placeholder="Herhangi bir şey ara..."
+                  className={`w-full h-full bg-transparent pl-10 pr-10 text-sm text-white placeholder:text-slate-400 outline-none transition-opacity duration-300 ${isSearchExpanded ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      if (searchSelectedIndex >= 0 && searchResults[searchSelectedIndex]) {
+                        e.preventDefault();
+                        router.push(searchResults[searchSelectedIndex].href);
+                        setIsSearchExpanded(false);
+                        setHeaderSearchQuery("");
+                      } else if (headerSearchQuery) {
+                        setIsCommandCenterOpen(true);
+                      }
+                    } else if (e.key === "Escape") {
+                      setIsSearchExpanded(false);
+                      setHeaderSearchQuery("");
+                    } else if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSearchSelectedIndex(prev => Math.min(prev + 1, searchResults.length - 1));
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSearchSelectedIndex(prev => Math.max(prev - 1, -1));
+                    }
+                  }}
+                />
+                {isSearchExpanded && (
+                  <button
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setHeaderSearchQuery("");
+                      setIsSearchExpanded(false);
+                    }}
+                    className="absolute right-0 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white z-10"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </motion.div>
+
+              {/* Live Search Dropdown */}
+              <AnimatePresence>
+                {isSearchExpanded && headerSearchQuery.length >= 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-12 right-0 w-80 bg-[#0f172a] rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 flex flex-col max-h-[400px]"
+                  >
+                    {isSearchLoading ? (
+                      <div className="p-4 flex items-center justify-center text-slate-400">
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        <span className="text-sm">Aranıyor...</span>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <div className="overflow-y-auto p-2 flex flex-col gap-1">
+                        {searchResults.map((res: any, idx: number) => (
+                          <Link
+                            key={`${res.type}-${res.id}-${idx}`}
+                            href={res.href}
+                            onClick={() => {
+                              setHeaderSearchQuery("");
+                              setIsSearchExpanded(false);
+                            }}
+                            className={`flex items-start flex-col p-3 rounded-xl transition-colors group ${idx === searchSelectedIndex ? "bg-white/10" : "hover:bg-white/5"}`}
+                          >
+                            <span className="text-sm text-white font-medium group-hover:text-blue-400 transition-colors line-clamp-1">{res.title}</span>
+                            <span className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                              <span className="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px] uppercase font-semibold text-slate-400">{res.type}</span>
+                              <span className="line-clamp-1">{res.subtitle}</span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-slate-500">
+                        <Search className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">Hiçbir sonuç bulunamadı.</p>
+                      </div>
+                    )}
+                    
+                    {/* Footer link to full command center */}
+                    <button 
+                      onClick={() => setIsCommandCenterOpen(true)}
+                      className="p-3 border-t border-white/5 text-xs text-center text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full"
+                    >
+                      Tüm sonuçları ve menüleri görmek için Enter'a basın
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Segmented Controls (Language, Fullscreen, Bell) */}
             <div
@@ -515,6 +688,7 @@ export default function TopNavigation() {
       <CommandCenter
         isOpen={isCommandCenterOpen}
         onClose={() => setIsCommandCenterOpen(false)}
+        initialQuery={headerSearchQuery}
       />
     </>
   );

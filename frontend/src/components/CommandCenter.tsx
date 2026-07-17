@@ -32,12 +32,20 @@ import { usePermissions, Module, getModuleFromHref } from "@/lib/permissions";
 interface CommandCenterProps {
   isOpen: boolean;
   onClose: () => void;
+  initialQuery?: string;
 }
 
-export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: CommandCenterProps) {
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Reset search query when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery(initialQuery);
+    }
+  }, [isOpen, initialQuery]);
 
   const { canView } = usePermissions();
 

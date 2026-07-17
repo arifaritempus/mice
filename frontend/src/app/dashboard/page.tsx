@@ -1375,7 +1375,7 @@ export default function UltimateDashboard() {
                     </div>
                   ) : (
                   <FunnelChart>
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} />
                     <Funnel
                       dataKey="value"
                       data={m.funnelData}
@@ -1466,7 +1466,7 @@ export default function UltimateDashboard() {
                       tickFormatter={(v) => `%${v}`}
                     />
                     <Tooltip
-                      content={<CustomTooltip />}
+                      content={<CustomTooltip t={t} language={language} />}
                       cursor={{ fill: "#ffffff05" }}
                     />
                     <Legend
@@ -1544,7 +1544,7 @@ export default function UltimateDashboard() {
                       width={100}
                     />
                     <Tooltip
-                      content={<CustomTooltip />}
+                      content={<CustomTooltip t={t} language={language} />}
                       cursor={{ fill: "#ffffff05" }}
                     />
                     <Bar
@@ -1587,7 +1587,7 @@ export default function UltimateDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
                     <YAxis type="category" dataKey="name" stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} width={100} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
                     <Bar dataKey="Ciro" name={t('dashboard.sales') || "Ciro"} fill="#10b981" radius={[0, 4, 4, 0]} barSize={8} />
                     <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={8} />
@@ -1617,7 +1617,7 @@ export default function UltimateDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 100000).toFixed(1)}K`} />
                     <YAxis type="category" dataKey="name" stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} width={100} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
                     <Bar dataKey="Ciro" name={t('dashboard.sales') || "Ciro"} fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={8} />
                     <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={8} />
@@ -1657,7 +1657,7 @@ export default function UltimateDashboard() {
                         />
                       ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} />
                     <Legend wrapperStyle={{ fontSize: "10px" }} />
                   </PieChart>
                 </ResponsiveContainer>
@@ -1691,7 +1691,7 @@ export default function UltimateDashboard() {
                         />
                       ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} />
                     <Legend wrapperStyle={{ fontSize: "10px" }} />
                   </PieChart>
                 </ResponsiveContainer>
@@ -1725,7 +1725,7 @@ export default function UltimateDashboard() {
                         />
                       ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} />
                     <Legend wrapperStyle={{ fontSize: "10px" }} />
                   </PieChart>
                 </ResponsiveContainer>
@@ -1756,7 +1756,7 @@ export default function UltimateDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} allowDecimals={false} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
                     <Bar dataKey="Bekleyen Teklif" name={t('dashboard.pendingQuote') || "Bekleyen Teklif"} fill="#fbbf24" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
                     <Bar dataKey="İptal Olan Teklif" name={t('dashboard.canceledQuote') || "İptal Olan Teklif"} fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={12} stackId="a" />
@@ -1787,7 +1787,7 @@ export default function UltimateDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 }).format(value)} />
                     <YAxis dataKey="name" type="category" width={80} stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
+                    <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#fb7185" radius={[0, 4, 4, 0]} barSize={12}>
                       {m.supplierCostData.map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={index % 2 === 0 ? "#fb7185" : "#f43f5e"} />
