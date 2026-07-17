@@ -96,6 +96,7 @@ type Quote = import("@/lib/supabase").Quote & {
   option_date?: string; // OPSİYON TARİHİ field'ı eklendi
   status: string;
   notes?: string;
+  hotels_data?: any[];
   note?: string; // For backward compatibility
   room_pax?: string; // For backward compatibility
   items?: QuoteItem[];
