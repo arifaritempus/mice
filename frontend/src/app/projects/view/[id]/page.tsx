@@ -1067,7 +1067,7 @@ export default function ProjectViewPublicPage() {
   const hotelsData = project?.hotels_data || [];
 
   if (loading)
-    return <div className="p-8 text-center text-gray-500">Yükleniyor...</div>;
+    return <div className="p-8 text-center text-slate-800">Yükleniyor...</div>;
   if (error && !showPasswordForm)
     return <div className="p-8 text-center text-red-500">{error}</div>;
 
@@ -1105,7 +1105,7 @@ export default function ProjectViewPublicPage() {
               <h2 className="text-2xl font-bold text-slate-800 mb-2 tracking-tight">
                 Güvenli Erişim
               </h2>
-              <p className="text-slate-500 text-sm">
+              <p className="text-slate-800 text-sm">
                 Devam etmek için proje şifresini giriniz
               </p>
             </div>
@@ -1117,7 +1117,7 @@ export default function ProjectViewPublicPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifre"
-                  className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
                   required
                   autoFocus
                 />
@@ -1147,12 +1147,12 @@ export default function ProjectViewPublicPage() {
 
   if (!project)
     return (
-      <div className="p-8 text-center text-gray-500">Proje bulunamadı.</div>
+      <div className="p-8 text-center text-slate-800">Proje bulunamadı.</div>
     );
 
   return (
     <div
-      className="fixed inset-0 overflow-y-auto p-4 md:p-8 transition-colors duration-500 z-50"
+      className="absolute inset-0 w-full h-full overflow-y-auto p-4 md:p-8 transition-colors duration-500 z-50 text-slate-900"
       style={{ backgroundColor: appSettings?.lightBgMain || "#f8fafc" }}
     >
       <div
@@ -1223,19 +1223,19 @@ export default function ProjectViewPublicPage() {
             <div>
               <label
                 className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                style={{ color: appSettings?.colorSecondary || "#64748b" }}
+                
               >
                 ACENTE | FİRMA
               </label>
               <p
                 className="text-sm font-bold"
-                style={{ color: appSettings?.lightText || "#1e293b" }}
+                
               >
                 {getAgencyName(project.agency_id)} | {project.company_name}
               </p>
             </div>
             <div>
-              <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
+              <label className="block text-[10px] text-slate-800 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 PROJE DURUMU
               </label>
               <span
@@ -1245,7 +1245,7 @@ export default function ProjectViewPublicPage() {
               </span>
             </div>
             <div>
-              <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
+              <label className="block text-[10px] text-slate-800 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-IN TARİHİ
               </label>
               <p className="text-sm font-bold text-slate-800">
@@ -1255,7 +1255,7 @@ export default function ProjectViewPublicPage() {
               </p>
             </div>
             <div>
-              <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
+              <label className="block text-[10px] text-slate-800 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-OUT TARİHİ
               </label>
               <p className="text-sm font-bold text-slate-800">
@@ -1348,23 +1348,19 @@ export default function ProjectViewPublicPage() {
                     <div>
                       <span
                         className="block text-[10px] font-bold uppercase mb-1 tracking-tighter underline decoration-blue-500/20"
-                        style={{
-                          color: appSettings?.colorSecondary || "#475569",
-                        }}
+                        
                       >
                         OTEL KONSEPTİ
                       </span>
                       <span
                         className="text-sm font-bold"
-                        style={{
-                          color: appSettings?.lightText || "#1e293b",
-                        }}
+                        
                       >
                         {h.hotel_concept || "-"}
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1 tracking-tighter">
+                      <span className="block text-[10px] text-slate-800 font-bold uppercase mb-1 tracking-tighter">
                         GİRİŞ / ÇIKIŞ
                       </span>
                       <span className="text-sm font-bold text-slate-800">
@@ -1382,7 +1378,7 @@ export default function ProjectViewPublicPage() {
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1 tracking-tighter">
+                      <span className="block text-[10px] text-slate-800 font-bold uppercase mb-1 tracking-tighter">
                         ODA / PAX
                       </span>
                       <span className="text-sm font-bold text-slate-800">
@@ -1390,7 +1386,7 @@ export default function ProjectViewPublicPage() {
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1 tracking-tighter">
+                      <span className="block text-[10px] text-slate-800 font-bold uppercase mb-1 tracking-tighter">
                         OPSİYON
                       </span>
                       <span className="text-sm font-bold text-slate-800">
@@ -1420,9 +1416,7 @@ export default function ProjectViewPublicPage() {
                   >
                     <th
                       className="py-4 px-4 text-[10px] font-black uppercase tracking-tighter"
-                      style={{
-                        color: appSettings?.colorSecondary || "#475569",
-                      }}
+                      
                     >
                       HİZMET DETAYI / AÇIKLAMA
                     </th>
@@ -1442,7 +1436,7 @@ export default function ProjectViewPublicPage() {
                     <tr>
                       <td
                         colSpan={6}
-                        className="py-10 text-center text-gray-400 text-xs italic"
+                        className="py-10 text-center text-slate-800 text-xs italic"
                       >
                         Seçilen kategori/tab için kayıtlı hizmet
                         bulunmamaktadır.
@@ -1538,10 +1532,10 @@ export default function ProjectViewPublicPage() {
                                     </p>
                                   )}
                                 </td>
-                                <td className="py-4 text-xs font-medium text-right text-slate-600 whitespace-nowrap">
+                                <td className="py-4 text-xs font-medium text-right text-slate-800 whitespace-nowrap">
                                   {item.qty} x {item.repeat}
                                 </td>
-                                <td className="py-4 text-xs font-medium text-right text-slate-600 whitespace-nowrap">
+                                <td className="py-4 text-xs font-medium text-right text-slate-800 whitespace-nowrap">
                                   {formatTr(item.unit_price)}{" "}
                                   {item.currency === "TRY"
                                     ? "₺"
@@ -1558,7 +1552,7 @@ export default function ProjectViewPublicPage() {
                           {/* Category Subtotal Row */}
                           <tr className="bg-black/5 dark:bg-white/5">
                             <td colSpan={3} className="py-3 text-right">
-                              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic pr-4">
+                              <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest italic pr-4">
                                 ARA TOPLAM ({getCategoryName(catId)})
                               </span>
                             </td>
@@ -1580,7 +1574,7 @@ export default function ProjectViewPublicPage() {
                 <h4 className="text-[10px] text-slate-800/80 font-bold uppercase tracking-wider mb-2">
                   NOTLAR & ŞARTLAR
                 </h4>
-                <ul className="text-[11px] text-slate-500 space-y-1.5 leading-relaxed">
+                <ul className="text-[11px] text-slate-800 space-y-1.5 leading-relaxed">
                   <li>• FİYATLAR, NET & KOMİSYONSUZDUR.</li>
                   <li>
                     • ALINMASI HENÜZ KESİNLEŞMEYEN SERVİSLER İÇİN BİRİM/ ADET
@@ -1629,9 +1623,9 @@ export default function ProjectViewPublicPage() {
                       Mutabakat Onaylandı
                     </h3>
                     {linkData?.approval && (
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-[10px] font-bold text-gray-500  uppercase tracking-wider">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-[10px] font-bold text-slate-800  uppercase tracking-wider">
                         <div>
-                          <p className="text-gray-400 font-medium mb-1">
+                          <p className="text-slate-800 font-medium mb-1">
                             Onaylayan
                           </p>
                           <p className="text-gray-900 ">
@@ -1639,7 +1633,7 @@ export default function ProjectViewPublicPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 font-medium mb-1">
+                          <p className="text-slate-800 font-medium mb-1">
                             E-posta
                           </p>
                           <p className="text-gray-900  lowercase font-normal">
@@ -1647,7 +1641,7 @@ export default function ProjectViewPublicPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 font-medium mb-1">
+                          <p className="text-slate-800 font-medium mb-1">
                             Onay Tarihi
                           </p>
                           <p className="text-gray-900 ">
@@ -1657,7 +1651,7 @@ export default function ProjectViewPublicPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 font-medium mb-1">
+                          <p className="text-slate-800 font-medium mb-1">
                             IP Adresi
                           </p>
                           <p className="text-gray-900 ">
@@ -1699,7 +1693,7 @@ export default function ProjectViewPublicPage() {
                       >
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div>
-                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-2 tracking-widest">
+                            <label className="block text-[10px] font-black text-slate-800 uppercase mb-2 tracking-widest">
                               İSİM
                             </label>
                             <input
@@ -1716,7 +1710,7 @@ export default function ProjectViewPublicPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-2 tracking-widest">
+                            <label className="block text-[10px] font-black text-slate-800 uppercase mb-2 tracking-widest">
                               SOYİSİM
                             </label>
                             <input
@@ -1733,7 +1727,7 @@ export default function ProjectViewPublicPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-2 tracking-widest">
+                            <label className="block text-[10px] font-black text-slate-800 uppercase mb-2 tracking-widest">
                               E-POSTA
                             </label>
                             <input
@@ -1754,7 +1748,7 @@ export default function ProjectViewPublicPage() {
                           <button
                             type="button"
                             onClick={() => setShowApprovalForm(false)}
-                            className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest hover:text-slate-700  transition-colors"
+                            className="px-6 py-3 text-xs font-bold text-slate-800 uppercase tracking-widest hover:text-slate-700  transition-colors"
                           >
                             İPTAL
                           </button>

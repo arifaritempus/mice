@@ -885,7 +885,7 @@ export default function QuoteViewPublicPage() {
   const hotelsData = quote?.hotels_data || [];
 
   if (loading)
-    return <div className="p-8 text-center text-gray-500">Yükleniyor...</div>;
+    return <div className="p-8 text-center text-slate-800">Yükleniyor...</div>;
   if (error && !showPasswordForm)
     return <div className="p-8 text-center text-red-500">{error}</div>;
 
@@ -923,7 +923,7 @@ export default function QuoteViewPublicPage() {
               <h2 className="text-2xl font-bold text-slate-800 mb-2 tracking-tight">
                 Güvenli Erişim
               </h2>
-              <p className="text-slate-500 text-sm">
+              <p className="text-slate-800 text-sm">
                 Devam etmek için teklif şifresini giriniz
               </p>
             </div>
@@ -935,7 +935,7 @@ export default function QuoteViewPublicPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifre"
-                  className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
                   required
                   autoFocus
                 />
@@ -965,7 +965,7 @@ export default function QuoteViewPublicPage() {
 
   return (
     <div
-      className="fixed inset-0 overflow-y-auto p-4 md:p-8 transition-colors duration-500 z-50"
+      className="absolute inset-0 w-full h-full overflow-y-auto p-4 md:p-8 transition-colors duration-500 z-50 text-slate-900"
       style={{ backgroundColor: appSettings?.lightBgMain || "#f8fafc" }}
     >
       <div
@@ -988,7 +988,7 @@ export default function QuoteViewPublicPage() {
                 className="h-10 w-auto"
               />
             )}
-            <span className="text-slate-800 text-lg font-bold tracking-tight">
+            <span className="text-white text-lg font-bold tracking-tight">
               {appSettings?.companyName ||
                 process.env.NEXT_PUBLIC_AGENCY_NAME ||
                 "COOP EVENT"}
@@ -1015,7 +1015,7 @@ export default function QuoteViewPublicPage() {
               </svg>
               {exporting ? "İşleniyor..." : "EXCEL İNDİR"}
             </button>
-            <div className="text-slate-800 text-right border-l border-slate-200 pl-4">
+            <div className="text-white text-right border-l border-slate-200 pl-4">
               <p className="text-[10px] text-gray-100 font-bold uppercase tracking-wider">
                 TEKLİF REFERANS
               </p>
@@ -1036,19 +1036,19 @@ export default function QuoteViewPublicPage() {
             <div>
               <label
                 className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                style={{ color: appSettings?.colorSecondary || "#94a3b8" }}
+                
               >
                 MÜŞTERİ | FİRMA
               </label>
               <p
                 className="text-sm font-bold"
-                style={{ color: appSettings?.lightText || "#1e293b" }}
+                
               >
                 {getAgencyName(quote?.agency_id || "")} | {quote?.company_name}
               </p>
             </div>
             <div>
-              <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
+              <label className="block text-[10px] text-slate-800 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-IN TARİHİ
               </label>
               <p className="text-sm font-bold text-slate-800">
@@ -1058,7 +1058,7 @@ export default function QuoteViewPublicPage() {
               </p>
             </div>
             <div>
-              <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
+              <label className="block text-[10px] text-slate-800 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-OUT TARİHİ
               </label>
               <p className="text-sm font-bold text-slate-800">
@@ -1068,7 +1068,7 @@ export default function QuoteViewPublicPage() {
               </p>
             </div>
             <div className="md:col-span-2 lg:col-span-1">
-              <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 italic underline decoration-blue-600/30">
+              <label className="block text-[10px] text-slate-800 font-black uppercase tracking-tighter mb-2 italic underline decoration-blue-600/30">
                 TEKLİF DURUMU (GÜNCELLE)
               </label>
               <div className="relative">
@@ -1076,7 +1076,7 @@ export default function QuoteViewPublicPage() {
                   value={tempStatus}
                   onChange={(e) => setTempStatus(e.target.value)}
                   disabled={linkData?.approval?.is_approved}
-                  className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
+                  className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-gray-300"
                 >
                   <option value="BEKLEMEDE">BEKLEMEDE</option>
                   <option value="KONFİRME">KONFİRME</option>
@@ -1171,17 +1171,13 @@ export default function QuoteViewPublicPage() {
                     <div>
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                        style={{
-                          color: appSettings?.colorSecondary || "#94a3b8",
-                        }}
+                        
                       >
                         OTEL KONSEPTİ
                       </span>
                       <span
                         className="text-sm font-bold"
-                        style={{
-                          color: appSettings?.lightText || "#1e293b",
-                        }}
+                        
                       >
                         {h.hotel_concept || "-"}
                       </span>
@@ -1189,17 +1185,13 @@ export default function QuoteViewPublicPage() {
                     <div>
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                        style={{
-                          color: appSettings?.colorSecondary || "#94a3b8",
-                        }}
+                        
                       >
                         GİRİŞ / ÇIKIŞ
                       </span>
                       <span
                         className="text-sm font-bold whitespace-nowrap"
-                        style={{
-                          color: appSettings?.lightText || "#1e293b",
-                        }}
+                        
                       >
                         {h.check_in_date
                           ? new Date(h.check_in_date).toLocaleDateString(
@@ -1217,17 +1209,13 @@ export default function QuoteViewPublicPage() {
                     <div>
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                        style={{
-                          color: appSettings?.colorSecondary || "#94a3b8",
-                        }}
+                        
                       >
                         ODA / PAX
                       </span>
                       <span
                         className="text-sm font-bold"
-                        style={{
-                          color: appSettings?.lightText || "#1e293b",
-                        }}
+                        
                       >
                         {h.room_count} Oda / {h.pax_count} Pax
                       </span>
@@ -1235,17 +1223,13 @@ export default function QuoteViewPublicPage() {
                     <div>
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30"
-                        style={{
-                          color: appSettings?.colorSecondary || "#94a3b8",
-                        }}
+                        
                       >
                         OPSİYON
                       </span>
                       <span
                         className="text-sm font-bold"
-                        style={{
-                          color: appSettings?.lightText || "#1e293b",
-                        }}
+                        
                       >
                         {h.option || "-"}{" "}
                         {h.option_date ? (
@@ -1264,9 +1248,7 @@ export default function QuoteViewPublicPage() {
                     <div>
                       <span
                         className="block text-[10px] font-black uppercase tracking-tighter mb-2 italic underline decoration-blue-600/30"
-                        style={{
-                          color: appSettings?.colorSecondary || "#94a3b8",
-                        }}
+                        
                       >
                         OTEL DURUMU (GÜNCELLE)
                       </span>
@@ -1286,7 +1268,7 @@ export default function QuoteViewPublicPage() {
                             )
                           }
                           disabled={linkData?.approval?.is_approved}
-                          className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
+                          className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-gray-300"
                         >
                           <option value="BEKLEMEDE">BEKLEMEDE</option>
                           <option value="KONFİRME">KONFİRME</option>
@@ -1331,9 +1313,7 @@ export default function QuoteViewPublicPage() {
                   >
                     <th
                       className="py-4 px-4 text-[10px] font-black uppercase tracking-tighter"
-                      style={{
-                        color: appSettings?.colorSecondary || "#94a3b8",
-                      }}
+                      
                     >
                       HİZMET DETAYI / AÇIKLAMA
                     </th>
@@ -1353,7 +1333,7 @@ export default function QuoteViewPublicPage() {
                     <tr>
                       <td
                         colSpan={4}
-                        className="py-10 text-center text-gray-400 text-xs italic"
+                        className="py-10 text-center text-slate-800 text-xs italic"
                       >
                         Kayıtlı hizmet bulunmamaktadır.
                       </td>
@@ -1446,10 +1426,10 @@ export default function QuoteViewPublicPage() {
                                     </p>
                                   )}
                                 </td>
-                                <td className="py-4 text-xs font-medium text-right text-slate-500 whitespace-nowrap">
+                                <td className="py-4 text-xs font-medium text-right text-slate-800 whitespace-nowrap">
                                   {item.unit_quantity} x {item.sefer}
                                 </td>
-                                <td className="py-4 text-xs font-medium text-right text-slate-500 whitespace-nowrap">
+                                <td className="py-4 text-xs font-medium text-right text-slate-800 whitespace-nowrap">
                                   {formatTr(item.unit_price)}{" "}
                                   {item.currency === "TRY"
                                     ? "₺"
@@ -1466,7 +1446,7 @@ export default function QuoteViewPublicPage() {
                             {/* Category Subtotal Row */}
                             <tr className="bg-black/5 dark:bg-white/5">
                               <td colSpan={3} className="py-3 text-right">
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic pr-4">
+                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest italic pr-4">
                                   ARA TOPLAM ({catName})
                                 </span>
                               </td>
@@ -1488,7 +1468,7 @@ export default function QuoteViewPublicPage() {
                 <h4 className="text-[10px] text-slate-800/80 font-bold uppercase tracking-wider mb-2">
                   NOTLAR & ŞARTLAR
                 </h4>
-                <ul className="text-[11px] text-slate-500 space-y-1.5 leading-relaxed">
+                <ul className="text-[11px] text-slate-800 space-y-1.5 leading-relaxed">
                   {quote?.notes ? (
                     quote.notes
                       .split("\n")
@@ -1625,7 +1605,7 @@ export default function QuoteViewPublicPage() {
                       >
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                           <div className="text-left">
-                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-3 tracking-widest">
+                            <label className="block text-[10px] font-black text-slate-800 uppercase mb-3 tracking-widest">
                               İSİM
                             </label>
                             <input
@@ -1638,12 +1618,12 @@ export default function QuoteViewPublicPage() {
                                 })
                               }
                               placeholder="Adınız"
-                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-500 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
                               required
                             />
                           </div>
                           <div className="text-left">
-                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-3 tracking-widest">
+                            <label className="block text-[10px] font-black text-slate-800 uppercase mb-3 tracking-widest">
                               SOYİSİM
                             </label>
                             <input
@@ -1656,12 +1636,12 @@ export default function QuoteViewPublicPage() {
                                 })
                               }
                               placeholder="Soyadınız"
-                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-500 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
                               required
                             />
                           </div>
                           <div className="text-left">
-                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-3 tracking-widest">
+                            <label className="block text-[10px] font-black text-slate-800 uppercase mb-3 tracking-widest">
                               E-POSTA ADRESİ
                             </label>
                             <input
@@ -1674,7 +1654,7 @@ export default function QuoteViewPublicPage() {
                                 })
                               }
                               placeholder="Email adresiniz"
-                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-500 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
                               required
                             />
                           </div>
@@ -1683,7 +1663,7 @@ export default function QuoteViewPublicPage() {
                           <button
                             type="button"
                             onClick={() => setShowApprovalForm(false)}
-                            className="px-8 py-4 text-xs font-black text-gray-600 uppercase tracking-widest hover:text-gray-800 hover:bg-black/5 dark:bg-white/5/50 rounded-xl transition-all"
+                            className="px-8 py-4 text-xs font-black text-slate-800 uppercase tracking-widest hover:text-gray-800 hover:bg-black/5 dark:bg-white/5/50 rounded-xl transition-all"
                           >
                             VAZGEÇ
                           </button>
