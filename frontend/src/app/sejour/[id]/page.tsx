@@ -395,11 +395,11 @@ export default function SejourDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "KONFİRME":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300";
       case "İPTAL":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300";
       case "TEKLİF":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300";
       case "BEKLEMEDE":
         return "bg-yellow-100 text-yellow-800";
       default:
@@ -432,7 +432,7 @@ export default function SejourDetailPage() {
       <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
         <div className="max-w-7xl mx-auto animate-pulse">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
+          <div className="bg-v3-surface rounded-lg shadow-sm p-6 space-y-4">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
@@ -480,7 +480,7 @@ export default function SejourDetailPage() {
         }}
       >
         <div
-          className="bg-white px-10 py-12 w-full min-h-[297mm] text-gray-900"
+          className="bg-v3-surface px-10 py-12 w-full min-h-[297mm] text-gray-900"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
           {/* Header with Logos */}
@@ -592,7 +592,7 @@ export default function SejourDetailPage() {
                   {sejour.rooms.map((room, idx) => (
                     <div
                       key={`room-${idx}`}
-                      className="bg-white border border-gray-200 p-4 rounded-sm flex justify-between items-center"
+                      className="bg-v3-surface border border-gray-200 p-4 rounded-sm flex justify-between items-center"
                     >
                       <div>
                         <span className="block text-[8px] tracking-widest text-gray-600 uppercase mb-1">
@@ -731,7 +731,7 @@ export default function SejourDetailPage() {
           </div>
 
           {sejour.notes && (
-            <div className="mt-12 bg-white border border-gray-200 p-4">
+            <div className="mt-12 bg-v3-surface border border-gray-200 p-4">
               <h3 className="text-[9px] tracking-widest text-gray-900 font-bold uppercase mb-2">
                 IMPORTANT NOTES
               </h3>
@@ -771,7 +771,7 @@ export default function SejourDetailPage() {
       {/* Main UI */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl font-bold text-v3-text">
             Sejour Detayı
           </h1>
           <p className="text-gray-600 mt-1 text-sm">
@@ -824,7 +824,7 @@ export default function SejourDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-v3-surface rounded-lg shadow p-4">
           <h2 className="text-base font-semibold mb-2">Temel Bilgiler</h2>
           <div className="space-y-2 text-sm">
             <p>
@@ -842,7 +842,7 @@ export default function SejourDetailPage() {
             </p>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-v3-surface rounded-lg shadow p-4">
           <h2 className="text-base font-semibold mb-2">Toplam Tutarlar</h2>
           <div className="space-y-1 text-sm font-semibold">
             {sejour.totals &&
@@ -856,7 +856,7 @@ export default function SejourDetailPage() {
       </div>
 
       {sejour.rooms?.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4 overflow-x-auto">
+        <div className="bg-v3-surface rounded-lg shadow p-4 mb-4 overflow-x-auto">
           <h2 className="text-base font-semibold mb-2">Konaklama</h2>
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -889,7 +889,7 @@ export default function SejourDetailPage() {
       )}
 
       {sejour.flights?.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4 overflow-x-auto">
+        <div className="bg-v3-surface rounded-lg shadow p-4 mb-4 overflow-x-auto">
           <h2 className="text-base font-semibold mb-2">Uçuşlar</h2>
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -928,7 +928,7 @@ export default function SejourDetailPage() {
       )}
 
       {sejour.transfers?.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4 overflow-x-auto">
+        <div className="bg-v3-surface rounded-lg shadow p-4 mb-4 overflow-x-auto">
           <h2 className="text-base font-semibold mb-2">Transferler</h2>
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -971,7 +971,7 @@ export default function SejourDetailPage() {
       )}
 
       {sejour.notes && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-v3-surface rounded-lg shadow p-4">
           <h2 className="text-base font-semibold mb-2">Notlar</h2>
           <p className="text-sm">{sejour.notes}</p>
         </div>
@@ -984,10 +984,10 @@ export default function SejourDetailPage() {
         title="Sejour Log Kayıtları"
         maxWidth="max-w-4xl"
       >
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
+        <div className="p-4 bg-black/5 dark:bg-white/5 rounded-lg max-h-[70vh] flex flex-col">
           <div className="mb-4 flex flex-col md:flex-row gap-4 items-start md:items-center">
             <div className="flex-1 w-full relative">
-              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
+              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-v3-surface focus-within:ring-2 focus-within:ring-blue-500">
                 {logSearchTerms.map((term, idx) => (
                   <div
                     key={idx}
@@ -1033,7 +1033,7 @@ export default function SejourDetailPage() {
                       setLogSearchTerms((prev) => prev.slice(0, -1));
                     }
                   }}
-                  className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                  className="flex-1 min-w-[150px] bg-transparent text-sm text-v3-text outline-none placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
@@ -1130,31 +1130,31 @@ export default function SejourDetailPage() {
                   .map((log) => (
                     <div
                       key={log.id}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs"
+                      className="bg-v3-surface p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs"
                     >
                       <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
                         <div className="flex items-center gap-2">
                           <span
                             className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
                               log.action === "INSERT"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                                 : log.action === "UPDATE"
-                                  ? "bg-blue-100 text-blue-700"
+                                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                                   : log.action === "DELETE"
-                                    ? "bg-red-100 text-red-700"
+                                    ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                     : "bg-gray-100 text-gray-700"
                             }`}
                           >
                             {log.action}
                           </span>
-                          <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          <span className="font-semibold text-v3-text">
                             {log.user_name ||
                               users.find((u) => u.id === log.user_id)?.name ||
                               users.find((u) => u.id === log.user_id)?.email ||
                               log.user_id ||
                               "Sistem / Anonim"}
                           </span>
-                          <span className="text-gray-400 text-[10px]">
+                          <span className="text-v3-muted text-[10px]">
                             ({log.module})
                           </span>
                         </div>
@@ -1167,7 +1167,7 @@ export default function SejourDetailPage() {
                       {(() => {
                         const contextStr = getItemContext(log, uuidNameMap);
                         return contextStr ? (
-                          <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                          <div className="mb-2 bg-black/5 dark:bg-white/5/50 p-2 rounded border border-v3-border text-[11px] text-v3-muted font-medium">
                             <span className="text-blue-600 dark:text-blue-400 font-semibold">
                               Kayıt Detayı:
                             </span>{" "}
@@ -1191,20 +1191,20 @@ export default function SejourDetailPage() {
                           }
 
                           return (
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                            <div className="border border-v3-border rounded-md overflow-hidden">
                               <table className="w-full text-left border-collapse">
                                 <thead>
-                                  <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase tracking-wider">
-                                    <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3">
+                                  <tr className="bg-black/5 dark:bg-white/5 text-v3-muted text-[10px] uppercase tracking-wider">
+                                    <th className="px-3 py-2 font-medium border-b border-v3-border w-1/3">
                                       Alan
                                     </th>
                                     {log.action !== "INSERT" && (
-                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-red-600 dark:text-red-400">
+                                      <th className="px-3 py-2 font-medium border-b border-v3-border w-1/3 text-red-600 dark:text-red-400">
                                         Eski Değer
                                       </th>
                                     )}
                                     {log.action !== "DELETE" && (
-                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-green-600 dark:text-green-400">
+                                      <th className="px-3 py-2 font-medium border-b border-v3-border w-1/3 text-green-600 dark:text-green-400">
                                         Yeni Değer
                                       </th>
                                     )}
@@ -1214,13 +1214,13 @@ export default function SejourDetailPage() {
                                   {changes.map((change, idx) => (
                                     <tr
                                       key={idx}
-                                      className="bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                      className="bg-v3-surface/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                                     >
-                                      <td className="px-3 py-2 font-medium text-gray-700 dark:text-gray-300">
+                                      <td className="px-3 py-2 font-medium text-v3-text">
                                         {translateField(change.field)}
                                       </td>
                                       {log.action !== "INSERT" && (
-                                        <td className="px-3 py-2 text-gray-500 dark:text-gray-400 line-through decoration-red-300 dark:decoration-red-800">
+                                        <td className="px-3 py-2 text-v3-muted line-through decoration-red-300 dark:decoration-red-800">
                                           {formatLogValue(
                                             change.oldVal,
                                             uuidNameMap,
@@ -1228,7 +1228,7 @@ export default function SejourDetailPage() {
                                         </td>
                                       )}
                                       {log.action !== "DELETE" && (
-                                        <td className="px-3 py-2 text-gray-800 dark:text-gray-200 font-medium">
+                                        <td className="px-3 py-2 text-v3-text font-medium">
                                           {formatLogValue(
                                             change.newVal,
                                             uuidNameMap,

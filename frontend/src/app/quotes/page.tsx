@@ -919,10 +919,10 @@ export default function QuotesPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Teklifler sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -941,16 +941,16 @@ export default function QuotesPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               Teklifler
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               Müşteri tekliflerini yönetin
             </p>
           </div>
@@ -997,16 +997,16 @@ export default function QuotesPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 onClick={exportToExcel}
                 disabled={exporting}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {exporting ? (
                   <>
                     <svg
-                      className="animate-spin h-3 w-3 text-white"
+                      className="animate-spin h-3 w-3 text-v3-text"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -1048,7 +1048,7 @@ export default function QuotesPage() {
               {canCreate(Module.QUOTES) && (
                 <Link
                   href="/quotes/create"
-                  className="bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   Yeni Teklif
                 </Link>
@@ -1058,16 +1058,16 @@ export default function QuotesPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-2 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
+        <div className="flex flex-wrap items-center gap-2 mb-2 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
           {/* Durum Filters */}
-          <div className="flex flex-wrap items-center gap-1.5 border-r border-white/10 pr-3">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 mr-1">
+          <div className="flex flex-wrap items-center gap-1.5 border-r border-v3-border pr-3">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1">
               Durum:
             </span>
 
             <button
               onClick={() => setFilter("all")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "all" ? "bg-blue-500/20 border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "all" ? "bg-blue-500/20 border-blue-500/50 text-blue-600 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 Tümü
@@ -1079,7 +1079,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setFilter("BEKLEMEDE")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "BEKLEMEDE" ? "bg-orange-500/20 border-orange-500/50 text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "BEKLEMEDE" ? "bg-orange-500/20 border-orange-500/50 text-orange-600 dark:text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 Beklemede
@@ -1091,7 +1091,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setFilter("KONFİRME")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "KONFİRME" ? "bg-teal-500/20 border-teal-500/50 text-teal-300 shadow-[0_0_10px_rgba(20,184,166,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "KONFİRME" ? "bg-teal-500/20 border-teal-500/50 text-teal-600 dark:text-teal-300 shadow-[0_0_10px_rgba(20,184,166,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 Konfirme
@@ -1103,7 +1103,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setFilter("İPTAL")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "İPTAL" ? "bg-red-500/20 border-red-500/50 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "İPTAL" ? "bg-red-500/20 border-red-500/50 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 İptal
@@ -1116,13 +1116,13 @@ export default function QuotesPage() {
 
           {/* Opsiyon Filters */}
           <div className="flex flex-wrap items-center gap-1.5 pl-2">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 mr-1">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1">
               Opsiyon:
             </span>
 
             <button
               onClick={() => setOptionFilter("all")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "all" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "all" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 Tümü
@@ -1134,7 +1134,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setOptionFilter("1. OPSİYON")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "1. OPSİYON" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "1. OPSİYON" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 1. Opsiyon
@@ -1146,7 +1146,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setOptionFilter("2. OPSİYON")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "2. OPSİYON" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "2. OPSİYON" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 2. Opsiyon
@@ -1158,7 +1158,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setOptionFilter("SOR-SAT")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "SOR-SAT" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${optionFilter === "SOR-SAT" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
             >
               <span className="text-[10px] font-medium uppercase tracking-wider">
                 Sor-Sat
@@ -1171,13 +1171,13 @@ export default function QuotesPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl w-full min-w-0 flex-grow shrink-0 flex flex-col relative overflow-hidden">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 flex-grow shrink-0 flex flex-col relative overflow-hidden">
           <div className="w-full flex-1 overflow-auto custom-scrollbar">
             <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-[#1e293b]/95 sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-white/10">
+              <thead className="bg-v3-surface sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-v3-border">
                 <tr>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("created_at")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1204,7 +1204,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("reference")}
                   >
                     <div className="flex items-center">
@@ -1227,7 +1227,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("date")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1254,7 +1254,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("company_name")}
                   >
                     <div className="flex items-center">
@@ -1277,7 +1277,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("agency")}
                   >
                     <div className="flex items-center">
@@ -1300,7 +1300,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("hotel")}
                   >
                     <div className="flex items-center">
@@ -1324,7 +1324,7 @@ export default function QuotesPage() {
                   </th>
 
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("quote_type")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1352,7 +1352,7 @@ export default function QuotesPage() {
                   </th>
 
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("option")}
                   >
                     <div className="flex items-center">
@@ -1376,7 +1376,7 @@ export default function QuotesPage() {
                   </th>
 
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("option_date")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1404,7 +1404,7 @@ export default function QuotesPage() {
                   </th>
 
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("room_pax")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1430,7 +1430,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("total_amount")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1457,7 +1457,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("currency")}
                   >
                     <div className="flex items-center">
@@ -1480,7 +1480,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("status")}
                   >
                     <div className="flex items-center">
@@ -1517,32 +1517,32 @@ export default function QuotesPage() {
                 {visibleQuotes.map((quote) => (
                   <tr
                     key={quote.id}
-                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0"
                     onDoubleClick={() => router.push(`/quotes/${quote.id}`)}
                   >
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {formatDate(quote.created_at)}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {quote.reference}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       <div className="leading-tight flex flex-col gap-0.5">
                         <div className="flex items-center">
                           <span>{formatDate(quote.check_in_date)}</span>
-                          <span className="text-slate-500 ml-1 text-[10px] uppercase font-medium tracking-wider">
+                          <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
                             , {getDayNameShort(quote.check_in_date)}
                           </span>
                         </div>
                         <div className="flex items-center">
                           <span>{formatDate(quote.check_out_date)}</span>
-                          <span className="text-slate-500 ml-1 text-[10px] uppercase font-medium tracking-wider">
+                          <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
                             , {getDayNameShort(quote.check_out_date)}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200 max-w-[180px]">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[180px]">
                       <span
                         className="block truncate"
                         title={quote.company_name || "-"}
@@ -1550,7 +1550,7 @@ export default function QuotesPage() {
                         {quote.company_name}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200 max-w-[160px]">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[160px]">
                       <span
                         className="block truncate"
                         title={getAgencyName(quote.agency_id) || "-"}
@@ -1558,7 +1558,7 @@ export default function QuotesPage() {
                         {getAgencyName(quote.agency_id)}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200 max-w-[160px]">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[160px]">
                       {(() => {
                         let tooltipNames: string[] = [];
                         let firstHotelName = "";
@@ -1593,7 +1593,7 @@ export default function QuotesPage() {
                           <div className="flex items-center gap-1 group" title={allHotelsText}>
                             <span className="truncate block max-w-[120px] cursor-help">{firstHotelName}</span>
                             {additionalCount > 0 && (
-                              <span className="text-[9px] bg-blue-500/20 text-blue-400 font-bold px-1.5 py-0.5 rounded cursor-help whitespace-nowrap flex-shrink-0">
+                              <span className="text-[9px] bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-0.5 rounded cursor-help whitespace-nowrap flex-shrink-0">
                                 +{additionalCount}
                               </span>
                             )}
@@ -1602,27 +1602,27 @@ export default function QuotesPage() {
                       })()}
                     </td>
 
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {quote.quote_type}
                     </td>
 
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {quote.option}
                     </td>
 
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {quote.option_date ? formatDate(quote.option_date) : "-"}
                     </td>
 
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {quote.room_count && quote.pax_count
                         ? `${quote.room_count} | ${quote.pax_count}`
                         : quote.room_pax || "N/A"}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {formatNumber(quote.total_amount || 0)}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {getCurrencyDisplay(quote.items?.[0]?.currency || "EUR")}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
@@ -1676,7 +1676,7 @@ export default function QuotesPage() {
                           onClick={() =>
                             (window.location.href = `/quotes/${quote.id}`)
                           }
-                          className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg hover:bg-blue-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-600 dark:text-blue-300 p-1.5 rounded-lg hover:bg-blue-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                           title="Görüntüle"
                         >
                           <svg
@@ -1724,7 +1724,7 @@ export default function QuotesPage() {
                         )}
                         <button
                           onClick={() => handleCopyQuote(quote)}
-                          className="text-orange-400 hover:text-orange-300 p-1.5 rounded-lg hover:bg-orange-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                          className="text-orange-600 dark:text-orange-400 hover:text-orange-600 dark:text-orange-300 p-1.5 rounded-lg hover:bg-orange-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                           title="Kopyala"
                         >
                           <svg
@@ -1803,7 +1803,7 @@ export default function QuotesPage() {
                   <tr>
                     <td
                       colSpan={tableColumnCount}
-                      className="px-4 py-8 text-center text-sm text-slate-400"
+                      className="px-4 py-8 text-center text-sm text-v3-muted"
                     >
                       Filtrelere uygun kayıt bulunamadı.
                     </td>
@@ -1830,9 +1830,9 @@ export default function QuotesPage() {
           maxWidth="max-w-2xl"
         >
           {quoteToConfirm && (
-            <div className="flex flex-col space-y-6 text-white p-6">
-              <p className="text-sm text-white">
-                <span className="font-semibold text-white uppercase tracking-tight">
+            <div className="flex flex-col space-y-6 text-v3-text p-6">
+              <p className="text-sm text-v3-text">
+                <span className="font-semibold text-v3-text uppercase tracking-tight">
                   {quoteToConfirm.reference}
                 </span>{" "}
                 referanslı teklif için konfirme edilecek otelleri seçin:
@@ -1849,7 +1849,7 @@ export default function QuotesPage() {
                         className={`flex items-center p-4 rounded-xl border transition-all cursor-pointer ${
                           isSelected
                             ? "border-blue-500/50 bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-                            : "border-white/10 bg-[#0f172a]/40 hover:bg-white/5 backdrop-blur-md"
+                            : "border-v3-border bg-v3-surface hover:bg-v3-border backdrop-blur-md"
                         }`}
                       >
                         <div
@@ -1857,7 +1857,7 @@ export default function QuotesPage() {
                         >
                           {isSelected && (
                             <svg
-                              className="w-3.5 h-3.5 text-white"
+                              className="w-3.5 h-3.5 text-v3-text"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -1884,14 +1884,14 @@ export default function QuotesPage() {
                         </div>
                         <div className="ml-4 flex-1">
                           <div className="flex justify-between items-start">
-                            <span className="text-sm font-semibold text-white tracking-tight">
+                            <span className="text-sm font-semibold text-v3-text tracking-tight">
                               {idx + 1}. {hotelObj?.name || "Otel Bilgisi Yok"}
                             </span>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase tracking-widest">
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 uppercase tracking-widest">
                               {h.option}
                             </span>
                           </div>
-                          <div className="text-[11px] font-medium text-slate-400 mt-1">
+                          <div className="text-[11px] font-medium text-v3-muted mt-1">
                             {formatDate(h.check_in_date)} -{" "}
                             {formatDate(h.check_out_date)} • {h.room_count} Oda,{" "}
                             {h.pax_count} Pax
@@ -1904,8 +1904,8 @@ export default function QuotesPage() {
 
                 {(!(quoteToConfirm as any).hotels_data ||
                   (quoteToConfirm as any).hotels_data.length === 0) && (
-                  <div className="text-center py-12 bg-white/5 rounded-xl border border-dashed border-white/20">
-                    <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest">
+                  <div className="text-center py-12 bg-v3-border rounded-xl border border-dashed border-v3-border">
+                    <p className="text-sm font-semibold text-v3-muted uppercase tracking-widest">
                       Otel verisi bulunamadı.
                     </p>
                   </div>
@@ -1913,7 +1913,7 @@ export default function QuotesPage() {
               </div>
 
               <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 flex items-start gap-3 backdrop-blur-sm">
-                <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                <div className="p-2 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg">
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -1928,16 +1928,16 @@ export default function QuotesPage() {
                     />
                   </svg>
                 </div>
-                <p className="text-[11px] font-medium text-blue-300 leading-relaxed pt-0.5">
+                <p className="text-[11px] font-medium text-blue-600 dark:text-blue-300 leading-relaxed pt-0.5">
                   Seçilen tüm oteller TEK BİR PROJE içerisinde birleştirilerek
                   aktarılacaktır.
                 </p>
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
+              <div className="flex justify-end gap-3 pt-6 border-t border-v3-border">
                 <button
                   onClick={() => setShowConfirmModal(false)}
-                  className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors uppercase disabled:opacity-50"
+                  className="px-6 py-2 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors uppercase disabled:opacity-50"
                   disabled={transferring}
                 >
                   İptal
@@ -1972,7 +1972,7 @@ export default function QuotesPage() {
                     transferring ||
                     !Object.values(selectedHotels).some((v) => v)
                   }
-                  className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase flex items-center gap-2 disabled:opacity-60"
+                  className="px-6 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase flex items-center gap-2 disabled:opacity-60"
                 >
                   {transferring ? (
                     <>
@@ -2013,23 +2013,23 @@ export default function QuotesPage() {
           title="SİLMEYİ ONAYLA"
           maxWidth="max-w-md"
         >
-          <div className="flex flex-col items-center text-center space-y-6 p-6 text-white">
+          <div className="flex flex-col items-center text-center space-y-6 p-6 text-v3-text">
             <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.15)] border border-red-500/30">
               <Trash2 size={32} />
             </div>
             <div className="space-y-2">
-              <p className="text-lg font-light text-white glow-text tracking-tight">
+              <p className="text-lg font-light text-v3-text glow-text tracking-tight">
                 Emin misiniz?
               </p>
-              <p className="text-sm font-medium text-slate-400">
+              <p className="text-sm font-medium text-v3-muted">
                 Bu teklifi silmek istediğinizden emin misiniz? Bu işlem geri
                 alınamaz.
               </p>
             </div>
-            <div className="flex justify-center gap-3 w-full pt-4 border-t border-white/10 mt-6">
+            <div className="flex justify-center gap-3 w-full pt-4 border-t border-v3-border mt-6">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-8 py-2.5 text-xs font-semibold text-white hover:text-white transition-colors uppercase"
+                className="px-8 py-2.5 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors uppercase"
               >
                 İPTAL
               </button>
@@ -2049,25 +2049,25 @@ export default function QuotesPage() {
           title={generalConfirmConfig?.title || "ONAYLA"}
           maxWidth="max-w-md"
         >
-          <div className="flex flex-col items-center text-center space-y-6 p-6 text-white">
-            <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)] border border-blue-500/30">
+          <div className="flex flex-col items-center text-center space-y-6 p-6 text-v3-text">
+            <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)] border border-blue-500/30">
               <AlertTriangle size={32} />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-white leading-relaxed">
+              <p className="text-sm font-medium text-v3-text leading-relaxed">
                 {generalConfirmConfig?.message}
               </p>
             </div>
-            <div className="flex justify-center gap-3 w-full pt-4 border-t border-white/10 mt-6">
+            <div className="flex justify-center gap-3 w-full pt-4 border-t border-v3-border mt-6">
               <button
                 onClick={() => setShowGeneralConfirm(false)}
-                className="px-8 py-2.5 text-xs font-semibold text-white hover:text-white transition-colors uppercase"
+                className="px-8 py-2.5 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors uppercase"
               >
                 {generalConfirmConfig?.cancelText || "İPTAL"}
               </button>
               <button
                 onClick={() => generalConfirmConfig?.onConfirm()}
-                className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase"
+                className="px-8 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase"
               >
                 {generalConfirmConfig?.confirmText || "ONAYLA"}
               </button>

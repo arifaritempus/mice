@@ -424,7 +424,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     }
   };
   return <div className="space-y-3">
-      <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+      <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
           {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
               {tag}
@@ -436,7 +436,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
           {searchTags.length > 0 && <button onClick={() => {
             setSearchTags([]);
             setTransferSearch("");
-          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted pl-1 shrink-0 transition-colors">
             <X className="w-4 h-4" />
           </button>}
         </div></div>
@@ -447,7 +447,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
           <table className="w-full text-xs">
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   <div className="flex items-center gap-1">
                     <input type="checkbox" checked={filteredTransfers.length > 0 && filteredTransfers.every(t => selectedTransfers.includes(t.id))} onChange={() => {
                     const filteredIds = filteredTransfers.map(t => t.id);
@@ -464,46 +464,46 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                     Seç
                   </div>
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Transfer Tipi
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Otel
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Tarih
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Saat
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Uçuş Kodu
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Güzergah
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Yolcu Sayısı
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Transfer Tipi
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Araç Tipi
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Tedarikçi
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Maliyet Tutarı
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Döviz
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Misafirler
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-gray-900 dark:text-white">
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   <div className="flex items-center justify-between relative">
                     <span>İşlemler</span>
                     <div className="relative">
@@ -515,7 +515,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                         </svg>
                       </button>
-                      {showAddTransferMenu && addMenuPosition && createPortal(<div id="manual-transfer-menu" className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] py-1 w-44" style={{
+                      {showAddTransferMenu && addMenuPosition && createPortal(<div id="manual-transfer-menu" className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-v3-border rounded-md shadow-lg z-[9999] py-1 w-44" style={{
                       top: addMenuPosition.top,
                       left: addMenuPosition.left
                     }}>
@@ -545,7 +545,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
             </thead>
             <tbody>
               {filteredTransfers.flatMap(transfer => {
-              const elements: any[] = [<tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={e => handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0 ${transfer.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20" : ""}`} onDoubleClick={() => {
+              const elements: any[] = [<tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={e => handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0 ${transfer.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20" : ""}`} onDoubleClick={() => {
                 if (!transfer.isEditing) handleTransferEdit(transfer.id);
               }}>
                     <td className="px-2.5 py-2.5">
@@ -559,15 +559,15 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                             {transfer.typeLabel || (transfer.direction === "arrival" ? "Grup Giriş" : "Grup Çıkış")}
                           </span>
                           <button onClick={() => toggleGroupDetails(transfer.id)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title={expandedGroups.has(transfer.id) ? "Detayları Gizle" : "Detayları Göster"}>
-                            <svg className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${expandedGroups.has(transfer.id) ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={`w-4 h-4 text-v3-muted transition-transform ${expandedGroups.has(transfer.id) ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                           </button>
-                        </div> : <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block ${transfer.direction === "arrival" ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700" : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-gray-700"}`}>
+                        </div> : <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block ${transfer.direction === "arrival" ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700" : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-v3-border"}`}>
                           {transfer.direction === "arrival" ? "Giriş" : "Çıkış"}
                         </span>}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                    <td className="px-2.5 py-2.5 text-[10px] font-bold text-v3-muted">
                       {(() => {
                     if (!transfer.hotel_id) return "Genel";
                     // 1. Proje otel sekmelerinde ara
@@ -582,7 +582,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                     return masterHotel?.name || "Otel";
                   })()}
                     </td>
-                    <td className="px-2.5 py-2.5 text-gray-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 text-v3-text">
                       {transfer.isEditing ? <input type="text" id={`transfer-date-${transfer.id}`} value={transfer.date || ""} onChange={e => updateTransfer(transfer.id, "date", e.target.value)} onKeyDown={e => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -591,9 +591,9 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       e.preventDefault();
                       cancelTransferEdit(transfer.id);
                     }
-                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700" placeholder="DD.MM.YYYY" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : transfer.date}
+                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" placeholder="DD.MM.YYYY" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : transfer.date}
                     </td>
-                    <td className="px-2.5 py-2.5 text-gray-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 text-v3-text">
                       {transfer.isEditing ? <input type="text" value={transfer.time || ""} onChange={e => updateTransfer(transfer.id, "time", e.target.value)} onKeyDown={e => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -602,9 +602,9 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       e.preventDefault();
                       cancelTransferEdit(transfer.id);
                     }
-                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700" placeholder="HH:MM" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : transfer.time}
+                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" placeholder="HH:MM" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : transfer.time}
                     </td>
-                    <td className="px-2.5 py-2.5 text-gray-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 text-v3-text">
                       {transfer.isEditing ? <input type="text" value={transfer.flightCode || ""} onChange={e => updateTransfer(transfer.id, "flightCode", e.target.value)} onKeyDown={e => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -613,14 +613,14 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       e.preventDefault();
                       cancelTransferEdit(transfer.id);
                     }
-                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 font-mono" placeholder="TK1234" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-xs text-gray-600 dark:text-gray-300 font-mono">
+                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 font-mono" placeholder="TK1234" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-xs text-gray-600 dark:text-gray-300 font-mono">
                           {transfer.flightCode || "-"}
                         </span>}
                     </td>
-                    <td className="px-2.5 py-2.5 text-gray-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 text-v3-text">
                       {transfer.route}
                     </td>
-                    <td className="px-2.5 py-2.5 text-gray-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 text-v3-text">
                       {transfer.isEditing ? <input type="text" value={formatIntegerForDisplay(transfer.passengerCount)} onChange={e => updateTransfer(transfer.id, "passengerCount", parseInt(formatIntegerForInput(e.target.value)) || 1)} onKeyDown={e => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -629,16 +629,16 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       e.preventDefault();
                       cancelTransferEdit(transfer.id);
                     }
-                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700" placeholder="1" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : formatIntegerForDisplay(transfer.passengerCount)}
+                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" placeholder="1" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : formatIntegerForDisplay(transfer.passengerCount)}
                     </td>
                     <td className="px-2.5 py-2.5">
-                      <select value={transfer.transferType || ""} onChange={e => updateTransfer(transfer.id, "transferType", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                      <select value={transfer.transferType || ""} onChange={e => updateTransfer(transfer.id, "transferType", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="private">Özel</option>
                         <option value="economic">Ekonomik</option>
                       </select>
                     </td>
                     <td className="px-2.5 py-2.5">
-                      <select value={transfer.vehicleType || ""} onChange={e => updateTransfer(transfer.id, "vehicleType", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                      <select value={transfer.vehicleType || ""} onChange={e => updateTransfer(transfer.id, "vehicleType", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">Seçiniz</option>
                         <option value="vito">Vito</option>
                         <option value="sprinter">Sprinter</option>
@@ -676,7 +676,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       }
                     }} onBlur={e => {
                       // Temizleme mantığı onChange içine taşındı.
-                    }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 cursor-pointer" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                    }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 cursor-pointer" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
                           <span className="pointer-events-none">
                             <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -691,11 +691,11 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       width: dropdownPosition.width,
                       minWidth: "300px"
                     }}>
-                              {allSuppliers.filter((item: any) => (item.displayName || item.name || item.title || "").toLowerCase().includes((supplierDropdowns[transfer.id]?.searchTerm || "").toLowerCase())).map((item: any, itemIndex: number) => <div key={`${item.type}-${item.id}`} onClick={() => selectSupplier(transfer.id, item.id, item.displayName || item.name || item.title)} className={`px-2.5 py-2.5 text-xs cursor-pointer transition-colors duration-150 flex items-center justify-between ${itemIndex === supplierDropdowns[transfer.id]?.selectedIndex ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100" : "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+                              {allSuppliers.filter((item: any) => (item.displayName || item.name || item.title || "").toLowerCase().includes((supplierDropdowns[transfer.id]?.searchTerm || "").toLowerCase())).map((item: any, itemIndex: number) => <div key={`${item.type}-${item.id}`} onClick={() => selectSupplier(transfer.id, item.id, item.displayName || item.name || item.title)} className={`px-2.5 py-2.5 text-xs cursor-pointer transition-colors duration-150 flex items-center justify-between ${itemIndex === supplierDropdowns[transfer.id]?.selectedIndex ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
                                     <span>
                                       {item.displayName || item.name || item.title}
                                     </span>
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-2">
+                                    <span className="text-[10px] text-v3-muted ml-2">
                                       {item.type === "hotel" ? "Otel" : "Tedarikçi"}
                                     </span>
                                   </div>)}
@@ -741,17 +741,17 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                         [transfer.id]: transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : ""
                       }));
                     }
-                  }} placeholder="0,00" className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} placeholder="0,00" className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2.5 py-2.5">
-                      <select value={transfer.currency || "TRY"} onChange={e => updateTransfer(transfer.id, "currency", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                      <select value={transfer.currency || "TRY"} onChange={e => updateTransfer(transfer.id, "currency", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="TRY">TRY</option>
                         <option value="EUR">EUR</option>
                         <option value="USD">USD</option>
                         <option value="GBP">GBP</option>
                       </select>
                     </td>
-                    <td className="px-2.5 py-2.5 w-48 max-w-[12rem] overflow-hidden text-gray-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 w-48 max-w-[12rem] overflow-hidden text-v3-text">
                       {transfer.isEditing ? <input type="text" value={(transfer as any).passengersInput ?? transfer.passengers.join(", ")} onChange={e => updateTransfer(transfer.id, "passengersInput", e.target.value)} onKeyDown={e => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -763,7 +763,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       e.preventDefault();
                       cancelTransferEdit(transfer.id);
                     }
-                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 truncate whitespace-nowrap overflow-hidden" placeholder="Ad Soyad, Ad Soyad" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <div className="truncate whitespace-nowrap" title={transfer.passengers.join(", ")}>
+                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 truncate whitespace-nowrap overflow-hidden" placeholder="Ad Soyad, Ad Soyad" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <div className="truncate whitespace-nowrap" title={transfer.passengers.join(", ")}>
                           {transfer.passengers.join(", ")}
                         </div>}
                     </td>
@@ -775,7 +775,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
                             </button>
-                            <button onClick={() => cancelTransferEdit(transfer.id)} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
+                            <button onClick={() => cancelTransferEdit(transfer.id)} className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30" title="İptal">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
@@ -836,7 +836,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                 elements.push(<tr key={`${transfer.id}-details`} className="bg-gray-50 dark:bg-gray-800/50">
                       <td colSpan={12} className="px-2.5 py-2.5">
                         <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                          <h4 className="text-sm font-semibold text-v3-text mb-3">
                             Grup Detayları (
                             {transfer.originalTransfers?.length || 0} transfer)
                           </h4>
@@ -858,7 +858,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       <span className={`px-2 py-1 rounded text-xs font-medium ${originalTransfer.direction === "arrival" ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200" : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"}`}>
                                         {originalTransfer.direction === "arrival" ? "Giriş" : "Çıkış"}
                                       </span>
-                                      <span className="font-bold text-gray-500 dark:text-gray-400 border-r pr-4 uppercase tracking-tighter">
+                                      <span className="font-bold text-v3-muted border-r pr-4 uppercase tracking-tighter">
                                         {hotelName}
                                       </span>
                                       <span className="font-mono">
@@ -873,7 +873,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                                       <span className="text-gray-600 dark:text-gray-300">
                                         {originalTransfer.route}
                                       </span>
-                                      <span className="text-gray-500 dark:text-gray-400">
+                                      <span className="text-v3-muted">
                                         {originalTransfer.passengers?.join(", ") || "-"}
                                       </span>
                                     </div>
@@ -889,19 +889,19 @@ export default function TransferTurTab(props: TransferTurTabProps) {
 
               {/* Döviz Cinsine Göre Toplam Satırları */}
               {transfers.length > 0 && Object.keys(transferTotals).sort().map((doviz, index) => <tr key={doviz} className={`font-semibold ${index === 0 ? "bg-gray-100 dark:bg-gray-600" : "bg-gray-50 dark:bg-gray-700"}`}>
-                      <td className="px-2.5 py-2.5 text-gray-900 dark:text-white" colSpan={8}>
+                      <td className="px-2.5 py-2.5 text-v3-text" colSpan={8}>
                         TOPLAM ({doviz})
                       </td>
-                      <td className="px-2.5 py-2.5 text-gray-900 dark:text-white text-center">
+                      <td className="px-2.5 py-2.5 text-v3-text text-center">
                         {formatIntegerForDisplay(transferTotals[doviz].kisiSayisi)}
                       </td>
-                      <td className="px-2.5 py-2.5 text-gray-900 dark:text-white text-center">
+                      <td className="px-2.5 py-2.5 text-v3-text text-center">
                         {formatNumberForDisplay(transferTotals[doviz].toplamMaliyet)}
                       </td>
-                      <td className="px-2.5 py-2.5 text-gray-900 dark:text-white text-center font-bold">
+                      <td className="px-2.5 py-2.5 text-v3-text text-center font-bold">
                         {doviz}
                       </td>
-                      <td className="px-2.5 py-2.5 text-gray-900 dark:text-white" colSpan={2}>
+                      <td className="px-2.5 py-2.5 text-v3-text" colSpan={2}>
                         {/* Boş sütunlar */}
                       </td>
                     </tr>)}
@@ -933,7 +933,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               Toplam Kişi
             </div>
             <div className="space-y-1.5">
-              {Object.entries(stats?.arrival?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="flex items-center justify-between text-xs bg-white/50 dark:bg-green-900/20 rounded-lg px-2 py-1">
+              {Object.entries(stats?.arrival?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="flex items-center justify-between text-xs bg-v3-border0 dark:bg-green-900/20 rounded-lg px-2 py-1">
                     <span className="text-green-700 dark:text-green-300 font-medium">
                       {getVehicleTypeName(veh)}
                     </span>
@@ -956,7 +956,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                   Ara Transferler
                 </h3>
               </div>
-              <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              <div className="bg-amber-500 text-v3-text text-xs font-bold px-2 py-1 rounded-full">
                 {stats.intermediate.count}
               </div>
             </div>
@@ -967,7 +967,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               Toplam Kişi
             </div>
             <div className="space-y-1.5">
-              {Object.entries(stats?.intermediate?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="flex items-center justify-between text-xs bg-white/50 dark:bg-amber-900/20 rounded-lg px-2 py-1">
+              {Object.entries(stats?.intermediate?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="flex items-center justify-between text-xs bg-v3-border0 dark:bg-amber-900/20 rounded-lg px-2 py-1">
                     <span className="text-amber-700 dark:text-amber-300 font-medium">
                       {getVehicleTypeName(veh)}
                     </span>
@@ -999,7 +999,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               Toplam Kişi
             </div>
             <div className="space-y-1.5">
-              {Object.entries(stats?.departure?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="flex items-center justify-between text-xs bg-white/50 dark:bg-blue-900/20 rounded-lg px-2 py-1">
+              {Object.entries(stats?.departure?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="flex items-center justify-between text-xs bg-v3-border0 dark:bg-blue-900/20 rounded-lg px-2 py-1">
                     <span className="text-blue-700 dark:text-blue-300 font-medium">
                       {getVehicleTypeName(veh)}
                     </span>
@@ -1029,7 +1029,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
             </div>
             
             <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto pr-1">
-              {Object.keys(supplierTotalsCalc).length > 0 ? Object.entries(supplierTotalsCalc).sort(([a], [b]) => a.localeCompare(b)).map(([supplierName, currencies]) => <div key={supplierName} className="flex flex-col text-xs bg-white/50 dark:bg-purple-900/20 rounded-lg px-2 py-1.5">
+              {Object.keys(supplierTotalsCalc).length > 0 ? Object.entries(supplierTotalsCalc).sort(([a], [b]) => a.localeCompare(b)).map(([supplierName, currencies]) => <div key={supplierName} className="flex flex-col text-xs bg-v3-border0 dark:bg-purple-900/20 rounded-lg px-2 py-1.5">
                       <span className="text-purple-800 dark:text-purple-200 font-semibold mb-1">
                         {supplierName}
                       </span>
@@ -1061,18 +1061,18 @@ export default function TransferTurTab(props: TransferTurTabProps) {
             </div>
             <div className="flex gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-v3-text">
                   {stats.totals.count}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
+                <div className="text-xs text-v3-muted">
                   Transfer
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-v3-text">
                   {stats.totals.passengers}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
+                <div className="text-xs text-v3-muted">
                   Kişi
                 </div>
               </div>
@@ -1080,10 +1080,10 @@ export default function TransferTurTab(props: TransferTurTabProps) {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 responsive-filter-grid">
             {Object.entries(stats?.totals?.byVehicle || {}).sort(([a], [b]) => a.localeCompare(b)).map(([veh, v]: any) => <div key={veh} className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-2.5 py-2.5 text-center">
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="text-xs text-v3-muted mb-1">
                     {getVehicleTypeName(veh)}
                   </div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <div className="text-sm font-semibold text-v3-text">
                     {v.transfers}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500">
@@ -1106,7 +1106,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                 </svg>
                 Seçili Transferleri Grupla
               </button>}
-            <button onClick={() => setSelectedTransfers([])} className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <button onClick={() => setSelectedTransfers([])} className="px-4 py-2 bg-white dark:bg-gray-800 text-v3-text text-sm font-medium border border-gray-200 dark:border-v3-border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
               Seçimi Temizle
             </button>
           </div>

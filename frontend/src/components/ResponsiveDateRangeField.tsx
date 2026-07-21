@@ -197,14 +197,14 @@ export default function ResponsiveDateRangeField({
               <div className="flex items-center justify-between px-2 py-2">
                 <button
                   aria-label="Previous Month"
-                  className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
+                  className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-v3-surface transition-colors ${
                     prevMonthButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                   onClick={decreaseMonth}
                   disabled={prevMonthButtonDisabled}
                   style={{ visibility: customHeaderCount === 1 ? "hidden" : "visible" }}
                 >
-                  <svg className="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                  <svg className="w-5 h-5 text-slate-600 dark:text-v3-text/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
                 
                 <div className="flex items-center gap-2">
@@ -222,7 +222,7 @@ export default function ResponsiveDateRangeField({
                         changeMonth(newMonth);
                       }
                     }}
-                    className="appearance-none bg-transparent font-bold text-slate-800 dark:text-slate-100 text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                    className="appearance-none bg-transparent font-bold text-slate-800 dark:text-slate-100 text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 focus:outline-none"
                   >
                     {months.map((option) => (
                       <option key={option} value={option} className="text-slate-900 dark:text-slate-900">
@@ -245,7 +245,7 @@ export default function ResponsiveDateRangeField({
                         changeYear(newYear);
                       }
                     }}
-                    className="appearance-none bg-transparent font-bold text-slate-800 dark:text-slate-100 text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                    className="appearance-none bg-transparent font-bold text-slate-800 dark:text-slate-100 text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 focus:outline-none"
                   >
                     {years.map((option) => (
                       <option key={option} value={option} className="text-slate-900 dark:text-slate-900">
@@ -257,14 +257,14 @@ export default function ResponsiveDateRangeField({
 
                 <button
                   aria-label="Next Month"
-                  className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
+                  className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-v3-surface transition-colors ${
                     nextMonthButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                   onClick={increaseMonth}
                   disabled={nextMonthButtonDisabled}
                   style={{ visibility: customHeaderCount === 0 && !isMobile ? "hidden" : "visible" }}
                 >
-                  <svg className="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                  <svg className="w-5 h-5 text-slate-600 dark:text-v3-text/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
               </div>
             );
@@ -276,7 +276,7 @@ export default function ResponsiveDateRangeField({
 
   return (
     <div className={`min-w-0 relative flex flex-col w-full ${className}`} ref={containerRef}>
-      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 truncate" title={label}>
+      <label className="block text-xs font-semibold text-slate-700 dark:text-v3-text/90 mb-1.5 truncate" title={label}>
         {label}
       </label>
       
@@ -284,10 +284,10 @@ export default function ResponsiveDateRangeField({
       <button
         type="button"
         onClick={openCalendar}
-        className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+        className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-v3-surface text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
       >
         <div className="flex items-center gap-2.5 truncate">
-          <Calendar size={16} className="text-slate-400 dark:text-slate-400 shrink-0" />
+          <Calendar size={16} className="text-v3-muted dark:text-v3-muted shrink-0" />
           <span className="truncate">{displayText}</span>
         </div>
       </button>
@@ -296,15 +296,15 @@ export default function ResponsiveDateRangeField({
       {isCalendarOpen && typeof document !== 'undefined' && createPortal(
         isMobile ? (
           // Mobile: Bottom-sheet modal
-          <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-v3-bg/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div 
-              className="bg-white dark:bg-slate-900 w-full rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
+              className="bg-white dark:bg-v3-bg w-full rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
               style={{ maxHeight: '90dvh' }}
               ref={calendarRef}
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{label || t('home.selectDate')}</h3>
-                <button onClick={closeCalendar} className="p-2 -mr-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <h3 className="text-base font-bold text-slate-900 dark:text-v3-text">{label || t('home.selectDate')}</h3>
+                <button onClick={closeCalendar} className="p-2 -mr-2 bg-slate-100 dark:bg-v3-surface rounded-full text-v3-muted dark:text-v3-muted hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                   <X size={18} />
                 </button>
               </div>
@@ -317,7 +317,7 @@ export default function ResponsiveDateRangeField({
           // Desktop: Popover
           <div
             ref={calendarRef}
-            className="fixed z-[9999] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="fixed z-[9999] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-v3-surface overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             style={{ 
               top: `${calendarStyle.top}px`, 
               left: `${calendarStyle.left}px`,

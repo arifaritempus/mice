@@ -111,7 +111,7 @@ export default function ConfirmModal({
               {getIcon()}
             </div>
 
-            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">
+            <h3 className="text-2xl font-black text-gray-900 dark:text-v3-text mb-3 tracking-tight">
               {title}
             </h3>
             <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-10 leading-relaxed">
@@ -121,7 +121,7 @@ export default function ConfirmModal({
             <div className="flex flex-col gap-4">
               <button
                 onClick={onConfirm}
-                className={`w-full py-5 px-6 text-xs font-black uppercase tracking-widest text-white ${getButtonClasses()} rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]`}
+                className={`w-full py-5 px-6 text-xs font-black uppercase tracking-widest text-v3-text ${getButtonClasses()} rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]`}
               >
                 {confirmText}
               </button>

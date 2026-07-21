@@ -128,7 +128,7 @@ function ResetPasswordForm() {
             />
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
-              <span className="text-white text-2xl font-bold">
+              <span className="text-v3-text text-2xl font-bold">
                 {appSettings?.company_name
                   ? appSettings.company_name.substring(0, 2).toUpperCase()
                   : process.env.NEXT_PUBLIC_AGENCY_NAME
@@ -142,12 +142,12 @@ function ResetPasswordForm() {
           )}
         </div>
 
-        <div className="bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 px-8 py-8">
+        <div className="bg-white/[0.04] backdrop-blur-2xl border border-v3-border rounded-2xl shadow-2xl shadow-black/40 px-8 py-8">
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-white text-center">
+            <h1 className="text-xl font-bold text-v3-text text-center">
               Yeni Şifre Belirle
             </h1>
-            <p className="text-sm text-slate-400 text-center mt-1">
+            <p className="text-sm text-v3-muted text-center mt-1">
               Lütfen yeni şifrenizi girin.
             </p>
           </div>
@@ -168,7 +168,7 @@ function ResetPasswordForm() {
           ) : (
             <form className="space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-xs font-medium text-white mb-1.5">
+                <label className="block text-xs font-medium text-v3-text mb-1.5">
                   Yeni Şifre
                 </label>
                 <input
@@ -176,13 +176,13 @@ function ResetPasswordForm() {
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
+                  className="w-full px-4 py-2.5 rounded-xl bg-v3-border border border-v3-border text-v3-text placeholder:text-v3-muted text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
                   placeholder="••••••••"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white mb-1.5">
+                <label className="block text-xs font-medium text-v3-text mb-1.5">
                   Yeni Şifre (Tekrar)
                 </label>
                 <input
@@ -190,7 +190,7 @@ function ResetPasswordForm() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
+                  className="w-full px-4 py-2.5 rounded-xl bg-v3-border border border-v3-border text-v3-text placeholder:text-v3-muted text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all duration-200"
                   placeholder="••••••••"
                 />
               </div>
@@ -198,7 +198,7 @@ function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={loading || !!error}
-                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-500 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center"
+                className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-v3-text bg-blue-500 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center"
               >
                 {loading ? "Güncelleniyor..." : "Şifreyi Güncelle"}
               </button>
@@ -214,7 +214,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white">
+        <div className="min-h-screen bg-v3-surface flex items-center justify-center text-v3-text">
           Yükleniyor...
         </div>
       }

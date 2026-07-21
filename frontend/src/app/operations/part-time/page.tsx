@@ -559,10 +559,10 @@ export default function PartTimePage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             {t('parttime.authRequired') || "Yetki Gerekli"}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             {t('parttime.noPermission') || "Bu sayfaya erişim yetkiniz bulunmuyor."}
           </p>
           <a
@@ -581,16 +581,16 @@ export default function PartTimePage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('parttime.title') || "Yarı Zamanlı Çalışan Yönetimi"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('parttime.description') || "MICE ve Sejour part-time operasyonlarını tek ekrandan yönetin"}
             </p>
           </div>
@@ -627,11 +627,11 @@ export default function PartTimePage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 type="button"
                 onClick={exportPartTimeToExcel}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
                 title={t('parttime.exportExcel') || "Excel İndir"}
               >
                 <svg
@@ -654,9 +654,9 @@ export default function PartTimePage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+        <div className="flex flex-wrap items-center gap-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+            <span className="text-v3-muted font-medium uppercase tracking-wider ml-2">
               {t('parttime.source') || "KAYNAK:"}
             </span>
             <button
@@ -664,7 +664,7 @@ export default function PartTimePage() {
                 setFilter("all");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span className="uppercase">{t('parttime.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
@@ -674,7 +674,7 @@ export default function PartTimePage() {
                 setFilter("mice");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span className="uppercase">{t('parttime.tabMice') || "MICE"}</span>
               <span className="font-bold">{typeCounts.mice}</span>
@@ -684,7 +684,7 @@ export default function PartTimePage() {
                 setFilter("sejour");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span className="uppercase">{t('parttime.tabSejour') || "SEJOUR"}</span>
               <span className="font-bold">{typeCounts.sejour}</span>
@@ -693,14 +693,14 @@ export default function PartTimePage() {
         </div>
 
         <div
-          className={`flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
+          className={`flex-1 bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden shadow-inner flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
         >
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
+              <thead className="bg-v3-surface backdrop-blur-xl border-b border-v3-border sticky top-0 z-20">
                 <tr>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("voucher_number")}
                   >
                     {t('parttime.colVoucher') || "Voucher No"}
@@ -711,7 +711,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("check_in_date")}
                   >
                     {t('parttime.colDate') || "Tarih"}
@@ -722,7 +722,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("customer_type")}
                   >
                     {t('parttime.colType') || "Tür"}
@@ -733,7 +733,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("check_in_date")}
                   >
                     {t('parttime.colCheckInOut') || "C-IN / C-OUT"}
@@ -744,7 +744,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("company_name")}
                   >
                     {t('parttime.colCompanyName') || "FİRMA ADI"}
@@ -755,7 +755,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("customer_name")}
                   >
                     {t('parttime.colAgencyCustomer') || "ACENTE/MÜŞTERİ"}
@@ -766,7 +766,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("hotel_name")}
                   >
                     {t('parttime.colHotel') || "OTEL"}
@@ -777,7 +777,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("service_type")}
                   >
                     {t('parttime.colServiceType') || "HİZMET TÜRÜ"}
@@ -788,7 +788,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("supplier")}
                   >
                     {t('parttime.colSupplier') || "TEDARİKÇİ"}
@@ -799,7 +799,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("employee_name")}
                   >
                     {t('parttime.colEmployee') || "ÇALIŞAN ADI"}
@@ -810,7 +810,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("cost_price")}
                   >
                     {t('parttime.colCost') || "MALİYET"}
@@ -821,7 +821,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("cost_currency")}
                   >
                     {t('parttime.colCurrency') || "DÖVİZ"}
@@ -832,7 +832,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("fx")}
                   >
                     {t('parttime.colFx') || "KUR"}
@@ -843,7 +843,7 @@ export default function PartTimePage() {
                     )}
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("totalTRY")}
                   >
                     {t('parttime.colTotalTRY') || "TOPLAM TL"}
@@ -861,7 +861,7 @@ export default function PartTimePage() {
                     key={service.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-3 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <button
                         onClick={() =>
                           handleVoucherClick(
@@ -870,15 +870,15 @@ export default function PartTimePage() {
                             service.project_id,
                           )
                         }
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 dark:text-blue-300 underline cursor-pointer transition-colors duration-200"
                       >
                         {service.voucher_number}
                       </button>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatDate(service.check_in_date)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           service.customer_type === "mice"
@@ -889,57 +889,57 @@ export default function PartTimePage() {
                         {service.customer_type === "mice" ? "MICE" : "SEJOUR"}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {service.check_in_date && service.check_out_date
                         ? `${formatDate(service.check_in_date)} / ${formatDate(service.check_out_date)}`
                         : "-"}
                     </td>
                     <td
-                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 truncate max-w-[120px]"
                       title={service.company_name || ""}
                     >
                       {service.company_name || "-"}
                     </td>
                     <td
-                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 truncate max-w-[120px]"
                       title={service.customer_name || ""}
                     >
                       {service.customer_name || "-"}
                     </td>
                     <td
-                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[150px]"
+                      className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 truncate max-w-[150px]"
                       title={service.hotel_name || ""}
                     >
                       {service.hotel_name || "-"}
                     </td>
                     <td
-                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 truncate max-w-[120px]"
                       title={service.service_type || ""}
                     >
                       {service.service_type}
                     </td>
                     <td
-                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 truncate max-w-[120px]"
                       title={service.supplier || ""}
                     >
                       {service.supplier || "-"}
                     </td>
                     <td
-                      className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 truncate max-w-[120px]"
+                      className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 truncate max-w-[120px]"
                       title={service.employee_name || ""}
                     >
                       {service.employee_name}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(service.cost_price)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {service.cost_currency}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(service.fx || 1)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(
                         (service.cost_price || 0) * (service.fx || 1),
                       )}
@@ -951,7 +951,7 @@ export default function PartTimePage() {
                   <tr>
                     <td
                       colSpan={20}
-                      className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                      className="px-3 py-8 text-center text-sm text-v3-muted"
                     >
                       {t('parttime.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>

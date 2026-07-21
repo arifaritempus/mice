@@ -69,10 +69,19 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement;
-    // V3: Always force dark mode
-    root.classList.add("dark");
-    setIsDark(true);
-    setThemeCookie("dark");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    root.classList.remove("light", "dark");
+
+    if (newTheme === "dark" || (newTheme === "system" && systemDark)) {
+      root.classList.add("dark");
+      setIsDark(true);
+    } else {
+      root.classList.add("light");
+      setIsDark(false);
+    }
+    
+    setThemeCookie(newTheme);
 
     // Fetch and apply dynamic color
     fetch("/api/theme-settings")

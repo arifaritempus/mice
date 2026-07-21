@@ -152,7 +152,7 @@ export default function DraggableAIAssistant() {
             }`}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-4 flex justify-between items-center text-white">
+            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-4 flex justify-between items-center text-v3-text">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-indigo-200" />
                 <h3 className="font-semibold text-lg">AI Asistan</h3>

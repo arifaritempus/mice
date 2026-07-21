@@ -45,25 +45,25 @@ export default function MultiTokenFilterInput({
   return (
     <div className="relative min-w-0">
       {label && (
-        <label className="block text-[10px] font-semibold tracking-wider text-slate-400 mb-1.5 uppercase ml-1">
+        <label className="block text-[10px] font-semibold tracking-wider text-v3-text opacity-70 mb-1.5 uppercase ml-1">
           {label}
         </label>
       )}
       <div
-        className="w-full h-10 px-3 text-xs border border-white/5 rounded-xl bg-black/20 flex items-center gap-1.5 overflow-x-auto focus-within:border-blue-500/50 focus-within:bg-black/40 transition-all shadow-inner"
+        className="w-full h-10 px-3 text-xs border border-v3-border rounded-xl bg-black/5 dark:bg-black/20 flex items-center gap-1.5 overflow-x-auto focus-within:border-blue-500/50 focus-within:bg-black/5 dark:focus-within:bg-black/20 transition-all shadow-inner"
         title={tooltipText}
       >
         {tokens.map((token, index) => (
           <span
             key={`${token}-${index}`}
-            className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-300"
+            className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300"
             title={`+${index + 1}: ${token}`}
           >
             <span className="opacity-70 text-[10px]">+{index + 1}</span>
             <span className="font-medium">{token}</span>
             <button
               type="button"
-              className="text-blue-300 hover:text-red-400 ml-0.5 opacity-70 hover:opacity-100 transition-opacity"
+              className="text-blue-600 dark:text-blue-300 hover:text-red-400 ml-0.5 opacity-70 hover:opacity-100 transition-opacity"
               onClick={() => onRemoveToken(token)}
               title="Kaldır"
             >
@@ -101,16 +101,16 @@ export default function MultiTokenFilterInput({
               onRemoveToken(tokens[tokens.length - 1]);
             }
           }}
-          className="flex-1 min-w-[80px] h-full bg-transparent outline-none text-white placeholder-slate-500"
+          className="flex-1 min-w-[80px] h-full bg-transparent outline-none text-v3-text placeholder:text-v3-text opacity-70"
         />
       </div>
       {filteredSuggestions.length > 0 && (
-        <div className="absolute z-20 mt-2 w-full bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto overflow-hidden custom-scrollbar">
+        <div className="absolute z-20 mt-2 w-full bg-v3-surface backdrop-blur-xl border border-v3-border rounded-xl shadow-2xl max-h-48 overflow-y-auto overflow-hidden custom-scrollbar">
           {filteredSuggestions.map((suggestion) => (
             <button
               type="button"
               key={suggestion}
-              className="w-full text-left px-4 py-2.5 text-xs font-medium text-white hover:bg-blue-500/20 hover:text-blue-300 transition-colors border-b border-white/5 last:border-0"
+              className="w-full text-left px-4 py-2.5 text-xs font-medium text-v3-text hover:bg-blue-500/20 hover:text-blue-600 dark:text-blue-300 transition-colors border-b border-v3-border last:border-0"
               onClick={() => onAddToken(suggestion)}
             >
               {suggestion}

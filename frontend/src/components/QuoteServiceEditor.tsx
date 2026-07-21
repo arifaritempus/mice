@@ -518,7 +518,7 @@ export default function QuoteServiceEditor({
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-gray-900 text-v3-text">
                   Ana Kategoriyi Sil
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -528,7 +528,7 @@ export default function QuoteServiceEditor({
             </div>
 
             <div className="mb-6">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-v3-text">
                 <span className="font-semibold">{categoryToDelete}</span> ana
                 kategorisini ve bu ana kategoriye ait tüm alt kategorileri
                 silmek istediğinizden emin misiniz?
@@ -555,7 +555,7 @@ export default function QuoteServiceEditor({
                   setShowDeleteConfirmModal(false);
                   setCategoryToDelete(null);
                 }}
-                className="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 text-sm bg-black/5 dark:bg-white/50 text-v3-text rounded hover:bg-gray-600 transition-colors"
               >
                 İptal
               </button>
@@ -578,8 +578,8 @@ export default function QuoteServiceEditor({
             className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="flex items-center justify-between p-4 border-b border-v3-border">
+              <h2 className="text-lg font-semibold text-gray-900 text-v3-text">
                 Kategori Seçin
               </h2>
               <button
@@ -617,7 +617,7 @@ export default function QuoteServiceEditor({
                 </button>
                 <button
                   onClick={() => toggleAllCategories(false)}
-                  className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                  className="px-3 py-1 text-xs bg-black/5 dark:bg-white/50 text-v3-text rounded hover:bg-gray-600"
                 >
                   Tümünü Kaldır
                 </button>
@@ -635,7 +635,7 @@ export default function QuoteServiceEditor({
                   return (
                     <div
                       key={mainCat.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                      className="border border-v3-border rounded-lg overflow-hidden"
                     >
                       {/* Ana Kategori Header */}
                       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -674,7 +674,7 @@ export default function QuoteServiceEditor({
                                 );
                               }}
                             />
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <span className="text-sm font-semibold text-gray-900 text-v3-text">
                               {mainCat.name}
                             </span>
                             {subCats.length > 0 && (
@@ -699,7 +699,7 @@ export default function QuoteServiceEditor({
                               e.stopPropagation();
                               toggleAllSubCategories(mainCat.id, false);
                             }}
-                            className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                            className="px-2 py-1 text-xs bg-black/5 dark:bg-white/50 text-v3-text rounded hover:bg-gray-600"
                           >
                             Tümünü Kaldır
                           </button>
@@ -708,7 +708,7 @@ export default function QuoteServiceEditor({
 
                       {/* Alt Kategoriler - Sadece açıkken göster */}
                       {isExpanded && subCats.length > 0 && (
-                        <div className="p-3 bg-white dark:bg-gray-800 space-y-1 border-t border-gray-200 dark:border-gray-700">
+                        <div className="p-3 bg-white dark:bg-gray-800 space-y-1 border-t border-v3-border">
                           {subCats.map((subCat) => (
                             <label
                               key={subCat.id}
@@ -730,7 +730,7 @@ export default function QuoteServiceEditor({
                                 }}
                                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                               />
-                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                              <span className="text-sm text-v3-text">
                                 {subCat.name}
                               </span>
                             </label>
@@ -744,8 +744,8 @@ export default function QuoteServiceEditor({
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center justify-between p-4 border-t border-v3-border">
+              <div className="text-sm text-v3-muted">
                 {selectedCategories.size} kategori seçildi
               </div>
               <div className="flex gap-2">
@@ -754,7 +754,7 @@ export default function QuoteServiceEditor({
                     setShowCategoryModal(false);
                     setSelectedCategories(new Set());
                   }}
-                  className="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
+                  className="px-4 py-2 text-sm bg-black/5 dark:bg-white/50 text-v3-text rounded hover:bg-gray-600"
                 >
                   İptal
                 </button>
@@ -777,7 +777,7 @@ export default function QuoteServiceEditor({
           <div className="flex items-center gap-4">
             {/* Ana Kategori Seçimi */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-v3-text mb-2">
                 Ana Kategori Seçin
               </label>
               <select
@@ -789,7 +789,7 @@ export default function QuoteServiceEditor({
                     sub_category: "",
                   });
                 }}
-                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 text-sm border border-v3-border rounded-md bg-white dark:bg-gray-800 text-gray-900 text-v3-text focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Ana Kategori Seçin</option>
                 {categories
@@ -833,7 +833,7 @@ export default function QuoteServiceEditor({
               <button
                 type="button"
                 onClick={() => setShowAddRow(false)}
-                className="px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className="px-4 py-2 bg-black/5 dark:bg-white/50 text-v3-text text-sm font-medium rounded-md hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
               >
                 İptal
               </button>
@@ -874,7 +874,7 @@ export default function QuoteServiceEditor({
       <div className="overflow-x-auto pb-4">
         <div className="min-w-[1200px]">
           {/* Başlık satırı */}
-          <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-gray-800 dark:text-gray-200">
+          <div className="bg-black/5 dark:bg-white/5 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-v3-text">
             <div className="w-44">ALT KATEGORİ</div>
             <div className="w-16 flex flex-col justify-center items-end pr-1">
               <div>BİRİM</div>
@@ -1027,9 +1027,9 @@ export default function QuoteServiceEditor({
                   return (
                     <div
                       key={`header-${row.category}`}
-                      className={`bg-gray-200 dark:bg-gray-600 rounded-md p-2 flex items-center justify-between ${!isFirstHeader ? "mt-4" : ""}`}
+                      className={`bg-black/10 dark:bg-white/10 rounded-md p-2 flex items-center justify-between ${!isFirstHeader ? "mt-4" : ""}`}
                     >
-                      <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                      <h3 className="text-sm font-bold text-v3-text">
                         {row.category}
                       </h3>
                       {!disabled && (
@@ -1062,21 +1062,21 @@ export default function QuoteServiceEditor({
                   return (
                     <div
                       key={`subtotal-${row.category}`}
-                      className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex flex-wrap md:flex-nowrap items-center gap-2"
+                      className="bg-black/5 dark:bg-white/5 rounded-md p-2 flex flex-wrap md:flex-nowrap items-center gap-2"
                     >
-                      <div className="w-44 text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      <div className="w-44 text-xs font-semibold text-v3-text">
                         ARA TOPLAM
                       </div>
                       <div className="w-16"></div>
                       <div className="w-20"></div>
                       <div className="w-24"></div>
-                      <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      <div className="w-32 text-right pr-1 text-xs font-semibold text-v3-text">
                         {formatTRY(row.total)}
                       </div>
                       <div className="w-16"></div>
                       <div className="w-16"></div>
                       <div className="w-16"></div>
-                      <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      <div className="w-32 text-right pr-1 text-xs font-semibold text-v3-text">
                         {formatTRY(row.totalTRY)}
                       </div>
                       <div className="flex-1 min-w-0"></div>
@@ -1110,7 +1110,7 @@ export default function QuoteServiceEditor({
                               e.target.value,
                             )
                           }
-                          className="w-44 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-44 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         >
                           <option value="">Alt Kategori Seçin</option>
                           {categories
@@ -1145,7 +1145,7 @@ export default function QuoteServiceEditor({
                           }
                           type="number"
                           step="1"
-                          className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-16 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                           autoFocus
                         />
                         <input
@@ -1159,7 +1159,7 @@ export default function QuoteServiceEditor({
                           }
                           type="number"
                           step="1"
-                          className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-20 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         />
                         <input
                           value={it.unit_price}
@@ -1172,7 +1172,7 @@ export default function QuoteServiceEditor({
                           }
                           type="number"
                           step="0.01"
-                          className="w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-24 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         />
                         <div className="w-28 px-2 py-1 text-xs text-right text-gray-700 dark:text-gray-200">
                           {formatTRY(it.total)}
@@ -1182,7 +1182,7 @@ export default function QuoteServiceEditor({
                           onChange={(e) =>
                             handleItemChange(it.id, "currency", e.target.value)
                           }
-                          className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-16 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         >
                           {currencies.map((currency) => (
                             <option key={currency} value={currency}>
@@ -1204,7 +1204,7 @@ export default function QuoteServiceEditor({
                           min="0"
                           max="100"
                           placeholder="0"
-                          className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-16 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         />
                         <input
                           value={it.fx || 1}
@@ -1217,7 +1217,7 @@ export default function QuoteServiceEditor({
                           }
                           type="number"
                           step="0.0001"
-                          className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-16 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         />
                         <input
                           value={it.total_try || 0}
@@ -1226,7 +1226,7 @@ export default function QuoteServiceEditor({
                           }
                           type="number"
                           step="0.01"
-                          className="w-32 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-32 px-2 py-1 text-xs text-right border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         />
 
                         {/* Hotel selection for CAT_001 and CAT_002 */}
@@ -1243,7 +1243,7 @@ export default function QuoteServiceEditor({
                                   e.target.value,
                                 )
                               }
-                              className="w-32 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white ml-2"
+                              className="w-32 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text ml-2"
                             >
                               <option value="">Otel Seçin</option>
                               {hotels.map((h) => (
@@ -1270,7 +1270,7 @@ export default function QuoteServiceEditor({
                               e.target.value,
                             )
                           }
-                          className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white ml-2"
+                          className="flex-1 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text ml-2"
                           placeholder="Açıklama"
                         />
                         {!isViewMode && (
@@ -1350,35 +1350,35 @@ export default function QuoteServiceEditor({
                     ) : (
                       // Görüntüleme modu - normal div'ler
                       <>
-                        <div className="w-44 text-xs text-gray-900 dark:text-white">
+                        <div className="w-44 text-xs text-gray-900 text-v3-text">
                           {getCategoryName(it.sub_category || "") || "-"}
                         </div>
-                        <div className="w-16 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                        <div className="w-16 text-right pr-1 text-xs text-gray-900 text-v3-text">
                           {Math.round(it.unit_quantity)}
                         </div>
-                        <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                        <div className="w-20 text-right pr-1 text-xs text-gray-900 text-v3-text">
                           {Math.round(it.sefer)}
                         </div>
-                        <div className="w-24 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                        <div className="w-24 text-right pr-1 text-xs text-gray-900 text-v3-text">
                           {formatTRY(it.unit_price)}
                         </div>
-                        <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">
+                        <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 text-v3-text">
                           {formatTRY(it.total)}
                         </div>
-                        <div className="w-16 text-xs text-gray-900 dark:text-white">
+                        <div className="w-16 text-xs text-gray-900 text-v3-text">
                           {it.currency}
                         </div>
-                        <div className="w-16 text-xs text-gray-900 dark:text-white">
+                        <div className="w-16 text-xs text-gray-900 text-v3-text">
                           %{it.vat || 0}
                         </div>
-                        <div className="w-16 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                        <div className="w-16 text-right pr-1 text-xs text-gray-900 text-v3-text">
                           {formatTRY(it.fx || 1)}
                         </div>
-                        <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">
+                        <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 text-v3-text">
                           {formatTRY(it.total_try || 0)}
                         </div>
 
-                        <div className="w-32 text-xs text-gray-900 dark:text-white ml-2 flex items-center">
+                        <div className="w-32 text-xs text-gray-900 text-v3-text ml-2 flex items-center">
                           {(() => {
                             if (!it.hotel_id) return "-";
                             const hotel = hotels.find((h) => h.id === it.hotel_id);
@@ -1396,7 +1396,7 @@ export default function QuoteServiceEditor({
                           })()}
                         </div>
 
-                        <div className="flex-1 min-w-0 text-xs text-gray-900 dark:text-white">
+                        <div className="flex-1 min-w-0 text-xs text-gray-900 text-v3-text">
                           {it.description || "-"}
                         </div>
 
@@ -1477,13 +1477,13 @@ export default function QuoteServiceEditor({
               {/* Genel Toplamlar */}
               <div className="mt-4 bg-blue-500 dark:bg-blue-700 rounded-md p-3">
                 <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
-                  <div className="w-44 text-sm font-bold text-white">
+                  <div className="w-44 text-sm font-bold text-v3-text">
                     GENEL TOPLAM
                   </div>
                   <div className="w-16"></div>
                   <div className="w-20"></div>
                   <div className="w-24"></div>
-                  <div className="w-32 text-right pr-1 text-sm font-bold text-white">
+                  <div className="w-32 text-right pr-1 text-sm font-bold text-v3-text">
                     {Object.entries(totals)
                       .map(
                         ([cur, val]: any) =>
@@ -1494,7 +1494,7 @@ export default function QuoteServiceEditor({
                   <div className="w-16"></div>
                   <div className="w-16"></div>
                   <div className="w-16"></div>
-                  <div className="w-32 text-right pr-1 text-sm font-bold text-white">
+                  <div className="w-32 text-right pr-1 text-sm font-bold text-v3-text">
                     {formatTRY(
                       items.reduce(
                         (sum: number, it: ServiceItem) =>

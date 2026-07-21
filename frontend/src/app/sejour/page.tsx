@@ -521,8 +521,8 @@ export default function SejourPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">Yetki Gerekli</h1>
+          <p className="text-v3-muted mb-6">
             Sejour sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -587,15 +587,15 @@ export default function SejourPage() {
   const getStatusColor = (status: string) => {
     switch ((status || "").toLowerCase()) {
       case "konfirme":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50";
+        return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50";
       case "bekleyen":
       case "beklemede":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50";
+        return "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50";
       case "iptal":
       case "i̇ptal":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50";
+        return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700/50";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-v3-border/50";
     }
   };
 
@@ -1042,7 +1042,7 @@ export default function SejourPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col">
         {/* Error Message */}
         {error && (
@@ -1055,10 +1055,10 @@ export default function SejourPage() {
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text">
               Sejour Yönetimi
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               Sejour işlemlerini yönetin
             </p>
           </div>
@@ -1095,10 +1095,10 @@ export default function SejourPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 onClick={exportToExcel}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500 hover:bg-green-600 text-white border-transparent shadow-[0_0_15px_rgba(34,197,94,0.3)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
                 title="Excel'e Aktar"
               >
                 <svg
@@ -1142,35 +1142,35 @@ export default function SejourPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1">
               DURUM:
             </span>
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
               <span>TÜMÜ</span>
               <span className="font-bold">{totalCount}</span>
             </button>
             <button
               onClick={() => setStatusFilter("konfirme")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "konfirme" ? "bg-green-500/20 border border-green-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "konfirme" ? "bg-green-500/20 border border-green-500/50 text-green-700 dark:text-green-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
               <span>KONFİRME</span>
               <span className="font-bold">{sejoursKonfirmeCount}</span>
             </button>
             <button
               onClick={() => setStatusFilter("bekleyen")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "bekleyen" ? "bg-yellow-500/20 border border-yellow-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "bekleyen" ? "bg-yellow-500/20 border border-yellow-500/50 text-amber-700 dark:text-amber-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
               <span>BEKLEYEN</span>
               <span className="font-bold">{sejoursBekleyenCount}</span>
             </button>
             <button
               onClick={() => setStatusFilter("iptal")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "iptal" ? "bg-red-500/20 border border-red-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "iptal" ? "bg-red-500/20 border border-red-500/50 text-red-700 dark:text-red-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
               <span>İPTAL</span>
               <span className="font-bold">{sejoursIptalCount}</span>
@@ -1179,13 +1179,13 @@ export default function SejourPage() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px]">
+        <div className="flex-1 bg-v3-surface/5 backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px]">
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
+              <thead className="bg-v3-surface sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-v3-border">
                 <tr>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                     onClick={() => handleSort("voucherNumber")}
                   >
                     <div className="flex items-center gap-1">
@@ -1208,7 +1208,7 @@ export default function SejourPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                     onClick={() => handleSort("customerName")}
                   >
                     <div className="flex items-center gap-1">
@@ -1231,7 +1231,7 @@ export default function SejourPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                     onClick={() => handleSort("agencyName")}
                   >
                     <div className="flex items-center gap-1">
@@ -1253,11 +1253,11 @@ export default function SejourPage() {
                       )}
                     </div>
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Misafirler
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                     onClick={() => handleSort("checkInDate")}
                   >
                     <div className="flex items-center gap-1">
@@ -1280,7 +1280,7 @@ export default function SejourPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                     onClick={() => handleSort("checkOutDate")}
                   >
                     <div className="flex items-center gap-1">
@@ -1303,20 +1303,20 @@ export default function SejourPage() {
                     </div>
                   </th>
 
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Toplam Tutar
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Toplam Maliyet
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Tahsilat
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Bakiye
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                     onClick={() => handleSort("status")}
                   >
                     <div className="flex items-center gap-1">
@@ -1338,7 +1338,7 @@ export default function SejourPage() {
                       )}
                     </div>
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider border-b border-v3-border">
                     İşlemler
                   </th>
                 </tr>
@@ -1347,19 +1347,19 @@ export default function SejourPage() {
                 {paginatedSejours.items.map((sejour) => (
                   <tr
                     key={sejour.id}
-                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group cursor-pointer border-b border-v3-border last:border-0"
                     onDoubleClick={() => router.push(`/sejour/${sejour.id}`)}
                   >
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-v3-text transition-colors duration-200">
                       {sejour.voucherNumber}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       {sejour.customerName}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       {sejour.agencyName || "-"}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       <div className="text-xs max-w-xs">
                         {sejour.rooms &&
                         Array.isArray(sejour.rooms) &&
@@ -1376,14 +1376,14 @@ export default function SejourPage() {
                             return (
                               <div
                                 key={index}
-                                className={`mb-1 p-1 rounded ${
+                                className={`mb-1 p-1.5 rounded-lg ${
                                   isMatchedGuest
-                                    ? "bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-600"
-                                    : "bg-gray-50 dark:bg-gray-700"
+                                    ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50"
+                                    : ""
                                 }`}
                               >
                                 <div className="flex items-center justify-between mb-1">
-                                  <div className="font-medium text-gray-700 dark:text-gray-300 text-xs">
+                                  <div className="font-medium text-v3-text text-xs">
                                     {String(room.roomNumber || "")
                                       .toLowerCase()
                                       .includes("oda")
@@ -1400,7 +1400,7 @@ export default function SejourPage() {
                                   className={`truncate ${
                                     isMatchedGuest
                                       ? "text-yellow-800 dark:text-yellow-200 font-semibold"
-                                      : "text-gray-600 dark:text-gray-400"
+                                      : "text-v3-text"
                                   }`}
                                   title={room.guestInfo}
                                 >
@@ -1410,24 +1410,24 @@ export default function SejourPage() {
                             );
                           })
                         ) : (
-                          <span className="text-gray-400 dark:text-gray-500">
+                          <span className="text-v3-muted dark:text-gray-500">
                             Misafir bilgisi yok
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       {formatDate(
                         sejour.checkInDate || sejour.check_in_date || "",
                       )}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       {formatDate(
                         sejour.checkOutDate || sejour.check_out_date || "",
                       )}
                     </td>
 
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       <div className="text-xs">
                         {(() => {
                           const tryAmt = sejour.totals?.TRY || 0;
@@ -1436,7 +1436,7 @@ export default function SejourPage() {
                           const gbpAmt = (sejour as any).totals?.GBP || 0;
                           const hasAny = tryAmt || eurAmt || usdAmt || gbpAmt;
                           if (!hasAny)
-                            return <div className="text-gray-400">-</div>;
+                            return <div className="text-v3-muted">-</div>;
                           return (
                             <>
                               {!!tryAmt && (
@@ -1456,7 +1456,7 @@ export default function SejourPage() {
                         })()}
                       </div>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       <div className="text-xs">
                         {(() => {
                           const tryAmt = sejour.costs?.TRY || 0;
@@ -1465,7 +1465,7 @@ export default function SejourPage() {
                           const gbpAmt = (sejour as any).costs?.GBP || 0;
                           const hasAny = tryAmt || eurAmt || usdAmt || gbpAmt;
                           if (!hasAny)
-                            return <div className="text-gray-400">-</div>;
+                            return <div className="text-v3-muted">-</div>;
                           return (
                             <>
                               {!!tryAmt && (
@@ -1485,7 +1485,7 @@ export default function SejourPage() {
                         })()}
                       </div>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       <div className="text-xs">
                         {(() => {
                           const tryAmt =
@@ -1514,7 +1514,7 @@ export default function SejourPage() {
                             ) || 0;
                           const hasAny = tryAmt || eurAmt || usdAmt || gbpAmt;
                           if (!hasAny)
-                            return <div className="text-gray-400">-</div>;
+                            return <div className="text-v3-muted">-</div>;
                           return (
                             <>
                               {!!tryAmt && (
@@ -1534,7 +1534,7 @@ export default function SejourPage() {
                         })()}
                       </div>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                       <div className="text-xs">
                         {(() => {
                           const tryAmt =
@@ -1567,7 +1567,7 @@ export default function SejourPage() {
                             ) || 0);
                           const hasAny = tryAmt || eurAmt || usdAmt || gbpAmt;
                           if (!hasAny)
-                            return <div className="text-gray-400">-</div>;
+                            return <div className="text-v3-muted">-</div>;
                           return (
                             <>
                               {!!tryAmt && (
@@ -1598,7 +1598,7 @@ export default function SejourPage() {
                       <div className="flex space-x-2">
                         <Link
                           href={`/sejour/${sejour.id}`}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200"
+                          className="text-v3-muted hover:text-blue-600 dark:hover:text-blue-300 p-1.5 rounded-lg hover:bg-blue-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                           title="Görüntüle"
                         >
                           <svg
@@ -1624,7 +1624,7 @@ export default function SejourPage() {
                         {canEdit(Module.SEJOUR) && (
                           <Link
                             href={`/sejour/${sejour.id}/edit`}
-                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors duration-200"
+                            className="text-v3-muted hover:text-green-600 dark:hover:text-green-300 p-1.5 rounded-lg hover:bg-green-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Düzenle"
                           >
                             <svg
@@ -1645,7 +1645,7 @@ export default function SejourPage() {
                         {canDelete(Module.SEJOUR) && (
                           <button
                             onClick={() => handleDeleteSejour(sejour.id)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
+                            className="text-v3-muted hover:text-red-600 dark:hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Sil"
                           >
                             <svg
@@ -1692,8 +1692,8 @@ export default function SejourPage() {
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Emin misiniz?</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <h3 className="text-lg font-bold text-v3-text mb-2">Emin misiniz?</h3>
+            <p className="text-sm text-v3-muted mb-6">
               Bu sejour kaydını silmek istediğinizden emin misiniz? Bu işlemle
               birlikte sejour ile ilişkili tüm faturalar ve kalemler de
               silinecektir. Bu işlem geri alınamaz.
@@ -1701,7 +1701,7 @@ export default function SejourPage() {
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="px-4 py-2 text-sm font-medium text-v3-text bg-black/5 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 Vazgeç
               </button>

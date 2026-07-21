@@ -389,10 +389,10 @@ export default function PermissionsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <Link
@@ -411,7 +411,7 @@ export default function PermissionsPage() {
       <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-v3-muted">
             Yetkiler yükleniyor...
           </p>
         </div>
@@ -422,10 +422,10 @@ export default function PermissionsPage() {
   return (
     <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-2xl font-bold text-v3-text mb-4">
           Yetki Gerekli
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-v3-muted mb-6">
           Bu sayfaya erişim için yetkiniz bulunmuyor.
         </p>
         <Link

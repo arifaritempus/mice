@@ -42,7 +42,7 @@ export default function PermissionDebugPanel() {
       {isOpen && (
         <div className="fixed bottom-20 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 w-96 max-h-[80vh] overflow-y-auto border-2 border-purple-500">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-v3-text">
               Yetki Debug Paneli
             </h3>
             <button
@@ -56,7 +56,7 @@ export default function PermissionDebugPanel() {
           <div className="space-y-4">
             {/* Kullanıcı Bilgileri */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h4 className="font-semibold text-gray-900 dark:text-v3-text mb-2">
                 Kullanıcı Bilgileri
               </h4>
               <div className="text-sm">
@@ -77,7 +77,7 @@ export default function PermissionDebugPanel() {
 
             {/* Modül Yetkileri */}
             <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h4 className="font-semibold text-gray-900 dark:text-v3-text mb-2">
                 Modül Yetkileri
               </h4>
               <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -98,7 +98,7 @@ export default function PermissionDebugPanel() {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm text-gray-900 dark:text-white">
+                        <span className="font-medium text-sm text-gray-900 dark:text-v3-text">
                           {module}
                         </span>
                         <span
@@ -150,7 +150,7 @@ export default function PermissionDebugPanel() {
 
             {/* Test Butonları */}
             <div className="bg-blue-500/10 dark:bg-blue-900/20 rounded-lg p-3">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h4 className="font-semibold text-gray-900 dark:text-v3-text mb-2">
                 Hızlı Test
               </h4>
               <div className="space-y-2 text-sm">

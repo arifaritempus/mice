@@ -178,7 +178,7 @@ export default function InvoicePreview({
   const contactTaxOffice = contactInfo?.tax_office || "";
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#0f172a]/80 backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
+    <div className="fixed inset-0 z-[60] bg-v3-surface backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
       <div
         className="mx-auto light !bg-white !text-slate-900 flex flex-col relative w-[210mm] min-h-[297mm] shadow-[0_0_50px_rgba(0,0,0,0.3)] rounded-sm"
         style={{ colorScheme: "light" }}
@@ -207,7 +207,7 @@ export default function InvoicePreview({
           </button>
           <button
             onClick={onClose}
-            className="p-3 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-900 transition-all font-bold"
+            className="p-3 bg-gray-800 text-v3-text rounded-full shadow-lg hover:bg-gray-900 transition-all font-bold"
             title="Kapat"
           >
             ESC

@@ -90,7 +90,7 @@ function PaginationControls({
   const end = total > 0 ? Math.min(total, page * pageSize) : 0;
 
   return (
-    <div className="mt-2 flex flex-nowrap items-center justify-end gap-2 border-t border-gray-200 pt-2 dark:border-gray-700 sm:gap-3">
+    <div className="mt-2 flex flex-nowrap items-center justify-end gap-2 border-t border-gray-200 pt-2 dark:border-v3-border sm:gap-3">
       {loadingHint ? (
         <span className="flex shrink-0 flex-nowrap items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
           <span className="relative h-3.5 w-3.5 shrink-0" aria-hidden>
@@ -110,7 +110,7 @@ function PaginationControls({
       </span>
       <select
         value={pageSize}
-        className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+        className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-v3-text"
         onChange={(e) => {
           const size = Number(e.target.value) || DEFAULT_PAGE_SIZE;
           setCookie(preferenceKey, String(size));
@@ -1427,10 +1427,10 @@ export default function TransfersPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Transfer sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -1452,16 +1452,16 @@ export default function TransfersPage() {
         : null;
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('transfers.title') || "Transfer Yönetimi"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('transfers.description') || "MICE ve Sejour Transfer Operasyonlarını Yönetin"}
             </p>
           </div>
@@ -1507,11 +1507,11 @@ export default function TransfersPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 type="button"
                 onClick={exportTransfersToExcel}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
                 title={t('transfers.exportExcel') || "Excel İndir"}
               >
                 <svg
@@ -1534,28 +1534,28 @@ export default function TransfersPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+        <div className="flex flex-wrap items-center gap-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+            <span className="text-v3-muted font-medium uppercase tracking-wider ml-2">
               {t('transfers.source') || "KAYNAK:"}
             </span>
             <button
               onClick={() => setFilter("all")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('transfers.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
             </button>
             <button
               onClick={() => setFilter("mice")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-indigo-500/20 border border-indigo-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-indigo-500/20 border border-indigo-500/50 text-indigo-700 dark:text-indigo-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>MICE</span>
               <span className="font-bold">{typeCounts.mice}</span>
             </button>
             <button
               onClick={() => setFilter("sejour")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>SEJOUR</span>
               <span className="font-bold">{typeCounts.sejour}</span>
@@ -1565,15 +1565,15 @@ export default function TransfersPage() {
 
         {/* Transferler Tablosu */}
         <div
-          className={`flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
+          className={`flex-1 bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden shadow-inner flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
           aria-busy={tableBusy || undefined}
         >
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
+              <thead className="bg-v3-surface backdrop-blur-xl border-b border-v3-border sticky top-0 z-20">
                 <tr>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("reference")}
                   >
                     <div className="flex items-center">
@@ -1596,7 +1596,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("transfer_date")}
                   >
                     <div className="flex items-center">
@@ -1619,7 +1619,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("transfer_time")}
                   >
                     <div className="flex items-center">
@@ -1642,7 +1642,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("project_reference")}
                   >
                     <div className="flex items-center">
@@ -1665,7 +1665,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("check_in_out")}
                   >
                     <div className="flex items-center gap-0.5">
@@ -1688,7 +1688,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("company_name")}
                   >
                     <div className="flex items-center">
@@ -1711,7 +1711,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("customer_name")}
                   >
                     <div className="flex items-center gap-0.5">
@@ -1734,7 +1734,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("hotel_name")}
                   >
                     <div className="flex items-center">
@@ -1757,7 +1757,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("supplier_name")}
                   >
                     <div className="flex items-center gap-0.5">
@@ -1782,7 +1782,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("transfer_type")}
                   >
                     <div className="flex items-center">
@@ -1805,7 +1805,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("service_type")}
                   >
                     <div className="flex items-center">
@@ -1828,7 +1828,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("vehicle_type")}
                   >
                     <div className="flex items-center">
@@ -1851,7 +1851,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("passenger_count")}
                   >
                     <div className="flex items-center">
@@ -1874,7 +1874,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("notes")}
                   >
                     <div className="flex items-center gap-0.5">
@@ -1897,7 +1897,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("flight_info.flight_number")}
                   >
                     <div className="flex items-center">
@@ -1920,7 +1920,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("total_amount")}
                   >
                     <div className="flex items-center">
@@ -1943,7 +1943,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("currency")}
                   >
                     <div className="flex items-center">
@@ -1973,7 +1973,7 @@ export default function TransfersPage() {
                     key={transfer.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    <td className="px-2 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <button
                         onClick={() =>
                           handleReferenceClick(
@@ -1981,18 +1981,18 @@ export default function TransfersPage() {
                             transfer.project_type,
                           )
                         }
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 dark:text-blue-300 underline cursor-pointer transition-colors duration-200"
                       >
                         {transfer.reference}
                       </button>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {safeFormatDate(transfer.transfer_date)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.transfer_time || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           transfer.project_type === "mice"
@@ -2003,7 +2003,7 @@ export default function TransfersPage() {
                         {transfer.project_type === "mice" ? "MICE" : "Sejour"}
                       </span>
                     </td>
-                    <td className="px-2 py-1.5 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2 py-1.5 text-xs text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.check_in_date && transfer.check_out_date ? (
                         <div className="flex items-center leading-tight">
                           <span>
@@ -2020,10 +2020,10 @@ export default function TransfersPage() {
                         "-"
                       )}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.company_name || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span
                         className="block truncate"
                         title={transfer.customer_name || ""}
@@ -2031,7 +2031,7 @@ export default function TransfersPage() {
                         {transfer.customer_name || "-"}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span
                         className="block truncate"
                         title={transfer.hotel_name || ""}
@@ -2039,7 +2039,7 @@ export default function TransfersPage() {
                         {transfer.hotel_name || "-"}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span
                         className="block truncate whitespace-nowrap"
                         title={transfer.supplier_name || ""}
@@ -2047,23 +2047,23 @@ export default function TransfersPage() {
                         {transfer.supplier_name || "-"}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {getTransferTypeDisplayName(transfer.transfer_type)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.service_type === "private"
                         ? t('transfers.servicePrivate') || "Özel"
                         : transfer.service_type === "economic"
                           ? t('transfers.serviceEconomic') || "Ekonomik"
                           : "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.vehicle_type || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.passenger_count}/{transfer.capacity}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white relative transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text relative transition-colors duration-200 whitespace-nowrap">
                       <div className="flex items-center justify-between gap-1">
                         <div
                           className="truncate flex-1 min-w-0"
@@ -2106,23 +2106,23 @@ export default function TransfersPage() {
                       {expandedGuests.has(transfer.id) && transfer.notes && (
                         <div className="absolute z-10 mt-1 w-full max-w-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg">
                           <div className="p-2">
-                            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <div className="text-xs font-medium text-v3-text mb-1">
                               Misafirler:
                             </div>
-                            <div className="text-xs text-gray-900 dark:text-white whitespace-pre-wrap">
+                            <div className="text-xs text-v3-text whitespace-pre-wrap">
                               {transfer.notes.replace("Misafirler: ", "")}
                             </div>
                           </div>
                         </div>
                       )}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.flight_info.flight_number || "-"}
                     </td>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(transfer.total_amount)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.currency}
                     </td>
                   </tr>
@@ -2132,7 +2132,7 @@ export default function TransfersPage() {
                   <tr>
                     <td
                       colSpan={20}
-                      className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                      className="px-3 py-8 text-center text-sm text-v3-muted"
                     >
                       {t('transfers.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>

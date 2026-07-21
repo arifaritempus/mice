@@ -227,10 +227,10 @@ export default function ServiceTypesPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white group-hover:text-blue-300 mb-4">
+          <h1 className="text-2xl font-bold text-v3-text group-hover:text-blue-600 dark:text-blue-300 mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <a
@@ -456,13 +456,13 @@ export default function ServiceTypesPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
           {/* Title Area */}
           <div className="flex items-center gap-4 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -478,10 +478,10 @@ export default function ServiceTypesPage() {
               </svg>
             </div>
             <div className="space-y-0.5">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
                 Hizmet Kategori Yönetimi
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 Transfer, rehber, otel ve diğer hizmet türlerini yönetin
               </p>
             </div>
@@ -491,7 +491,7 @@ export default function ServiceTypesPage() {
           <div className="flex flex-row items-end justify-start xl:justify-end gap-3 flex-1 flex-wrap">
             {/* Search Bar */}
             <div className="flex flex-col gap-1.5 flex-[2] min-w-[250px] max-w-lg shrink-0">
-              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                 GENEL ARAMA (TÜR, KOD, AÇIKLAMA...)
               </label>
               <div className="h-10">
@@ -545,7 +545,7 @@ export default function ServiceTypesPage() {
 
             <button
               onClick={exportToExcel}
-              className="h-10 bg-[#0f172a]/40 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/30 py-2 px-4 rounded-xl shadow-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+              className="h-10 bg-v3-surface text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/30 py-2 px-4 rounded-xl shadow-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
             >
               <svg
                 className="w-4 h-4"
@@ -566,7 +566,7 @@ export default function ServiceTypesPage() {
             {canCreate(Module.SUPPLIERS) && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="h-10 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                className="h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
                 + YENİ HİZMET TÜRÜ
               </button>
@@ -581,43 +581,43 @@ export default function ServiceTypesPage() {
         )}
 
         {success && (
-          <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl transition-colors duration-200 text-xs font-medium">
+          <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-xl transition-colors duration-200 text-xs font-medium">
             {success}
           </div>
         )}
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span className="text-[11px] font-medium text-white">Durum:</span>
+            <span className="text-[11px] font-medium text-v3-text">Durum:</span>
           </div>
 
           <button
             onClick={() => setStatsFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TÜMÜ
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "all" ? "bg-blue-500/20 text-blue-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "all" ? "bg-blue-500/20 text-blue-600 dark:text-blue-300" : "bg-white/10"}`}
             >
               {serviceTypes.length}
             </span>
           </button>
           <button
             onClick={() => setStatsFilter("active")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "active" ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "active" ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             AKTİF
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "active" ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "active" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" : "bg-white/10"}`}
             >
               {serviceTypes.filter((st) => st.is_active).length}
             </span>
           </button>
           <button
             onClick={() => setStatsFilter("transfer")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "transfer" ? "bg-purple-500/20 border border-purple-500/30 text-purple-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "transfer" ? "bg-purple-500/20 border border-purple-500/30 text-purple-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TRANSFER
             <span
@@ -628,11 +628,11 @@ export default function ServiceTypesPage() {
           </button>
           <button
             onClick={() => setStatsFilter("guide")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "guide" ? "bg-orange-500/20 border border-orange-500/30 text-orange-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "guide" ? "bg-orange-500/20 border border-orange-500/30 text-orange-600 dark:text-orange-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             REHBER
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "guide" ? "bg-orange-500/20 text-orange-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "guide" ? "bg-orange-500/20 text-orange-600 dark:text-orange-300" : "bg-white/10"}`}
             >
               {serviceTypes.filter((st) => st.code === "GUIDE").length}
             </span>
@@ -649,7 +649,7 @@ export default function ServiceTypesPage() {
             return (
               <div
                 key={serviceType.id}
-                className="bg-[#0f172a]/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:bg-blue-500/10 cursor-pointer transition-colors duration-200 group"
+                className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden hover:bg-blue-500/10 cursor-pointer transition-colors duration-200 group"
                 onDoubleClick={() => {
                   setEditingServiceType(serviceType);
                   setShowEditModal(true);
@@ -657,13 +657,13 @@ export default function ServiceTypesPage() {
               >
                 <div className="px-4 py-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-0.5 mr-3 border-r border-white/10 pr-3">
+                    <div className="flex flex-col gap-0.5 mr-3 border-r border-v3-border pr-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           moveServiceTypeUp(serviceType.id);
                         }}
-                        className="p-0.5 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"
+                        className="p-0.5 hover:bg-v3-surface rounded text-v3-muted hover:text-v3-text transition-colors"
                         title="Yukarı Taşı"
                       >
                         <svg
@@ -685,7 +685,7 @@ export default function ServiceTypesPage() {
                           e.stopPropagation();
                           moveServiceTypeDown(serviceType.id);
                         }}
-                        className="p-0.5 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"
+                        className="p-0.5 hover:bg-v3-surface rounded text-v3-muted hover:text-v3-text transition-colors"
                         title="Aşağı Taşı"
                       >
                         <svg
@@ -704,27 +704,27 @@ export default function ServiceTypesPage() {
                       </button>
                     </div>
                     <div className="flex items-center space-x-3 flex-1">
-                      <div className="w-6 h-6 bg-white/5 border border-white/10 rounded-full flex items-center justify-center">
-                        <span className="text-slate-400 text-xs font-bold">
+                      <div className="w-6 h-6 bg-v3-border border border-v3-border rounded-full flex items-center justify-center">
+                        <span className="text-v3-muted text-xs font-bold">
                           {index + 1}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-white group-hover:text-blue-300">
+                        <h3 className="text-sm font-semibold text-v3-text group-hover:text-blue-600 dark:text-blue-300">
                           {serviceType.name}
                         </h3>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-v3-muted">
                           {serviceType.description}
                         </p>
                         <div className="flex items-center space-x-4 mt-1">
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-v3-muted">
                             Kod:{" "}
                             <span className="font-mono">
                               {serviceType.code}
                             </span>
                           </span>
                           {serviceType.notes && (
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-v3-muted">
                               Not: {serviceType.notes}
                             </span>
                           )}
@@ -736,35 +736,35 @@ export default function ServiceTypesPage() {
                       {/* Muhasebe ve KDV Kodları */}
                       <div className="hidden lg:flex items-center space-x-8 text-xs">
                         <div className="text-center">
-                          <span className="text-slate-500 font-medium">
+                          <span className="text-v3-muted font-medium">
                             Gider:
                           </span>
-                          <span className="font-mono text-white ml-1">
+                          <span className="font-mono text-v3-text ml-1">
                             {serviceType.expense_accounting_code || "-"}
                           </span>
                         </div>
                         <div className="text-center">
-                          <span className="text-slate-500 font-medium">
+                          <span className="text-v3-muted font-medium">
                             Gelir:
                           </span>
-                          <span className="font-mono text-white ml-1">
+                          <span className="font-mono text-v3-text ml-1">
                             {serviceType.revenue_accounting_code || "-"}
                           </span>
                         </div>
                         <div className="text-center">
-                          <span className="text-slate-500 font-medium">
+                          <span className="text-v3-muted font-medium">
                             Gelir KDV:
                           </span>
-                          <span className="font-mono text-white ml-1">
+                          <span className="font-mono text-v3-text ml-1">
                             {serviceType.revenue_vat_code || "-"} (
                             {serviceType.revenue_vat_rate || 0}%)
                           </span>
                         </div>
                         <div className="text-center">
-                          <span className="text-slate-500 font-medium">
+                          <span className="text-v3-muted font-medium">
                             Gider KDV:
                           </span>
-                          <span className="font-mono text-white ml-1">
+                          <span className="font-mono text-v3-text ml-1">
                             {serviceType.expense_vat_code || "-"} (
                             {serviceType.expense_vat_rate || 0}%)
                           </span>
@@ -788,7 +788,7 @@ export default function ServiceTypesPage() {
                         <button
                           onClick={() => moveServiceTypeUp(serviceType.id)}
                           disabled={index === 0}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-600 dark:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Yukarı Taşı"
                         >
                           <svg
@@ -808,7 +808,7 @@ export default function ServiceTypesPage() {
                         <button
                           onClick={() => moveServiceTypeDown(serviceType.id)}
                           disabled={index === serviceTypes.length - 1}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-600 dark:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Aşağı Taşı"
                         >
                           <svg
@@ -879,10 +879,10 @@ export default function ServiceTypesPage() {
               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">🔧</span>
               </div>
-              <h3 className="text-sm font-medium text-white group-hover:text-blue-300 mb-2">
+              <h3 className="text-sm font-medium text-v3-text group-hover:text-blue-600 dark:text-blue-300 mb-2">
                 Henüz hizmet türü eklenmemiş
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-v3-muted">
                 Yeni hizmet türü ekleyerek başlayın
               </p>
             </div>
@@ -904,14 +904,14 @@ export default function ServiceTypesPage() {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-10 mx-auto p-2 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-white group-hover:text-blue-300 mb-3">
+                <h3 className="text-lg font-medium text-v3-text group-hover:text-blue-600 dark:text-blue-300 mb-3">
                   Yeni Hizmet Türü Ekle
                 </h3>
                 <form onSubmit={handleCreateServiceType}>
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Hizmet Türü Adı
                         </label>
                         <input
@@ -923,12 +923,12 @@ export default function ServiceTypesPage() {
                               name: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Kod
                         </label>
                         <input
@@ -940,14 +940,14 @@ export default function ServiceTypesPage() {
                               code: e.target.value.toUpperCase(),
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-white">
+                      <label className="block text-xs font-medium text-v3-text">
                         Açıklama
                       </label>
                       <textarea
@@ -958,7 +958,7 @@ export default function ServiceTypesPage() {
                             description: e.target.value,
                           })
                         }
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                         rows={2}
                         required
                       />
@@ -966,7 +966,7 @@ export default function ServiceTypesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gider Muhasebe Bağlantı Kodu
                         </label>
                         <input
@@ -978,12 +978,12 @@ export default function ServiceTypesPage() {
                               expense_accounting_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 120.01.001"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gelir Muhasebe Bağlantı Kodu
                         </label>
                         <input
@@ -995,7 +995,7 @@ export default function ServiceTypesPage() {
                               revenue_accounting_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 120.01.001"
                         />
                       </div>
@@ -1003,7 +1003,7 @@ export default function ServiceTypesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gelir KDV Kodu
                         </label>
                         <input
@@ -1015,12 +1015,12 @@ export default function ServiceTypesPage() {
                               revenue_vat_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 391.01.001"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gelir KDV Oranı (%)
                         </label>
                         <input
@@ -1035,7 +1035,7 @@ export default function ServiceTypesPage() {
                               revenue_vat_rate: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 18"
                         />
                       </div>
@@ -1043,7 +1043,7 @@ export default function ServiceTypesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gider KDV Kodu
                         </label>
                         <input
@@ -1055,12 +1055,12 @@ export default function ServiceTypesPage() {
                               expense_vat_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 191.01.001"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gider KDV Oranı (%)
                         </label>
                         <input
@@ -1075,14 +1075,14 @@ export default function ServiceTypesPage() {
                               expense_vat_rate: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 18"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-white">
+                      <label className="block text-xs font-medium text-v3-text">
                         Notlar
                       </label>
                       <textarea
@@ -1093,7 +1093,7 @@ export default function ServiceTypesPage() {
                             notes: e.target.value,
                           })
                         }
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                         rows={2}
                         placeholder="Hizmet türü ile ilgili özel notlar..."
                       />
@@ -1125,7 +1125,7 @@ export default function ServiceTypesPage() {
                     <button
                       type="button"
                       onClick={() => setShowCreateModal(false)}
-                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-white hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-300"
+                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-v3-text hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-300"
                     >
                       İptal
                     </button>
@@ -1147,14 +1147,14 @@ export default function ServiceTypesPage() {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-10 mx-auto p-2 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-white group-hover:text-blue-300 mb-3">
+                <h3 className="text-lg font-medium text-v3-text group-hover:text-blue-600 dark:text-blue-300 mb-3">
                   Hizmet Türü Düzenle
                 </h3>
                 <form onSubmit={handleUpdateServiceType}>
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Hizmet Türü Adı
                         </label>
                         <input
@@ -1166,12 +1166,12 @@ export default function ServiceTypesPage() {
                               name: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Kod
                         </label>
                         <input
@@ -1183,14 +1183,14 @@ export default function ServiceTypesPage() {
                               code: e.target.value.toUpperCase(),
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-white">
+                      <label className="block text-xs font-medium text-v3-text">
                         Açıklama
                       </label>
                       <textarea
@@ -1201,7 +1201,7 @@ export default function ServiceTypesPage() {
                             description: e.target.value,
                           })
                         }
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                         rows={2}
                         required
                       />
@@ -1209,7 +1209,7 @@ export default function ServiceTypesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gider Muhasebe Bağlantı Kodu
                         </label>
                         <input
@@ -1223,12 +1223,12 @@ export default function ServiceTypesPage() {
                               expense_accounting_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 120.01.001"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gelir Muhasebe Bağlantı Kodu
                         </label>
                         <input
@@ -1242,7 +1242,7 @@ export default function ServiceTypesPage() {
                               revenue_accounting_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 120.01.001"
                         />
                       </div>
@@ -1250,7 +1250,7 @@ export default function ServiceTypesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gelir KDV Kodu
                         </label>
                         <input
@@ -1262,12 +1262,12 @@ export default function ServiceTypesPage() {
                               revenue_vat_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 391.01.001"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gelir KDV Oranı (%)
                         </label>
                         <input
@@ -1282,7 +1282,7 @@ export default function ServiceTypesPage() {
                               revenue_vat_rate: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 18"
                         />
                       </div>
@@ -1290,7 +1290,7 @@ export default function ServiceTypesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gider KDV Kodu
                         </label>
                         <input
@@ -1302,12 +1302,12 @@ export default function ServiceTypesPage() {
                               expense_vat_code: e.target.value,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 191.01.001"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-white">
+                        <label className="block text-xs font-medium text-v3-text">
                           Gider KDV Oranı (%)
                         </label>
                         <input
@@ -1322,14 +1322,14 @@ export default function ServiceTypesPage() {
                               expense_vat_rate: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                           placeholder="Örn: 18"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-white">
+                      <label className="block text-xs font-medium text-v3-text">
                         Notlar
                       </label>
                       <textarea
@@ -1340,7 +1340,7 @@ export default function ServiceTypesPage() {
                             notes: e.target.value,
                           })
                         }
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-white group-hover:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-v3-text group-hover:text-blue-600 dark:text-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-xs"
                         rows={2}
                         placeholder="Hizmet türü ile ilgili özel notlar..."
                       />
@@ -1375,7 +1375,7 @@ export default function ServiceTypesPage() {
                         setShowEditModal(false);
                         setEditingServiceType(null);
                       }}
-                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-white hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-300"
+                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium text-v3-text hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-300"
                     >
                       İptal
                     </button>

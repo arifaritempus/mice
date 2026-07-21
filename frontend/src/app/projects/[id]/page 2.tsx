@@ -861,7 +861,7 @@ export default function ProjectDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200">
+          <h1 className="text-lg font-bold text-v3-text transition-colors duration-200">
             Proje Detayı
           </h1>
         </div>
@@ -875,72 +875,72 @@ export default function ProjectDetailPage() {
       {/* Stats (özet) */}
       <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-9 gap-1 mb-3">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Referans
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {project?.reference || projectId}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Başlangıç
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {formatDate(project?.start_date || "")}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">Bitiş</p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-[10px] text-v3-muted">Bitiş</p>
+          <p className="text-xs font-semibold text-v3-text">
             {formatDate(project?.end_date || "")}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Firma Adı
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {project?.company_name || project?.company?.name || "-"}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Acente Adı
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {getAgencyName(project?.agency_id) || "-"}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Otel Adı
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {getHotelName(project?.hotel_id) || "-"}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Oda | Pax
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {project?.room_pax || project?.room_info || "-"}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Teklif Türü
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {project?.quote_type || "-"}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-1.5 transition-colors duration-200">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] text-v3-muted">
             Proje Sorumlusu
           </p>
-          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+          <p className="text-xs font-semibold text-v3-text">
             {getProjectManagers(projectId)}
           </p>
         </div>
@@ -948,7 +948,7 @@ export default function ProjectDetailPage() {
 
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200">
-        <div className="border-b border-gray-200 dark:border-gray-700 px-2 pt-2">
+        <div className="border-b border-gray-200 dark:border-v3-border px-2 pt-2">
           <div className="flex flex-wrap gap-2">
             {TABS.map((t) => (
               <button
@@ -968,7 +968,7 @@ export default function ProjectDetailPage() {
 
         <div className="p-3">
           {loading ? (
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-v3-muted">
               Yükleniyor...
             </div>
           ) : (
@@ -1133,7 +1133,7 @@ export default function ProjectDetailPage() {
               {activeTab === "konaklama" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <h2 className="text-sm font-semibold text-v3-text">
                       Konaklama
                     </h2>
                     <div className="flex items-center gap-2">
@@ -1189,7 +1189,7 @@ export default function ProjectDetailPage() {
                               {accommodationItems.map((item, index) => (
                                 <tr
                                   key={index}
-                                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                  className="border-b border-gray-200 dark:border-v3-border hover:bg-gray-50 dark:hover:bg-gray-700"
                                 >
                                   <td className="px-2 py-1">
                                     {item.oda_no || "-"}
@@ -1302,7 +1302,7 @@ export default function ProjectDetailPage() {
 
                       {/* Günlük Inhouse Kontrolü */}
                       <div className="mt-6">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        <h3 className="text-lg font-semibold text-v3-text mb-4">
                           Günlük Inhouse Kontrolü
                         </h3>
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -1500,7 +1500,7 @@ export default function ProjectDetailPage() {
                                     return (
                                       <tr
                                         key={uniqueKey}
-                                        className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        className="border-b border-gray-200 dark:border-v3-border hover:bg-gray-50 dark:hover:bg-gray-700"
                                       >
                                         <td className="px-3 py-2 font-medium">
                                           {stats.date}
@@ -1700,7 +1700,7 @@ export default function ProjectDetailPage() {
 
                             return (
                               <>
-                                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg">
+                                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-v3-text shadow-lg">
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <p className="text-blue-100 text-sm">
@@ -1722,7 +1722,7 @@ export default function ProjectDetailPage() {
                                   </div>
                                 </div>
 
-                                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg">
+                                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-v3-text shadow-lg">
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <p className="text-green-100 text-sm">
@@ -1744,7 +1744,7 @@ export default function ProjectDetailPage() {
                                   </div>
                                 </div>
 
-                                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-lg">
+                                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-v3-text shadow-lg">
                                   <div className="flex items-center justify-between">
                                     <div>
                                       <p className="text-purple-100 text-sm">
@@ -1815,11 +1815,11 @@ export default function ProjectDetailPage() {
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+      <h2 className="text-sm font-semibold text-v3-text">
         {title}
       </h2>
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+        <span className="text-[10px] text-v3-muted">
           Satırlar tek satır, h-10
         </span>
       </div>
@@ -1882,7 +1882,7 @@ function ServiceEditor({
             onChange={(e) =>
               setNewItem({ ...newItem, main_category: e.target.value })
             }
-            className="w-36 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="w-36 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
           >
             <option value="">Ana Kategori</option>
             {categories
@@ -1898,7 +1898,7 @@ function ServiceEditor({
             onChange={(e) =>
               setNewItem({ ...newItem, sub_category: e.target.value })
             }
-            className="w-40 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="w-40 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
           >
             <option value="">Alt Kategori</option>
             {categories
@@ -2079,7 +2079,7 @@ function ServiceEditor({
                         list[index] = updated;
                         saveItems(side, list);
                       }}
-                      className="w-40 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-40 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     >
                       <option value="">Alt Kategori</option>
                       {categories
@@ -2113,7 +2113,7 @@ function ServiceEditor({
                       }}
                       type="number"
                       step="1"
-                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       autoFocus
                     />
                     <input
@@ -2139,7 +2139,7 @@ function ServiceEditor({
                       }}
                       type="number"
                       step="1"
-                      className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     />
                     <input
                       value={it.unit_price}
@@ -2160,7 +2160,7 @@ function ServiceEditor({
                       }}
                       type="number"
                       step="0.01"
-                      className="w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     />
                     <div className="w-28 px-2 py-1 text-xs text-right text-gray-700 dark:text-gray-200">
                       {formatTRY(it.total)}
@@ -2176,7 +2176,7 @@ function ServiceEditor({
                         list[index] = updated;
                         saveItems(side, list);
                       }}
-                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     >
                       <option>EUR</option>
                       <option>USD</option>
@@ -2198,7 +2198,7 @@ function ServiceEditor({
                       min="0"
                       max="100"
                       placeholder="5"
-                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     />
                     <input
                       value={it.fx}
@@ -2221,7 +2221,7 @@ function ServiceEditor({
                       }}
                       type="number"
                       step="0.0001"
-                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     />
                     <input
                       value={it.total_try}
@@ -2250,7 +2250,7 @@ function ServiceEditor({
                       }}
                       type="number"
                       step="0.01"
-                      className="w-32 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-32 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                     />
                     <input
                       value={it.description}
@@ -2263,7 +2263,7 @@ function ServiceEditor({
                         list[index] = updated;
                         saveItems(side, list);
                       }}
-                      className="flex-1 min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="flex-1 min-w-0 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       placeholder="Açıklama"
                     />
                     {showSupplier && (
@@ -2336,38 +2336,38 @@ function ServiceEditor({
                   <>
                     <div className="w-36"></div>{" "}
                     {/* Ana kategori boş - başlıkta gösteriliyor */}
-                    <div className="w-40 text-xs text-gray-900 dark:text-white">
+                    <div className="w-40 text-xs text-v3-text">
                       {getCategoryName(it.sub_category) || "-"}
                     </div>
-                    <div className="w-16 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                    <div className="w-16 text-right pr-1 text-xs text-v3-text">
                       {Math.round(it.qty)}
                     </div>
-                    <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                    <div className="w-20 text-right pr-1 text-xs text-v3-text">
                       {Math.round(it.repeat)}
                     </div>
-                    <div className="w-24 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                    <div className="w-24 text-right pr-1 text-xs text-v3-text">
                       {formatTRY(it.unit_price)}
                     </div>
-                    <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">
+                    <div className="w-32 text-right pr-1 text-xs font-semibold text-v3-text">
                       {formatTRY(it.total)}
                     </div>
-                    <div className="w-16 text-xs text-gray-900 dark:text-white">
+                    <div className="w-16 text-xs text-v3-text">
                       {it.currency}
                     </div>
-                    <div className="w-16 text-xs text-gray-900 dark:text-white">
+                    <div className="w-16 text-xs text-v3-text">
                       %{it.vat}
                     </div>
-                    <div className="w-16 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                    <div className="w-16 text-right pr-1 text-xs text-v3-text">
                       {formatTRY(it.fx)}
                     </div>
-                    <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">
+                    <div className="w-32 text-right pr-1 text-xs font-semibold text-v3-text">
                       {formatTRY(it.total_try)}
                     </div>
-                    <div className="flex-1 min-w-0 text-xs text-gray-900 dark:text-white">
+                    <div className="flex-1 min-w-0 text-xs text-v3-text">
                       {it.description}
                     </div>
                     {showSupplier && (
-                      <div className="w-40 text-xs text-gray-900 dark:text-white">
+                      <div className="w-40 text-xs text-v3-text">
                         {getVendorName(it.supplier) || "-"}
                       </div>
                     )}
@@ -2439,14 +2439,14 @@ function ServiceEditor({
           {/* Genel Toplamlar */}
           <div className="mt-4 bg-blue-500 dark:bg-blue-700 rounded-md p-3">
             <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
-              <div className="w-36 text-sm font-bold text-white">
+              <div className="w-36 text-sm font-bold text-v3-text">
                 GENEL TOPLAM
               </div>
               <div className="w-40"></div>
               <div className="w-16"></div>
               <div className="w-20"></div>
               <div className="w-24"></div>
-              <div className="w-32 text-right pr-1 text-sm font-bold text-white">
+              <div className="w-32 text-right pr-1 text-sm font-bold text-v3-text">
                 {Object.entries(totals)
                   .map(
                     ([cur, val]: any) =>
@@ -2457,7 +2457,7 @@ function ServiceEditor({
               <div className="w-16"></div>
               <div className="w-16"></div>
               <div className="w-16"></div>
-              <div className="w-32 text-right pr-1 text-sm font-bold text-white">
+              <div className="w-32 text-right pr-1 text-sm font-bold text-v3-text">
                 {formatTRY(
                   items.reduce(
                     (sum: number, it: any) => sum + Number(it.total_try || 0),
@@ -2639,7 +2639,7 @@ function ProfitLossList({
                   <div className="flex items-center gap-2 text-xs">
                     {/* Alt kategori */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-v3-text">
                         {getCategoryName(service.sub_category) || "-"}
                       </div>
                     </div>
@@ -2663,7 +2663,7 @@ function ProfitLossList({
                     {/* Satış Kur */}
                     <div className="w-24 text-right pr-1">
                       <div
-                        className="text-gray-600 dark:text-gray-400 cursor-help"
+                        className="text-v3-muted cursor-help"
                         title={tooltipForFx(service.salesFxValues)}
                       >
                         {displayFx(service.salesFxValues)}
@@ -2696,7 +2696,7 @@ function ProfitLossList({
                     {/* Alış Kur */}
                     <div className="w-24 text-right pr-1">
                       <div
-                        className="text-gray-600 dark:text-gray-400 cursor-help"
+                        className="text-v3-muted cursor-help"
                         title={tooltipForFx(service.purchaseFxValues)}
                       >
                         {displayFx(service.purchaseFxValues)}
@@ -2741,7 +2741,7 @@ function ProfitLossList({
           <div className="flex items-center gap-2 text-sm font-bold">
             {/* Genel Toplam Başlığı */}
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-gray-900 dark:text-white">
+              <div className="font-bold text-v3-text">
                 GENEL TOPLAM
               </div>
             </div>
@@ -2769,7 +2769,7 @@ function ProfitLossList({
 
             {/* Satış Kur (boş) */}
             <div className="w-24 text-right pr-1">
-              <div className="text-gray-600 dark:text-gray-400">-</div>
+              <div className="text-v3-muted">-</div>
             </div>
 
             {/* Toplam Satış TL */}
@@ -2810,7 +2810,7 @@ function ProfitLossList({
 
             {/* Alış Kur (boş) */}
             <div className="w-24 text-right pr-1">
-              <div className="text-gray-600 dark:text-gray-400">-</div>
+              <div className="text-v3-muted">-</div>
             </div>
 
             {/* Toplam Alış TL */}
@@ -2971,7 +2971,7 @@ function SearchableVendorSelect({
   return (
     <div className={`relative ${className}`}>
       <div
-        className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer flex items-center justify-between"
+        className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text cursor-pointer flex items-center justify-between"
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
         tabIndex={0}
@@ -2998,7 +2998,7 @@ function SearchableVendorSelect({
         <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto">
           <input
             type="text"
-            className="w-full px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+            className="w-full px-2 py-1 text-xs border-b border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800 text-v3-text focus:outline-none"
             placeholder="Ara..."
             value={searchTerm}
             onChange={(e) => {
@@ -3026,14 +3026,14 @@ function SearchableVendorSelect({
                   )}
                 </div>
                 {v.subtitle && (
-                  <div className="text-gray-500 dark:text-gray-400 text-[10px]">
+                  <div className="text-v3-muted text-[10px]">
                     {v.subtitle}
                   </div>
                 )}
               </div>
             ))
           ) : (
-            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">
+            <div className="px-2 py-1 text-xs text-v3-muted">
               Tedarikçi bulunamadı
             </div>
           )}

@@ -782,10 +782,10 @@ export default function SuppliersPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Tedarikçiler sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <a
@@ -804,13 +804,13 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
           {/* Title Area */}
           <div className="flex items-center gap-4 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -826,10 +826,10 @@ export default function SuppliersPage() {
               </svg>
             </div>
             <div className="space-y-0.5">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
                 Tedarikçi Yönetimi
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 Transfer, rehber, otel ve diğer hizmet tedarikçilerini yönetin
               </p>
             </div>
@@ -839,7 +839,7 @@ export default function SuppliersPage() {
           <div className="flex flex-row items-end justify-start xl:justify-end gap-3 flex-1 flex-wrap">
             {/* Search Bar */}
             <div className="flex flex-col gap-1.5 flex-[2] min-w-[250px] max-w-lg shrink-0">
-              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                 GENEL ARAMA (TEDARİKÇİ, UNVAN, HİZMET...)
               </label>
               <div className="h-10">
@@ -892,7 +892,7 @@ export default function SuppliersPage() {
             <div className="w-px h-6 bg-white/10 shrink-0 mx-1 hidden sm:block"></div>
 
             {/* Actions */}
-            <label className="h-10 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
+            <label className="h-10 bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -919,7 +919,7 @@ export default function SuppliersPage() {
             <button
               onClick={exportSuppliersToExcel}
               disabled={exporting}
-              className="h-10 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+              className="h-10 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" />
@@ -930,7 +930,7 @@ export default function SuppliersPage() {
             {canCreate(Module.SUPPLIERS) && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="h-10 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                className="h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
                 <Plus size={16} /> YENİ TEDARİKÇİ
               </button>
@@ -939,37 +939,37 @@ export default function SuppliersPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span className="text-[11px] font-medium text-white">Durum:</span>
+            <span className="text-[11px] font-medium text-v3-text">Durum:</span>
           </div>
 
           <button
             onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TÜMÜ
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "all" ? "bg-blue-500/20 text-blue-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "all" ? "bg-blue-500/20 text-blue-600 dark:text-blue-300" : "bg-white/10"}`}
             >
               {stats.total}
             </span>
           </button>
           <button
             onClick={() => setFilter("active")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-600 dark:text-teal-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             AKTİF
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "active" ? "bg-teal-500/20 text-teal-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "active" ? "bg-teal-500/20 text-teal-600 dark:text-teal-300" : "bg-white/10"}`}
             >
               {stats.active}
             </span>
           </button>
           <button
             onClick={() => setFilter("transfer")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "transfer" ? "bg-purple-500/20 border border-purple-500/30 text-purple-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "transfer" ? "bg-purple-500/20 border border-purple-500/30 text-purple-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TRANSFER
             <span
@@ -980,18 +980,18 @@ export default function SuppliersPage() {
           </button>
           <button
             onClick={() => setFilter("guide")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "guide" ? "bg-orange-500/20 border border-orange-500/30 text-orange-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "guide" ? "bg-orange-500/20 border border-orange-500/30 text-orange-600 dark:text-orange-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             REHBER
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "guide" ? "bg-orange-500/20 text-orange-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "guide" ? "bg-orange-500/20 text-orange-600 dark:text-orange-300" : "bg-white/10"}`}
             >
               {stats.guide}
             </span>
           </button>
           <button
             onClick={() => setFilter("hotel")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "hotel" ? "bg-pink-500/20 border border-pink-500/30 text-pink-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "hotel" ? "bg-pink-500/20 border border-pink-500/30 text-pink-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             OTEL
             <span
@@ -1003,13 +1003,13 @@ export default function SuppliersPage() {
         </div>
 
         {/* Tedarikçiler Tablosu */}
-        <div className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl w-full min-w-0 flex-1 flex flex-col min-h-0 relative overflow-hidden">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 flex-1 flex flex-col min-h-0 relative overflow-hidden">
           <div className="overflow-auto w-full flex-1 custom-scrollbar">
             <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
+              <thead className="bg-v3-border sticky top-0 z-10 backdrop-blur-md">
                 <tr>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-border border-b border-v3-border"
                     onClick={() => handleSort("name")}
                   >
                     <div className="flex items-center gap-1">
@@ -1032,7 +1032,7 @@ export default function SuppliersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-border border-b border-v3-border"
                     onClick={() => handleSort("service_type")}
                   >
                     <div className="flex items-center gap-1">
@@ -1055,7 +1055,7 @@ export default function SuppliersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-border border-b border-v3-border"
                     onClick={() => handleSort("contact_person")}
                   >
                     <div className="flex items-center gap-1">
@@ -1077,11 +1077,11 @@ export default function SuppliersPage() {
                       )}
                     </div>
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Vergi Bilgileri
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-border border-b border-v3-border"
                     onClick={() => handleSort("created_at")}
                   >
                     <div className="flex items-center gap-1">
@@ -1103,10 +1103,10 @@ export default function SuppliersPage() {
                       )}
                     </div>
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Durum
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     İşlemler
                   </th>
                 </tr>
@@ -1115,10 +1115,10 @@ export default function SuppliersPage() {
                 {paginatedSuppliers.items.map((supplier) => (
                   <tr
                     key={supplier.id}
-                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0"
                     onDoubleClick={() => handleEditSupplier(supplier)}
                   >
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-sm font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-sm font-medium text-v3-text">
                       {supplier.name}
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap">
@@ -1129,8 +1129,8 @@ export default function SuppliersPage() {
                             : supplier.service_type === "transfer"
                               ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
                               : supplier.service_type === "guide"
-                                ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                                : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20"
+                                : "bg-slate-500/10 text-v3-muted border-slate-500/20"
                         }`}
                       >
                         {getServiceTypeDisplayName(supplier.service_type)}
@@ -1138,35 +1138,35 @@ export default function SuppliersPage() {
                     </td>
                     <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-xs font-medium text-slate-200">
+                        <div className="text-xs font-medium text-v3-text">
                           {supplier.contact_person}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {supplier.phone}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {supplier.email}
                         </div>
                       </div>
                     </td>
                     <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-xs font-medium text-slate-200">
+                        <div className="text-xs font-medium text-v3-text">
                           Vergi: {supplier.tax_id || "-"}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {supplier.tax_office || "-"}
                         </div>
                       </div>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {formatDate(supplier.created_at)}
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2.5 py-1 text-[11px] font-semibold rounded-full border ${
                           supplier.is_active
-                            ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                            ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20"
                             : "bg-red-500/10 text-red-400 border-red-500/20"
                         }`}
                       >
@@ -1178,7 +1178,7 @@ export default function SuppliersPage() {
                         {canEdit(Module.SUPPLIERS) && (
                           <button
                             onClick={() => handleEditSupplier(supplier)}
-                            className="text-emerald-400 hover:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-600 dark:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Düzenle"
                           >
                             <svg
@@ -1256,15 +1256,15 @@ export default function SuppliersPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Temel Bilgiler Section */}
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 border-b border-v3-border pb-3 mb-4">
                   <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <Building2 size={16} className="text-blue-400" />
+                    <Building2 size={16} className="text-blue-600 dark:text-blue-400" />
                   </div>
                   Kurumsal Bilgiler
                 </h4>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                    <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                       Tedarikçi Adı *
                     </label>
                     <input
@@ -1272,12 +1272,12 @@ export default function SuppliersPage() {
                       type="text"
                       defaultValue={editingSupplier?.name || ""}
                       required
-                      className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                      className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                       placeholder="Kısa isim"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                    <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                       Tedarikçi Unvanı *
                     </label>
                     <input
@@ -1287,13 +1287,13 @@ export default function SuppliersPage() {
                       type="text"
                       defaultValue={editingSupplier?.title || ""}
                       required
-                      className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                      className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                       placeholder="Tam ticari unvan"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                      <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                         Hizmet Türü *
                       </label>
                       <select
@@ -1313,7 +1313,7 @@ export default function SuppliersPage() {
                                 service_type: e.target.value,
                               })
                         }
-                        className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm cursor-pointer"
+                        className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm cursor-pointer"
                         required
                       >
                         <option value="">Seçiniz</option>
@@ -1325,7 +1325,7 @@ export default function SuppliersPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                      <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                         Vade / Ödeme Koşulu
                       </label>
                       <input
@@ -1338,14 +1338,14 @@ export default function SuppliersPage() {
                         defaultValue={
                           editingSupplier?.contract_info?.payment_terms || ""
                         }
-                        className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                        className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                         placeholder="Örn: 30 Gün"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                      <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                         Vergi No
                       </label>
                       <input
@@ -1354,11 +1354,11 @@ export default function SuppliersPage() {
                         }
                         type="text"
                         defaultValue={editingSupplier?.tax_id || ""}
-                        className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                        className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                      <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                         Vergi Dairesi
                       </label>
                       <input
@@ -1369,7 +1369,7 @@ export default function SuppliersPage() {
                         }
                         type="text"
                         defaultValue={editingSupplier?.tax_office || ""}
-                        className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                        className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                       />
                     </div>
                   </div>
@@ -1378,7 +1378,7 @@ export default function SuppliersPage() {
 
               {/* İletişim Bilgileri Section */}
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+                <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 border-b border-v3-border pb-3 mb-4">
                   <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
                     <Phone size={16} className="text-green-400" />
                   </div>
@@ -1386,7 +1386,7 @@ export default function SuppliersPage() {
                 </h4>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                    <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                       İletişim Kişisi *
                     </label>
                     <input
@@ -1398,13 +1398,13 @@ export default function SuppliersPage() {
                       type="text"
                       defaultValue={editingSupplier?.contact_person || ""}
                       required
-                      className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
+                      className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       placeholder="Ad Soyad"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
+                      <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
                         <Phone size={12} /> Telefon *
                       </label>
                       <input
@@ -1414,11 +1414,11 @@ export default function SuppliersPage() {
                         type="tel"
                         defaultValue={editingSupplier?.phone || ""}
                         required
-                        className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
+                        className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
+                      <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
                         <Mail size={12} /> E-posta *
                       </label>
                       <input
@@ -1428,12 +1428,12 @@ export default function SuppliersPage() {
                         type="email"
                         defaultValue={editingSupplier?.email || ""}
                         required
-                        className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
+                        className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
+                    <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
                       <MapPin size={12} /> Adres *
                     </label>
                     <textarea
@@ -1445,7 +1445,7 @@ export default function SuppliersPage() {
                       defaultValue={editingSupplier?.address || ""}
                       required
                       rows={4}
-                      className="w-full px-2.5 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm resize-none"
+                      className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm resize-none"
                       placeholder="Fatura ve şirket adresi"
                     />
                   </div>
@@ -1455,7 +1455,7 @@ export default function SuppliersPage() {
 
             {/* Muhasebe Kodları Section */}
             <div className="space-y-4 mt-2">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
+              <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 border-b border-v3-border pb-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <FileText size={16} className="text-purple-400" />
                 </div>
@@ -1463,7 +1463,7 @@ export default function SuppliersPage() {
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+                  <label className="block text-[10px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                     TL Kodu
                   </label>
                   <input
@@ -1474,11 +1474,11 @@ export default function SuppliersPage() {
                     defaultValue={
                       editingSupplier?.accounting_link_codes?.TL || ""
                     }
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+                  <label className="block text-[10px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                     EUR Kodu
                   </label>
                   <input
@@ -1489,11 +1489,11 @@ export default function SuppliersPage() {
                     defaultValue={
                       editingSupplier?.accounting_link_codes?.EUR || ""
                     }
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+                  <label className="block text-[10px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                     USD Kodu
                   </label>
                   <input
@@ -1504,11 +1504,11 @@ export default function SuppliersPage() {
                     defaultValue={
                       editingSupplier?.accounting_link_codes?.USD || ""
                     }
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+                  <label className="block text-[10px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
                     GBP Kodu
                   </label>
                   <input
@@ -1519,7 +1519,7 @@ export default function SuppliersPage() {
                     defaultValue={
                       editingSupplier?.accounting_link_codes?.GBP || ""
                     }
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none text-xs transition-all"
                   />
                 </div>
               </div>
@@ -1531,7 +1531,7 @@ export default function SuppliersPage() {
                   <input
                     id="isActiveModal"
                     type="checkbox"
-                    className="h-5 w-5 rounded border-white/10 text-blue-400/50 focus:ring-blue-500/50 bg-[#0f172a]/40 cursor-pointer transition-all"
+                    className="h-5 w-5 rounded border-v3-border text-blue-600 dark:text-blue-400/50 focus:ring-blue-500/50 bg-v3-surface cursor-pointer transition-all"
                     checked={
                       editingSupplier
                         ? editingSupplier.is_active
@@ -1553,18 +1553,18 @@ export default function SuppliersPage() {
                 <div className="ml-3 text-sm leading-6">
                   <label
                     htmlFor="isActiveModal"
-                    className="font-semibold text-white cursor-pointer"
+                    className="font-semibold text-v3-text cursor-pointer"
                   >
                     Aktif Tedarikçi
                   </label>
-                  <p className="text-slate-400 text-xs">
+                  <p className="text-v3-muted text-xs">
                     Bu tedarikçi sistemde listelenecek ve işlem yapılabilecek.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
+            <div className="flex justify-end gap-3 pt-6 border-t border-v3-border mt-4">
               <button
                 type="button"
                 onClick={() => {
@@ -1572,13 +1572,13 @@ export default function SuppliersPage() {
                   setShowEditModal(false);
                   setEditingSupplier(null);
                 }}
-                className="px-6 py-2.5 text-sm font-bold text-white bg-[#0f172a]/40 border border-white/10 rounded-xl hover:bg-white/5 transition-all"
+                className="px-6 py-2.5 text-sm font-bold text-v3-text bg-v3-surface border border-v3-border rounded-xl hover:bg-v3-border transition-all"
               >
                 İptal
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all flex items-center gap-2"
+                className="px-6 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all flex items-center gap-2"
               >
                 {editingSupplier ? <Pencil size={18} /> : <Plus size={18} />}
                 {editingSupplier
@@ -1616,9 +1616,9 @@ export default function SuppliersPage() {
               className={`w-8 h-8 rounded-full flex items-center justify-center ${success ? "bg-green-400/20" : "bg-red-400/20"}`}
             >
               {success ? (
-                <Save size={18} className="text-white" />
+                <Save size={18} className="text-v3-text" />
               ) : (
-                <Building2 size={18} className="text-white" />
+                <Building2 size={18} className="text-v3-text" />
               )}
             </div>
             <span className="font-bold text-sm">{success || error}</span>

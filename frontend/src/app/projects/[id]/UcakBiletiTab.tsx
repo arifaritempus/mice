@@ -184,9 +184,9 @@ function AutocompleteInput({
       setIsOpen(true);
       setHighlightedIndex(0);
       onSelect(null, e.target.value);
-    }} onFocus={() => setIsOpen(true)} onKeyDown={handleKeyDown} placeholder={placeholder} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 truncate" disabled={disabled} />
-      {isOpen && filteredOptions.length > 0 && <ul className="absolute z-50 mt-1 max-h-48 w-full min-w-[200px] overflow-auto rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 py-1 text-xs">
-          {filteredOptions.map((opt, index) => <li key={opt.id} className={`cursor-pointer px-3 py-1.5 ${index === highlightedIndex ? 'bg-indigo-500 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'}`} onClick={() => {
+    }} onFocus={() => setIsOpen(true)} onKeyDown={handleKeyDown} placeholder={placeholder} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text focus:ring-1 focus:ring-indigo-500 truncate" disabled={disabled} />
+      {isOpen && filteredOptions.length > 0 && <ul className="absolute z-50 mt-1 max-h-48 w-full min-w-[200px] overflow-auto rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-v3-border py-1 text-xs">
+          {filteredOptions.map((opt, index) => <li key={opt.id} className={`cursor-pointer px-3 py-1.5 ${index === highlightedIndex ? 'bg-indigo-500 text-white' : 'text-v3-text hover:bg-indigo-50 dark:hover:bg-gray-700'}`} onClick={() => {
         setInputValue(opt.label);
         onSelect(opt.id, opt.label);
         setIsOpen(false);
@@ -350,7 +350,7 @@ export default function UcakBiletiTab({
   }, [filteredFlightTickets]);
   return <div className="space-y-3">
       <div className="w-full mb-4">
-        <div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+        <div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
           {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
               {tag}
@@ -362,7 +362,7 @@ export default function UcakBiletiTab({
           {searchTags.length > 0 && <button onClick={() => {
             setSearchTags([]);
             setFlightTicketSearch("");
-          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted pl-1 shrink-0 transition-colors">
             <X className="w-4 h-4" />
           </button>}
         </div>
@@ -374,7 +374,7 @@ export default function UcakBiletiTab({
           <table className="min-w-full text-left text-xs border-collapse">
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[9rem] w-36 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("biletlemeTarihi")}>
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[9rem] w-36 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("biletlemeTarihi")}>
                   <div className="flex items-center">
                     BİLETLEME
                     <br />
@@ -384,7 +384,7 @@ export default function UcakBiletiTab({
                       </span>}
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("tedarikci")}>
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("tedarikci")}>
                   <div className="flex items-center">
                     OTEL/TEDARİKÇİ
                     {flightSortField === "tedarikci" && <span className="ml-1">
@@ -392,7 +392,7 @@ export default function UcakBiletiTab({
                       </span>}
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[90px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("havayolu")}>
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[90px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("havayolu")}>
                   <div className="flex items-center">
                     HAVAYOLU
                     {flightSortField === "havayolu" && <span className="ml-1">
@@ -400,38 +400,38 @@ export default function UcakBiletiTab({
                       </span>}
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[90px] whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[90px] whitespace-nowrap">
                   PNR
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[100px] whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[100px] whitespace-nowrap">
                     <div className="leading-tight">UÇUŞ<br />TİPİ</div>
                     </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[5rem] w-20 whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[5rem] w-20 whitespace-nowrap">
                     <div className="leading-tight">GİDİŞ<br />TARİHİ</div>
                     </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[5rem] w-20 whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[5rem] w-20 whitespace-nowrap">
                     <div className="leading-tight">GİDİŞ<br />SAATİ</div>
                     </th>
-                <th className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[6rem] w-24">
+                <th className="px-1 py-2 text-left font-semibold text-v3-text min-w-[6rem] w-24">
                   <div className="leading-tight whitespace-nowrap">
                     GİDİŞ<br />UÇUŞ KODU
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[5rem] w-20 whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[5rem] w-20 whitespace-nowrap">
                     <div className="leading-tight">DÖNÜŞ<br />TARİHİ</div>
                     </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[5rem] w-20 whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[5rem] w-20 whitespace-nowrap">
                     <div className="leading-tight">DÖNÜŞ<br />SAATİ</div>
                     </th>
-                <th className="px-1 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[6rem] w-24">
+                <th className="px-1 py-2 text-left font-semibold text-v3-text min-w-[6rem] w-24">
                   <div className="leading-tight whitespace-nowrap">
                     DÖNÜŞ<br />UÇUŞ KODU
                   </div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[180px] whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[180px] whitespace-nowrap">
                   GÜZERGAH
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("kisiSayisi")}>
+                <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("kisiSayisi")}>
                   <div className="flex items-center justify-center">
                     <div className="leading-tight">Maliyet<br />Pax</div>
                     {flightSortField === "kisiSayisi" && <span className="ml-1">
@@ -442,7 +442,7 @@ export default function UcakBiletiTab({
                 <th style={{
                 minWidth: "70px",
                 width: "70px"
-              }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("ppMaliyet")}>
+              }} className="px-1 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("ppMaliyet")}>
                   <div className="flex items-center justify-end">
                     <div className="leading-tight">PP<br />Maliyet</div>
                     {flightSortField === "ppMaliyet" && <span className="ml-1">
@@ -450,7 +450,7 @@ export default function UcakBiletiTab({
                       </span>}
                   </div>
                 </th>
-                <th className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("toplamMaliyet")}>
+                <th className="px-1 py-2 text-right font-semibold text-v3-text min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("toplamMaliyet")}>
                   <div className="flex items-center justify-end">
                     <div className="leading-tight">Toplam<br />Maliyet</div>
                     {flightSortField === "toplamMaliyet" && <span className="ml-1">
@@ -461,21 +461,21 @@ export default function UcakBiletiTab({
                 <th style={{
                 minWidth: "70px",
                 width: "70px"
-              }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+              }} className="px-1 py-2 text-center font-semibold text-v3-text whitespace-nowrap">
                   Döviz
                 </th>
                 <th style={{
                 minWidth: "70px",
                 width: "70px"
-              }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+              }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
                   KUR
                 </th>
                 <th style={{
                 minWidth: "90px"
-              }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+              }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
                   <div className="leading-tight">Toplam<br />Maliyet TL</div>
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap border-l border-gray-200 dark:border-gray-700" onClick={() => handleFlightSort("satisPax")}>
+                <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap border-l border-gray-200 dark:border-v3-border" onClick={() => handleFlightSort("satisPax")}>
                   <div className="flex items-center justify-center">
                     <div className="leading-tight">Satış<br />Pax</div>
                     {flightSortField === "satisPax" && <span className="ml-1">
@@ -486,7 +486,7 @@ export default function UcakBiletiTab({
                 <th style={{
                 minWidth: "70px",
                 width: "70px"
-              }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("ppSatis")}>
+              }} className="px-1 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("ppSatis")}>
                   <div className="flex items-center justify-end">
                     <div className="leading-tight">PP<br />Satış</div>
                     {flightSortField === "ppSatis" && <span className="ml-1">
@@ -494,7 +494,7 @@ export default function UcakBiletiTab({
                       </span>}
                   </div>
                 </th>
-                <th className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("toplamSatis")}>
+                <th className="px-1 py-2 text-right font-semibold text-v3-text min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("toplamSatis")}>
                   <div className="flex items-center justify-end">
                     <div className="leading-tight">Toplam<br />Satış</div>
                     {flightSortField === "toplamSatis" && <span className="ml-1">
@@ -505,37 +505,37 @@ export default function UcakBiletiTab({
                 <th style={{
                 minWidth: "70px",
                 width: "70px"
-              }} className="px-1 py-2 text-center font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+              }} className="px-1 py-2 text-center font-semibold text-v3-text whitespace-nowrap">
                   Döviz
                 </th>
                 <th style={{
                 minWidth: "70px",
                 width: "70px"
-              }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+              }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
                   KUR
                 </th>
                 <th style={{
                 minWidth: "90px"
-              }} className="px-1 py-2 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+              }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
                   <div className="leading-tight">Toplam<br />Satış TL</div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white min-w-[200px] whitespace-nowrap">
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[200px] whitespace-nowrap">
                   MİSAFİRLER
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white min-w-[5rem] w-20 whitespace-nowrap">
+                <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[5rem] w-20 whitespace-nowrap">
                   DURUM
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white min-w-[7rem] w-28 whitespace-nowrap">
+                <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[7rem] w-28 whitespace-nowrap">
                   İŞLEMLER
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {sortedFlightTickets.length === 0 && !(editingFlightIndex === flightTickets.length && tempFlightItem && isNewFlightItem) ? <tr>
-                  <td colSpan={27} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={27} className="px-4 py-8 text-center text-v3-muted">
                     Uçak bileti bulunamadı
                   </td>
-                </tr> : sortedFlightTickets.map((ticket, index) => <tr key={ticket.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+                </tr> : sortedFlightTickets.map((ticket, index) => <tr key={ticket.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-v3-border last:border-0" onDoubleClick={() => {
               if (editingFlightIndex !== index) {
                 handleFlightEdit(index);
               }
@@ -545,7 +545,7 @@ export default function UcakBiletiTab({
                           <input type="date" value={tempFlightItem?.biletlemeTarihi || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     biletlemeTarihi: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 relative">
                           <AutocompleteInput value={tempFlightItem?.tedarikci || ""} options={allSuppliers.map(s => ({
@@ -559,13 +559,13 @@ export default function UcakBiletiTab({
                           <input type="text" value={tempFlightItem?.havayolu || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     havayolu: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <input type="text" value={tempFlightItem?.pnr || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     pnr: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <select style={{
@@ -573,7 +573,7 @@ export default function UcakBiletiTab({
                   }} value={tempFlightItem?.ucusTipi || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     ucusTipi: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             <option value="GRUP">GRUP</option>
                             <option value="MÜNFERİT">MÜNFERİT</option>
                           </select>
@@ -582,43 +582,43 @@ export default function UcakBiletiTab({
                           <input type="date" value={tempFlightItem?.gidisTarihi || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     gidisTarihi: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <input type="time" value={tempFlightItem?.gidisSaati || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     gidisSaati: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <input type="text" value={tempFlightItem?.gidisUcusKodu || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     gidisUcusKodu: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <input type="date" value={tempFlightItem?.donusTarihi || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     donusTarihi: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <input type="time" value={tempFlightItem?.donusSaati || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     donusSaati: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <input type="text" value={tempFlightItem?.donusUcusKodu || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     donusUcusKodu: e.target.value
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="text" value={tempFlightItem?.guzergah || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     guzergah: e.target.value
-                  })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" value={tempFlightItem?.kisiSayisi || 0} onChange={e => {
@@ -634,7 +634,7 @@ export default function UcakBiletiTab({
                       toplamMaliyet,
                       toplamTl
                     });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" step="0.01" value={tempFlightItem?.ppMaliyet || 0} onChange={e => {
@@ -650,7 +650,7 @@ export default function UcakBiletiTab({
                       toplamMaliyet,
                       toplamTl
                     });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" step="0.01" value={tempFlightItem?.toplamMaliyet || 0} onChange={e => {
@@ -666,7 +666,7 @@ export default function UcakBiletiTab({
                       ppMaliyet,
                       toplamTl
                     });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <select style={{
@@ -681,7 +681,7 @@ export default function UcakBiletiTab({
                       doviz,
                       toplamTl
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
                             <option value="TL">TL</option>
@@ -700,7 +700,7 @@ export default function UcakBiletiTab({
                       kur,
                       toplamTl
                     });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input style={{
@@ -715,7 +715,7 @@ export default function UcakBiletiTab({
                       toplamTl,
                       kur
                     });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" value={tempFlightItem?.satisPax || 0} onChange={e => {
@@ -731,7 +731,7 @@ export default function UcakBiletiTab({
                       toplamSatis,
                       toplamSatisTl
                     });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" step="0.01" value={tempFlightItem?.ppSatis || 0} onChange={e => {
@@ -747,7 +747,7 @@ export default function UcakBiletiTab({
                       toplamSatis,
                       toplamSatisTl
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" step="0.01" value={tempFlightItem?.toplamSatis || 0} onChange={e => {
@@ -763,7 +763,7 @@ export default function UcakBiletiTab({
                       ppSatis,
                       toplamSatisTl
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <select value={tempFlightItem?.satisDoviz || "TL"} onChange={e => {
@@ -777,7 +777,7 @@ export default function UcakBiletiTab({
                       satisKur,
                       toplamSatisTl
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             <option value="TL">TL</option>
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>
@@ -795,7 +795,7 @@ export default function UcakBiletiTab({
                       satisKur,
                       toplamSatisTl
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right" disabled={tempFlightItem?.satisDoviz === "TL"} />
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={tempFlightItem?.satisDoviz === "TL"} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" step="0.01" value={tempFlightItem?.toplamSatisTl || 0} onChange={e => {
@@ -807,19 +807,19 @@ export default function UcakBiletiTab({
                       toplamSatisTl,
                       satisKur
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 min-w-[200px]">
                           <input type="text" value={tempFlightItem?.misafirler || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     misafirler: e.target.value
-                  })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                  })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2">
                           <select value={tempFlightItem?.durum || "aktif"} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
                     durum: e.target.value as any
-                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                  })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             <option value="aktif">Aktif</option>
                             <option value="iptal">İptal</option>
                             <option value="iade">İade</option>
@@ -841,73 +841,73 @@ export default function UcakBiletiTab({
                           </div>
                         </td>
                       </> : <>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {formatDateForDisplay(ticket.biletlemeTarihi)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.tedarikci || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.havayolu || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.pnr || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.ucusTipi || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {formatDateForDisplay(ticket.gidisTarihi)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.gidisSaati || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.gidisUcusKodu || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {formatDateForDisplay(ticket.donusTarihi)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.donusSaati || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white">
+                        <td className="px-2 py-2 text-v3-text">
                           {ticket.donusUcusKodu || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text whitespace-nowrap">
                           {ticket.guzergah || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-center whitespace-nowrap">
                           {ticket.kisiSayisi || 0}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.ppMaliyet)}
                         </td>
                         <td className="px-2 py-2 text-red-600 dark:text-red-400 text-right font-semibold whitespace-nowrap">
                           {formatNumberForDisplay(ticket.toplamMaliyet)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                        <td className="px-2 py-2 text-v3-text text-center">
                           {ticket.doviz || "-"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.kur)}
                         </td>
                         <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
                           {formatNumberForDisplay(ticket.toplamTl)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-center whitespace-nowrap">
                           {ticket.satisPax || 0}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.ppSatis || 0)}
                         </td>
                         <td className="px-2 py-2 text-green-600 dark:text-green-400 text-right font-semibold whitespace-nowrap">
                           {formatNumberForDisplay(ticket.toplamSatis || 0)}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-center font-bold whitespace-nowrap">
                           {ticket.satisDoviz || "TL"}
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-right whitespace-nowrap">
+                        <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.satisKur || 1)}
                         </td>
                         <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
@@ -916,16 +916,16 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 min-w-[120px]">
                           <div className="flex items-center gap-1">
                             <div className="flex-1 min-w-0 max-w-full">
-                              {expandedMisafirler[ticket.id] ? <div className="text-xs text-gray-900 dark:text-white whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
+                              {expandedMisafirler[ticket.id] ? <div className="text-xs text-v3-text whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
                                   {ticket.misafirler || "-"}
-                                </div> : <div className="text-xs text-gray-900 dark:text-white truncate">
+                                </div> : <div className="text-xs text-v3-text truncate">
                                   {ticket.misafirler || "-"}
                                 </div>}
                             </div>
                             {ticket.misafirler && <button onClick={() => setExpandedMisafirler(prev => ({
                       ...prev,
                       [ticket.id]: !prev[ticket.id]
-                    }))} className="flex-shrink-0 p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title={expandedMisafirler[ticket.id] ? "Kapat" : "Genişlet"}>
+                    }))} className="flex-shrink-0 p-0.5 text-v3-muted hover:text-gray-700 dark:hover:text-v3-muted transition-colors" title={expandedMisafirler[ticket.id] ? "Kapat" : "Genişlet"}>
                                 {expandedMisafirler[ticket.id] ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                                   </svg> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -934,7 +934,7 @@ export default function UcakBiletiTab({
                               </button>}
                           </div>
                         </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                        <td className="px-2 py-2 text-v3-text text-center">
                           <span className={`px-2 py-1 text-xs rounded ${ticket.durum === "aktif" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : ticket.durum === "iptal" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : ticket.durum === "iade" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
                             {ticket.durum === "aktif" ? "Aktif" : ticket.durum === "iptal" ? "İptal" : ticket.durum === "iade" ? "İade" : "Değiştirildi"}
                           </span>
@@ -956,12 +956,12 @@ export default function UcakBiletiTab({
                       </>}
                   </tr>)}
               {/* Yeni Bilet Ekleme Satırı */}
-              {editingFlightIndex === flightTickets.length && tempFlightItem && isNewFlightItem && <tr key="new-flight-ticket" className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+              {editingFlightIndex === flightTickets.length && tempFlightItem && isNewFlightItem && <tr key="new-flight-ticket" className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-v3-border last:border-0">
                     <td className="px-2 py-2">
                       <input type="date" value={tempFlightItem?.biletlemeTarihi || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   biletlemeTarihi: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 relative">
                       <AutocompleteInput value={tempFlightItem?.tedarikci || ""} options={allSuppliers.map(s => ({
@@ -976,13 +976,13 @@ export default function UcakBiletiTab({
                       <input type="text" value={tempFlightItem?.havayolu || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   havayolu: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={tempFlightItem?.pnr || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   pnr: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select style={{
@@ -990,7 +990,7 @@ export default function UcakBiletiTab({
                 }} value={tempFlightItem?.ucusTipi || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   ucusTipi: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="GRUP">GRUP</option>
                         <option value="MÜNFERİT">MÜNFERİT</option>
                       </select>
@@ -999,43 +999,43 @@ export default function UcakBiletiTab({
                       <input type="date" value={tempFlightItem?.gidisTarihi || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   gidisTarihi: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="time" value={tempFlightItem?.gidisSaati || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   gidisSaati: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={tempFlightItem?.gidisUcusKodu || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   gidisUcusKodu: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="date" value={tempFlightItem?.donusTarihi || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   donusTarihi: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="time" value={tempFlightItem?.donusSaati || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   donusSaati: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={tempFlightItem?.donusUcusKodu || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   donusUcusKodu: e.target.value
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input type="text" value={tempFlightItem?.guzergah || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   guzergah: e.target.value
-                })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input type="number" value={tempFlightItem?.kisiSayisi || 0} onChange={e => {
@@ -1051,7 +1051,7 @@ export default function UcakBiletiTab({
                     toplamMaliyet,
                     toplamTl
                   });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input type="number" step="0.01" value={tempFlightItem?.ppMaliyet || 0} onChange={e => {
@@ -1067,7 +1067,7 @@ export default function UcakBiletiTab({
                     toplamMaliyet,
                     toplamTl
                   });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input type="number" step="0.01" value={tempFlightItem?.toplamMaliyet || 0} onChange={e => {
@@ -1083,7 +1083,7 @@ export default function UcakBiletiTab({
                     ppMaliyet,
                     toplamTl
                   });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select style={{
@@ -1098,7 +1098,7 @@ export default function UcakBiletiTab({
                     doviz,
                     toplamTl
                   });
-                }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
                         <option value="USD">USD</option>
                         <option value="TL">TL</option>
@@ -1117,7 +1117,7 @@ export default function UcakBiletiTab({
                     kur,
                     toplamTl
                   });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input style={{
@@ -1132,19 +1132,19 @@ export default function UcakBiletiTab({
                     toplamTl,
                     kur
                   });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 min-w-[200px]">
                       <input type="text" value={tempFlightItem?.misafirler || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   misafirler: e.target.value
-                })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempFlightItem?.durum || "aktif"} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
                   durum: e.target.value as any
-                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                })} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="aktif">Aktif</option>
                         <option value="iptal">İptal</option>
                         <option value="iade">İade</option>
@@ -1172,7 +1172,7 @@ export default function UcakBiletiTab({
         </div>
         {/* --- YENİ EKLENEN ÖZET KARTLARI (DİĞER TABIYLA UYUMLU) --- */}
         <div className="mt-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+          <h3 className="text-sm font-semibold text-v3-text mb-3">
             Uçak Bileti Maliyet & Satış Özeti
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1181,9 +1181,9 @@ export default function UcakBiletiTab({
             const mToplam = flightTickets.filter(t => t.doviz === doviz).reduce((s, t) => s + (t.toplamMaliyet || 0), 0);
             const sToplam = flightTickets.filter(t => t.satisDoviz === doviz).reduce((s, t) => s + (t.toplamSatis || 0), 0);
             if (mToplam === 0 && sToplam === 0) return null;
-            return <div key={doviz} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4 hover:shadow-md transition-shadow">
+            return <div key={doviz} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-v3-border shadow-sm p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-v3-muted uppercase tracking-wider">
                       {doviz} BAZINDA
                     </span>
                     <span className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-md">
@@ -1193,21 +1193,21 @@ export default function UcakBiletiTab({
                   
                   <div className="space-y-3 mt-4">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Toplam Maliyet:</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <span className="text-sm text-v3-muted">Toplam Maliyet:</span>
+                      <span className="text-sm font-semibold text-v3-text">
                         {formatNumberForDisplay(mToplam)} {doviz}
                       </span>
                     </div>
                     
                     <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Toplam Satış:</span>
+                      <span className="text-sm text-v3-muted">Toplam Satış:</span>
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">
                         {formatNumberForDisplay(sToplam)} {doviz}
                       </span>
                     </div>
                     
                     <div className="flex justify-between items-center pt-1">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tahmini Kâr:</span>
+                      <span className="text-sm font-medium text-v3-text">Tahmini Kâr:</span>
                       <span className={`text-sm font-bold ${sToplam - mToplam >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
                         {formatNumberForDisplay(sToplam - mToplam)} {doviz}
                       </span>
@@ -1264,7 +1264,7 @@ export default function UcakBiletiTab({
     }}>
             {allSuppliers.filter((item: any) => (item.displayName || item.name || item.title || "").toLowerCase().includes((supplierDropdowns[tempFlightItem.id]?.searchTerm || "").toLowerCase())).map((item: any, itemIndex: number) => <div key={`${item.type}-${item.id}`} onClick={() => selectFlightSupplier(tempFlightItem.id, item.id, item.displayName || item.name || item.title)} className={`px-3 py-2 text-xs cursor-pointer transition-colors duration-150 flex items-center justify-between ${itemIndex === supplierDropdowns[tempFlightItem.id]?.selectedIndex ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100" : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
                   <span>{item.displayName || item.name || item.title}</span>
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-2">
+                  <span className="text-[10px] text-v3-muted ml-2">
                     {item.type === "hotel" ? "Otel" : "Tedarikçi"}
                   </span>
                 </div>)}

@@ -94,7 +94,7 @@ function AutocompleteInput({
         onSelect(null, "");
       }
     }} onFocus={() => setIsOpen(true)} onKeyDown={handleKeyDown} autoFocus={autoFocus} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate" disabled={disabled} />
-      {isOpen && filteredOptions.length > 0 && <div className="absolute z-50 mt-1 w-full min-w-[200px] max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg">
+      {isOpen && filteredOptions.length > 0 && <div className="absolute z-50 mt-1 w-full min-w-[200px] max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-v3-border rounded shadow-lg">
           {filteredOptions.map((opt, idx) => <div key={opt.id || opt.label} className={`px-2 py-1.5 text-xs cursor-pointer flex justify-between items-center ${highlightedIndex === idx ? 'bg-indigo-50 dark:bg-indigo-900/30' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onMouseEnter={() => setHighlightedIndex(idx)} onClick={() => {
         onSelect(opt.id, opt.label);
         setSearchTerm(opt.label);
@@ -544,7 +544,7 @@ export default function DigerTab(props: DigerTabProps) {
 
   return <div className="space-y-4">
       <div className="w-full mb-4">
-        <div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+        <div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
           {searchTerms.map((term, idx) => <span key={`${term}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
               {term}
@@ -555,18 +555,18 @@ export default function DigerTab(props: DigerTabProps) {
           <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={searchTerms.length === 0 ? "Diğer ara... (Enter ile çoğalt)" : "Yeni arama..."} className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 min-w-[120px] py-0.5 focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} />
           {searchTerms.length > 0 && <button onClick={() => {
             setSearchTerms([]);
-          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted pl-1 shrink-0 transition-colors">
             <X className="w-4 h-4" />
           </button>}
         </div>
       </div>
 
       {/* Main Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-v3-border overflow-hidden">
         <div className="overflow-x-auto min-h-[400px]">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 dark:bg-gray-900/50 text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+              <tr className="bg-gray-50/80 dark:bg-gray-900/50 text-[10px] uppercase tracking-wider text-v3-muted border-b border-gray-200 dark:border-v3-border">
                 <th className={`w-28 ${thClass}`} onClick={() => handleSort('date')}>
                   <div className="flex items-center">Tarih <SortIcon column="date" /></div>
                 </th>
@@ -594,7 +594,7 @@ export default function DigerTab(props: DigerTabProps) {
                 <th className={`w-24 text-right ${thClass}`} onClick={() => handleSort('cost_amount_try')}>
                   <div className="flex items-center justify-end">Top. Mlyt(TL) <SortIcon column="cost_amount_try" /></div>
                 </th>
-                <th className={`w-24 text-right border-l border-gray-200 dark:border-gray-700 ${thClass}`} onClick={() => handleSort('sale_amount')}>
+                <th className={`w-24 text-right border-l border-gray-200 dark:border-v3-border ${thClass}`} onClick={() => handleSort('sale_amount')}>
                   <div className="flex items-center justify-end">Satış <SortIcon column="sale_amount" /></div>
                 </th>
                 <th className={`w-16 ${thClass}`} onClick={() => handleSort('sale_currency')}>
@@ -611,7 +611,7 @@ export default function DigerTab(props: DigerTabProps) {
             </thead>
             <tbody className="text-xs divide-y divide-gray-100 dark:divide-gray-800/50">
               {filteredOthers.length === 0 ? <tr>
-                  <td colSpan={14} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={14} className="px-4 py-8 text-center text-v3-muted">
                     Arama kriterlerine uygun kayıt bulunamadı.
                   </td>
                 </tr> : filteredOthers.map(item => {
@@ -623,7 +623,7 @@ export default function DigerTab(props: DigerTabProps) {
                         {isEditing ? <input type="date" value={currentItem.date || ""} onChange={e => setDraftItem({
                     ...draftItem,
                     date: e.target.value
-                  })} onKeyDown={handleGlobalKeyDown} autoFocus className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="font-mono text-gray-700 dark:text-gray-300">
+                  })} onKeyDown={handleGlobalKeyDown} autoFocus className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="font-mono text-v3-text">
                             {currentItem.date ? new Date(currentItem.date).toLocaleDateString('tr-TR') : '-'}
                           </span>}
                       </td>
@@ -645,7 +645,7 @@ export default function DigerTab(props: DigerTabProps) {
                     ...draftItem,
                     category_name: label,
                     sub_category_name: ""
-                  })} disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-gray-700 dark:text-gray-300 text-xs block truncate max-w-[120px]" title={currentItem.category_name || '-'}>
+                  })} disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-text text-xs block truncate max-w-[120px]" title={currentItem.category_name || '-'}>
                             {currentItem.category_name || '-'}
                           </span>}
                       </td>
@@ -655,7 +655,7 @@ export default function DigerTab(props: DigerTabProps) {
                         {isEditing ? <AutocompleteInput value={currentItem.sub_category_name || ""} options={getSubCategoryOptions(currentItem.category_name)} placeholder="Alt Kategori" onKeyDownOuter={handleGlobalKeyDown} onSelect={(id, label) => setDraftItem({
                     ...draftItem,
                     sub_category_name: label
-                  })} disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-gray-600 dark:text-gray-400 text-xs block truncate max-w-[120px]" title={currentItem.sub_category_name || '-'}>
+                  })} disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-muted text-xs block truncate max-w-[120px]" title={currentItem.sub_category_name || '-'}>
                             {currentItem.sub_category_name || '-'}
                           </span>}
                       </td>
@@ -665,7 +665,7 @@ export default function DigerTab(props: DigerTabProps) {
                         {isEditing ? <input type="text" value={currentItem.description || ""} onChange={e => setDraftItem({
                     ...draftItem,
                     description: e.target.value
-                  })} onKeyDown={handleGlobalKeyDown} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500 truncate" title={currentItem.description || ""} placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-gray-600 dark:text-gray-400 block max-w-[200px] truncate" title={currentItem.description}>
+                  })} onKeyDown={handleGlobalKeyDown} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500 truncate" title={currentItem.description || ""} placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-muted block max-w-[200px] truncate" title={currentItem.description}>
                             {currentItem.description || '-'}
                           </span>}
                       </td>
@@ -687,7 +687,7 @@ export default function DigerTab(props: DigerTabProps) {
                     cost_currency: e.target.value
                   })} onKeyDown={handleGlobalKeyDown} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                          </select> : <span className="text-gray-700 dark:text-gray-300 font-medium">{currentItem.cost_currency || "EUR"}</span>}
+                          </select> : <span className="text-v3-text font-medium">{currentItem.cost_currency || "EUR"}</span>}
                       </td>
 
                       {/* Maliyet Kur */}
@@ -695,7 +695,7 @@ export default function DigerTab(props: DigerTabProps) {
                         {isEditing ? <input type="text" value={currentItem.cost_exchange_rate ?? "1"} onChange={e => setDraftItem({
                     ...draftItem,
                     cost_exchange_rate: cleanInputValue(e.target.value)
-                  })} onKeyDown={handleGlobalKeyDown} className="w-12 text-right px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-gray-500 dark:text-gray-400 text-xs">
+                  })} onKeyDown={handleGlobalKeyDown} className="w-12 text-right px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-muted text-xs">
                             {formatNumberForDisplay(currentItem.cost_exchange_rate)}
                           </span>}
                       </td>
@@ -708,7 +708,7 @@ export default function DigerTab(props: DigerTabProps) {
                       </td>
 
                       {/* Satış Tutarı */}
-                      <td className="px-2 py-1.5 align-middle text-right border-l border-gray-200 dark:border-gray-700">
+                      <td className="px-2 py-1.5 align-middle text-right border-l border-gray-200 dark:border-v3-border">
                         {isEditing ? <input type="text" value={currentItem.sale_amount ?? ""} onChange={e => setDraftItem({
                     ...draftItem,
                     sale_amount: cleanInputValue(e.target.value)
@@ -724,7 +724,7 @@ export default function DigerTab(props: DigerTabProps) {
                     sale_currency: e.target.value
                   })} onKeyDown={handleGlobalKeyDown} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                          </select> : <span className="text-gray-700 dark:text-gray-300 font-medium">{currentItem.sale_currency || "EUR"}</span>}
+                          </select> : <span className="text-v3-text font-medium">{currentItem.sale_currency || "EUR"}</span>}
                       </td>
 
                       {/* Satış Kur */}
@@ -732,7 +732,7 @@ export default function DigerTab(props: DigerTabProps) {
                         {isEditing ? <input type="text" value={currentItem.sale_exchange_rate ?? "1"} onChange={e => setDraftItem({
                     ...draftItem,
                     sale_exchange_rate: cleanInputValue(e.target.value)
-                  })} onKeyDown={handleGlobalKeyDown} className="w-12 text-right px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-gray-500 dark:text-gray-400 text-xs">
+                  })} onKeyDown={handleGlobalKeyDown} className="w-12 text-right px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-muted text-xs">
                             {formatNumberForDisplay(currentItem.sale_exchange_rate)}
                           </span>}
                       </td>
@@ -770,38 +770,38 @@ export default function DigerTab(props: DigerTabProps) {
       </div>
       
       {/* Supplier Totals Summary at Bottom */}
-      {filteredOthers.length > 0 && Object.keys(totalsBySupplierAndCurrency).length > 0 && <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 border-b border-gray-100 dark:border-gray-700 pb-2">
+      {filteredOthers.length > 0 && Object.keys(totalsBySupplierAndCurrency).length > 0 && <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-v3-border p-4">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 border-b border-gray-100 dark:border-v3-border pb-2">
             Tedarikçi Bazlı Toplamlar
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Object.entries(totalsBySupplierAndCurrency).map(([supplier, data]) => <div key={supplier} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+            {Object.entries(totalsBySupplierAndCurrency).map(([supplier, data]) => <div key={supplier} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border border-gray-200 dark:border-v3-border">
                 <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2 truncate" title={supplier}>
                   {supplier}
                 </div>
                 
                 {/* Costs */}
                 <div className="mb-2">
-                  <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1 border-b border-gray-200 dark:border-gray-700 pb-0.5">Maliyetler</div>
+                  <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1 border-b border-gray-200 dark:border-v3-border pb-0.5">Maliyetler</div>
                   {Object.entries(data.costs).map(([cur, amount]) => amount ? <div key={cur} className="flex justify-between text-xs mb-0.5">
-                      <span className="text-gray-600 dark:text-gray-400">{cur}</span>
+                      <span className="text-v3-muted">{cur}</span>
                       <span className="font-medium text-red-600 dark:text-red-400">{formatNumberForDisplay(amount)}</span>
                     </div> : null)}
-                  <div className="flex justify-between text-xs mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Toplam TL</span>
+                  <div className="flex justify-between text-xs mt-1 pt-1 border-t border-gray-200 dark:border-v3-border">
+                    <span className="text-v3-text font-medium">Toplam TL</span>
                     <span className="font-bold text-gray-900 dark:text-gray-100">{formatNumberForDisplay(data.totalCostTry)} ₺</span>
                   </div>
                 </div>
 
                 {/* Sales */}
                 <div>
-                  <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1 border-b border-gray-200 dark:border-gray-700 pb-0.5 mt-2">Satışlar</div>
+                  <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1 border-b border-gray-200 dark:border-v3-border pb-0.5 mt-2">Satışlar</div>
                   {Object.entries(data.sales).map(([cur, amount]) => amount ? <div key={cur} className="flex justify-between text-xs mb-0.5">
-                      <span className="text-gray-600 dark:text-gray-400">{cur}</span>
+                      <span className="text-v3-muted">{cur}</span>
                       <span className="font-medium text-green-600 dark:text-green-400">{formatNumberForDisplay(amount)}</span>
                     </div> : null)}
-                  <div className="flex justify-between text-xs mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Toplam TL</span>
+                  <div className="flex justify-between text-xs mt-1 pt-1 border-t border-gray-200 dark:border-v3-border">
+                    <span className="text-v3-text font-medium">Toplam TL</span>
                     <span className="font-bold text-gray-900 dark:text-gray-100">{formatNumberForDisplay(data.totalSaleTry)} ₺</span>
                   </div>
                 </div>

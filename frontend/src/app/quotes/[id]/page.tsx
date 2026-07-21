@@ -846,10 +846,10 @@ export default function QuoteViewPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Teklif detaylarını görmek için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -885,7 +885,7 @@ export default function QuoteViewPage() {
     return (
       <div className="min-h-screen bg-transparent p-6 flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-v3-muted mb-4">
             Teklif bulunamadı.
           </p>
           <Link
@@ -907,7 +907,7 @@ export default function QuoteViewPage() {
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h2 className="text-2xl font-black dark:text-white uppercase tracking-tight">
+                <h2 className="text-2xl font-black dark:text-v3-text uppercase tracking-tight">
                   Public Teklif Link Yönetimi
                 </h2>
                 <p className="text-sm text-gray-500 font-medium">
@@ -920,7 +920,7 @@ export default function QuoteViewPage() {
                   setShowLinkModal(false);
                   setGeneratedLink("");
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors bg-gray-100 dark:bg-gray-700 rounded-xl"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted transition-colors bg-gray-100 dark:bg-gray-700 rounded-xl"
               >
                 <svg
                   className="w-6 h-6"
@@ -941,7 +941,7 @@ export default function QuoteViewPage() {
             {/* Existing links */}
             {quoteLinks.length > 0 && (
               <div className="mb-10 space-y-4">
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">
+                <h3 className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-[0.2em] px-1">
                   MEVCUT LİNKLER & ONAY GEÇMİŞİ
                 </h3>
                 <div className="space-y-4 pr-2">
@@ -963,7 +963,7 @@ export default function QuoteViewPage() {
                             <div className="flex-1 min-w-[280px]">
                               <div className="flex flex-wrap items-center gap-2 mb-3">
                                 <span
-                                  className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${isApproved ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : link.is_active && !isExpired ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-400"}`}
+                                  className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${isApproved ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : link.is_active && !isExpired ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-600 dark:text-gray-400"}`}
                                 >
                                   {isApproved
                                     ? "ONAYLANDI"
@@ -973,7 +973,7 @@ export default function QuoteViewPage() {
                                         ? "Süresi Dolmuş"
                                         : "Pasif"}
                                 </span>
-                                <span className="text-[10px] text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg">
+                                <span className="text-[10px] text-gray-600 dark:text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg">
                                   #{(link.id || "").substring(0, 8)}
                                 </span>
                                 <span className="text-[10px] text-gray-500 font-medium ml-2">
@@ -990,11 +990,11 @@ export default function QuoteViewPage() {
                                 className="flex items-center gap-2 group/link cursor-pointer"
                                 onClick={() => handleCopyLinkFromList(link)}
                               >
-                                <p className="text-sm font-mono text-gray-500 dark:text-gray-400 truncate max-w-[400px] hover:text-blue-400 transition-colors">
+                                <p className="text-sm font-mono text-v3-muted truncate max-w-[400px] hover:text-blue-600 dark:text-blue-400 transition-colors">
                                   {fullLink}
                                 </p>
                                 <svg
-                                  className="w-3.5 h-3.5 text-blue-400 opacity-0 group-hover/link:opacity-100 transition-opacity"
+                                  className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 opacity-0 group-hover/link:opacity-100 transition-opacity"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -1025,7 +1025,7 @@ export default function QuoteViewPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t border-dashed border-slate-200 dark:border-slate-700">
                             <div className="flex items-center gap-8">
                               <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                                   GÜVENLİK ŞİFRESİ
                                 </p>
                                 <div
@@ -1041,7 +1041,7 @@ export default function QuoteViewPage() {
                                       ? link.password
                                       : "••••••••"}
                                   </span>
-                                  <button className="text-white hover:text-blue-400 transition-colors">
+                                  <button className="text-v3-text hover:text-blue-600 dark:text-blue-400 transition-colors">
                                     <svg
                                       className="w-3.5 h-3.5"
                                       fill="none"
@@ -1066,10 +1066,10 @@ export default function QuoteViewPage() {
                               </div>
                               {link.expiry_date && (
                                 <div className="space-y-1 border-l border-slate-100 dark:border-slate-700 pl-8">
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                                     SON GEÇERLİLİK
                                   </p>
-                                  <p className="text-xs font-bold dark:text-gray-400">
+                                  <p className="text-xs font-bold dark:text-gray-600 dark:text-gray-400">
                                     {new Date(
                                       link.expiry_date,
                                     ).toLocaleDateString("tr-TR")}
@@ -1141,7 +1141,7 @@ export default function QuoteViewPage() {
                               </div>
                             ) : (
                               <div className="flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                <p className="text-[10px] text-v3-muted font-bold uppercase tracking-widest">
                                   HAKİKATEN BEKLENİYOR...
                                 </p>
                               </div>
@@ -1155,8 +1155,8 @@ export default function QuoteViewPage() {
               </div>
             )}
 
-            <div className="space-y-4 border-t border-gray-100 dark:border-gray-700 pt-5">
-              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
+            <div className="space-y-4 border-t border-gray-100 dark:border-v3-border pt-5">
+              <h3 className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest px-1">
                 YENİ LİNK OLUŞTUR
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1169,7 +1169,7 @@ export default function QuoteViewPage() {
                     value={linkPassword}
                     onChange={(e) => setLinkPassword(e.target.value)}
                     placeholder="Otomatik oluşturulur..."
-                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-v3-text focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1181,7 +1181,7 @@ export default function QuoteViewPage() {
                     value={linkExpiryDate}
                     onChange={(e) => setLinkExpiryDate(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
-                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-v3-text focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
@@ -1194,7 +1194,7 @@ export default function QuoteViewPage() {
                     onChange={(e) => setLinkIsActive(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="font-bold text-gray-700 dark:text-gray-300">
+                  <span className="font-bold text-v3-text">
                     Link Aktif Olsun
                   </span>
                 </label>
@@ -1213,7 +1213,7 @@ export default function QuoteViewPage() {
                     OLUŞTURULAN LİNK
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="flex-1 text-xs break-all dark:text-gray-300 font-mono bg-white/50 dark:bg-black/20 p-2 rounded border border-green-200 dark:border-green-800">
+                    <p className="flex-1 text-xs break-all dark:text-gray-300 font-mono bg-v3-border0 dark:bg-black/20 p-2 rounded border border-green-200 dark:border-green-800">
                       {generatedLink}
                     </p>
                     <button
@@ -1251,26 +1251,26 @@ export default function QuoteViewPage() {
 
       <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
         {/* NEW: Sticky Main Tabs - Full Width Minimal */}
-        <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-white/5" style={{ backgroundColor: "rgb(var(--theme-bg-main, 15, 23, 42))" }}>
+        <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-v3-border bg-black/5 dark:bg-white/5 backdrop-blur-md">
           <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
             {/* Left placeholder to balance the flex layout */}
             <div className="w-[150px] flex items-center">
-              <Link href="/quotes" className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors flex items-center border border-white/10">
+              <Link href="/quotes" className="px-3 py-1.5 bg-v3-border hover:bg-v3-surface text-v3-text rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors flex items-center border border-v3-border">
                 GERİ DÖN
               </Link>
             </div>
             
             {/* Center Tabs */}
-            <div className="flex bg-transparent p-1 rounded-xl border border-white/5 w-full max-w-[350px]">
+            <div className="flex bg-transparent p-1 rounded-xl border border-v3-border w-full max-w-[350px]">
               <button 
                 onClick={() => setActiveMainTab('info')} 
-                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
               >
                 TEKLİF BİLGİLERİ
               </button>
               <button 
                 onClick={() => setActiveMainTab('details')} 
-                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
               >
                 TEKLİF DETAYLARI
               </button>
@@ -1279,21 +1279,21 @@ export default function QuoteViewPage() {
             {/* Right Action (Settings) Button */}
             <div className="w-[150px] flex justify-end">
               <div className="flex-shrink-0 relative group z-50">
-                <button className="bg-transparent border border-gray-600/50 hover:bg-white/5 text-gray-300 hover:text-white p-2 rounded-xl transition-all duration-200" title="İşlemler">
+                <button className="bg-transparent border border-gray-600/50 hover:bg-v3-border text-v3-muted hover:text-v3-text p-2 rounded-xl transition-all duration-200" title="İşlemler">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                 </button>
-                <div className="absolute right-0 top-full mt-2 w-48 bg-[#1e293b] rounded-xl shadow-2xl border border-gray-700 p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100">
-                  <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-1">İşlemler</div>
-                  <Link href={`/quotes/${quote.id}/edit?tab=${activeMainTab}`} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-v3-surface dark:bg-gray-800 backdrop-blur-xl rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-v3-border p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100 z-[9999]">
+                  <div className="px-2 py-1 text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest border-b border-v3-border mb-1">İşlemler</div>
+                  <Link href={`/quotes/${quote.id}/edit?tab=${activeMainTab}`} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
                     Düzenle
                   </Link>
-                  <button onClick={() => setShowLinkModal(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                  <button onClick={() => setShowLinkModal(true)} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
                     Link Oluştur
                   </button>
-                  <button onClick={handleExportExcel} disabled={exporting} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 disabled:opacity-50">
+                  <button onClick={handleExportExcel} disabled={exporting} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 disabled:opacity-50">
                     {exporting ? "Excel İşleniyor..." : "Excel İndir"}
                   </button>
-                  <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                  <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
                     Log Kayıtları
                   </button>
                 </div>
@@ -1313,20 +1313,20 @@ export default function QuoteViewPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4">
                   
                   {/* Card 1: Temel Bilgiler */}
-                  <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
-                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
+                    <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         REFERANS
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                      <p className="text-base font-bold text-v3-text leading-tight">
                         {quote.reference}
                       </p>
                     </div>
-                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         TEKLİF DURUM
                       </p>
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                      <p className="text-xs font-semibold text-v3-text">
                         <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-md ${getStatusColor(quote.status)}`}>
                           {quote.status}
                         </span>
@@ -1335,28 +1335,28 @@ export default function QuoteViewPage() {
                   </div>
 
                   {/* Card 2: Paydaşlar */}
-                  <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
-                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+                    <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         FİRMA ADI
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                      <p className="text-base font-bold text-v3-text leading-tight">
                         {quote.company_name || "-"}
                       </p>
                     </div>
-                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         ACENTE ADI
                       </p>
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                      <p className="text-xs font-semibold text-v3-text">
                         {getAgencyName(quote.agency_id) || "-"}
                       </p>
                     </div>
-                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         OPERASYON SORUMLUSU
                       </p>
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                      <p className="text-xs font-semibold text-v3-text">
                         {quote.operation_managers && quote.operation_managers.length > 0 ? (
                           quote.operation_managers.map((id: string) => users.find((x: any) => x.id === id)?.first_name).filter(Boolean).join(", ")
                         ) : (
@@ -1367,16 +1367,16 @@ export default function QuoteViewPage() {
                   </div>
 
                   {/* Card 3: Teklif Bilgileri */}
-                  <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
-                    <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors flex-1 flex flex-col min-h-[100px] overflow-hidden">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-shrink-0">
+                  <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+                    <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors flex-1 flex flex-col min-h-[100px] overflow-hidden">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-shrink-0">
                         OTELLER VE KONAKLAMA TARİHLERİ
                       </p>
                       <div className="space-y-2 overflow-y-auto pr-1 flex-1 custom-scrollbar">
                         {hotelsData && hotelsData.length > 0 ? (
                           hotelsData.map((h: any, idx: number) => (
-                            <div key={idx} className="flex justify-between items-center bg-[#1e293b]/50 p-2 rounded-lg border border-gray-700/30">
-                              <span className="text-[11px] font-bold text-gray-300 truncate mr-2" title={getHotelName(h.hotel_id)}>
+                            <div key={idx} className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-2 rounded-lg border border-v3-border">
+                              <span className="text-[11px] font-bold text-v3-muted truncate mr-2" title={getHotelName(h.hotel_id)}>
                                 {getHotelName(h.hotel_id)}
                               </span>
                               <span className="text-[10px] font-black text-gray-500 whitespace-nowrap bg-black/20 px-2 py-0.5 rounded-full">
@@ -1390,19 +1390,19 @@ export default function QuoteViewPage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                        <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                        <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                           ODA | PAX
                         </p>
-                        <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                        <p className="text-base font-bold text-v3-text leading-tight">
                           {hotelsData ? hotelsData.reduce((acc: number, h: any) => acc + (Number(h.room_count) || 0), 0) : 0} | {hotelsData ? hotelsData.reduce((acc: number, h: any) => acc + (Number(h.pax_count) || 0), 0) : 0}
                         </p>
                       </div>
-                      <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                        <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                        <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                           TEKLİF TÜRÜ
                         </p>
-                        <p className="text-base font-bold text-gray-900 dark:text-white leading-tight uppercase">
+                        <p className="text-base font-bold text-v3-text leading-tight uppercase">
                           {quote.quote_type || "BİRİM"}
                         </p>
                       </div>
@@ -1414,11 +1414,11 @@ export default function QuoteViewPage() {
                 {/* Notlar Section */}
                 {quote.notes && (
                   <div className="px-4 mb-6">
-                    <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl">
-                      <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl">
+                      <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                         NOTLAR
                       </p>
-                      <div className="text-sm font-semibold text-gray-300 whitespace-pre-wrap">
+                      <div className="text-sm font-semibold text-v3-muted whitespace-pre-wrap">
                         {quote.notes}
                       </div>
                     </div>
@@ -1430,17 +1430,17 @@ export default function QuoteViewPage() {
             {/* ─── DETAILS TAB ─── */}
             {activeMainTab === 'details' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full px-4">
-                <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-700/50 p-6 transition-colors duration-200 mb-6">
+                <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl shadow-xl border border-v3-border p-6 transition-colors duration-200 mb-6">
                   
                   {/* Hotel filter tabs */}
-                  <div className="flex justify-center flex-wrap gap-2 bg-transparent p-1.5 rounded-lg border border-white/5 custom-scrollbar mb-6">                    {hotelsData.map((h: any) => (
+                  <div className="flex justify-center flex-wrap gap-2 bg-transparent p-1.5 rounded-lg border border-v3-border custom-scrollbar mb-6">                    {hotelsData.map((h: any) => (
                       <div
                         key={h.id}
                         onClick={() => setActiveViewHotelId(h.id)}
                         className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap group ${
                           activeViewHotelId === h.id
                             ? "bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                            : "bg-[#1e293b]/80 border border-gray-700/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
+                            : "bg-black/5 dark:bg-white/5 border border-v3-border text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-black/10 dark:hover:bg-white/10"
                         }`}
                       >
                         <span className="text-[10px] font-black uppercase tracking-tight truncate max-w-[150px]">
@@ -1462,7 +1462,7 @@ export default function QuoteViewPage() {
                       className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap ${
                         activeViewHotelId === "general"
                           ? "bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                          : "bg-[#1e293b]/80 border border-gray-700/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
+                          : "bg-black/5 dark:bg-white/5 border border-v3-border text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-black/10 dark:hover:bg-white/10"
                       }`}
                     >
                       <span className="text-[10px] font-black uppercase tracking-tight">GENEL HİZMETLER</span>
@@ -1484,7 +1484,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Otel
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {getHotelName(currentHotel.hotel_id)}
                           </div>
                         </div>
@@ -1492,7 +1492,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Otel Konsepti
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.hotel_concept || "-"}
                           </div>
                         </div>
@@ -1500,7 +1500,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             C/IN Tarihi
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.check_in_date
                               ? new Date(
                                   currentHotel.check_in_date,
@@ -1512,7 +1512,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             C/OUT Tarihi
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.check_out_date
                               ? new Date(
                                   currentHotel.check_out_date,
@@ -1524,7 +1524,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Oda Sayısı
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.room_count || 0}
                           </div>
                         </div>
@@ -1532,7 +1532,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Pax Sayısı
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.pax_count || 0}
                           </div>
                         </div>
@@ -1540,7 +1540,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Opsiyon
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.option || "-"}
                           </div>
                         </div>
@@ -1548,7 +1548,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Opsiyon Tarihi
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             {currentHotel.option_date
                               ? new Date(
                                   currentHotel.option_date,
@@ -1560,7 +1560,7 @@ export default function QuoteViewPage() {
                           <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                             Durum
                           </label>
-                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-gray-700/50 rounded-lg font-bold text-xs text-white truncate min-w-0">
+                          <div className="w-full px-3 h-9 flex items-center bg-transparent border border-v3-border rounded-lg font-bold text-xs text-v3-text truncate min-w-0">
                             <span
                               className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${getStatusColor(currentHotel.hotel_status || (currentHotel.is_confirmed ? "KONFİRME" : "BEKLEMEDE"))}`}
                             >
@@ -1612,7 +1612,7 @@ export default function QuoteViewPage() {
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
           <div className="mb-4 flex flex-col md:flex-row gap-4 items-start md:items-center">
             <div className="flex-1 w-full relative">
-              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
+              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-v3-border rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
                 {logSearchTerms.map((term, idx) => (
                   <div
                     key={idx}
@@ -1658,7 +1658,7 @@ export default function QuoteViewPage() {
                       setLogSearchTerms((prev) => prev.slice(0, -1));
                     }
                   }}
-                  className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                  className="flex-1 min-w-[150px] bg-transparent text-sm text-v3-text outline-none placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
@@ -1761,9 +1761,9 @@ export default function QuoteViewPage() {
                   .map((log) => (
                     <div
                       key={log.id}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs"
+                      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-v3-border text-xs"
                     >
-                      <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-v3-border pb-2">
                         <div className="flex items-center gap-2">
                           <span
                             className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
@@ -1785,7 +1785,7 @@ export default function QuoteViewPage() {
                               log.user_id ||
                               "Sistem / Anonim"}
                           </span>
-                          <span className="text-gray-400 text-[10px]">
+                          <span className="text-gray-600 dark:text-gray-400 text-[10px]">
                             ({log.module})
                           </span>
                         </div>
@@ -1798,7 +1798,7 @@ export default function QuoteViewPage() {
                       {(() => {
                         const contextStr = getItemContext(log, uuidNameMap);
                         return contextStr ? (
-                          <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                          <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-v3-muted font-medium">
                             <span className="text-blue-600 dark:text-blue-400 font-semibold">
                               Kayıt Detayı:
                             </span>{" "}
@@ -1823,20 +1823,20 @@ export default function QuoteViewPage() {
                           }
 
                           return (
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                            <div className="border border-gray-200 dark:border-v3-border rounded-md overflow-hidden">
                               <table className="w-full text-left border-collapse">
                                 <thead>
                                   <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase tracking-wider">
-                                    <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3">
+                                    <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-v3-border w-1/3">
                                       Alan
                                     </th>
                                     {log.action !== "INSERT" && (
-                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-red-600 dark:text-red-400">
+                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-v3-border w-1/3 text-red-600 dark:text-red-600 dark:text-red-400">
                                         Eski Değer
                                       </th>
                                     )}
                                     {log.action !== "DELETE" && (
-                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-green-600 dark:text-green-400">
+                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-v3-border w-1/3 text-green-600 dark:text-green-400">
                                         Yeni Değer
                                       </th>
                                     )}
@@ -1848,11 +1848,11 @@ export default function QuoteViewPage() {
                                       key={idx}
                                       className="bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                                     >
-                                      <td className="px-3 py-2 font-medium text-gray-700 dark:text-gray-300">
+                                      <td className="px-3 py-2 font-medium text-v3-text">
                                         {translateField(change.field)}
                                       </td>
                                       {log.action !== "INSERT" && (
-                                        <td className="px-3 py-2 text-gray-500 dark:text-gray-400 line-through decoration-red-300 dark:decoration-red-800">
+                                        <td className="px-3 py-2 text-v3-muted line-through decoration-red-300 dark:decoration-red-800">
                                           {formatLogValue(
                                             change.oldVal,
                                             uuidNameMap,

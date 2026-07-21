@@ -1029,10 +1029,10 @@ export default function CashFlowPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white glow-text mb-4">
+          <h1 className="text-2xl font-bold text-v3-text glow-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <a
@@ -1051,47 +1051,47 @@ export default function CashFlowPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       {/* Premium Sticky Header */}
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2 shrink-0">
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               Nakit Akışı Takvimi
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               Takvim üzerinden nakit akışınızı yönetin
             </p>
           </div>
 
           <div className="flex flex-wrap items-end gap-3 flex-1 xl:justify-end">
-            <div className="flex items-center h-10 bg-[#0f172a]/60 p-1 rounded-xl border border-white/10 shrink-0 min-w-[200px]">
+            <div className="flex items-center h-10 bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-v3-border shrink-0 min-w-[200px]">
               <button
                 onClick={goToPreviousPeriod}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-all shrink-0"
+                className="p-1.5 text-v3-muted hover:text-v3-text rounded-lg hover:bg-v3-surface transition-all shrink-0"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <div className="flex-1 text-center flex items-center justify-center">
-                <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-v3-text uppercase tracking-wider">
                   {getViewTitle()}
                 </span>
               </div>
               <button
                 onClick={goToNextPeriod}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-all shrink-0"
+                className="p-1.5 text-v3-muted hover:text-v3-text rounded-lg hover:bg-v3-surface transition-all shrink-0"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="flex h-10 bg-[#0f172a]/60 p-1 rounded-xl border border-white/10 shrink-0">
+            <div className="flex h-10 bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-v3-border shrink-0">
               {(["daily", "weekly", "monthly", "yearly"] as const).map(
                 (mode) => (
                   <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
-                    className={`px-3 rounded-lg text-[10px] font-semibold transition-all uppercase flex items-center justify-center ${viewMode === mode ? "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+                    className={`px-3 rounded-lg text-[10px] font-semibold transition-all uppercase flex items-center justify-center ${viewMode === mode ? "bg-v3-primary text-white shadow-md shadow-v3-primary/30 scale-105" : "text-v3-muted hover:text-v3-text hover:bg-black/10 dark:hover:bg-white/10"}`}
                   >
                     {mode === "daily"
                       ? "GÜN"
@@ -1133,14 +1133,14 @@ export default function CashFlowPage() {
                   setViewMode("monthly");
                   setCurrentDate(new Date());
                 }}
-                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
+                className="w-10 h-10 inline-flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
                 title="Filtreleri Temizle"
               >
                 <RotateCcw size={14} />
               </button>
               <button
                 onClick={() => exportCashFlowExcel()}
-                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"
+                className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-105 uppercase"
               >
                 <Download size={14} /> Excel İndir
               </button>
@@ -1149,7 +1149,7 @@ export default function CashFlowPage() {
         </div>
 
         {/* Main Content Area */}
-        <main className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden flex flex-col flex-1 min-h-0">
+        <main className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-v3-border overflow-hidden shadow-inner flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
             {/* Currency Perspective Section */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1163,7 +1163,7 @@ export default function CashFlowPage() {
                   key={curr.key}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#0f172a]/40 backdrop-blur-md rounded-3xl border border-white/10 p-5 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all"
+                  className="bg-v3-surface backdrop-blur-md rounded-3xl border border-v3-border p-5 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all"
                 >
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-3">
@@ -1173,14 +1173,14 @@ export default function CashFlowPage() {
                         {curr.label} TOPLAM
                       </span>
                       <div
-                        className={`p-1.5 rounded-lg bg-gray-50 bg-white/10 text-gray-400 group-hover:text-${curr.color}-500 transition-colors`}
+                        className={`p-1.5 rounded-lg bg-black/5 dark:bg-white/5 text-v3-muted group-hover:text-${curr.color}-500 transition-colors`}
                       >
                         <TrendingUp className="w-3.5 h-3.5" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-gray-400">
+                        <span className="text-[10px] font-bold text-v3-muted">
                           TAHSİLAT
                         </span>
                         <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
@@ -1193,7 +1193,7 @@ export default function CashFlowPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-gray-400">
+                        <span className="text-[10px] font-bold text-v3-muted">
                           ÖDEME
                         </span>
                         <span className="text-sm font-black text-rose-600 dark:text-rose-400">
@@ -1230,7 +1230,7 @@ export default function CashFlowPage() {
                     "Pazar",
                   ].map((day) => (
                     <div key={day} className="py-4 text-center">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                      <span className="text-[10px] font-black text-v3-muted uppercase tracking-[0.2em]">
                         {day}
                       </span>
                     </div>
@@ -1293,8 +1293,8 @@ export default function CashFlowPage() {
                             isToday
                               ? "px-2 py-1 bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-500/30"
                               : isCurrentPeriod || viewMode === "yearly"
-                                ? "text-white glow-text"
-                                : "text-gray-300 dark:text-gray-700"
+                                ? "text-v3-text glow-text"
+                                : "text-v3-muted/50 dark:text-v3-muted/30"
                           }`}
                         >
                           {viewMode === "yearly"
@@ -1329,7 +1329,7 @@ export default function CashFlowPage() {
                                       <TrendingUp className="w-2 h-2 mr-0.5" />{" "}
                                       {curr}
                                     </span>
-                                    <span className="text-white glow-text">
+                                    <span className="text-v3-text glow-text">
                                       {formatCurrency(coll, curr)}
                                     </span>
                                   </div>
@@ -1340,7 +1340,7 @@ export default function CashFlowPage() {
                                       <TrendingDown className="w-2 h-2 mr-0.5" />{" "}
                                       {curr}
                                     </span>
-                                    <span className="text-white glow-text">
+                                    <span className="text-v3-text glow-text">
                                       {formatCurrency(pay, curr)}
                                     </span>
                                   </div>
@@ -1367,11 +1367,11 @@ export default function CashFlowPage() {
                                 >
                                   {item.project_title || "İşlem"}
                                 </span>
-                                <span className="font-black text-white glow-text ml-1">
+                                <span className="font-black text-v3-text glow-text ml-1">
                                   {formatCurrency(item.amount, item.currency)}
                                 </span>
                               </div>
-                              <div className="text-slate-400 dark:text-gray-400 font-bold truncate">
+                              <div className="text-v3-muted font-bold truncate">
                                 {item.type === "collection"
                                   ? item.project_company ||
                                     item.agency_name ||
@@ -1380,7 +1380,7 @@ export default function CashFlowPage() {
                                     item.hotel_name ||
                                     "Tedarikçi"}
                               </div>
-                              <div className="text-[8px] text-gray-400 dark:text-slate-400 mt-0.5 truncate tracking-tighter">
+                              <div className="text-[8px] text-v3-muted mt-0.5 truncate tracking-tighter">
                                 {item.description ||
                                   item.collection_type ||
                                   item.payment_type ||
@@ -1389,14 +1389,14 @@ export default function CashFlowPage() {
                             </div>
                           ))}
                           {period.items.length > 3 && (
-                            <div className="text-[8px] font-black text-blue-400 uppercase px-1 pt-1 flex items-center gap-1 animate-pulse">
+                            <div className="text-[8px] font-black text-blue-600 dark:text-blue-400 uppercase px-1 pt-1 flex items-center gap-1 animate-pulse">
                               <Plus className="w-2 h-2" />{" "}
                               {period.items.length - 3} HAREKET DAHA
                             </div>
                           )}
                           {period.items.length > 0 &&
                             period.items.length <= 3 && (
-                              <div className="text-[8px] font-black text-gray-300 dark:text-gray-600 uppercase px-1 pt-1 flex items-center gap-1 group-hover:text-blue-400 transition-colors">
+                              <div className="text-[8px] font-black text-v3-muted uppercase px-1 pt-1 flex items-center gap-1 group-hover:text-blue-600 dark:text-blue-400 transition-colors">
                                 <Plus className="w-2 h-2" /> DETAYLAR
                               </div>
                             )}
@@ -1435,7 +1435,7 @@ export default function CashFlowPage() {
                     )}
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+                    <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest leading-none mb-1">
                       İŞLEM TUTARI
                     </p>
                     <p
@@ -1457,29 +1457,29 @@ export default function CashFlowPage() {
 
               <div className="grid grid-cols-2 gap-y-8 gap-x-12 py-8 border-y border-gray-100 dark:border-gray-800 responsive-filter-grid">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                     İLGİLİ PROJE / REFERANS
                   </p>
-                  <p className="text-sm font-black text-white glow-text leading-snug">
+                  <p className="text-sm font-black text-v3-text glow-text leading-snug">
                     {selectedItem.project_title || "Genel İşlem"}
                   </p>
                   <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">
                     {selectedItem.project_reference || "REF YOK"}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[9px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-700">
+                    <span className="text-[9px] font-bold text-v3-muted bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-100 dark:border-v3-border">
                       {formatDate(selectedItem.project_start_date)} -{" "}
                       {formatDate(selectedItem.project_end_date)}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                     {selectedItem.type === "collection"
                       ? "MÜŞTERİ / ACENTE"
                       : "OTEL / TEDARİKÇİ"}
                   </p>
-                  <p className="text-sm font-black text-white glow-text leading-snug">
+                  <p className="text-sm font-black text-v3-text glow-text leading-snug">
                     {selectedItem.type === "collection"
                       ? selectedItem.project_company ||
                         selectedItem.agency_name ||
@@ -1492,29 +1492,29 @@ export default function CashFlowPage() {
                     selectedItem.agency_name &&
                     selectedItem.agency_name !==
                       selectedItem.project_company && (
-                      <p className="text-[10px] font-bold text-gray-400">
+                      <p className="text-[10px] font-bold text-v3-muted">
                         {selectedItem.agency_name}
                       </p>
                     )}
                   {selectedItem.type === "payment" &&
                     selectedItem.hotel_name &&
                     selectedItem.hotel_name !== selectedItem.hotel && (
-                      <p className="text-[10px] font-bold text-gray-400">
+                      <p className="text-[10px] font-bold text-v3-muted">
                         {selectedItem.hotel_name}
                       </p>
                     )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                     PLANLANAN TARİH
                   </p>
-                  <div className="flex items-center text-sm font-black text-white glow-text">
-                    <CalendarIcon className="w-4 h-4 mr-2 text-blue-400" />
+                  <div className="flex items-center text-sm font-black text-v3-text glow-text">
+                    <CalendarIcon className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
                     {formatDate(selectedItem.date)}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                     İŞLEM TÜRÜ / KUR
                   </p>
                   <div className="flex flex-col gap-1.5">
@@ -1530,7 +1530,7 @@ export default function CashFlowPage() {
                         "KATEGORİSİZ"}
                     </span>
                     {selectedItem.exchange_rate > 1 && (
-                      <span className="text-[10px] font-bold text-gray-400">
+                      <span className="text-[10px] font-bold text-v3-muted">
                         Kur: 1 {selectedItem.currency} ={" "}
                         {selectedItem.exchange_rate.toFixed(4)} TRY
                       </span>
@@ -1540,11 +1540,11 @@ export default function CashFlowPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-3xl border border-gray-100 dark:border-gray-700/50">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-3xl border border-gray-100 dark:border-v3-border">
+                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2">
                     AÇIKLAMA VE NOTLAR
                   </p>
-                  <p className="text-sm text-gray-700 text-white font-bold leading-relaxed">
+                  <p className="text-sm text-v3-text font-bold leading-relaxed">
                     {selectedItem.description ||
                       "Bu işlem için ek bir açıklama girilmemiş."}
                   </p>
@@ -1554,7 +1554,7 @@ export default function CashFlowPage() {
               <div className="flex justify-between items-center pt-4">
                 <div className="flex gap-2">
                   {selectedItem.project_id && (
-                    <button className="px-6 py-3 bg-[#0f172a]/60 text-gray-600 text-white rounded-2xl text-[10px] font-black hover:bg-blue-500 hover:text-white transition-all uppercase tracking-widest">
+                    <button className="px-6 py-3 bg-v3-surface text-v3-text rounded-2xl text-[10px] font-black hover:bg-blue-500 hover:text-white transition-all uppercase tracking-widest">
                       PROJEYE GİT
                     </button>
                   )}
@@ -1584,10 +1584,10 @@ export default function CashFlowPage() {
                   <CalendarIcon className="w-8 h-8" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest leading-none mb-1">
                     DÖNEM TARİHİ
                   </p>
-                  <p className="text-2xl font-black text-white glow-text tracking-tight">
+                  <p className="text-2xl font-black text-v3-text glow-text tracking-tight">
                     {selectedPeriod.startDate
                       ? formatDate(selectedPeriod.startDate)
                       : "-"}
@@ -1609,13 +1609,13 @@ export default function CashFlowPage() {
                   return (
                     <div
                       key={curr}
-                      className="bg-[#0f172a]/40 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-sm space-y-3"
+                      className="bg-v3-surface backdrop-blur-md p-4 rounded-2xl border border-v3-border shadow-sm space-y-3"
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                          <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                          <TrendingUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-v3-muted uppercase tracking-widest">
                           {curr} ÖZETİ
                         </span>
                       </div>
@@ -1625,16 +1625,16 @@ export default function CashFlowPage() {
                           <span className="text-[9px] font-bold text-emerald-500">
                             TAHSİLAT
                           </span>
-                          <span className="text-sm font-black text-white glow-text">
+                          <span className="text-sm font-black text-v3-text glow-text">
                             {formatCurrency(coll, curr)}
                           </span>
                         </div>
-                        <div className="h-[1px] w-full bg-white/5" />
+                        <div className="h-[1px] w-full bg-v3-border" />
                         <div className="flex items-center justify-between">
                           <span className="text-[9px] font-bold text-rose-500">
                             ÖDEME
                           </span>
-                          <span className="text-sm font-black text-white glow-text">
+                          <span className="text-sm font-black text-v3-text glow-text">
                             {formatCurrency(pay, curr)}
                           </span>
                         </div>
@@ -1644,7 +1644,7 @@ export default function CashFlowPage() {
                 })}
               </div>
               <div className="space-y-4 pt-4">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                   İŞLEM LİSTESİ
                 </p>
                 <div className="space-y-3">
@@ -1658,8 +1658,8 @@ export default function CashFlowPage() {
                         }}
                         className={`group p-5 rounded-3xl border cursor-pointer transition-all hover:scale-[1.02] shadow-sm ${
                           item.type === "collection"
-                            ? "bg-[#0f172a]/40 backdrop-blur-md/50 border-emerald-100 dark:border-emerald-800/50 hover:border-emerald-500"
-                            : "bg-[#0f172a]/40 backdrop-blur-md/50 border-rose-100 dark:border-rose-800/50 hover:border-rose-500"
+                            ? "bg-v3-surface backdrop-blur-md/50 border-emerald-100 dark:border-emerald-800/50 hover:border-emerald-500"
+                            : "bg-v3-surface backdrop-blur-md/50 border-rose-100 dark:border-rose-800/50 hover:border-rose-500"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -1667,15 +1667,15 @@ export default function CashFlowPage() {
                             <span
                               className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
                                 item.type === "collection"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-rose-100 text-rose-700"
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                  : "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
                               }`}
                             >
                               {item.collection_type ||
                                 item.payment_type ||
                                 "İŞLEM"}
                             </span>
-                            <span className="text-[10px] font-bold text-gray-400">
+                            <span className="text-[10px] font-bold text-v3-muted">
                               #{item.id.slice(0, 8)}
                             </span>
                           </div>
@@ -1687,10 +1687,10 @@ export default function CashFlowPage() {
                         </div>
                         <div className="flex justify-between items-end">
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-black text-white glow-text truncate">
+                            <p className="text-sm font-black text-v3-text glow-text truncate">
                               {item.project_title || "Genel İşlem"}
                             </p>
-                            <p className="text-[10px] font-bold text-gray-400 truncate">
+                            <p className="text-[10px] font-bold text-v3-muted truncate">
                               {item.type === "collection"
                                 ? item.project_company ||
                                   item.agency_name ||
@@ -1701,13 +1701,13 @@ export default function CashFlowPage() {
                               • {item.description || "Açıklama yok"}
                             </p>
                           </div>
-                          <ArrowUpRight className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors" />
+                          <ArrowUpRight className="w-5 h-5 text-v3-muted group-hover:text-blue-600 dark:text-blue-400 transition-colors" />
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="text-center py-12">
-                      <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">
+                      <p className="text-v3-muted font-bold uppercase text-[10px] tracking-widest">
                         Bu tarihte herhangi bir işlem bulunamadı.
                       </p>
                     </div>

@@ -1534,11 +1534,11 @@ export default function ProjectDetailPage() {
   //       <div className="flex flex-col items-center justify-center">
   //         {/* Spinner */}
   //         <div className="relative">
-  //           <div className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+  //           <div className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-v3-border"></div>
   //           <div className="absolute top-0 left-0 w-8 h-8 rounded-full border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 animate-spin"></div>
   //           <div className="absolute top-0 left-0 w-8 h-8 rounded-full border-4 border-transparent border-r-blue-500 dark:border-r-blue-300 animate-spin" style={{animationDelay: '0.1s', animationDuration: '1.5s'}}></div>
   //         </div>
-  //         <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm transition-colors duration-200">
+  //         <p className="mt-4 text-v3-muted text-sm transition-colors duration-200">
   //           Yükleniyor...
   //         </p>
   //       </div>
@@ -14166,10 +14166,10 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Proje detaylarını görmek için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -14187,22 +14187,22 @@ export default function ProjectDetailPage() {
   return (
     <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
             {/* NEW: Sticky Main Tabs - Full Width Minimal */}
-      <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-white/5" style={{ backgroundColor: "rgb(var(--theme-bg-main, 15, 23, 42))" }}>
+      <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-v3-border bg-black/5 dark:bg-white/5 backdrop-blur-md">
         <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
           {/* Left placeholder to balance the flex layout */}
           <div className="w-[100px]"></div>
           
           {/* Center Tabs */}
-          <div className="flex bg-transparent p-1 rounded-xl border border-white/5 w-full max-w-[350px]">
+          <div className="flex bg-transparent p-1 rounded-xl border border-v3-border w-full max-w-[350px]">
              <button 
                onClick={() => setActiveMainTab('info')} 
-               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
              >
                PROJE BİLGİLERİ
              </button>
              <button 
                onClick={() => setActiveMainTab('details')} 
-               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
              >
                PROJE DETAYLARI
              </button>
@@ -14211,11 +14211,11 @@ export default function ProjectDetailPage() {
           {/* Right Action (Settings) Button */}
           <div className="w-[100px] flex justify-end">
             <div className="flex-shrink-0 relative group z-50">
-              <button className="bg-transparent border border-gray-600/50 hover:bg-white/5 text-gray-300 hover:text-white p-2 rounded-xl transition-all duration-200" title="İşlemler">
+              <button className="bg-transparent border border-gray-600/50 hover:bg-v3-border text-v3-muted hover:text-v3-text p-2 rounded-xl transition-all duration-200" title="İşlemler">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
               </button>
-              <div className="absolute right-0 top-full mt-2 w-64 bg-[#1e293b] rounded-xl shadow-2xl border border-gray-700 p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100">
-                <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-700 mb-1">İşlemler</div>
+              <div className="absolute right-0 top-full mt-2 w-64 bg-v3-surface dark:bg-gray-800 backdrop-blur-xl rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-v3-border p-2 flex flex-col gap-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right transform scale-95 group-hover:scale-100 z-[9999]">
+                <div className="px-2 py-1 text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest border-b border-v3-border mb-1">İşlemler</div>
                 
                 {activeMainTab === 'info' ? (
                   <>
@@ -14223,7 +14223,7 @@ export default function ProjectDetailPage() {
                       value={isEditingProject ? projectFormData?.exchange_rate_strategy || project?.exchange_rate_strategy || "manuel" : project?.exchange_rate_strategy || "manuel"}
                       onChange={(e) => handleProjectFormChange("exchange_rate_strategy", e.target.value)}
                       disabled={!isEditingProject || updatingRates}
-                      className={`w-full px-2 py-1.5 rounded-lg text-xs font-bold border outline-none transition-colors ${isEditingProject && !updatingRates ? "bg-[#0f172a] text-white border-blue-500 cursor-pointer" : "bg-[#0f172a]/50 text-gray-500 border-gray-700/50 cursor-not-allowed"}`}
+                      className={`w-full px-2 py-1.5 rounded-lg text-xs font-bold border outline-none transition-colors ${isEditingProject && !updatingRates ? "bg-v3-surface text-v3-text border-blue-500 cursor-pointer" : "bg-v3-surface text-gray-500 border-v3-border cursor-not-allowed"}`}
                       title="Kur Stratejisi"
                     >
                       <option value="manuel">Kur: Manuel</option>
@@ -14232,10 +14232,10 @@ export default function ProjectDetailPage() {
                       <option value="tcmb_banknote_buying">Kur: TCMB Efektif Alış</option>
                       <option value="tcmb_banknote_selling">Kur: TCMB Efektif Satış</option>
                     </select>
-                    <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                    <button onClick={() => { setShowLogsModal(true); fetchLogs(); }} className="w-full text-left bg-purple-500/10 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Loglar
                     </button>
-                    <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
+                    <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Excel (Tam Rapor)
                     </button>
                     {isEditingProject ? (
@@ -14246,7 +14246,7 @@ export default function ProjectDetailPage() {
                           </button>
                         )}
                         {canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
-                          <button onClick={handleCancelEdit} className="w-full text-left bg-gray-700 text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors text-xs font-bold flex items-center gap-2">
+                          <button onClick={handleCancelEdit} className="w-full text-left bg-gray-700 text-v3-muted px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors text-xs font-bold flex items-center gap-2">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> İptal
                           </button>
                         )}
@@ -14263,14 +14263,14 @@ export default function ProjectDetailPage() {
                   <>
                     {activeTab === 'satis' && (
                       <>
-                        <button onClick={() => setShowCategoryModalSales(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Satış Kalemi</button>
-                        <button onClick={handleCreateSalesLink} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Mutabakat Linki</button>
-                        <button onClick={exportSalesOnlyByHotelToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => setShowCategoryModalSales(true)} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Satış Kalemi</button>
+                        <button onClick={handleCreateSalesLink} className="w-full text-left bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Mutabakat Linki</button>
+                        <button onClick={exportSalesOnlyByHotelToExcel} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                     {activeTab === 'alis' && (
                       <>
-                        <button onClick={() => setShowCategoryModalPurchase(true)} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Alış Kalemi</button>
+                        <button onClick={() => setShowCategoryModalPurchase(true)} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Alış Kalemi</button>
                         <button onClick={() => {
                           setConfirmModal({
                             open: true,
@@ -14283,65 +14283,65 @@ export default function ProjectDetailPage() {
                             type: "info",
                             showCancel: true,
                           });
-                        }} className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Satış Kalemlerini İçe Aktar</button>
-                        <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        }} className="w-full text-left bg-orange-500/10 text-orange-600 dark:text-orange-600 dark:text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Satış Kalemlerini İçe Aktar</button>
+                        <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                     {activeTab === 'konaklama' && (
                       <>
-                        <button onClick={() => handleAccommodationAdd("")} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Oda Ekle</button>
-                        <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
+                        <button onClick={() => handleAccommodationAdd("")} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Oda Ekle</button>
+                        <label className="w-full text-left bg-orange-500/10 text-orange-600 dark:text-orange-600 dark:text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
                           <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleAccommodationImport} />
                           Excel İçe Aktar
                         </label>
-                        <button onClick={handleAccommodationExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
-                        <button onClick={handleAccommodationClear} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Listeyi Temizle</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-toggle-collapse-accommodation'))} className="w-full text-left bg-gray-500/10 text-gray-400 px-3 py-2 rounded-lg hover:bg-gray-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Genişlet/Daralt</button>
+                        <button onClick={handleAccommodationExport} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={handleAccommodationClear} className="w-full text-left bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Listeyi Temizle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-toggle-collapse-accommodation'))} className="w-full text-left bg-gray-500/10 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-lg hover:bg-gray-500 hover:text-v3-text transition-colors text-xs font-bold flex items-center gap-2">Genişlet/Daralt</button>
                       </>
                     )}
                     {activeTab === 'ucak-bileti' && (
                       <>
-                        <button onClick={() => handleFlightAdd()} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Bilet Ekle</button>
-                        <label className="w-full text-left bg-orange-500/10 text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
+                        <button onClick={() => handleFlightAdd()} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Bilet Ekle</button>
+                        <label className="w-full text-left bg-orange-500/10 text-orange-600 dark:text-orange-600 dark:text-orange-400 px-3 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer">
                           <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFlightImport} />
                           Excel İçe Aktar
                         </label>
-                        <button onClick={handleFlightExport} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={handleFlightExport} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                     {activeTab === 'transfer-tur' && (
                       <>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'giris' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Giriş Transferi Ekle</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'ara' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Ara Transfer Ekle</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'cikis' }))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Çıkış Transferi Ekle</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-create-transfer'))} className="w-full text-left bg-purple-500/10 text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Konaklamadan Transfer Oluştur</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-transfer'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-clear-transfer'))} className="w-full text-left bg-red-500/10 text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Temizle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'giris' }))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Giriş Transferi Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'ara' }))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Ara Transfer Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-transfer', { detail: 'cikis' }))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Çıkış Transferi Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-create-transfer'))} className="w-full text-left bg-purple-500/10 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Konaklamadan Transfer Oluştur</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-transfer'))} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-clear-transfer'))} className="w-full text-left bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Temizle</button>
                       </>
                     )}
                     {activeTab === 'diger' && (
                       <>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-other'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Kayıt Ekle</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-other'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-other'))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Kayıt Ekle</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-other'))} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                     {activeTab === 'tahsilat' && (
                       <>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-tahsilat'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-tahsilat'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Tahsilat</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-tahsilat'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-tahsilat'))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-tahsilat'))} className="w-full text-left bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Tahsilat</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-tahsilat'))} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                     {activeTab === 'odeme' && (
                       <>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-odeme'))} className="w-full text-left bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-odeme'))} className="w-full text-left bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Ödeme</button>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-odeme'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-plan-odeme'))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Plan</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-odeme'))} className="w-full text-left bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Ödeme</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-odeme'))} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                     {activeTab === 'kar-zarar' && (
                       <>
-                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-karzarar'))} className="w-full text-left bg-green-500/10 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-export-karzarar'))} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Excel Dışa Aktar</button>
                       </>
                     )}
                   </>
@@ -14358,11 +14358,11 @@ export default function ProjectDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4">
       
         {/* Card 1: Temel Bilgiler */}
-        <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
 
           
-          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Referans
           </p>
           {isEditingProject ? (
@@ -14372,16 +14372,16 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("reference", e.target.value)
               }
-              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+              className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0"
             />
           ) : (
-            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+            <p className="text-base font-bold text-v3-text leading-tight">
               {project?.reference || projectId}
             </p>
           )}
           </div>
-          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Proje Durum
           </p>
           {isEditingProject ? (
@@ -14390,7 +14390,7 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("status", e.target.value)
               }
-              className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none"
+              className="w-full text-xs font-semibold text-v3-text bg-transparent border-none outline-none"
             >
               <option value="active">Aktif</option>
               <option value="completed">Tamamlandı</option>
@@ -14398,7 +14398,7 @@ export default function ProjectDetailPage() {
               <option value="cancelled">İptal</option>
             </select>
           ) : (
-            <p className="text-xs font-semibold text-gray-900 dark:text-white">
+            <p className="text-xs font-semibold text-v3-text">
               {getStatusText(project?.status || "active")}
             </p>
           )}
@@ -14406,11 +14406,11 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Card 2: Paydaşlar */}
-        <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
 
           
-          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Firma Adı
           </p>
           {isEditingProject ? (
@@ -14420,16 +14420,16 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("company_name", e.target.value)
               }
-              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+              className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0"
             />
           ) : (
-            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate">
+            <p className="text-base font-bold text-v3-text leading-tight truncate">
               {project?.company_name || project?.company?.name || "-"}
             </p>
           )}
           </div>
-          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Acente Adı
           </p>
           {isEditingProject ? (
@@ -14444,7 +14444,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowAgencyDropdown(true)}
                 onKeyDown={handleAgencyKeyDown}
-                className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+                className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0"
                 placeholder="Acente ara..."
                 autoComplete="off"
               />
@@ -14467,13 +14467,13 @@ export default function ProjectDetailPage() {
               )}
             </div>
           ) : (
-            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate">
+            <p className="text-base font-bold text-v3-text leading-tight truncate">
               {getAgencyName(project?.agency_id) || "-"}
             </p>
           )}
           </div>
-          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-            <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Proje Sorumlusu
           </p>
           {isEditingProject ? (
@@ -14510,7 +14510,7 @@ export default function ProjectDetailPage() {
                 }}
                 onFocus={() => setShowUserDropdown(true)}
                 onKeyDown={handleUserKeyDown}
-                className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+                className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0"
                 placeholder="Kullanıcı ara..."
                 autoComplete="off"
               />
@@ -14547,7 +14547,7 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <p 
-              className="text-base font-bold text-gray-900 dark:text-white leading-tight truncate"
+              className="text-base font-bold text-v3-text leading-tight truncate"
               title={getProjectManagers(projectId) || "Atanmadı"}
             >
               {getProjectManagers(projectId)}
@@ -14557,13 +14557,13 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Card 3: İçerik Detayları */}
-        <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
 
           
-          <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
+          <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
           {isEditingProject ? (
             <div className="space-y-3">
-              <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 OTELLER VE KONAKLAMA TARİHLERİ
               </p>
               
@@ -14572,7 +14572,7 @@ export default function ProjectDetailPage() {
                 {projectFormData.hotels_data && projectFormData.hotels_data.length > 0 ? (
                   projectFormData.hotels_data.map((h: any, idx: number) => {
                     return (
-                      <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-[#1e293b] p-2 rounded-xl border border-gray-700/50">
+                      <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-black/5 dark:bg-white/5 p-2 rounded-xl border border-v3-border">
                         <div className="flex-1 min-w-[150px]">
                           <select
                             value={h.hotel_id || ""}
@@ -14583,7 +14583,7 @@ export default function ProjectDetailPage() {
                               newHotels[idx].hotel_name = selectedHotel ? selectedHotel.name : "";
                               setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
                             }}
-                            className="w-full bg-[#0f172a] text-white text-[11px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
+                            className="w-full bg-v3-surface text-v3-text text-[11px] font-bold border border-v3-border rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
                           >
                             <option value="">Otel Seçiniz</option>
                             {hotels?.map((mh: any) => (
@@ -14600,7 +14600,7 @@ export default function ProjectDetailPage() {
                               newHotels[idx].check_in_date = e.target.value;
                               setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
                             }}
-                            className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                            className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
                             title="Giriş Tarihi"
                           />
                           <span className="text-gray-500 font-bold">-</span>
@@ -14612,7 +14612,7 @@ export default function ProjectDetailPage() {
                               newHotels[idx].check_out_date = e.target.value;
                               setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
                             }}
-                            className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                            className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
                             title="Çıkış Tarihi"
                           />
                           <button
@@ -14625,7 +14625,7 @@ export default function ProjectDetailPage() {
                                 hotel_id: newHotels.length > 0 ? newHotels[0].hotel_id : null 
                               }));
                             }}
-                            className="p-1.5 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors"
                             title="Oteli Kaldır"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -14653,7 +14653,7 @@ export default function ProjectDetailPage() {
                   });
                   setProjectFormData((prev: any) => ({ ...prev, hotels_data: newHotels }));
                 }}
-                className="w-full mt-2 py-2 bg-[#0f172a] hover:bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-gray-700/50 hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
+                className="w-full mt-2 py-2 bg-v3-surface hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-v3-border hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Yeni Otel Satırı Ekle
@@ -14661,7 +14661,7 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+              <p className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-3">
                 OTELLER VE KONAKLAMA TARİHLERİ
               </p>
               <div className="flex flex-col gap-2">
@@ -14674,11 +14674,11 @@ export default function ProjectDetailPage() {
                     const dateText = `${sDate ? formatDate(sDate).substring(0, 10) : "?"} - ${eDate ? formatDate(eDate).substring(0, 10) : "?"}`;
                     
                     return (
-                      <div key={idx} className="flex items-center justify-between bg-[#1e293b] px-3 py-2.5 rounded-xl border border-gray-700/50">
-                        <span className="text-[11px] font-bold text-white truncate max-w-[220px]">
+                      <div key={idx} className="flex items-center justify-between bg-black/5 dark:bg-white/5 px-3 py-2.5 rounded-xl border border-v3-border">
+                        <span className="text-[11px] font-bold text-v3-text truncate max-w-[220px]">
                           {hName}
                         </span>
-                        <span className="text-[10px] font-bold text-gray-300 bg-[#0f172a] px-2.5 py-1 rounded-md border border-gray-700/30">
+                        <span className="text-[10px] font-bold text-v3-muted bg-v3-surface px-2.5 py-1 rounded-md border border-v3-border">
                           {dateText}
                         </span>
                       </div>
@@ -14694,8 +14694,8 @@ export default function ProjectDetailPage() {
           )}
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-              <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+              <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Oda | Pax
           </p>
           {isEditingProject ? (
@@ -14705,17 +14705,17 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("room_pax", e.target.value)
               }
-              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+              className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0"
               placeholder="Oda | Pax"
             />
           ) : (
-            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+            <p className="text-base font-bold text-v3-text leading-tight">
               {headerDisplayData.room_pax}
             </p>
           )}
             </div>
-            <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-              <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+              <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             Teklif Türü
           </p>
           {isEditingProject ? (
@@ -14724,14 +14724,14 @@ export default function ProjectDetailPage() {
               onChange={(e) =>
                 handleProjectFormChange("quote_type", e.target.value)
               }
-              className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0"
+              className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0"
             >
               <option value="">Teklif Türü Seçin</option>
               <option value="BİRİM">BİRİM</option>
               <option value="PAKET">PAKET</option>
             </select>
           ) : (
-            <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+            <p className="text-base font-bold text-v3-text leading-tight">
               {project?.quote_type || "-"}
             </p>
           )}
@@ -14749,13 +14749,13 @@ export default function ProjectDetailPage() {
       {/* Otel Sekmeleri (Çoklu Otel Desteği) - Premium Quote Style */}
       {project?.hotels_data && project.hotels_data.length > 0 && (
         <div className="mb-4">
-          <div className="flex md:justify-center bg-gray-50 dark:bg-[#0f172a]/70 dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-gray-700/50 space-x-2 overflow-x-auto shadow-sm">
+          <div className="flex md:justify-center bg-gray-50 dark:bg-v3-surface dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-v3-border space-x-2 overflow-x-auto shadow-sm">
             <button
               onClick={() => handleHotelChange("all")}
               className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
                 activeHotelId === "all"
                   ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  : "bg-white dark:bg-gray-800 text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               TÜMÜ
@@ -14772,7 +14772,7 @@ export default function ProjectDetailPage() {
                     className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm group ${
                       activeHotelId === (h.id || h.hotel_id)
                         ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "bg-white dark:bg-gray-800 text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   >
                     <span className="text-[10px] font-black uppercase tracking-tight" title={hObj?.name || h.hotel_name || ""}>
@@ -14793,7 +14793,7 @@ export default function ProjectDetailPage() {
                         className={`p-1.5 rounded-lg transition-all duration-200 ${
                           activeHotelMenuId === (h.id || h.hotel_id)
                             ? "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
-                            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
                         }`}
                       >
                         <svg
@@ -14838,7 +14838,7 @@ export default function ProjectDetailPage() {
               className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
                 activeHotelId === "general"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  : "bg-white dark:bg-gray-800 text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               GENEL HİZMETLER
@@ -14849,7 +14849,7 @@ export default function ProjectDetailPage() {
 
       {/* Tabs - Premium Style */}
       <div className="mb-4">
-        <div className="flex md:justify-center w-full bg-[#0f172a]/70 backdrop-blur-md p-1.5 rounded-xl border border-gray-700/50 space-x-2 overflow-x-auto shadow-xl no-scrollbar">
+        <div className="flex md:justify-center w-full bg-v3-surface backdrop-blur-md p-1.5 rounded-xl border border-v3-border space-x-2 overflow-x-auto shadow-xl no-scrollbar">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -14857,7 +14857,7 @@ export default function ProjectDetailPage() {
               className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm text-[9px] font-semibold uppercase tracking-widest ${
                 activeTab === t.key
                   ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                  : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                  : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border border border-transparent"
               }`}
             >
               {t.label}
@@ -14869,7 +14869,7 @@ export default function ProjectDetailPage() {
 
         <div className="p-3">
           {loading ? (
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-v3-muted">
               Yükleniyor...
             </div>
           ) : (
@@ -15066,7 +15066,7 @@ export default function ProjectDetailPage() {
                         placeholder="Uçak bileti ara (tedarikçi, havayolu, güzergah, PNR, misafirler)..."
                         value={flightTicketSearch}
                         onChange={(e) => setFlightTicketSearch(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -15114,13 +15114,13 @@ export default function ProjectDetailPage() {
                   {/* Arama (taşındı: başlık satırına) */}
 
                   {/* Uçak Bileti Tablosu */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-v3-border overflow-hidden relative">
                     <div className="overflow-x-auto">
                       <table className="w-max min-w-full text-xs">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                           <tr>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() =>
                                 handleFlightSort("biletlemeTarihi")
                               }
@@ -15137,7 +15137,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-32 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-32 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("tedarikci")}
                             >
                               <div className="flex items-center">
@@ -15150,7 +15150,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("havayolu")}
                             >
                               <div className="flex items-center">
@@ -15163,7 +15163,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("pnr")}
                             >
                               <div className="flex items-center">
@@ -15176,7 +15176,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("ucusTipi")}
                             >
                               <div className="flex items-center">
@@ -15191,7 +15191,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("gidisTarihi")}
                             >
                               <div className="flex items-center">
@@ -15205,18 +15205,18 @@ export default function ProjectDetailPage() {
                                 )}
                               </div>
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-20">
                               GİDİŞ
                               <br />
                               SAATİ
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-20">
                               GİDİŞ UÇUŞ
                               <br />
                               KODU
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("donusTarihi")}
                             >
                               <div className="flex items-center">
@@ -15230,18 +15230,18 @@ export default function ProjectDetailPage() {
                                 )}
                               </div>
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-20">
                               DÖNÜŞ
                               <br />
                               SAATİ
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-20">
                               DÖNÜŞ UÇUŞ
                               <br />
                               KODU
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-24 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("guzergah")}
                             >
                               <div className="flex items-center">
@@ -15254,7 +15254,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("kisiSayisi")}
                             >
                               <div className="flex items-center">
@@ -15269,7 +15269,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("ppMaliyet")}
                             >
                               <div className="flex items-center">
@@ -15284,7 +15284,7 @@ export default function ProjectDetailPage() {
                               </div>
                             </th>
                             <th
-                              className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                              className="px-2 py-2 text-left font-medium text-v3-text w-20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
                               onClick={() => handleFlightSort("toplamMaliyet")}
                             >
                               <div className="flex items-center">
@@ -15298,22 +15298,22 @@ export default function ProjectDetailPage() {
                                 )}
                               </div>
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-16">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-16">
                               DÖVİZ
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-20">
                               KUR
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-32">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-32">
                               TOPLAM TL
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-32">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-32">
                               MİSAFİRLER
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-16">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-16">
                               DURUM
                             </th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-900 dark:text-white w-20">
+                            <th className="px-2 py-2 text-left font-medium text-v3-text w-20">
                               İŞLEMLER
                             </th>
                           </tr>
@@ -15324,7 +15324,7 @@ export default function ProjectDetailPage() {
                             <tr>
                               <td
                                 colSpan={19}
-                                className="px-2 py-8 text-center text-gray-500 dark:text-gray-400"
+                                className="px-2 py-8 text-center text-v3-muted"
                               >
                                 Henüz uçak bileti eklenmemiş
                               </td>
@@ -15351,7 +15351,7 @@ export default function ProjectDetailPage() {
                                               biletlemeTarihi: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                       </td>
                                       <td className="px-2 py-1 relative">
@@ -15423,7 +15423,7 @@ export default function ProjectDetailPage() {
                                             }
                                           }}
                                           placeholder="Tedarikçi ara..."
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                         {showSupplierDropdown &&
                                           filteredSuppliers.length > 0 &&
@@ -15465,16 +15465,16 @@ export default function ProjectDetailPage() {
                                                     }`}
                                                   >
                                                     <div>
-                                                      <div className="font-medium text-gray-900 dark:text-white">
+                                                      <div className="font-medium text-v3-text">
                                                         {item.name}
                                                       </div>
                                                       {item.title && (
-                                                        <div className="text-gray-500 dark:text-gray-400 text-xs">
+                                                        <div className="text-v3-muted text-xs">
                                                           {item.title}
                                                         </div>
                                                       )}
                                                     </div>
-                                                    <div className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                                                    <div className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-v3-text">
                                                       {item.type === "hotel"
                                                         ? "Otel"
                                                         : "Tedarikçi"}
@@ -15495,7 +15495,7 @@ export default function ProjectDetailPage() {
                                               havayolu: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="TK"
                                         />
                                       </td>
@@ -15509,7 +15509,7 @@ export default function ProjectDetailPage() {
                                               pnr: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="ABC123"
                                         />
                                       </td>
@@ -15522,7 +15522,7 @@ export default function ProjectDetailPage() {
                                               ucusTipi: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         >
                                           <option value="">Seçiniz</option>
                                           <option value="GRUP">GRUP</option>
@@ -15543,7 +15543,7 @@ export default function ProjectDetailPage() {
                                               gidisTarihi: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                       </td>
                                       <td className="px-2 py-1">
@@ -15558,7 +15558,7 @@ export default function ProjectDetailPage() {
                                               gidisSaati: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                       </td>
                                       <td className="px-2 py-1">
@@ -15573,7 +15573,7 @@ export default function ProjectDetailPage() {
                                               gidisUcusKodu: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="TK123"
                                           maxLength={6}
                                         />
@@ -15590,7 +15590,7 @@ export default function ProjectDetailPage() {
                                               donusTarihi: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                       </td>
                                       <td className="px-2 py-1">
@@ -15605,7 +15605,7 @@ export default function ProjectDetailPage() {
                                               donusSaati: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                       </td>
                                       <td className="px-2 py-1">
@@ -15620,7 +15620,7 @@ export default function ProjectDetailPage() {
                                               donusUcusKodu: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="TK124"
                                           maxLength={6}
                                         />
@@ -15635,7 +15635,7 @@ export default function ProjectDetailPage() {
                                               guzergah: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="IST-AMS"
                                         />
                                       </td>
@@ -15665,7 +15665,7 @@ export default function ProjectDetailPage() {
                                               toplamTl: toplamMaliyet * kur,
                                             }));
                                           }}
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="1"
                                         />
                                       </td>
@@ -15692,7 +15692,7 @@ export default function ProjectDetailPage() {
                                               toplamTl: toplamMaliyet * kur,
                                             }));
                                           }}
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="0,00"
                                         />
                                       </td>
@@ -15720,7 +15720,7 @@ export default function ProjectDetailPage() {
                                               toplamTl: toplamMaliyet * kur,
                                             }));
                                           }}
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="0,00"
                                         />
                                       </td>
@@ -15733,7 +15733,7 @@ export default function ProjectDetailPage() {
                                               doviz: e.target.value,
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         >
                                           <option value="EUR">EUR</option>
                                           <option value="USD">USD</option>
@@ -15757,7 +15757,7 @@ export default function ProjectDetailPage() {
                                               toplamTl: toplamMaliyet * kur,
                                             }));
                                           }}
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                           placeholder="1.0000"
                                         />
                                       </td>
@@ -15768,7 +15768,7 @@ export default function ProjectDetailPage() {
                                             tempFlightItem?.toplamTl || 0,
                                           )}
                                           readOnly
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white bg-gray-100 dark:bg-gray-600"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text bg-gray-100 dark:bg-gray-600"
                                           placeholder="0,00"
                                         />
                                       </td>
@@ -15785,7 +15785,7 @@ export default function ProjectDetailPage() {
                                             }))
                                           }
                                           placeholder="Misafirler (virgülle ayırın)"
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         />
                                       </td>
                                       <td className="px-2 py-1">
@@ -15803,7 +15803,7 @@ export default function ProjectDetailPage() {
                                                 | "degistirildi",
                                             }))
                                           }
-                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                          className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         >
                                           <option value="aktif">Aktif</option>
                                           <option value="iptal">İptal</option>
@@ -15858,75 +15858,75 @@ export default function ProjectDetailPage() {
                                     </>
                                   ) : (
                                     <>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatDateForDisplay(
                                           ticket.biletlemeTarihi,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.tedarikci}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.havayolu}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.pnr}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.ucusTipi}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatDateForDisplay(
                                           ticket.gidisTarihi,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.gidisSaati}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.gidisUcusKodu}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatDateForDisplay(
                                           ticket.donusTarihi,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.donusSaati}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.donusUcusKodu}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.guzergah}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatIntegerForDisplay(
                                           ticket.kisiSayisi,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatNumberForDisplay(
                                           ticket.ppMaliyet,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatNumberForDisplay(
                                           ticket.toplamMaliyet,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {ticket.doviz}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatNumberForDisplay(ticket.kur)}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         {formatNumberForDisplay(
                                           ticket.toplamTl,
                                         )}
                                       </td>
-                                      <td className="px-2 py-1 text-gray-900 dark:text-white">
+                                      <td className="px-2 py-1 text-v3-text">
                                         <div className="flex items-center justify-between">
                                           <span
                                             className="truncate max-w-[150px]"
@@ -16040,10 +16040,10 @@ export default function ProjectDetailPage() {
                                   >
                                     <td colSpan={19} className="px-4 py-3">
                                       <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                        <h4 className="text-sm font-medium text-v3-text mb-2">
                                           Misafirler:
                                         </h4>
-                                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                                        <div className="text-sm text-v3-text whitespace-pre-line">
                                           {ticket.misafirler}
                                         </div>
                                       </div>
@@ -16068,7 +16068,7 @@ export default function ProjectDetailPage() {
                                       biletlemeTarihi: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1 relative">
@@ -16131,7 +16131,7 @@ export default function ProjectDetailPage() {
                                     }
                                   }}
                                   placeholder="Tedarikçi ara..."
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                                 {showSupplierDropdown &&
                                   filteredSuppliers.length > 0 &&
@@ -16163,16 +16163,16 @@ export default function ProjectDetailPage() {
                                           }`}
                                         >
                                           <div>
-                                            <div className="font-medium text-gray-900 dark:text-white">
+                                            <div className="font-medium text-v3-text">
                                               {item.name}
                                             </div>
                                             {item.title && (
-                                              <div className="text-gray-500 dark:text-gray-400 text-xs">
+                                              <div className="text-v3-muted text-xs">
                                                 {item.title}
                                               </div>
                                             )}
                                           </div>
-                                          <div className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                                          <div className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-v3-text">
                                             {item.type === "hotel"
                                               ? "Otel"
                                               : "Tedarikçi"}
@@ -16192,7 +16192,7 @@ export default function ProjectDetailPage() {
                                       havayolu: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="TK"
                                 />
                               </td>
@@ -16206,7 +16206,7 @@ export default function ProjectDetailPage() {
                                       pnr: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="ABC123"
                                 />
                               </td>
@@ -16219,7 +16219,7 @@ export default function ProjectDetailPage() {
                                       ucusTipi: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 >
                                   <option value="">Seçiniz</option>
                                   <option value="GRUP">GRUP</option>
@@ -16236,7 +16236,7 @@ export default function ProjectDetailPage() {
                                       gidisTarihi: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1">
@@ -16249,7 +16249,7 @@ export default function ProjectDetailPage() {
                                       gidisSaati: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1">
@@ -16262,7 +16262,7 @@ export default function ProjectDetailPage() {
                                       gidisUcusKodu: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="TK123"
                                   maxLength={6}
                                 />
@@ -16277,7 +16277,7 @@ export default function ProjectDetailPage() {
                                       donusTarihi: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1">
@@ -16290,7 +16290,7 @@ export default function ProjectDetailPage() {
                                       donusSaati: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1">
@@ -16303,7 +16303,7 @@ export default function ProjectDetailPage() {
                                       donusUcusKodu: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="TK124"
                                   maxLength={6}
                                 />
@@ -16318,7 +16318,7 @@ export default function ProjectDetailPage() {
                                       guzergah: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="İstanbul - Antalya"
                                 />
                               </td>
@@ -16341,7 +16341,7 @@ export default function ProjectDetailPage() {
                                       toplamTl: toplamMaliyet * kur,
                                     }));
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   min="1"
                                 />
                               </td>
@@ -16365,7 +16365,7 @@ export default function ProjectDetailPage() {
                                       toplamTl: toplamMaliyet * kur,
                                     }));
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1">
@@ -16389,7 +16389,7 @@ export default function ProjectDetailPage() {
                                       toplamTl: toplamMaliyet * kur,
                                     }));
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-1">
@@ -16401,7 +16401,7 @@ export default function ProjectDetailPage() {
                                       doviz: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 >
                                   <option value="EUR">EUR</option>
                                   <option value="USD">USD</option>
@@ -16424,7 +16424,7 @@ export default function ProjectDetailPage() {
                                       toplamTl: toplamMaliyet * kur,
                                     }));
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="1.0000"
                                 />
                               </td>
@@ -16435,7 +16435,7 @@ export default function ProjectDetailPage() {
                                     tempFlightItem?.toplamTl || 0,
                                   )}
                                   readOnly
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white bg-gray-100 dark:bg-gray-600"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text bg-gray-100 dark:bg-gray-600"
                                   placeholder="0,00"
                                 />
                               </td>
@@ -16448,7 +16448,7 @@ export default function ProjectDetailPage() {
                                       misafirler: e.target.value,
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="Misafir isimleri..."
                                   rows={2}
                                 />
@@ -16466,7 +16466,7 @@ export default function ProjectDetailPage() {
                                         | "degistirildi",
                                     }))
                                   }
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 >
                                   <option value="aktif">Aktif</option>
                                   <option value="iptal">İptal</option>
@@ -16531,37 +16531,37 @@ export default function ProjectDetailPage() {
                                   className={`font-semibold ${index === 0 ? "bg-gray-100 dark:bg-gray-600" : "bg-gray-50 dark:bg-gray-700"}`}
                                 >
                                   <td
-                                    className="px-2 py-2 text-gray-900 dark:text-white"
+                                    className="px-2 py-2 text-v3-text"
                                     colSpan={12}
                                   >
                                     TOPLAM
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                  <td className="px-2 py-2 text-v3-text text-center">
                                     {formatIntegerForDisplay(
                                       flightTotals[doviz].kisiSayisi,
                                     )}
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                  <td className="px-2 py-2 text-v3-text text-center">
                                     {formatNumberForDisplay(
                                       flightTotals[doviz].ppMaliyet,
                                     )}
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                  <td className="px-2 py-2 text-v3-text text-center">
                                     {formatNumberForDisplay(
                                       flightTotals[doviz].toplamMaliyet,
                                     )}
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold">
+                                  <td className="px-2 py-2 text-v3-text text-center font-bold">
                                     {doviz}
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center w-32">
+                                  <td className="px-2 py-2 text-v3-text text-center w-32">
                                     {formatNumberForDisplay(
                                       flightTotals[doviz].toplamTl,
                                     )}{" "}
                                     TL
                                   </td>
                                   <td
-                                    className="px-2 py-2 text-gray-900 dark:text-white"
+                                    className="px-2 py-2 text-v3-text"
                                     colSpan={2}
                                   >
                                     {/* Boş sütunlar */}
@@ -16584,7 +16584,7 @@ export default function ProjectDetailPage() {
                         placeholder="Otel Ekstra ara..."
                         value={hotelExtraSearch}
                         onChange={(e) => setHotelExtraSearch(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -16723,7 +16723,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     />
                                   </td>
                                   <td className="px-2 py-2 relative">
@@ -16742,12 +16742,12 @@ export default function ProjectDetailPage() {
                                         updateDropdownPosition();
                                         setSelectedSupplierIndex(-1);
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="Otel/Tedarikçi ara..."
                                     />
                                   </td>
                                   <td className="px-2 py-2 hidden">
-                                    <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                    <div className="w-full px-1 py-0.5 text-xs text-v3-muted bg-gray-100 dark:bg-gray-600 rounded">
                                       OTEL | DİĞER HİZMETLER
                                     </div>
                                   </td>
@@ -16776,7 +16776,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     >
                                       <option value="">
                                         Alt Kategori Seçin
@@ -16819,7 +16819,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="Oda No"
                                     />
                                   </td>
@@ -16849,7 +16849,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="Misafir Adı"
                                     />
                                   </td>
@@ -16874,7 +16874,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="Açıklama"
                                     />
                                   </td>
@@ -16958,7 +16958,7 @@ export default function ProjectDetailPage() {
                                           formatNumberForDisplay(value),
                                         );
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text text-right"
                                       placeholder="0,00"
                                       inputMode="decimal"
                                     />
@@ -17003,7 +17003,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     >
                                       <option value="TRY">TRY</option>
                                       <option value="EUR">EUR</option>
@@ -17051,7 +17051,7 @@ export default function ProjectDetailPage() {
                                           handleHotelExtraCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text text-right"
                                       placeholder="1.00"
                                     />
                                   </td>
@@ -17125,7 +17125,7 @@ export default function ProjectDetailPage() {
                                           formatNumberForDisplay(value),
                                         );
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text text-right"
                                       placeholder="0,00"
                                       inputMode="decimal"
                                     />
@@ -17153,7 +17153,7 @@ export default function ProjectDetailPage() {
                                       </button>
                                       <button
                                         onClick={handleHotelExtraCancel}
-                                        className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                        className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                         title="İptal"
                                       >
                                         <svg
@@ -17181,7 +17181,7 @@ export default function ProjectDetailPage() {
                             <tr>
                               <td
                                 colSpan={12}
-                                className="px-2 py-8 text-center text-gray-500 dark:text-gray-400"
+                                className="px-2 py-8 text-center text-v3-muted"
                               >
                                 Henüz otel ekstra hizmeti eklenmemiş
                               </td>
@@ -17215,7 +17215,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       />
                                     </td>
                                     <td className="px-2 py-2 relative">
@@ -17236,12 +17236,12 @@ export default function ProjectDetailPage() {
                                           updateDropdownPosition();
                                           setSelectedSupplierIndex(-1);
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         placeholder="Otel/Tedarikçi ara..."
                                       />
                                     </td>
                                     <td className="px-2 py-2 hidden">
-                                      <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                      <div className="w-full px-1 py-0.5 text-xs text-v3-muted bg-gray-100 dark:bg-gray-600 rounded">
                                         OTEL | DİĞER HİZMETLER
                                       </div>
                                     </td>
@@ -17270,7 +17270,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       >
                                         <option value="">
                                           Alt Kategori Seçin
@@ -17313,7 +17313,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         placeholder="101"
                                       />
                                     </td>
@@ -17343,7 +17343,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         placeholder="Ad Soyad"
                                       />
                                     </td>
@@ -17368,7 +17368,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                         placeholder="Açıklama"
                                       />
                                     </td>
@@ -17443,7 +17443,7 @@ export default function ProjectDetailPage() {
                                             formatNumberForDisplay(value),
                                           );
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text text-right"
                                         placeholder="0,00"
                                         inputMode="decimal"
                                       />
@@ -17489,7 +17489,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       >
                                         <option value="TRY">TRY</option>
                                         <option value="EUR">EUR</option>
@@ -17538,7 +17538,7 @@ export default function ProjectDetailPage() {
                                             handleHotelExtraCancel();
                                           }
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text text-right"
                                         placeholder="1.00"
                                       />
                                     </td>
@@ -17616,7 +17616,7 @@ export default function ProjectDetailPage() {
                                             formatNumberForDisplay(value),
                                           );
                                         }}
-                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white text-right"
+                                        className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text text-right"
                                         placeholder="0,00"
                                         inputMode="decimal"
                                       />
@@ -17644,7 +17644,7 @@ export default function ProjectDetailPage() {
                                         </button>
                                         <button
                                           onClick={handleHotelExtraCancel}
-                                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                          className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                           title="İptal"
                                         >
                                           <svg
@@ -17667,43 +17667,43 @@ export default function ProjectDetailPage() {
                                 ) : (
                                   // Display Mode
                                   <>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {formatDateForDisplay(extra.date)}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {extra.hotel}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white hidden">
+                                    <td className="px-2 py-2 text-v3-text hidden">
                                       {hotelExtraMainCategories.find(
                                         (cat) => cat.id === extra.mainCategory,
                                       )?.name || ""}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {extra.subCategory}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {extra.roomNumber}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {extra.guestName}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {extra.description}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {formatNumberForDisplay(extra.amount)}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                    <td className="px-2 py-2 text-v3-text">
                                       {extra.currency}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                    <td className="px-2 py-2 text-v3-text text-right">
                                       {formatTRY(
                                         extra.exchange_rate ||
                                           extra.exchangeRate ||
                                           1,
                                       )}
                                     </td>
-                                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                    <td className="px-2 py-2 text-v3-text text-right">
                                       {formatTRY(
                                         extra.total_try ||
                                           extra.totalTRY ||
@@ -17763,7 +17763,7 @@ export default function ProjectDetailPage() {
                                           onClick={() =>
                                             handleHotelExtraDelete(extra.id)
                                           }
-                                          className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                          className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                           title="Sil"
                                         >
                                           <svg
@@ -17796,7 +17796,7 @@ export default function ProjectDetailPage() {
                   {/* Genel Toplam */}
                   {hotelExtras.length > 0 && (
                     <div className="bg-blue-500 dark:bg-blue-700 rounded-md p-3">
-                      <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
+                      <div className="grid grid-cols-12 gap-2 text-v3-text text-sm responsive-filter-grid">
                         <div className="col-span-1 font-bold">GENEL TOPLAM</div>
                         <div className="col-span-1"></div>
                         <div className="col-span-1"></div>
@@ -17867,7 +17867,7 @@ export default function ProjectDetailPage() {
                               }`}
                             >
                               <span>{supplier.displayName}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-xs text-v3-muted">
                                 {supplier.type === "hotel"
                                   ? "Otel"
                                   : "Tedarikçi"}
@@ -17875,7 +17875,7 @@ export default function ProjectDetailPage() {
                             </div>
                           ))
                         ) : (
-                          <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">
+                          <div className="px-2 py-1 text-xs text-v3-muted">
                             Sonuç bulunamadı
                           </div>
                         )}
@@ -17971,7 +17971,7 @@ export default function ProjectDetailPage() {
                         value={transferSearch}
                         onChange={(e) => setTransferSearch(e.target.value)}
 
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -18227,7 +18227,7 @@ export default function ProjectDetailPage() {
                                         }
                                       >
                                         <svg
-                                          className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${
+                                          className={`w-4 h-4 text-v3-muted transition-transform ${
                                             expandedGroups.has(transfer.id)
                                               ? "rotate-180"
                                               : ""
@@ -18485,7 +18485,7 @@ export default function ProjectDetailPage() {
                                       )}
                                       <span className="pointer-events-none">
                                         <svg
-                                          className="w-3 h-3 text-gray-400"
+                                          className="w-3 h-3 text-gray-600 dark:text-gray-400"
                                           fill="none"
                                           stroke="currentColor"
                                           viewBox="0 0 24 24"
@@ -18755,7 +18755,7 @@ export default function ProjectDetailPage() {
                                           onClick={() =>
                                             cancelTransferEdit(transfer.id)
                                           }
-                                          className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                          className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                           title="İptal"
                                         >
                                           <svg
@@ -18804,7 +18804,7 @@ export default function ProjectDetailPage() {
                                               onClick={() =>
                                                 cancelTransferEdit(transfer.id)
                                               }
-                                              className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                              className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                               title="İptal"
                                             >
                                               <svg
@@ -18832,7 +18832,7 @@ export default function ProjectDetailPage() {
                                                     transfer.id,
                                                   )
                                                 }
-                                                className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                                className="p-1 rounded text-purple-600 dark:text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                                 title="Araç Ata"
                                               >
                                                 <svg
@@ -18877,7 +18877,7 @@ export default function ProjectDetailPage() {
                                               onClick={() =>
                                                 ungroupTransfer(transfer.id)
                                               }
-                                              className="p-1 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
+                                              className="p-1 rounded text-orange-600 dark:text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
                                               title="Grubu Ayır"
                                             >
                                               <svg
@@ -18908,7 +18908,7 @@ export default function ProjectDetailPage() {
                                                 transfer.id,
                                               )
                                             }
-                                            className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                            className="p-1 rounded text-purple-600 dark:text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                             title="Araç Ata"
                                           >
                                             <svg
@@ -19004,7 +19004,7 @@ export default function ProjectDetailPage() {
                                           onClick={() =>
                                             deleteTransfer(transfer.id)
                                           }
-                                          className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                          className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                           title="Sil"
                                         >
                                           <svg
@@ -19033,7 +19033,7 @@ export default function ProjectDetailPage() {
                                                 transfer.id,
                                               )
                                             }
-                                            className="p-1 rounded text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                            className="p-1 rounded text-purple-600 dark:text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                             title="Araç Ata"
                                           >
                                             <svg
@@ -19127,7 +19127,7 @@ export default function ProjectDetailPage() {
                                               onClick={() =>
                                                 deleteTransfer(transfer.id)
                                               }
-                                              className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                              className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                               title="Sil"
                                             >
                                               <svg
@@ -19203,7 +19203,7 @@ export default function ProjectDetailPage() {
                                                   <span className="text-gray-600 dark:text-gray-300">
                                                     {originalTransfer.route}
                                                   </span>
-                                                  <span className="text-gray-500 dark:text-gray-400">
+                                                  <span className="text-v3-muted">
                                                     {originalTransfer.passengers?.join(
                                                       ", ",
                                                     ) || "-"}
@@ -19230,26 +19230,26 @@ export default function ProjectDetailPage() {
                                   className={`font-semibold ${index === 0 ? "bg-gray-100 dark:bg-gray-600" : "bg-gray-50 dark:bg-gray-700"}`}
                                 >
                                   <td
-                                    className="px-2 py-2 text-gray-900 dark:text-white"
+                                    className="px-2 py-2 text-v3-text"
                                     colSpan={8}
                                   >
                                     TOPLAM ({doviz})
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                  <td className="px-2 py-2 text-v3-text text-center">
                                     {formatIntegerForDisplay(
                                       transferTotals[doviz].kisiSayisi,
                                     )}
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                  <td className="px-2 py-2 text-v3-text text-center">
                                     {formatNumberForDisplay(
                                       transferTotals[doviz].toplamMaliyet,
                                     )}
                                   </td>
-                                  <td className="px-2 py-2 text-gray-900 dark:text-white text-center font-bold">
+                                  <td className="px-2 py-2 text-v3-text text-center font-bold">
                                     {doviz}
                                   </td>
                                   <td
-                                    className="px-2 py-2 text-gray-900 dark:text-white"
+                                    className="px-2 py-2 text-v3-text"
                                     colSpan={2}
                                   >
                                     {/* Boş sütunlar */}
@@ -19289,7 +19289,7 @@ export default function ProjectDetailPage() {
                             .map(([veh, v]: any) => (
                               <div
                                 key={veh}
-                                className="flex items-center justify-between text-xs bg-white/50 dark:bg-green-900/20 rounded-lg px-2 py-1"
+                                className="flex items-center justify-between text-xs bg-v3-border0 dark:bg-green-900/20 rounded-lg px-2 py-1"
                               >
                                 <span className="text-green-700 dark:text-green-300 font-medium">
                                   {getVehicleTypeName(veh)}
@@ -19330,7 +19330,7 @@ export default function ProjectDetailPage() {
                             .map(([veh, v]: any) => (
                               <div
                                 key={veh}
-                                className="flex items-center justify-between text-xs bg-white/50 dark:bg-blue-900/20 rounded-lg px-2 py-1"
+                                className="flex items-center justify-between text-xs bg-v3-border0 dark:bg-blue-900/20 rounded-lg px-2 py-1"
                               >
                                 <span className="text-blue-700 dark:text-blue-300 font-medium">
                                   {getVehicleTypeName(veh)}
@@ -19355,7 +19355,7 @@ export default function ProjectDetailPage() {
                               Ara Transferler
                             </h3>
                           </div>
-                          <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          <div className="bg-amber-500 text-v3-text text-xs font-bold px-2 py-1 rounded-full">
                             {stats.intermediate.count}
                           </div>
                         </div>
@@ -19371,7 +19371,7 @@ export default function ProjectDetailPage() {
                             .map(([veh, v]: any) => (
                               <div
                                 key={veh}
-                                className="flex items-center justify-between text-xs bg-white/50 dark:bg-amber-900/20 rounded-lg px-2 py-1"
+                                className="flex items-center justify-between text-xs bg-v3-border0 dark:bg-amber-900/20 rounded-lg px-2 py-1"
                               >
                                 <span className="text-amber-700 dark:text-amber-300 font-medium">
                                   {getVehicleTypeName(veh)}
@@ -19402,7 +19402,7 @@ export default function ProjectDetailPage() {
                             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                               {stats.totals.count}
                             </div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                            <div className="text-xs text-v3-muted">
                               Transfer
                             </div>
                           </div>
@@ -19410,7 +19410,7 @@ export default function ProjectDetailPage() {
                             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                               {stats.totals.passengers}
                             </div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                            <div className="text-xs text-v3-muted">
                               Kişi
                             </div>
                           </div>
@@ -19424,7 +19424,7 @@ export default function ProjectDetailPage() {
                               key={veh}
                               className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2 text-center"
                             >
-                              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                              <div className="text-xs text-v3-muted mb-1">
                                 {getVehicleTypeName(veh)}
                               </div>
                               <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -19505,7 +19505,7 @@ export default function ProjectDetailPage() {
                         </button>
                         <button
                           onClick={() => setSelectedTransfers([])}
-                          className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors"
+                          className="px-3 py-1 bg-gray-600 text-v3-text text-xs rounded hover:bg-gray-700 transition-colors"
                         >
                           Seçimi Temizle
                         </button>
@@ -19524,7 +19524,7 @@ export default function ProjectDetailPage() {
                         placeholder="Etkinlik & Aktivite ara..."
                         value={eventSearch}
                         onChange={(e) => setEventSearch(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -19625,7 +19625,7 @@ export default function ProjectDetailPage() {
                                       event_date: e.target.value,
                                     })
                                   }
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-2">
@@ -19641,7 +19641,7 @@ export default function ProjectDetailPage() {
                                       setShowEventSupplierDropdown(true)
                                     }
                                     placeholder="Otel/Tedarikçi seç..."
-                                    className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                   />
                                   {showEventSupplierDropdown && (
                                     <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -19732,7 +19732,7 @@ export default function ProjectDetailPage() {
                                       sub_category_id: e.target.value,
                                     })
                                   }
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                 >
                                   <option value="">Alt kategori seç...</option>
                                   {eventSubCategories.map((cat) => (
@@ -19752,7 +19752,7 @@ export default function ProjectDetailPage() {
                                       description: e.target.value,
                                     })
                                   }
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-2 text-right">
@@ -19771,7 +19771,7 @@ export default function ProjectDetailPage() {
                                         (tempEventItem.exchange_rate || 1.0),
                                     });
                                   }}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text text-right"
                                 />
                               </td>
                               <td className="px-2 py-2 text-center">
@@ -19783,7 +19783,7 @@ export default function ProjectDetailPage() {
                                       currency: e.target.value,
                                     })
                                   }
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                 >
                                   <option value="EUR">EUR</option>
                                   <option value="USD">USD</option>
@@ -19806,7 +19806,7 @@ export default function ProjectDetailPage() {
                                         (tempEventItem.amount || 0) * rate,
                                     });
                                   }}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text text-right"
                                 />
                               </td>
                               <td className="px-2 py-2 text-right">
@@ -19830,7 +19830,7 @@ export default function ProjectDetailPage() {
                                       amount: totalTL / rate,
                                     });
                                   }}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text text-right"
                                 />
                               </td>
                               <td className="px-2 py-2">
@@ -19974,7 +19974,7 @@ export default function ProjectDetailPage() {
                               return (
                                 <tr
                                   key={event.id || index}
-                                  className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                  className="border-t border-gray-200 dark:border-v3-border hover:bg-gray-50 dark:hover:bg-gray-700/50"
                                   onKeyDown={(e) => {
                                     if (!isEditing) return;
                                     if (e.key === "Escape") {
@@ -20094,7 +20094,7 @@ export default function ProjectDetailPage() {
                                             event_date: e.target.value,
                                           })
                                         }
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                       />
                                     ) : (
                                       <span>
@@ -20122,7 +20122,7 @@ export default function ProjectDetailPage() {
                                             setShowEventSupplierDropdown(true)
                                           }
                                           placeholder="Otel/Tedarikçi seç..."
-                                          className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                          className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                         />
                                         {showEventSupplierDropdown && (
                                           <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -20225,7 +20225,7 @@ export default function ProjectDetailPage() {
                                             sub_category_id: e.target.value,
                                           })
                                         }
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                       >
                                         <option value="">
                                           Alt kategori seç...
@@ -20253,7 +20253,7 @@ export default function ProjectDetailPage() {
                                             description: e.target.value,
                                           })
                                         }
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                       />
                                     ) : (
                                       <span>
@@ -20279,7 +20279,7 @@ export default function ProjectDetailPage() {
                                                 1.0),
                                           });
                                         }}
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text text-right"
                                       />
                                     ) : (
                                       <span>
@@ -20302,7 +20302,7 @@ export default function ProjectDetailPage() {
                                             currency: e.target.value,
                                           })
                                         }
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text"
                                       >
                                         <option value="EUR">EUR</option>
                                         <option value="USD">USD</option>
@@ -20334,7 +20334,7 @@ export default function ProjectDetailPage() {
                                               rate,
                                           });
                                         }}
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text text-right"
                                       />
                                     ) : (
                                       <span>
@@ -20370,7 +20370,7 @@ export default function ProjectDetailPage() {
                                             amount: totalTL / rate,
                                           });
                                         }}
-                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
+                                        className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text text-right"
                                       />
                                     ) : (
                                       <span className="font-semibold">
@@ -20577,7 +20577,7 @@ export default function ProjectDetailPage() {
                             <tr>
                               <td
                                 colSpan={10}
-                                className="px-2 py-8 text-center text-gray-500 dark:text-gray-400"
+                                className="px-2 py-8 text-center text-v3-muted"
                               >
                                 Henüz etkinlik eklenmemiş. "Yeni Ekle" butonunu
                                 kullanarak etkinlik ekleyebilirsiniz.
@@ -20595,7 +20595,7 @@ export default function ProjectDetailPage() {
                       <h3 className="text-sm font-semibold mb-2">Özet</h3>
                       <div className="grid grid-cols-4 gap-4 text-xs">
                         <div>
-                          <div className="text-gray-500 dark:text-gray-400">
+                          <div className="text-v3-muted">
                             Toplam Etkinlik
                           </div>
                           <div className="text-lg font-bold">
@@ -20603,7 +20603,7 @@ export default function ProjectDetailPage() {
                           </div>
                         </div>
                         <div>
-                          <div className="text-gray-500 dark:text-gray-400">
+                          <div className="text-v3-muted">
                             Toplam Tutar
                           </div>
                           <div className="text-lg font-bold">
@@ -20620,7 +20620,7 @@ export default function ProjectDetailPage() {
                           </div>
                         </div>
                         <div>
-                          <div className="text-gray-500 dark:text-gray-400">
+                          <div className="text-v3-muted">
                             Toplam TL
                           </div>
                           <div className="text-lg font-bold text-green-600">
@@ -20637,7 +20637,7 @@ export default function ProjectDetailPage() {
                           </div>
                         </div>
                         <div>
-                          <div className="text-gray-500 dark:text-gray-400">
+                          <div className="text-v3-muted">
                             Ortalama Tutar
                           </div>
                           <div className="text-lg font-bold">
@@ -20668,7 +20668,7 @@ export default function ProjectDetailPage() {
                         placeholder="İnsan Kaynakları ara..."
                         value={hrSearch}
                         onChange={(e) => setHrSearch(e.target.value)}
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -20788,7 +20788,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 />
                               </td>
                               <td className="px-2 py-2 relative">
@@ -20834,12 +20834,12 @@ export default function ProjectDetailPage() {
                                       handleHrKeyDown(e);
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="Otel/Tedarikçi ara..."
                                 />
                               </td>
                               <td className="px-2 py-2 hidden">
-                                <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                <div className="w-full px-1 py-0.5 text-xs text-v3-muted bg-gray-100 dark:bg-gray-600 rounded">
                                   İNSAN KAYNAKLARI
                                 </div>
                               </td>
@@ -20870,7 +20870,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 >
                                   <option value="">Alt Kategori Seçin</option>
                                   {hrSubCategories.length > 0 ? (
@@ -20917,7 +20917,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="Açıklama"
                                 />
                               </td>
@@ -20966,7 +20966,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="0,00"
                                 />
                               </td>
@@ -21008,7 +21008,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                 >
                                   <option value="TRY">TRY</option>
                                   <option value="EUR">EUR</option>
@@ -21061,7 +21061,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="1,00"
                                 />
                               </td>
@@ -21120,7 +21120,7 @@ export default function ProjectDetailPage() {
                                       handleHrCancel();
                                     }
                                   }}
-                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                  className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   placeholder="0,00"
                                 />
                               </td>
@@ -21147,7 +21147,7 @@ export default function ProjectDetailPage() {
                                   </button>
                                   <button
                                     onClick={handleHrCancel}
-                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                                    className="text-red-600 hover:text-red-900 dark:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-1"
                                     title="İptal"
                                   >
                                     <svg
@@ -21175,7 +21175,7 @@ export default function ProjectDetailPage() {
                             <tr>
                               <td
                                 colSpan={10}
-                                className="px-4 py-8 text-center text-gray-500 dark:text-gray-400"
+                                className="px-4 py-8 text-center text-v3-muted"
                               >
                                 Henüz kayıt bulunmuyor
                               </td>
@@ -21206,7 +21206,7 @@ export default function ProjectDetailPage() {
                                           handleHrCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     />
                                   ) : extra.date ? (
                                     formatDateForDisplay(extra.date)
@@ -21246,7 +21246,7 @@ export default function ProjectDetailPage() {
                                         setSelectedHrSupplierIndex(-1);
                                       }}
                                       onKeyDown={handleHrKeyDown}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="Otel/Tedarikçi ara..."
                                     />
                                   ) : (
@@ -21270,7 +21270,7 @@ export default function ProjectDetailPage() {
                                   )}
                                 </td>
                                 <td className="px-2 py-2 hidden">
-                                  <div className="w-full px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded">
+                                  <div className="w-full px-1 py-0.5 text-xs text-v3-muted bg-gray-100 dark:bg-gray-600 rounded">
                                     İNSAN KAYNAKLARI
                                   </div>
                                 </td>
@@ -21302,7 +21302,7 @@ export default function ProjectDetailPage() {
                                           handleHrCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     >
                                       <option value="">
                                         Alt Kategori Seçin
@@ -21357,7 +21357,7 @@ export default function ProjectDetailPage() {
                                           handleHrCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="Açıklama"
                                     />
                                   ) : (
@@ -21408,7 +21408,7 @@ export default function ProjectDetailPage() {
                                           handleHrCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="0,00"
                                     />
                                   ) : (
@@ -21455,7 +21455,7 @@ export default function ProjectDetailPage() {
                                           handleHrCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     >
                                       <option value="TRY">TRY</option>
                                       <option value="EUR">EUR</option>
@@ -21513,7 +21513,7 @@ export default function ProjectDetailPage() {
                                           handleHrCancel();
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="1,00"
                                     />
                                   ) : (
@@ -21563,7 +21563,7 @@ export default function ProjectDetailPage() {
                                           );
                                         }
                                       }}
-                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                      className="w-full px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                       placeholder="0,00"
                                     />
                                   ) : (
@@ -21596,7 +21596,7 @@ export default function ProjectDetailPage() {
                                       </button>
                                       <button
                                         onClick={handleHrCancel}
-                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                                        className="text-red-600 hover:text-red-900 dark:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-1"
                                         title="İptal"
                                       >
                                         <svg
@@ -21619,7 +21619,7 @@ export default function ProjectDetailPage() {
                                       <>{ permEdit(Module.PROJECTS) && (
 <button
                                         onClick={() => handleHrEdit(index)}
-                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-600 dark:text-blue-300 p-1"
                                         title="Düzenle"
                                       >
                                         <svg
@@ -21640,7 +21640,7 @@ export default function ProjectDetailPage() {
                                       <>{ permDelete(Module.PROJECTS) && (
 <button
                                         onClick={() => handleHrDelete(index)}
-                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1"
+                                        className="text-red-600 hover:text-red-900 dark:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-1"
                                         title="Sil"
                                       >
                                         <svg
@@ -21672,7 +21672,7 @@ export default function ProjectDetailPage() {
                   {/* Genel Toplam */}
                   {hrExtras.length > 0 && (
                     <div className="bg-blue-500 dark:bg-blue-700 rounded-md p-3">
-                      <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
+                      <div className="grid grid-cols-12 gap-2 text-v3-text text-sm responsive-filter-grid">
                         <div className="col-span-1 font-bold">GENEL TOPLAM</div>
                         <div className="col-span-1"></div>
                         <div className="col-span-1"></div>
@@ -21731,7 +21731,7 @@ export default function ProjectDetailPage() {
                             }
                           >
                             <div className="font-medium">{supplier.name}</div>
-                            <div className="text-gray-500 dark:text-gray-400 text-[10px]">
+                            <div className="text-v3-muted text-[10px]">
                               {supplier.type === "hotel"
                                 ? "Otel"
                                 : supplier.type === "supplier"
@@ -21795,7 +21795,7 @@ export default function ProjectDetailPage() {
                 <div className="space-y-4">
                   {/* Satış Genel Toplamları */}
                   <div className="bg-blue-500 dark:bg-blue-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
+                    <div className="grid grid-cols-12 gap-2 text-v3-text text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">
                         Satış Genel Toplamları
                       </div>
@@ -21817,7 +21817,7 @@ export default function ProjectDetailPage() {
                   {/* Ödeme Planı (Sözleşme) */}
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                     <div className="p-3 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-sm font-semibold text-v3-text">
                         Ödeme Planı
                       </h3>
                       <button
@@ -21920,7 +21920,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -21956,7 +21956,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -22003,7 +22003,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -22063,7 +22063,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -22111,7 +22111,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -22164,7 +22164,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -22222,7 +22222,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -22269,7 +22269,7 @@ export default function ProjectDetailPage() {
                                         setPlanAmountInput("");
                                         setPlanTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -22329,7 +22329,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -22371,7 +22371,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -22422,7 +22422,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -22488,7 +22488,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -22541,7 +22541,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -22602,7 +22602,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -22664,7 +22664,7 @@ export default function ProjectDetailPage() {
                                         setPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -22713,7 +22713,7 @@ export default function ProjectDetailPage() {
                                         setPlanAmountInput("");
                                         setPlanTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -22735,10 +22735,10 @@ export default function ProjectDetailPage() {
                               </tr>
                             ) : (
                               <tr key={p.id}>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                <td className="px-2 py-2 text-v3-text">
                                   {formatDateForDisplay(p.date)}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                <td className="px-2 py-2 text-v3-text">
                                   {p.collectionType === "banka"
                                     ? "Banka Havalesi"
                                     : p.collectionType === "pos"
@@ -22749,19 +22749,19 @@ export default function ProjectDetailPage() {
                                           ? "Nakit"
                                           : "-"}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                <td className="px-2 py-2 text-v3-text">
                                   {p.description}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                <td className="px-2 py-2 text-v3-text text-right">
                                   {formatNumberForDisplay(p.amount)}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                <td className="px-2 py-2 text-v3-text text-center">
                                   {p.currency}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                <td className="px-2 py-2 text-v3-text text-right">
                                   {formatTRY(p.exchangeRate || 1)}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                <td className="px-2 py-2 text-v3-text text-right">
                                   {formatTRY(p.totalTRY || p.amount)}
                                 </td>
                                 <td className="px-2 py-2">
@@ -22807,7 +22807,7 @@ export default function ProjectDetailPage() {
                                         setCollectionPlans(list);
                                         // localStorage kullanimi kaldirildi
                                       }}
-                                      className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                      className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                       title="Sil"
                                     >
                                       <svg
@@ -22838,7 +22838,7 @@ export default function ProjectDetailPage() {
                   {/* Tahsilatlar */}
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                     <div className="p-3 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-sm font-semibold text-v3-text">
                         Tahsilatlar
                       </h3>
                       <button
@@ -22941,7 +22941,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -22979,7 +22979,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -23028,7 +23028,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -23088,7 +23088,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -23139,7 +23139,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -23195,7 +23195,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -23253,7 +23253,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -23300,7 +23300,7 @@ export default function ProjectDetailPage() {
                                         setCollectionAmountInput("");
                                         setCollectionTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -23360,7 +23360,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -23402,7 +23402,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -23454,7 +23454,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -23520,7 +23520,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -23577,7 +23577,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -23640,7 +23640,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -23702,7 +23702,7 @@ export default function ProjectDetailPage() {
                                         setCollectionTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -23751,7 +23751,7 @@ export default function ProjectDetailPage() {
                                         setCollectionAmountInput("");
                                         setCollectionTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hoverbg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hoverbg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -23773,10 +23773,10 @@ export default function ProjectDetailPage() {
                               </tr>
                             ) : (
                               <tr key={c.id}>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                <td className="px-2 py-2 text-v3-text">
                                   {formatDateForDisplay(c.date)}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                <td className="px-2 py-2 text-v3-text">
                                   {c.collectionType === "banka"
                                     ? "Banka Havalesi"
                                     : c.collectionType === "pos"
@@ -23787,19 +23787,19 @@ export default function ProjectDetailPage() {
                                           ? "Nakit"
                                           : "-"}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                                <td className="px-2 py-2 text-v3-text">
                                   {c.description}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                <td className="px-2 py-2 text-v3-text text-right">
                                   {formatNumberForDisplay(c.amount)}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                                <td className="px-2 py-2 text-v3-text text-center">
                                   {c.currency}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                <td className="px-2 py-2 text-v3-text text-right">
                                   {formatTRY(c.exchangeRate || 1)}
                                 </td>
-                                <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                                <td className="px-2 py-2 text-v3-text text-right">
                                   {formatTRY(c.totalTRY || c.amount)}
                                 </td>
                                 <td className="px-2 py-2">
@@ -23848,7 +23848,7 @@ export default function ProjectDetailPage() {
                                           list,
                                         );
                                       }}
-                                      className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                      className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                       title="Sil"
                                     >
                                       <svg
@@ -23878,7 +23878,7 @@ export default function ProjectDetailPage() {
 
                   {/* Bakiye Özeti */}
                   <div className="bg-emerald-600 dark:bg-emerald-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
+                    <div className="grid grid-cols-12 gap-2 text-v3-text text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">
                         Bakiye Özeti (Döviz Bazında)
                       </div>
@@ -24015,7 +24015,7 @@ export default function ProjectDetailPage() {
                 <div className="space-y-4">
                   {/* Alış Genel Toplamları */}
                   <div className="bg-red-600 dark:bg-red-700 rounded-md p-3">
-                    <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
+                    <div className="grid grid-cols-12 gap-2 text-v3-text text-sm responsive-filter-grid">
                       <div className="col-span-3 font-bold">
                         Alış Genel Toplamları
                       </div>
@@ -24037,7 +24037,7 @@ export default function ProjectDetailPage() {
                   {/* Ödeme Planı (Alış) */}
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                     <div className="p-3 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-sm font-semibold text-v3-text">
                         Ödeme Planı
                       </h3>
                       <button
@@ -24140,7 +24140,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -24178,7 +24178,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -24227,7 +24227,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -24287,7 +24287,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -24338,7 +24338,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -24394,7 +24394,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -24452,7 +24452,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -24499,7 +24499,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanAmountInput("");
                                         setPaymentPlanTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -24559,7 +24559,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -24601,7 +24601,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -24653,7 +24653,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -24719,7 +24719,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -24777,7 +24777,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -24840,7 +24840,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -24902,7 +24902,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -24951,7 +24951,7 @@ export default function ProjectDetailPage() {
                                         setPaymentPlanAmountInput("");
                                         setPaymentPlanTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -25040,7 +25040,7 @@ export default function ProjectDetailPage() {
                                           list,
                                         );
                                       }}
-                                      className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                      className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                       title="Sil"
                                     >
                                       <svg
@@ -25071,7 +25071,7 @@ export default function ProjectDetailPage() {
                   {/* Ödemeler */}
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                     <div className="p-3 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-sm font-semibold text-v3-text">
                         Ödemeler
                       </h3>
                       <button
@@ -25174,7 +25174,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -25210,7 +25210,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -25257,7 +25257,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -25317,7 +25317,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -25366,7 +25366,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -25420,7 +25420,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -25478,7 +25478,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -25525,7 +25525,7 @@ export default function ProjectDetailPage() {
                                         setPaymentAmountInput("");
                                         setPaymentTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -25585,7 +25585,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   />
                                 </td>
                                 <td className="px-2 py-2">
@@ -25627,7 +25627,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="">Seçin</option>
                                     <option value="banka">
@@ -25679,7 +25679,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="Açıklama"
                                   />
                                 </td>
@@ -25745,7 +25745,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -25801,7 +25801,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -25863,7 +25863,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="1.00"
                                   />
                                 </td>
@@ -25925,7 +25925,7 @@ export default function ProjectDetailPage() {
                                         setPaymentTotalTRYInput("");
                                       }
                                     }}
-                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text"
                                     placeholder="0,00"
                                     inputMode="decimal"
                                   />
@@ -25974,7 +25974,7 @@ export default function ProjectDetailPage() {
                                         setPaymentAmountInput("");
                                         setPaymentTotalTRYInput("");
                                       }}
-                                      className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+                                      className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30"
                                       title="İptal"
                                     >
                                       <svg
@@ -26063,7 +26063,7 @@ export default function ProjectDetailPage() {
                                           list,
                                         );
                                       }}
-                                      className="p-1 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                      className="p-1 rounded text-red-600 dark:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                       title="Sil"
                                     >
                                       <svg
@@ -26093,7 +26093,7 @@ export default function ProjectDetailPage() {
 
                   {/* Bakiye Özeti (Döviz Bazında) */}
                   <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    <h3 className="text-sm font-semibold text-v3-text mb-3">
                       Bakiye Özeti (Döviz Bazında)
                     </h3>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
@@ -26185,7 +26185,7 @@ export default function ProjectDetailPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5">
-              <h3 className="text-lg font-black text-white uppercase tracking-tight">
+              <h3 className="text-lg font-black text-v3-text uppercase tracking-tight">
                 Transfer Zamanlaması
               </h3>
               <p className="text-blue-100 text-[11px] mt-1 font-medium">
@@ -26195,12 +26195,12 @@ export default function ProjectDetailPage() {
             </div>
 
             <div className="p-6">
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">
+              <p className="text-xs font-bold text-v3-muted uppercase tracking-widest mb-4">
                 Çıkış transferleri için dönüş uçak kalkış saatinden kaç saat
                 önce planlama yapmak istiyorsunuz?
               </p>
 
-              <div className="flex items-center justify-center gap-4 mb-6 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-center gap-4 mb-6 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-v3-border">
                 <div className="flex flex-col items-center gap-1">
                   <input
                     type="number"
@@ -26210,9 +26210,9 @@ export default function ProjectDetailPage() {
                     onChange={(e) =>
                       setDepartureHours(parseInt(e.target.value) || 0)
                     }
-                    className="w-20 h-12 text-xl font-bold border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-20 h-12 text-xl font-bold border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center bg-white dark:bg-gray-800 text-v3-text focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   />
-                  <span className="text-[10px] font-black text-gray-400 uppercase">
+                  <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">
                     Saat
                   </span>
                 </div>
@@ -26231,9 +26231,9 @@ export default function ProjectDetailPage() {
                     onChange={(e) =>
                       setDepartureMinutes(parseInt(e.target.value) || 0)
                     }
-                    className="w-20 h-12 text-xl font-bold border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-20 h-12 text-xl font-bold border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center bg-white dark:bg-gray-800 text-v3-text focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   />
-                  <span className="text-[10px] font-black text-gray-400 uppercase">
+                  <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">
                     Dakika
                   </span>
                 </div>
@@ -26242,7 +26242,7 @@ export default function ProjectDetailPage() {
               <div className="flex gap-3 mt-2">
                 <button
                   onClick={() => setShowTransferTimingModal(false)}
-                  className="flex-1 px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all"
+                  className="flex-1 px-4 py-3 text-xs font-bold text-v3-muted uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all"
                 >
                   İptal
                 </button>
@@ -26265,7 +26265,7 @@ export default function ProjectDetailPage() {
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h2 className="text-2xl font-black dark:text-white uppercase tracking-tight">
+                <h2 className="text-2xl font-black dark:text-v3-text uppercase tracking-tight">
                   Public Link Yönetimi
                 </h2>
                 <p className="text-sm text-gray-500 font-medium">
@@ -26278,7 +26278,7 @@ export default function ProjectDetailPage() {
                   setShowLinkModal(false);
                   setGeneratedLink("");
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors bg-gray-100 dark:bg-gray-700 rounded-xl"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted transition-colors bg-gray-100 dark:bg-gray-700 rounded-xl"
               >
                 <svg
                   className="w-6 h-6"
@@ -26299,7 +26299,7 @@ export default function ProjectDetailPage() {
             {/* Existing links */}
             {projectLinks.length > 0 && (
               <div className="mb-10 space-y-4">
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">
+                <h3 className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-[0.2em] px-1">
                   MEVCUT LİNKLER & MUTABAKAT GEÇMİŞİ
                 </h3>
                 <div className="space-y-4 pr-2">
@@ -26321,7 +26321,7 @@ export default function ProjectDetailPage() {
                             <div className="flex-1 min-w-[280px]">
                               <div className="flex flex-wrap items-center gap-2 mb-3">
                                 <span
-                                  className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${isApproved ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : link.is_active && !isExpired ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-400"}`}
+                                  className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${isApproved ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : link.is_active && !isExpired ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-600 dark:text-gray-400"}`}
                                 >
                                   {isApproved
                                     ? "ONAYLANDI"
@@ -26331,7 +26331,7 @@ export default function ProjectDetailPage() {
                                         ? "Süresi Dolmuş"
                                         : "Pasif"}
                                 </span>
-                                <span className="text-[10px] text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg">
+                                <span className="text-[10px] text-gray-600 dark:text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg">
                                   #{(link.id || "").substring(0, 8)}
                                 </span>
                                 <span className="text-[10px] text-gray-500 font-medium ml-2">
@@ -26348,11 +26348,11 @@ export default function ProjectDetailPage() {
                                 className="flex items-center gap-2 group/link cursor-pointer"
                                 onClick={() => handleCopyLinkFromList(link)}
                               >
-                                <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[400px] hover:text-blue-400 transition-colors">
+                                <p className="text-xs font-mono text-v3-muted truncate max-w-[400px] hover:text-blue-600 dark:text-blue-400 transition-colors">
                                   {fullLink}
                                 </p>
                                 <svg
-                                  className="w-3.5 h-3.5 text-blue-400 opacity-0 group-hover/link:opacity-100 transition-opacity"
+                                  className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 opacity-0 group-hover/link:opacity-100 transition-opacity"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -26383,7 +26383,7 @@ export default function ProjectDetailPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t border-dashed border-slate-200 dark:border-slate-700">
                             <div className="flex items-center gap-8">
                               <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                                   GÜVENLİK ŞİFRESİ
                                 </p>
                                 <div
@@ -26399,7 +26399,7 @@ export default function ProjectDetailPage() {
                                       ? link.password
                                       : "••••••••"}
                                   </span>
-                                  <button className="text-white hover:text-blue-400 transition-colors">
+                                  <button className="text-v3-text hover:text-blue-600 dark:text-blue-400 transition-colors">
                                     <svg
                                       className="w-3.5 h-3.5"
                                       fill="none"
@@ -26424,10 +26424,10 @@ export default function ProjectDetailPage() {
                               </div>
                               {link.expiry_date && (
                                 <div className="space-y-1 border-l border-slate-100 dark:border-slate-700 pl-8">
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest">
                                     SON GEÇERLİLİK
                                   </p>
-                                  <p className="text-xs font-bold dark:text-gray-400">
+                                  <p className="text-xs font-bold dark:text-gray-600 dark:text-gray-400">
                                     {new Date(
                                       link.expiry_date,
                                     ).toLocaleDateString("tr-TR")}
@@ -26499,7 +26499,7 @@ export default function ProjectDetailPage() {
                               </div>
                             ) : (
                               <div className="flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                <p className="text-[10px] text-v3-muted font-bold uppercase tracking-widest">
                                   HAKİKATEN BEKLENİYOR...
                                 </p>
                               </div>
@@ -26513,8 +26513,8 @@ export default function ProjectDetailPage() {
               </div>
             )}
 
-            <div className="space-y-4 border-t border-gray-100 dark:border-gray-700 pt-5">
-              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
+            <div className="space-y-4 border-t border-gray-100 dark:border-v3-border pt-5">
+              <h3 className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest px-1">
                 YENİ LİNK OLUŞTUR
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -26527,7 +26527,7 @@ export default function ProjectDetailPage() {
                     value={linkPassword}
                     onChange={(e) => setLinkPassword(e.target.value)}
                     placeholder="Otomatik oluşturulur..."
-                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-v3-text focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
                 <div>
@@ -26539,7 +26539,7 @@ export default function ProjectDetailPage() {
                     value={linkExpiryDate}
                     onChange={(e) => setLinkExpiryDate(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
-                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full h-10 px-3 text-xs bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg dark:text-v3-text focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
@@ -26552,7 +26552,7 @@ export default function ProjectDetailPage() {
                     onChange={(e) => setLinkIsActive(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="font-bold text-gray-700 dark:text-gray-300">
+                  <span className="font-bold text-v3-text">
                     Link Aktif Olsun
                   </span>
                 </label>
@@ -26571,7 +26571,7 @@ export default function ProjectDetailPage() {
                     OLUŞTURULAN LİNK
                   </p>
                   <div className="flex items-center gap-2">
-                    <p className="flex-1 text-xs break-all dark:text-gray-300 font-mono bg-white/50 dark:bg-black/20 p-2 rounded border border-green-200 dark:border-green-800">
+                    <p className="flex-1 text-xs break-all dark:text-gray-300 font-mono bg-v3-border0 dark:bg-black/20 p-2 rounded border border-green-200 dark:border-green-800">
                       {generatedLink}
                     </p>
                     <button
@@ -26607,7 +26607,7 @@ export default function ProjectDetailPage() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
-                <h2 className="text-xl font-black text-white uppercase tracking-tight">
+                <h2 className="text-xl font-black text-v3-text uppercase tracking-tight">
                   {editingHotelTab ? "Oteli Düzenle" : "Yeni Otel Ekle"}
                 </h2>
                 <p className="text-blue-100 text-xs mt-1 font-medium">
@@ -26620,11 +26620,11 @@ export default function ProjectDetailPage() {
               <div className="p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                    <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                       Otel Seçimi
                     </label>
                     <select
-                      className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                      className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                       defaultValue={editingHotelTab?.hotel_id || ""}
                       onChange={(e) => {
                         const hId = e.target.value;
@@ -26646,7 +26646,7 @@ export default function ProjectDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                    <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                       Konsept
                     </label>
                     <input
@@ -26660,12 +26660,12 @@ export default function ProjectDetailPage() {
                       ref={(el) => {
                         (window as any).__tempConceptInput = el;
                       }}
-                      className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                      className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                    <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                       Opsiyon
                     </label>
                     <input
@@ -26675,13 +26675,13 @@ export default function ProjectDetailPage() {
                       ref={(el) => {
                         (window as any).__tempOptionInput = el;
                       }}
-                      className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                      className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                      <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                         C/IN
                       </label>
                       <input
@@ -26691,11 +26691,11 @@ export default function ProjectDetailPage() {
                         ref={(el) => {
                           (window as any).__tempCheckInInput = el;
                         }}
-                        className="w-full h-12 px-2 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                        className="w-full h-12 px-2 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                      <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                         C/OUT
                       </label>
                       <input
@@ -26705,14 +26705,14 @@ export default function ProjectDetailPage() {
                         ref={(el) => {
                           (window as any).__tempCheckOutInput = el;
                         }}
-                        className="w-full h-12 px-2 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                        className="w-full h-12 px-2 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                      <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                         Oda
                       </label>
                       <input
@@ -26722,11 +26722,11 @@ export default function ProjectDetailPage() {
                         ref={(el) => {
                           (window as any).__tempRoomsInput = el;
                         }}
-                        className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                        className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                      <label className="block text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2">
                         Pax
                       </label>
                       <input
@@ -26736,20 +26736,20 @@ export default function ProjectDetailPage() {
                         ref={(el) => {
                           (window as any).__tempPaxInput = el;
                         }}
-                        className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-white text-sm font-bold transition-all outline-none"
+                        className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 rounded-2xl dark:text-v3-text text-sm font-bold transition-all outline-none"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-4">
+              <div className="p-8 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-v3-border flex justify-end space-x-4">
                 <button
                   onClick={() => {
                     setIsAddHotelModalOpen(false);
                     setEditingHotelTab(null);
                   }}
-                  className="px-6 py-3 text-sm font-black text-gray-500 uppercase tracking-widest hover:text-gray-700 dark:hover:text-white transition-colors"
+                  className="px-6 py-3 text-sm font-black text-gray-500 uppercase tracking-widest hover:text-gray-700 dark:hover:text-v3-text transition-colors"
                 >
                   Vazgeç
                 </button>
@@ -26806,7 +26806,7 @@ export default function ProjectDetailPage() {
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-h-[70vh] flex flex-col">
           <div className="mb-4 flex flex-col md:flex-row gap-4 items-start md:items-center">
             <div className="flex-1 w-full relative">
-              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
+              <div className="min-h-[42px] px-3 py-1.5 flex flex-wrap gap-2 border border-gray-300 dark:border-v3-border rounded-lg bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-blue-500">
                 {logSearchTerms.map((term, idx) => (
                   <div
                     key={idx}
@@ -26852,7 +26852,7 @@ export default function ProjectDetailPage() {
                       setLogSearchTerms((prev) => prev.slice(0, -1));
                     }
                   }}
-                  className="flex-1 min-w-[150px] bg-transparent text-sm text-gray-900 dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                  className="flex-1 min-w-[150px] bg-transparent text-sm text-v3-text outline-none placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
@@ -26955,9 +26955,9 @@ export default function ProjectDetailPage() {
                   .map((log) => (
                     <div
                       key={log.id}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-xs"
+                      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-v3-border text-xs"
                     >
-                      <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <div className="flex justify-between items-start mb-2 border-b border-gray-100 dark:border-v3-border pb-2">
                         <div className="flex items-center gap-2">
                           <span
                             className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
@@ -26979,7 +26979,7 @@ export default function ProjectDetailPage() {
                               log.user_id ||
                               "Sistem / Anonim"}
                           </span>
-                          <span className="text-gray-400 text-[10px]">
+                          <span className="text-gray-600 dark:text-gray-400 text-[10px]">
                             ({log.module})
                           </span>
                         </div>
@@ -26992,7 +26992,7 @@ export default function ProjectDetailPage() {
                       {(() => {
                         const contextStr = getItemContext(log, uuidNameMap);
                         return contextStr ? (
-                          <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-gray-600 dark:text-gray-400 font-medium">
+                          <div className="mb-2 bg-gray-50 dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-800 text-[11px] text-v3-muted font-medium">
                             <span className="text-blue-600 dark:text-blue-400 font-semibold">
                               Kayıt Detayı:
                             </span>{" "}
@@ -27017,20 +27017,20 @@ export default function ProjectDetailPage() {
                           }
 
                           return (
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                            <div className="border border-gray-200 dark:border-v3-border rounded-md overflow-hidden">
                               <table className="w-full text-left border-collapse">
                                 <thead>
                                   <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] uppercase tracking-wider">
-                                    <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3">
+                                    <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-v3-border w-1/3">
                                       Alan
                                     </th>
                                     {log.action !== "INSERT" && (
-                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-red-600 dark:text-red-400">
+                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-v3-border w-1/3 text-red-600 dark:text-red-600 dark:text-red-400">
                                         Eski Değer
                                       </th>
                                     )}
                                     {log.action !== "DELETE" && (
-                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-gray-700 w-1/3 text-green-600 dark:text-green-400">
+                                      <th className="px-3 py-2 font-medium border-b border-gray-200 dark:border-v3-border w-1/3 text-green-600 dark:text-green-400">
                                         Yeni Değer
                                       </th>
                                     )}
@@ -27042,11 +27042,11 @@ export default function ProjectDetailPage() {
                                       key={idx}
                                       className="bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                                     >
-                                      <td className="px-3 py-2 font-medium text-gray-700 dark:text-gray-300">
+                                      <td className="px-3 py-2 font-medium text-v3-text">
                                         {translateField(change.field)}
                                       </td>
                                       {log.action !== "INSERT" && (
-                                        <td className="px-3 py-2 text-gray-500 dark:text-gray-400 line-through decoration-red-300 dark:decoration-red-800">
+                                        <td className="px-3 py-2 text-v3-muted line-through decoration-red-300 dark:decoration-red-800">
                                           {formatLogValue(
                                             change.oldVal,
                                             uuidNameMap,
@@ -27100,7 +27100,7 @@ export default function ProjectDetailPage() {
         activeHotelMenuPos &&
         createPortal(
           <div
-            className="fixed z-[99999] flex flex-row items-center bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 p-1 space-x-1 animate-in fade-in zoom-in-95 duration-150 hotel-action-menu"
+            className="fixed z-[99999] flex flex-row items-center bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-v3-border p-1 space-x-1 animate-in fade-in zoom-in-95 duration-150 hotel-action-menu"
             style={{
               top: activeHotelMenuPos.top + 8,
               left: activeHotelMenuPos.left - 100,
@@ -27146,7 +27146,7 @@ export default function ProjectDetailPage() {
                       setActiveHotelMenuId(null);
                     }}
                     title="Kopyala"
-                    className="p-1.5 bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white rounded-lg transition-all"
+                    className="p-1.5 bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:bg-indigo-900/40 dark:text-indigo-600 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white rounded-lg transition-all"
                   >
                     <svg
                       className="w-4 h-4"
@@ -27171,7 +27171,7 @@ export default function ProjectDetailPage() {
                       setActiveHotelMenuId(null);
                     }}
                     title="Sil"
-                    className="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white rounded-lg transition-all"
+                    className="p-1.5 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-600 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white rounded-lg transition-all"
                   >
                     <svg
                       className="w-4 h-4"

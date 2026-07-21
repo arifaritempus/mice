@@ -54,7 +54,7 @@ export const FullscreenButton: React.FC = () => {
   return (
     <button
       onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-      className="flex items-center space-x-2 px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+      className="flex items-center space-x-2 px-4 py-2 bg-gray-600 dark:bg-gray-700 text-v3-text rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
       title={isFullscreen ? 'Tam ekrandan çık (ESC)' : 'Tam ekran yap'}
     >
       {isFullscreen ? (

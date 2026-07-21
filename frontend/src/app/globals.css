@@ -17,28 +17,60 @@
   --color-primary-900: 30 58 138;
   --color-primary-950: 23 37 84;
 
-  --theme-bg-primary: #f8fafc;
+  /* V3 Light Theme (Apple/Linear Style) - High Contrast & Readability */
+  --v3-bg: #f5f5f7; /* Apple light gray background */
+  --v3-surface: rgba(255, 255, 255, 0.95); /* High opacity white for solid contrast while keeping slight glass blur */
+  --v3-border: rgba(0, 0, 0, 0.08); /* Crisp, subtle dark border */
+  --v3-text: #1d1d1f; /* Apple deep black text */
+  --v3-muted: #86868b; /* Apple muted gray text */
+  --v3-glass-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.06);
+
+  --theme-bg-primary: var(--v3-bg);
   --theme-bg-secondary: #eef2ff;
-  --theme-card-bg: rgba(255, 255, 255, 0.7);
-  --theme-text-color: #0f172a;
+  --theme-card-bg: var(--v3-surface);
+  --theme-text-color: var(--v3-text);
   --theme-sidebar-bg: rgba(255, 255, 255, 0.6);
   --theme-sidebar-header-bg: transparent;
-  --theme-sidebar-border: rgba(15, 23, 42, 0.08);
+  --theme-sidebar-border: var(--v3-border);
 }
 
 .dark {
   /* V3 Dark Mode: Deep slate background, semi-transparent surfaces */
-  --theme-bg-primary: #020617; /* Slate 950 */
-  --theme-bg-secondary: #020617; /* Slate 950 */
-  --theme-card-bg: rgba(15, 23, 42, 0.65); /* Slate 900 with opacity */
-  --theme-text-color: #f8fafc; /* Slate 50 */
+  --v3-bg: #020617; /* Slate 950 */
+  --v3-surface: rgba(15, 23, 42, 0.65); /* Slate 900 with opacity */
+  --v3-border: rgba(51, 65, 85, 0.4); /* Slate 700 with opacity */
+  --v3-text: #f8fafc; /* Slate 50 */
+  --v3-muted: #94a3b8; /* Slate 400 */
+  --v3-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+  --theme-bg-primary: var(--v3-bg);
+  --theme-bg-secondary: var(--v3-bg);
+  --theme-card-bg: var(--v3-surface);
+  --theme-text-color: var(--v3-text);
   --theme-sidebar-bg: rgba(15, 23, 42, 0.4); /* Glass sidebar */
   --theme-sidebar-header-bg: transparent;
-  --theme-sidebar-border: rgba(51, 65, 85, 0.4); /* Subtle border */
+  --theme-sidebar-border: var(--v3-border);
 }
 
 /* Base Body Style for V3 */
 body {
+  background-color: var(--theme-bg-primary);
+  background-image:
+    radial-gradient(
+      circle at top left,
+      rgba(59, 130, 246, 0.08),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(139, 92, 246, 0.05),
+      transparent 50%
+    );
+  background-attachment: fixed;
+  color: var(--theme-text-color);
+}
+
+.dark body {
   background-color: var(--theme-bg-primary);
   background-image:
     radial-gradient(
@@ -51,8 +83,6 @@ body {
       rgba(88, 28, 135, 0.1),
       transparent 40%
     );
-  background-attachment: fixed;
-  color: var(--theme-text-color);
 }
 
 /* Glassmorphism Utilities */
@@ -61,9 +91,7 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--theme-sidebar-border);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--v3-glass-shadow);
 }
 
 .glass-card {
@@ -71,9 +99,9 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--theme-sidebar-border);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid rgba(255, 255, 255, 0.02);
+  box-shadow: var(--v3-glass-shadow);
   border-radius: 1rem;
 }
 

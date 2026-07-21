@@ -77,7 +77,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
     {
       id: "main",
       title: "Ana Menü",
-      icon: <LayoutDashboard className="w-5 h-5 text-blue-400" />,
+      icon: <LayoutDashboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
       color: "blue",
       items: [
         { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={16} /> },
@@ -92,7 +92,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
     {
       id: "mice",
       title: "MICE",
-      icon: <Briefcase className="w-5 h-5 text-emerald-400" />,
+      icon: <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
       color: "emerald",
       items: [
         { label: "Projeler", href: "/projects", icon: <Briefcase size={16} /> },
@@ -102,7 +102,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
     {
       id: "sejour",
       title: "Sejour",
-      icon: <Hotel className="w-5 h-5 text-amber-400" />,
+      icon: <Hotel className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
       color: "amber",
       items: [
         {
@@ -120,7 +120,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
     {
       id: "operations",
       title: "Operasyon",
-      icon: <Bus className="w-5 h-5 text-violet-400" />,
+      icon: <Bus className="w-5 h-5 text-violet-600 dark:text-violet-400" />,
       color: "violet",
       items: [
         {
@@ -163,7 +163,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
     {
       id: "finance",
       title: "Finans",
-      icon: <Wallet className="w-5 h-5 text-rose-400" />,
+      icon: <Wallet className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
       color: "rose",
       items: [
         {
@@ -201,7 +201,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
     {
       id: "system",
       title: "Tanımlamalar",
-      icon: <Settings className="w-5 h-5 text-slate-400" />,
+      icon: <Settings className="w-5 h-5 text-v3-muted" />,
       color: "slate",
       items: [
         { label: "Oteller", href: "/hotels", icon: <Hotel size={16} /> },
@@ -267,18 +267,18 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-12 backdrop-blur-2xl bg-[#0a0f1c]/80"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-12 backdrop-blur-md bg-black/20 dark:bg-[#0a0f1c]/80"
         >
           <motion.div
             initial={{ scale: 0.95, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.95, y: 20, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="w-full max-w-6xl h-[85vh] overflow-hidden flex flex-col bg-[#0f172a]/90 rounded-3xl border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+            className="w-full max-w-6xl h-[85vh] overflow-hidden flex flex-col bg-v3-surface rounded-3xl border border-v3-border shadow-[0_0_100px_rgba(0,0,0,0.5)]"
           >
             {/* Header / Search */}
-            <div className="p-6 border-b border-white/10 flex items-center gap-4 relative shrink-0">
-              <Search className="w-6 h-6 text-slate-400" />
+            <div className="p-6 border-b border-v3-border flex items-center gap-4 relative shrink-0">
+              <Search className="w-6 h-6 text-v3-muted" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -286,17 +286,17 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Modül veya sayfa ara... (Örn: Rehberler)"
-                className="flex-1 bg-transparent text-xl md:text-2xl text-white placeholder:text-slate-500 outline-none"
+                className="flex-1 bg-transparent text-xl md:text-2xl text-v3-text placeholder:text-v3-muted outline-none"
               />
               <div className="hidden sm:flex items-center gap-2 mr-4">
-                <span className="px-2 py-1 bg-white/10 rounded-md text-xs font-mono text-slate-400">
+                <span className="px-2 py-1 bg-white/10 rounded-md text-xs font-mono text-v3-muted">
                   ESC
                 </span>
-                <span className="text-xs text-slate-500">çıkış</span>
+                <span className="text-xs text-v3-muted">çıkış</span>
               </div>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors shrink-0"
+                className="w-10 h-10 rounded-full bg-v3-border hover:bg-rose-500/20 text-v3-muted hover:text-rose-600 dark:text-rose-400 flex items-center justify-center transition-colors shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -305,7 +305,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
             {/* Menu Grid */}
             <div className="p-6 overflow-y-auto flex-1">
               {filteredGroups.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                <div className="flex flex-col items-center justify-center h-full text-v3-muted">
                   <Search className="w-12 h-12 mb-4 opacity-20" />
                   <p className="text-lg">Sonuç bulunamadı.</p>
                 </div>
@@ -317,13 +317,13 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="bg-white/5 rounded-2xl border border-white/5 p-5 hover:bg-white/[0.07] hover:border-white/10 transition-colors group"
+                      className="bg-v3-border rounded-2xl border border-v3-border p-5 hover:bg-white/[0.07] hover:border-v3-border transition-colors group"
                     >
-                      <div className="flex items-center gap-3 mb-5 pb-3 border-b border-white/5">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                      <div className="flex items-center gap-3 mb-5 pb-3 border-b border-v3-border">
+                        <div className="w-10 h-10 rounded-xl bg-v3-border flex items-center justify-center">
                           {group.icon}
                         </div>
-                        <h3 className="text-lg font-bold text-white tracking-wide">
+                        <h3 className="text-lg font-bold text-v3-text tracking-wide">
                           {group.title}
                         </h3>
                       </div>
@@ -334,7 +334,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
                             key={item.href}
                             href={item.href}
                             onClick={onClose}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white hover:text-white hover:bg-white/10 transition-all group/link"
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-v3-text hover:text-v3-text hover:bg-v3-surface transition-all group/link"
                           >
                             <span className="opacity-70 group-hover/link:opacity-100 group-hover/link:scale-110 transition-transform">
                               {item.icon}

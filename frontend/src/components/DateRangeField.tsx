@@ -169,7 +169,7 @@ export default function DateRangeField({
         <button
           onClick={handleApply}
           disabled={!pickerRange[0]}
-          className="flex-1 sm:flex-none px-6 py-3 text-sm font-bold text-white bg-blue-500 rounded-xl hover:bg-blue-500/90 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shadow-blue-500/20"
+          className="flex-1 sm:flex-none px-6 py-3 text-sm font-bold text-v3-text bg-blue-500 rounded-xl hover:bg-blue-500/90 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shadow-blue-500/20"
         >
           Uygula
         </button>
@@ -190,7 +190,7 @@ export default function DateRangeField({
       <button
         type="button"
         onClick={openCalendar}
-        className="flex items-center justify-between w-full min-w-0 h-10 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors shadow-sm"
+        className="flex items-center justify-between w-full min-w-0 h-10 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-v3-text hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors shadow-sm"
       >
         <div className="flex items-center gap-2 truncate">
           <Calendar
@@ -222,7 +222,7 @@ export default function DateRangeField({
                 ref={calendarRef}
               >
                 <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-                  <h3 className="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-black tracking-tight text-gray-900 dark:text-v3-text">
                     {label}
                   </h3>
                   <button

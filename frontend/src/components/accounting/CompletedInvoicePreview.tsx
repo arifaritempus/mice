@@ -244,7 +244,7 @@ export default function CompletedInvoicePreview({
   });
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#0f172a]/80 backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
+    <div className="fixed inset-0 z-[60] bg-v3-surface backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
       <div
         className="mx-auto light !bg-white !text-slate-900 flex flex-col relative w-[210mm] min-h-[297mm] shadow-[0_0_50px_rgba(0,0,0,0.3)] rounded-sm"
         style={{ colorScheme: "light" }}
@@ -273,7 +273,7 @@ export default function CompletedInvoicePreview({
           </button>
           <button
             onClick={onClose}
-            className="p-3 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-900 transition-all font-bold"
+            className="p-3 bg-gray-800 text-v3-text rounded-full shadow-lg hover:bg-gray-900 transition-all font-bold"
             title="Kapat"
           >
             ESC
@@ -400,7 +400,7 @@ export default function CompletedInvoicePreview({
               </div>
               <div className="flex gap-10 text-[10px]">
                 <div className="flex flex-col items-end gap-1">
-                  <span className="uppercase font-bold text-slate-500">
+                  <span className="uppercase font-bold text-v3-muted">
                     FATURA NO
                   </span>
                   <span className="text-sm font-black tracking-wider text-slate-900">
@@ -408,7 +408,7 @@ export default function CompletedInvoicePreview({
                   </span>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="uppercase font-bold text-slate-500">
+                  <span className="uppercase font-bold text-v3-muted">
                     TARİH
                   </span>
                   <span className="text-sm font-black text-slate-900">
@@ -423,7 +423,7 @@ export default function CompletedInvoicePreview({
               className="p-4 rounded-md border border-slate-200 mb-8 text-[11px]"
               style={{ backgroundColor: "#f8fafc", color: "#0f172a" }}
             >
-              <div className="font-bold text-slate-500 uppercase tracking-wider mb-2 text-[10px]">
+              <div className="font-bold text-v3-muted uppercase tracking-wider mb-2 text-[10px]">
                 {recipientLabel}
               </div>
               <div className="flex justify-between items-start">
@@ -509,7 +509,7 @@ export default function CompletedInvoicePreview({
             <div className="mt-6 flex justify-between items-end border-t-[2px] border-slate-900 pt-4 text-slate-900">
               {/* VAT Breakdown */}
               <div className="w-[50%] text-[9.5px]">
-                <div className="font-bold text-slate-500 uppercase tracking-wider mb-2">
+                <div className="font-bold text-v3-muted uppercase tracking-wider mb-2">
                   KDV DETAYI
                 </div>
                 {Object.entries(vatBreakdown).map(
@@ -521,7 +521,7 @@ export default function CompletedInvoicePreview({
                       <span className="w-24 text-right tracking-wider">
                         {formatCurrency(vals.matrah)}
                       </span>
-                      <span className="mx-2 text-slate-400">+</span>
+                      <span className="mx-2 text-v3-muted">+</span>
                       <span className="w-24 text-right tracking-wider">
                         {formatCurrency(vals.kdv)}
                       </span>
@@ -562,7 +562,7 @@ export default function CompletedInvoicePreview({
             </div>
 
             {/* Footer Placeholder for Proforma Note */}
-            <div className="mt-8 text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest border-t border-slate-200 pt-4 pb-2">
+            <div className="mt-8 text-center text-[9px] font-bold text-v3-muted uppercase tracking-widest border-t border-slate-200 pt-4 pb-2">
               BU BİR BİLGİLENDİRME (PROFORMA) FATURASIDIR. MALİ DEĞERİ YOKTUR.
             </div>
           </div>

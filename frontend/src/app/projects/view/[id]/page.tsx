@@ -1078,7 +1078,7 @@ export default function ProjectViewPublicPage() {
       appSettings?.darkIconLogo ||
       "";
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-v3-surface flex items-center justify-center p-4 relative overflow-hidden">
         {/* Dekoratif arka plan */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
@@ -1099,13 +1099,13 @@ export default function ProjectViewPublicPage() {
 
           <form
             onSubmit={handlePasswordSubmit}
-            className="bg-white/5 backdrop-blur-2xl border border-white/10 p-10 rounded-3xl shadow-2xl w-full"
+            className="bg-v3-border backdrop-blur-2xl border border-v3-border p-10 rounded-3xl shadow-2xl w-full"
           >
             <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
+              <h2 className="text-2xl font-bold text-v3-text mb-2 tracking-tight">
                 Güvenli Erişim
               </h2>
-              <p className="text-slate-400 text-sm">
+              <p className="text-v3-muted text-sm">
                 Devam etmek için proje şifresini giriniz
               </p>
             </div>
@@ -1117,7 +1117,7 @@ export default function ProjectViewPublicPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifre"
-                  className="w-full h-14 px-6 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  className="w-full h-14 px-6 bg-v3-border border border-v3-border rounded-2xl text-v3-text placeholder:text-v3-muted focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
                   required
                   autoFocus
                 />
@@ -1138,7 +1138,7 @@ export default function ProjectViewPublicPage() {
               </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/5 text-center"></div>
+            <div className="mt-8 pt-6 border-t border-v3-border text-center"></div>
           </form>
         </div>
       </div>
@@ -1175,7 +1175,7 @@ export default function ProjectViewPublicPage() {
                 className="h-10 w-auto"
               />
             )}
-            <span className="text-white text-lg font-bold tracking-tight">
+            <span className="text-v3-text text-lg font-bold tracking-tight">
               {appSettings?.companyName ||
                 process.env.NEXT_PUBLIC_AGENCY_NAME ||
                 "COOP EVENT"}
@@ -1202,7 +1202,7 @@ export default function ProjectViewPublicPage() {
               </svg>
               {exporting ? "İşleniyor..." : "EXCEL İNDİR"}
             </button>
-            <div className="text-white text-right border-l border-white/10 pl-4">
+            <div className="text-v3-text text-right border-l border-v3-border pl-4">
               <p className="text-[10px] text-gray-100 font-bold uppercase tracking-wider">
                 PROJE REFERANS
               </p>
@@ -1239,7 +1239,7 @@ export default function ProjectViewPublicPage() {
                 PROJE DURUMU
               </label>
               <span
-                className={`px-2 py-1 text-[10px] font-bold rounded-full ${project.status === "approved" || project.status === "completed" ? "bg-green-500/10 text-green-500" : "bg-blue-500/10 text-blue-400"}`}
+                className={`px-2 py-1 text-[10px] font-bold rounded-full ${project.status === "approved" || project.status === "completed" ? "bg-green-500/10 text-green-500" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"}`}
               >
                 {getStatusText(project.status).toUpperCase()}
               </span>
@@ -1248,7 +1248,7 @@ export default function ProjectViewPublicPage() {
               <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-IN TARİHİ
               </label>
-              <p className="text-sm font-bold text-slate-900">
+              <p className="text-sm font-bold text-v3-text">
                 {project.start_date
                   ? new Date(project.start_date).toLocaleDateString("tr-TR")
                   : "-"}
@@ -1258,7 +1258,7 @@ export default function ProjectViewPublicPage() {
               <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-OUT TARİHİ
               </label>
-              <p className="text-sm font-bold text-slate-900">
+              <p className="text-sm font-bold text-v3-text">
                 {project.end_date
                   ? new Date(project.end_date).toLocaleDateString("tr-TR")
                   : "-"}
@@ -1367,7 +1367,7 @@ export default function ProjectViewPublicPage() {
                       <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1 tracking-tighter">
                         GİRİŞ / ÇIKIŞ
                       </span>
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-v3-text">
                         {h.check_in_date
                           ? new Date(h.check_in_date).toLocaleDateString(
                               "tr-TR",
@@ -1385,7 +1385,7 @@ export default function ProjectViewPublicPage() {
                       <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1 tracking-tighter">
                         ODA / PAX
                       </span>
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-v3-text">
                         {h.room_count || 0} Oda / {h.pax_count || 0} Pax
                       </span>
                     </div>
@@ -1393,7 +1393,7 @@ export default function ProjectViewPublicPage() {
                       <span className="block text-[10px] text-gray-600 font-bold uppercase mb-1 tracking-tighter">
                         OPSİYON
                       </span>
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-v3-text">
                         {h.option || "SOR - SAT"}{" "}
                         {h.option_date
                           ? `(${new Date(h.option_date).toLocaleDateString("tr-TR")})`
@@ -1487,10 +1487,10 @@ export default function ProjectViewPublicPage() {
                       return (
                         <tbody
                           key={catId}
-                          className="border-b border-gray-100 "
+                          className="border-b border-v3-border "
                         >
                           {/* Category Header Row */}
-                          <tr className="bg-gray-50/80 ">
+                          <tr className="bg-black/5 dark:bg-white/5/80 ">
                             <td colSpan={6} className="py-3 px-4">
                               <span className="text-[10px] font-black text-[#232f38] uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
                                 {getCategoryName(catId) || "DİĞER HİZMETLER"}
@@ -1522,7 +1522,7 @@ export default function ProjectViewPublicPage() {
                                 className="hover:bg-blue-500/10/20  transition-colors"
                               >
                                 <td className="py-4 px-4">
-                                  <p className="text-xs font-bold text-slate-800">
+                                  <p className="text-xs font-bold text-v3-text">
                                     {scrubText(
                                       getCategoryName(
                                         item.sub_category || "",
@@ -1549,16 +1549,16 @@ export default function ProjectViewPublicPage() {
                                       ? "€"
                                       : item.currency}
                                 </td>
-                                <td className="py-4 px-4 text-sm font-black text-right text-slate-900 whitespace-nowrap">
+                                <td className="py-4 px-4 text-sm font-black text-right text-v3-text whitespace-nowrap">
                                   {formatEUR(item.total)}
                                 </td>
                               </tr>
                             ))}
 
                           {/* Category Subtotal Row */}
-                          <tr className="bg-slate-50/50">
+                          <tr className="bg-black/5 dark:bg-white/5">
                             <td colSpan={3} className="py-3 text-right">
-                              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic pr-4">
+                              <span className="text-[9px] font-black text-v3-muted uppercase tracking-widest italic pr-4">
                                 ARA TOPLAM ({getCategoryName(catId)})
                               </span>
                             </td>
@@ -1575,12 +1575,12 @@ export default function ProjectViewPublicPage() {
             </div>
 
             {/* Footer Totals & Notes */}
-            <div className="mt-10 flex flex-wrap justify-between items-end gap-6 bg-[#232f38] p-8 rounded-2xl shadow-xl">
+            <div className="mt-10 flex flex-wrap justify-between items-end gap-6 bg-black/5 dark:bg-v3-surface/5 p-8 rounded-2xl shadow-xl">
               <div className="flex-1 min-w-[300px]">
-                <h4 className="text-[10px] text-white/80 font-bold uppercase tracking-wider mb-2">
+                <h4 className="text-[10px] text-v3-text/80 font-bold uppercase tracking-wider mb-2">
                   NOTLAR & ŞARTLAR
                 </h4>
-                <ul className="text-[11px] text-gray-300 space-y-1.5 leading-relaxed">
+                <ul className="text-[11px] text-v3-muted space-y-1.5 leading-relaxed">
                   <li>• FİYATLAR, NET & KOMİSYONSUZDUR.</li>
                   <li>
                     • ALINMASI HENÜZ KESİNLEŞMEYEN SERVİSLER İÇİN BİRİM/ ADET
@@ -1594,11 +1594,11 @@ export default function ProjectViewPublicPage() {
                 </ul>
               </div>
               <div className="text-right">
-                <h3 className="text-[10px] text-white/80 font-bold mb-1 uppercase tracking-widest">
+                <h3 className="text-[10px] text-v3-text/80 font-bold mb-1 uppercase tracking-widest">
                   TOPLAM GENEL TUTAR
                 </h3>
                 <div className="space-y-1">
-                  <p className="text-3xl font-black text-white">
+                  <p className="text-3xl font-black text-v3-text">
                     {formatEUR(filteredItems.reduce((s, i) => s + i.total, 0))}
                   </p>
                 </div>
@@ -1606,7 +1606,7 @@ export default function ProjectViewPublicPage() {
             </div>
 
             {/* Mutabakat Onayı */}
-            <div className="mt-12 border-t border-gray-100  pt-10">
+            <div className="mt-12 border-t border-v3-border  pt-10">
               {isApproved ? (
                 <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-8 flex flex-wrap items-center gap-6">
                   <div className="bg-green-500 text-white p-4 rounded-full shadow-lg shadow-green-500/20">
@@ -1669,9 +1669,9 @@ export default function ProjectViewPublicPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white  rounded-2xl shadow-xl overflow-hidden border border-gray-100  group">
+                <div className="bg-v3-surface  rounded-2xl shadow-xl overflow-hidden border border-v3-border  group">
                   <div className="bg-blue-500 p-8 flex flex-wrap justify-between items-center gap-6 group-hover:bg-blue-500/90 transition-colors">
-                    <div className="max-w-xl text-white">
+                    <div className="max-w-xl text-v3-text">
                       <h3 className="text-2xl font-black mb-2 uppercase tracking-tight">
                         Mutabakat Onayı
                       </h3>
@@ -1684,7 +1684,7 @@ export default function ProjectViewPublicPage() {
                     {!showApprovalForm && (
                       <button
                         onClick={() => setShowApprovalForm(true)}
-                        className="bg-white text-blue-600 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-900/20"
+                        className="bg-v3-surface text-blue-600 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-900/20"
                       >
                         MUTABAKATI ONAYLA
                       </button>
@@ -1692,7 +1692,7 @@ export default function ProjectViewPublicPage() {
                   </div>
 
                   {showApprovalForm && (
-                    <div className="p-8 bg-gray-50 ">
+                    <div className="p-8 bg-black/5 dark:bg-white/5 ">
                       <form
                         onSubmit={handleApprovalSubmit}
                         className="space-y-6"
@@ -1711,7 +1711,7 @@ export default function ProjectViewPublicPage() {
                                   name: e.target.value,
                                 })
                               }
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              className="w-full px-4 py-3 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                               required
                             />
                           </div>
@@ -1728,7 +1728,7 @@ export default function ProjectViewPublicPage() {
                                   surname: e.target.value,
                                 })
                               }
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              className="w-full px-4 py-3 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                               required
                             />
                           </div>
@@ -1745,7 +1745,7 @@ export default function ProjectViewPublicPage() {
                                   email: e.target.value,
                                 })
                               }
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              className="w-full px-4 py-3 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                               required
                             />
                           </div>
@@ -1754,7 +1754,7 @@ export default function ProjectViewPublicPage() {
                           <button
                             type="button"
                             onClick={() => setShowApprovalForm(false)}
-                            className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest hover:text-slate-700  transition-colors"
+                            className="px-6 py-3 text-xs font-bold text-v3-muted uppercase tracking-widest hover:text-slate-700  transition-colors"
                           >
                             İPTAL
                           </button>

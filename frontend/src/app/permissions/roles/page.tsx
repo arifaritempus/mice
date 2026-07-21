@@ -359,10 +359,10 @@ export default function RolePermissionsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Rol ve Yetki Yönetimi sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -590,19 +590,19 @@ export default function RolePermissionsPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
           <div className="flex items-center gap-4 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
               <Shield size={24} />
             </div>
             <div className="space-y-0.5">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
                 Rol ve Yetki Yönetimi
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 Rol seçip modüllere ait izinleri yönetin
               </p>
             </div>
@@ -611,7 +611,7 @@ export default function RolePermissionsPage() {
             {canEdit(Module.USERS) && (
               <button
                 onClick={() => setShowAddRoleModal(true)}
-                className="h-10 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                className="h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
                 + YENİ ROL
               </button>
@@ -619,18 +619,18 @@ export default function RolePermissionsPage() {
           </div>
         </div>
         {/* Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span className="text-[11px] font-medium text-white">Durum:</span>
+            <span className="text-[11px] font-medium text-v3-text">Durum:</span>
           </div>
-          <div className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 text-slate-400">
+          <div className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 text-v3-muted">
             TOPLAM ROL
             <span className="px-1.5 py-0.5 rounded-md text-[9px] bg-white/10">
               {roles.length}
             </span>
           </div>
-          <div className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 text-slate-400">
+          <div className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 text-v3-muted">
             TOPLAM MODÜL
             <span className="px-1.5 py-0.5 rounded-md text-[9px] bg-white/10">
               {moduleList.length}
@@ -639,7 +639,7 @@ export default function RolePermissionsPage() {
         </div>
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl transition-colors duration-200 text-xs font-medium">
+          <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-xl transition-colors duration-200 text-xs font-medium">
             {success}
           </div>
         )}
@@ -650,8 +650,8 @@ export default function RolePermissionsPage() {
         )}
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 flex-1 min-h-0">
-          <div className="xl:col-span-1 rounded-2xl bg-[#0f172a]/40 backdrop-blur-md border border-white/10 flex flex-col min-h-0 p-3 shadow-sm">
-            <h2 className="text-[11px] font-semibold text-white uppercase tracking-wider mb-2">
+          <div className="xl:col-span-1 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border flex flex-col min-h-0 p-3 shadow-sm">
+            <h2 className="text-[11px] font-semibold text-v3-text uppercase tracking-wider mb-2">
               Roller
             </h2>
             <div className="space-y-2 overflow-y-auto pr-1">
@@ -663,8 +663,8 @@ export default function RolePermissionsPage() {
                     onClick={() => handleRoleSelect(role.id)}
                     className={`w-full text-left rounded-xl border px-3 py-2 transition-all cursor-pointer ${
                       active
-                        ? "border-blue-500/30 bg-blue-500/10 text-blue-300"
-                        : "border-white/5 hover:bg-white/5 text-white"
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-300"
+                        : "border-v3-border hover:bg-v3-border text-v3-text"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -676,7 +676,7 @@ export default function RolePermissionsPage() {
                               e.stopPropagation();
                               handleEditRole(role);
                             }}
-                            className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors"
+                            className="p-2 rounded-lg text-v3-muted hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors"
                             title="Düzenle"
                           >
                             <Pencil size={16} />
@@ -686,7 +686,7 @@ export default function RolePermissionsPage() {
                               e.stopPropagation();
                               setRoleToDelete(role.id);
                             }}
-                            className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                            className="p-2 rounded-lg text-v3-muted hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                             title="Sil"
                           >
                             <Trash2 size={16} />
@@ -694,7 +694,7 @@ export default function RolePermissionsPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                    <p className="text-xs text-v3-muted dark:text-v3-muted mt-1 line-clamp-2">
                       {role.description || "Aciklama yok"}
                     </p>
                   </div>
@@ -703,15 +703,15 @@ export default function RolePermissionsPage() {
             </div>
           </div>
 
-          <div className="xl:col-span-3 rounded-2xl bg-[#0f172a]/40 backdrop-blur-md border border-white/10 shadow-sm flex flex-col min-h-0">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-white/10 shrink-0">
+          <div className="xl:col-span-3 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border shadow-sm flex flex-col min-h-0">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-v3-border shrink-0">
               <div>
-                <h2 className="text-base font-medium text-white">
+                <h2 className="text-base font-medium text-v3-text">
                   {selectedRole
                     ? `${selectedRole.name} - Yetkileri`
                     : "Rol seçin"}
                 </h2>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-v3-muted mt-1">
                   Modül izinlerini buradan yönetebilirsiniz.
                 </p>
               </div>
@@ -721,15 +721,15 @@ export default function RolePermissionsPage() {
                   value={moduleQuery}
                   onChange={(e) => setModuleQuery(e.target.value)}
                   placeholder="Modül ara..."
-                  className="w-full h-full rounded-xl border border-white/10 bg-[#0f172a]/40 px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
+                  className="w-full h-full rounded-xl border border-v3-border bg-v3-surface px-3 py-2 text-sm text-v3-text focus:outline-none focus:border-blue-500/50"
                 />
               </div>
             </div>
             <div className="flex-1 overflow-auto custom-scrollbar p-0">
               <table className="min-w-full divide-y divide-white/10">
-                <thead className="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
+                <thead className="bg-v3-border sticky top-0 z-10 backdrop-blur-md">
                   <tr>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                       Modül
                     </th>
                     {PERMISSIONS.map((perm) => {
@@ -755,7 +755,7 @@ export default function RolePermissionsPage() {
                       return (
                         <th
                           key={perm.id}
-                          className="px-4 py-3 text-center text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10"
+                          className="px-4 py-3 text-center text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border"
                         >
                           <div className="flex flex-col items-center gap-1">
                             <span>{perm.name}</span>
@@ -776,7 +776,7 @@ export default function RolePermissionsPage() {
                         </th>
                       );
                     })}
-                    <th className="border-b border-slate-200 dark:border-gray-700 py-3 px-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <th className="border-b border-slate-200 dark:border-v3-border py-3 px-4 text-center text-xs font-semibold text-v3-muted dark:text-v3-muted">
                       <div className="flex flex-col items-center gap-1">
                         <span>Satır Tümünü Seç</span>
                         <input
@@ -846,10 +846,10 @@ export default function RolePermissionsPage() {
                           <div className="flex items-center gap-3">
                             <span className="text-xl">{module.icon}</span>
                             <div>
-                              <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                              <div className="text-sm font-semibold text-slate-900 dark:text-v3-text">
                                 {module.name}
                               </div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                              <div className="text-xs text-v3-muted dark:text-v3-muted">
                                 {module.id}
                               </div>
                             </div>
@@ -890,7 +890,7 @@ export default function RolePermissionsPage() {
                                   className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
                                 />
                               ) : (
-                                <span className="text-white dark:text-gray-600">
+                                <span className="text-v3-text dark:text-gray-600">
                                   -
                                 </span>
                               )}
@@ -920,7 +920,7 @@ export default function RolePermissionsPage() {
                     <tr>
                       <td
                         colSpan={6}
-                        className="py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                        className="py-8 text-center text-sm text-v3-muted dark:text-v3-muted"
                       >
                         Aramanıza uygun modül bulunamadı.
                       </td>
@@ -931,7 +931,7 @@ export default function RolePermissionsPage() {
             </div>
 
             {/* Save Button Container */}
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-gray-700 flex justify-end">
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-v3-border flex justify-end">
               <button
                 onClick={handleSavePermissions}
                 disabled={
@@ -940,7 +940,7 @@ export default function RolePermissionsPage() {
                 className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${
                   hasUnsavedChanges
                     ? "bg-blue-500 text-white hover:bg-blue-500/90 shadow-lg shadow-blue-600/20"
-                    : "bg-slate-100 text-slate-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed"
+                    : "bg-slate-100 text-v3-muted dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed"
                 }`}
               >
                 {isSaving ? (
@@ -968,22 +968,22 @@ export default function RolePermissionsPage() {
       >
         <form onSubmit={handleAddRole} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-white mb-2 flex items-center gap-2">
-              <Shield size={16} className="text-blue-400" />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-v3-text mb-2 flex items-center gap-2">
+              <Shield size={16} className="text-blue-600 dark:text-blue-400" />
               Rol Adı
             </label>
             <input
               type="text"
               value={newRole.name}
               onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
-              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-v3-surface dark:text-v3-text transition-all"
               placeholder="Örn: Proje Yöneticisi"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-white mb-2 flex items-center gap-2">
-              <Info size={16} className="text-blue-400" />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-v3-text mb-2 flex items-center gap-2">
+              <Info size={16} className="text-blue-600 dark:text-blue-400" />
               Açıklama
             </label>
             <textarea
@@ -991,7 +991,7 @@ export default function RolePermissionsPage() {
               onChange={(e) =>
                 setNewRole({ ...newRole, description: e.target.value })
               }
-              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-v3-surface dark:text-v3-text transition-all"
               rows={3}
               placeholder="Rol yetkileri hakkında kısa bilgi..."
             />
@@ -1000,7 +1000,7 @@ export default function RolePermissionsPage() {
             <button
               type="button"
               onClick={() => setShowAddRoleModal(false)}
-              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+              className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-v3-muted bg-slate-100 dark:bg-v3-surface rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
             >
               İptal
             </button>
@@ -1024,8 +1024,8 @@ export default function RolePermissionsPage() {
         {editingRole && (
           <form onSubmit={handleUpdateRole} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-white mb-2 flex items-center gap-2">
-                <Shield size={16} className="text-blue-400" />
+              <label className="block text-sm font-semibold text-slate-700 dark:text-v3-text mb-2 flex items-center gap-2">
+                <Shield size={16} className="text-blue-600 dark:text-blue-400" />
                 Rol Adı
               </label>
               <input
@@ -1034,13 +1034,13 @@ export default function RolePermissionsPage() {
                 onChange={(e) =>
                   setEditingRole({ ...editingRole, name: e.target.value })
                 }
-                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-v3-surface dark:text-v3-text transition-all"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-white mb-2 flex items-center gap-2">
-                <Info size={16} className="text-blue-400" />
+              <label className="block text-sm font-semibold text-slate-700 dark:text-v3-text mb-2 flex items-center gap-2">
+                <Info size={16} className="text-blue-600 dark:text-blue-400" />
                 Açıklama
               </label>
               <textarea
@@ -1051,7 +1051,7 @@ export default function RolePermissionsPage() {
                     description: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white transition-all"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-v3-surface dark:text-v3-text transition-all"
                 rows={3}
               />
             </div>
@@ -1059,7 +1059,7 @@ export default function RolePermissionsPage() {
               <button
                 type="button"
                 onClick={() => setShowEditRoleModal(false)}
-                className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-v3-muted bg-slate-100 dark:bg-v3-surface rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
               >
                 İptal
               </button>

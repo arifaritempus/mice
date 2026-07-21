@@ -156,10 +156,10 @@ export default function IncomeCompletedPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <a
@@ -251,15 +251,15 @@ export default function IncomeCompletedPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-2rem)] w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-[calc(100vh-2rem)] w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-4 shrink-0">
           {/* Sol: Başlık */}
           <div className="shrink-0 mr-2">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               Tamamlanan Gelir Faturaları
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               Kaydı tamamlanmış gelir faturalarının listesi
             </p>
           </div>
@@ -305,7 +305,7 @@ export default function IncomeCompletedPage() {
 
               <button
                 onClick={exportToExcel}
-                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"
+                className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"
               >
                 <Download size={14} /> Excel İndir
               </button>
@@ -318,36 +318,36 @@ export default function IncomeCompletedPage() {
             <LoadingSpinner compact />
           </div>
         ) : (
-          <div className="bg-[#0f172a]/40 backdrop-blur-md rounded-2xl border border-white/10 flex-1 min-h-0 flex flex-col w-full relative mt-4 overflow-hidden">
+          <div className="bg-v3-surface backdrop-blur-md rounded-2xl border border-v3-border flex-1 min-h-0 flex flex-col w-full relative mt-4 overflow-hidden">
             <div className="overflow-auto w-full flex-1 min-h-0">
               <table className="min-w-full text-left border-collapse">
-                <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 z-10 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+                <thead className="bg-slate-50 dark:bg-v3-surface/80 sticky top-0 z-10 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
                   <tr>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Fatura Tarihi
                     </th>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Fatura No
                     </th>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Cari
                     </th>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Firma / Acente
                     </th>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Otel
                     </th>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Hizmet Tarihi
                     </th>
-                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Voucher / Ref
                     </th>
-                    <th className="px-2.5 py-2.5 text-right text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-right text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       Tutar
                     </th>
-                    <th className="px-2.5 py-2.5 text-center text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2.5 py-2.5 text-center text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                       İşlemler
                     </th>
                   </tr>
@@ -356,11 +356,11 @@ export default function IncomeCompletedPage() {
                   {displayInvoices.map((inv) => (
                     <tr
                       key={inv.id}
-                      className="hover:bg-blue-500/10 transition-colors group border-b border-white/5 last:border-0 cursor-pointer"
+                      className="hover:bg-blue-500/10 transition-colors group border-b border-v3-border last:border-0 cursor-pointer"
                       onDoubleClick={(e) => handlePreview(inv, e as any)}
                       title="Görüntülemek için çift tıklayın"
                     >
-                      <td className="px-2.5 py-2.5 text-[11px] text-slate-700 dark:text-white whitespace-nowrap">
+                      <td className="px-2.5 py-2.5 text-[11px] text-slate-700 dark:text-v3-text whitespace-nowrap">
                         {new Date(inv.date).toLocaleDateString("tr-TR")}
                       </td>
                       <td className="px-2.5 py-2.5">
@@ -369,20 +369,20 @@ export default function IncomeCompletedPage() {
                         </span>
                       </td>
                       <td className="px-2.5 py-2.5">
-                        <div className="text-[11px] text-slate-700 dark:text-slate-200 font-medium">
+                        <div className="text-[11px] text-slate-700 dark:text-v3-text font-medium">
                           {inv.contact_name}
                         </div>
                       </td>
                       <td className="px-2.5 py-2.5 max-w-[14rem]">
                         {inv.metadata?.company_name ? (
                           <div
-                            className="text-[11px] text-slate-600 dark:text-white font-medium truncate"
+                            className="text-[11px] text-slate-600 dark:text-v3-text font-medium truncate"
                             title={inv.metadata.company_name}
                           >
                             {inv.metadata.company_name}
                           </div>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-500 text-[11px]">
+                          <span className="text-v3-muted dark:text-v3-muted text-[11px]">
                             -
                           </span>
                         )}
@@ -390,13 +390,13 @@ export default function IncomeCompletedPage() {
                       <td className="px-2.5 py-2.5 max-w-[12rem]">
                         {inv.metadata?.hotel_name ? (
                           <div
-                            className="text-[10px] text-slate-500 dark:text-slate-400 truncate"
+                            className="text-[10px] text-v3-muted dark:text-v3-muted truncate"
                             title={inv.metadata.hotel_name}
                           >
                             {inv.metadata.hotel_name}
                           </div>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                          <span className="text-v3-muted dark:text-v3-muted text-[10px]">
                             -
                           </span>
                         )}
@@ -408,7 +408,7 @@ export default function IncomeCompletedPage() {
                             {formatDate(inv.metadata.date_end)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                          <span className="text-v3-muted dark:text-v3-muted text-[10px]">
                             -
                           </span>
                         )}
@@ -416,13 +416,13 @@ export default function IncomeCompletedPage() {
                       <td className="px-2.5 py-2.5 max-w-[12rem]">
                         {voucherDisplay(inv) ? (
                           <span
-                            className="text-[10px] font-bold text-slate-600 dark:text-white truncate block"
+                            className="text-[10px] font-bold text-slate-600 dark:text-v3-text truncate block"
                             title={voucherDisplay(inv)}
                           >
                             {voucherDisplay(inv)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                          <span className="text-v3-muted dark:text-v3-muted text-[10px]">
                             -
                           </span>
                         )}
@@ -434,7 +434,7 @@ export default function IncomeCompletedPage() {
                         <div className="flex justify-center gap-1.5  transition-opacity">
                           <button
                             onClick={(e) => handlePreview(inv, e)}
-                            className="p-1 text-slate-400 hover:text-blue-400 transition-colors"
+                            className="p-1 text-v3-muted hover:text-blue-600 dark:text-blue-400 transition-colors"
                             title="Görüntüle / Yazdır"
                             type="button"
                           >
@@ -460,7 +460,7 @@ export default function IncomeCompletedPage() {
                           </button>
                           <button
                             onClick={(e) => handleEdit(inv, e)}
-                            className="p-1 text-slate-400 hover:text-amber-500 transition-colors"
+                            className="p-1 text-v3-muted hover:text-amber-500 transition-colors"
                             title="Düzenle"
                             type="button"
                           >
@@ -482,7 +482,7 @@ export default function IncomeCompletedPage() {
                             onClick={(e) =>
                               handleDeleteClick(inv.id, inv.invoice_no, e)
                             }
-                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                            className="p-1 text-v3-muted hover:text-red-500 transition-colors"
                             title="Sil"
                             type="button"
                           >
@@ -509,7 +509,7 @@ export default function IncomeCompletedPage() {
                     <tr>
                       <td
                         colSpan={10}
-                        className="px-6 py-16 text-center italic text-slate-500"
+                        className="px-6 py-16 text-center italic text-v3-muted"
                       >
                         Kayıtlı fatura bulunamadı veya filtrelere uyan sonuç
                         yok.

@@ -186,10 +186,10 @@ export default function UserPermissionsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <a
@@ -208,17 +208,17 @@ export default function UserPermissionsPage() {
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
           <div className="relative mx-auto mb-4">
-            <div className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+            <div className="w-8 h-8 rounded-full border-4 border-gray-200 dark:border-v3-border"></div>
             <div className="absolute top-0 left-0 w-8 h-8 rounded-full border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 animate-spin"></div>
             <div
               className="absolute top-0 left-0 w-8 h-8 rounded-full border-4 border-transparent border-r-blue-500 dark:border-r-blue-300 animate-spin"
               style={{ animationDelay: "0.1s", animationDuration: "1.5s" }}
             ></div>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+          <h2 className="text-xl font-semibold text-v3-text mb-2 transition-colors duration-200">
             Yükleniyor...
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 transition-colors duration-200">
+          <p className="text-v3-muted transition-colors duration-200">
             Lütfen bekleyin
           </p>
         </div>
@@ -229,10 +229,10 @@ export default function UserPermissionsPage() {
   return (
     <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-2xl font-bold text-v3-text mb-4">
           Yetki Gerekli
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-v3-muted mb-6">
           Bu sayfaya erişim için yetkiniz bulunmuyor.
         </p>
         <Link

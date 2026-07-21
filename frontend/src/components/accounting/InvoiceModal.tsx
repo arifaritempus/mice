@@ -384,7 +384,7 @@ export default function InvoiceModal({
                   required
                   type="text"
                   placeholder="ORN-2026-001"
-                  className="w-full px-4 py-2 border rounded-lg dark:bg-gray-900 dark:border-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  className="w-full px-4 py-2 border rounded-lg dark:bg-gray-900 dark:border-gray-700 dark:text-v3-text shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
                   value={invoiceNo}
                   onChange={(e) => setInvoiceNo(e.target.value)}
                 />
@@ -396,7 +396,7 @@ export default function InvoiceModal({
                 <input
                   required
                   type="date"
-                  className="w-full px-4 py-2 border rounded-lg dark:bg-gray-900 dark:border-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  className="w-full px-4 py-2 border rounded-lg dark:bg-gray-900 dark:border-gray-700 dark:text-v3-text shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
                   value={invoiceDate}
                   onChange={(e) => setInvoiceDate(e.target.value)}
                 />
@@ -412,7 +412,7 @@ export default function InvoiceModal({
                   <input
                     type="text"
                     placeholder="Acente/Otel/Tedarikçi ara..."
-                    className="w-full px-3 py-1.5 text-sm rounded bg-white dark:bg-gray-900 border dark:border-gray-700 dark:text-white focus:ring-2 outline-none"
+                    className="w-full px-3 py-1.5 text-sm rounded bg-white dark:bg-gray-900 border dark:border-gray-700 dark:text-v3-text focus:ring-2 outline-none"
                     value={searchAccount}
                     onChange={(e) => setSearchAccount(e.target.value)}
                   />
@@ -456,7 +456,7 @@ export default function InvoiceModal({
                             </svg>
                           )}
                           <div className="min-w-0">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            <h4 className="text-sm font-semibold text-gray-900 dark:text-v3-text truncate">
                               {acc.name || acc.company_name}
                             </h4>
                             <span className="text-[10px] uppercase text-gray-500">
@@ -524,7 +524,7 @@ export default function InvoiceModal({
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
                               {projectTypeBadge}
                             </span>
-                            <span className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                            <span className="text-sm font-bold text-gray-900 dark:text-v3-text truncate">
                               {item.category_name}
                               {item.sub_category_name && (
                                 <span className="text-gray-400 font-normal ml-1 text-xs">
@@ -533,7 +533,7 @@ export default function InvoiceModal({
                               )}
                             </span>
                           </div>
-                          <div className="text-xs text-blue-400 dark:text-blue-400 font-semibold truncate">
+                          <div className="text-xs text-blue-600 dark:text-blue-400 dark:text-blue-400 font-semibold truncate">
                             {item.project?.company_name}
                           </div>
                         </td>
@@ -541,7 +541,7 @@ export default function InvoiceModal({
                           <input
                             type="text"
                             placeholder="Örn: Konaklama Bedeli"
-                            className="w-full px-3 py-1.5 text-sm border rounded bg-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-1.5 text-sm border rounded bg-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-v3-text focus:ring-1 focus:ring-blue-500 outline-none"
                             value={itemDescriptions[item.id] || ""}
                             onChange={(e) =>
                               setItemDescriptions((prev) => ({
@@ -554,7 +554,7 @@ export default function InvoiceModal({
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-1">
                             <select
-                              className="w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+                              className="w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-v3-text focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                               value={itemCurrencies[item.id] || "TRY"}
                               onChange={(e) =>
                                 setItemCurrencies((prev) => ({
@@ -572,7 +572,7 @@ export default function InvoiceModal({
                               type="number"
                               step="0.0001"
                               placeholder="Kur"
-                              className="w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                              className="w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-v3-text focus:ring-1 focus:ring-blue-500 outline-none"
                               value={itemExchangeRates[item.id] || ""}
                               onChange={(e) =>
                                 setItemExchangeRates((prev) => ({
@@ -588,7 +588,7 @@ export default function InvoiceModal({
                             type="number"
                             min="0"
                             max="100"
-                            className="w-16 px-2 py-1.5 text-right border rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm font-medium focus:ring-1 outline-none"
+                            className="w-16 px-2 py-1.5 text-right border rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-v3-text text-sm font-medium focus:ring-1 outline-none"
                             value={itemVats[item.id] || 0}
                             onChange={(e) =>
                               setItemVats((prev) => ({
@@ -605,7 +605,7 @@ export default function InvoiceModal({
                               step="0.01"
                               max={editInvoice ? undefined : item.balance}
                               placeholder="0.00 (KDV Dahil)"
-                              className="w-full px-3 py-1.5 text-right border-2 border-blue-200 dark:border-blue-800/50 rounded bg-white dark:bg-gray-800 dark:text-white text-sm font-bold focus:border-blue-500 outline-none"
+                              className="w-full px-3 py-1.5 text-right border-2 border-blue-200 dark:border-blue-800/50 rounded bg-white dark:bg-gray-800 dark:text-v3-text text-sm font-bold focus:border-blue-500 outline-none"
                               value={itemAmounts[item.id] || 0}
                               onChange={(e) =>
                                 setItemAmounts((prev) => ({
@@ -661,7 +661,7 @@ export default function InvoiceModal({
                 Fatura Genel Açıklaması / Notlar
               </label>
               <textarea
-                className="w-full px-4 py-3 border rounded-xl bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 dark:text-white min-h-[120px] focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="w-full px-4 py-3 border rounded-xl bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 dark:text-v3-text min-h-[120px] focus:ring-2 focus:ring-blue-500 outline-none transition"
                 placeholder="Genel notlar..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -674,13 +674,13 @@ export default function InvoiceModal({
                   <div key={curr} className="flex flex-col gap-1.5 p-3 bg-white dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-700">
                     <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400">
                       <span>Ara Toplam (Matrah)</span>
-                      <span className="text-gray-900 dark:text-white">
+                      <span className="text-gray-900 dark:text-v3-text">
                         {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(vals.matrah)} <span className="text-xs font-semibold">{curr}</span>
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400">
                       <span>KDV Toplamı</span>
-                      <span className="text-gray-900 dark:text-white">
+                      <span className="text-gray-900 dark:text-v3-text">
                         {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(vals.kdv)} <span className="text-xs font-semibold">{curr}</span>
                       </span>
                     </div>
@@ -695,7 +695,7 @@ export default function InvoiceModal({
               </div>
               <div className="flex justify-between items-end pt-4">
                 <div className="flex flex-col">
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  <span className="text-lg font-bold text-gray-900 dark:text-v3-text">
                     Genel Toplam Karşılığı
                   </span>
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">TRY Bazında</span>

@@ -166,7 +166,7 @@ export default function ColorThemeApplier() {
           `;
           if (isDark) {
             css += `
-              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-[#0f172a]${exclude}, .dark .dark\\:bg-zinc-900${exclude} { background-color: var(--theme-bg-secondary) !important; }
+              .dark .dark\\:bg-gray-900${exclude}, .dark .dark\\:bg-v3-surface${exclude}, .dark .dark\\:bg-zinc-900${exclude} { background-color: var(--theme-bg-secondary) !important; }
             \n`;
           }
         }
@@ -179,7 +179,7 @@ export default function ColorThemeApplier() {
           `;
           if (isDark) {
             css += `
-              .dark .dark\\:bg-gray-800${exclude}, .dark .dark\\:bg-slate-800${exclude}, .dark .dark\\:bg-zinc-800${exclude} { 
+              .dark .dark\\:bg-gray-800${exclude}, .dark .dark\\:bg-v3-surface${exclude}, .dark .dark\\:bg-zinc-800${exclude} { 
                 background-color: var(--theme-card-bg) !important; 
               }
             \n`;

@@ -1053,10 +1053,10 @@ export default function TicketsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             {t('tickets.authRequired') || "Yetki Gerekli"}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             {t('tickets.noPermission') || "Bu sayfaya erişim yetkiniz bulunmuyor."}
           </p>
           <a
@@ -1075,16 +1075,16 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('tickets.title') || "Bilet Devre"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('tickets.description') || "Uçak biletlerinin devre listelerini ve detaylarını yönetin"}
             </p>
           </div>
@@ -1129,7 +1129,7 @@ export default function TicketsPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 type="button"
                 onClick={async () => {
@@ -1147,7 +1147,7 @@ export default function TicketsPage() {
                   }));
                   await exportDetailsExcel(enriched);
                 }}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
                 title="Detay Excel'e Aktar"
               >
                 <svg
@@ -1193,9 +1193,9 @@ export default function TicketsPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+            <span className="text-v3-muted font-medium uppercase tracking-wider ml-2">
               {t('tickets.ticketSource') || "BİLET KAYNAĞI:"}
             </span>
             <button
@@ -1203,7 +1203,7 @@ export default function TicketsPage() {
                 setFilter("all");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('tickets.all') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
@@ -1213,7 +1213,7 @@ export default function TicketsPage() {
                 setFilter("mice");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>MICE</span>
               <span className="font-bold">{typeCounts.mice}</span>
@@ -1223,26 +1223,26 @@ export default function TicketsPage() {
                 setFilter("sejour");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>SEJOUR</span>
               <span className="font-bold">{typeCounts.sejour}</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2 border-l border-white/10 pl-4">
-            <span className="text-slate-400 font-medium uppercase tracking-wider">
+          <div className="flex items-center gap-2 border-l border-v3-border pl-4">
+            <span className="text-v3-muted font-medium uppercase tracking-wider">
               {t('tickets.viewMode') || "GÖRÜNÜM:"}
             </span>
             <button
               onClick={() => setActiveTab("detail")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "detail" ? "bg-purple-500/20 border border-purple-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "detail" ? "bg-purple-500/20 border border-purple-500/50 text-purple-700 dark:text-purple-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('tickets.viewDetail') || "📋 DETAY"}</span>
             </button>
             <button
               onClick={() => setActiveTab("summary")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "summary" ? "bg-pink-500/20 border border-pink-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "summary" ? "bg-pink-500/20 border border-pink-500/50 text-pink-700 dark:text-pink-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('tickets.viewSummary') || "📊 ÖZET"}</span>
             </button>
@@ -1250,7 +1250,7 @@ export default function TicketsPage() {
         </div>
 
         {/* Tickets Table */}
-        <div className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px] relative">
+        <div className="flex-1 bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden shadow-inner flex flex-col min-h-[400px] relative">
           {tableBusy && (
             <div
               className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 dark:bg-gray-900/50 backdrop-blur-[1px]"
@@ -1265,12 +1265,12 @@ export default function TicketsPage() {
           )}
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
+              <thead className="bg-v3-surface backdrop-blur-xl border-b border-v3-border sticky top-0 z-20">
                 <tr>
                   {activeTab === "detail" ? (
                     <>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("voucherNumber")}
                       >
                         <div className="flex items-center">
@@ -1283,7 +1283,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("ticketingDate")}
                       >
                         <div className="flex items-center">
@@ -1296,7 +1296,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("sejourId")}
                       >
                         <div className="flex items-center">
@@ -1309,7 +1309,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("checkInOut")}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1322,7 +1322,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("companyName")}
                       >
                         <div className="flex items-center">
@@ -1335,7 +1335,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("customerName")}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1353,7 +1353,7 @@ export default function TicketsPage() {
                         <div className="flex items-center">{t('tickets.colGuest') || "MİSAFİR ADI"}</div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("pnr")}
                       >
                         <div className="flex items-center">
@@ -1366,7 +1366,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("flightDate")}
                       >
                         <div className="flex items-center">
@@ -1378,7 +1378,7 @@ export default function TicketsPage() {
                           )}
                         </div>
                       </th>
-                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
+                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border">
                         <div className="flex items-center">{t('tickets.colDepTime') || "GİDİŞ SAATİ"}</div>
                       </th>
                       {/* MICE özel sütunları */}
@@ -1390,7 +1390,7 @@ export default function TicketsPage() {
                       </th>
 
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("airline")}
                       >
                         <div className="flex items-center">
@@ -1403,7 +1403,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("route")}
                       >
                         <div className="flex items-center">
@@ -1416,7 +1416,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("flightNo")}
                       >
                         <div className="flex items-center">
@@ -1429,7 +1429,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("ticketingProvider")}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1445,7 +1445,7 @@ export default function TicketsPage() {
                       </th>
 
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("costPrice")}
                       >
                         <div className="flex items-center">
@@ -1458,7 +1458,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("costCurrency")}
                       >
                         <div className="flex items-center">
@@ -1474,7 +1474,7 @@ export default function TicketsPage() {
                   ) : (
                     <>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("voucherNumber")}
                       >
                         <div className="flex items-center">
@@ -1487,7 +1487,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("ticketingDate")}
                       >
                         <div className="flex items-center">
@@ -1500,7 +1500,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("sejourId")}
                       >
                         <div className="flex items-center">
@@ -1513,7 +1513,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("checkInOut")}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1526,7 +1526,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("companyName")}
                       >
                         <div className="flex items-center">
@@ -1539,7 +1539,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("customerName")}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1557,7 +1557,7 @@ export default function TicketsPage() {
                         <div className="flex items-center">{t('tickets.colGuest') || "MİSAFİR ADI"}</div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("pnr")}
                       >
                         <div className="flex items-center">
@@ -1570,7 +1570,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("flightDate")}
                       >
                         <div className="flex items-center">
@@ -1582,18 +1582,18 @@ export default function TicketsPage() {
                           )}
                         </div>
                       </th>
-                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
+                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border">
                         <div className="flex items-center">{t('tickets.colDepTime') || "GİDİŞ SAATİ"}</div>
                       </th>
-                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
+                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border">
                         <div className="flex items-center">{t('tickets.colRetDate') || "DÖNÜŞ TARİHİ"}</div>
                       </th>
-                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10">
+                      <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border">
                         <div className="flex items-center">{t('tickets.colRetTime') || "DÖNÜŞ SAATİ"}</div>
                       </th>
 
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("airline")}
                       >
                         <div className="flex items-center">
@@ -1606,7 +1606,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("route")}
                       >
                         <div className="flex items-center">
@@ -1619,7 +1619,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("flightNo")}
                       >
                         <div className="flex items-center">
@@ -1632,7 +1632,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("ticketingProvider")}
                       >
                         <div className="flex items-center gap-0.5">
@@ -1648,7 +1648,7 @@ export default function TicketsPage() {
                       </th>
 
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("costPrice")}
                       >
                         <div className="flex items-center">
@@ -1661,7 +1661,7 @@ export default function TicketsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                         onClick={() => handleSort("costCurrency")}
                       >
                         <div className="flex items-center">
@@ -1684,25 +1684,25 @@ export default function TicketsPage() {
                         key={ticket.id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       >
-                        <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-3 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <button
                             onClick={() => handleVoucherClick(ticket.sejourId)}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 dark:text-blue-300 underline cursor-pointer transition-colors duration-200"
                           >
                             {ticket.voucherNumber}
                           </button>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {formatDateCustom(ticket.ticketingDate)}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs rounded-full font-medium ${"bg-blue-100 text-blue-800 dark:bg-gray-800/30 dark:text-blue-400"}`}
                           >
                             {getSejourType(ticket.sejourId)}
                           </span>
                         </td>
-                        <td className="px-3 py-1.5 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-3 py-1.5 text-xs text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.checkInDate && ticket.checkOutDate ? (
                             <div className="flex items-center leading-tight">
                               <span>
@@ -1715,10 +1715,10 @@ export default function TicketsPage() {
                             "-"
                           )}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.companyName || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className="block truncate"
                             title={
@@ -1729,7 +1729,7 @@ export default function TicketsPage() {
                             {agencyCustomerLine(ticket)}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className="block truncate whitespace-nowrap overflow-hidden text-ellipsis"
                             title={
@@ -1741,26 +1741,26 @@ export default function TicketsPage() {
                               getGuestNames(ticket.sejourId)}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.pnr}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {formatDateCustom(ticket.flightDate)}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.departureTime
                             ? formatTime(ticket.departureTime)
                             : "-"}
                         </td>
                         {/* MICE özel hücreler: sadece project:* için değer göster, aksi halde '-' */}
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.sejourId?.startsWith("project:")
                             ? ticket.returnDate
                               ? formatDateCustom(ticket.returnDate)
                               : "-"
                             : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.sejourId?.startsWith("project:")
                             ? ticket.returnDepartureTime
                               ? formatTime(ticket.returnDepartureTime)
@@ -1768,16 +1768,16 @@ export default function TicketsPage() {
                             : "-"}
                         </td>
 
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.airline}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.route}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.flightNo}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className="block truncate whitespace-nowrap"
                             title={
@@ -1787,10 +1787,10 @@ export default function TicketsPage() {
                             {getSupplierName(ticket.ticketingProvider)}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {formatNumber(ticket.costPrice)}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {ticket.costCurrency}
                         </td>
                       </tr>
@@ -1800,27 +1800,27 @@ export default function TicketsPage() {
                         key={`${summary.voucherNumber}-${summary.pnr}-${idx}`}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       >
-                        <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-3 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <button
                             onClick={() => handleVoucherClick(summary.sejourId)}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 dark:text-blue-300 underline cursor-pointer transition-colors duration-200"
                           >
                             {summary.voucherNumber}
                           </button>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.ticketingDate
                             ? formatDateCustom(summary.ticketingDate)
                             : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs rounded-full font-medium ${"bg-blue-100 text-blue-800 dark:bg-gray-800/30 dark:text-blue-400"}`}
                           >
                             {getSejourType(summary.sejourId)}
                           </span>
                         </td>
-                        <td className="px-3 py-1.5 text-xs text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-3 py-1.5 text-xs text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.checkInDate && summary.checkOutDate ? (
                             <div className="flex items-center leading-tight">
                               <span>
@@ -1833,10 +1833,10 @@ export default function TicketsPage() {
                             "-"
                           )}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.companyName || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className="block truncate"
                             title={
@@ -1847,7 +1847,7 @@ export default function TicketsPage() {
                             {agencyCustomerLine(summary)}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className="block truncate whitespace-nowrap overflow-hidden text-ellipsis"
                             title={
@@ -1861,40 +1861,40 @@ export default function TicketsPage() {
                               getGuestNames(summary.sejourId)}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.pnr || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.departureDate
                             ? formatDateCustom(summary.departureDate)
                             : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.departureTime
                             ? formatTime(summary.departureTime)
                             : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.returnDate
                             ? formatDateCustom(summary.returnDate)
                             : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.arrivalTime
                             ? formatTime(summary.arrivalTime)
                             : "-"}
                         </td>
 
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.airline || summary.airlines || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.route || summary.departureRoute || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.flightNo || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           <span
                             className="block truncate whitespace-nowrap"
                             title={
@@ -1905,12 +1905,12 @@ export default function TicketsPage() {
                           </span>
                         </td>
 
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {formatNumber(
                             summary.costPrice || summary.totalCost || 0,
                           )}
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                           {summary.costCurrency || "-"}
                         </td>
                       </tr>
@@ -1920,7 +1920,7 @@ export default function TicketsPage() {
                   <tr>
                     <td
                       colSpan={20}
-                      className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                      className="px-3 py-8 text-center text-sm text-v3-muted"
                     >
                       {t('tickets.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>

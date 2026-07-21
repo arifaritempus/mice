@@ -575,13 +575,13 @@ export default function Sidebar() {
             onClick={() => toggleMenu(item.id, level)}
             className={`w-full flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-300 group mb-1 ${
               active
-                ? "bg-blue-500/10 text-blue-400 shadow-inner shadow-blue-500/20 border border-blue-500/20"
+                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 shadow-inner shadow-blue-500/20 border border-blue-500/20"
                 : childActive
                   ? isDark
-                    ? "bg-white/5 text-white"
+                    ? "bg-v3-border text-v3-text"
                     : "bg-slate-100 text-slate-900"
                   : isDark
-                    ? "text-white hover:bg-white/5 hover:text-white"
+                    ? "text-v3-text hover:bg-v3-border hover:text-v3-text"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             } ${isCollapsed && !isHovered && !isMobileOpen ? "justify-center px-0" : ""}`}
           >
@@ -597,7 +597,7 @@ export default function Sidebar() {
                 </span>
                 <ChevronRight
                   size={14}
-                  className={`transition-transform duration-300 ${isExpanded ? "rotate-90 text-blue-400" : isDark ? "opacity-40" : "text-slate-400"}`}
+                  className={`transition-transform duration-300 ${isExpanded ? "rotate-90 text-blue-600 dark:text-blue-400" : isDark ? "opacity-40" : "text-v3-muted"}`}
                 />
               </>
             )}
@@ -608,9 +608,9 @@ export default function Sidebar() {
             href={item.href || "#"}
             className={`w-full flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-300 group mb-1 ${
               active
-                ? "bg-blue-500/10 text-blue-400 shadow-inner shadow-blue-500/20 border border-blue-500/20"
+                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 shadow-inner shadow-blue-500/20 border border-blue-500/20"
                 : isDark
-                  ? "text-white hover:bg-white/5 hover:text-white"
+                  ? "text-v3-text hover:bg-v3-border hover:text-v3-text"
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             } ${isCollapsed && !isHovered && !isMobileOpen ? "justify-center px-0" : ""}`}
           >
@@ -692,7 +692,7 @@ export default function Sidebar() {
       )}
 
       {/* Mobile Top Bar */}
-      <div className="mobile-only items-center justify-between p-3 glass-panel border-b border-white/5 flex-shrink-0 z-40 relative w-full">
+      <div className="mobile-only items-center justify-between p-3 glass-panel border-b border-v3-border flex-shrink-0 z-40 relative w-full">
         <div className="flex items-center gap-3">
           <img
             src={currentLogo}
@@ -702,7 +702,7 @@ export default function Sidebar() {
         </div>
         <button
           onClick={() => setIsMobileOpen(true)}
-          className="p-2 rounded-lg text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+          className="p-2 rounded-lg text-slate-600 dark:text-v3-text hover:bg-slate-100 dark:hover:bg-v3-surface transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -769,8 +769,8 @@ export default function Sidebar() {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={`absolute top-4 right-2 p-1.5 rounded-xl transition-all duration-200 ${
               isDark
-                ? "hover:bg-white/10 text-white/50 hover:text-white"
-                : "hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                ? "hover:bg-v3-surface text-v3-text/50 hover:text-v3-text"
+                : "hover:bg-slate-100 text-v3-muted hover:text-slate-600"
             }`}
           >
             <ChevronLeft
@@ -797,7 +797,7 @@ export default function Sidebar() {
             onClick={() => setIsNotificationsOpen(true)}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 relative group ${
               isDark
-                ? "text-white hover:bg-white/5 hover:text-white"
+                ? "text-v3-text hover:bg-v3-border hover:text-v3-text"
                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             } ${
               isCollapsed && !isHovered && !isMobileOpen
@@ -808,7 +808,7 @@ export default function Sidebar() {
             <div className="relative">
               <Bell
                 size={20}
-                className={unreadCount > 0 ? "text-blue-400" : ""}
+                className={unreadCount > 0 ? "text-blue-600 dark:text-blue-400" : ""}
               />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -875,35 +875,35 @@ export default function Sidebar() {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className={`fixed left-0 top-0 bottom-0 w-full max-w-sm z-[1000] shadow-2xl flex flex-col border-r ${
                 isDark
-                  ? "bg-[#1a2233] border-white/5"
+                  ? "bg-[#1a2233] border-v3-border"
                   : "bg-white border-slate-200"
               }`}
             >
               <div
                 className={`p-6 border-b flex items-center justify-between ${
                   isDark
-                    ? "bg-[#161d2b] border-white/5"
+                    ? "bg-[#161d2b] border-v3-border"
                     : "bg-slate-50 border-slate-200"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
                     <Bell size={20} />
                   </div>
                   <div>
                     <h3
-                      className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}
+                      className={`font-bold ${isDark ? "text-v3-text" : "text-slate-900"}`}
                     >
                       Bildirimler
                     </h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-v3-muted uppercase tracking-widest">
                       Sistem Mesajları
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsNotificationsOpen(false)}
-                  className={`p-2 rounded-lg ${isDark ? "hover:bg-white/5 text-slate-400" : "hover:bg-slate-100 text-slate-500"}`}
+                  className={`p-2 rounded-lg ${isDark ? "hover:bg-v3-border text-v3-muted" : "hover:bg-slate-100 text-v3-muted"}`}
                 >
                   <X size={20} />
                 </button>
@@ -918,7 +918,7 @@ export default function Sidebar() {
                         onClick={() => handleNotificationClick(n)}
                         className={`w-full p-5 text-left transition-all flex gap-4 relative ${
                           isDark
-                            ? `hover:bg-white/5 ${!n.is_read ? "bg-blue-500/5" : ""}`
+                            ? `hover:bg-v3-border ${!n.is_read ? "bg-blue-500/5" : ""}`
                             : `hover:bg-slate-50 ${!n.is_read ? "bg-blue-500/10/50" : ""}`
                         }`}
                       >
@@ -937,15 +937,15 @@ export default function Sidebar() {
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
                             <h4
-                              className={`text-sm ${!n.is_read ? `font-bold ${isDark ? "text-white" : "text-slate-900"}` : "font-medium text-slate-400"}`}
+                              className={`text-sm ${!n.is_read ? `font-bold ${isDark ? "text-v3-text" : "text-slate-900"}` : "font-medium text-v3-muted"}`}
                             >
                               {n.title}
                             </h4>
-                            <span className="text-[10px] text-slate-500">
+                            <span className="text-[10px] text-v3-muted">
                               {moment(n.created_at).fromNow()}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 line-clamp-2">
+                          <p className="text-xs text-v3-muted line-clamp-2">
                             {n.message.replace(/<[^>]*>?/gm, "")}
                           </p>
                         </div>
@@ -953,7 +953,7 @@ export default function Sidebar() {
                     ))}
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center p-8 text-slate-500">
+                  <div className="h-full flex flex-col items-center justify-center p-8 text-v3-muted">
                     <span className="text-5xl mb-4">📭</span>
                     <p className="text-sm font-medium uppercase tracking-widest">
                       Bildirim bulunamadı

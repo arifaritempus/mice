@@ -203,7 +203,7 @@ export default function MarketingPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950 p-6">
         <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl font-bold text-v3-text">
             {t('marketing.accessDenied') || "Erişim Engellendi"}
           </h1>
           <p className="text-gray-500 mt-2">
@@ -217,17 +217,17 @@ export default function MarketingPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2 shrink-0">
           {/* Left Side: Title + Date Filter */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 shrink-0">
             <div className="shrink-0">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
                 {t('marketing.title') || "Pazarlama Yönetimi"}
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 {t('marketing.subtitle') || "Pazarlama verilerinizi analiz edin ve yönetin"}
               </p>
             </div>
@@ -268,7 +268,7 @@ export default function MarketingPage() {
             <div className="shrink-0 flex items-center gap-2">
               <button
                 onClick={loadData}
-                className="w-10 h-10 inline-flex items-center justify-center bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl transition-all duration-300 hover:scale-105"
+                className="w-10 h-10 inline-flex items-center justify-center bg-v3-border hover:bg-v3-surface text-v3-text border border-v3-border rounded-xl transition-all duration-300 hover:scale-105"
                 title="Yenile"
               >
                 <RefreshCw
@@ -281,7 +281,7 @@ export default function MarketingPage() {
                   setSelectedClient(null);
                   setIsClientModalOpen(true);
                 }}
-                className="bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105"
+                className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105"
               >
                 <Plus size={14} /> {t('marketing.addNew') || "YENİ EKLE"}
               </button>
@@ -333,23 +333,23 @@ export default function MarketingPage() {
         </div>
 
         {/* Content Section */}
-        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden flex flex-col flex-1 min-h-0">
-          <div className="flex border-b border-white/10 p-2 gap-2 overflow-x-auto custom-scrollbar shrink-0">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-v3-border overflow-hidden flex flex-col flex-1 min-h-0 shadow-inner">
+          <div className="flex border-b border-v3-border p-2 gap-2 overflow-x-auto custom-scrollbar shrink-0">
             <button
               onClick={() => setActiveTab("clients")}
-              className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "clients" ? "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+              className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "clients" ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
             >
               {t('marketing.firmsAndAgencies') || "FİRMALAR & ACENTELER"}
             </button>
             <button
               onClick={() => setActiveTab("interactions")}
-              className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "interactions" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+              className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "interactions" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
             >
               {t('marketing.interactionHistory') || "GÖRÜŞME GEÇMİŞİ"}
             </button>
             <button
               onClick={() => setActiveTab("appointments")}
-              className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "appointments" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+              className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "appointments" ? "bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
             >
               {t('marketing.appointments') || "RANDEVULAR"}
             </button>
@@ -559,21 +559,21 @@ function DashboardStatBox({
   > = {
     blue: {
       bg: "bg-blue-500/20",
-      text: "text-blue-300",
+      text: "text-blue-600 dark:text-blue-300",
       border: "border-blue-500/30",
       shadow: "shadow-[0_0_15px_rgba(59,130,246,0.15)]",
       hover: "hover:border-blue-500/50",
     },
     emerald: {
       bg: "bg-emerald-500/20",
-      text: "text-emerald-300",
+      text: "text-emerald-600 dark:text-emerald-300",
       border: "border-emerald-500/30",
       shadow: "shadow-[0_0_15px_rgba(16,185,129,0.15)]",
       hover: "hover:border-emerald-500/50",
     },
     amber: {
       bg: "bg-amber-500/20",
-      text: "text-amber-300",
+      text: "text-amber-600 dark:text-amber-300",
       border: "border-amber-500/30",
       shadow: "shadow-[0_0_15px_rgba(245,158,11,0.15)]",
       hover: "hover:border-amber-500/50",
@@ -589,12 +589,12 @@ function DashboardStatBox({
 
   const activeStyles = active
     ? `${colorMap[color].border} ${colorMap[color].shadow}`
-    : `border-white/10 ${colorMap[color].hover} hover:bg-white/5`;
+    : `border-v3-border ${colorMap[color].hover} hover:bg-v3-border`;
 
   return (
     <button
       onClick={onClick}
-      className={`bg-[#0f172a]/40 backdrop-blur-md rounded-2xl border p-4 flex flex-col text-left transition-all duration-300 ${activeStyles}`}
+      className={`bg-v3-surface backdrop-blur-md rounded-2xl border p-4 flex flex-col text-left transition-all duration-300 ${activeStyles}`}
     >
       <div className="flex justify-between items-start mb-2">
         <div
@@ -605,7 +605,7 @@ function DashboardStatBox({
         {trend && (
           <div
             className={`flex items-center gap-1 text-[10px] font-bold ${
-              trend.type === "up" ? "text-emerald-400" : "text-red-400"
+              trend.type === "up" ? "text-emerald-600 dark:text-emerald-400" : "text-red-400"
             }`}
           >
             {trend.type === "up" ? (
@@ -623,9 +623,9 @@ function DashboardStatBox({
         >
           {label}
         </p>
-        <h4 className="text-2xl font-light text-white">{value}</h4>
+        <h4 className="text-2xl font-light text-v3-text">{value}</h4>
         {subValue && (
-          <p className="text-[10px] text-slate-400 mt-1">{subValue}</p>
+          <p className="text-[10px] text-v3-muted mt-1">{subValue}</p>
         )}
       </div>
     </button>
@@ -647,10 +647,10 @@ function ModernClientCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-blue-500/50 transition-all group relative shadow-[0_0_15px_rgba(0,0,0,0.2)]"
+      className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl p-5 hover:border-blue-500/50 transition-all group relative shadow-[0_0_15px_rgba(0,0,0,0.2)]"
     >
       <div className="flex justify-between items-start mb-4">
-        <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-400 transition-all">
+        <div className="w-10 h-10 bg-v3-border border border-v3-border rounded-xl flex items-center justify-center text-v3-muted group-hover:text-blue-600 dark:text-blue-400 transition-all">
           <Building2 size={20} />
         </div>
         <div className="flex items-center gap-2">
@@ -658,7 +658,7 @@ function ModernClientCard({
             className={`px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${
               client.type === "acenta"
                 ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
-                : "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                : "bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30"
             }`}
           >
             {client.type}
@@ -666,7 +666,7 @@ function ModernClientCard({
           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
             <button
               onClick={onEdit}
-              className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-all"
+              className="p-1.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-all"
             >
               <Edit2 size={12} />
             </button>
@@ -680,14 +680,14 @@ function ModernClientCard({
         </div>
       </div>
 
-      <h3 className="font-medium text-white truncate">{client.name}</h3>
+      <h3 className="font-medium text-v3-text truncate">{client.name}</h3>
       <div className="flex items-center gap-1 mt-1">
-        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider truncate">
+        <p className="text-[10px] font-medium text-v3-muted uppercase tracking-wider truncate">
           {client.industry || t('marketing.industryNotSpecified') || "Sektör Belirtilmemiş"}
         </p>
         {client.city && <span className="text-[10px] text-slate-600">•</span>}
         {client.city && (
-          <p className="text-[10px] font-medium text-slate-400 uppercase">
+          <p className="text-[10px] font-medium text-v3-muted uppercase">
             {client.city}
           </p>
         )}
@@ -697,7 +697,7 @@ function ModernClientCard({
       <div className="mt-4">
         <button
           onClick={() => setShowContacts(!showContacts)}
-          className="flex items-center gap-2 text-[10px] font-semibold text-blue-400 uppercase hover:text-blue-300 transition-colors"
+          className="flex items-center gap-2 text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase hover:text-blue-600 dark:text-blue-300 transition-colors"
         >
           {contacts.length} {t('marketing.relatedContacts') || "İLGİLİ KİŞİ"} 
           {showContacts ? (
@@ -708,20 +708,20 @@ function ModernClientCard({
         </button>
 
         {showContacts && (
-          <div className="mt-2 space-y-2 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-xl border border-white/10 custom-scrollbar">
+          <div className="mt-2 space-y-2 max-h-32 overflow-y-auto p-2 bg-v3-border rounded-xl border border-v3-border custom-scrollbar">
             {contacts.length === 0 ? (
-              <p className="text-[9px] text-slate-500 italic">
+              <p className="text-[9px] text-v3-muted italic">
                 {t('marketing.noContacts') || "Henüz kişi eklenmemiş."}
               </p>
             ) : (
               contacts.map((c: any) => (
                 <div
                   key={c.id}
-                  className="text-[10px] border-b border-white/10 last:border-0 pb-1 mb-1"
+                  className="text-[10px] border-b border-v3-border last:border-0 pb-1 mb-1"
                 >
-                  <p className="font-medium text-slate-200">{c.full_name}</p>
-                  <p className="text-slate-500">{c.position}</p>
-                  <div className="flex gap-2 text-[9px] text-slate-400 mt-0.5">
+                  <p className="font-medium text-v3-text">{c.full_name}</p>
+                  <p className="text-v3-muted">{c.position}</p>
+                  <div className="flex gap-2 text-[9px] text-v3-muted mt-0.5">
                     {c.phone && (
                       <span className="flex items-center gap-0.5">
                         <Phone size={8} /> {c.phone}
@@ -740,16 +740,16 @@ function ModernClientCard({
         )}
       </div>
 
-      <div className="flex items-center gap-2 mt-6 pt-4 border-t border-white/10">
+      <div className="flex items-center gap-2 mt-6 pt-4 border-t border-v3-border">
         <button
           onClick={onAddContact}
-          className="flex-1 py-1.5 bg-white/5 rounded-xl text-[9px] font-semibold text-white hover:bg-white/10 hover:text-white transition-all border border-white/10 uppercase"
+          className="flex-1 py-1.5 bg-v3-border rounded-xl text-[9px] font-semibold text-v3-text hover:bg-v3-surface hover:text-v3-text transition-all border border-v3-border uppercase"
         >
           {t('marketing.addContact') || "Kişi Ekle"}
         </button>
         <button
           onClick={onAddInteraction}
-          className="flex-1 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-xl text-[9px] font-semibold text-blue-300 hover:bg-blue-500/30 transition-all uppercase"
+          className="flex-1 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-xl text-[9px] font-semibold text-blue-600 dark:text-blue-300 hover:bg-blue-500/30 transition-all uppercase"
         >
           {t('marketing.interaction') || "Görüşme"}
         </button>
@@ -766,19 +766,19 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
   const Icon = type.icon;
 
   const colors: any = {
-    blue: "border-l-blue-500 bg-[#0f172a]/40",
-    green: "border-l-emerald-500 bg-[#0f172a]/40",
-    purple: "border-l-purple-500 bg-[#0f172a]/40",
-    orange: "border-l-orange-500 bg-[#0f172a]/40",
-    slate: "border-l-slate-500 bg-[#0f172a]/40",
+    blue: "border-l-blue-500 bg-v3-surface",
+    green: "border-l-emerald-500 bg-v3-surface",
+    purple: "border-l-purple-500 bg-v3-surface",
+    orange: "border-l-orange-500 bg-v3-surface",
+    slate: "border-l-slate-500 bg-v3-surface",
   };
 
   const iconColors: any = {
-    blue: "text-blue-400 bg-blue-500/20 border-blue-500/30",
-    green: "text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
+    blue: "text-blue-600 dark:text-blue-400 bg-blue-500/20 border-blue-500/30",
+    green: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
     purple: "text-purple-400 bg-purple-500/20 border-purple-500/30",
-    orange: "text-orange-400 bg-orange-500/20 border-orange-500/30",
-    slate: "text-slate-400 bg-slate-500/20 border-slate-500/30",
+    orange: "text-orange-600 dark:text-orange-400 bg-orange-500/20 border-orange-500/30",
+    slate: "text-v3-muted bg-slate-500/20 border-slate-500/30",
   };
 
   // Get names of all involved contacts
@@ -788,7 +788,7 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
 
   return (
     <div
-      className={`border-l-4 rounded-2xl p-5 shadow-[0_0_15px_rgba(0,0,0,0.2)] transition-all group ${colors[type.color] || colors.slate} backdrop-blur-md border border-white/10`}
+      className={`border-l-4 rounded-2xl p-5 shadow-[0_0_15px_rgba(0,0,0,0.2)] transition-all group ${colors[type.color] || colors.slate} backdrop-blur-md border border-v3-border`}
     >
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
@@ -796,10 +796,10 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
             <Icon size={18} />
           </div>
           <div>
-            <h4 className="text-xs font-semibold text-white uppercase tracking-tight">
+            <h4 className="text-xs font-semibold text-v3-text uppercase tracking-tight">
               {interaction.marketing_clients?.name}
             </h4>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] font-medium text-v3-muted uppercase tracking-wider mt-0.5">
               {interaction.appointment_date
                 ? format(
                     parseISO(interaction.appointment_date),
@@ -818,7 +818,7 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
             <button
               onClick={onEdit}
-              className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-all"
+              className="p-1.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-all"
             >
               <Edit2 size={10} />
             </button>
@@ -832,8 +832,8 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
           <span
             className={`px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase border ${
               interaction.status === "completed"
-                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30"
+                : "bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/30"
             }`}
           >
             {interaction.status === "completed" ? (t('marketing.completed') || "TAMAMLANDI") : (t('marketing.appointment') || "RANDEVU")}
@@ -841,21 +841,21 @@ function InteractionCard({ interaction, contacts, onEdit, onDelete }: any) {
         </div>
       </div>
 
-      <p className="text-[12px] text-slate-200 font-medium leading-relaxed mb-4">
+      <p className="text-[12px] text-v3-text font-medium leading-relaxed mb-4">
         {interaction.description}
       </p>
 
       {involvedContacts.length > 0 && (
-        <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10">
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-v3-border">
           {involvedContacts.map((c: any) => (
             <div
               key={c.id}
-              className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10"
+              className="flex items-center gap-1.5 bg-v3-border px-2.5 py-1 rounded-lg border border-v3-border"
             >
-              <div className="w-4 h-4 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-[8px] font-bold text-blue-300 uppercase">
+              <div className="w-4 h-4 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-[8px] font-bold text-blue-600 dark:text-blue-300 uppercase">
                 {c.full_name.charAt(0)}
               </div>
-              <span className="text-[10px] font-medium text-white">
+              <span className="text-[10px] font-medium text-v3-text">
                 {c.full_name}
               </span>
             </div>
@@ -873,16 +873,16 @@ function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
   );
 
   return (
-    <div className="bg-[#0f172a]/40 backdrop-blur-md border-l-4 border-l-amber-500 rounded-2xl p-5 shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] transition-all group border border-white/10">
+    <div className="bg-v3-surface backdrop-blur-md border-l-4 border-l-amber-500 rounded-2xl p-5 shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] transition-all group border border-v3-border">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+        <div className="p-2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-500/30">
           <Calendar size={18} />
         </div>
         <div className="flex items-center gap-2">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
             <button
               onClick={onEdit}
-              className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-all"
+              className="p-1.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-all"
             >
               <Edit2 size={10} />
             </button>
@@ -894,10 +894,10 @@ function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
             </button>
           </div>
           <div className="text-right">
-            <div className="text-[9px] font-medium text-slate-400 uppercase tracking-wider">
+            <div className="text-[9px] font-medium text-v3-muted uppercase tracking-wider">
               {t('marketing.time') || "VAKİT"}
             </div>
-            <div className="text-xs font-semibold text-amber-400">
+            <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">
               {appointment.appointment_date
                 ? format(parseISO(appointment.appointment_date), "HH:mm")
                 : "-"}
@@ -906,10 +906,10 @@ function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
         </div>
       </div>
 
-      <h4 className="text-xs font-semibold text-white mb-1 truncate uppercase tracking-tight">
+      <h4 className="text-xs font-semibold text-v3-text mb-1 truncate uppercase tracking-tight">
         {appointment.marketing_clients?.name}
       </h4>
-      <p className="text-[10px] font-medium text-slate-400 mb-3 uppercase tracking-wider">
+      <p className="text-[10px] font-medium text-v3-muted mb-3 uppercase tracking-wider">
         {appointment.appointment_date
           ? format(parseISO(appointment.appointment_date), "dd MMMM yyyy", {
               locale: tr,
@@ -918,25 +918,25 @@ function AppointmentCard({ appointment, contacts, onEdit, onDelete }: any) {
       </p>
 
       {appointment.description && (
-        <div className="mb-4 p-3 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-[11px] text-white font-medium leading-relaxed italic">
+        <div className="mb-4 p-3 bg-v3-border rounded-xl border border-v3-border">
+          <p className="text-[11px] text-v3-text font-medium leading-relaxed italic">
             {appointment.description}
           </p>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/10">
+      <div className="flex flex-wrap gap-1.5 pt-3 border-t border-v3-border">
         {involvedContacts.length === 0 ? (
-          <span className="text-[9px] text-slate-500 flex items-center gap-1 font-medium uppercase">
+          <span className="text-[9px] text-v3-muted flex items-center gap-1 font-medium uppercase">
             <Info size={10} /> İlgili Kişi Belirtilmemiş
           </span>
         ) : (
           involvedContacts.map((c: any) => (
             <div
               key={c.id}
-              className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-lg border border-white/10"
+              className="flex items-center gap-1.5 bg-v3-border px-2 py-0.5 rounded-lg border border-v3-border"
             >
-              <span className="text-[10px] font-medium text-white">
+              <span className="text-[10px] font-medium text-v3-text">
                 {c.full_name}
               </span>
             </div>
@@ -990,15 +990,15 @@ function ClientModal({ client, onClose, onSave }: any) {
       title={client ? (t('marketing.editRecord') || "Kaydı Düzenle") : (t('marketing.addRecord') || "Yeni Kayıt Ekle")}
       maxWidth="max-w-3xl"
     >
-      <div className="space-y-6 text-white">
+      <div className="space-y-6 text-v3-text">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
+            <label className="text-xs font-semibold text-v3-text ml-1 flex items-center gap-1">
               <Building2 size={12} /> {t('marketing.companyName') || "FİRMA ADI"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -1006,13 +1006,13 @@ function ClientModal({ client, onClose, onSave }: any) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1">{t('marketing.type') || "TÜR"}</label>
-            <div className="flex p-1 bg-[#0f172a]/40 rounded-xl border border-white/10">
+            <label className="text-xs font-semibold text-v3-text ml-1">{t('marketing.type') || "TÜR"}</label>
+            <div className="flex p-1 bg-v3-surface rounded-xl border border-v3-border">
               {["firma", "acenta"].map((typeValue) => (
                 <button
                   key={typeValue}
                   onClick={() => setFormData({ ...formData, type: typeValue as any })}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all uppercase ${formData.type === typeValue ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "text-slate-400 border border-transparent hover:text-white hover:bg-white/5"}`}
+                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all uppercase ${formData.type === typeValue ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30" : "text-v3-muted border border-transparent hover:text-v3-text hover:bg-v3-border"}`}
                 >
                   {typeValue === "firma" ? (t('marketing.firm') || "FİRMA") : (t('marketing.agency') || "ACENTA")}
                 </button>
@@ -1023,12 +1023,12 @@ function ClientModal({ client, onClose, onSave }: any) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
+            <label className="text-xs font-semibold text-v3-text ml-1 flex items-center gap-1">
               <AtSign size={12} /> {t('marketing.emailLabel') || "E-POSTA"}
             </label>
             <input
               type="email"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -1036,12 +1036,12 @@ function ClientModal({ client, onClose, onSave }: any) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1">
+            <label className="text-xs font-semibold text-v3-text ml-1">
               {t('marketing.industry') || "SEKTÖR"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.industry}
               onChange={(e) =>
                 setFormData({ ...formData, industry: e.target.value })
@@ -1052,12 +1052,12 @@ function ClientModal({ client, onClose, onSave }: any) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
+            <label className="text-xs font-semibold text-v3-text ml-1 flex items-center gap-1">
               <Map size={12} /> {t('marketing.city') || "ŞEHİR"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.city}
               onChange={(e) =>
                 setFormData({ ...formData, city: e.target.value })
@@ -1065,12 +1065,12 @@ function ClientModal({ client, onClose, onSave }: any) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1 flex items-center gap-1">
+            <label className="text-xs font-semibold text-v3-text ml-1 flex items-center gap-1">
               <MapPin size={12} /> {t('marketing.district') || "İLÇE"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.district}
               onChange={(e) =>
                 setFormData({ ...formData, district: e.target.value })
@@ -1080,10 +1080,10 @@ function ClientModal({ client, onClose, onSave }: any) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-white ml-1">{t('marketing.address') || "ADRES"}</label>
+          <label className="text-xs font-semibold text-v3-text ml-1">{t('marketing.address') || "ADRES"}</label>
           <textarea
             rows={2}
-            className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all resize-none"
+            className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all resize-none"
             value={formData.address}
             onChange={(e) =>
               setFormData({ ...formData, address: e.target.value })
@@ -1092,7 +1092,7 @@ function ClientModal({ client, onClose, onSave }: any) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-xs font-semibold text-white ml-1">
+          <label className="text-xs font-semibold text-v3-text ml-1">
             {t('marketing.serviceItems') || "HİZMET KALEMLERİ"}
           </label>
           <div className="flex flex-wrap gap-2">
@@ -1102,8 +1102,8 @@ function ClientModal({ client, onClose, onSave }: any) {
                 onClick={() => handleServiceToggle(service)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
                   formData.services.includes(service)
-                    ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                    : "bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10"
+                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30"
+                    : "bg-v3-border border-v3-border text-v3-muted hover:text-v3-text hover:bg-v3-surface"
                 }`}
               >
                 {getServiceLabel(service)}
@@ -1112,16 +1112,16 @@ function ClientModal({ client, onClose, onSave }: any) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="flex justify-end gap-3 pt-4 border-t border-v3-border">
           <button
             onClick={onClose}
-            className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors"
+            className="px-6 py-2 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors"
           >
             {t('marketing.cancel') || "İPTAL"}
           </button>
           <button
             onClick={() => onSave(formData)}
-            className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
+            className="px-8 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
           >
             {t('marketing.save') || "KAYDET"}
           </button>
@@ -1175,19 +1175,19 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
       title={interaction ? "Görüşmeyi Düzenle" : "Yeni Görüşme"}
       maxWidth="max-w-2xl"
     >
-      <div className="space-y-6 text-white">
+      <div className="space-y-6 text-v3-text">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white ml-1 flex items-center justify-between">
+              <label className="text-xs font-semibold text-v3-text ml-1 flex items-center justify-between">
                 <span>İLGİLİ KİŞİLER (ÇOKLU SEÇİM)</span>
-                <span className="text-blue-400">
+                <span className="text-blue-600 dark:text-blue-400">
                   {formData.contact_ids.length} SEÇİLİ
                 </span>
               </label>
-              <div className="p-2 border border-white/10 rounded-xl max-h-40 overflow-y-auto bg-[#0f172a]/40 space-y-1 custom-scrollbar">
+              <div className="p-2 border border-v3-border rounded-xl max-h-40 overflow-y-auto bg-v3-surface space-y-1 custom-scrollbar">
                 {contacts.length === 0 ? (
-                  <p className="text-[10px] text-slate-500 italic p-2">
+                  <p className="text-[10px] text-v3-muted italic p-2">
                     Henüz kayıtlı kişi yok.
                   </p>
                 ) : (
@@ -1197,8 +1197,8 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                       onClick={() => toggleContact(c.id)}
                       className={`w-full flex items-center justify-between p-2 rounded-lg text-[10px] font-semibold transition-all border ${
                         formData.contact_ids.includes(c.id)
-                          ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                          : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:text-white"
+                          ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30"
+                          : "bg-v3-border border-transparent text-v3-muted hover:bg-v3-surface hover:text-v3-text"
                       }`}
                     >
                       <span>{c.full_name}</span>
@@ -1212,7 +1212,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white ml-1">
+              <label className="text-xs font-semibold text-v3-text ml-1">
                 GÖRÜŞME TÜRÜ
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -1224,8 +1224,8 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                     }
                     className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl border transition-all ${
                       formData.type === type.value
-                        ? "bg-blue-500/20 border-blue-500/30 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
-                        : "border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                        ? "bg-blue-500/20 border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                        : "border-v3-border bg-v3-border text-v3-muted hover:bg-v3-surface hover:text-v3-text"
                     }`}
                   >
                     <type.icon size={16} />
@@ -1244,15 +1244,15 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white ml-1">
+              <label className="text-xs font-semibold text-v3-text ml-1">
                 {t('marketing.status') || "DURUM"}
               </label>
-              <div className="flex p-1 bg-[#0f172a]/40 rounded-xl border border-white/10">
+              <div className="flex p-1 bg-v3-surface rounded-xl border border-v3-border">
                 <button
                   onClick={() =>
                     setFormData({ ...formData, status: "completed" })
                   }
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${formData.status === "completed" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-slate-400 border border-transparent hover:bg-white/5"}`}
+                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${formData.status === "completed" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30" : "text-v3-muted border border-transparent hover:bg-v3-border"}`}
                 >
                   {t('marketing.completed') || "TAMAMLANDI"}
                 </button>
@@ -1260,7 +1260,7 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
                   onClick={() =>
                     setFormData({ ...formData, status: "planned" })
                   }
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${formData.status === "planned" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "text-slate-400 border border-transparent hover:bg-white/5"}`}
+                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${formData.status === "planned" ? "bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30" : "text-v3-muted border border-transparent hover:bg-v3-border"}`}
                 >
                   {t('marketing.appointment') || "RANDEVU"}
                 </button>
@@ -1269,12 +1269,12 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
 
             {formData.status === "planned" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-amber-400 ml-1">
+                <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 ml-1">
                   {t('marketing.appointmentDate') || "RANDEVU TARİHİ"}
                 </label>
                 <input
                   type="datetime-local"
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-amber-500/30 rounded-xl outline-none focus:ring-1 focus:ring-amber-500/50 text-sm placeholder-slate-400 text-white transition-all shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-amber-500/30 rounded-xl outline-none focus:ring-1 focus:ring-amber-500/50 text-sm placeholder-slate-400 text-v3-text transition-all shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                   value={formatForInput(formData.appointment_date)}
                   onChange={(e) =>
                     setFormData({
@@ -1287,12 +1287,12 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white ml-1">
+              <label className="text-xs font-semibold text-v3-text ml-1">
                 {t('marketing.recordDate') || "KAYIT TARİHİ"}
               </label>
               <input
                 type="datetime-local"
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
                 value={formatForInput(formData.interaction_date)}
                 onChange={(e) =>
                   setFormData({ ...formData, interaction_date: e.target.value })
@@ -1303,12 +1303,12 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-white ml-1">
+          <label className="text-xs font-semibold text-v3-text ml-1">
             {t('marketing.interactionSummary') || "GÖRÜŞME ÖZETİ & NOTLAR"}
           </label>
           <textarea
             rows={4}
-            className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all resize-none"
+            className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all resize-none"
             placeholder="Konuşulan detayları buraya yazın..."
             value={formData.description}
             onChange={(e) =>
@@ -1317,16 +1317,16 @@ function InteractionModal({ client, interaction, onClose, onSave }: any) {
           ></textarea>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="flex justify-end gap-3 pt-4 border-t border-v3-border">
           <button
             onClick={onClose}
-            className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors"
+            className="px-6 py-2 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors"
           >
             {t('marketing.cancel') || "İPTAL"}
           </button>
           <button
             onClick={() => onSave(formData)}
-            className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
+            className="px-8 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
           >
             {t('marketing.save') || "KAYDET"}
           </button>
@@ -1354,19 +1354,19 @@ function ContactModal({ client, onClose, onSave }: any) {
       title={t('marketing.addContactTitle') || "İlgili Kişi Ekle"}
       maxWidth="max-w-md"
     >
-      <div className="space-y-6 text-white">
-        <p className="text-xs font-semibold text-blue-400 uppercase">
+      <div className="space-y-6 text-v3-text">
+        <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
           {client?.name}
         </p>
 
         <div className="space-y-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1">
+            <label className="text-xs font-semibold text-v3-text ml-1">
               {t('marketing.fullName') || "AD SOYAD"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.full_name}
               onChange={(e) =>
                 setFormData({ ...formData, full_name: e.target.value })
@@ -1374,12 +1374,12 @@ function ContactModal({ client, onClose, onSave }: any) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white ml-1">
+            <label className="text-xs font-semibold text-v3-text ml-1">
               {t('marketing.position') || "POZİSYON"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
               value={formData.position}
               onChange={(e) =>
                 setFormData({ ...formData, position: e.target.value })
@@ -1388,12 +1388,12 @@ function ContactModal({ client, onClose, onSave }: any) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white ml-1">
+              <label className="text-xs font-semibold text-v3-text ml-1">
                 {t('marketing.telephone') || "TELEFON"}
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
@@ -1401,12 +1401,12 @@ function ContactModal({ client, onClose, onSave }: any) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white ml-1">
+              <label className="text-xs font-semibold text-v3-text ml-1">
                 {t('marketing.emailLabel') || "E-POSTA"}
               </label>
               <input
                 type="email"
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-white transition-all"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm placeholder-slate-400 text-v3-text transition-all"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -1417,16 +1417,16 @@ function ContactModal({ client, onClose, onSave }: any) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="flex justify-end gap-3 pt-4 border-t border-v3-border">
           <button
             onClick={onClose}
-            className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors"
+            className="px-6 py-2 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors"
           >
             {t('marketing.cancel') || "İPTAL"}
           </button>
           <button
             onClick={() => onSave(formData)}
-            className="px-8 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
+            className="px-8 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all uppercase"
           >
             {t('marketing.save') || "KAYDET"}
           </button>

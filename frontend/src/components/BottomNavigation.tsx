@@ -25,7 +25,7 @@ export default function BottomNavigation() {
 
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 w-full h-[84px] z-50 px-6 pb-6 pt-2 bg-[#0a0f1c]/80 backdrop-blur-3xl border-t border-white/5">
+    <div className="md:hidden fixed bottom-0 left-0 w-full h-[84px] z-50 px-6 pb-6 pt-2 bg-[#0a0f1c]/80 backdrop-blur-3xl border-t border-v3-border">
       <div className="flex items-center justify-between h-full max-w-md mx-auto">
         {navItems.filter(item => isHrefVisible(item.href)).map((item) => {
           const isActive =
@@ -37,7 +37,7 @@ export default function BottomNavigation() {
               key={item.id}
               href={item.href}
               className={`flex flex-col items-center justify-center gap-1.5 min-w-[64px] transition-all duration-300 ${
-                isActive ? "text-blue-400" : "text-slate-500 hover:text-white"
+                isActive ? "text-blue-600 dark:text-blue-400" : "text-v3-muted hover:text-v3-text"
               }`}
             >
               <div

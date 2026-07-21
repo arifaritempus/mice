@@ -298,7 +298,7 @@ const toggleColumnVisibility = useCallback((column: string) => {
   }, [hotelFilteredItems, accommodationSearch]);
   return <div className="space-y-4">
         {/* Üst Kontroller - Responsive */}
-        <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1e293b]/80 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
+        <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
           {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
               {tag}
@@ -310,7 +310,7 @@ const toggleColumnVisibility = useCallback((column: string) => {
           {searchTags.length > 0 && <button onClick={() => {
             setSearchTags([]);
             setAccommodationSearch("");
-          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 pl-1 shrink-0 transition-colors">
+          }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted pl-1 shrink-0 transition-colors">
             <X className="w-4 h-4" />
           </button>}
         </div></div>
@@ -360,7 +360,7 @@ const toggleColumnVisibility = useCallback((column: string) => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                   </svg>
                                 </button>
-                                <button onClick={handleAccommodationCancel} className="p-1 bg-gray-600 text-white rounded hover:bg-gray-700" title="İptal">
+                                <button onClick={handleAccommodationCancel} className="p-1 bg-gray-600 text-v3-text rounded hover:bg-gray-700" title="İptal">
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                   </svg>
@@ -773,8 +773,8 @@ const toggleColumnVisibility = useCallback((column: string) => {
       // Sıralamaya göre oda tiplerini düzenle
       const sortedRoomTypes = roomTypeOrder.filter(roomType => allRoomTypes.has(roomType));
       return <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-v3-border">
+                  <h3 className="text-sm font-semibold text-v3-text flex items-center gap-2">
                     <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
@@ -846,16 +846,16 @@ const toggleColumnVisibility = useCallback((column: string) => {
                   });
                   const totalRooms = activeRoomNumbers.size;
                   return <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                              <td className="px-2 py-2 text-left text-xs text-gray-900 dark:text-white font-medium">
+                              <td className="px-2 py-2 text-left text-xs text-v3-text font-medium">
                                 {date.toLocaleDateString("tr-TR")}
                               </td>
-                              {sortedRoomTypes.map(roomType => <td key={roomType} className="px-2 py-2 text-center text-xs text-gray-900 dark:text-white">
+                              {sortedRoomTypes.map(roomType => <td key={roomType} className="px-2 py-2 text-center text-xs text-v3-text">
                                   {roomTypeCounts[roomType] || 0}
                                 </td>)}
-                              <td className="px-2 py-2 text-center text-xs text-gray-900 dark:text-white font-semibold bg-blue-500/10 dark:bg-blue-900/20">
+                              <td className="px-2 py-2 text-center text-xs text-v3-text font-semibold bg-blue-500/10 dark:bg-blue-900/20">
                                 {totalRooms}
                               </td>
-                              <td className="px-2 py-2 text-center text-xs text-gray-900 dark:text-white font-semibold bg-green-50 dark:bg-green-900/20">
+                              <td className="px-2 py-2 text-center text-xs text-v3-text font-semibold bg-green-50 dark:bg-green-900/20">
                                 {totalPax}
                               </td>
                             </tr>;
@@ -863,7 +863,7 @@ const toggleColumnVisibility = useCallback((column: string) => {
                       </tbody>
                       <tfoot className="bg-gray-100 dark:bg-gray-700">
                         <tr className="font-semibold">
-                          <td className="px-2 py-2 text-left text-xs text-gray-900 dark:text-white">
+                          <td className="px-2 py-2 text-left text-xs text-v3-text">
                             GENEL TOPLAM
                           </td>
                           {(() => {
@@ -907,11 +907,11 @@ const toggleColumnVisibility = useCallback((column: string) => {
                         }
                       });
                     });
-                    return sortedRoomTypes.map(roomType => <td key={roomType} className="px-2 py-2 text-center text-xs text-gray-900 dark:text-white bg-blue-500/10 dark:bg-blue-900/20">
+                    return sortedRoomTypes.map(roomType => <td key={roomType} className="px-2 py-2 text-center text-xs text-v3-text bg-blue-500/10 dark:bg-blue-900/20">
                                 {totalRoomTypeCounts[roomType] || 0}
                               </td>);
                   })()}
-                          <td className="px-2 py-2 text-center text-xs text-gray-900 dark:text-white bg-blue-100 dark:bg-blue-800/30">
+                          <td className="px-2 py-2 text-center text-xs text-v3-text bg-blue-100 dark:bg-blue-800/30">
                             {(() => {
                       // Benzersiz ODA # sayısını hesapla
                       const uniqueRoomNumbers = new Set<string>();
@@ -936,7 +936,7 @@ const toggleColumnVisibility = useCallback((column: string) => {
                       return uniqueRoomNumbers.size;
                     })()}
                           </td>
-                          <td className="px-2 py-2 text-center text-xs text-gray-900 dark:text-white bg-green-100 dark:bg-green-800/30">
+                          <td className="px-2 py-2 text-center text-xs text-v3-text bg-green-100 dark:bg-green-800/30">
                             {(() => {
                       // Toplam kişi sayısını hesapla
                       let totalPax = 0;

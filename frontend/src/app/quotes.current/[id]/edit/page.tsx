@@ -492,7 +492,7 @@ export default function QuoteEditPage() {
           </div>
           <Link
             href="/quotes"
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-600 dark:text-blue-300 font-medium"
           >
             ← Tekliflere Dön
           </Link>
@@ -508,10 +508,10 @@ export default function QuoteEditPage() {
         <div className="mb-8 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+              <h1 className="text-3xl font-bold text-v3-text transition-colors duration-200">
                 Teklif Düzenle
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
+              <p className="text-v3-muted mt-2 transition-colors duration-200">
                 Referans: {quote.reference} |{" "}
                 {new Date(quote.created_at).toLocaleDateString("tr-TR")}
               </p>
@@ -525,7 +525,7 @@ export default function QuoteEditPage() {
               </Link>
               <Link
                 href="/quotes"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-v3-text rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
               >
                 Tekliflere Dön
               </Link>
@@ -537,14 +537,14 @@ export default function QuoteEditPage() {
         <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Header Information - ${typeof document !== "undefined" ? document.title.split("-")[0].trim() : "MICE"} Style */}
-            <div className="border-b border-gray-200 dark:border-gray-700 pb-6 transition-colors duration-200">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">
+            <div className="border-b border-gray-200 dark:border-v3-border pb-6 transition-colors duration-200">
+              <h3 className="text-lg font-medium text-v3-text mb-4 transition-colors duration-200">
                 Teklif Bilgileri
               </h3>
               <div className="grid grid-cols-1 gap-6">
                 {/* 1. Referans - Tek Bölüm Tam Genişlik */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                  <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                     REFERANS *
                   </label>
                   <input
@@ -553,7 +553,7 @@ export default function QuoteEditPage() {
                     value={formData.reference}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     placeholder="Referans numarası girin"
                   />
                 </div>
@@ -561,7 +561,7 @@ export default function QuoteEditPage() {
                 {/* 2. Acente + Firma - 2 Bölüm Yan Yana */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       ACENTE *
                     </label>
                     <select
@@ -569,7 +569,7 @@ export default function QuoteEditPage() {
                       value={formData.agency_id}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="">Acente seçin</option>
                       {agencies.map((agency) => (
@@ -581,7 +581,7 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       FİRMA *
                     </label>
                     <input
@@ -590,7 +590,7 @@ export default function QuoteEditPage() {
                       value={formData.company_name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       placeholder="Firma adını girin"
                     />
                   </div>
@@ -599,7 +599,7 @@ export default function QuoteEditPage() {
                 {/* 3. C-IN + C-OUT - 2 Bölüm Yan Yana */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       C/IN TARİHİ *
                     </label>
                     <input
@@ -608,12 +608,12 @@ export default function QuoteEditPage() {
                       value={formData.check_in_date}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       C/OUT TARİHİ *
                     </label>
                     <input
@@ -622,7 +622,7 @@ export default function QuoteEditPage() {
                       value={formData.check_out_date}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     />
                   </div>
                 </div>
@@ -630,7 +630,7 @@ export default function QuoteEditPage() {
                 {/* 5. Otel + Otel Konsepti - 2 Bölüm Yan Yana */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       OTEL *
                     </label>
                     <select
@@ -638,7 +638,7 @@ export default function QuoteEditPage() {
                       value={formData.hotel_id}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="">Otel seçin</option>
                       {hotels.map((hotel) => (
@@ -650,7 +650,7 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       OTEL KONSEPTİ
                     </label>
                     <input
@@ -660,7 +660,7 @@ export default function QuoteEditPage() {
                           ?.concept || ""
                       }
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-v3-muted transition-colors duration-200"
                       placeholder="Otel seçildiğinde otomatik doldurulur"
                     />
                   </div>
@@ -669,7 +669,7 @@ export default function QuoteEditPage() {
                 {/* 6. Oda + Pax Sayısı - 2 Bölüm Yan Yana */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       ODA SAYISI
                     </label>
                     <input
@@ -678,13 +678,13 @@ export default function QuoteEditPage() {
                       value={formData.room_count}
                       onChange={handleInputChange}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                       placeholder="200"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       PAX SAYISI
                     </label>
                     <input
@@ -693,7 +693,7 @@ export default function QuoteEditPage() {
                       value={formData.pax_count}
                       onChange={handleInputChange}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                       placeholder="350"
                     />
                   </div>
@@ -702,14 +702,14 @@ export default function QuoteEditPage() {
                 {/* 7. Teklif Türü + Opsiyon - 2 Bölüm Yan Yana */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       TEKLİF TÜRÜ
                     </label>
                     <select
                       name="quote_type"
                       value={formData.quote_type}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="BİRİM">BİRİM</option>
                       <option value="PAKET">PAKET</option>
@@ -717,14 +717,14 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       OPSİYON
                     </label>
                     <select
                       name="option"
                       value={formData.option}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="SOR - SAT">SOR - SAT</option>
                       <option value="1. OPSİYON">1. OPSİYON</option>
@@ -736,14 +736,14 @@ export default function QuoteEditPage() {
                 {/* 8. Durum + Dosya Sorumlusu - 2 Bölüm Yan Yana */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       DURUM
                     </label>
                     <select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="TEKLİF">TEKLİF</option>
                       <option value="KONFİRME">KONFİRME</option>
@@ -752,14 +752,14 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       DOSYA SORUMLUSU
                     </label>
                     <select
                       name="file_manager"
                       value={formData.file_manager || ""}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="">Kullanıcı seçin</option>
                       {users.map((user) => (
@@ -773,7 +773,7 @@ export default function QuoteEditPage() {
 
                 {/* 9. Not - Tek Bölüm Tam Genişlik */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                  <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                     NOT
                   </label>
                   <textarea
@@ -781,7 +781,7 @@ export default function QuoteEditPage() {
                     value={formData.notes}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     placeholder="Teklif notları..."
                   />
                 </div>
@@ -803,13 +803,13 @@ export default function QuoteEditPage() {
             {/* Add New Item */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mx-6 mb-6 transition-colors duration-200">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
+                <h2 className="text-2xl font-bold text-v3-text mb-6 transition-colors duration-200">
                   Yeni Hizmet Ekle
                 </h2>
 
                 <div className="grid grid-cols-12 gap-4 mb-4">
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Ana Kategori
                     </label>
                     <select
@@ -821,7 +821,7 @@ export default function QuoteEditPage() {
                           sub_category: "",
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="">Seçin</option>
                       {categories.map((category) => (
@@ -833,7 +833,7 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Alt Kategori
                     </label>
                     <select
@@ -841,7 +841,7 @@ export default function QuoteEditPage() {
                       onChange={(e) =>
                         setNewItem({ ...newItem, sub_category: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="">Seçin</option>
                       {categories
@@ -855,7 +855,7 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Adet
                     </label>
                     <input
@@ -871,12 +871,12 @@ export default function QuoteEditPage() {
                         });
                       }}
                       min="1"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     />
                   </div>
 
                   <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Tekrar
                     </label>
                     <input
@@ -892,12 +892,12 @@ export default function QuoteEditPage() {
                         });
                       }}
                       min="1"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Birim Fiyat
                     </label>
                     <input
@@ -914,13 +914,13 @@ export default function QuoteEditPage() {
                       }}
                       min="0"
                       step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                       placeholder="0.00"
                     />
                   </div>
 
                   <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Döviz
                     </label>
                     <select
@@ -928,7 +928,7 @@ export default function QuoteEditPage() {
                       onChange={(e) =>
                         setNewItem({ ...newItem, currency: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                     >
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
@@ -938,7 +938,7 @@ export default function QuoteEditPage() {
                   </div>
 
                   <div className="col-span-3">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                    <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                       Açıklama
                     </label>
                     <input
@@ -947,7 +947,7 @@ export default function QuoteEditPage() {
                       onChange={(e) =>
                         setNewItem({ ...newItem, service_name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       placeholder="Hizmet açıklaması girin"
                     />
                   </div>
@@ -975,7 +975,7 @@ export default function QuoteEditPage() {
             {quote.items && quote.items.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mx-6 mb-6 transition-colors duration-200">
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
+                  <h2 className="text-2xl font-bold text-v3-text mb-6 transition-colors duration-200">
                     Teklif Kalemleri
                   </h2>
 
@@ -983,31 +983,31 @@ export default function QuoteEditPage() {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Kategori
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Alt Kategori
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Açıklama
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Adet
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Tekrar
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Birim Fiyat
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Döviz
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             Toplam
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                             İşlemler
                           </th>
                         </tr>
@@ -1018,34 +1018,34 @@ export default function QuoteEditPage() {
                             key={item.id}
                             className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {getCategoryName(
                                 item.main_category || item.category_id || "",
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {getCategoryName(
                                 item.sub_category || item.sub_category_id || "",
                               ) || "Bilinmiyor"}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {item.description ||
                                 item.detail_description ||
                                 "-"}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {item.unit_quantity || 0}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {item.repeat_frequency || item.sefer || 0}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {item.unit_price?.toFixed(2) || "0.00"}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                               {item.currency || "EUR"}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-v3-text transition-colors duration-200">
                               {item.currency || "EUR"}{" "}
                               {item.total_price?.toFixed(2) ||
                                 item.total?.toFixed(2) ||
@@ -1056,7 +1056,7 @@ export default function QuoteEditPage() {
                                 <button
                                   type="button"
                                   onClick={() => editItem(item.id)}
-                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors duration-200"
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-600 dark:text-blue-300 transition-colors duration-200"
                                   title="Düzenle"
                                 >
                                   <svg
@@ -1103,10 +1103,10 @@ export default function QuoteEditPage() {
 
                   {/* Total */}
                   <div className="mt-6 text-right">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+                    <div className="text-2xl font-bold text-v3-text transition-colors duration-200">
                       TOPLAM: {quote.total_amount?.toFixed(2) || "0.00"} EUR
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">
+                    <div className="text-sm text-v3-muted transition-colors duration-200">
                       KDV DAHİL
                     </div>
                   </div>

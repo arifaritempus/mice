@@ -45,7 +45,7 @@ export default function KarZararTab({
   const { t } = useLanguage();
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+      <h2 className="text-lg font-bold text-v3-text">
         {t('projects.profitAndLossAnalysis') || "Kar/Zarar Analizi"}
       </h2>
 
@@ -53,7 +53,7 @@ export default function KarZararTab({
       <div className="overflow-x-auto custom-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0">
         <div className="min-w-max md:min-w-full">
           {/* Başlık satırı - Kar/Zarar için optimize edilmiş */}
-          <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-gray-900 dark:text-white">
+          <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2 flex items-center gap-2 text-xs font-semibold text-v3-text">
             <div className="w-48">{t('projects.subCategoryUpper') || "ALT KATEGORİ"}</div>
             <div className="w-32 text-right pr-1">{t('projects.salesCurrencyUpper') || "SATIŞ DÖVİZ"}</div>
             <div className="w-20 text-right pr-1">{t('projects.exchangeRateUpper') || "KUR"}</div>
@@ -70,28 +70,28 @@ export default function KarZararTab({
             {profitLossData.rows.length === 0 ? (
               salesTotals.totalTRY > 0 || purchaseTotals.totalTRY > 0 ? (
                 <div className="rounded-md p-2 flex flex-nowrap items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                  <div className="w-48 text-xs text-gray-900 dark:text-white">
+                  <div className="w-48 text-xs text-v3-text">
                     {t('projects.totalFallbackUpper') || "TOPLAM (fallback)"}
                   </div>
-                  <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-32 text-right pr-1 text-xs text-v3-text">
                     {formatByCurrencySummary(salesTotals.totalByCurrency)}
                   </div>
-                  <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-20 text-right pr-1 text-xs text-v3-text">
                     —
                   </div>
-                  <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-32 text-right pr-1 text-xs text-v3-text">
                     {formatNumber(salesTotals.totalTRY)}
                   </div>
-                  <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-32 text-right pr-1 text-xs text-v3-text">
                     {formatByCurrencySummary(purchaseTotals.totalByCurrency)}
                   </div>
-                  <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-20 text-right pr-1 text-xs text-v3-text">
                     —
                   </div>
-                  <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-32 text-right pr-1 text-xs text-v3-text">
                     {formatNumber(purchaseTotals.totalTRY)}
                   </div>
-                  <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-32 text-right pr-1 text-xs text-v3-text">
                     <span
                       className={
                         salesTotals.totalTRY - purchaseTotals.totalTRY >= 0
@@ -104,14 +104,14 @@ export default function KarZararTab({
                       )}
                     </span>
                   </div>
-                  <div className="w-24 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                  <div className="w-24 text-right pr-1 text-xs text-v3-text">
                     {salesTotals.totalTRY > 0
                       ? `${formatNumber(((salesTotals.totalTRY - purchaseTotals.totalTRY) / salesTotals.totalTRY) * 100)} %`
                       : "—"}
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">
+                <div className="text-center text-v3-muted py-6 text-sm">
                   {t('projects.noData') || "Veri yok"}
                 </div>
               )
@@ -134,30 +134,30 @@ export default function KarZararTab({
                           className="rounded-md p-2 flex flex-nowrap items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                         >
                           <div
-                            className="w-48 text-xs text-gray-900 dark:text-white"
+                            className="w-48 text-xs text-v3-text"
                             title={r.subCategoryName}
                           >
                             {r.subCategoryName}
                           </div>
-                          <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-32 text-right pr-1 text-xs text-v3-text">
                             {formatByCurrencySummary(r.salesByCurrency)}
                           </div>
-                          <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-20 text-right pr-1 text-xs text-v3-text">
                             —
                           </div>
-                          <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-32 text-right pr-1 text-xs text-v3-text">
                             {formatNumber(r.salesTRY)}
                           </div>
-                          <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-32 text-right pr-1 text-xs text-v3-text">
                             {formatByCurrencySummary(r.purchaseByCurrency)}
                           </div>
-                          <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-20 text-right pr-1 text-xs text-v3-text">
                             —
                           </div>
-                          <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-32 text-right pr-1 text-xs text-v3-text">
                             {formatNumber(r.purchaseTRY)}
                           </div>
-                          <div className="w-32 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-32 text-right pr-1 text-xs text-v3-text">
                             <span
                               className={
                                 r.profitTRY >= 0
@@ -168,7 +168,7 @@ export default function KarZararTab({
                               {formatNumber(r.profitTRY)}
                             </span>
                           </div>
-                          <div className="w-24 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                          <div className="w-24 text-right pr-1 text-xs text-v3-text">
                             {Number.isFinite(r.marginPercent)
                               ? `${formatNumber(r.marginPercent)} %`
                               : "—"}
@@ -182,35 +182,35 @@ export default function KarZararTab({
                 {/* Genel Toplam - Kar/Zarar için optimize edilmiş */}
                 <div className="mt-4 bg-blue-500 dark:bg-blue-700 rounded-md p-3">
                   <div className="flex flex-nowrap items-center gap-2">
-                    <div className="w-48 text-sm font-bold text-white">
+                    <div className="w-48 text-sm font-bold text-v3-text">
                       {t('projects.grandTotalUpper') || "GENEL TOPLAM"}
                     </div>
-                    <div className="w-32 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-32 text-sm font-bold text-v3-text text-right pr-1">
                       {formatByCurrencySummary(
                         profitLossData.totals.salesByCurrency,
                       )}
                     </div>
-                    <div className="w-20 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-20 text-sm font-bold text-v3-text text-right pr-1">
                       —
                     </div>
-                    <div className="w-32 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-32 text-sm font-bold text-v3-text text-right pr-1">
                       {formatNumber(profitLossData.totals.salesTRY)}
                     </div>
-                    <div className="w-32 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-32 text-sm font-bold text-v3-text text-right pr-1">
                       {formatByCurrencySummary(
                         profitLossData.totals.purchaseByCurrency,
                       )}
                     </div>
-                    <div className="w-20 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-20 text-sm font-bold text-v3-text text-right pr-1">
                       —
                     </div>
-                    <div className="w-32 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-32 text-sm font-bold text-v3-text text-right pr-1">
                       {formatNumber(profitLossData.totals.purchaseTRY)}
                     </div>
-                    <div className="w-32 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-32 text-sm font-bold text-v3-text text-right pr-1">
                       {formatNumber(profitLossData.totals.profitTRY)}
                     </div>
-                    <div className="w-24 text-sm font-bold text-white text-right pr-1">
+                    <div className="w-24 text-sm font-bold text-v3-text text-right pr-1">
                       {profitLossData.totals.salesTRY > 0
                         ? `${formatNumber((profitLossData.totals.profitTRY / profitLossData.totals.salesTRY) * 100)} %`
                         : "—"}

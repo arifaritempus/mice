@@ -159,7 +159,7 @@ export default function InvoiceItemTable({
           <input
             type="text"
             placeholder="Ara (Voucher, Firma, Otel, Tarih, Proje...)"
-            className="px-4 py-2 border rounded-lg w-full max-w-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+            className="px-4 py-2 border rounded-lg w-full max-w-sm dark:bg-gray-800 dark:border-gray-700 dark:text-v3-text focus:ring-2 focus:ring-blue-500 outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -171,7 +171,7 @@ export default function InvoiceItemTable({
         style={themedPanelStyle}
       >
         <table className="w-full table-fixed min-w-[1000px] divide-y divide-gray-200 dark:divide-gray-700 text-sm relative">
-          <thead className="bg-slate-100/80 dark:bg-slate-800/70 sticky top-0 z-10 backdrop-blur-sm">
+          <thead className="bg-slate-100/80 dark:bg-v3-surface/70 sticky top-0 z-10 backdrop-blur-sm">
             <tr>
               <th className="px-2.5 py-2.5 text-left w-10">
                 <input
@@ -228,7 +228,7 @@ export default function InvoiceItemTable({
               <tr>
                 <td
                   colSpan={11}
-                  className="px-4 py-8 text-center text-slate-500 dark:text-slate-400"
+                  className="px-4 py-8 text-center text-v3-muted dark:text-v3-muted"
                 >
                   {enableInternalSearch && searchTerm
                     ? "Arama sonucu bulunamadı."
@@ -275,7 +275,7 @@ export default function InvoiceItemTable({
                         ? "bg-blue-500/20 dark:bg-blue-900/40"
                         : partial
                           ? "bg-orange-50/30 dark:bg-orange-900/10"
-                          : "hover:bg-blue-500/10 transition-colors group border-b border-white/5 last:border-0"
+                          : "hover:bg-blue-500/10 transition-colors group border-b border-v3-border last:border-0"
                     }`}
                     onClick={() => toggleRow(row)}
                   >
@@ -303,7 +303,7 @@ export default function InvoiceItemTable({
                       >
                         {badge}
                       </span>
-                      <span className="font-semibold text-gray-900 dark:text-white truncate text-[11px]">
+                      <span className="font-semibold text-gray-900 dark:text-v3-text truncate text-[11px]">
                         {item.category_name}
                         {item.sub_category_name && (
                           <span className="text-gray-400 font-normal ml-1">
@@ -372,7 +372,7 @@ export default function InvoiceItemTable({
                   <td className="px-2.5 py-2.5 text-right text-green-600 dark:text-green-400 whitespace-nowrap text-[11px]">
                     {formatCurrency(item.invoiced_amount || 0, item.currency)}
                   </td>
-                  <td className="px-2.5 py-2.5 text-right font-bold text-gray-900 dark:text-white whitespace-nowrap text-[11px]">
+                  <td className="px-2.5 py-2.5 text-right font-bold text-gray-900 dark:text-v3-text whitespace-nowrap text-[11px]">
                     {formatCurrency(item.balance || 0, item.currency)}
                   </td>
 

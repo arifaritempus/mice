@@ -53,7 +53,7 @@ const AccommodationRow = memo(
     canDelete = true,
   }: any) => {
     return (
-      <tr className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <tr className="border-b border-gray-200 dark:border-v3-border hover:bg-gray-50 dark:hover:bg-gray-700">
         {isEditing ? (
           <>
             <td className="px-3 py-2">
@@ -197,7 +197,7 @@ const AccommodationRow = memo(
               )}
               <button
                 onClick={handleAccommodationCancel}
-                className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                className="px-2 py-1 bg-gray-600 text-v3-text text-xs rounded hover:bg-gray-700"
               >
                 İptal
               </button>
@@ -366,7 +366,7 @@ export default function AccommodationTab({
   return (
     <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-sm font-semibold text-v3-text">
           {t('projects.accommodation') || "Konaklama"}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -406,7 +406,7 @@ export default function AccommodationTab({
         <div className="space-y-4">
           {/* Ana Konaklama Tablosu */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div className="px-0 py-1 border-b border-gray-200 dark:border-gray-700 flex items-center justify-start">
+            <div className="px-0 py-1 border-b border-gray-200 dark:border-v3-border flex items-center justify-start">
               <input
                 type="text"
                 value={accommodationSearch}
@@ -451,7 +451,7 @@ export default function AccommodationTab({
                     return (
                       <tr
                         key={uniqueKey}
-                        className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="border-b border-gray-200 dark:border-v3-border hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         {editingAccommodationIndex === index ? (
                           <>
@@ -842,7 +842,7 @@ export default function AccommodationTab({
                               )}
                               <button
                                 onClick={handleAccommodationCancel}
-                                className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                className="px-2 py-1 bg-gray-600 text-v3-text text-xs rounded hover:bg-gray-700"
                               >
                                 {t('common.cancel') || "İptal"}
                               </button>
@@ -935,8 +935,8 @@ export default function AccommodationTab({
           {/* Günlük Inhouse Kontrolü Tablosu - Basitleştirilmiş */}
           {accommodationStats.allDates.length > 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-v3-border">
+                <h3 className="text-sm font-semibold text-v3-text">
                   {t('projects.dailyInhouseControl') || "Günlük Inhouse Kontrolü"}
                 </h3>
               </div>

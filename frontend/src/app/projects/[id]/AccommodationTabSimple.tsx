@@ -78,7 +78,7 @@ export default function AccommodationTabSimple({
   return (
     <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-sm font-semibold text-v3-text">
           Konaklama
         </h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -146,8 +146,8 @@ export default function AccommodationTabSimple({
 
           {/* Basitleştirilmiş Konaklama Listesi */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-v3-border flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-v3-text">
                 Konaklama Listesi
               </h3>
               <input
@@ -201,7 +201,7 @@ export default function AccommodationTabSimple({
                   </div>
                 ))}
                 {accommodationItems.length > 20 && (
-                  <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-4 text-sm text-v3-muted">
                     ... ve {accommodationItems.length - 20} daha fazla kayıt
                   </div>
                 )}

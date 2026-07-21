@@ -254,10 +254,10 @@ export default function AuthWrapper({
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400 shadow-inner">
             <span className="text-3xl">🔒</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+          <h2 className="text-xl font-black text-slate-900 dark:text-v3-text mb-3 tracking-tight">
             Erişim Sınırlandırıldı
           </h2>
-          <p className="text-sm font-medium text-slate-500 dark:text-gray-400 leading-relaxed">
+          <p className="text-sm font-medium text-v3-muted dark:text-gray-400 leading-relaxed">
             Bu bölüme erişmek için gerekli yetki seviyesine sahip değilsiniz.{" "}
             <br />
             Lütfen bir yönetici ile iletişime geçin.

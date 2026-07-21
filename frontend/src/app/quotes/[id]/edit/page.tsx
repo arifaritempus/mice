@@ -86,19 +86,19 @@ function NotificationModal({ message, type, onClose }: NotificationModalProps) {
               </svg>
             )}
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-bold text-v3-text mb-2">
             {type === "success"
               ? "Başarılı"
               : type === "error"
                 ? "Hata"
                 : "Bilgi"}
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
+          <p className="text-v3-muted text-sm leading-relaxed mb-6">
             {message}
           </p>
           <button
             onClick={onClose}
-            className={`w-full py-3 rounded-xl font-semibold text-white transition-all active:scale-95 shadow-lg ${
+            className={`w-full py-3 rounded-xl font-semibold text-v3-text transition-all active:scale-95 shadow-lg ${
               type === "success"
                 ? "bg-green-600 hover:bg-green-700 shadow-green-500/20"
                 : type === "error"
@@ -250,11 +250,11 @@ function SearchableSelect({
           setTimeout(() => setOpen(false), 150);
         }}
         placeholder={placeholder}
-        className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800"
+        className="w-full px-3 h-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-v3-text text-xs disabled:bg-gray-100 dark:disabled:bg-gray-800"
       />
       {open && (
-        <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
-          <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">
+        <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-v3-border rounded-md shadow-lg z-20">
+          <div className="px-2 py-1 text-xs text-v3-muted">
             {filtered.length} sonuç
           </div>
           {filtered.map((opt, idx) => (
@@ -263,13 +263,13 @@ function SearchableSelect({
               key={opt.id}
               onMouseEnter={() => setHighlight(idx)}
               onClick={() => handleSelect(opt.id)}
-              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${idx === highlight ? "bg-blue-500/10 dark:bg-gray-700" : ""} text-gray-900 dark:text-white`}
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${idx === highlight ? "bg-blue-500/10 dark:bg-gray-700" : ""} text-v3-text`}
             >
               {opt.name}
             </button>
           ))}
           {filtered.length === 0 && (
-            <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="px-3 py-2 text-sm text-v3-muted">
               Sonuç yok
             </div>
           )}
@@ -990,10 +990,10 @@ export default function QuoteEditPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Teklifi düzenlemek için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -1027,13 +1027,13 @@ export default function QuoteEditPage() {
   return (
     <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent transition-colors duration-200 compact">
       {/* NEW: Sticky Main Tabs - Full Width Minimal */}
-      <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-white/5 bg-[#0a0f18]/90 backdrop-blur-xl">
+      <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-v3-border bg-slate-900/10 dark:bg-[#0a0f18]/90 backdrop-blur-xl">
         <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
           {/* Left Back Button */}
           <div className="w-[120px]">
             <Link
               href="/quotes"
-              className="flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-v3-muted dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-v3-text dark:hover:text-v3-text transition-all duration-200 shadow-sm"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1043,18 +1043,18 @@ export default function QuoteEditPage() {
           </div>
           
           {/* Center Tabs */}
-          <div className="flex bg-transparent p-1 rounded-xl border border-white/5 w-full max-w-[350px]">
+          <div className="flex bg-transparent p-1 rounded-xl border border-v3-border w-full max-w-[350px]">
              <button 
                type="button"
                onClick={() => setActiveMainTab('info')} 
-               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-v3-muted hover:text-v3-text hover:bg-v3-border'}`}
              >
                TEKLİF BİLGİLERİ
              </button>
              <button 
                type="button"
                onClick={() => setActiveMainTab('details')} 
-               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+               className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-v3-muted hover:text-v3-text hover:bg-v3-border'}`}
              >
                TEKLİF DETAYLARI
              </button>
@@ -1064,7 +1064,7 @@ export default function QuoteEditPage() {
           <div className="w-[150px] flex justify-end gap-2">
             <Link
               href={`/quotes/${quoteId}?tab=${activeMainTab}`}
-              className="px-3 py-1.5 bg-gray-500/10 hover:bg-gray-500/20 text-gray-300 hover:text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors border border-gray-500/20"
+              className="px-3 py-1.5 bg-black/5 dark:bg-white/50/10 hover:bg-black/5 dark:bg-white/50/20 text-v3-muted hover:text-v3-text rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors border border-gray-500/20"
             >
               Vazgeç
             </Link>
@@ -1116,16 +1116,16 @@ export default function QuoteEditPage() {
         <form id="quote-edit-form" onSubmit={handleSubmit} className="space-y-4">
           {/* Teklif Bilgileri */}
           <div className={activeMainTab === 'info' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
-          <div className="bg-[#1e293b]/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-700/50 p-6 transition-colors duration-200 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl shadow-xl border border-v3-border p-6 transition-colors duration-200 mb-6">
+            <h2 className="text-lg font-semibold text-v3-text mb-4">
               Teklif Bilgileri
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Card 1: Temel Bilgiler */}
-              <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-blue-500/30 transition-all duration-300">
-                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative z-[60] group hover:border-blue-500/30 transition-all duration-300">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                  <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     KOD *
                   </label>
                   <input
@@ -1139,11 +1139,11 @@ export default function QuoteEditPage() {
                       }))
                     }
                     placeholder="Teklif kodu giriniz..."
-                    className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400"
+                    className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0 disabled:text-v3-muted"
                   />
                 </div>
-                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                  <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     DURUM *
                   </label>
                   <select
@@ -1152,7 +1152,7 @@ export default function QuoteEditPage() {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, status: e.target.value }))
                     }
-                    className="w-full text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400"
+                    className="w-full text-xs font-semibold text-v3-text bg-transparent border-none outline-none focus:ring-0 disabled:text-v3-muted"
                   >
                     <option value="BEKLEMEDE">BEKLEMEDE</option>
                     <option value="KONFİRME">KONFİRME</option>
@@ -1162,9 +1162,9 @@ export default function QuoteEditPage() {
               </div>
 
               {/* Card 2: Firma & Paydaşlar */}
-              <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-purple-500/30 transition-all duration-300">
-                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative z-[50] group hover:border-purple-500/30 transition-all duration-300">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                  <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     FİRMA ADI *
                   </label>
                   <input
@@ -1178,11 +1178,11 @@ export default function QuoteEditPage() {
                       }))
                     }
                     placeholder="Firma adını giriniz..."
-                    className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400"
+                    className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0 disabled:text-v3-muted"
                   />
                 </div>
-                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                  <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     ACENTE *
                   </label>
                   <SearchableSelect
@@ -1195,11 +1195,11 @@ export default function QuoteEditPage() {
                     placeholder="Acente seç / ara..."
                   />
                 </div>
-                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                  <label className="block text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                  <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     OPERASYON SORUMLULARI
                   </label>
-                  <div className="relative operation-managers-dropdown">
+                  <div className="relative z-50 operation-managers-dropdown">
                     <button
                       type="button"
                       disabled={hasLinkedProject}
@@ -1207,7 +1207,7 @@ export default function QuoteEditPage() {
                         !hasLinkedProject &&
                         setShowOperationManagersDropdown(!showOperationManagersDropdown)
                       }
-                      className="w-full text-left text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 flex justify-between items-center disabled:text-gray-400"
+                      className="w-full text-left text-xs font-semibold text-v3-text bg-transparent border-none outline-none focus:ring-0 flex justify-between items-center disabled:text-v3-muted"
                     >
                       <span className="flex-1 overflow-hidden">
                         {formData.operation_managers.length > 0 ? (
@@ -1219,22 +1219,22 @@ export default function QuoteEditPage() {
                                 return <span key={id} className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-1 py-0.5 rounded text-[10px] leading-none truncate max-w-[65px]">{u.first_name}</span>;
                               }
                               if (index === 2) {
-                                return <span key="more" className="bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300 px-1 py-0.5 rounded text-[10px] leading-none font-medium">+{formData.operation_managers.length - 2}</span>;
+                                return <span key="more" className="bg-gray-100 dark:bg-gray-600 text-v3-text text-v3-muted px-1 py-0.5 rounded text-[10px] leading-none font-medium">+{formData.operation_managers.length - 2}</span>;
                               }
                               return null;
                             })}
                           </div>
                         ) : "Kullanıcı seçin..."}
                       </span>
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-v3-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
 
                     {showOperationManagersDropdown && (
-                      <div className="absolute z-10 w-full mt-2 bg-[#1e293b] border border-gray-700 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                      <div className="absolute z-[9999] w-full mt-2 bg-v3-surface backdrop-blur-xl border border-v3-border rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-60 overflow-y-auto">
                         {users.map((user) => (
-                          <label key={user.id} className="flex items-center px-4 py-3 hover:bg-gray-800 cursor-pointer border-b border-gray-800/50 last:border-0">
+                          <label key={user.id} className="flex items-center px-4 py-3 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer border-b border-v3-border last:border-0 transition-colors">
                             <input
                               type="checkbox"
                               checked={formData.operation_managers.includes(user.id)}
@@ -1247,9 +1247,9 @@ export default function QuoteEditPage() {
                                   operation_managers: managers,
                                 }));
                               }}
-                              className="mr-3 text-blue-600 focus:ring-blue-500 rounded border-gray-600 bg-gray-900"
+                              className="mr-3 text-blue-600 focus:ring-blue-500 rounded border-v3-border bg-v3-surface"
                             />
-                            <span className="text-xs font-semibold text-gray-300">
+                            <span className="text-xs font-semibold text-v3-text">
                               {user.first_name} {user.last_name}
                             </span>
                           </label>
@@ -1261,10 +1261,10 @@ export default function QuoteEditPage() {
               </div>
 
               {/* Card 3: Teklif Bilgileri */}
-              <div className="bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
-                <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors flex-1 flex flex-col min-h-[100px] overflow-hidden">
+              <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors flex-1 flex flex-col min-h-[100px] overflow-hidden">
                   <div className="flex justify-between items-center mb-2 flex-shrink-0">
-                    <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest flex items-center gap-1.5">
+                    <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
                       OTELLER VE KONAKLAMA TARİHLERİ
                     </p>
                   </div>
@@ -1274,13 +1274,13 @@ export default function QuoteEditPage() {
                       {selectedHotels && selectedHotels.length > 0 ? (
                         selectedHotels.map((h: any, idx: number) => {
                           return (
-                            <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-[#1e293b] p-2 rounded-xl border border-gray-700/50">
+                            <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-black/5 dark:bg-white/5 p-2 rounded-xl border border-v3-border">
                               <div className="flex-1 min-w-[150px]">
                                 <select
                                   value={h.hotel_id || ""}
                                   disabled={hasLinkedProject}
                                   onChange={(e) => handleHotelListChange(h.id, 'hotel_id', e.target.value)}
-                                  className="w-full bg-[#0f172a] text-white text-[11px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
+                                  className="w-full bg-v3-surface text-v3-text text-[11px] font-bold border border-v3-border rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
                                 >
                                   <option value="">Otel Seçiniz</option>
                                   {hotels?.map((mh: any) => (
@@ -1294,16 +1294,16 @@ export default function QuoteEditPage() {
                                   value={h.check_in_date ? h.check_in_date.substring(0, 10) : ""}
                                   disabled={hasLinkedProject}
                                   onChange={(e) => handleHotelListChange(h.id, 'check_in_date', e.target.value)}
-                                  className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                                  className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
                                   title="Giriş Tarihi"
                                 />
-                                <span className="text-gray-500 font-bold">-</span>
+                                <span className="text-v3-muted font-bold">-</span>
                                 <input
                                   type="date"
                                   value={h.check_out_date ? h.check_out_date.substring(0, 10) : ""}
                                   disabled={hasLinkedProject}
                                   onChange={(e) => handleHotelListChange(h.id, 'check_out_date', e.target.value)}
-                                  className="bg-[#0f172a] text-white text-[10px] font-bold border border-gray-700/50 rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
+                                  className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
                                   title="Çıkış Tarihi"
                                 />
                                 {!hasLinkedProject && (
@@ -1321,7 +1321,7 @@ export default function QuoteEditPage() {
                           );
                         })
                       ) : (
-                        <div className="text-[10px] text-gray-500 italic">Otel eklenmemiş.</div>
+                        <div className="text-[10px] text-v3-muted italic">Otel eklenmemiş.</div>
                       )}
                     </div>
                     
@@ -1329,7 +1329,7 @@ export default function QuoteEditPage() {
                       <button
                         type="button"
                         onClick={addHotelRow}
-                        className="w-full mt-2 py-2 bg-[#0f172a] hover:bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-gray-700/50 hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
+                        className="w-full mt-2 py-2 bg-v3-surface hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-v3-border hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                         Yeni Otel Satırı Ekle
@@ -1338,16 +1338,16 @@ export default function QuoteEditPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                    <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                    <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       ODA | PAX
                     </p>
-                    <p className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                    <p className="text-base font-bold text-v3-text leading-tight">
                       {selectedHotels.reduce((acc, h) => acc + (Number(h.room_count) || 0), 0)} | {selectedHotels.reduce((acc, h) => acc + (Number(h.pax_count) || 0), 0)}
                     </p>
                   </div>
-                  <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors">
-                    <p className="text-[10px] font-black text-blue-500/80 dark:text-blue-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                    <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       TEKLİF TÜRÜ *
                     </p>
                     <select
@@ -1359,7 +1359,7 @@ export default function QuoteEditPage() {
                           quote_type: e.target.value,
                         }))
                       }
-                      className="w-full text-base font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 disabled:text-gray-400 p-0"
+                      className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0 disabled:text-v3-muted p-0"
                     >
                       <option value="BİRİM">BİRİM</option>
                       <option value="PAKET">PAKET</option>
@@ -1370,8 +1370,8 @@ export default function QuoteEditPage() {
             </div>
 
             {/* Tam Genişlik: Notlar */}
-            <div className="mt-6 bg-[#1e293b]/90 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-emerald-500/30 transition-all duration-300">
-              <div className="bg-[#0f172a]/70 rounded-xl p-4 border border-gray-700/30 hover:bg-[#0f172a] transition-colors flex flex-col">
+            <div className="mt-6 bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative z-[40] group hover:border-emerald-500/30 transition-all duration-300">
+              <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors flex flex-col">
                 <label className="block text-[10px] font-black text-emerald-500/80 dark:text-emerald-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   NOTLAR
                 </label>
@@ -1381,7 +1381,7 @@ export default function QuoteEditPage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, notes: e.target.value }))
                   }
-                  className="w-full min-h-[120px] text-xs font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 resize-y disabled:text-gray-400"
+                  className="w-full min-h-[120px] text-xs font-semibold text-v3-text bg-transparent border-none outline-none focus:ring-0 resize-y disabled:text-v3-muted"
                   placeholder="Teklif notlarını buraya yazın..."
                 />
               </div>
@@ -1392,16 +1392,16 @@ export default function QuoteEditPage() {
           {/* ─── DETAYLAR TAB ─── */}
           <div className={activeMainTab === 'details' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
               {/* ─── Çoklu Otel Seçimi ─── */}
-              <div className="md:col-span-6 space-y-4 bg-[#0f172a]/50 p-4 rounded-xl border border-gray-700/50 mb-6">
+              <div className="md:col-span-6 space-y-4 bg-v3-surface p-4 rounded-xl border border-v3-border mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  <h3 className="text-sm font-semibold text-v3-text dark:text-gray-200">
                     Otel &amp; Konaklama Seçimleri
                   </h3>
 
                 </div>
 
                 {/* Tab Bar */}
-                <div className="flex overflow-x-auto custom-scrollbar gap-2 bg-gray-50 dark:bg-[#0f172a]/70 dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-sm">
+                <div className="flex overflow-x-auto custom-scrollbar gap-2 bg-gray-50 dark:bg-v3-surface dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-v3-border shadow-sm">
                   {selectedHotels.map((h, index) => (
                     <div
                       key={h.id}
@@ -1413,7 +1413,7 @@ export default function QuoteEditPage() {
                       className={`flex items-center px-4 py-2 rounded-md cursor-pointer transition-all duration-200 whitespace-nowrap group ${
                         activeHotelId === h.id
                           ? "bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                          : "bg-[#1e293b]/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
+                          : "bg-black/5 dark:bg-white/5 text-v3-muted hover:text-v3-text hover:bg-black/10 dark:hover:bg-v3-surface/10"
                       }`}
                     >
                       <span className="text-[10px] font-black uppercase tracking-tight truncate max-w-[150px]">
@@ -1435,7 +1435,7 @@ export default function QuoteEditPage() {
                               e.stopPropagation();
                               copyHotel(h);
                             }}
-                            className="p-1 hover:bg-white/20 rounded"
+                            className="p-1 hover:bg-v3-surface/20 rounded"
                             title="Kopyala"
                           >
                             <svg
@@ -1487,7 +1487,7 @@ export default function QuoteEditPage() {
                     className={`flex items-center px-4 py-2 rounded-md cursor-pointer transition-all duration-200 whitespace-nowrap ${
                       activeHotelId === "general"
                         ? "bg-indigo-600/90 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]"
-                        : "bg-[#1e293b]/50 text-gray-400 hover:text-white hover:bg-[#1e293b]"
+                        : "bg-black/5 dark:bg-white/5 text-v3-muted hover:text-v3-text hover:bg-black/10 dark:hover:bg-v3-surface/10"
                     }`}
                   >
                     <span className="text-[10px] font-black uppercase tracking-tight">
@@ -1561,7 +1561,7 @@ export default function QuoteEditPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                                 placeholder="Konsept..."
                               />
                             </div>
@@ -1581,7 +1581,7 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 required
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
                             <div className="w-full">
@@ -1600,7 +1600,7 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 required
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
                           
@@ -1620,7 +1620,7 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 min="1"
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
                             <div className="w-full">
@@ -1639,7 +1639,7 @@ export default function QuoteEditPage() {
                                   )
                                 }
                                 min="1"
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
                             <div className="w-full">
@@ -1656,7 +1656,7 @@ export default function QuoteEditPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               >
                                 <option value="1. OPSİYON">1. OPSİYON</option>
                                 <option value="2. OPSİYON">2. OPSİYON</option>
@@ -1680,7 +1680,7 @@ export default function QuoteEditPage() {
                                 disabled={
                                   h.option === "SOR-SAT" || hasLinkedProject
                                 }
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               />
                             </div>
                             <div className="w-full">
@@ -1700,7 +1700,7 @@ export default function QuoteEditPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-gray-900 dark:text-white font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                                className="w-full px-2 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text font-bold disabled:bg-gray-100 dark:disabled:bg-gray-800"
                               >
                                 <option value="BEKLEMEDE">BEKLEMEDE</option>
                                 <option value="KONFİRME">KONFİRME</option>
@@ -1712,9 +1712,9 @@ export default function QuoteEditPage() {
                           <div className="mt-6 pt-2">
                               <QuoteServiceEditor
                               title={
-                              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase flex items-center m-0">
+                              <h3 className="text-sm font-bold text-v3-text dark:text-gray-200 uppercase flex items-center m-0">
                                 <svg
-                                  className="w-4 h-4 mr-2 text-blue-400"
+                                  className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -1771,7 +1771,7 @@ export default function QuoteEditPage() {
                 {/* Tab Content – General */}
                 {activeHotelId === "general" && (
                   <div className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm space-y-4">
-                    <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4 uppercase flex items-center">
+                    <h3 className="text-sm font-bold text-v3-text dark:text-gray-200 mb-4 uppercase flex items-center">
                       <svg
                         className="w-4 h-4 mr-2 text-indigo-500"
                         fill="none"
@@ -1828,14 +1828,14 @@ export default function QuoteEditPage() {
           <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">
             <Link
               href="/quotes"
-              className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-v3-muted text-v3-muted bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-v3-text dark:hover:text-v3-text transition-all duration-200 shadow-sm"
             >
               İPTAL
             </Link>
             {!hasLinkedProject && (
               <button
                 type="submit"
-                className="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5"
+                className="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-v3-text bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />

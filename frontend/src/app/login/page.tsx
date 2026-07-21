@@ -155,16 +155,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-v3-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[20%] left-[10%] w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[120px] mix-blend-screen" />
-        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[100px] mix-blend-screen" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617] z-0" />
+        <div className="absolute top-[20%] left-[10%] w-[600px] h-[600px] bg-blue-500/20 dark:bg-blue-900/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-v3-bg/80 to-v3-bg z-0" />
       </div>
 
       <div className="relative sm:mx-auto sm:w-full sm:max-w-md z-10">
-        <div className="glass-panel backdrop-blur-2xl bg-white/5 border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-2xl p-8 sm:p-10 relative overflow-hidden group">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="glass-panel backdrop-blur-2xl bg-v3-surface/80 border border-v3-border shadow-2xl rounded-2xl p-8 sm:p-10 relative overflow-hidden group">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/20 to-transparent" />
 
           <div className="text-center mb-8 flex flex-col items-center">
             {logo ? (
@@ -176,16 +176,16 @@ export default function LoginPage() {
                 />
               </div>
             ) : null}
-            <h1 className="text-3xl font-light tracking-[0.2em] text-white mb-2">
+            <h1 className="text-3xl font-light tracking-[0.2em] text-v3-text mb-2">
               {t("login.title")}
             </h1>
-            <p className="text-sm text-slate-400">{t("login.subtitle")}</p>
+            <p className="text-sm text-v3-muted">{t("login.subtitle")}</p>
           </div>
 
           {error && (
             <div
               key={errorKey}
-              className="login-error-shake mb-6 flex items-start gap-3 bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg"
+              className="login-error-shake mb-6 flex items-start gap-3 bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg"
             >
               <span className="text-sm leading-relaxed">{error}</span>
             </div>
@@ -196,14 +196,14 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-xs text-white mb-1.5"
+                  className="block text-xs text-v3-text mb-1.5"
                 >
                   {t("login.email")}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg
-                      className="h-4 w-4 text-slate-500"
+                      className="h-4 w-4 text-v3-muted"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -224,7 +224,7 @@ export default function LoginPage() {
                     required
                     value={credentials.email}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#0f172a]/80 border border-white/10 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                    className="block w-full pl-10 pr-3 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-sm text-v3-text placeholder:text-v3-muted focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
                     placeholder="e.g., alex.chen@nexus.co"
                   />
                 </div>
@@ -233,14 +233,14 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-xs text-white mb-1.5"
+                  className="block text-xs text-v3-text mb-1.5"
                 >
                   {t("login.password")}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg
-                      className="h-4 w-4 text-slate-500"
+                      className="h-4 w-4 text-v3-muted"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -261,7 +261,7 @@ export default function LoginPage() {
                     required
                     value={credentials.password}
                     onChange={handleInputChange}
-                    className="block w-full pl-10 pr-10 py-2.5 bg-[#0f172a]/80 border border-white/10 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all tracking-[0.2em]"
+                    className="block w-full pl-10 pr-10 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-sm text-v3-text placeholder:text-v3-muted focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all tracking-[0.2em]"
                     placeholder="••••••••"
                   />
                 </div>
@@ -274,11 +274,11 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 rounded bg-white/5 border-white/10 text-blue-400 focus:ring-blue-500 focus:ring-offset-slate-900"
+                  className="h-4 w-4 rounded bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-blue-600 dark:text-blue-400 focus:ring-blue-500 focus:ring-offset-v3-bg"
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-xs text-white"
+                  className="ml-2 block text-xs text-v3-text"
                 >
                   {t("login.remember")}
                 </label>
@@ -287,7 +287,7 @@ export default function LoginPage() {
               <div className="text-xs">
                 <Link
                   href="/forgot-password"
-                  className="text-slate-400 hover:text-white transition-colors border-b border-transparent hover:border-slate-400"
+                  className="text-v3-muted hover:text-v3-text transition-colors border-b border-transparent hover:border-slate-400"
                 >
                   {t("login.forgot")}
                 </Link>
@@ -298,7 +298,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-[#020617] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-none"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-v3-bg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-none"
               >
                 {loading ? t("login.loading") : t("login.button")}
               </button>

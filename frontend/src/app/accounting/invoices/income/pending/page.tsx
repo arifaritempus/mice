@@ -122,10 +122,10 @@ export default function IncomePendingPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <a
@@ -140,15 +140,15 @@ export default function IncomePendingPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-2rem)] w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-[calc(100vh-2rem)] w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-4 shrink-0">
           {/* Sol: Başlık */}
           <div className="shrink-0 mr-2">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               Bekleyen Gelir Faturaları
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               Fatura kesilmeyi bekleyen satış kalemleri
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function IncomePendingPage() {
 
               <button
                 onClick={exportToExcel}
-                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"
+                className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 hover:scale-105 uppercase"
               >
                 <Download size={14} /> Excel İndir
               </button>
@@ -212,7 +212,7 @@ export default function IncomePendingPage() {
 
         {/* Selection Totals Badge */}
         {selectedItems.length > 0 && (
-          <div className="flex items-center gap-3 p-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 shadow-sm rounded-2xl animate-in slide-in-from-top-2 duration-300 mt-4 shrink-0">
+          <div className="flex items-center gap-3 p-4 bg-v3-surface backdrop-blur-md border border-v3-border shadow-sm rounded-2xl animate-in slide-in-from-top-2 duration-300 mt-4 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
               <svg
                 className="w-6 h-6"
@@ -263,7 +263,7 @@ export default function IncomePendingPage() {
             <LoadingSpinner compact />
           </div>
         ) : (
-          <div className="bg-[#0f172a]/40 backdrop-blur-md rounded-2xl border border-white/10 flex-1 min-h-0 flex flex-col w-full relative mt-4 overflow-hidden">
+          <div className="bg-v3-surface backdrop-blur-md rounded-2xl border border-v3-border flex-1 min-h-0 flex flex-col w-full relative mt-4 overflow-hidden">
             <InvoiceItemTable
               items={filteredItems}
               type="income"

@@ -85,10 +85,22 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                // FORCE DARK MODE ONLY for V3
-                
-// FORCE DARK MODE ONLY for V3
-                document.documentElement.classList.add('dark');
+                // Read theme from cookie or fallback to dark mode
+                var match = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
+                var theme = match ? decodeURIComponent(match[1]) : "dark";
+                if (theme === "light") {
+                  document.documentElement.classList.add("light");
+                  document.documentElement.classList.remove("dark");
+                } else if (theme === "system") {
+                  var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                  if (systemDark) {
+                    document.documentElement.classList.add("dark");
+                  } else {
+                    document.documentElement.classList.add("light");
+                  }
+                } else {
+                  document.documentElement.classList.add("dark");
+                }
 
                 
                 fetch('/api/theme-settings')

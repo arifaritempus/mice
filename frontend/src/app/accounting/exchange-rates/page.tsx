@@ -140,21 +140,21 @@ export default function ExchangeRatesPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-2rem)] flex flex-col min-h-0 text-slate-100 p-4 sm:p-6 lg:p-8 overflow-hidden font-sans">
+    <div className="h-[calc(100vh-2rem)] flex flex-col min-h-0 text-v3-text p-4 sm:p-6 lg:p-8 overflow-hidden font-sans">
       {/* ═══════════════ HEADER ═══════════════ */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-start gap-8 mb-2 shrink-0">
         <div className="shrink-0">
-          <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+          <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
             TCMB Döviz Kurları
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-v3-muted mt-1">
             Türkiye Cumhuriyet Merkez Bankası geçmiş ve güncel kurları
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* Period Selector */}
-          <div className="flex h-10 bg-[#0f172a]/60 p-1 rounded-xl border border-white/10 shrink-0">
+          <div className="flex h-10 bg-v3-surface p-1 rounded-xl border border-v3-border shrink-0">
             {(
               [
                 { id: "today", label: "BUGÜN" },
@@ -169,8 +169,8 @@ export default function ExchangeRatesPage() {
                 onClick={() => setPeriod(item.id)}
                 className={`px-3 rounded-lg text-[10px] font-semibold transition-all uppercase flex items-center justify-center ${
                   period === item.id
-                    ? "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
-                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                    : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                 }`}
               >
                 {item.label}
@@ -202,7 +202,7 @@ export default function ExchangeRatesPage() {
           <button
             onClick={handleFetchRates}
             disabled={fetching || (!permEdit && !permsLoading)}
-            className="flex items-center gap-2 px-4 h-10 bg-[#0f172a]/60 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
+            className="flex items-center gap-2 px-4 h-10 bg-v3-surface border border-v3-border hover:border-emerald-500/50 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold uppercase tracking-wider rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${fetching ? "animate-spin" : ""}`}
@@ -213,23 +213,23 @@ export default function ExchangeRatesPage() {
       </div>
 
       {/* ═══════════════ DATA GRID ═══════════════ */}
-      <div className="bg-[#0f172a]/40 backdrop-blur-2xl border border-white/10 rounded-2xl flex-1 flex flex-col min-h-0 overflow-hidden relative shadow-2xl ring-1 ring-white/5">
+      <div className="bg-v3-surface backdrop-blur-2xl border border-v3-border rounded-2xl flex-1 flex flex-col min-h-0 overflow-hidden relative shadow-2xl ring-1 ring-white/5">
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay"></div>
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
         <div className="overflow-auto flex-1 min-h-0 custom-scrollbar relative z-10">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-[#0f172a]/60 backdrop-blur-xl text-[10px] uppercase font-black tracking-widest text-slate-400 sticky top-0 z-20">
+            <thead className="bg-v3-surface backdrop-blur-xl text-[10px] uppercase font-black tracking-widest text-v3-muted sticky top-0 z-20">
               <tr>
                 <th
                   rowSpan={2}
-                  className="px-6 py-4 border-b border-r border-white/10 bg-[#0f172a]/80 align-middle"
+                  className="px-6 py-4 border-b border-r border-v3-border bg-v3-surface align-middle"
                 >
                   Tarih
                 </th>
                 <th
                   colSpan={4}
-                  className="px-4 py-2 text-center border-b border-r border-white/10 text-blue-400 bg-blue-950/20"
+                  className="px-4 py-2 text-center border-b border-r border-v3-border text-blue-600 dark:text-blue-400 bg-blue-950/20"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <span className="text-base">🇪🇺</span> EUR - EURO
@@ -237,7 +237,7 @@ export default function ExchangeRatesPage() {
                 </th>
                 <th
                   colSpan={4}
-                  className="px-4 py-2 text-center border-b border-r border-white/10 text-emerald-400 bg-emerald-950/20"
+                  className="px-4 py-2 text-center border-b border-r border-v3-border text-emerald-600 dark:text-emerald-400 bg-emerald-950/20"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <span className="text-base">🇺🇸</span> USD - AMERİKAN DOLARI
@@ -245,7 +245,7 @@ export default function ExchangeRatesPage() {
                 </th>
                 <th
                   colSpan={4}
-                  className="px-4 py-2 text-center border-b border-white/10 text-purple-400 bg-purple-950/20"
+                  className="px-4 py-2 text-center border-b border-v3-border text-purple-400 bg-purple-950/20"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <span className="text-base">🇬🇧</span> GBP - İNGİLİZ STERLİNİ
@@ -254,42 +254,42 @@ export default function ExchangeRatesPage() {
               </tr>
               <tr className="text-[9px]">
                 {/* EUR */}
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface">
                   D. Alış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface">
                   D. Satış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60 opacity-60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface opacity-60">
                   E. Alış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60 opacity-60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface opacity-60">
                   E. Satış
                 </th>
                 {/* USD */}
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface">
                   D. Alış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface">
                   D. Satış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60 opacity-60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface opacity-60">
                   E. Alış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60 opacity-60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface opacity-60">
                   E. Satış
                 </th>
                 {/* GBP */}
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface">
                   D. Alış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface">
                   D. Satış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-r border-white/10 bg-[#0f172a]/60 opacity-60">
+                <th className="px-3 py-2 text-right border-b border-r border-v3-border bg-v3-surface opacity-60">
                   E. Alış
                 </th>
-                <th className="px-3 py-2 text-right border-b border-white/10 bg-[#0f172a]/60 opacity-60">
+                <th className="px-3 py-2 text-right border-b border-v3-border bg-v3-surface opacity-60">
                   E. Satış
                 </th>
               </tr>
@@ -299,10 +299,10 @@ export default function ExchangeRatesPage() {
                 <tr>
                   <td
                     colSpan={13}
-                    className="px-6 py-12 text-center text-slate-400 font-medium"
+                    className="px-6 py-12 text-center text-v3-muted font-medium"
                   >
                     <div className="flex flex-col items-center gap-3">
-                      <RefreshCw className="w-6 h-6 animate-spin text-blue-400" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
                       Kurlar yükleniyor, lütfen bekleyin...
                     </div>
                   </td>
@@ -311,11 +311,11 @@ export default function ExchangeRatesPage() {
                 <tr>
                   <td
                     colSpan={13}
-                    className="px-6 py-12 text-center text-slate-400 font-medium"
+                    className="px-6 py-12 text-center text-v3-muted font-medium"
                   >
                     Seçili tarih aralığında kur verisi bulunamadı. Lütfen
                     üstteki{" "}
-                    <strong className="text-emerald-400">Şimdi Güncelle</strong>{" "}
+                    <strong className="text-emerald-600 dark:text-emerald-400">Şimdi Güncelle</strong>{" "}
                     butonunu kullanın.
                   </td>
                 </tr>
@@ -323,53 +323,53 @@ export default function ExchangeRatesPage() {
                 historicalRates.map((dayRow) => (
                   <tr
                     key={dayRow.tarih}
-                    className="group hover:bg-white/[0.04] transition-colors cursor-default text-[12px] sm:text-[13px] font-medium text-white"
+                    className="group hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-default text-[12px] sm:text-[13px] font-medium text-v3-text"
                   >
-                    <td className="px-6 py-3 whitespace-nowrap font-bold text-white border-r border-white/5 bg-white/[0.01] group-hover:bg-transparent transition-colors">
+                    <td className="px-6 py-3 whitespace-nowrap font-bold text-v3-text border-r border-v3-border bg-black/[0.02] dark:bg-white/[0.02] group-hover:bg-transparent transition-colors">
                       {format(new Date(dayRow.tarih), "dd MMM yyyy", {
                         locale: tr,
                       })}
                     </td>
 
                     {/* EUR */}
-                    <td className="px-3 py-3 text-right tabular-nums text-blue-100">
+                    <td className="px-3 py-3 text-right tabular-nums text-blue-600 dark:text-blue-400">
                       {dayRow.EUR?.forex_buying?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-blue-400 font-bold">
+                    <td className="px-3 py-3 text-right tabular-nums text-blue-600 dark:text-blue-400 font-bold">
                       {dayRow.EUR?.forex_selling?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-500">
+                    <td className="px-3 py-3 text-right tabular-nums text-v3-muted">
                       {dayRow.EUR?.banknote_buying?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-500 border-r border-white/5">
+                    <td className="px-3 py-3 text-right tabular-nums text-v3-muted border-r border-v3-border">
                       {dayRow.EUR?.banknote_selling?.toFixed(4) || "-"}
                     </td>
 
                     {/* USD */}
-                    <td className="px-3 py-3 text-right tabular-nums text-emerald-100">
+                    <td className="px-3 py-3 text-right tabular-nums text-emerald-600 dark:text-emerald-400">
                       {dayRow.USD?.forex_buying?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-emerald-400 font-bold">
+                    <td className="px-3 py-3 text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
                       {dayRow.USD?.forex_selling?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-500">
+                    <td className="px-3 py-3 text-right tabular-nums text-v3-muted">
                       {dayRow.USD?.banknote_buying?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-500 border-r border-white/5">
+                    <td className="px-3 py-3 text-right tabular-nums text-v3-muted border-r border-v3-border">
                       {dayRow.USD?.banknote_selling?.toFixed(4) || "-"}
                     </td>
 
                     {/* GBP */}
-                    <td className="px-3 py-3 text-right tabular-nums text-purple-100">
+                    <td className="px-3 py-3 text-right tabular-nums text-purple-600 dark:text-purple-400">
                       {dayRow.GBP?.forex_buying?.toFixed(4) || "-"}
                     </td>
                     <td className="px-3 py-3 text-right tabular-nums text-purple-400 font-bold">
                       {dayRow.GBP?.forex_selling?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-500">
+                    <td className="px-3 py-3 text-right tabular-nums text-v3-muted">
                       {dayRow.GBP?.banknote_buying?.toFixed(4) || "-"}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-500">
+                    <td className="px-3 py-3 text-right tabular-nums text-v3-muted">
                       {dayRow.GBP?.banknote_selling?.toFixed(4) || "-"}
                     </td>
                   </tr>

@@ -96,17 +96,17 @@ export default function SettingsPage() {
 
   if (!canView(Module.SETTINGS)) {
     return (
-      <div className="h-full w-full p-6 sm:p-8 flex items-center justify-center font-sans text-white">
+      <div className="h-full w-full p-6 sm:p-8 flex items-center justify-center font-sans text-v3-text">
         <div className="text-center">
-          <h1 className="text-2xl font-light text-white glow-text mb-4">
+          <h1 className="text-2xl font-light text-v3-text glow-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-sm text-slate-400 mb-6">
+          <p className="text-sm text-v3-muted mb-6">
             Sistem Ayarları sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <a
             href="/"
-            className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase inline-block"
+            className="px-6 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] uppercase inline-block"
           >
             Ana Sayfaya Dön
           </a>
@@ -150,12 +150,12 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
           <div className="flex items-center gap-4 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -177,10 +177,10 @@ export default function SettingsPage() {
               </svg>
             </div>
             <div className="space-y-0.5">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text uppercase">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text uppercase">
                 Ayarlar
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 Sistem genelinde ayarları yapılandırın
               </p>
             </div>
@@ -188,7 +188,7 @@ export default function SettingsPage() {
           <div className="flex flex-row items-end justify-start xl:justify-end gap-3 flex-1 flex-wrap">
             <button
               onClick={handleSave}
-              className="h-10 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+              className="h-10 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
             >
               <svg
                 className="w-4 h-4"
@@ -209,12 +209,12 @@ export default function SettingsPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === tab.id ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+              className={`px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200 ${activeTab === tab.id ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
             >
               {tab.label}
             </button>
@@ -227,10 +227,10 @@ export default function SettingsPage() {
           {activeTab === "company" && (
             <div className="space-y-6">
               {/* Şirket Bilgileri */}
-              <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-6 pb-4 border-b border-white/10 flex items-center gap-2">
+              <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+                <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider mb-6 pb-4 border-b border-v3-border flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 text-blue-400"
+                    className="w-4 h-4 text-blue-600 dark:text-blue-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Şirket Adı *
                     </label>
                     <input
@@ -258,11 +258,11 @@ export default function SettingsPage() {
                           companyName: e.target.value,
                         })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       E-posta *
                     </label>
                     <input
@@ -274,11 +274,11 @@ export default function SettingsPage() {
                           companyEmail: e.target.value,
                         })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Telefon
                     </label>
                     <input
@@ -290,11 +290,11 @@ export default function SettingsPage() {
                           companyPhone: e.target.value,
                         })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Adres
                     </label>
                     <textarea
@@ -306,17 +306,17 @@ export default function SettingsPage() {
                           companyAddress: e.target.value,
                         })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all resize-none"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all resize-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Sistem Ayarları */}
-              <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-6 pb-4 border-b border-white/10 flex items-center gap-2">
+              <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+                <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider mb-6 pb-4 border-b border-v3-border flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 text-blue-400"
+                    className="w-4 h-4 text-blue-600 dark:text-blue-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -332,7 +332,7 @@ export default function SettingsPage() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Varsayılan Para Birimi
                     </label>
                     <select
@@ -343,21 +343,21 @@ export default function SettingsPage() {
                           defaultCurrency: e.target.value,
                         })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all appearance-none"
                     >
-                      <option value="EUR" className="bg-[#0f172a]">
+                      <option value="EUR" className="bg-v3-surface">
                         EUR (Euro)
                       </option>
-                      <option value="USD" className="bg-[#0f172a]">
+                      <option value="USD" className="bg-v3-surface">
                         USD (Dolar)
                       </option>
-                      <option value="TRY" className="bg-[#0f172a]">
+                      <option value="TRY" className="bg-v3-surface">
                         TRY (Türk Lirası)
                       </option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Saat Dilimi
                     </label>
                     <select
@@ -365,21 +365,21 @@ export default function SettingsPage() {
                       onChange={(e) =>
                         setSettings({ ...settings, timezone: e.target.value })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all appearance-none"
                     >
-                      <option value="Europe/Istanbul" className="bg-[#0f172a]">
+                      <option value="Europe/Istanbul" className="bg-v3-surface">
                         Europe/Istanbul (GMT+3)
                       </option>
-                      <option value="Europe/London" className="bg-[#0f172a]">
+                      <option value="Europe/London" className="bg-v3-surface">
                         Europe/London (GMT+0)
                       </option>
-                      <option value="UTC" className="bg-[#0f172a]">
+                      <option value="UTC" className="bg-v3-surface">
                         UTC
                       </option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Tarih Formatı
                     </label>
                     <select
@@ -387,21 +387,21 @@ export default function SettingsPage() {
                       onChange={(e) =>
                         setSettings({ ...settings, dateFormat: e.target.value })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all appearance-none"
                     >
-                      <option value="DD.MM.YYYY" className="bg-[#0f172a]">
+                      <option value="DD.MM.YYYY" className="bg-v3-surface">
                         DD.MM.YYYY (31.12.2023)
                       </option>
-                      <option value="MM/DD/YYYY" className="bg-[#0f172a]">
+                      <option value="MM/DD/YYYY" className="bg-v3-surface">
                         MM/DD/YYYY (12/31/2023)
                       </option>
-                      <option value="YYYY-MM-DD" className="bg-[#0f172a]">
+                      <option value="YYYY-MM-DD" className="bg-v3-surface">
                         YYYY-MM-DD (2023-12-31)
                       </option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Dil
                     </label>
                     <select
@@ -409,12 +409,12 @@ export default function SettingsPage() {
                       onChange={(e) =>
                         setSettings({ ...settings, language: e.target.value })
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all appearance-none"
                     >
-                      <option value="tr" className="bg-[#0f172a]">
+                      <option value="tr" className="bg-v3-surface">
                         Türkçe
                       </option>
-                      <option value="en" className="bg-[#0f172a]">
+                      <option value="en" className="bg-v3-surface">
                         English
                       </option>
                     </select>
@@ -427,11 +427,11 @@ export default function SettingsPage() {
           {/* TAB: LOGOLAR */}
           {activeTab === "logos" && (
             <div className="space-y-6">
-              <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-                <div className="mb-6 pb-4 border-b border-white/10">
-                  <h2 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+              <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+                <div className="mb-6 pb-4 border-b border-v3-border">
+                  <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider flex items-center gap-2">
                     <svg
-                      className="w-4 h-4 text-blue-400"
+                      className="w-4 h-4 text-blue-600 dark:text-blue-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -445,14 +445,14 @@ export default function SettingsPage() {
                     </svg>
                     Logolar
                   </h2>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-xs text-v3-muted mt-2">
                     PNG tercih edilir. İkon logo kare, wordmark logo yatay, menü
                     logo yatay önerilir. Tema değişikliklerinde logolar otomatik
                     olarak güncellenir.
                   </p>
                 </div>
 
-                <h3 className="text-[11px] font-bold text-white uppercase tracking-widest mb-4">
+                <h3 className="text-[11px] font-bold text-v3-text uppercase tracking-widest mb-4">
                   Koyu Tema Logoları
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -463,9 +463,9 @@ export default function SettingsPage() {
                   ].map((l, i) => (
                     <div
                       key={i}
-                      className="border border-white/10 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center hover:border-white/20 transition-colors"
+                      className="border border-v3-border bg-v3-border rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center hover:border-v3-border transition-colors"
                     >
-                      <label className="w-full aspect-[4/3] bg-[#0a0f18] rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center text-slate-500 cursor-pointer group hover:border-blue-500/50 hover:bg-blue-500/5 transition-all overflow-hidden relative p-2">
+                      <label className="w-full aspect-[4/3] bg-[#0a0f18] rounded-lg border border-dashed border-v3-border flex flex-col items-center justify-center text-v3-muted cursor-pointer group hover:border-blue-500/50 hover:bg-blue-500/5 transition-all overflow-hidden relative p-2">
                         <input
                           type="file"
                           accept="image/*"
@@ -494,7 +494,7 @@ export default function SettingsPage() {
                           <div className="absolute inset-0 flex items-center justify-center p-4">
                             <img src={(settings as any)[l.key]} alt={l.label} className="w-full h-full object-contain" />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                              <span className="text-white text-xs font-bold bg-blue-500/80 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                              <span className="text-v3-text text-xs font-bold bg-blue-500/80 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                                 Değiştir
                               </span>
@@ -502,16 +502,16 @@ export default function SettingsPage() {
                           </div>
                         ) : (
                           <>
-                            <svg className="w-8 h-8 mb-2 opacity-50 group-hover:text-blue-400 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-8 h-8 mb-2 opacity-50 group-hover:text-blue-600 dark:text-blue-400 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
                             </svg>
                             <span className="text-[10px] px-2">{l.label}</span>
-                            <span className="text-[9px] text-blue-400 mt-2 font-semibold bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">Görsel Seç</span>
+                            <span className="text-[9px] text-blue-600 dark:text-blue-400 mt-2 font-semibold bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">Görsel Seç</span>
                           </>
                         )}
                       </label>
                       <div className="flex gap-2 w-full">
-                        <label className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all cursor-pointer text-center flex items-center justify-center">
+                        <label className="flex-1 bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all cursor-pointer text-center flex items-center justify-center">
                           Yükle
                           <input
                             type="file"
@@ -552,7 +552,7 @@ export default function SettingsPage() {
                   ))}
                 </div>
 
-                <h3 className="text-[11px] font-bold text-white uppercase tracking-widest mb-4">
+                <h3 className="text-[11px] font-bold text-v3-text uppercase tracking-widest mb-4">
                   Açık Tema Logoları
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -563,9 +563,9 @@ export default function SettingsPage() {
                   ].map((l, i) => (
                     <div
                       key={i}
-                      className="border border-white/10 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center hover:border-white/20 transition-colors"
+                      className="border border-v3-border bg-v3-border rounded-xl p-4 flex flex-col items-center justify-center gap-4 text-center hover:border-v3-border transition-colors"
                     >
-                      <label className="w-full aspect-[4/3] bg-white rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-pointer group hover:border-blue-500/50 hover:bg-blue-50/50 transition-all overflow-hidden relative p-2">
+                      <label className="w-full aspect-[4/3] bg-white rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center text-v3-muted cursor-pointer group hover:border-blue-500/50 hover:bg-blue-50/50 transition-all overflow-hidden relative p-2">
                         <input
                           type="file"
                           accept="image/*"
@@ -594,7 +594,7 @@ export default function SettingsPage() {
                           <div className="absolute inset-0 flex items-center justify-center p-4">
                             <img src={(settings as any)[l.key]} alt={l.label} className="w-full h-full object-contain" />
                             <div className="absolute inset-0 bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                              <span className="text-white text-xs font-bold bg-blue-500/90 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                              <span className="text-v3-text text-xs font-bold bg-blue-500/90 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                                 Değiştir
                               </span>
@@ -611,7 +611,7 @@ export default function SettingsPage() {
                         )}
                       </label>
                       <div className="flex gap-2 w-full">
-                        <label className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all cursor-pointer text-center flex items-center justify-center">
+                        <label className="flex-1 bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] py-1.5 rounded-lg uppercase tracking-wider font-bold transition-all cursor-pointer text-center flex items-center justify-center">
                           Yükle
                           <input
                             type="file"
@@ -657,11 +657,11 @@ export default function SettingsPage() {
 
           {/* TAB: MAIL AYARLARI */}
           {activeTab === "mail" && (
-            <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-              <div className="mb-6 pb-4 border-b border-white/10">
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+            <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+              <div className="mb-6 pb-4 border-b border-v3-border">
+                <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 text-blue-400"
+                    className="w-4 h-4 text-blue-600 dark:text-blue-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -675,7 +675,7 @@ export default function SettingsPage() {
                   </svg>
                   Mail Ayarları
                 </h2>
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-xs text-v3-muted mt-2">
                   Sistem otomatik mail gönderimi için SMTP ayarları. Bu ayarlar
                   sistem genelinde kullanılacaktır.
                 </p>
@@ -683,7 +683,7 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     SMTP Sunucu
                   </label>
                   <input
@@ -692,11 +692,11 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, smtpServer: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     SMTP Port
                   </label>
                   <input
@@ -705,11 +705,11 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, smtpPort: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     SMTP Kullanıcı Adı
                   </label>
                   <input
@@ -718,11 +718,11 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, smtpUser: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     SMTP Şifre
                   </label>
                   <input
@@ -731,11 +731,11 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, smtpPass: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     Güvenli Bağlantı (SSL/TLS)
                   </label>
                   <select
@@ -743,24 +743,24 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, smtpSecure: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all appearance-none"
                   >
-                    <option value="tls" className="bg-[#0f172a]">
+                    <option value="tls" className="bg-v3-surface">
                       TLS
                     </option>
-                    <option value="ssl" className="bg-[#0f172a]">
+                    <option value="ssl" className="bg-v3-surface">
                       SSL
                     </option>
-                    <option value="none" className="bg-[#0f172a]">
+                    <option value="none" className="bg-v3-surface">
                       None
                     </option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 border-t border-white/10 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 border-t border-v3-border pt-6">
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     Gönderen Adı
                   </label>
                   <input
@@ -769,11 +769,11 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, mailFromName: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     Gönderen E-posta
                   </label>
                   <input
@@ -785,11 +785,11 @@ export default function SettingsPage() {
                         mailFromEmail: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                     Yanıt Adresi
                   </label>
                   <input
@@ -798,24 +798,24 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, mailReplyTo: e.target.value })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
+              <div className="mt-8 pt-4 border-t border-v3-border flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-v3-text">
                     Mail Ayarlarını Test Et
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-v3-muted mt-1">
                     Test maili göndererek ayarların doğru çalıştığını kontrol
                     edin
                   </p>
                 </div>
                 <button
                   onClick={handleTestMail}
-                  className="bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] px-6 py-2.5 rounded-xl uppercase tracking-wider font-bold transition-all shadow-sm"
+                  className="bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 text-[10px] px-6 py-2.5 rounded-xl uppercase tracking-wider font-bold transition-all shadow-sm"
                 >
                   Test Gönder
                 </button>
@@ -825,9 +825,9 @@ export default function SettingsPage() {
 
           {/* TAB: AI ASİSTAN */}
           {activeTab === "ai" && (
-            <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-              <div className="mb-6 pb-4 border-b border-white/10">
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+            <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+              <div className="mb-6 pb-4 border-b border-v3-border">
+                <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider flex items-center gap-2">
                   <svg
                     className="w-4 h-4 text-purple-400"
                     fill="none"
@@ -844,12 +844,12 @@ export default function SettingsPage() {
                   AI Asistan Ayarları
                 </h2>
               </div>
-              <div className="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-xl">
+              <div className="flex items-center justify-between bg-v3-border border border-v3-border p-4 rounded-xl">
                 <div>
-                  <h3 className="text-sm font-medium text-white">
+                  <h3 className="text-sm font-medium text-v3-text">
                     Sistemde Yapay Zeka Asistanını Göster
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-v3-muted mt-1">
                     Aktif edildiğinde ekranın sağ alt köşesinde AI asistan
                     butonu belirir. Pasif edilirse sistemden gizlenir.
                   </p>
@@ -876,11 +876,11 @@ export default function SettingsPage() {
           {activeTab === "colors" && (
             <div className="space-y-6">
               {/* Genel Renkler */}
-              <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-                <div className="mb-6 pb-4 border-b border-white/10">
-                  <h2 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+              <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+                <div className="mb-6 pb-4 border-b border-v3-border">
+                  <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider flex items-center gap-2">
                     <svg
-                      className="w-4 h-4 text-blue-400"
+                      className="w-4 h-4 text-blue-600 dark:text-blue-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -894,7 +894,7 @@ export default function SettingsPage() {
                     </svg>
                     Renk Ayarları
                   </h2>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-xs text-v3-muted mt-2">
                     Sistem genelinde kullanılacak renkleri özelleştirin. Renkler
                     CSS değişkenleri olarak uygulanır.
                   </p>
@@ -910,7 +910,7 @@ export default function SettingsPage() {
                     { label: "Bilgi (Info)", key: "colorInfo" },
                   ].map((color) => (
                     <div key={color.key} className="flex flex-col gap-2">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                         {color.label}
                       </label>
                       <div className="flex gap-2 items-center">
@@ -934,49 +934,49 @@ export default function SettingsPage() {
                               [color.key]: e.target.value,
                             })
                           }
-                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:border-blue-500/50 outline-none uppercase font-mono"
+                          className="flex-1 bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none uppercase font-mono"
                         />
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-4 border-t border-white/10 pt-4">
+                <h3 className="text-xs font-semibold text-v3-text uppercase tracking-wider mb-4 border-t border-v3-border pt-4">
                   Renk Önizleme
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   <span
-                    className="px-3 py-1 rounded-lg text-xs font-medium text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-medium text-v3-text"
                     style={{ backgroundColor: settings.colorPrimary }}
                   >
                     Primary
                   </span>
                   <span
-                    className="px-3 py-1 rounded-lg text-xs font-medium text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-medium text-v3-text"
                     style={{ backgroundColor: settings.colorSecondary }}
                   >
                     Secondary
                   </span>
                   <span
-                    className="px-3 py-1 rounded-lg text-xs font-medium text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-medium text-v3-text"
                     style={{ backgroundColor: settings.colorSuccess }}
                   >
                     Success
                   </span>
                   <span
-                    className="px-3 py-1 rounded-lg text-xs font-medium text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-medium text-v3-text"
                     style={{ backgroundColor: settings.colorWarning }}
                   >
                     Warning
                   </span>
                   <span
-                    className="px-3 py-1 rounded-lg text-xs font-medium text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-medium text-v3-text"
                     style={{ backgroundColor: settings.colorError }}
                   >
                     Error
                   </span>
                   <span
-                    className="px-3 py-1 rounded-lg text-xs font-medium text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-medium text-v3-text"
                     style={{ backgroundColor: settings.colorInfo }}
                   >
                     Info
@@ -987,11 +987,11 @@ export default function SettingsPage() {
               {/* Koyu/Açık Tema Renkleri Grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Koyu Tema */}
-                <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">
+                <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-sm font-semibold text-v3-text uppercase tracking-wider mb-2">
                     Koyu Tema Renk Ayarları
                   </h3>
-                  <p className="text-[11px] text-slate-400 mb-6 pb-4 border-b border-white/10">
+                  <p className="text-[11px] text-v3-muted mb-6 pb-4 border-b border-v3-border">
                     Koyu tema için zemin, kart, sidebar ve yazı renklerini
                     özelleştirin.
                   </p>
@@ -1016,7 +1016,7 @@ export default function SettingsPage() {
                         key={c.key}
                         className="flex items-center justify-between gap-4"
                       >
-                        <label className="text-xs font-medium text-white w-1/2">
+                        <label className="text-xs font-medium text-v3-text w-1/2">
                           {c.label}
                         </label>
                         <div className="flex gap-2 items-center flex-1">
@@ -1040,7 +1040,7 @@ export default function SettingsPage() {
                                 [c.key]: e.target.value,
                               })
                             }
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:border-blue-500/50 outline-none uppercase font-mono"
+                            className="w-full bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none uppercase font-mono"
                           />
                         </div>
                       </div>
@@ -1054,7 +1054,7 @@ export default function SettingsPage() {
                   <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-2">
                     Açık Tema Renk Ayarları
                   </h3>
-                  <p className="text-[11px] text-slate-500 mb-6 pb-4 border-b border-slate-200">
+                  <p className="text-[11px] text-v3-muted mb-6 pb-4 border-b border-slate-200">
                     Açık tema için zemin, kart, sidebar ve yazı renklerini
                     özelleştirin.
                   </p>

@@ -66,11 +66,11 @@ function ComboBox({
   return (
     <div className="relative">
       <div
-        className={`relative flex items-center bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 ${className}`}
+        className={`relative flex items-center bg-v3-surface border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 ${className}`}
       >
         <input
           ref={setInputRef}
-          className="w-full px-2 py-1 bg-transparent text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+          className="w-full px-2 py-1 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
           placeholder={placeholder}
           value={open ? query : selected ? getName(selected) : ""}
           onChange={(e) => {
@@ -112,7 +112,7 @@ function ComboBox({
           }}
           autoComplete="off"
         />
-        <div className="pr-4 pointer-events-none text-gray-400">
+        <div className="pr-4 pointer-events-none text-v3-muted">
           <svg
             className={`w-4 h-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
             fill="none"
@@ -130,7 +130,7 @@ function ComboBox({
       </div>
       {open && (
         <div
-          className="fixed z-[9999] bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white dark:border-gray-700 rounded-lg shadow-2xl max-h-56 overflow-auto animate-in fade-in zoom-in-95 duration-200"
+          className="fixed z-[9999] bg-v3-surface/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white dark:border-gray-700 rounded-lg shadow-2xl max-h-56 overflow-auto animate-in fade-in zoom-in-95 duration-200"
           style={{
             top: position.top,
             left: position.left,
@@ -139,14 +139,14 @@ function ComboBox({
           }}
         >
           {filtered.length === 0 ? (
-            <div className="px-2 py-1 text-xs font-bold text-gray-400">
+            <div className="px-2 py-1 text-xs font-bold text-v3-muted">
               Sonuç bulunamadı
             </div>
           ) : (
             filtered.map((o, i) => (
               <div
                 key={o.id}
-                className={`px-2 py-1 text-xs cursor-pointer transition-colors duration-200 ${i === highlight ? "bg-blue-500 text-white" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
+                className={`px-2 py-1 text-xs cursor-pointer transition-colors duration-200 ${i === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
                 onMouseEnter={() => setHighlight(i)}
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -924,7 +924,7 @@ export default function CreateSejourPage() {
     };
     return (
       <div className={`relative w-full ${className}`}>
-        <div className="relative flex items-center bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
+        <div className="relative flex items-center bg-v3-surface border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
           <input
             type="text"
             value={display}
@@ -966,9 +966,9 @@ export default function CreateSejourPage() {
             }}
             onBlur={() => setTimeout(() => setOpen(false), 120)}
             placeholder={placeholder}
-            className="w-full px-2 py-1.5 bg-transparent text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+            className="w-full px-2 py-1.5 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
           />
-          <div className="pr-6 pointer-events-none text-gray-400">
+          <div className="pr-6 pointer-events-none text-v3-muted">
             <svg
               className={`w-5 h-5 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
               fill="none"
@@ -985,8 +985,8 @@ export default function CreateSejourPage() {
           </div>
         </div>
         {open && (
-          <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
+          <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-auto bg-v3-surface border border-v3-border rounded-lg shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-4 py-2 text-[10px] font-black text-v3-muted uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
               {filtered.length} sonuç
             </div>
             {filtered.map((opt, idx) => (
@@ -996,13 +996,13 @@ export default function CreateSejourPage() {
                 onMouseEnter={() => setHighlight(idx)}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(opt.id)}
-                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
+                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
               >
                 {opt.name}
               </button>
             ))}
             {filtered.length === 0 && (
-              <div className="px-5 py-4 text-xs font-bold text-gray-400 italic">
+              <div className="px-5 py-4 text-xs font-bold text-v3-muted italic">
                 Sonuç bulunamadı
               </div>
             )}
@@ -1020,10 +1020,10 @@ export default function CreateSejourPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Yeni sejour kaydı oluşturmak için yetkiniz bulunmuyor.
           </p>
           <button
@@ -1042,11 +1042,11 @@ export default function CreateSejourPage() {
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-1 animate-in fade-in slide-in-from-top-1 duration-500">
-          <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-1 rounded border border-gray-100 dark:border-gray-700 shadow-sm">
+          <div className="flex justify-between items-center bg-v3-surface p-1 rounded border border-gray-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center space-x-3">
               <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
               <div>
-                <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                <h1 className="text-3xl font-black text-v3-text tracking-tight">
                   Yeni Sejour Oluştur
                 </h1>
                 <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 mt-0.5 uppercase tracking-widest">
@@ -1077,7 +1077,7 @@ export default function CreateSejourPage() {
               </button>
               <button
                 onClick={() => router.push("/sejour")}
-                className="px-6 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-[0.98] transition-all duration-200 shadow-sm"
+                className="px-6 py-2.5 bg-white dark:bg-gray-700 text-v3-text text-xs rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-[0.98] transition-all duration-200 shadow-sm"
               >
                 Geri Dön
               </button>
@@ -1088,13 +1088,13 @@ export default function CreateSejourPage() {
         {/* Status and Messages */}
         <div className="max-w-[1800px] mx-auto mb-2">
           {error && (
-            <div className="bg-red-50/80 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-red-500/10 animate-in zoom-in-95 duration-300">
+            <div className="bg-red-50 dark:bg-red-900/20/80 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-red-500/10 animate-in zoom-in-95 duration-300">
               <span className="mr-3 text-xl">⚠️</span>
               <p className="font-bold text-sm tracking-tight">{error}</p>
             </div>
           )}
           {success && (
-            <div className="bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-emerald-500/10 animate-in zoom-in-95 duration-300">
+            <div className="bg-emerald-50 dark:bg-emerald-900/20/80 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-emerald-500/10 animate-in zoom-in-95 duration-300">
               <span className="mr-3 text-xl">✅</span>
               <p className="font-bold text-sm tracking-tight">{success}</p>
             </div>
@@ -1104,7 +1104,7 @@ export default function CreateSejourPage() {
         <form onSubmit={handleSubmit} className="relative">
           {/* Main Navigation Tabs */}
           <div className="relative mb-2">
-            <div className="flex p-1 space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm max-w-md mx-auto">
+            <div className="flex p-1 space-x-1 bg-v3-surface border border-v3-border rounded-lg shadow-sm max-w-md mx-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -1113,7 +1113,7 @@ export default function CreateSejourPage() {
                   className={`flex items-center justify-center flex-1 px-2 py-1.5 text-xs font-black leading-5 rounded transition-all duration-300 ${
                     activeTab === tab.id
                       ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      : "text-v3-muted hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   <span className="mr-2 text-base">{tab.icon}</span>
@@ -1129,7 +1129,7 @@ export default function CreateSejourPage() {
             {activeTab === "sales" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-xl font-black text-v3-text tracking-tight">
                     Satış Bilgileri
                   </h2>
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
@@ -1138,7 +1138,7 @@ export default function CreateSejourPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 responsive-filter-grid">
                   {/* Left Column: General Info */}
                   <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm transition-all duration-300">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm transition-all duration-300">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                         <div className="space-y-4">
                           <div>
@@ -1150,7 +1150,7 @@ export default function CreateSejourPage() {
                               name="voucherNumber"
                               value={salesData.voucherNumber}
                               onChange={handleInputChange}
-                              className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                              className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               placeholder="VOU-2024-001"
                               required
                             />
@@ -1172,8 +1172,8 @@ export default function CreateSejourPage() {
                                 }
                                 className={`flex-1 py-3 px-4 rounded text-xs font-black tracking-widest transition-all duration-300 ${
                                   salesData.customerType === "agency"
-                                    ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
-                                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    ? "bg-v3-surface text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
+                                    : "text-v3-muted hover:text-gray-600 dark:hover:text-v3-muted"
                                 }`}
                               >
                                 ACENTE
@@ -1190,8 +1190,8 @@ export default function CreateSejourPage() {
                                 }
                                 className={`flex-1 py-3 px-4 rounded text-xs font-black tracking-widest transition-all duration-300 ${
                                   salesData.customerType === "individual"
-                                    ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
-                                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    ? "bg-v3-surface text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
+                                    : "text-v3-muted hover:text-gray-600 dark:hover:text-v3-muted"
                                 }`}
                               >
                                 ŞAHIS
@@ -1229,7 +1229,7 @@ export default function CreateSejourPage() {
                                   name="customerName"
                                   value={salesData.customerName}
                                   onChange={handleInputChange}
-                                  className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   placeholder="Örn: Ahmet Yılmaz"
                                 />
                               </>
@@ -1246,7 +1246,7 @@ export default function CreateSejourPage() {
                                 name="checkInDate"
                                 value={salesData.checkInDate}
                                 onChange={handleInputChange}
-                                className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               />
                             </div>
                             <div>
@@ -1258,7 +1258,7 @@ export default function CreateSejourPage() {
                                 name="checkOutDate"
                                 value={salesData.checkOutDate}
                                 onChange={handleInputChange}
-                                className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               />
                             </div>
                           </div>
@@ -1286,7 +1286,7 @@ export default function CreateSejourPage() {
                                     : status === "KONFIRME"
                                       ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 border-2 border-emerald-200 dark:border-emerald-800"
                                       : "bg-red-100 dark:bg-red-900/30 text-red-600 border-2 border-red-200 dark:border-red-800"
-                                  : "bg-white dark:bg-gray-900 text-gray-400 border-2 border-gray-100 dark:border-gray-700 grayscale"
+                                  : "bg-v3-surface text-v3-muted border-2 border-gray-100 dark:border-gray-700 grayscale"
                               }`}
                             >
                               {status === "BEKLEMEDE"
@@ -1303,8 +1303,8 @@ export default function CreateSejourPage() {
 
                   {/* Right Column: Service Selection Quick Cards */}
                   <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
-                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
+                      <h3 className="text-xs font-black text-v3-muted uppercase tracking-widest mb-1">
                         Hizmet Seçimi
                       </h3>
                       <div className="grid grid-cols-1 gap-1">
@@ -1316,7 +1316,7 @@ export default function CreateSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showAccommodation
                               ? "bg-blue-500/10 dark:bg-blue-900/20 border-blue-500 text-blue-600 shadow-lg shadow-blue-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1336,7 +1336,7 @@ export default function CreateSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showFlight
                               ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-600 shadow-lg shadow-emerald-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1356,7 +1356,7 @@ export default function CreateSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showTransfer
                               ? "bg-purple-50 dark:bg-purple-900/20 border-purple-500 text-purple-600 shadow-lg shadow-purple-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1378,7 +1378,7 @@ export default function CreateSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showExtraServices
                               ? "bg-orange-50 dark:bg-orange-900/20 border-orange-500 text-orange-600 shadow-lg shadow-orange-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1398,7 +1398,7 @@ export default function CreateSejourPage() {
 
                 {/* Accommodation Section */}
                 {showAccommodation && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-v3-surface border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500">
                     <div className="px-2 py-1.5 bg-blue-500/10/50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30">
@@ -1444,14 +1444,14 @@ export default function CreateSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeRoom(room.id)}
-                              className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-10 h-10 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[3] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1.5]">
                             <div className="md:col-span-2">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Otel Seçimi
                               </label>
                               <SearchableSelect
@@ -1465,11 +1465,11 @@ export default function CreateSejourPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Konaklama Tipi
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 value={room.accommodationType || ""}
                                 onChange={(e) =>
                                   updateRoom(
@@ -1505,11 +1505,11 @@ export default function CreateSejourPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Oda Tipi
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 value={room.roomType}
                                 onChange={(e) =>
                                   updateRoom(
@@ -1528,11 +1528,11 @@ export default function CreateSejourPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Misafir Bilgileri
                               </label>
                               <input
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="text"
                                 value={room.guestInfo}
                                 onChange={(e) =>
@@ -1546,12 +1546,12 @@ export default function CreateSejourPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satş Tutarı
                               </label>
                               <div className="flex gap-1">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -1578,7 +1578,7 @@ export default function CreateSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-2 py-3 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={room.currency}
                                   onChange={(e) =>
                                     updateRoom(
@@ -1602,8 +1602,8 @@ export default function CreateSejourPage() {
                   </div>
                 )}
                 {showFlight && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="px-3 py-2 bg-emerald-50/60 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex flex-wrap gap-2 justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20/60 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-emerald-500/30">
                           <span className="text-lg">✈️</span>
@@ -1681,14 +1681,14 @@ export default function CreateSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeFlight(flight.id)}
-                              className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-10 h-10 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[3.5] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.5]">
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Uçuş Tarihi
                               </label>
                               <input
@@ -1701,11 +1701,11 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Havayolu
                               </label>
                               <input
@@ -1718,12 +1718,12 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 placeholder="Örn: THY"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Güzergah
                               </label>
                               <input
@@ -1736,12 +1736,12 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 placeholder="Örn: IST-AYT"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Uçuş No
                               </label>
                               <input
@@ -1754,12 +1754,12 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 placeholder="Örn: TK1234"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Kalkış - Varış
                               </label>
                               <div className="grid grid-cols-2 gap-1">
@@ -1773,7 +1773,7 @@ export default function CreateSejourPage() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 />
                                 <input
                                   type="time"
@@ -1785,12 +1785,12 @@ export default function CreateSejourPage() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi & PNR
                               </label>
                               <div className="grid grid-cols-2 gap-1">
@@ -1817,13 +1817,13 @@ export default function CreateSejourPage() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                   placeholder="PNR"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Biletleme Tarihi
                               </label>
                               <input
@@ -1836,16 +1836,16 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
                               <div className="flex gap-2">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-emerald-600 dark:text-emerald-400 text-right focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-emerald-600 dark:text-emerald-400 text-right focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -1879,7 +1879,7 @@ export default function CreateSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-1 py-1 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={flight.currency}
                                   onChange={(e) =>
                                     updateFlight(
@@ -1904,8 +1904,8 @@ export default function CreateSejourPage() {
                 )}
                 {/* Transfer Information */}
                 {showTransfer && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-purple-100 dark:border-purple-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="px-3 py-2 bg-purple-50/60 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex flex-wrap gap-2 justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-purple-100 dark:border-purple-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/20/60 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-purple-500/30">
                           <span className="text-lg">🚗</span>
@@ -1958,18 +1958,18 @@ export default function CreateSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeTransfer(transfer.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tarih
                               </label>
                               <input
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="date"
                                 value={transfer.date}
                                 onChange={(e) =>
@@ -1982,7 +1982,7 @@ export default function CreateSejourPage() {
                               />
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi
                               </label>
                               <SearchableSelect
@@ -1996,11 +1996,11 @@ export default function CreateSejourPage() {
                               />
                             </div>
                             <div className="md:col-span-1">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tip
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text transition-all duration-300 outline-none"
                                 value={transfer.type}
                                 onChange={(e) =>
                                   updateTransfer(
@@ -2015,11 +2015,11 @@ export default function CreateSejourPage() {
                               </select>
                             </div>
                             <div className="md:col-span-1">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Araç
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text transition-all duration-300 outline-none"
                                 value={transfer.vehicle}
                                 onChange={(e) =>
                                   updateTransfer(
@@ -2038,11 +2038,11 @@ export default function CreateSejourPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Saat
                               </label>
                               <input
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="time"
                                 value={transfer.time}
                                 onChange={(e) =>
@@ -2055,12 +2055,12 @@ export default function CreateSejourPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
                               <div className="flex gap-2">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-purple-600 dark:text-purple-400 focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-purple-600 dark:text-purple-400 focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2098,7 +2098,7 @@ export default function CreateSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-gray-100 transition-all duration-300 outline-none"
+                                  className="w-20 px-1 py-1 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={transfer.currency}
                                   onChange={(e) =>
                                     updateTransfer(
@@ -2123,8 +2123,8 @@ export default function CreateSejourPage() {
                 )}
                 {/* Extra Services Information */}
                 {showExtraServices && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-orange-100 dark:border-orange-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="px-3 py-2 bg-orange-50/60 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex flex-wrap gap-2 justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-orange-100 dark:border-orange-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="px-3 py-2 bg-orange-50 dark:bg-orange-900/20/60 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-orange-500/30">
                           <span className="text-lg">✨</span>
@@ -2169,14 +2169,14 @@ export default function CreateSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeExtraService(service.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Hizmet Tipi
                               </label>
                               <select
@@ -2188,7 +2188,7 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-3 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-[10px] font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none"
+                                className="w-full px-3 py-3 bg-v3-surface border border-v3-border rounded text-[10px] font-bold text-v3-text focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none"
                               >
                                 <option value="">Seçin</option>
                                 {supplierServiceTypes.map((type) => (
@@ -2199,7 +2199,7 @@ export default function CreateSejourPage() {
                               </select>
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi
                               </label>
                               <SearchableSelect
@@ -2213,7 +2213,7 @@ export default function CreateSejourPage() {
                               />
                             </div>
                             <div className="xl:col-span-4">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Açıklama
                               </label>
                               <input
@@ -2226,17 +2226,17 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none h-9"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded text-xs font-bold text-v3-text focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none h-9"
                                 placeholder="Örn: Rehberlik"
                               />
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
                               <div className="flex gap-2">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-orange-600 dark:text-orange-400 text-right focus:ring-4 focus:ring-orange-500/10 focus:border-blue-500 transition-all duration-300 outline-none h-9"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-orange-600 dark:text-orange-400 text-right focus:ring-4 focus:ring-orange-500/10 focus:border-blue-500 transition-all duration-300 outline-none h-9"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2274,7 +2274,7 @@ export default function CreateSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none h-9"
+                                  className="w-20 px-1 py-1 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none h-9"
                                   value={service.currency}
                                   onChange={(e) =>
                                     updateExtraService(
@@ -2299,9 +2299,9 @@ export default function CreateSejourPage() {
                 )}
 
                 {/* Summary */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg transition-all duration-300">
-                  <div className="px-2 py-1 bg-gray-50/50 dark:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-[10px] font-black text-gray-900 dark:text-white flex items-center tracking-widest uppercase">
+                <div className="bg-v3-surface border border-v3-border rounded shadow-lg transition-all duration-300">
+                  <div className="px-2 py-1 bg-gray-50/50 dark:bg-gray-700/30 border-b border-v3-border">
+                    <h3 className="text-[10px] font-black text-v3-text flex items-center tracking-widest uppercase">
                       <span className="mr-2">📊</span>
                       Genel Özet
                     </h3>
@@ -2309,8 +2309,8 @@ export default function CreateSejourPage() {
                   <div className="p-1">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-2 responsive-filter-grid">
                       <div className="relative group">
-                        <div className="relative bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm transition-all duration-300 hover:scale-[1.02]">
-                          <h4 className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">
+                        <div className="relative bg-v3-surface p-1 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm transition-all duration-300 hover:scale-[1.02]">
+                          <h4 className="text-[10px] font-bold text-v3-muted uppercase tracking-widest mb-3">
                             Toplam Satış Tutarları
                           </h4>
                           <div className="space-y-2">
@@ -2319,7 +2319,7 @@ export default function CreateSejourPage() {
                                 key={curr}
                                 className="flex justify-between items-center"
                               >
-                                <span className="text-xs font-bold text-gray-400">
+                                <span className="text-xs font-bold text-v3-muted">
                                   {curr}
                                 </span>
                                 <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">
@@ -2331,7 +2331,7 @@ export default function CreateSejourPage() {
                         </div>
                       </div>
 
-                      <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-1 rounded-lg border border-emerald-100 dark:border-emerald-900/30 flex flex-col items-center justify-center transition-all duration-300 hover:scale-[1.02]">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20/50 dark:bg-emerald-900/10 p-1 rounded-lg border border-emerald-100 dark:border-emerald-900/30 flex flex-col items-center justify-center transition-all duration-300 hover:scale-[1.02]">
                         <span className="text-3xl mb-2">🏨</span>
                         <h4 className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-widest">
                           Otel Sayısı
@@ -2351,7 +2351,7 @@ export default function CreateSejourPage() {
                         </p>
                       </div>
 
-                      <div className="bg-purple-50/50 dark:bg-purple-900/10 p-1 rounded-lg border border-purple-100 dark:border-purple-900/30 flex flex-col items-center justify-center transition-all duration-300 hover:scale-[1.02]">
+                      <div className="bg-purple-50 dark:bg-purple-900/20/50 dark:bg-purple-900/10 p-1 rounded-lg border border-purple-100 dark:border-purple-900/30 flex flex-col items-center justify-center transition-all duration-300 hover:scale-[1.02]">
                         <span className="text-3xl mb-2">🚗</span>
                         <h4 className="text-[10px] font-bold text-purple-800 dark:text-purple-400 uppercase tracking-widest">
                           Transfer Sayısı
@@ -2370,7 +2370,7 @@ export default function CreateSejourPage() {
             {activeTab === "purchase" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-xl font-black text-v3-text tracking-tight">
                     Alış ve Maliyet Bilgileri
                   </h2>
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
@@ -2380,8 +2380,8 @@ export default function CreateSejourPage() {
                   <div className="lg:col-span-3 space-y-6">
                     {/* Accommodation Costs */}
                     {showAccommodation && (
-                      <div className="bg-white dark:bg-gray-800 border-2 border-red-100 dark:border-red-900/30 rounded shadow-xl">
-                        <div className="px-2 py-1.5 bg-red-50/50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/20 flex justify-between items-center">
+                      <div className="bg-v3-surface border-2 border-red-100 dark:border-red-900/30 rounded shadow-xl">
+                        <div className="px-2 py-1.5 bg-red-50 dark:bg-red-900/20/50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/20 flex justify-between items-center">
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-red-500/30">
                               <span className="text-lg">🏨</span>
@@ -2399,10 +2399,10 @@ export default function CreateSejourPage() {
                             >
                               <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.5]">
                                 <div className="md:col-span-2">
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                     Otel & Oda
                                   </p>
-                                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                                  <p className="text-xs font-bold text-v3-text truncate">
                                     {hotels.find((h) => h.id === room.hotelId)
                                       ?.name || "Otel Seçilmedi"}{" "}
                                     - {room.roomType}
@@ -2447,7 +2447,7 @@ export default function CreateSejourPage() {
                                         }));
                                       }
                                     }}
-                                    className="w-full px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-red-600 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none transition-all"
+                                    className="w-full px-2 py-1.5 bg-v3-surface border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-red-600 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none transition-all"
                                     placeholder="0,00"
                                   />
                                 </div>
@@ -2464,7 +2464,7 @@ export default function CreateSejourPage() {
                                         e.target.value,
                                       )
                                     }
-                                    className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-gray-900 dark:text-white outline-none"
+                                    className="w-full px-3 py-2.5 bg-v3-surface border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-v3-text outline-none"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -2481,8 +2481,8 @@ export default function CreateSejourPage() {
 
                     {/* Flight Costs */}
                     {showFlight && (
-                      <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded shadow-xl">
-                        <div className="px-2 py-1.5 bg-emerald-50/50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex items-center">
+                      <div className="bg-v3-surface border-2 border-emerald-100 dark:border-emerald-900/30 rounded shadow-xl">
+                        <div className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-900/20/50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex items-center">
                           <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-emerald-500/30">
                             <span className="text-lg">✈️</span>
                           </div>
@@ -2498,13 +2498,13 @@ export default function CreateSejourPage() {
                             >
                               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                                 <div className="md:col-span-2">
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                  <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                     {flight.type === "departure"
                                       ? "Gidiş"
                                       : "Dönüş"}{" "}
                                     Uçuşu
                                   </p>
-                                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                                  <p className="text-xs font-bold text-v3-text truncate">
                                     {flight.airline} - {flight.route}
                                   </p>
                                 </div>
@@ -2548,7 +2548,7 @@ export default function CreateSejourPage() {
                                         }));
                                       }
                                     }}
-                                    className="w-full px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-red-600 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none transition-all"
+                                    className="w-full px-2 py-1.5 bg-v3-surface border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-red-600 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none transition-all"
                                     placeholder="0,00"
                                   />
                                 </div>
@@ -2567,7 +2567,7 @@ export default function CreateSejourPage() {
                                         e.target.value,
                                       )
                                     }
-                                    className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-gray-900 dark:text-white outline-none"
+                                    className="w-full px-3 py-2.5 bg-v3-surface border border-gray-100 dark:border-gray-700 rounded text-xs font-black text-v3-text outline-none"
                                   >
                                     <option value="TRY">TRY</option>
                                     <option value="EUR">EUR</option>
@@ -2584,8 +2584,8 @@ export default function CreateSejourPage() {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm sticky top-2">
-                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm sticky top-2">
+                      <h3 className="text-xs font-black text-v3-muted uppercase tracking-widest mb-1">
                         Maliyet Özeti
                       </h3>
                       <div className="space-y-4">
@@ -2595,9 +2595,9 @@ export default function CreateSejourPage() {
                           return (
                             <div
                               key={curr}
-                              className="p-1 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-700"
+                              className="p-1 bg-black/5 dark:bg-white/5/50 rounded-lg border border-gray-100 dark:border-gray-700"
                             >
-                              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                              <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 {curr} TOPLAM ALIŞ
                               </p>
                               <p className="text-xl font-black text-red-600 dark:text-red-400 tracking-tight">
@@ -2608,7 +2608,7 @@ export default function CreateSejourPage() {
                         })}
                         {/* Profit / Loss */}
                         <div className="pt-4 border-t border-gray-100 dark:border-gray-700 mt-4">
-                          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+                          <h4 className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-4">
                             Tahmini Kar/Zarar
                           </h4>
                           {["TRY", "EUR", "USD", "GBP"].map((curr) => {
@@ -2644,7 +2644,7 @@ export default function CreateSejourPage() {
             {activeTab === "collections" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-xl font-black text-v3-text tracking-tight">
                     Tahsilat Bilgileri
                   </h2>
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
@@ -2675,7 +2675,7 @@ export default function CreateSejourPage() {
                     {/* Mevcut Tahsilat Kayıtları */}
                     {collections.length > 0 && (
                       <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest px-1">
+                        <h4 className="text-xs font-bold text-v3-muted uppercase tracking-widest px-1">
                           Mevcut Tahsilatlar
                         </h4>
                         <div className="space-y-3">
@@ -2693,7 +2693,7 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold transition-all duration-200 outline-none"
+                                className="w-full px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-v3-surface text-v3-text font-bold transition-all duration-200 outline-none"
                               >
                                 <option value="cash">Nakit</option>
                                 <option value="bank">Havale / EFT</option>
@@ -2715,7 +2715,7 @@ export default function CreateSejourPage() {
                                     parseTrAmount(e.target.value) || 0,
                                   )
                                 }
-                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold transition-all duration-200"
+                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-v3-surface text-v3-text font-bold transition-all duration-200"
                               />
                               <input
                                 type="date"
@@ -2727,7 +2727,7 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200"
+                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-v3-surface text-v3-text transition-all duration-200"
                               />
                               <select
                                 value={collection.currency || "TRY"}
@@ -2738,7 +2738,7 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200"
+                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-v3-surface text-v3-text transition-all duration-200"
                               >
                                 <option value="TRY">TRY</option>
                                 <option value="EUR">EUR</option>
@@ -2755,7 +2755,7 @@ export default function CreateSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200"
+                                className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg bg-v3-surface text-v3-text transition-all duration-200"
                                 placeholder="Açıklama"
                               />
                               <button
@@ -2784,7 +2784,7 @@ export default function CreateSejourPage() {
                           key={curr}
                           className="flex justify-between items-center"
                         >
-                          <span className="text-xs font-bold text-gray-400">
+                          <span className="text-xs font-bold text-v3-muted">
                             {curr}
                           </span>
                           <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">
@@ -2794,7 +2794,7 @@ export default function CreateSejourPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-1 rounded-lg border border-emerald-100 dark:border-emerald-900/30 transition-all duration-300 hover:scale-[1.02]">
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20/50 dark:bg-emerald-900/10 p-1 rounded-lg border border-emerald-100 dark:border-emerald-900/30 transition-all duration-300 hover:scale-[1.02]">
                     <h3 className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-widest mb-3">
                       Toplam Tahsilat
                     </h3>
@@ -2804,7 +2804,7 @@ export default function CreateSejourPage() {
                           key={curr}
                           className="flex justify-between items-center"
                         >
-                          <span className="text-xs font-bold text-gray-400">
+                          <span className="text-xs font-bold text-v3-muted">
                             {curr}
                           </span>
                           <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
@@ -2816,7 +2816,7 @@ export default function CreateSejourPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="bg-red-50/50 dark:bg-red-900/10 p-1 rounded-lg border border-red-100 dark:border-red-900/30 transition-all duration-300 hover:scale-[1.02]">
+                  <div className="bg-red-50 dark:bg-red-900/20/50 dark:bg-red-900/10 p-1 rounded-lg border border-red-100 dark:border-red-900/30 transition-all duration-300 hover:scale-[1.02]">
                     <h3 className="text-[10px] font-bold text-red-800 dark:text-red-400 uppercase tracking-widest mb-3">
                       Kalan Bakiye
                     </h3>
@@ -2826,7 +2826,7 @@ export default function CreateSejourPage() {
                           key={curr}
                           className="flex justify-between items-center"
                         >
-                          <span className="text-xs font-bold text-gray-400">
+                          <span className="text-xs font-bold text-v3-muted">
                             {curr}
                           </span>
                           <span
@@ -2843,11 +2843,11 @@ export default function CreateSejourPage() {
             )}
 
             {/* Submit Buttons */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-2 pt-2 border-t border-gray-200 dark:border-gray-700 mt-2 mb-20 animate-in slide-in-from-bottom-8 duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-2 pt-2 border-t border-v3-border mt-2 mb-20 animate-in slide-in-from-bottom-8 duration-700">
               <button
                 type="button"
                 onClick={() => router.push("/sejour")}
-                className="w-full md:w-auto h-9 px-10 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded text-[10px] font-black tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 transition-all duration-300"
+                className="w-full md:w-auto h-9 px-10 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-[10px] font-black tracking-widest text-v3-muted hover:text-gray-900 dark:hover:text-white hover:border-gray-300 transition-all duration-300"
               >
                 ← VAZGEÇ
               </button>
@@ -2904,7 +2904,7 @@ export default function CreateSejourPage() {
           }}
         >
           <div
-            className="bg-white px-10 py-12 w-full min-h-[297mm] text-gray-900"
+            className="bg-v3-surface px-10 py-12 w-full min-h-[297mm] text-gray-900"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             {/* Elegant Header with Logos */}
@@ -3207,7 +3207,7 @@ export default function CreateSejourPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[7px] text-gray-300 uppercase tracking-widest mb-1">
+                  <div className="text-[7px] text-v3-muted uppercase tracking-widest mb-1">
                     Generated By System
                   </div>
                   <div className="text-[10px] font-semibold text-gray-800 tracking-[0.2em]">

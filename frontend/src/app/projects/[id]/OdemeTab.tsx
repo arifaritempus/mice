@@ -579,7 +579,7 @@ const exportToExcel = async () => {
 
       {/* Alış Genel Toplamları */}
       <div className="bg-red-600 dark:bg-red-700 rounded-md p-3">
-        <div className="grid grid-cols-12 gap-2 text-white text-sm responsive-filter-grid">
+        <div className="grid grid-cols-12 gap-2 text-v3-text text-sm responsive-filter-grid">
           <div className="col-span-3 font-bold">{t('projects.purchaseGrandTotals') || "Alış Genel Toplamları"}</div>
           <div className="col-span-6 text-right font-bold">
             {Object.entries(purchaseTotals.totalByCurrency).map(([cur, val]: any) => `${formatNumber(Number(val || 0))} ${cur}`).join(" + ")}
@@ -598,7 +598,7 @@ const exportToExcel = async () => {
       {/* Ödeme Planı (Alış) */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="p-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-sm font-semibold text-v3-text">
             {t('projects.paymentPlanTitle') || "Ödeme Planı"}
           </h3>
           
@@ -618,15 +618,15 @@ const exportToExcel = async () => {
             </colgroup>
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th onClick={() => handleSortPlan("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.dateUpper') || "TARİH"} <SortIcon sortConfig={sortConfigPlan} columnKey="date" /></th>
-                <th onClick={() => handleSortPlan("hotel")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.hotelSupplierUpper') || "OTEL/TEDARİKÇİ"} <SortIcon sortConfig={sortConfigPlan} columnKey="hotel" /></th>
-                <th onClick={() => handleSortPlan("paymentType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.paymentTypeUpper') || "ÖDEME TİPİ"} <SortIcon sortConfig={sortConfigPlan} columnKey="paymentType" /></th>
-                <th onClick={() => handleSortPlan("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.descriptionUpper') || "AÇIKLAMA"} <SortIcon sortConfig={sortConfigPlan} columnKey="description" /></th>
-                <th onClick={() => handleSortPlan("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.amountUpper') || "TUTAR"} <SortIcon sortConfig={sortConfigPlan} columnKey="amount" /></th>
-                <th onClick={() => handleSortPlan("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.currencyUpper') || "DÖVİZ"} <SortIcon sortConfig={sortConfigPlan} columnKey="currency" /></th>
-                <th onClick={() => handleSortPlan("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.exchangeRateUpper') || "KUR"} <SortIcon sortConfig={sortConfigPlan} columnKey="exchangeRate" /></th>
-                <th onClick={() => handleSortPlan("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.totalTRYUpper') || "TOPLAM TL"} <SortIcon sortConfig={sortConfigPlan} columnKey="totalTRY" /></th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
+                <th onClick={() => handleSortPlan("date")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.dateUpper') || "TARİH"} <SortIcon sortConfig={sortConfigPlan} columnKey="date" /></th>
+                <th onClick={() => handleSortPlan("hotel")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.hotelSupplierUpper') || "OTEL/TEDARİKÇİ"} <SortIcon sortConfig={sortConfigPlan} columnKey="hotel" /></th>
+                <th onClick={() => handleSortPlan("paymentType")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.paymentTypeUpper') || "ÖDEME TİPİ"} <SortIcon sortConfig={sortConfigPlan} columnKey="paymentType" /></th>
+                <th onClick={() => handleSortPlan("description")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.descriptionUpper') || "AÇIKLAMA"} <SortIcon sortConfig={sortConfigPlan} columnKey="description" /></th>
+                <th onClick={() => handleSortPlan("amount")} className="px-2 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.amountUpper') || "TUTAR"} <SortIcon sortConfig={sortConfigPlan} columnKey="amount" /></th>
+                <th onClick={() => handleSortPlan("currency")} className="px-2 py-2 text-center font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.currencyUpper') || "DÖVİZ"} <SortIcon sortConfig={sortConfigPlan} columnKey="currency" /></th>
+                <th onClick={() => handleSortPlan("exchangeRate")} className="px-2 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.exchangeRateUpper') || "KUR"} <SortIcon sortConfig={sortConfigPlan} columnKey="exchangeRate" /></th>
+                <th onClick={() => handleSortPlan("totalTRY")} className="px-2 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.totalTRYUpper') || "TOPLAM TL"} <SortIcon sortConfig={sortConfigPlan} columnKey="totalTRY" /></th>
+                <th className="px-2 py-2 text-center font-semibold text-v3-text">
                   {t('common.actionsUpper') || "İŞLEMLER"}
                 </th>
               </tr>
@@ -645,7 +645,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" ref={setPaymentPlanSupplierInputRef} value={paymentPlanHotelSupplierSearch} onChange={e => {
@@ -675,7 +675,7 @@ const exportToExcel = async () => {
                   } else {
                     handlePaymentPlanKeyDownLocal(e);
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempPaymentPlanItem?.paymentType || ""} onChange={e => setTempPaymentPlanItem((p: any) => ({
@@ -689,7 +689,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">{t('common.select') || "Seçin"}</option>
                         <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
                         <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
@@ -709,7 +709,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentPlanAmountInput} onChange={e => {
@@ -736,7 +736,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempPaymentPlanItem?.currency || "TRY"} onChange={e => {
@@ -758,7 +758,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -785,7 +785,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentPlanTotalTRYInput} onChange={e => {
@@ -811,7 +811,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
@@ -820,7 +820,7 @@ const exportToExcel = async () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetPaymentPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
+                        <button onClick={resetPaymentPlanState} className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -828,7 +828,7 @@ const exportToExcel = async () => {
                       </div>
                     </td>
                   </tr>}
-              {getFilteredAndSortedPlans().map((p, idx) => editingPaymentPlanIndex === idx ? <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+              {getFilteredAndSortedPlans().map((p, idx) => editingPaymentPlanIndex === idx ? <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-v3-border last:border-0" onDoubleClick={() => {
               setEditingPaymentPlanIndex(idx);
               setTempPaymentPlanItem({
                 ...p
@@ -848,7 +848,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" ref={editingPaymentPlanIndex === idx ? setPaymentPlanSupplierInputRef : undefined} value={editingPaymentPlanIndex === idx ? paymentPlanHotelSupplierSearch : p.hotel || ""} onChange={e => {
@@ -881,7 +881,7 @@ const exportToExcel = async () => {
                   } else {
                     handlePaymentPlanKeyDown(e);
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={(tempPaymentPlanItem?.paymentType ?? p.paymentType) || ""} onChange={e => setTempPaymentPlanItem((pp: any) => ({
@@ -895,7 +895,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">{t('common.select') || "Seçin"}</option>
                         <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
                         <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
@@ -915,7 +915,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentPlanAmountInput} onChange={e => {
@@ -942,7 +942,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempPaymentPlanItem?.currency ?? p.currency} onChange={e => {
@@ -964,7 +964,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -991,7 +991,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentPlanTotalTRYInput} onChange={e => {
@@ -1017,7 +1017,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentPlanState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
@@ -1026,14 +1026,14 @@ const exportToExcel = async () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetPaymentPlanState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
+                        <button onClick={resetPaymentPlanState} className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
                     </td>
-                  </tr> : <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0" onDoubleClick={() => {
+                  </tr> : <tr key={p.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-v3-border last:border-0" onDoubleClick={() => {
               setEditingPaymentPlanIndex(idx);
               setTempPaymentPlanItem({
                 ...p
@@ -1041,28 +1041,28 @@ const exportToExcel = async () => {
               setPaymentPlanAmountInput(formatNumberForDisplay(p.amount || 0));
               setPaymentPlanTotalTRYInput(formatNumberForDisplay(p.totalTRY || 0));
             }}>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {formatDateForDisplay(p.date)}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {p.hotel || "-"}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {p.paymentType === "banka" ? (t('projects.bankTransfer') || "Banka Havalesi") : p.paymentType === "pos" ? (t('projects.creditCard') || "Kredi Kartı / Pos") : p.paymentType === "cek" ? (t('projects.checkPromissoryNote') || "Çek / Senet") : p.paymentType === "nakit" ? (t('projects.cash') || "Nakit") : "-"}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white max-w-xs truncate" title={p.description}>
+                    <td className="px-2 py-2 text-v3-text max-w-xs truncate" title={p.description}>
                       {p.description}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                    <td className="px-2 py-2 text-v3-text text-right">
                       {formatNumberForDisplay(p.amount)}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                    <td className="px-2 py-2 text-v3-text text-center">
                       {p.currency}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                    <td className="px-2 py-2 text-v3-text text-right">
                       {formatTRY(p.exchangeRate || 1)}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                    <td className="px-2 py-2 text-v3-text text-right">
                       {formatTRY(p.totalTRY || p.amount)}
                     </td>
                     <td className="px-2 py-2">
@@ -1096,7 +1096,7 @@ const exportToExcel = async () => {
       {/* Ödemeler */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="p-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-sm font-semibold text-v3-text">
             {t('projects.paymentsTitle') || "Ödemeler"}
           </h3>
           
@@ -1116,15 +1116,15 @@ const exportToExcel = async () => {
             </colgroup>
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th onClick={() => handleSortActual("date")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.dateUpper') || "TARİH"} <SortIcon sortConfig={sortConfigActual} columnKey="date" /></th>
-                <th onClick={() => handleSortActual("hotel")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.hotelSupplierUpper') || "OTEL/TEDARİKÇİ"} <SortIcon sortConfig={sortConfigActual} columnKey="hotel" /></th>
-                <th onClick={() => handleSortActual("paymentType")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.paymentTypeUpper') || "ÖDEME TİPİ"} <SortIcon sortConfig={sortConfigActual} columnKey="paymentType" /></th>
-                <th onClick={() => handleSortActual("description")} className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.descriptionUpper') || "AÇIKLAMA"} <SortIcon sortConfig={sortConfigActual} columnKey="description" /></th>
-                <th onClick={() => handleSortActual("amount")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.amountUpper') || "TUTAR"} <SortIcon sortConfig={sortConfigActual} columnKey="amount" /></th>
-                <th onClick={() => handleSortActual("currency")} className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.currencyUpper') || "DÖVİZ"} <SortIcon sortConfig={sortConfigActual} columnKey="currency" /></th>
-                <th onClick={() => handleSortActual("exchangeRate")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.exchangeRateUpper') || "KUR"} <SortIcon sortConfig={sortConfigActual} columnKey="exchangeRate" /></th>
-                <th onClick={() => handleSortActual("totalTRY")} className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.totalTRYUpper') || "TOPLAM TL"} <SortIcon sortConfig={sortConfigActual} columnKey="totalTRY" /></th>
-                <th className="px-2 py-2 text-center font-semibold text-gray-900 dark:text-white">
+                <th onClick={() => handleSortActual("date")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.dateUpper') || "TARİH"} <SortIcon sortConfig={sortConfigActual} columnKey="date" /></th>
+                <th onClick={() => handleSortActual("hotel")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.hotelSupplierUpper') || "OTEL/TEDARİKÇİ"} <SortIcon sortConfig={sortConfigActual} columnKey="hotel" /></th>
+                <th onClick={() => handleSortActual("paymentType")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.paymentTypeUpper') || "ÖDEME TİPİ"} <SortIcon sortConfig={sortConfigActual} columnKey="paymentType" /></th>
+                <th onClick={() => handleSortActual("description")} className="px-2 py-2 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('common.descriptionUpper') || "AÇIKLAMA"} <SortIcon sortConfig={sortConfigActual} columnKey="description" /></th>
+                <th onClick={() => handleSortActual("amount")} className="px-2 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.amountUpper') || "TUTAR"} <SortIcon sortConfig={sortConfigActual} columnKey="amount" /></th>
+                <th onClick={() => handleSortActual("currency")} className="px-2 py-2 text-center font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.currencyUpper') || "DÖVİZ"} <SortIcon sortConfig={sortConfigActual} columnKey="currency" /></th>
+                <th onClick={() => handleSortActual("exchangeRate")} className="px-2 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.exchangeRateUpper') || "KUR"} <SortIcon sortConfig={sortConfigActual} columnKey="exchangeRate" /></th>
+                <th onClick={() => handleSortActual("totalTRY")} className="px-2 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t('projects.totalTRYUpper') || "TOPLAM TL"} <SortIcon sortConfig={sortConfigActual} columnKey="totalTRY" /></th>
+                <th className="px-2 py-2 text-center font-semibold text-v3-text">
                   {t('common.actionsUpper') || "İŞLEMLER"}
                 </th>
               </tr>
@@ -1143,7 +1143,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" ref={setPaymentSupplierInputRef} value={paymentHotelSupplierSearch} onChange={e => {
@@ -1173,7 +1173,7 @@ const exportToExcel = async () => {
                   } else {
                     handlePaymentKeyDownLocal(e);
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempPaymentItem?.paymentType || ""} onChange={e => setTempPaymentItem((p: any) => ({
@@ -1187,7 +1187,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">{t('common.select') || "Seçin"}</option>
                         <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
                         <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
@@ -1207,7 +1207,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('common.description') || "Açıklama"} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentAmountInput} onChange={e => {
@@ -1234,7 +1234,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempPaymentItem?.currency || "TRY"} onChange={e => {
@@ -1256,7 +1256,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -1283,7 +1283,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentTotalTRYInput} onChange={e => {
@@ -1309,7 +1309,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
@@ -1318,7 +1318,7 @@ const exportToExcel = async () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetPaymentState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
+                        <button onClick={resetPaymentState} className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -1339,7 +1339,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" ref={editingPaymentIndex === idx ? setPaymentSupplierInputRef : undefined} value={editingPaymentIndex === idx ? paymentHotelSupplierSearch : pay.hotel || ""} onChange={e => {
@@ -1372,7 +1372,7 @@ const exportToExcel = async () => {
                   } else {
                     handlePaymentKeyDown(e);
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder={t('projects.searchHotelSupplier') || "Otel/Tedarikçi ara..."} disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={(tempPaymentItem?.paymentType ?? pay.paymentType) || ""} onChange={e => setTempPaymentItem((pp: any) => ({
@@ -1386,7 +1386,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="">{t('common.select') || "Seçin"}</option>
                         <option value="banka">{t('projects.bankTransfer') || "Banka Havalesi"}</option>
                         <option value="pos">{t('projects.creditCard') || "Kredi Kartı / Pos"}</option>
@@ -1406,7 +1406,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-white" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs dark:bg-gray-700 dark:text-v3-text" placeholder="Açıklama" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentAmountInput} onChange={e => {
@@ -1433,7 +1433,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <select value={tempPaymentItem?.currency ?? pay.currency} onChange={e => {
@@ -1455,7 +1455,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-white" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-center dark:bg-gray-700 dark:text-v3-text" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
 <option value="TRY">TRY</option>
 <option value="USD">USD</option>
@@ -1482,7 +1482,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="1.00" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <input type="text" value={paymentTotalTRYInput} onChange={e => {
@@ -1508,7 +1508,7 @@ const exportToExcel = async () => {
                     e.preventDefault();
                     resetPaymentState();
                   }
-                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-white" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                }} className="w-full px-1 py-0.5 border rounded text-xs text-right dark:bg-gray-700 dark:text-v3-text" placeholder="0,00" inputMode="decimal" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex gap-1 justify-center">
@@ -1517,7 +1517,7 @@ const exportToExcel = async () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button onClick={resetPaymentState} className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
+                        <button onClick={resetPaymentState} className="p-1 rounded text-v3-muted hover:bg-gray-50 dark:hover:bg-gray-900/30" title={t('common.cancel') || "İptal"}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -1525,28 +1525,28 @@ const exportToExcel = async () => {
                       </div>
                     </td>
                   </tr> : <tr key={pay.id}>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {formatDateForDisplay(pay.date)}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {pay.hotel || "-"}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {pay.paymentType === "banka" ? (t('projects.bankTransfer') || "Banka Havalesi") : pay.paymentType === "pos" ? (t('projects.creditCard') || "Kredi Kartı / Pos") : pay.paymentType === "cek" ? (t('projects.checkPromissoryNote') || "Çek / Senet") : pay.paymentType === "nakit" ? (t('projects.cash') || "Nakit") : "-"}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-v3-text">
                       {pay.description}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                    <td className="px-2 py-2 text-v3-text text-right">
                       {formatNumberForDisplay(pay.amount)}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-center">
+                    <td className="px-2 py-2 text-v3-text text-center">
                       {pay.currency}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                    <td className="px-2 py-2 text-v3-text text-right">
                       {formatTRY(pay.exchangeRate || 1)}
                     </td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-white text-right">
+                    <td className="px-2 py-2 text-v3-text text-right">
                       {formatTRY(pay.totalTRY || pay.amount)}
                     </td>
                     <td className="px-2 py-2">
@@ -1613,16 +1613,16 @@ const exportToExcel = async () => {
                 const paid = paidByCurrency[cur] || 0;
                 const balance = plan - paid;
                 return <tr key={cur} className="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors">
-                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-white uppercase">
+                      <td className="px-3 py-2 font-medium text-v3-text uppercase">
                         {cur}
                       </td>
-                      <td className="px-3 py-2 text-right text-gray-900 dark:text-white">
+                      <td className="px-3 py-2 text-right text-v3-text">
                         {formatNumberForDisplay(plan)}
                       </td>
                       <td className="px-3 py-2 text-right text-red-600 dark:text-red-400 font-medium">
                         {formatNumberForDisplay(paid)}
                       </td>
-                      <td className={`px-3 py-2 text-right font-bold ${balance > 0 ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
+                      <td className={`px-3 py-2 text-right font-bold ${balance > 0 ? "text-red-600 dark:text-red-400" : "text-v3-text"}`}>
                         {formatNumberForDisplay(balance)}
                       </td>
                     </tr>;
@@ -1665,7 +1665,7 @@ const exportToExcel = async () => {
                   <div className="text-xs font-medium">
                     {supplier.displayName || supplier.name}
                   </div>
-                  {supplier.title && <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                  {supplier.title && <div className="text-[10px] text-v3-muted">
                       {supplier.title}
                     </div>}
                 </div>)}
@@ -1687,7 +1687,7 @@ const exportToExcel = async () => {
                   <div className="text-xs font-medium">
                     {supplier.displayName || supplier.name}
                   </div>
-                  {supplier.title && <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                  {supplier.title && <div className="text-[10px] text-v3-muted">
                       {supplier.title}
                     </div>}
                 </div>)}

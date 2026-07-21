@@ -113,7 +113,7 @@ export default function NotificationModal({
       />
 
       <div
-        className={`relative w-full max-w-3xl bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-2xl overflow-hidden border ${config.border} animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]`}
+        className={`relative w-full max-w-3xl bg-white dark:bg-v3-surface rounded-[2rem] shadow-2xl overflow-hidden border ${config.border} animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]`}
       >
         {/* Header Section */}
         <div
@@ -126,10 +126,10 @@ export default function NotificationModal({
               <Icon size={32} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
+              <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-v3-text leading-tight tracking-tight">
                 {notification.title}
               </h3>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-v3-muted dark:text-v3-muted">
                 <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
                   <Calendar size={14} className="opacity-70" />
                   {moment
@@ -146,7 +146,7 @@ export default function NotificationModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full transition-all active:scale-90"
+            className="p-2.5 bg-v3-border0 dark:bg-v3-border hover:bg-white/80 dark:hover:bg-v3-surface text-v3-muted hover:text-slate-600 dark:hover:text-v3-text rounded-full transition-all active:scale-90"
           >
             <X size={20} />
           </button>
@@ -157,9 +157,9 @@ export default function NotificationModal({
           <div
             className={`prose dark:prose-invert max-w-none 
             prose-headings:font-black prose-headings:tracking-tight
-            prose-p:text-slate-600 dark:prose-p:text-white prose-p:leading-relaxed
+            prose-p:text-slate-600 dark:prose-p:text-v3-text prose-p:leading-relaxed
             prose-table:border prose-table:border-slate-200 dark:prose-table:border-slate-800 prose-table:rounded-xl prose-table:overflow-hidden
-            prose-th:bg-slate-50 dark:prose-th:bg-slate-800/50 prose-th:px-4 prose-th:py-3 prose-th:text-xs prose-th:font-black prose-th:uppercase prose-th:tracking-widest
+            prose-th:bg-slate-50 dark:prose-th:bg-v3-surface/50 prose-th:px-4 prose-th:py-3 prose-th:text-xs prose-th:font-black prose-th:uppercase prose-th:tracking-widest
             prose-td:px-4 prose-td:py-3 prose-td:text-sm prose-td:border-t prose-td:border-slate-100 dark:prose-td:border-slate-800
           `}
           >
@@ -177,8 +177,8 @@ export default function NotificationModal({
         </div>
 
         {/* Action / Footer Section */}
-        <div className="p-6 md:p-8 bg-[#0f172a]/50 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-slate-400 font-medium">
+        <div className="p-6 md:p-8 bg-v3-surface border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-xs text-v3-muted font-medium">
             Bu bildirim sistem tarafından otomatik olarak oluşturulmuştur.
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -193,7 +193,7 @@ export default function NotificationModal({
             )}
             <button
               onClick={onClose}
-              className="flex-1 md:flex-none px-8 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all active:scale-95"
+              className="flex-1 md:flex-none px-8 py-3 bg-white dark:bg-v3-surface text-slate-700 dark:text-v3-text rounded-2xl font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all active:scale-95"
             >
               Kapat
             </button>

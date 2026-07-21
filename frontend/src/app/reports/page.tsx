@@ -789,7 +789,7 @@ export default function ReportsPage() {
   if (!canView(Module.REPORTS)) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors duration-300">
-        <div className="text-center max-w-md bg-white dark:bg-[#0f172a] p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
+        <div className="text-center max-w-md bg-white dark:bg-v3-surface p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
           <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-6">
             <svg
               className="w-8 h-8"
@@ -805,10 +805,10 @@ export default function ReportsPage() {
               ></path>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-v3-text mb-2">
             {t('reports.accessDenied') || "Erişim Engellendi"}
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-8">
+          <p className="text-slate-600 dark:text-v3-muted mb-8">
             {t('reports.noPermission') || "Raporlar sayfasına erişim için yetkiniz bulunmuyor. Lütfen yönetici ile iletişime geçin."}
           </p>
           <a
@@ -828,7 +828,7 @@ export default function ReportsPage() {
       <div className="flex flex-row items-center justify-between gap-4 mb-4 shrink-0 w-full overflow-x-auto custom-scrollbar">
         {/* Title Area */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -844,10 +844,10 @@ export default function ReportsPage() {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-light tracking-wide text-white glow-text whitespace-nowrap">
+            <h1 className="text-xl font-light tracking-wide text-v3-text glow-text whitespace-nowrap">
               {t('reports.title') || "Rapor Merkezi"}
             </h1>
-            <p className="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap">
+            <p className="text-[10px] text-v3-muted mt-0.5 whitespace-nowrap">
               {t('reports.description') || "Sistem verilerinizi analiz edin"}
             </p>
           </div>
@@ -856,7 +856,7 @@ export default function ReportsPage() {
         {/* Filters Area (Single Row) */}
         <div className="flex flex-row items-center justify-end gap-3 flex-1 min-w-0">
           {/* Report Period Toggle */}
-          <div className="inline-flex bg-[#0f172a]/60 p-1 rounded-xl border border-white/10 shrink-0 h-10">
+          <div className="inline-flex bg-v3-surface p-1 rounded-xl border border-v3-border shrink-0 h-10">
             {(["bu_hafta", "bu_ay", "bu_yil", "ozel"] as DatePreset[]).map(
               (preset) => (
                 <button
@@ -864,8 +864,8 @@ export default function ReportsPage() {
                   onClick={() => applyPreset(preset)}
                   className={`px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
                     datePreset === preset
-                      ? "bg-blue-500/20 border border-blue-500/30 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
-                      : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                      ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                      : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                   }`}
                 >
                   {preset === "bu_hafta"
@@ -958,7 +958,7 @@ export default function ReportsPage() {
                 value={otelFilterInput}
                 onChange={(e) => setOtelFilterInput(e.target.value)}
                 placeholder={t('reports.selectHotel') || "Otel seçin..."}
-                className="w-full h-full bg-[#0f172a]/60 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full h-full bg-v3-surface border border-v3-border text-v3-text placeholder:text-v3-muted focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               />
             </div>
           )}
@@ -966,13 +966,13 @@ export default function ReportsPage() {
           {/* Buttons */}
           <button
             onClick={() => fetchReport()}
-            className="h-10 shrink-0 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-md text-[10px] font-black uppercase tracking-widest transition-all"
+            className="h-10 shrink-0 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-md text-[10px] font-black uppercase tracking-widest transition-all"
           >
             {t('reports.query') || "SORGULA"}
           </button>
           <button
             onClick={handleExportExcel}
-            className="h-10 shrink-0 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 py-2 px-4 rounded-xl shadow-md text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+            className="h-10 shrink-0 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 py-2 px-4 rounded-xl shadow-md text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
             title="Excel'e Aktar"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -988,7 +988,7 @@ export default function ReportsPage() {
         {REPORT_GROUPS.map((group) => (
           <div
             key={group.id}
-            className="bg-white dark:bg-[#0f172a]/50 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all duration-300"
+            className="bg-white dark:bg-v3-surface rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div className="flex items-center gap-2 mb-4">
               <span
@@ -1000,7 +1000,7 @@ export default function ReportsPage() {
                       : "bg-indigo-500"
                 }`}
               ></span>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-v3-muted dark:text-v3-muted">
                 {t(`reports.group_${group.id}` as any) || group.title}
               </h2>
             </div>
@@ -1024,7 +1024,7 @@ export default function ReportsPage() {
                   className={`group flex items-center justify-between p-3 rounded-2xl border text-left transition-all duration-200 ${
                     activeReportId === report.id
                       ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-600/20"
-                      : "bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-700 dark:text-white"
+                      : "bg-slate-50 dark:bg-v3-border border-slate-100 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-700 dark:text-v3-text"
                   }`}
                 >
                   <span className="text-xs font-bold leading-tight">
@@ -1051,11 +1051,11 @@ export default function ReportsPage() {
       </div>
 
       {/* Content Container */}
-      <div className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl flex flex-col mb-4">
+      <div className="bg-white dark:bg-v3-surface backdrop-blur-md rounded-3xl border border-slate-200 dark:border-v3-border shadow-xl flex flex-col mb-4">
         {/* Table Area */}
         <div className="flex-1 overflow-visible relative w-full">
           {loading && (
-            <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-20 flex items-center justify-center">
+            <div className="absolute inset-0 bg-v3-border0 dark:bg-slate-950/50 backdrop-blur-[2px] z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-sm font-bold text-blue-600">{t('reports.loading') || "Yükleniyor..."}</p>
@@ -1064,27 +1064,27 @@ export default function ReportsPage() {
           )}
 
           <table className="w-full text-left border-collapse min-w-[1000px]">
-            <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800/80 backdrop-blur-md z-10 border-b border-slate-200 dark:border-slate-700">
+            <thead className="sticky top-0 bg-slate-50 dark:bg-v3-surface/80 backdrop-blur-md z-10 border-b border-slate-200 dark:border-slate-700">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={col}
                     onClick={() => handleSort(col)}
-                    className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none group"
+                    className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-v3-muted cursor-pointer select-none group"
                   >
-                    <div className="flex items-center gap-2 group-hover:text-blue-400 transition-colors">
+                    <div className="flex items-center gap-2 group-hover:text-blue-600 dark:text-blue-400 transition-colors">
                       {t(`reports.col_${col}` as any) || COLUMN_LABELS[col] ||
                         col.replace(/_/g, " ").toUpperCase()}
                       <div className="flex flex-col scale-75 opacity-50">
                         <svg
-                          className={`w-2 h-2 ${sortKey === col && sortDirection === "asc" ? "text-blue-400 opacity-100" : ""}`}
+                          className={`w-2 h-2 ${sortKey === col && sortDirection === "asc" ? "text-blue-600 dark:text-blue-400 opacity-100" : ""}`}
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
                           <path d="M12 5l-7 7h14l-7-7z"></path>
                         </svg>
                         <svg
-                          className={`w-2 h-2 ${sortKey === col && sortDirection === "desc" ? "text-blue-400 opacity-100" : ""}`}
+                          className={`w-2 h-2 ${sortKey === col && sortDirection === "desc" ? "text-blue-600 dark:text-blue-400 opacity-100" : ""}`}
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -1117,7 +1117,7 @@ export default function ReportsPage() {
                         return (
                           <td
                             key={`${idx}-${col}`}
-                            className="px-6 py-4 text-xs font-medium text-slate-700 dark:text-white"
+                            className="px-6 py-4 text-xs font-medium text-slate-700 dark:text-v3-text"
                           >
                             {col === "cin_cout_tarihi" ? (
                               <div className="flex flex-col gap-0.5">
@@ -1139,7 +1139,7 @@ export default function ReportsPage() {
                               </span>
                             ) : isMargin ? (
                               <div className="flex items-center gap-2">
-                                <div className="flex-1 h-1.5 w-12 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div className="flex-1 h-1.5 w-12 bg-slate-100 dark:bg-v3-surface rounded-full overflow-hidden">
                                   <div
                                     className={`h-full rounded-full ${Number(cellValue) > 15 ? "bg-emerald-500" : Number(cellValue) > 5 ? "bg-blue-500" : "bg-red-500"}`}
                                     style={{
@@ -1185,7 +1185,7 @@ export default function ReportsPage() {
                         colSpan={columns.length}
                         className="px-6 py-24 text-center"
                       >
-                        <div className="flex flex-col items-center gap-4 text-slate-400">
+                        <div className="flex flex-col items-center gap-4 text-v3-muted">
                           <svg
                             className="w-16 h-16 opacity-20"
                             fill="none"
@@ -1211,53 +1211,53 @@ export default function ReportsPage() {
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+        <div className="p-4 bg-slate-50 dark:bg-v3-surface/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
+          <div className="text-[11px] font-bold text-v3-muted uppercase tracking-widest">
             {t('reports.total') || "Toplam"}{" "}
-            <span className="text-slate-900 dark:text-white">{totalCount}</span>{" "}
+            <span className="text-slate-900 dark:text-v3-text">{totalCount}</span>{" "}
             {t('reports.records') || "Kayıt"}
           </div>
           <div className="flex items-center gap-1.5">
             <button
               disabled={currentPage === 1 || loading}
               onClick={() => setCurrentPage(1)}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a] disabled:opacity-30 transition-all text-xs"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-v3-surface disabled:opacity-30 transition-all text-xs"
             >
               «
             </button>
             <button
               disabled={currentPage === 1 || loading}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a] disabled:opacity-30 transition-all text-xs"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-v3-surface disabled:opacity-30 transition-all text-xs"
             >
               ‹
             </button>
-            <div className="flex items-center px-4 py-2 bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold">
+            <div className="flex items-center px-4 py-2 bg-white dark:bg-v3-surface rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold">
               {currentPage} / {totalPages}
             </div>
             <button
               disabled={currentPage === totalPages || loading}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a] disabled:opacity-30 transition-all text-xs"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-v3-surface disabled:opacity-30 transition-all text-xs"
             >
               ›
             </button>
             <button
               disabled={currentPage === totalPages || loading}
               onClick={() => setCurrentPage(totalPages)}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a] disabled:opacity-30 transition-all text-xs"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-v3-surface disabled:opacity-30 transition-all text-xs"
             >
               »
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">
+            <span className="text-[10px] font-bold text-v3-muted uppercase">
               {t('reports.rows') || "Satır"}
             </span>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold outline-none"
+              className="bg-white dark:bg-v3-surface border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold outline-none"
             >
               {[25, 50, 100, 250].map((s) => (
                 <option key={s} value={s}>

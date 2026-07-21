@@ -668,10 +668,10 @@ export default function HotelsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Oteller sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -690,13 +690,13 @@ export default function HotelsPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
           {/* Title Area */}
           <div className="flex items-center gap-4 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -712,10 +712,10 @@ export default function HotelsPage() {
               </svg>
             </div>
             <div className="space-y-0.5">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
                 Otel Yönetimi
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 Otel bilgilerini yönetin ve düzenleyin
               </p>
             </div>
@@ -725,7 +725,7 @@ export default function HotelsPage() {
           <div className="flex flex-row items-end justify-start xl:justify-end gap-3 flex-1 flex-wrap">
             {/* Search Bar */}
             <div className="flex flex-col gap-1.5 flex-[2] min-w-[250px] max-w-lg shrink-0">
-              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                 GENEL ARAMA (OTEL, FİRMA, KONUM...)
               </label>
               <div className="h-10">
@@ -778,7 +778,7 @@ export default function HotelsPage() {
             <div className="w-px h-6 bg-white/10 shrink-0 mx-1 hidden sm:block"></div>
 
             {/* Actions */}
-            <label className="h-10 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
+            <label className="h-10 bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -805,7 +805,7 @@ export default function HotelsPage() {
             <button
               onClick={exportHotelsToExcel}
               disabled={exporting}
-              className="h-10 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+              className="h-10 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" />
@@ -816,7 +816,7 @@ export default function HotelsPage() {
             {canCreate(Module.HOTELS) && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="h-10 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                className="h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
                 <Plus size={16} /> YENİ OTEL
               </button>
@@ -825,37 +825,37 @@ export default function HotelsPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span className="text-[11px] font-medium text-white">Durum:</span>
+            <span className="text-[11px] font-medium text-v3-text">Durum:</span>
           </div>
 
           <button
             onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TÜMÜ
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "all" ? "bg-blue-500/20 text-blue-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "all" ? "bg-blue-500/20 text-blue-600 dark:text-blue-300" : "bg-white/10"}`}
             >
               {hotels.length}
             </span>
           </button>
           <button
             onClick={() => setFilter("active")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-600 dark:text-teal-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             AKTİF
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "active" ? "bg-teal-500/20 text-teal-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "active" ? "bg-teal-500/20 text-teal-600 dark:text-teal-300" : "bg-white/10"}`}
             >
               {hotels.filter((h) => h.is_active).length}
             </span>
           </button>
           <button
             onClick={() => setFilter("inactive")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "inactive" ? "bg-red-500/20 border border-red-500/30 text-red-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "inactive" ? "bg-red-500/20 border border-red-500/30 text-red-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             PASİF
             <span
@@ -867,27 +867,27 @@ export default function HotelsPage() {
         </div>
 
         {/* Hotels Table */}
-        <div className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl w-full min-w-0 flex-1 flex flex-col min-h-0 relative overflow-hidden">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 flex-1 flex flex-col min-h-0 relative overflow-hidden">
           <div className="overflow-auto w-full flex-1 custom-scrollbar">
             <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
+              <thead className="bg-v3-border sticky top-0 z-10 backdrop-blur-md">
                 <tr>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Otel Bilgileri
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Konum & Konsept
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     İletişim
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Muhasebe
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     Durum
                   </th>
-                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider border-b border-white/10">
+                  <th className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider border-b border-v3-border">
                     İşlemler
                   </th>
                 </tr>
@@ -896,34 +896,34 @@ export default function HotelsPage() {
                 {paginatedHotels.items.map((hotel) => (
                   <tr
                     key={hotel.id}
-                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0"
                     onDoubleClick={() => handleEdit(hotel)}
                   >
                     <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-sm font-medium text-white mb-0.5">
+                        <div className="text-sm font-medium text-v3-text mb-0.5">
                           {hotel.name}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-v3-muted">
                           {hotel.company_name || "-"}
                         </div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="text-[10px] text-v3-muted">
                           ID: {hotel.id}
                         </div>
                       </div>
                     </td>
                     <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-xs font-medium text-slate-200">
+                        <div className="text-xs font-medium text-v3-text">
                           {hotel.location || "-"}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {hotel.concept}
                         </div>
                         {hotel.rating && (
                           <div className="flex items-center mt-1">
                             <span className="text-yellow-400 text-xs">★</span>
-                            <span className="text-xs text-slate-400 ml-1">
+                            <span className="text-xs text-v3-muted ml-1">
                               {hotel.rating}/5
                             </span>
                           </div>
@@ -932,32 +932,32 @@ export default function HotelsPage() {
                     </td>
                     <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-xs font-medium text-slate-200">
+                        <div className="text-xs font-medium text-v3-text">
                           {hotel.contact_person || "-"}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {hotel.phone || "-"}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {hotel.email || "-"}
                         </div>
                       </div>
                     </td>
                     <td className="px-2.5 py-2.5">
                       <div>
-                        <div className="text-xs font-medium text-slate-200">
+                        <div className="text-xs font-medium text-v3-text">
                           Vergi: {hotel.tax_number || "-"}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-v3-muted">
                           {hotel.tax_office || "-"}
                         </div>
                         {hotel.accounting_link_codes && (
                           <div className="mt-1">
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-v3-muted">
                               {hotel.accounting_link_codes.TL &&
                                 `TL: ${hotel.accounting_link_codes.TL}`}
                             </div>
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-v3-muted">
                               {hotel.accounting_link_codes.EUR &&
                                 `EUR: ${hotel.accounting_link_codes.EUR}`}
                             </div>
@@ -969,7 +969,7 @@ export default function HotelsPage() {
                       <span
                         className={`inline-flex px-2.5 py-1 text-[11px] font-semibold rounded-full border ${
                           hotel.is_active
-                            ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                            ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20"
                             : "bg-red-500/10 text-red-400 border-red-500/20"
                         }`}
                       >
@@ -1025,8 +1025,8 @@ export default function HotelsPage() {
                             onClick={() => toggleActive(hotel.id)}
                             className={`p-1.5 rounded-lg transition-all duration-200 opacity-70 group-hover:opacity-100 ${
                               hotel.is_active
-                                ? "text-orange-400 hover:text-orange-300 hover:bg-orange-500/20"
-                                : "text-teal-400 hover:text-teal-300 hover:bg-teal-500/20"
+                                ? "text-orange-600 dark:text-orange-400 hover:text-orange-600 dark:text-orange-300 hover:bg-orange-500/20"
+                                : "text-teal-600 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 hover:bg-teal-500/20"
                             }`}
                             title={hotel.is_active ? "Pasif Yap" : "Aktif Yap"}
                           >
@@ -1079,13 +1079,13 @@ export default function HotelsPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-2">
-                <Building2 size={16} className="text-blue-400" />
+              <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 border-b border-v3-border pb-2">
+                <Building2 size={16} className="text-blue-600 dark:text-blue-400" />
                 Temel Bilgiler
               </h4>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-white mb-1.5">
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5">
                     Otel Adı *
                   </label>
                   <input
@@ -1093,37 +1093,37 @@ export default function HotelsPage() {
                     type="text"
                     defaultValue=""
                     required
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Otel Adı"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white mb-1.5">
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5">
                     Firma Adı
                   </label>
                   <input
                     ref={companyNameInputRef}
                     type="text"
                     defaultValue=""
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Şirket Ünvanı"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
+                    <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
                       <MapPin size={12} /> Konum
                     </label>
                     <input
                       ref={locationInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                      className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="Şehir/Bölge"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text mb-1.5">
                       Konsept *
                     </label>
                     <input
@@ -1131,13 +1131,13 @@ export default function HotelsPage() {
                       type="text"
                       defaultValue=""
                       required
-                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                      className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="Örn: Her Şey Dahil"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
                     <Star size={12} /> Yıldız
                   </label>
                   <select
@@ -1148,7 +1148,7 @@ export default function HotelsPage() {
                         rating: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer text-sm"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer text-sm"
                   >
                     {[1, 2, 3, 4, 5].map((rating) => (
                       <option key={rating} value={rating}>
@@ -1161,82 +1161,82 @@ export default function HotelsPage() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-2">
-                <Phone size={16} className="text-blue-400" />
+              <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 border-b border-v3-border pb-2">
+                <Phone size={16} className="text-blue-600 dark:text-blue-400" />
                 İletişim & Fatura
               </h4>
               <div className="grid grid-cols-1 gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text mb-1.5">
                       İletişim Kişisi
                     </label>
                     <input
                       ref={contactPersonInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                      className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="Ad Soyad"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
+                    <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
                       <Phone size={12} /> Telefon
                     </label>
                     <input
                       ref={phoneInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                      className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                       placeholder="+90..."
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
                     <Mail size={12} /> E-posta
                   </label>
                   <input
                     ref={emailInputRef}
                     type="email"
                     defaultValue=""
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="otel@eposta.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white mb-1.5">
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5">
                     Adres
                   </label>
                   <input
                     ref={addressInputRef}
                     type="text"
                     defaultValue=""
-                    className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Tam adres..."
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text mb-1.5">
                       Vergi No
                     </label>
                     <input
                       ref={taxNumberInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                      className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text mb-1.5">
                       Vergi Dairesi
                     </label>
                     <input
                       ref={taxOfficeInputRef}
                       type="text"
                       defaultValue=""
-                      className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                      className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     />
                   </div>
                 </div>
@@ -1245,59 +1245,59 @@ export default function HotelsPage() {
           </div>
 
           <div className="space-y-4 pt-2">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-2">
-              <FileText size={16} className="text-blue-400" />
+            <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 border-b border-v3-border pb-2">
+              <FileText size={16} className="text-blue-600 dark:text-blue-400" />
               Muhasebe Bağlantı Kodları
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">
                   TL Kodu
                 </label>
                 <input
                   ref={tlCodeInputRef}
                   type="text"
                   defaultValue=""
-                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                  className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">
                   EUR Kodu
                 </label>
                 <input
                   ref={eurCodeInputRef}
                   type="text"
                   defaultValue=""
-                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                  className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">
                   USD Kodu
                 </label>
                 <input
                   ref={usdCodeInputRef}
                   type="text"
                   defaultValue=""
-                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                  className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">
                   GBP Kodu
                 </label>
                 <input
                   ref={gbpCodeInputRef}
                   type="text"
                   defaultValue=""
-                  className="w-full px-3 py-2 bg-[#0f172a]/40 border border-white/10 text-white rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
+                  className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none text-xs"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-6 border-t border-v3-border">
             <button
               type="button"
               onClick={() => {
@@ -1305,13 +1305,13 @@ export default function HotelsPage() {
                 setEditingHotel(null);
                 resetForm();
               }}
-              className="px-6 py-2.5 text-sm font-bold text-white bg-[#0f172a]/40 border border-white/10 rounded-xl hover:bg-white/5 transition-all"
+              className="px-6 py-2.5 text-sm font-bold text-v3-text bg-v3-surface border border-v3-border rounded-xl hover:bg-v3-border transition-all"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all flex items-center gap-2"
             >
               {editingHotel ? <Pencil size={18} /> : <Plus size={18} />}
               {editingHotel ? "Güncelle" : "Otel Oluştur"}

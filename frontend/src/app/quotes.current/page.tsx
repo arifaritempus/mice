@@ -777,10 +777,10 @@ export default function QuotesPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+          <h1 className="text-3xl font-bold text-v3-text transition-colors duration-200">
             Teklifler
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
+          <p className="text-v3-muted mt-2 transition-colors duration-200">
             Müşteri tekliflerini yönetin
           </p>
         </div>
@@ -793,7 +793,7 @@ export default function QuotesPage() {
             {exporting ? (
               <>
                 <svg
-                  className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                  className="animate-spin -ml-1 mr-3 h-4 w-4 text-v3-text"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -841,7 +841,7 @@ export default function QuotesPage() {
             {exporting ? (
               <>
                 <svg
-                  className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                  className="animate-spin -ml-1 mr-3 h-4 w-4 text-v3-text"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -910,10 +910,10 @@ export default function QuotesPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">
+              <p className="text-sm font-medium text-v3-muted transition-colors duration-200">
                 Toplam Teklif
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+              <p className="text-2xl font-bold text-v3-text transition-colors duration-200">
                 {quotes.length}
               </p>
             </div>
@@ -938,10 +938,10 @@ export default function QuotesPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">
+              <p className="text-sm font-medium text-v3-muted transition-colors duration-200">
                 Konfirme
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+              <p className="text-2xl font-bold text-v3-text transition-colors duration-200">
                 {konfirmeCount}
               </p>
             </div>
@@ -966,10 +966,10 @@ export default function QuotesPage() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors duration-200">
+              <p className="text-sm font-medium text-v3-muted transition-colors duration-200">
                 Bekleyen
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+              <p className="text-2xl font-bold text-v3-text transition-colors duration-200">
                 {teklifCount}
               </p>
             </div>
@@ -986,7 +986,7 @@ export default function QuotesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "all"
                   ? "bg-blue-500 dark:bg-blue-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-gray-100 dark:bg-gray-700 text-v3-text hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               Tümü ({quotes.length})
@@ -996,7 +996,7 @@ export default function QuotesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "TEKLİF"
                   ? "bg-blue-500 dark:bg-blue-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-gray-100 dark:bg-gray-700 text-v3-text hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               Teklif ({teklifCount})
@@ -1006,7 +1006,7 @@ export default function QuotesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "KONFİRME"
                   ? "bg-blue-500 dark:bg-blue-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-gray-100 dark:bg-gray-700 text-v3-text hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               Konfirme ({konfirmeCount})
@@ -1016,7 +1016,7 @@ export default function QuotesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "İPTAL"
                   ? "bg-blue-500 dark:bg-blue-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-gray-100 dark:bg-gray-700 text-v3-text hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               İptal ({iptalCount})
@@ -1048,7 +1048,7 @@ export default function QuotesPage() {
             placeholder="Referans, Acente, Firma, Otel, Organizasyon Tarihi, Oluşturulma Tarihi, Durum, Tutar... herhangi bir şey arayın"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white transition-colors duration-200"
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-v3-text transition-colors duration-200"
           />
           {searchTerm && (
             <button
@@ -1072,7 +1072,7 @@ export default function QuotesPage() {
           )}
         </div>
         {searchTerm && (
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">
+          <div className="mt-2 text-sm text-v3-muted transition-colors duration-200">
             <span className="font-medium">{filteredQuotes.length}</span> sonuç
             bulundu
             {filteredQuotes.length !== quotes.length && (
@@ -1089,7 +1089,7 @@ export default function QuotesPage() {
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                  className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                   onClick={() => handleSort("created_at")}
                 >
                   <div className="flex items-center">
@@ -1112,7 +1112,7 @@ export default function QuotesPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                  className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                   onClick={() => handleSort("reference")}
                 >
                   <div className="flex items-center">
@@ -1204,7 +1204,7 @@ export default function QuotesPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                  className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                   onClick={() => handleSort("date")}
                 >
                   <div className="flex items-center">
@@ -1227,7 +1227,7 @@ export default function QuotesPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                  className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                   onClick={() => handleSort("total_amount")}
                 >
                   <div className="flex items-center">
@@ -1250,7 +1250,7 @@ export default function QuotesPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                  className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                   onClick={() => handleSort("status")}
                 >
                   <div className="flex items-center">
@@ -1272,7 +1272,7 @@ export default function QuotesPage() {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider">
                   İşlemler
                 </th>
               </tr>
@@ -1283,27 +1283,27 @@ export default function QuotesPage() {
                   key={quote.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-v3-text transition-colors duration-200">
                     {new Date(quote.created_at).toLocaleDateString("tr-TR")}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-v3-text transition-colors duration-200">
                     {quote.reference}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                     {getAgencyName(quote.agency_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                     {quote.company_name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                     {getHotelName(quote.hotel_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                     {new Date(quote.check_in_date).toLocaleDateString("tr-TR")}{" "}
                     -{" "}
                     {new Date(quote.check_out_date).toLocaleDateString("tr-TR")}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-v3-text transition-colors duration-200">
                     €{formatNumber(quote.total_amount || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -1313,7 +1313,7 @@ export default function QuotesPage() {
                       {quote.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                     {new Date(quote.created_at).toLocaleDateString("tr-TR")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -1322,7 +1322,7 @@ export default function QuotesPage() {
                         onClick={() =>
                           window.open(`/quotes/${quote.id}`, "_blank")
                         }
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-600 dark:text-blue-300 p-1 rounded hover:bg-blue-500/10 dark:hover:bg-blue-900/30 transition-colors duration-200"
                         title="Görüntüle"
                       >
                         <svg
@@ -1368,7 +1368,7 @@ export default function QuotesPage() {
                       </button>
                       <button
                         onClick={() => handleCopyQuote(quote)}
-                        className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 p-1 rounded hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors duration-200"
+                        className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-600 dark:text-orange-300 p-1 rounded hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors duration-200"
                         title="Kopyala"
                       >
                         <svg

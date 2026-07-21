@@ -141,7 +141,7 @@ export default function SalesTab({
   return (
     <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-sm font-semibold text-v3-text">
           {t('projects.sales') || "Satış"}
         </h2>
         
@@ -238,7 +238,7 @@ export default function SalesTab({
                         setShowAddRowSales(false);
                       }
                     }}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white"
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-v3-text"
                   >
                     <option value="">{t('projects.selectMainCategory') || "Ana Kategori Seç"}</option>
                     {categories
@@ -334,8 +334,8 @@ export default function SalesTab({
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
               >
                 {/* Modal Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-v3-border">
+                  <h2 className="text-lg font-semibold text-v3-text">
                     Kategori Seçin (Satış)
                   </h2>
                   <button
@@ -343,7 +343,7 @@ export default function SalesTab({
                       setShowCategoryModalSales(false);
                       setSelectedCategoriesSales(new Set());
                     }}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-v3-muted"
                   >
                     <svg
                       className="w-6 h-6"
@@ -373,7 +373,7 @@ export default function SalesTab({
                     </button>
                     <button
                       onClick={() => toggleAllCategories(false, "sales")}
-                      className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                      className="px-3 py-1 text-xs bg-gray-500 text-v3-text rounded hover:bg-gray-600"
                     >
                       Tümünü Kaldır
                     </button>
@@ -382,7 +382,7 @@ export default function SalesTab({
                   {/* Kategoriler Listesi */}
                   <div className="space-y-4">
                     {mainCategories.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <div className="text-center py-8 text-v3-muted">
                         Kategoriler yükleniyor...
                       </div>
                     ) : (
@@ -403,7 +403,7 @@ export default function SalesTab({
                         return (
                           <div
                             key={mainCat.id}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                            className="border border-gray-200 dark:border-v3-border rounded-lg overflow-hidden"
                           >
                             {/* Ana Kategori Header */}
                             <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -445,11 +445,11 @@ export default function SalesTab({
                                       );
                                     }}
                                   />
-                                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                  <span className="text-sm font-semibold text-v3-text">
                                     {mainCat.name}
                                   </span>
                                   {subCats.length > 0 && (
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    <span className="text-xs text-v3-muted">
                                       ({subCats.length} alt kategori)
                                     </span>
                                   )}
@@ -478,7 +478,7 @@ export default function SalesTab({
                                       "sales",
                                     );
                                   }}
-                                  className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                                  className="px-2 py-1 text-xs bg-gray-500 text-v3-text rounded hover:bg-gray-600"
                                 >
                                   Tümünü Kaldır
                                 </button>
@@ -487,7 +487,7 @@ export default function SalesTab({
 
                             {/* Alt Kategoriler - Sadece açıkken göster */}
                             {isExpanded && subCats.length > 0 && (
-                              <div className="p-3 bg-white dark:bg-gray-800 space-y-1 border-t border-gray-200 dark:border-gray-700">
+                              <div className="p-3 bg-white dark:bg-gray-800 space-y-1 border-t border-gray-200 dark:border-v3-border">
                                 {subCats.map((subCat: any) => (
                                   <label
                                     key={subCat.id}
@@ -511,7 +511,7 @@ export default function SalesTab({
                                       }}
                                       className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                     />
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                                    <span className="text-sm text-v3-text">
                                       {subCat.name}
                                     </span>
                                   </label>
@@ -526,8 +526,8 @@ export default function SalesTab({
                 </div>
 
                 {/* Modal Footer */}
-                <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-v3-border">
+                  <div className="text-sm text-v3-muted">
                     {selectedCategoriesSales.size} {t('projects.categoriesSelected') || "kategori seçildi"}
                   </div>
                   <div className="flex gap-2">
@@ -536,7 +536,7 @@ export default function SalesTab({
                         setShowCategoryModalSales(false);
                         setSelectedCategoriesSales(new Set());
                       }}
-                      className="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
+                      className="px-4 py-2 text-sm bg-gray-500 text-v3-text rounded hover:bg-gray-600"
                     >
                       {t('common.cancel') || "İptal"}
                     </button>
@@ -631,7 +631,7 @@ export default function SalesTab({
                             prev.map((p) => (p.id === it.id ? updated : p)),
                           );
                         }}
-                        className="w-44 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-44 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       >
                         <option value="">{t('projects.subCategory') || "Alt Kategori"}</option>
                         {categories
@@ -680,7 +680,7 @@ export default function SalesTab({
                         }}
                         type="number"
                         step="1"
-                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                         autoFocus
                       />
                       <input
@@ -721,7 +721,7 @@ export default function SalesTab({
                         }}
                         type="number"
                         step="1"
-                        className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       />
                       <input
                         value={it.unit_price ?? 0}
@@ -761,7 +761,7 @@ export default function SalesTab({
                         }}
                         type="number"
                         step="0.01"
-                        className="w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       />
                       <div className="w-28 px-2 py-1 text-xs text-right text-gray-700 dark:text-gray-200">
                         {formatNumber(it.total)}
@@ -774,7 +774,7 @@ export default function SalesTab({
                             prev.map((p) => (p.id === it.id ? updated : p)),
                           );
                         }}
-                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       >
                         <option>EUR</option>
                         <option>USD</option>
@@ -813,7 +813,7 @@ export default function SalesTab({
                         min="0"
                         max="100"
                         placeholder="5"
-                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       />
                       <input
                         value={it.fx ?? 0}
@@ -849,7 +849,7 @@ export default function SalesTab({
                         }}
                         type="number"
                         step="0.0001"
-                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       />
                       <input
                         value={it.total_try ?? 0}
@@ -891,7 +891,7 @@ export default function SalesTab({
                         }}
                         type="number"
                         step="0.01"
-                        className="w-32 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-32 px-2 py-1 text-xs text-right border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                       />
                       <input
                         value={it.description ?? ""}
@@ -918,7 +918,7 @@ export default function SalesTab({
                             );
                           }
                         }}
-                        className="flex-1 min-w-[10rem] px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="flex-1 min-w-[10rem] px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text"
                         placeholder={t('projects.descriptionField') || "Açıklama"}
                       />
                       <div className="w-24 flex items-center gap-1 justify-end pr-1">
@@ -970,37 +970,37 @@ export default function SalesTab({
                   ) : (
                     // Görüntüleme modu
                     <>
-                      <div className="w-44 text-xs text-gray-900 dark:text-white">
+                      <div className="w-44 text-xs text-v3-text">
                         {getCategoryName(it.sub_category) || "-"}
                       </div>
-                      <div className="w-16 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                      <div className="w-16 text-right pr-1 text-xs text-v3-text">
                         {Math.round(it.qty)}
                       </div>
-                      <div className="w-20 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                      <div className="w-20 text-right pr-1 text-xs text-v3-text">
                         {Math.round(it.repeat)}
                       </div>
-                      <div className="w-24 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                      <div className="w-24 text-right pr-1 text-xs text-v3-text">
                         {formatNumber(it.unit_price)}
                       </div>
-                      <div className="w-28 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">
+                      <div className="w-28 text-right pr-1 text-xs font-semibold text-v3-text">
                         {formatNumber(it.total)}
                       </div>
-                      <div className="w-16 text-xs text-gray-900 dark:text-white">
+                      <div className="w-16 text-xs text-v3-text">
                         {it.currency}
                       </div>
-                      <div className="w-16 text-xs text-gray-900 dark:text-white">
+                      <div className="w-16 text-xs text-v3-text">
                         %{it.vat}
                       </div>
-                      <div className="w-16 text-right pr-1 text-xs text-gray-900 dark:text-white">
+                      <div className="w-16 text-right pr-1 text-xs text-v3-text">
                         {formatTRY(it.fx)}
                       </div>
-                      <div className="w-32 text-right pr-1 text-xs font-semibold text-gray-900 dark:text-white">
+                      <div className="w-32 text-right pr-1 text-xs font-semibold text-v3-text">
                         {formatTRY(it.total_try)}
                       </div>
-                      <div className="flex-1 min-w-[10rem] text-xs text-gray-900 dark:text-white truncate">
+                      <div className="flex-1 min-w-[10rem] text-xs text-v3-text truncate">
                         {it.description || "-"}
                       </div>
-                      <div className="w-36 text-xs text-gray-900 dark:text-white truncate">
+                      <div className="w-36 text-xs text-v3-text truncate">
                         {getHotelNameFromData(it.hotel_id)}
                       </div>
                       <div className="w-24 flex items-center gap-1 justify-end pr-1 group-hover:opacity-100 transition-opacity">
@@ -1082,13 +1082,13 @@ export default function SalesTab({
             {itemsSales.length > 0 && (
               <div className="mt-4 bg-blue-500 dark:bg-blue-700 rounded-md p-3">
                 <div className="flex flex-nowrap items-center gap-2">
-                  <div className="w-44 text-sm font-bold text-white">
+                  <div className="w-44 text-sm font-bold text-v3-text">
                     {t('projects.grandTotal') || "GENEL TOPLAM"}
                   </div>
                   <div className="w-16"></div>
                   <div className="w-20"></div>
                   <div className="w-24"></div>
-                  <div className="w-28 text-right pr-1 text-sm font-bold text-white whitespace-nowrap">
+                  <div className="w-28 text-right pr-1 text-sm font-bold text-v3-text whitespace-nowrap">
                     {Object.entries(totalsByCurrency(itemsSales))
                       .map(
                         ([cur, val]: any) =>
@@ -1099,7 +1099,7 @@ export default function SalesTab({
                   <div className="w-16"></div>
                   <div className="w-16"></div>
                   <div className="w-16"></div>
-                  <div className="w-32 text-right pr-1 text-sm font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                  <div className="w-32 text-right pr-1 text-sm font-bold text-v3-text whitespace-nowrap overflow-hidden text-ellipsis">
                     {formatNumber(
                       itemsSales.reduce(
                         (sum: number, item: any) => sum + (item.total_try || 0),

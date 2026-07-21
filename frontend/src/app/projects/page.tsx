@@ -712,10 +712,10 @@ export default function ProjectsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             {t('common.unauthorized') || "Yetki Gerekli"}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             {t('projects.unauthorizedDesc') || "Projeler sayfasına erişim için yetkiniz bulunmuyor."}
           </p>
           <Link
@@ -734,16 +734,16 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('projects.title') || "Projeler"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">{t('projects.description') || "Projelerinizi yönetin"}</p>
+            <p className="text-xs text-v3-muted mt-1">{t('projects.description') || "Projelerinizi yönetin"}</p>
           </div>
 
           {/* Right: All Filters and Actions */}
@@ -811,17 +811,17 @@ export default function ProjectsPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 onClick={handleExportExcel}
                 disabled={exporting}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 title={t('common.exportExcel') || "Excel'e Aktar"}
               >
                 {exporting ? (
                   <>
                     <svg
-                      className="animate-spin h-3 w-3 text-white"
+                      className="animate-spin h-3 w-3 text-v3-text"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -865,14 +865,14 @@ export default function ProjectsPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm">
-          <span className="text-[10px] uppercase font-semibold text-slate-500 mr-1 pl-1">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm">
+          <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1">
             Durum:
           </span>
 
           <button
             onClick={() => setFilter("all")}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "all" ? "bg-blue-500/20 border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "all" ? "bg-blue-500/20 border-blue-500/50 text-blue-600 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
           >
             <span className="text-[10px] font-medium uppercase tracking-wider">
               {t('common.all') || "Tümü"}
@@ -884,7 +884,7 @@ export default function ProjectsPage() {
 
           <button
             onClick={() => setFilter("active")}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "active" ? "bg-teal-500/20 border-teal-500/50 text-teal-300 shadow-[0_0_10px_rgba(20,184,166,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "active" ? "bg-teal-500/20 border-teal-500/50 text-teal-600 dark:text-teal-300 shadow-[0_0_10px_rgba(20,184,166,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
           >
             <span className="text-[10px] font-medium uppercase tracking-wider">
               {t('common.active') || "Aktif"}
@@ -896,7 +896,7 @@ export default function ProjectsPage() {
 
           <button
             onClick={() => setFilter("approved")}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "approved" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "approved" ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
           >
             <span className="text-[10px] font-medium uppercase tracking-wider">
               {t('projects.lblConfirmed') || "Konfirme"}
@@ -908,7 +908,7 @@ export default function ProjectsPage() {
 
           <button
             onClick={() => setFilter("completed")}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "completed" ? "bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "completed" ? "bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
           >
             <span className="text-[10px] font-medium uppercase tracking-wider">
               {t('common.completed') || "Tamamlandı"}
@@ -920,7 +920,7 @@ export default function ProjectsPage() {
 
           <button
             onClick={() => setFilter("on-hold")}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "on-hold" ? "bg-orange-500/20 border-orange-500/50 text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]" : "bg-transparent border-transparent hover:bg-white/5 text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "on-hold" ? "bg-orange-500/20 border-orange-500/50 text-orange-600 dark:text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
           >
             <span className="text-[10px] font-medium uppercase tracking-wider">
               {t('common.onHold') || "Beklemede"}
@@ -932,13 +932,13 @@ export default function ProjectsPage() {
         </div>
 
         {/* Projects Table */}
-        <div className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl w-full min-w-0 flex-grow shrink-0 flex flex-col relative overflow-hidden">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 flex-grow shrink-0 flex flex-col relative overflow-hidden">
           <div className="w-full flex-1 overflow-auto custom-scrollbar">
             <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-[#1e293b]/95 sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-white/10">
+              <thead className="bg-v3-surface sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-v3-border">
                 <tr>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort("created_at")}
                   >
                     <div className="flex items-center leading-tight">
@@ -963,7 +963,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                    className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                     onClick={() => handleSort("reference")}
                   >
                     <div className="flex items-center">
@@ -986,7 +986,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("start_date")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1011,7 +1011,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("company_name")}
                   >
                     <div className="flex items-center">
@@ -1034,7 +1034,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("agency_id")}
                   >
                     <div className="flex items-center">
@@ -1057,7 +1057,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("hotel_id")}
                   >
                     <div className="flex items-center">
@@ -1080,7 +1080,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("quote_type")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1105,7 +1105,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("room_pax")}
                   >
                     <div className="flex items-center leading-tight">
@@ -1130,7 +1130,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("team_members")}
                   >
                     <div className="flex items-center">
@@ -1153,7 +1153,7 @@ export default function ProjectsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("status")}
                   >
                     <div className="flex items-center">
@@ -1177,11 +1177,11 @@ export default function ProjectsPage() {
                   </th>
                   {/* Kilit durumu (sadece süper admin için) */}
                   {isSuperAdmin && lockFeatureAvailable && (
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider">
                       {t('common.lock') || "Kilit"}
                     </th>
                   )}
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider">
                     {t('common.actions') || "İşlemler"}
                   </th>
                 </tr>
@@ -1190,41 +1190,81 @@ export default function ProjectsPage() {
                 {visibleProjects.map((project) => (
                   <tr
                     key={project.id}
-                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                    className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0"
                     onDoubleClick={() => router.push(`/projects/${project.id}`)}
                   >
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {formatDate(project.confirmed_at || project.created_at)}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {project.reference || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       <div className="leading-tight flex flex-col gap-0.5">
                         <div className="flex items-center">
                           <span>{formatDate(project.start_date)}</span>
-                          <span className="text-slate-500 ml-1 text-[10px] uppercase font-medium tracking-wider">
+                          <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
                             , {getDayNameShort(project.start_date, language === 'en' ? 'en-US' : 'tr-TR')}
                           </span>
                         </div>
                         <div className="flex items-center">
                           <span>{formatDate(project.end_date)}</span>
-                          <span className="text-slate-500 ml-1 text-[10px] uppercase font-medium tracking-wider">
+                          <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
                             , {getDayNameShort(project.end_date, language === 'en' ? 'en-US' : 'tr-TR')}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {project.company_name || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {getAgencyName(project.agency_id)}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
-                      {getHotelName(project.hotel_id)}
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[160px]">
+                      {(() => {
+                        let tooltipNames: string[] = [];
+                        let firstHotelName = "";
+                        
+                        if ((project as any).hotels_data && Array.isArray((project as any).hotels_data) && (project as any).hotels_data.length > 0) {
+                          firstHotelName = getHotelName((project as any).hotels_data[0].hotel_id) || (project as any).hotels_data[0].hotel_name || "Bilinmeyen Otel";
+                          tooltipNames = (project as any).hotels_data.map((h: any) => {
+                            const name = getHotelName(h.hotel_id) || h.hotel_name || "Bilinmeyen Otel";
+                            const inDate = h.check_in_date ? formatDate(h.check_in_date) : "";
+                            const outDate = h.check_out_date ? formatDate(h.check_out_date) : "";
+                            let text = name;
+                            if (inDate && outDate) text = `${name} (${inDate} - ${outDate})`;
+                            return text.replace(/ /g, "\u00A0").replace(/-/g, "\u2011");
+                          });
+                        } else if (project.hotel_id) {
+                          firstHotelName = getHotelName(project.hotel_id) || "Bilinmeyen Otel";
+                          const inDate = project.start_date ? formatDate(project.start_date) : "";
+                          const outDate = project.end_date ? formatDate(project.end_date) : "";
+                          let text = firstHotelName;
+                          if (inDate && outDate) {
+                            text = `${firstHotelName} (${inDate} - ${outDate})`;
+                          }
+                          tooltipNames = [text.replace(/ /g, "\u00A0").replace(/-/g, "\u2011")];
+                        }
+                        
+                        if (tooltipNames.length === 0) return <span>-</span>;
+                        
+                        const additionalCount = tooltipNames.length - 1;
+                        const allHotelsText = tooltipNames.join("\n");
+                        
+                        return (
+                          <div className="flex items-center gap-1 group" title={allHotelsText}>
+                            <span className="truncate block max-w-[120px] cursor-help">{firstHotelName}</span>
+                            {additionalCount > 0 && (
+                              <span className="text-[9px] bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-0.5 rounded cursor-help whitespace-nowrap flex-shrink-0">
+                                +{additionalCount}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {project.quote_type ? (
                         project.quote_type.toLowerCase() === "konaklamalı" ? (t('projects.quoteWithAccommodation') || "Konaklamalı") :
                         project.quote_type.toLowerCase() === "konaklamasız" ? (t('projects.quoteWithoutAccommodation') || "Konaklamasız") :
@@ -1233,13 +1273,13 @@ export default function ProjectsPage() {
                         project.quote_type
                       ) : "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {project.room_pax ||
                         (project.room_count && project.pax_count
                           ? `${project.room_count} | ${project.pax_count}`
                           : "N/A")}
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-slate-200">
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       {(projectUsersMap[project.id]?.length ??
                         project.team_members) ||
                         0}{" "}
@@ -1306,7 +1346,7 @@ export default function ProjectsPage() {
                           onClick={() =>
                             (window.location.href = `/projects/${project.id}`)
                           }
-                          className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg hover:bg-blue-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-600 dark:text-blue-300 p-1.5 rounded-lg hover:bg-blue-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                           title={t('common.view') || "Görüntüle"}
                         >
                           <svg
@@ -1358,7 +1398,7 @@ export default function ProjectsPage() {
                   <tr>
                     <td
                       colSpan={isSuperAdmin && lockFeatureAvailable ? 13 : 12}
-                      className="px-4 py-8 text-center text-sm text-slate-400"
+                      className="px-4 py-8 text-center text-sm text-v3-muted"
                     >
                       {t('projects.noRecordsFound') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>
@@ -1387,7 +1427,7 @@ export default function ProjectsPage() {
           title={t('projects.lblApprovalDetails') || "Onay Detayları"}
           maxWidth="max-w-2xl"
         >
-          <div className="p-6 text-white">
+          <div className="p-6 text-v3-text">
             {loadingApproval ? (
               <div className="flex justify-center items-center py-8">
                 <LoadingSpinner compact />
@@ -1396,48 +1436,48 @@ export default function ProjectsPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white ml-1 mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text ml-1 mb-1.5">
                       {t('home.name') || "Ad"}
                     </label>
-                    <div className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl text-sm text-white">
+                    <div className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl text-sm text-v3-text">
                       {approvalData.name || "-"}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white ml-1 mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text ml-1 mb-1.5">
                       {t('home.surname') || "Soyad"}
                     </label>
-                    <div className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl text-sm text-white">
+                    <div className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl text-sm text-v3-text">
                       {approvalData.surname || "-"}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white ml-1 mb-1.5">
+                  <label className="block text-xs font-semibold text-v3-text ml-1 mb-1.5">
                     {t('home.email') || "E-posta"}
                   </label>
-                  <div className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl text-sm text-white">
+                  <div className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl text-sm text-v3-text">
                     {approvalData.email || "-"}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white ml-1 mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text ml-1 mb-1.5">
                       {t('projects.lblApprovalDate') || "Onay Tarihi"}
                     </label>
-                    <div className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl text-sm text-white">
+                    <div className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl text-sm text-v3-text">
                       {approvalData.approved_at
                         ? formatDate(approvalData.approved_at)
                         : "-"}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white ml-1 mb-1.5">
+                    <label className="block text-xs font-semibold text-v3-text ml-1 mb-1.5">
                       {t('projects.lblApprovalTime') || "Onay Saati"}
                     </label>
-                    <div className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl text-sm text-white">
+                    <div className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl text-sm text-v3-text">
                       {approvalData.approved_at
                         ? new Date(approvalData.approved_at).toLocaleTimeString(
                             "tr-TR",
@@ -1453,24 +1493,24 @@ export default function ProjectsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white ml-1 mb-1.5">
+                  <label className="block text-xs font-semibold text-v3-text ml-1 mb-1.5">
                     {t('projects.lblIpAddress') || "IP Adresi"}
                   </label>
-                  <div className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 rounded-xl text-sm text-white font-mono">
+                  <div className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border rounded-xl text-sm text-v3-text font-mono">
                     {approvalData.ip_address || "-"}
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-v3-muted">
                 Onay bilgisi bulunamadı.
               </div>
             )}
 
-            <div className="mt-8 pt-4 border-t border-white/10 flex justify-end">
+            <div className="mt-8 pt-4 border-t border-v3-border flex justify-end">
               <button
                 onClick={handleCloseApprovalModal}
-                className="px-6 py-2 bg-white/5 border border-white/10 text-white hover:text-white hover:bg-white/10 rounded-xl text-xs font-semibold transition-all uppercase"
+                className="px-6 py-2 bg-v3-border border border-v3-border text-v3-text hover:text-v3-text hover:bg-v3-surface rounded-xl text-xs font-semibold transition-all uppercase"
               >
                 {t('common.close') || "Kapat"}
               </button>
@@ -1487,35 +1527,35 @@ export default function ProjectsPage() {
         title={t('projects.lblDeleteProject') || "Projeyi Sil"}
         maxWidth="max-w-md"
       >
-        <div className="p-6 text-white">
+        <div className="p-6 text-v3-text">
           <div className="flex items-start gap-4 mb-5">
             <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30">
               <Trash2 className="w-6 h-6 text-red-400" />
             </div>
             <div>
-              <h3 className="text-lg font-light text-white glow-text">
+              <h3 className="text-lg font-light text-v3-text glow-text">
                 {t('projects.lblDeleteProject') || "Projeyi Sil"}
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 {t('common.cannotBeUndone') || "Bu işlem geri alınamaz"}
               </p>
             </div>
           </div>
 
-          <div className="bg-[#0f172a]/60 border border-white/10 rounded-xl p-4 mb-5">
-            <p className="text-sm font-semibold text-white truncate">
+          <div className="bg-v3-surface border border-v3-border rounded-xl p-4 mb-5">
+            <p className="text-sm font-semibold text-v3-text truncate">
               {deleteModal.project?.title}
             </p>
             {deleteModal.project?.company_name && (
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-v3-muted mt-0.5">
                 {deleteModal.project.company_name}
               </p>
             )}
           </div>
 
-          <div className="text-sm text-white mb-6 space-y-1">
-            <p className="font-semibold text-white">{t('projects.lblDataToBeDeleted') || "Silinecek veriler:"}</p>
-            <ul className="list-disc list-inside space-y-1 text-xs mt-2 text-slate-400">
+          <div className="text-sm text-v3-text mb-6 space-y-1">
+            <p className="font-semibold text-v3-text">{t('projects.lblDataToBeDeleted') || "Silinecek veriler:"}</p>
+            <ul className="list-disc list-inside space-y-1 text-xs mt-2 text-v3-muted">
               <li>Konaklama, etkinlik ve transfer kalemleri</li>
               <li>Satış ve alış kalemleri</li>
               <li>Tahsilat ve ödeme planları</li>
@@ -1523,11 +1563,11 @@ export default function ProjectsPage() {
             </ul>
           </div>
 
-          <div className="flex gap-3 justify-end mt-8 pt-4 border-t border-white/10">
+          <div className="flex gap-3 justify-end mt-8 pt-4 border-t border-v3-border">
             <button
               onClick={() => setDeleteModal({ open: false, project: null })}
               disabled={deleting}
-              className="px-6 py-2 text-xs font-semibold text-white hover:text-white transition-colors uppercase disabled:opacity-50"
+              className="px-6 py-2 text-xs font-semibold text-v3-text hover:text-v3-text transition-colors uppercase disabled:opacity-50"
             >
               {t('common.cancel') || "Vazgeç"}
             </button>

@@ -312,14 +312,14 @@ export default function GeneralSettingsPage() {
               onClick={() => setColorPickerOpen(null)}
             ></div>
             <div className="fixed z-[9999] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-[90vw] max-h-[90vh] overflow-auto">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-3 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-3 border border-gray-200 dark:border-v3-border">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-sm font-semibold text-v3-text">
                     Renk Seç
                   </h3>
                   <button
                     onClick={() => setColorPickerOpen(null)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl leading-none"
+                    className="text-v3-muted hover:text-gray-700 dark:hover:text-v3-muted text-xl leading-none"
                     aria-label="Kapat"
                   >
                     ×
@@ -981,10 +981,10 @@ export default function GeneralSettingsPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Ayarlar sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -1010,10 +1010,10 @@ export default function GeneralSettingsPage() {
       <div className="w-full">
         {/* Header */}
         <div className="mb-4">
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200">
+          <h1 className="text-lg font-bold text-v3-text transition-colors duration-200">
             Genel Ayarlar
           </h1>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">
+          <p className="text-xs text-v3-muted mt-1 transition-colors duration-200">
             Sistem genel ayarlarını yapılandırın
           </p>
         </div>
@@ -1032,15 +1032,15 @@ export default function GeneralSettingsPage() {
 
         {/* Settings Form */}
         <div
-          className="rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-colors duration-200"
+          className="rounded-lg shadow border border-gray-200 dark:border-v3-border transition-colors duration-200"
           style={{
             backgroundColor: isDark
               ? "var(--theme-card-bg, #1f2937)"
               : "var(--theme-card-bg, #ffffff)",
           }}
         >
-          <div className="px-2 py-2 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
+          <div className="px-2 py-2 border-b border-gray-200 dark:border-v3-border">
+            <h2 className="text-sm font-medium text-v3-text transition-colors duration-200">
               Şirket Bilgileri
             </h2>
           </div>
@@ -1048,7 +1048,7 @@ export default function GeneralSettingsPage() {
           <form onSubmit={handleSubmit} className="p-2 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                   Şirket Adı *
                 </label>
                 <input
@@ -1056,12 +1056,12 @@ export default function GeneralSettingsPage() {
                   value={settings.company_name}
                   onChange={(e) => handleChange("company_name", e.target.value)}
                   required
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                   E-posta *
                 </label>
                 <input
@@ -1071,12 +1071,12 @@ export default function GeneralSettingsPage() {
                     handleChange("company_email", e.target.value)
                   }
                   required
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                   Telefon
                 </label>
                 <input
@@ -1085,12 +1085,12 @@ export default function GeneralSettingsPage() {
                   onChange={(e) =>
                     handleChange("company_phone", e.target.value)
                   }
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                   Adres
                 </label>
                 <input
@@ -1099,19 +1099,19 @@ export default function GeneralSettingsPage() {
                   onChange={(e) =>
                     handleChange("company_address", e.target.value)
                   }
-                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                  className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                 />
               </div>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                 Sistem Ayarları
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                  <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                     Varsayılan Para Birimi
                   </label>
                   <select
@@ -1119,7 +1119,7 @@ export default function GeneralSettingsPage() {
                     onChange={(e) =>
                       handleChange("default_currency", e.target.value)
                     }
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                   >
                     <option value="TRY">Türk Lirası (₺)</option>
                     <option value="USD">Amerikan Doları ($)</option>
@@ -1129,13 +1129,13 @@ export default function GeneralSettingsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                  <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                     Saat Dilimi
                   </label>
                   <select
                     value={settings.timezone}
                     onChange={(e) => handleChange("timezone", e.target.value)}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                   >
                     <option value="Europe/Istanbul">İstanbul (UTC+3)</option>
                     <option value="Europe/London">Londra (UTC+0)</option>
@@ -1145,7 +1145,7 @@ export default function GeneralSettingsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                  <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                     Tarih Formatı
                   </label>
                   <select
@@ -1153,7 +1153,7 @@ export default function GeneralSettingsPage() {
                     onChange={(e) =>
                       handleChange("date_format", e.target.value)
                     }
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                   >
                     <option value="DD.MM.YYYY">DD.MM.YYYY (GG.AA.YYYY)</option>
                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -1162,13 +1162,13 @@ export default function GeneralSettingsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-200">
+                  <label className="block text-xs font-medium text-v3-text mb-1 transition-colors duration-200">
                     Dil
                   </label>
                   <select
                     value={settings.language}
                     onChange={(e) => handleChange("language", e.target.value)}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-white transition-colors duration-200 text-xs"
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-700 dark:text-v3-text transition-colors duration-200 text-xs"
                   >
                     <option value="tr">Türkçe</option>
                     <option value="en">English</option>
@@ -1180,11 +1180,11 @@ export default function GeneralSettingsPage() {
             </div>
 
             {/* Logolar */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                 Logolar
               </h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-[11px] text-v3-muted mb-4">
                 PNG tercih edilir. İkon logo kare, wordmark logo yatay, menü
                 logo yatay önerilir. Tema değişikliklerinde logolar otomatik
                 olarak güncellenir.
@@ -1199,7 +1199,7 @@ export default function GeneralSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Koyu Tema İkon Logo */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-xs font-medium text-v3-text">
                       Koyu Tema İkon Logo
                     </label>
                     <div className="flex items-center gap-3">
@@ -1207,7 +1207,7 @@ export default function GeneralSettingsPage() {
                         <img
                           src={settings.dark_icon_logo}
                           alt="Dark Icon Logo"
-                          className="h-12 w-12 object-contain rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                          className="h-12 w-12 object-contain rounded border border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800"
                           key={settings.dark_icon_logo}
                         />
                       ) : (
@@ -1245,7 +1245,7 @@ export default function GeneralSettingsPage() {
 
                   {/* Koyu Tema Wordmark Logo */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-xs font-medium text-v3-text">
                       Koyu Tema Wordmark Logo
                     </label>
                     <div className="flex items-center gap-3">
@@ -1253,7 +1253,7 @@ export default function GeneralSettingsPage() {
                         <img
                           src={settings.dark_wordmark_logo}
                           alt="Dark Wordmark Logo"
-                          className="h-12 object-contain rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 max-w-[200px]"
+                          className="h-12 object-contain rounded border border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800 max-w-[200px]"
                           key={settings.dark_wordmark_logo}
                         />
                       ) : (
@@ -1291,7 +1291,7 @@ export default function GeneralSettingsPage() {
 
                   {/* Koyu Tema Menü Logo */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-xs font-medium text-v3-text">
                       Koyu Tema Menü Logo
                     </label>
                     <div className="flex items-center gap-3">
@@ -1299,7 +1299,7 @@ export default function GeneralSettingsPage() {
                         <img
                           src={settings.dark_menu_logo}
                           alt="Dark Menu Logo"
-                          className="h-12 object-contain rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 max-w-[200px]"
+                          className="h-12 object-contain rounded border border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800 max-w-[200px]"
                           key={settings.dark_menu_logo}
                         />
                       ) : (
@@ -1346,7 +1346,7 @@ export default function GeneralSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Açık Tema İkon Logo */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-xs font-medium text-v3-text">
                       Açık Tema İkon Logo
                     </label>
                     <div className="flex items-center gap-3">
@@ -1354,7 +1354,7 @@ export default function GeneralSettingsPage() {
                         <img
                           src={settings.light_icon_logo}
                           alt="Light Icon Logo"
-                          className="h-12 w-12 object-contain rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                          className="h-12 w-12 object-contain rounded border border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800"
                           key={settings.light_icon_logo}
                         />
                       ) : (
@@ -1392,7 +1392,7 @@ export default function GeneralSettingsPage() {
 
                   {/* Açık Tema Wordmark Logo */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-xs font-medium text-v3-text">
                       Açık Tema Wordmark Logo
                     </label>
                     <div className="flex items-center gap-3">
@@ -1400,7 +1400,7 @@ export default function GeneralSettingsPage() {
                         <img
                           src={settings.light_wordmark_logo}
                           alt="Light Wordmark Logo"
-                          className="h-12 object-contain rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 max-w-[200px]"
+                          className="h-12 object-contain rounded border border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800 max-w-[200px]"
                           key={settings.light_wordmark_logo}
                         />
                       ) : (
@@ -1438,7 +1438,7 @@ export default function GeneralSettingsPage() {
 
                   {/* Açık Tema Menü Logo */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-xs font-medium text-v3-text">
                       Açık Tema Menü Logo
                     </label>
                     <div className="flex items-center gap-3">
@@ -1446,7 +1446,7 @@ export default function GeneralSettingsPage() {
                         <img
                           src={settings.light_menu_logo}
                           alt="Light Menu Logo"
-                          className="h-12 object-contain rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 max-w-[200px]"
+                          className="h-12 object-contain rounded border border-gray-200 dark:border-v3-border bg-white dark:bg-gray-800 max-w-[200px]"
                           key={settings.light_menu_logo}
                         />
                       ) : (
@@ -1486,11 +1486,11 @@ export default function GeneralSettingsPage() {
             </div>
 
             {/* Mail Ayarları */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                 Mail Ayarları
               </h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-[11px] text-v3-muted mb-4">
                 Sistem otomatik mail gönderimi için SMTP ayarları. Bu ayarlar
                 sistem genelinde kullanılacaktır.
               </p>
@@ -1498,7 +1498,7 @@ export default function GeneralSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* SMTP Sunucu */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     SMTP Sunucu
                   </label>
                   <input
@@ -1506,13 +1506,13 @@ export default function GeneralSettingsPage() {
                     value={settings.smtp_host}
                     onChange={(e) => handleChange("smtp_host", e.target.value)}
                     placeholder="smtp.gmail.com"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
 
                 {/* SMTP Port */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     SMTP Port
                   </label>
                   <input
@@ -1520,13 +1520,13 @@ export default function GeneralSettingsPage() {
                     value={settings.smtp_port}
                     onChange={(e) => handleChange("smtp_port", e.target.value)}
                     placeholder="587"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
 
                 {/* SMTP Kullanıcı Adı */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     SMTP Kullanıcı Adı
                   </label>
                   <input
@@ -1536,13 +1536,13 @@ export default function GeneralSettingsPage() {
                       handleChange("smtp_username", e.target.value)
                     }
                     placeholder="kullanici@domain.com"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
 
                 {/* SMTP Şifre */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     SMTP Şifre
                   </label>
                   <input
@@ -1552,13 +1552,13 @@ export default function GeneralSettingsPage() {
                       handleChange("smtp_password", e.target.value)
                     }
                     placeholder="••••••••"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
 
                 {/* SSL/TLS */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Güvenli Bağlantı
                   </label>
                   <div className="flex items-center space-x-3">
@@ -1570,7 +1570,7 @@ export default function GeneralSettingsPage() {
                         onChange={() => handleChange("smtp_secure", true)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      <span className="ml-2 text-sm text-v3-text">
                         SSL/TLS
                       </span>
                     </label>
@@ -1582,7 +1582,7 @@ export default function GeneralSettingsPage() {
                         onChange={() => handleChange("smtp_secure", false)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      <span className="ml-2 text-sm text-v3-text">
                         None
                       </span>
                     </label>
@@ -1591,7 +1591,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Gönderen Adı */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Gönderen Adı
                   </label>
                   <input
@@ -1605,13 +1605,13 @@ export default function GeneralSettingsPage() {
                         ? document.title.split("-")[0].trim()
                         : "Firma"
                     }
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
 
                 {/* Gönderen E-posta */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Gönderen E-posta
                   </label>
                   <input
@@ -1621,13 +1621,13 @@ export default function GeneralSettingsPage() {
                       handleChange("mail_from_email", e.target.value)
                     }
                     placeholder="noreply@tempustravel.co"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
 
                 {/* Yanıt Adresi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Yanıt Adresi
                   </label>
                   <input
@@ -1637,29 +1637,29 @@ export default function GeneralSettingsPage() {
                       handleChange("mail_reply_to", e.target.value)
                     }
                     placeholder="info@tempustravel.co"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>
               </div>
 
               {/* Mail Test Butonu */}
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-v3-border">
                 <button
                   type="button"
                   onClick={handleMailTest}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-500/90 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                  className="px-4 py-2 text-sm font-medium text-v3-text bg-blue-500 hover:bg-blue-500/90 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                 >
                   Mail Ayarlarını Test Et
                 </button>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-[10px] text-v3-muted mt-1">
                   Test maili göndererek ayarların doğru çalıştığını kontrol edin
                 </p>
               </div>
             </div>
 
             {/* AI Asistan Ayarları */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                 AI Asistan Ayarları
               </h3>
 
@@ -1674,23 +1674,23 @@ export default function GeneralSettingsPage() {
                     }
                   />
                   <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
-                  <span className="ml-3 text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <span className="ml-3 text-xs font-medium text-v3-text">
                     Sistemde Yapay Zeka Asistanını Göster
                   </span>
                 </label>
               </div>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2">
+              <p className="text-[10px] text-v3-muted mt-2">
                 Aktif edildiğinde ekranın sağ alt köşesinde AI asistan butonu
                 belirir. Pasif edilirse sistemden gizlenir.
               </p>
             </div>
 
             {/* Renk Ayarları */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                 Renk Ayarları
               </h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-[11px] text-v3-muted mb-4">
                 Sistem genelinde kullanılacak renkleri özelleştirin. Renkler CSS
                 değişkenleri olarak uygulanır.
               </p>
@@ -1698,7 +1698,7 @@ export default function GeneralSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Primary Color */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Ana Renk (Primary)
                   </label>
                   <div className="relative">
@@ -1713,7 +1713,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.primary_color || "#2563eb"}
                       </span>
                     </div>
@@ -1726,7 +1726,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Secondary Color */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     İkincil Renk (Secondary)
                   </label>
                   <div className="relative">
@@ -1741,7 +1741,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.secondary_color || "#6b7280"}
                       </span>
                     </div>
@@ -1754,7 +1754,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Success Color */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Başarı Rengi (Success)
                   </label>
                   <div className="relative">
@@ -1769,7 +1769,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.success_color || "#10b981"}
                       </span>
                     </div>
@@ -1782,7 +1782,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Warning Color */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Uyarı Rengi (Warning)
                   </label>
                   <div className="relative">
@@ -1797,7 +1797,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.warning_color || "#f59e0b"}
                       </span>
                     </div>
@@ -1810,7 +1810,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Error Color */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Hata Rengi (Error)
                   </label>
                   <div className="relative">
@@ -1825,7 +1825,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.error_color || "#ef4444"}
                       </span>
                     </div>
@@ -1838,7 +1838,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Info Color */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Bilgi Rengi (Info)
                   </label>
                   <div className="relative">
@@ -1853,7 +1853,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.info_color || "#3b82f6"}
                       </span>
                     </div>
@@ -1866,13 +1866,13 @@ export default function GeneralSettingsPage() {
               </div>
 
               {/* Renk Önizleme */}
-              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-v3-border">
+                <p className="text-xs font-medium text-v3-text mb-2">
                   Renk Önizleme
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <div
-                    className="px-3 py-1 rounded text-xs text-white"
+                    className="px-3 py-1 rounded text-xs text-v3-text"
                     style={{
                       backgroundColor: settings.primary_color || "#2563eb",
                     }}
@@ -1880,7 +1880,7 @@ export default function GeneralSettingsPage() {
                     Primary
                   </div>
                   <div
-                    className="px-3 py-1 rounded text-xs text-white"
+                    className="px-3 py-1 rounded text-xs text-v3-text"
                     style={{
                       backgroundColor: settings.secondary_color || "#6b7280",
                     }}
@@ -1888,7 +1888,7 @@ export default function GeneralSettingsPage() {
                     Secondary
                   </div>
                   <div
-                    className="px-3 py-1 rounded text-xs text-white"
+                    className="px-3 py-1 rounded text-xs text-v3-text"
                     style={{
                       backgroundColor: settings.success_color || "#10b981",
                     }}
@@ -1896,7 +1896,7 @@ export default function GeneralSettingsPage() {
                     Success
                   </div>
                   <div
-                    className="px-3 py-1 rounded text-xs text-white"
+                    className="px-3 py-1 rounded text-xs text-v3-text"
                     style={{
                       backgroundColor: settings.warning_color || "#f59e0b",
                     }}
@@ -1904,7 +1904,7 @@ export default function GeneralSettingsPage() {
                     Warning
                   </div>
                   <div
-                    className="px-3 py-1 rounded text-xs text-white"
+                    className="px-3 py-1 rounded text-xs text-v3-text"
                     style={{
                       backgroundColor: settings.error_color || "#ef4444",
                     }}
@@ -1912,7 +1912,7 @@ export default function GeneralSettingsPage() {
                     Error
                   </div>
                   <div
-                    className="px-3 py-1 rounded text-xs text-white"
+                    className="px-3 py-1 rounded text-xs text-v3-text"
                     style={{
                       backgroundColor: settings.info_color || "#3b82f6",
                     }}
@@ -1924,12 +1924,12 @@ export default function GeneralSettingsPage() {
             </div>
 
             {/* Koyu Tema Renk Ayarları */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200 flex items-center">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200 flex items-center">
                 <span className="w-3 h-3 bg-gray-800 dark:bg-gray-200 rounded-full mr-2"></span>
                 Koyu Tema Renk Ayarları
               </h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-[11px] text-v3-muted mb-4">
                 Koyu tema için zemin, kart, sidebar ve yazı renklerini
                 özelleştirin.
               </p>
@@ -1937,7 +1937,7 @@ export default function GeneralSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Koyu Tema Ana Zemin */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Ana Zemin Rengi
                   </label>
                   <div className="relative">
@@ -1954,7 +1954,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.dark_bg_primary || "#030712"}
                       </span>
                     </div>
@@ -1967,7 +1967,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Koyu Tema İkincil Zemin */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     İkincil Zemin Rengi
                   </label>
                   <div className="relative">
@@ -1985,7 +1985,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.dark_bg_secondary || "#111827"}
                       </span>
                     </div>
@@ -1998,7 +1998,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Koyu Tema Kart Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Kart Rengi
                   </label>
                   <div className="relative">
@@ -2015,7 +2015,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.dark_card_bg || "#1f2937"}
                       </span>
                     </div>
@@ -2028,7 +2028,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Koyu Tema Sidebar Menü Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Sidebar Menü Rengi
                   </label>
                   <div className="relative">
@@ -2045,7 +2045,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.dark_sidebar_bg || "#030712"}
                       </span>
                     </div>
@@ -2058,7 +2058,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Koyu Tema Sidebar Header Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Sidebar Header Rengi
                   </label>
                   <div className="relative">
@@ -2076,7 +2076,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.dark_sidebar_header_bg || "#111827"}
                       </span>
                     </div>
@@ -2089,7 +2089,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Koyu Tema Yazı Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Yazı Rengi
                   </label>
                   <div className="relative">
@@ -2119,7 +2119,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Koyu Tema Sidebar Çerçeve Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Sidebar Çerçeve Rengi
                   </label>
                   <div className="relative">
@@ -2137,7 +2137,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.dark_sidebar_border || "#374151"}
                       </span>
                     </div>
@@ -2151,12 +2151,12 @@ export default function GeneralSettingsPage() {
             </div>
 
             {/* Açık Tema Renk Ayarları */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200 flex items-center">
+            <div className="border-t border-gray-200 dark:border-v3-border pt-3">
+              <h3 className="text-sm font-medium text-v3-text mb-2 transition-colors duration-200 flex items-center">
                 <span className="w-3 h-3 bg-gray-200 dark:bg-gray-800 rounded-full mr-2"></span>
                 Açık Tema Renk Ayarları
               </h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-[11px] text-v3-muted mb-4">
                 Açık tema için zemin, kart, sidebar ve yazı renklerini
                 özelleştirin.
               </p>
@@ -2164,7 +2164,7 @@ export default function GeneralSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Açık Tema Ana Zemin */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Ana Zemin Rengi
                   </label>
                   <div className="relative">
@@ -2194,7 +2194,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Açık Tema İkincil Zemin */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     İkincil Zemin Rengi
                   </label>
                   <div className="relative">
@@ -2225,7 +2225,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Açık Tema Kart Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Kart Rengi
                   </label>
                   <div className="relative">
@@ -2255,7 +2255,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Açık Tema Sidebar Menü Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Sidebar Menü Rengi
                   </label>
                   <div className="relative">
@@ -2285,7 +2285,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Açık Tema Sidebar Header Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Sidebar Header Rengi
                   </label>
                   <div className="relative">
@@ -2316,7 +2316,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Açık Tema Yazı Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Yazı Rengi
                   </label>
                   <div className="relative">
@@ -2333,7 +2333,7 @@ export default function GeneralSettingsPage() {
                         )
                       }
                     >
-                      <span className="text-white text-xs font-medium drop-shadow-lg">
+                      <span className="text-v3-text text-xs font-medium drop-shadow-lg">
                         {settings.light_text_color || "#111827"}
                       </span>
                     </div>
@@ -2346,7 +2346,7 @@ export default function GeneralSettingsPage() {
 
                 {/* Açık Tema Sidebar Çerçeve Rengi */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-xs font-medium text-v3-text">
                     Sidebar Çerçeve Rengi
                   </label>
                   <div className="relative">
@@ -2377,7 +2377,7 @@ export default function GeneralSettingsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end pt-3 border-t border-gray-200 dark:border-v3-border">
               <button
                 type="submit"
                 disabled={loading}

@@ -990,8 +990,8 @@ export default function SejourServicesPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Yetki Gerekli</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">Yetki Gerekli</h1>
+          <p className="text-v3-muted mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor.
           </p>
           <a
@@ -1006,7 +1006,7 @@ export default function SejourServicesPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col">
         {/* Header */}
 
@@ -1014,10 +1014,10 @@ export default function SejourServicesPage() {
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text">
               Sejour Hizmet Listesi
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               Sejour hizmet kalemlerini inceleyin ve filtreleyin
             </p>
           </div>
@@ -1082,10 +1082,10 @@ export default function SejourServicesPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 onClick={exportSalesExcel}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500 hover:bg-green-600 text-white border-transparent shadow-[0_0_15px_rgba(34,197,94,0.3)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
                 title="Satış Excel'e Aktar"
               >
                 <svg
@@ -1128,9 +1128,9 @@ export default function SejourServicesPage() {
         </div>
 
         {/* Unified Stats Strip for Tabs */}
-        <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1">
               VERİ TÜRÜ:
             </span>
             <button
@@ -1138,7 +1138,7 @@ export default function SejourServicesPage() {
                 setActiveTab("sales");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "sales" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "sales" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-v3-surface/5 border border-transparent text-white"}`}
             >
               <span>SATIŞ HİZMETLERİ</span>
             </button>
@@ -1147,7 +1147,7 @@ export default function SejourServicesPage() {
                 setActiveTab("costs");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "costs" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "costs" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-v3-surface/5 border border-transparent text-white"}`}
             >
               <span>ALIŞ HİZMETLERİ</span>
             </button>
@@ -1156,13 +1156,13 @@ export default function SejourServicesPage() {
 
         {/* Hatalar/Loading */}
         {loading && (
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 mb-4 shadow-sm">
+          <div className="bg-v3-surface/5 backdrop-blur-md border border-v3-border rounded-xl p-4 mb-4 shadow-sm">
             <LoadingSpinner message="Servis listesi yükleniyor..." compact />
           </div>
         )}
         {error && (
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 mb-4 shadow-sm">
-            <div className="p-3 rounded-lg border border-red-300 bg-red-50 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-200 text-sm">
+          <div className="bg-v3-surface/5 backdrop-blur-md border border-v3-border rounded-xl p-4 mb-4 shadow-sm">
+            <div className="p-3 rounded-lg border border-red-300 bg-red-50 dark:bg-red-900/20 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-200 text-sm">
               {error}
             </div>
           </div>
@@ -1170,13 +1170,13 @@ export default function SejourServicesPage() {
 
         {/* Tablo */}
         {!loading && !error && (
-          <div className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px]">
+          <div className="flex-1 bg-v3-surface/5 backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px]">
             <div className="flex-1 overflow-auto custom-scrollbar">
               <table className="w-full text-left border-collapse min-w-[1200px]">
-                <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
+                <thead className="bg-v3-surface sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-v3-border">
                   <tr>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("voucherNumber")}
                     >
                       <div className="flex items-center gap-1">
@@ -1199,7 +1199,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("customerName")}
                     >
                       <div className="flex items-center gap-1">
@@ -1222,7 +1222,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("checkInDate")}
                     >
                       <div className="flex items-center gap-1">
@@ -1245,7 +1245,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("checkOutDate")}
                     >
                       <div className="flex items-center gap-1">
@@ -1268,7 +1268,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("hotelName")}
                     >
                       <div className="flex items-center gap-1">
@@ -1291,7 +1291,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("guestName")}
                     >
                       <div className="flex items-center gap-1">
@@ -1314,7 +1314,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("boardType")}
                     >
                       <div className="flex items-center gap-1">
@@ -1337,7 +1337,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-left text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() => handleSort("roomType")}
                     >
                       <div className="flex items-center gap-1">
@@ -1360,7 +1360,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-right text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-right text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() =>
                         handleSort(
                           activeTab === "costs"
@@ -1394,7 +1394,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-right text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-right text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() =>
                         handleSort(
                           activeTab === "costs" ? "flightCost" : "flightAmount",
@@ -1426,7 +1426,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-right text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-right text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() =>
                         handleSort(
                           activeTab === "costs"
@@ -1460,7 +1460,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="px-2.5 py-2.5 text-right text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                      className="px-2.5 py-2.5 text-right text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
                       onClick={() =>
                         handleSort(
                           activeTab === "costs" ? "extraCost" : "extraAmount",
@@ -1492,7 +1492,7 @@ export default function SejourServicesPage() {
                       </div>
                     </th>
                     <th
-                      className="text-right px-2 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="text-right px-2 py-2 text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() =>
                         handleSort(
                           activeTab === "costs" ? "totalCost" : "totalAmount",
@@ -1513,7 +1513,7 @@ export default function SejourServicesPage() {
                     <tr>
                       <td
                         colSpan={13}
-                        className="px-2.5 py-4 text-center text-gray-500 dark:text-gray-400 text-xs"
+                        className="px-2.5 py-4 text-center text-v3-muted text-xs"
                       >
                         Kayıt bulunamadı
                       </td>
@@ -1522,12 +1522,12 @@ export default function SejourServicesPage() {
                   {visibleRows.map((r, idx) => (
                     <tr
                       key={`${r.voucherNumber}-${idx}`}
-                      className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-white/5 last:border-0"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group cursor-pointer border-b border-v3-border last:border-0"
                       onDoubleClick={() =>
                         router.push("/sejour?search=" + r.voucherNumber)
                       }
                     >
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-white transition-colors duration-200">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text transition-colors duration-200">
                         <button
                           onClick={() => {
                             // TODO: Supabase'den sejour ID'sini bul
@@ -1544,7 +1544,7 @@ export default function SejourServicesPage() {
                           {r.voucherNumber}
                         </button>
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                         {r.customerName}
                       </td>
                       <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white">
@@ -1567,19 +1567,19 @@ export default function SejourServicesPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                         {r.hotelName || "-"}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                         {r.guestName || "-"}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                         {r.boardType || "-"}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
                         {r.roomType || "-"}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200 text-right">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200 text-right">
                         {formatCurrency(
                           activeTab === "costs"
                             ? (r as SejourCostRow).accommodationCost
@@ -1589,7 +1589,7 @@ export default function SejourServicesPage() {
                             : (r as SejourServiceRow).accommodationCurrency,
                         )}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200 text-right">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200 text-right">
                         {formatCurrency(
                           activeTab === "costs"
                             ? (r as SejourCostRow).flightCost
@@ -1599,7 +1599,7 @@ export default function SejourServicesPage() {
                             : (r as SejourServiceRow).flightCurrency,
                         )}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200 text-right">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200 text-right">
                         {formatCurrency(
                           activeTab === "costs"
                             ? (r as SejourCostRow).transferCost
@@ -1609,7 +1609,7 @@ export default function SejourServicesPage() {
                             : (r as SejourServiceRow).transferCurrency,
                         )}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200 text-right">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200 text-right">
                         {formatCurrency(
                           activeTab === "costs"
                             ? (r as SejourCostRow).extraCost
@@ -1619,7 +1619,7 @@ export default function SejourServicesPage() {
                             : (r as SejourServiceRow).extraCurrency,
                         )}
                       </td>
-                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-white transition-colors duration-200 text-right">
+                      <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text transition-colors duration-200 text-right">
                         {formatCurrency(
                           activeTab === "costs"
                             ? (r as SejourCostRow).totalCost
@@ -1635,11 +1635,11 @@ export default function SejourServicesPage() {
               </table>
             </div>
             {totalCount > 0 && (
-              <div className="flex justify-end px-4 py-3 bg-[#0f172a]/60 backdrop-blur-md border-t border-white/10">
-                <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
+              <div className="flex justify-end px-4 py-3 bg-black/5 dark:bg-white/5 backdrop-blur-md border-t border-v3-border">
+                <div className="flex items-center gap-3 text-v3-text">
                   <span className="text-sm">Toplam {totalCount} kayıt</span>
                   <button
-                    className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40"
+                    className="h-8 w-8 rounded-md border border-v3-border disabled:opacity-40"
                     disabled={page <= 1}
                     onClick={() => setPage(page - 1)}
                   >
@@ -1647,7 +1647,7 @@ export default function SejourServicesPage() {
                   </button>
                   <span className="text-sm font-medium">{page}</span>
                   <button
-                    className="h-8 w-8 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-40"
+                    className="h-8 w-8 rounded-md border border-v3-border disabled:opacity-40"
                     disabled={page >= totalPages}
                     onClick={() => setPage(page + 1)}
                   >
@@ -1655,7 +1655,7 @@ export default function SejourServicesPage() {
                   </button>
                   <select
                     value={pageSize}
-                    className="h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm"
+                    className="h-8 rounded-md border border-v3-border bg-v3-surface px-2 text-sm"
                     onChange={(e) => {
                       const size = Number(e.target.value) || DEFAULT_PAGE_SIZE;
                       setPageSize(size);

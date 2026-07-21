@@ -642,16 +642,16 @@ export default function HomePage() {
       <div className="shrink-0 flex flex-col gap-3 z-10">
         <div className="flex flex-wrap items-center justify-start gap-8">
           <div>
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('home.title')}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('home.subtitle')}
             </p>
           </div>
 
           <div className="flex items-end gap-2">
-            <div className="flex items-center gap-2 p-1 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl w-fit h-[40px]">
+            <div className="flex items-center gap-2 p-1 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl w-fit h-[40px]">
               {(
                 [
                   { id: "today", label: t('home.today') },
@@ -668,8 +668,8 @@ export default function HomePage() {
                   }}
                   className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${
                     period === item.id
-                      ? "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
-                      : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                      ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                      : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                   }`}
                 >
                   {item.label}
@@ -682,8 +682,8 @@ export default function HomePage() {
                 }}
                 className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center gap-1 ${
                   period === "custom"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                    ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                    : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                 }`}
               >
                 <Calendar size={14} />
@@ -719,7 +719,7 @@ export default function HomePage() {
 
             <button
               onClick={loadData}
-              className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
+              className="bg-v3-border border border-v3-border hover:bg-v3-surface text-v3-text px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               {t('home.refresh')}
@@ -731,16 +731,16 @@ export default function HomePage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1 min-h-[500px]">
         {/* COLUMN 1: TIMELINE (Yaklaşan Operasyonlar) */}
-        <div className="lg:col-span-5 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col">
-          <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4 shrink-0">
-            <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/20">
+        <div className="lg:col-span-5 bg-v3-surface backdrop-blur-md border border-v3-border rounded-3xl p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-6 border-b border-v3-border pb-4 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
               <Clock size={20} />
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-wide">
                 {t('home.operationFlow')}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest">
                 {timelineItems.length} {t('home.upcomingTasksCount')}
               </p>
             </div>
@@ -763,19 +763,19 @@ export default function HomePage() {
                     key={item.id}
                     className="relative flex items-start gap-4 group"
                   >
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#0f172a] border-4 border-[#0f172a] z-10 shrink-0 mt-1">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-v3-surface border-4 border-[#0f172a] z-10 shrink-0 mt-1">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 
                         ${
                           item.color === "emerald"
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                             : item.color === "blue"
-                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                              ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30"
                               : item.color === "amber"
-                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                                 : item.color === "fuchsia"
-                                  ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
-                                  : "bg-violet-500/20 text-violet-400 border border-violet-500/30"
+                                  ? "bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-400 border border-fuchsia-500/30"
+                                  : "bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/30"
                         }`}
                       >
                         <item.icon size={16} />
@@ -784,13 +784,13 @@ export default function HomePage() {
                     <div className="flex-1 pb-2">
                       <Link
                         href={item.link}
-                        className="block group-hover:bg-white/5 p-3 rounded-2xl border border-transparent group-hover:border-white/10 transition-all"
+                        className="block group-hover:bg-v3-border p-3 rounded-2xl border border-transparent group-hover:border-v3-border transition-all"
                       >
                         <div className="flex justify-between items-start gap-2 mb-1">
-                          <h3 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors line-clamp-2 leading-tight">
+                          <h3 className="text-sm font-bold text-v3-text group-hover:text-blue-600 dark:text-blue-300 transition-colors line-clamp-2 leading-tight">
                             {item.title}
                           </h3>
-                          <span className="text-[10px] font-mono text-slate-400 bg-black/30 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
+                          <span className="text-[10px] font-mono text-v3-muted bg-black/30 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
                             {format(
                               item.date,
                               getFormatStrDate(),
@@ -800,12 +800,12 @@ export default function HomePage() {
                         </div>
                         <div className="flex justify-between items-center mt-2">
                           <p
-                            className="text-xs text-slate-400 font-medium truncate pr-2"
+                            className="text-xs text-v3-muted font-medium truncate pr-2"
                             title={item.subtitle}
                           >
                             {item.subtitle}
                           </p>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-1 rounded-md shrink-0">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-v3-muted bg-v3-border px-2 py-1 rounded-md shrink-0">
                             {item.module}
                           </span>
                         </div>
@@ -819,16 +819,16 @@ export default function HomePage() {
         </div>
 
         {/* COLUMN 2: UYARILAR (Finans & Opsiyonlar) */}
-        <div className="lg:col-span-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col">
-          <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4 shrink-0">
-            <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/20">
+        <div className="lg:col-span-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-3xl p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-6 border-b border-v3-border pb-4 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-500/20">
               <AlertTriangle size={20} />
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-wide">
                 {t('home.criticalWarnings')}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest">
                 {warnings.length} {t('home.pendingActions')}
               </p>
             </div>
@@ -850,19 +850,19 @@ export default function HomePage() {
                   className={`block p-4 rounded-2xl border transition-all hover:-translate-y-1 ${
                     warn.isUrgent
                       ? "bg-rose-500/10 border-rose-500/30 hover:shadow-[0_0_20px_rgba(244,63,94,0.15)] hover:bg-rose-500/20"
-                      : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10"
+                      : "bg-v3-border border-v3-border hover:border-v3-border hover:bg-v3-surface"
                   }`}
                 >
                   <div className="flex gap-3">
                     <div
-                      className={`mt-0.5 shrink-0 ${warn.isUrgent ? "text-rose-400" : "text-slate-400"}`}
+                      className={`mt-0.5 shrink-0 ${warn.isUrgent ? "text-rose-600 dark:text-rose-400" : "text-v3-muted"}`}
                     >
                       <warn.icon size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
                         <h4
-                          className={`text-xs font-bold uppercase tracking-wider line-clamp-2 ${warn.isUrgent ? "text-rose-100" : "text-white"}`}
+                          className={`text-xs font-bold uppercase tracking-wider line-clamp-2 ${warn.isUrgent ? "text-rose-900 dark:text-rose-100" : "text-v3-text"}`}
                         >
                           {warn.title}
                         </h4>
@@ -873,20 +873,20 @@ export default function HomePage() {
                         )}
                       </div>
                       <p
-                        className="text-[11px] text-slate-400 mt-1 truncate"
+                        className="text-[11px] text-v3-muted mt-1 truncate"
                         title={warn.subtitle}
                       >
                         {warn.subtitle}
                       </p>
 
-                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-v3-border">
                         <span
                           className={`text-[10px] font-bold uppercase tracking-widest ${
                             warn.daysLeft < 0
                               ? "text-rose-500"
                               : warn.daysLeft === 0
-                                ? "text-rose-400"
-                                : "text-amber-400"
+                                ? "text-rose-600 dark:text-rose-400"
+                                : "text-amber-600 dark:text-amber-400"
                           }`}
                         >
                           {warn.daysLeft < 0
@@ -895,7 +895,7 @@ export default function HomePage() {
                               ? t('home.todayEnd')
                               : `${warn.daysLeft} ${t('home.daysLeft')}`}
                         </span>
-                        <span className="text-[10px] text-slate-500 ml-auto whitespace-nowrap">
+                        <span className="text-[10px] text-v3-muted ml-auto whitespace-nowrap">
                           {format(
                             warn.date,
                             getFormatStrWarn(),
@@ -912,14 +912,14 @@ export default function HomePage() {
         </div>
 
         {/* COLUMN 3: PAZARLAMA (Randevular) */}
-        <div className="lg:col-span-3 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col">
-          <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4 shrink-0">
-            <div className="w-10 h-10 rounded-2xl bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center border border-fuchsia-500/20">
+        <div className="lg:col-span-3 bg-v3-surface backdrop-blur-md border border-v3-border rounded-3xl p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-6 border-b border-v3-border pb-4 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-400 flex items-center justify-center border border-fuchsia-500/20">
               <Target size={20} />
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-wide">{t('home.marketing')}</h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest">
                 {marketingAppts.length} {t('home.appointments')}
               </p>
             </div>
@@ -928,7 +928,7 @@ export default function HomePage() {
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1">
             {marketingAppts.length === 0 ? (
               <div className="text-center py-10 opacity-50">
-                <Target className="w-12 h-12 mx-auto mb-3 text-slate-500 opacity-50" />
+                <Target className="w-12 h-12 mx-auto mb-3 text-v3-muted opacity-50" />
                 <p className="text-sm font-medium">
                   {t('home.noAppointments')}
                 </p>
@@ -941,23 +941,23 @@ export default function HomePage() {
                   className="block p-4 rounded-2xl bg-fuchsia-950/20 border border-fuchsia-500/10 hover:border-fuchsia-500/30 hover:bg-fuchsia-900/30 transition-all group"
                 >
                   <div className="flex justify-between items-start mb-2 gap-2">
-                    <h4 className="text-sm font-bold text-white group-hover:text-fuchsia-300 transition-colors line-clamp-2 leading-tight">
+                    <h4 className="text-sm font-bold text-v3-text group-hover:text-fuchsia-600 dark:text-fuchsia-300 transition-colors line-clamp-2 leading-tight">
                       {appt.title}
                     </h4>
-                    <span className="text-[10px] font-mono text-slate-400 bg-black/30 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
+                    <span className="text-[10px] font-mono text-v3-muted bg-black/30 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
                       {format(appt.date, getFormatStrDate(), getFormatLocale())}
                     </span>
                   </div>
 
-                  <div className="mt-2 text-[11px] text-slate-400 flex flex-col gap-1">
+                  <div className="mt-2 text-[11px] text-v3-muted flex flex-col gap-1">
                     <span className="flex items-center gap-1.5">
-                      <Users size={12} className="text-fuchsia-400/70" />{" "}
+                      <Users size={12} className="text-fuchsia-600 dark:text-fuchsia-400/70" />{" "}
                       {appt.contacts}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center mt-3 pt-3 border-t border-fuchsia-500/10">
-                    <span className="text-[10px] font-bold text-fuchsia-400/70 uppercase tracking-widest bg-fuchsia-500/10 px-2 py-1 rounded-md shrink-0">
+                    <span className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400/70 uppercase tracking-widest bg-fuchsia-500/10 px-2 py-1 rounded-md shrink-0">
                       {appt.subtitle}
                     </span>
                   </div>

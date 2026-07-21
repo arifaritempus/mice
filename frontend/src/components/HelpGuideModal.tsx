@@ -24,7 +24,7 @@ const sections = [
     id: "overview",
     title: "Genel Bakış",
     icon: LayoutDashboard,
-    color: "text-blue-400",
+    color: "text-blue-600 dark:text-blue-400",
     bgColor: "bg-blue-500/10 dark:bg-blue-900/20",
     description:
       "Sistemin ana kontrol paneli. Burada yaklaşan operasyonları, istatistikleri ve hızlı işlem kısayollarını görebilirsiniz.",
@@ -129,7 +129,7 @@ export default function HelpGuideModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-v3-surface backdrop-blur-sm"
           />
 
           <motion.div
@@ -137,16 +137,16 @@ export default function HelpGuideModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative bg-white dark:bg-[#0f172a] w-full max-w-4xl h-[80vh] md:h-[600px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-slate-200 dark:border-slate-800"
+            className="relative bg-white dark:bg-v3-surface w-full max-w-4xl h-[80vh] md:h-[600px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-slate-200 dark:border-slate-800"
           >
             {/* Sidebar / Navigation */}
-            <div className="w-full md:w-72 bg-slate-50 dark:bg-slate-800/50 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex-shrink-0">
+            <div className="w-full md:w-72 bg-slate-50 dark:bg-v3-surface/50 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex-shrink-0">
               <div className="p-6 md:p-8 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="p-2 bg-blue-500 rounded-xl shadow-lg shadow-blue-500/20">
-                    <BookOpen className="w-5 h-5 text-white" />
+                    <BookOpen className="w-5 h-5 text-v3-text" />
                   </div>
-                  <h2 className="font-black text-slate-900 dark:text-white uppercase tracking-tighter text-sm">
+                  <h2 className="font-black text-slate-900 dark:text-v3-text uppercase tracking-tighter text-sm">
                     Sistem Rehberi
                   </h2>
                 </div>
@@ -156,7 +156,7 @@ export default function HelpGuideModal({
                     <button
                       key={`nav-${section.id}`}
                       onClick={() => setActiveSection(section.id)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-left whitespace-nowrap md:whitespace-normal group ${activeSection === section.id ? "bg-white dark:bg-[#0f172a] shadow-md shadow-slate-200/50 dark:shadow-none" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-left whitespace-nowrap md:whitespace-normal group ${activeSection === section.id ? "bg-white dark:bg-v3-surface shadow-md shadow-slate-200/50 dark:shadow-none" : "hover:bg-slate-100 dark:hover:bg-v3-surface"}`}
                     >
                       <div
                         className={`p-2 rounded-lg ${section.bgColor} ${section.color} group-hover:scale-110 transition-transform`}
@@ -164,7 +164,7 @@ export default function HelpGuideModal({
                         <section.icon className="w-4 h-4" />
                       </div>
                       <span
-                        className={`text-[11px] font-black uppercase tracking-widest ${activeSection === section.id ? "text-slate-900 dark:text-white" : "text-slate-500"}`}
+                        className={`text-[11px] font-black uppercase tracking-widest ${activeSection === section.id ? "text-slate-900 dark:text-v3-text" : "text-v3-muted"}`}
                       >
                         {section.title}
                       </span>
@@ -179,9 +179,9 @@ export default function HelpGuideModal({
               <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-end">
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors group"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-v3-surface rounded-full transition-colors group"
                 >
-                  <X className="w-5 h-5 text-slate-400 group-hover:rotate-90 transition-transform" />
+                  <X className="w-5 h-5 text-v3-muted group-hover:rotate-90 transition-transform" />
                 </button>
               </div>
 
@@ -204,28 +204,28 @@ export default function HelpGuideModal({
                           >
                             <section.icon className="w-8 h-8" />
                           </div>
-                          <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                          <h3 className="text-3xl font-black text-slate-900 dark:text-v3-text tracking-tight">
                             {section.title}
                           </h3>
-                          <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed font-medium">
+                          <p className="text-v3-muted dark:text-v3-muted text-lg leading-relaxed font-medium">
                             {section.description}
                           </p>
                         </div>
 
                         <div className="space-y-4">
-                          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                          <h4 className="text-[10px] font-black text-v3-muted uppercase tracking-[0.2em]">
                             Önemli İpuçları
                           </h4>
                           <div className="grid gap-3">
                             {section.tips.map((tip, i) => (
                               <div
                                 key={`tip-${section.id}-${i}`}
-                                className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/50 group hover:border-blue-200 transition-colors"
+                                className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-v3-surface/30 rounded-2xl border border-slate-100 dark:border-slate-800/50 group hover:border-blue-200 transition-colors"
                               >
                                 <div
                                   className={`mt-1.5 w-1.5 h-1.5 rounded-full ${section.color} bg-current flex-shrink-0`}
                                 />
-                                <p className="text-xs font-bold text-slate-600 dark:text-white uppercase tracking-widest leading-relaxed">
+                                <p className="text-xs font-bold text-slate-600 dark:text-v3-text uppercase tracking-widest leading-relaxed">
                                   {tip}
                                 </p>
                               </div>
@@ -237,10 +237,10 @@ export default function HelpGuideModal({
                 </AnimatePresence>
               </div>
 
-              <div className="p-6 md:p-8 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
+              <div className="p-6 md:p-8 bg-slate-50 dark:bg-v3-surface/20 border-t border-slate-100 dark:border-slate-800">
                 <button
                   onClick={onClose}
-                  className="w-full py-4 bg-[#0f172a] dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl shadow-slate-900/10"
+                  className="w-full py-4 bg-v3-surface dark:bg-white text-v3-text dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl shadow-slate-900/10"
                 >
                   Anladım, Teşekkürler
                 </button>

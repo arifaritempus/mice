@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -14,6 +15,7 @@ interface User {
   last_name: string;
   email: string;
   role: string;
+  user_metadata?: any;
 }
 
 interface UpdateProfileData {
@@ -22,7 +24,6 @@ interface UpdateProfileData {
   email: string;
 }
 
-type Theme = "light" | "dark" | "system";
 
 const getCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
@@ -40,10 +41,10 @@ export default function ProfilePage() {
   const { canView, loading: permissionsLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [currentTheme, setCurrentTheme] = useState<Theme>("system");
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const [profileData, setProfileData] = useState<UpdateProfileData>({
@@ -60,57 +61,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     loadUserProfile();
-    loadThemePreference();
   }, []);
-
-  const loadThemePreference = () => {
-    try {
-      const savedTheme = getCookie("theme") as Theme | null;
-      if (savedTheme) {
-        setCurrentTheme(savedTheme);
-        applyTheme(savedTheme);
-      } else {
-        // Varsayılan olarak sistem temasını kullan
-        setCurrentTheme("system");
-        applyTheme("system");
-      }
-    } catch (error) {
-      console.error("Tema yüklenirken hata:", error);
-    }
-  };
-
-  const applyTheme = (theme: Theme) => {
-    const root = document.documentElement;
-
-    // Önce tüm tema sınıflarını kaldır
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      // Sistem temasını kontrol et
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
-
-    // Tema tercihini cookie'ye kaydet
-    setCookie("theme", theme);
-  };
-
-  const handleThemeChange = (theme: Theme) => {
-    setCurrentTheme(theme);
-    applyTheme(theme);
-    setSuccess("Tema tercihi güncellendi");
-    setTimeout(() => setSuccess(""), 3000);
-
-    // Tema değiştiğinde sayfayı yenile (logo'nun güncellenmesi için)
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  };
 
   const loadUserProfile = async () => {
     try {
@@ -163,6 +114,69 @@ export default function ProfilePage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      setUploadingAvatar(true);
+      setError("");
+      setSuccess("");
+
+      // Yükleme işlemi
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Public URL alma
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // User metadata'ya kaydetme
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: data.publicUrl }
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // State'i güncelleme
+      if (user) {
+        setUser({
+          ...user,
+          user_metadata: {
+            ...user.user_metadata,
+            avatar_url: data.publicUrl
+          }
+        });
+      }
+      
+      setSuccess("Profil fotoğrafı başarıyla güncellendi.");
+      setTimeout(() => setSuccess(""), 3000);
+      
+      // Force reload to update TopNavigation
+      window.location.reload();
+    } catch (error: any) {
+      console.error("Fotoğraf yükleme hatası:", error);
+      setError("Fotoğraf yüklenirken bir hata oluştu: " + error.message);
+      setTimeout(() => setError(""), 5000);
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -280,9 +294,9 @@ export default function ProfilePage() {
 
   if (!canView(Module.PROFILE)) {
     return (
-      <div className="h-full w-full p-6 sm:p-8 flex items-center justify-center font-sans text-white">
+      <div className="h-full w-full p-6 sm:p-8 flex items-center justify-center font-sans text-v3-text">
         <div className="text-center">
-          <h1 className="text-2xl font-light text-white glow-text mb-4">
+          <h1 className="text-2xl font-light text-v3-text mb-4">
             Yetki Gerekli
           </h1>
           <p className="text-sm text-slate-400 mb-6">
@@ -304,7 +318,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -324,7 +338,7 @@ export default function ProfilePage() {
             </svg>
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text uppercase">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text uppercase">
               Profil Ayarları
             </h1>
             <p className="text-xs text-slate-400 mt-1">
@@ -372,10 +386,10 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profil Bilgileri */}
-          <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-6 pb-4 border-b border-white/10 flex items-center gap-2">
+          <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+            <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider mb-6 pb-4 border-b border-v3-border flex items-center gap-2">
               <svg
                 className="w-4 h-4 text-blue-400"
                 fill="none"
@@ -404,7 +418,7 @@ export default function ProfilePage() {
                     value={profileData.first_name}
                     onChange={handleInputChange}
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border/30 dark:bg-v3-border border border-v3-border rounded-xl px-3 py-2 text-xs text-v3-text placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
 
@@ -418,7 +432,7 @@ export default function ProfilePage() {
                     value={profileData.last_name}
                     onChange={handleInputChange}
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                    className="w-full bg-v3-border/30 dark:bg-v3-border border border-v3-border rounded-xl px-3 py-2 text-xs text-v3-text placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                   />
                 </div>
               </div>
@@ -433,7 +447,7 @@ export default function ProfilePage() {
                   value={profileData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                  className="w-full bg-v3-border/30 dark:bg-v3-border border border-v3-border rounded-xl px-3 py-2 text-xs text-v3-text placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                 />
               </div>
 
@@ -445,7 +459,7 @@ export default function ProfilePage() {
                   type="text"
                   value={user ? getRoleDisplayName(user.role) : ""}
                   disabled
-                  className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-3 py-2 text-xs text-slate-500 transition-all cursor-not-allowed"
+                  className="w-full bg-v3-surface border border-v3-border rounded-xl px-3 py-2 text-xs text-slate-500 transition-all cursor-not-allowed"
                 />
               </div>
 
@@ -461,7 +475,7 @@ export default function ProfilePage() {
             </form>
 
             {/* Çıkış Yap Bölümü */}
-            <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="mt-6 pt-6 border-t border-v3-border">
               <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
                 <h3 className="text-[11px] font-semibold text-red-400 uppercase tracking-wider mb-1.5 flex items-center gap-2">
                   <svg
@@ -505,184 +519,54 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Tema Ayarları */}
-          <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-6 pb-4 border-b border-white/10 flex items-center gap-2">
-              <svg
-                className="w-4 h-4 text-purple-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                />
+          {/* Profil Fotoğrafı */}
+          <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+            <h2 className="text-sm font-black text-v3-text uppercase tracking-widest mb-6 flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Tema Ayarları
+              Profil Fotoğrafı
             </h2>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                  Tema Tercihi
-                </label>
-
-                <div className="space-y-3">
-                  {/* Açık Tema */}
-                  <label
-                    className={`flex items-center p-3 border rounded-xl cursor-pointer transition-all duration-200 ${currentTheme === "light" ? "bg-blue-500/10 border-blue-500/30" : "bg-white/5 border-white/10 hover:bg-white/10"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="light"
-                      checked={currentTheme === "light"}
-                      onChange={() => handleThemeChange("light")}
-                      className="sr-only"
-                    />
-                    <div className="flex items-center flex-1">
-                      <div
-                        className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center transition-all ${currentTheme === "light" ? "bg-amber-500/20 text-amber-400" : "bg-white/5 text-slate-400"}`}
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-white text-xs uppercase tracking-wider mb-0.5">
-                          Açık Tema
-                        </div>
-                        <div className="text-[10px] text-slate-400">
-                          Parlak ve temiz görünüm
-                        </div>
-                      </div>
-                      {currentTheme === "light" && (
-                        <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]"></div>
-                      )}
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative w-32 h-32 rounded-full border-4 border-v3-surface shadow-xl bg-v3-border flex items-center justify-center overflow-hidden">
+                  {user?.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                      {user?.first_name?.charAt(0) || user?.email?.charAt(0) || "U"}
                     </div>
-                  </label>
-
-                  {/* Koyu Tema */}
-                  <label
-                    className={`flex items-center p-3 border rounded-xl cursor-pointer transition-all duration-200 ${currentTheme === "dark" ? "bg-blue-500/10 border-blue-500/30" : "bg-white/5 border-white/10 hover:bg-white/10"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="dark"
-                      checked={currentTheme === "dark"}
-                      onChange={() => handleThemeChange("dark")}
-                      className="sr-only"
-                    />
-                    <div className="flex items-center flex-1">
-                      <div
-                        className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center transition-all ${currentTheme === "dark" ? "bg-blue-500/20 text-blue-400" : "bg-white/5 text-slate-400"}`}
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-white text-xs uppercase tracking-wider mb-0.5">
-                          Koyu Tema
-                        </div>
-                        <div className="text-[10px] text-slate-400">
-                          Göz yormayan koyu görünüm
-                        </div>
-                      </div>
-                      {currentTheme === "dark" && (
-                        <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]"></div>
-                      )}
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                  </label>
-
-                  {/* Sistem Teması */}
-                  <label
-                    className={`flex items-center p-3 border rounded-xl cursor-pointer transition-all duration-200 ${currentTheme === "system" ? "bg-blue-500/10 border-blue-500/30" : "bg-white/5 border-white/10 hover:bg-white/10"}`}
-                  >
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="system"
-                      checked={currentTheme === "system"}
-                      onChange={() => handleThemeChange("system")}
-                      className="sr-only"
-                    />
-                    <div className="flex items-center flex-1">
-                      <div
-                        className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center transition-all ${currentTheme === "system" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-400"}`}
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-white text-xs uppercase tracking-wider mb-0.5">
-                          Sistem Teması
-                        </div>
-                        <div className="text-[10px] text-slate-400">
-                          İşletim sistemi ayarlarını takip eder
-                        </div>
-                      </div>
-                      {currentTheme === "system" && (
-                        <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]"></div>
-                      )}
-                    </div>
-                  </label>
+                  )}
                 </div>
-              </div>
-
-              <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20 mt-4">
-                <h3 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider mb-1.5 flex items-center gap-2">
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                
+                <div className="w-full">
+                  <label className="flex items-center justify-center w-full px-4 py-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500 hover:text-v3-text rounded-xl cursor-pointer transition-colors font-bold text-xs uppercase tracking-widest">
+                    <span>Fotoğraf Seç & Yükle</span>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*" 
+                      onChange={handleAvatarUpload}
+                      disabled={uploadingAvatar}
                     />
-                  </svg>
-                  Bilgi
-                </h3>
-                <p className="text-[10px] text-blue-300/80 leading-relaxed">
-                  Tema tercihiniz tüm sayfalarda geçerli olacak ve tarayıcınızda
-                  kaydedilecektir. Koyu tema (V3) en iyi deneyimi sunar.
-                </p>
+                  </label>
+                  <p className="text-[10px] text-v3-muted text-center mt-2 uppercase tracking-widest font-semibold">
+                    Önerilen boyut: 256x256px (Maks 5MB)
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Şifre Değiştirme */}
-          <div className="bg-[#0f172a]/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-6 pb-4 border-b border-white/10 flex items-center gap-2">
+          <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+            <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider mb-6 pb-4 border-b border-v3-border flex items-center gap-2">
               <svg
                 className="w-4 h-4 text-emerald-400"
                 fill="none"
@@ -709,7 +593,7 @@ export default function ProfilePage() {
                   name="currentPassword"
                   value={passwordData.currentPassword}
                   onChange={handlePasswordInputChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                  className="w-full bg-v3-border/30 dark:bg-v3-border border border-v3-border rounded-xl px-3 py-2 text-xs text-v3-text placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -724,7 +608,7 @@ export default function ProfilePage() {
                   value={passwordData.newPassword}
                   onChange={handlePasswordInputChange}
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                  className="w-full bg-v3-border/30 dark:bg-v3-border border border-v3-border rounded-xl px-3 py-2 text-xs text-v3-text placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -739,7 +623,7 @@ export default function ProfilePage() {
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordInputChange}
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                  className="w-full bg-v3-border/30 dark:bg-v3-border border border-v3-border rounded-xl px-3 py-2 text-xs text-v3-text placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                   placeholder="••••••••"
                 />
               </div>

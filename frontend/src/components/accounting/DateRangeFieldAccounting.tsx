@@ -166,17 +166,17 @@ export function DateRangeFieldAccounting({
           calendarClassName="!border-0 !bg-transparent w-full mx-auto"
         />
       </div>
-      <div className="flex justify-end gap-3 p-4 sm:px-6 sm:py-5 border-t border-slate-200 dark:border-slate-800 bg-[#0f172a]/50 w-full mt-auto">
+      <div className="flex justify-end gap-3 p-4 sm:px-6 sm:py-5 border-t border-slate-200 dark:border-slate-800 bg-v3-surface w-full mt-auto">
         <button
           onClick={closeCalendar}
-          className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 transition-all shadow-sm"
+          className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:bg-v3-surface dark:text-v3-text dark:border-slate-700 dark:hover:bg-slate-700 transition-all shadow-sm"
         >
           İptal
         </button>
         <button
           onClick={handleApply}
           disabled={!pickerRange[0]}
-          className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-semibold text-white bg-blue-500 border border-transparent rounded-xl hover:bg-blue-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/20"
+          className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-semibold text-v3-text bg-blue-500 border border-transparent rounded-xl hover:bg-blue-500/90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/20"
         >
           Uygula
         </button>
@@ -188,7 +188,7 @@ export function DateRangeFieldAccounting({
     <div className="min-w-0 relative flex flex-col w-full" ref={containerRef}>
       {!hideLabel && (
         <label
-          className="block text-xs font-semibold text-slate-700 dark:text-white mb-1.5 truncate"
+          className="block text-xs font-semibold text-slate-700 dark:text-v3-text mb-1.5 truncate"
           title={label}
         >
           {label}
@@ -199,19 +199,19 @@ export function DateRangeFieldAccounting({
       <button
         type="button"
         onClick={openCalendar}
-        className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+        className="flex items-center justify-between w-full min-w-0 h-10 px-3.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-v3-surface/80 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
       >
         <div className="flex items-center gap-2.5 truncate">
           <Calendar
             size={16}
-            className="text-slate-400 dark:text-slate-400 shrink-0"
+            className="text-v3-muted dark:text-v3-muted shrink-0"
           />
           <span className="truncate">{displayText}</span>
         </div>
         {(startValue || endValue) && (
           <div
             onClick={handleClear}
-            className="shrink-0 p-1 ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+            className="shrink-0 p-1 ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-v3-muted hover:text-slate-600 dark:hover:text-v3-text transition-colors"
           >
             <X size={14} />
           </div>
@@ -224,19 +224,19 @@ export function DateRangeFieldAccounting({
         createPortal(
           isMobile ? (
             // Mobile: Bottom-sheet modal
-            <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-[#0f172a]/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="fixed inset-0 z-[9999] flex flex-col justify-end bg-v3-surface dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
               <div
-                className="bg-white dark:bg-[#0f172a] w-full rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
+                className="bg-white dark:bg-v3-surface w-full rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
                 style={{ maxHeight: "90dvh" }}
                 ref={calendarRef}
               >
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-v3-text">
                     {label || "Tarih Seçin"}
                   </h3>
                   <button
                     onClick={closeCalendar}
-                    className="p-2 -mr-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="p-2 -mr-2 bg-slate-100 dark:bg-v3-surface rounded-full text-v3-muted dark:text-v3-muted hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     <X size={18} />
                   </button>
@@ -250,7 +250,7 @@ export function DateRangeFieldAccounting({
             // Desktop: Popover
             <div
               ref={calendarRef}
-              className="fixed z-[9999] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+              className="fixed z-[9999] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-v3-surface overflow-hidden animate-in fade-in zoom-in-95 duration-200"
               style={{
                 top: `${calendarStyle.top}px`,
                 left: `${calendarStyle.left}px`,

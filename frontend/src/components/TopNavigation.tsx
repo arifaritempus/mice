@@ -26,11 +26,14 @@ import {
   Check,
   ChevronDown,
   Loader2,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import CommandCenter from "@/components/CommandCenter";
 import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
@@ -75,6 +78,7 @@ export default function TopNavigation() {
   const pathname = usePathname();
   const [unreadCount] = useState(3);
   const { t, language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [activeSegment, setActiveSegment] = useState<string | null>(null);
@@ -90,6 +94,7 @@ export default function TopNavigation() {
     name: string;
     email: string;
     initial: string;
+    avatar_url?: string;
   } | null>(null);
 
   
@@ -129,6 +134,7 @@ export default function TopNavigation() {
           name,
           email,
           initial: name.charAt(0).toUpperCase() || "U",
+          avatar_url: user.user_metadata?.avatar_url,
         });
       }
     };
@@ -281,13 +287,13 @@ export default function TopNavigation() {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="pointer-events-auto flex items-center justify-between bg-[#0f172a]/80 backdrop-blur-2xl border border-white/10 rounded-full px-4 py-2 shadow-[0_8px_32px_rgba(59,130,246,0.15)] w-auto transition-all"
+          className="pointer-events-auto flex items-center justify-between bg-v3-surface backdrop-blur-2xl border border-v3-border rounded-full px-4 py-2 shadow-[0_8px_32px_rgba(59,130,246,0.15)] w-auto transition-all"
         >
           {/* Left: App Grid & Logo Area */}
           <div className="flex items-center mr-8 gap-4">
             <button
               onClick={() => setIsCommandCenterOpen(true)}
-              className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white hover:text-white flex items-center justify-center transition-all group"
+              className="w-10 h-10 rounded-full bg-v3-border hover:bg-v3-surface text-v3-text hover:text-v3-text flex items-center justify-center transition-all group"
               title="Tüm Modüller (Cmd+K)"
             >
               <LayoutGrid className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -299,16 +305,16 @@ export default function TopNavigation() {
                 {generalSettings?.darkIconLogo ? (
                   <img src={generalSettings.darkIconLogo} alt="Logo" className="w-8 h-8 object-contain relative z-10" />
                 ) : (
-                  <span className="text-white font-black text-xl relative z-10">
+                  <span className="text-v3-text font-black text-xl relative z-10">
                     {generalSettings?.companyName?.charAt(0) || "N"}
                   </span>
                 )}
               </div>
               <div className="flex flex-col logo-expand-container">
-                <span className="text-white font-black text-sm tracking-widest leading-none">
+                <span className="text-v3-text font-black text-sm tracking-widest leading-none">
                   {generalSettings?.companyName?.split(" ")[0] || "NEXUS"}
                 </span>
-                <span className="text-blue-400 text-[10px] font-bold tracking-widest uppercase mt-0.5">
+                <span className="text-blue-600 dark:text-blue-400 text-[10px] font-bold tracking-widest uppercase mt-0.5">
                   {generalSettings?.companyName?.split(" ").slice(1).join(" ") || "Analytics"}
                 </span>
               </div>
@@ -334,7 +340,7 @@ export default function TopNavigation() {
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
                         isActive 
                           ? "bg-blue-500/30 text-white border border-blue-500/30" 
-                          : "bg-white/10 hover:bg-white/20 text-blue-300 hover:text-blue-200"
+                          : "bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200"
                       }`}
                     >
                       <item.icon size={14} />
@@ -355,7 +361,7 @@ export default function TopNavigation() {
                 {canCreate(Module.QUOTES) && (
                 <Link
                   href="/quotes/create"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-emerald-300 hover:text-emerald-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
                 >
                   <FilePlus size={14} />
                   <span className="text-xs font-bold">Yeni Teklif</span>
@@ -364,7 +370,7 @@ export default function TopNavigation() {
                 {canCreate(Module.SEJOUR) && (
                 <Link
                   href="/sejour/create"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-emerald-300 hover:text-emerald-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
                 >
                   <Hotel size={14} />
                   <span className="text-xs font-bold">Yeni Sejour</span>
@@ -384,7 +390,7 @@ export default function TopNavigation() {
                 {canView(Module.QUOTES) && (
                 <Link
                   href="/quotes"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-purple-300 hover:text-purple-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"
                 >
                   <FileText size={14} />
                   <span className="text-xs font-bold">Teklif</span>
@@ -393,7 +399,7 @@ export default function TopNavigation() {
                 {canView(Module.PROJECTS) && (
                 <Link
                   href="/projects"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-purple-300 hover:text-purple-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"
                 >
                   <Briefcase size={14} />
                   <span className="text-xs font-bold">Proje</span>
@@ -402,7 +408,7 @@ export default function TopNavigation() {
                 {canView(Module.SEJOUR) && (
                 <Link
                   href="/sejour"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-purple-300 hover:text-purple-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"
                 >
                   <Hotel size={14} />
                   <span className="text-xs font-bold">Sejour</span>
@@ -419,7 +425,7 @@ export default function TopNavigation() {
             <div className="relative" ref={searchContainerRef}>
               <motion.div
                 animate={{ width: isSearchExpanded ? 260 : 40 }}
-                className={`relative flex items-center h-10 rounded-full overflow-hidden transition-colors duration-300 ${isSearchExpanded ? "bg-white/10 border border-white/20" : "bg-transparent border border-transparent hover:bg-white/5"}`}
+                className={`relative flex items-center h-10 rounded-full overflow-hidden transition-colors duration-300 ${isSearchExpanded ? "bg-white/10 border border-v3-border" : "bg-transparent border border-transparent hover:bg-v3-border"}`}
               >
                 <button
                   onClick={() => {
@@ -429,7 +435,7 @@ export default function TopNavigation() {
                       setIsSearchExpanded(true);
                     }
                   }}
-                  className="absolute left-0 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white z-10"
+                  className="absolute left-0 w-10 h-10 flex items-center justify-center text-v3-muted hover:text-v3-text z-10"
                 >
                   <Search className="w-[18px] h-[18px]" />
                 </button>
@@ -439,7 +445,7 @@ export default function TopNavigation() {
                   value={headerSearchQuery}
                   onChange={(e) => setHeaderSearchQuery(e.target.value)}
                   placeholder="Herhangi bir şey ara..."
-                  className={`w-full h-full bg-transparent pl-10 pr-10 text-sm text-white placeholder:text-slate-400 outline-none transition-opacity duration-300 ${isSearchExpanded ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                  className={`w-full h-full bg-transparent pl-10 pr-10 text-sm text-v3-text placeholder:text-v3-muted outline-none transition-opacity duration-300 ${isSearchExpanded ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       if (searchSelectedIndex >= 0 && searchResults[searchSelectedIndex]) {
@@ -469,7 +475,7 @@ export default function TopNavigation() {
                       setHeaderSearchQuery("");
                       setIsSearchExpanded(false);
                     }}
-                    className="absolute right-0 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white z-10"
+                    className="absolute right-0 w-10 h-10 flex items-center justify-center text-v3-muted hover:text-v3-text z-10"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -483,10 +489,10 @@ export default function TopNavigation() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-12 right-0 w-80 bg-[#0f172a] rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 flex flex-col max-h-[400px]"
+                    className="absolute top-12 right-0 w-80 bg-v3-surface rounded-2xl border border-v3-border shadow-2xl overflow-hidden z-50 flex flex-col max-h-[400px]"
                   >
                     {isSearchLoading ? (
-                      <div className="p-4 flex items-center justify-center text-slate-400">
+                      <div className="p-4 flex items-center justify-center text-v3-muted">
                         <Loader2 className="w-5 h-5 animate-spin mr-2" />
                         <span className="text-sm">Aranıyor...</span>
                       </div>
@@ -500,18 +506,18 @@ export default function TopNavigation() {
                               setHeaderSearchQuery("");
                               setIsSearchExpanded(false);
                             }}
-                            className={`flex items-start flex-col p-3 rounded-xl transition-colors group ${idx === searchSelectedIndex ? "bg-white/10" : "hover:bg-white/5"}`}
+                            className={`flex items-start flex-col p-3 rounded-xl transition-colors group ${idx === searchSelectedIndex ? "bg-white/10" : "hover:bg-v3-border"}`}
                           >
-                            <span className="text-sm text-white font-medium group-hover:text-blue-400 transition-colors line-clamp-1">{res.title}</span>
-                            <span className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                              <span className="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px] uppercase font-semibold text-slate-400">{res.type}</span>
+                            <span className="text-sm text-v3-text font-medium group-hover:text-blue-600 dark:text-blue-400 transition-colors line-clamp-1">{res.title}</span>
+                            <span className="text-xs text-v3-muted mt-0.5 flex items-center gap-1">
+                              <span className="px-1.5 py-0.5 rounded-md bg-v3-border text-[10px] uppercase font-semibold text-v3-muted">{res.type}</span>
                               <span className="line-clamp-1">{res.subtitle}</span>
                             </span>
                           </Link>
                         ))}
                       </div>
                     ) : (
-                      <div className="p-6 text-center text-slate-500">
+                      <div className="p-6 text-center text-v3-muted">
                         <Search className="w-8 h-8 mx-auto mb-2 opacity-20" />
                         <p className="text-sm">Hiçbir sonuç bulunamadı.</p>
                       </div>
@@ -520,7 +526,7 @@ export default function TopNavigation() {
                     {/* Footer link to full command center */}
                     <button 
                       onClick={() => setIsCommandCenterOpen(true)}
-                      className="p-3 border-t border-white/5 text-xs text-center text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full"
+                      className="p-3 border-t border-v3-border text-xs text-center text-v3-muted hover:text-v3-text hover:bg-v3-border transition-colors w-full"
                     >
                       Tüm sonuçları ve menüleri görmek için Enter'a basın
                     </button>
@@ -531,14 +537,35 @@ export default function TopNavigation() {
 
             {/* Segmented Controls (Language, Fullscreen, Bell) */}
             <div
-              className="flex items-center bg-white/5 rounded-full p-1 border border-white/5"
+              className="flex items-center bg-v3-border rounded-full p-1 border border-v3-border"
               onMouseLeave={() => setActiveSegment(null)}
             >
+              {/* Theme Toggle */}
+              <button
+                onMouseEnter={() => setActiveSegment("theme")}
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="relative w-9 h-9 flex items-center justify-center text-v3-text hover:text-v3-text z-10"
+                title={theme === "dark" ? "Aydınlık Temaya Geç" : "Karanlık Temaya Geç"}
+              >
+                {activeSegment === "theme" && (
+                  <motion.div
+                    layoutId="segmentHover"
+                    className="absolute inset-0 bg-white/10 rounded-full"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                {theme === "dark" ? (
+                  <Sun className="w-[18px] h-[18px] relative z-20" />
+                ) : (
+                  <Moon className="w-[18px] h-[18px] relative z-20" />
+                )}
+              </button>
+
               {/* Language */}
               <div className="relative group/lang">
                 <button
                   onMouseEnter={() => setActiveSegment("lang")}
-                  className="relative w-9 h-9 flex items-center justify-center text-white hover:text-white z-10"
+                  className="relative w-9 h-9 flex items-center justify-center text-v3-text hover:text-v3-text z-10"
                 >
                   {activeSegment === "lang" && (
                     <motion.div
@@ -553,17 +580,17 @@ export default function TopNavigation() {
                   )}
                   <Globe className="w-[18px] h-[18px] relative z-20" />
                 </button>
-                <div className="absolute top-full right-0 mt-4 w-32 bg-[#0f172a]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover/lang:opacity-100 group-hover/lang:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/lang:scale-100 scale-95">
+                <div className="absolute top-full right-0 mt-4 w-32 bg-v3-surface backdrop-blur-xl border border-v3-border rounded-2xl shadow-2xl opacity-0 invisible group-hover/lang:opacity-100 group-hover/lang:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/lang:scale-100 scale-95">
                   <button
                     onClick={() => setLanguage("tr")}
-                    className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-white/10 transition-colors ${language === "tr" ? "text-blue-400 bg-white/5" : "text-white"}`}
+                    className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-v3-surface transition-colors ${language === "tr" ? "text-blue-600 dark:text-blue-400 bg-v3-border" : "text-v3-text"}`}
                   >
                     Türkçe
                   </button>
-                  <div className="h-px w-full bg-white/5" />
+                  <div className="h-px w-full bg-v3-border" />
                   <button
                     onClick={() => setLanguage("en")}
-                    className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-white/10 transition-colors ${language === "en" ? "text-blue-400 bg-white/5" : "text-white"}`}
+                    className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-v3-surface transition-colors ${language === "en" ? "text-blue-600 dark:text-blue-400 bg-v3-border" : "text-v3-text"}`}
                   >
                     English
                   </button>
@@ -574,7 +601,7 @@ export default function TopNavigation() {
               <button
                 onMouseEnter={() => setActiveSegment("fs")}
                 onClick={toggleFullscreen}
-                className="relative w-9 h-9 flex items-center justify-center text-white hover:text-white z-10"
+                className="relative w-9 h-9 flex items-center justify-center text-v3-text hover:text-v3-text z-10"
               >
                 {activeSegment === "fs" && (
                   <motion.div
@@ -594,7 +621,7 @@ export default function TopNavigation() {
               <div className="relative group/bell">
                 <button
                   onMouseEnter={() => setActiveSegment("bell")}
-                  className="relative w-9 h-9 flex items-center justify-center text-white hover:text-white z-10"
+                  className="relative w-9 h-9 flex items-center justify-center text-v3-text hover:text-v3-text z-10"
                 >
                   {activeSegment === "bell" && (
                     <motion.div
@@ -612,13 +639,13 @@ export default function TopNavigation() {
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] border border-[#0f172a] z-30"></span>
                   )}
                 </button>
-                <div className="absolute top-full right-0 mt-4 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover/bell:opacity-100 group-hover/bell:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/bell:scale-100 scale-95 flex flex-col">
-                  <div className="p-4 border-b border-white/10">
-                    <h3 className="text-white font-bold text-sm">
+                <div className="absolute top-full right-0 mt-4 w-80 bg-v3-surface backdrop-blur-xl border border-v3-border rounded-2xl shadow-2xl opacity-0 invisible group-hover/bell:opacity-100 group-hover/bell:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/bell:scale-100 scale-95 flex flex-col">
+                  <div className="p-4 border-b border-v3-border">
+                    <h3 className="text-v3-text font-bold text-sm">
                       Bildirimler
                     </h3>
                   </div>
-                  <div className="p-4 text-center text-slate-400 text-xs h-32 flex items-center justify-center">
+                  <div className="p-4 text-center text-v3-muted text-xs h-32 flex items-center justify-center">
                     Henüz yeni bildiriminiz yok.
                   </div>
                 </div>
@@ -628,29 +655,33 @@ export default function TopNavigation() {
             {/* Rotating Gradient Profile Seal */}
             <div className="relative group/profile cursor-pointer ml-1">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 rounded-full animate-[spin_4s_linear_infinite] opacity-70 group-hover/profile:opacity-100 transition-opacity blur-[2px]" />
-              <div className="absolute inset-0.5 bg-[#0f172a] rounded-full z-10" />
-              <div className="relative z-20 w-11 h-11 rounded-full overflow-hidden p-0.5 flex items-center justify-center bg-gradient-to-tr from-blue-600/20 to-indigo-500/20 text-blue-300 font-bold group-hover/profile:text-white transition-colors">
-                {userProfile ? (
+              <div className="absolute inset-0.5 bg-v3-surface rounded-full z-10" />
+              <div className="relative z-20 w-11 h-11 rounded-full overflow-hidden p-0.5 flex items-center justify-center bg-gradient-to-tr from-blue-600/20 to-indigo-500/20 text-blue-600 dark:text-blue-300 font-bold group-hover/profile:text-v3-text transition-colors">
+{userProfile?.avatar_url ? (
+                  <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : userProfile ? (
                   userProfile.initial
                 ) : (
                   <User className="w-5 h-5" />
                 )}
               </div>
 
-              <div className="absolute top-full right-0 mt-4 w-56 bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover/profile:opacity-100 group-hover/profile:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/profile:scale-100 scale-95 flex flex-col">
-                <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-white/5">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">
-                    {userProfile ? (
+              <div className="absolute top-full right-0 mt-4 w-56 bg-v3-surface backdrop-blur-xl border border-v3-border rounded-2xl shadow-2xl opacity-0 invisible group-hover/profile:opacity-100 group-hover/profile:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/profile:scale-100 scale-95 flex flex-col">
+                <div className="p-4 border-b border-v3-border flex items-center gap-3 bg-v3-border">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold overflow-hidden">
+{userProfile?.avatar_url ? (
+                      <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : userProfile ? (
                       userProfile.initial
                     ) : (
                       <User className="w-5 h-5" />
                     )}
                   </div>
                   <div className="overflow-hidden">
-                    <h4 className="text-white text-sm font-bold truncate">
+                    <h4 className="text-v3-text text-sm font-bold truncate">
                       {userProfile ? userProfile.name : "Yönetici"}
                     </h4>
-                    <p className="text-xs text-slate-400 truncate">
+                    <p className="text-xs text-v3-muted truncate">
                       {userProfile ? userProfile.email : "Sistem Yetkilisi"}
                     </p>
                   </div>
@@ -658,23 +689,23 @@ export default function TopNavigation() {
                 <div className="p-2">
                   <Link
                     href="/profile"
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-white hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-v3-text hover:text-v3-text hover:bg-v3-border rounded-xl transition-colors"
                   >
                     <User className="w-4 h-4" /> Profilim
                   </Link>
                   {canView(Module.SETTINGS) && (
                   <Link
                     href="/settings"
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-white hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-v3-text hover:text-v3-text hover:bg-v3-border rounded-xl transition-colors"
                   >
                     <Settings className="w-4 h-4" /> Ayarlar
                   </Link>
                   )}
                 </div>
-                <div className="p-2 border-t border-white/10">
+                <div className="p-2 border-t border-v3-border">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:text-rose-600 dark:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors"
                   >
                     <X className="w-4 h-4" /> Çıkış Yap
                   </button>

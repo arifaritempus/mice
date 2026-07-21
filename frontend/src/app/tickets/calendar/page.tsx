@@ -758,16 +758,16 @@ export default function TicketCalendarPage() {
     );
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-2">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2 shrink-0">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('ticketsCalendar.title') || "Bilet Takvimi"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('ticketsCalendar.desc') || "Takvim üzerinden bilet hareketlerinizi yönetin"}
             </p>
           </div>
@@ -775,34 +775,34 @@ export default function TicketCalendarPage() {
           {/* Right: All Filters and Actions */}
           <div className="flex flex-wrap items-end gap-3 flex-1 xl:justify-end">
             {/* Navigation Controls */}
-            <div className="flex items-center gap-1 h-10 bg-white/5 px-1 rounded-xl border border-white/10 shrink-0">
+            <div className="flex items-center gap-1 h-10 bg-black/5 dark:bg-white/5 px-1 rounded-xl border border-v3-border shrink-0">
               <button
                 onClick={goToPreviousPeriod}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-all"
+                className="p-1.5 text-v3-muted hover:text-v3-text rounded-lg hover:bg-v3-surface transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <div className="px-3 min-w-[120px] text-center flex items-center justify-center">
-                <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-v3-text uppercase tracking-wider">
                   {getViewTitle()}
                 </span>
               </div>
               <button
                 onClick={goToNextPeriod}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-all"
+                className="p-1.5 text-v3-muted hover:text-v3-text rounded-lg hover:bg-v3-surface transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
             {/* View Mode Switcher */}
-            <div className="flex h-10 bg-[#0f172a]/60 p-1 rounded-xl border border-white/10 shrink-0">
+            <div className="flex h-10 bg-v3-surface p-1 rounded-xl border border-v3-border shrink-0">
               {(["daily", "weekly", "monthly", "yearly"] as const).map(
                 (mode) => (
                   <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
-                    className={`px-3 rounded-lg text-[10px] font-semibold transition-all uppercase flex items-center justify-center ${viewMode === mode ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "text-slate-400 hover:text-white"}`}
+                    className={`px-3 rounded-lg text-[10px] font-semibold transition-all uppercase flex items-center justify-center ${viewMode === mode ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30" : "text-v3-muted hover:text-v3-text"}`}
                   >
                     {mode === "daily"
                       ? t('ticketsCalendar.viewDaily') || "GÜN"
@@ -854,7 +854,7 @@ export default function TicketCalendarPage() {
               <button
                 type="button"
                 onClick={() => exportCalendarExcel()}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 {t('ticketsCalendar.btnDownloadExcel') || "Excel İndir"}
@@ -869,30 +869,30 @@ export default function TicketCalendarPage() {
             {["TRY", "USD", "EUR", "GBP"].map((curr) => (
               <div
                 key={curr}
-                className="bg-[#0f172a]/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-sm space-y-3"
+                className="bg-v3-surface backdrop-blur-md p-4 rounded-2xl border border-v3-border shadow-sm space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/20 text-blue-400 rounded-xl">
+                    <div className="p-2 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
                       <TrendingUp className="w-5 h-5" />
                     </div>
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+                    <h3 className="text-xs font-bold text-v3-text uppercase tracking-wider mb-2">
                       {curr} {t('ticketsCalendar.summary') || "ÖZETİ"}
                     </h3>
                   </div>
                   <button
                     onClick={() => exportCalendarExcel(curr)}
-                    className="absolute top-2 right-2 p-1.5 text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-500/30 rounded-lg transition-all border border-blue-500/20"
+                    className="absolute top-2 right-2 p-1.5 text-blue-600 dark:text-blue-400 hover:text-v3-text bg-blue-500/10 hover:bg-blue-500/30 rounded-lg transition-all border border-blue-500/20"
                     title={`${curr} Bazlı ${t('ticketsCalendar.btnDownloadExcel') || "Excel İndir"}`}
                   >
                     <Download className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">
+                  <p className="text-[10px] font-bold text-v3-muted uppercase">
                     TOPLAM
                   </p>
-                  <p className="text-xl font-bold text-white">
+                  <p className="text-xl font-bold text-v3-text">
                     {formatCurrency(
                       (statsTotals.instTotals[
                         curr as keyof typeof statsTotals.instTotals
@@ -908,9 +908,9 @@ export default function TicketCalendarPage() {
           </div>
 
           {/* Calendar Grid Container */}
-          <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-v3-border flex-1 min-h-0 flex flex-col overflow-hidden">
             {(viewMode === "monthly" || viewMode === "weekly") && (
-              <div className="grid grid-cols-7 border-b border-white/5 bg-[#0f172a]/40 shrink-0">
+              <div className="grid grid-cols-7 border-b border-v3-border bg-v3-surface shrink-0">
                 {(
                   [
                     t('common.dayMon') || "Pazartesi",
@@ -923,7 +923,7 @@ export default function TicketCalendarPage() {
                   ] as string[]
                 ).map((day) => (
                   <div key={day} className="py-3 text-center">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                    <span className="text-[10px] font-semibold text-v3-muted uppercase tracking-widest">
                       {day}
                     </span>
                   </div>
@@ -963,12 +963,12 @@ export default function TicketCalendarPage() {
                           setIsPeriodModalOpen(true);
                         }
                       }}
-                      className={`min-h-[120px] p-3 border-r border-b border-white/5 group relative transition-all cursor-pointer ${!isCurrentMonth && viewMode === "monthly" ? "bg-transparent opacity-40" : "bg-transparent hover:bg-white/10"} ${isToday ? "bg-blue-500/10 border-blue-500/30" : ""}`}
+                      className={`min-h-[120px] p-3 border-r border-b border-v3-border group relative transition-all cursor-pointer ${!isCurrentMonth && viewMode === "monthly" ? "bg-transparent opacity-40" : "bg-transparent hover:bg-v3-surface"} ${isToday ? "bg-blue-500/10 border-blue-500/30" : ""}`}
                     >
-                      <div className="absolute inset-0 border border-white/0 m-1 rounded-xl group-hover:border-white/10 transition-all pointer-events-none" />
+                      <div className="absolute inset-0 border border-white/0 m-1 rounded-xl group-hover:border-v3-border transition-all pointer-events-none" />
                       <div className="relative flex justify-between items-start mb-4">
                         <span
-                          className={`text-[11px] font-semibold tracking-wider ${isToday ? "px-2 py-0.5 bg-blue-500/40 text-white rounded-md" : isCurrentMonth || viewMode === "yearly" ? "text-white" : "text-slate-500"}`}
+                          className={`text-[11px] font-semibold tracking-wider ${isToday ? "px-2 py-0.5 bg-blue-500/40 text-white rounded-md" : isCurrentMonth || viewMode === "yearly" ? "text-v3-text" : "text-v3-muted"}`}
                         >
                           {viewMode === "yearly"
                             ? period.startDate.toLocaleDateString(locale, {
@@ -988,8 +988,8 @@ export default function TicketCalendarPage() {
                                   key={curr}
                                   className="flex items-center gap-1 text-[9px] font-semibold bg-blue-500/20 px-1.5 py-0.5 rounded border border-blue-500/30"
                                 >
-                                  <span className="text-blue-300">{curr}</span>
-                                  <span className="text-white">
+                                  <span className="text-blue-600 dark:text-blue-300">{curr}</span>
+                                  <span className="text-v3-text">
                                     {formatCurrency(total, curr)}
                                   </span>
                                 </div>
@@ -1002,13 +1002,13 @@ export default function TicketCalendarPage() {
                           {period.tickets.slice(0, 3).map((ticket, tIdx) => (
                             <div
                               key={tIdx}
-                              className="text-[9px] leading-tight p-1.5 bg-[#0f172a]/60 rounded-md border border-white/5 group-hover:border-white/20 transition-colors"
+                              className="text-[9px] leading-tight p-1.5 bg-v3-surface rounded-md border border-v3-border group-hover:border-v3-border transition-colors"
                             >
                               <div className="flex items-center justify-between mb-0.5">
-                                <span className="font-semibold text-blue-400 tracking-tighter truncate max-w-[60px]">
+                                <span className="font-semibold text-blue-600 dark:text-blue-400 tracking-tighter truncate max-w-[60px]">
                                   {ticket.voucher_no}
                                 </span>
-                                <span className="font-semibold text-white ml-1">
+                                <span className="font-semibold text-v3-text ml-1">
                                   {formatCurrency(
                                     ticket.installment?.amount ||
                                       ticket.payment?.amount ||
@@ -1020,11 +1020,11 @@ export default function TicketCalendarPage() {
                                   )}
                                 </span>
                               </div>
-                              <div className="text-white font-semibold truncate mt-0.5">
+                              <div className="text-v3-text font-semibold truncate mt-0.5">
                                 {ticket.agent || ticket.company_name || "-"}
                               </div>
                               <div
-                                className="text-[8px] text-slate-500 mt-0.5 truncate tracking-tighter"
+                                className="text-[8px] text-v3-muted mt-0.5 truncate tracking-tighter"
                                 title={[
                                   ticket.project_code,
                                   ticket.reference_code,
@@ -1046,14 +1046,14 @@ export default function TicketCalendarPage() {
                             </div>
                           ))}
                           {period.tickets.length > 3 && (
-                            <div className="text-[8px] font-bold text-blue-400 uppercase px-1 pt-1 flex items-center gap-1 animate-pulse">
+                            <div className="text-[8px] font-bold text-blue-600 dark:text-blue-400 uppercase px-1 pt-1 flex items-center gap-1 animate-pulse">
                               <Plus className="w-2 h-2" />{" "}
                               {period.tickets.length - 3} HAREKET DAHA
                             </div>
                           )}
                           {period.tickets.length > 0 &&
                             period.tickets.length <= 3 && (
-                              <div className="text-[8px] font-bold text-slate-500 uppercase px-1 pt-1 flex items-center gap-1 group-hover:text-blue-400 transition-colors">
+                              <div className="text-[8px] font-bold text-v3-muted uppercase px-1 pt-1 flex items-center gap-1 group-hover:text-blue-600 dark:text-blue-400 transition-colors">
                                 <Plus className="w-2 h-2" /> {t('common.details') || "DETAYLAR"}
                               </div>
                             )}
@@ -1084,7 +1084,7 @@ export default function TicketCalendarPage() {
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative w-full max-w-2xl bg-[#0f172a] border border-white/10 rounded-[3rem] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden"
+                    className="relative w-full max-w-2xl bg-v3-surface border border-v3-border rounded-[3rem] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden"
                   >
                     <div className="p-10 space-y-8">
                       <div className="flex items-center justify-between">
@@ -1095,10 +1095,10 @@ export default function TicketCalendarPage() {
                             <TicketIcon className="w-8 h-8" />
                           </div>
                           <div>
-                            <h2 className="text-2xl font-black text-white tracking-tight">
+                            <h2 className="text-2xl font-black text-v3-text tracking-tight">
                               {selectedTicket.voucher_no}
                             </h2>
-                            <h3 className="font-semibold text-lg text-white">
+                            <h3 className="font-semibold text-lg text-v3-text">
                               {selectedTicket.type === "installment"
                                 ? t('ticketsCalendar.modalTitleInstallment') || "Taksit Detayı"
                                 : t('ticketsCalendar.modalTitlePayment') || "Ödeme Detayı"}
@@ -1118,7 +1118,7 @@ export default function TicketCalendarPage() {
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
                               {t('ticketsCalendar.lblAgentCompany') || "ACENTA / FİRMA / TEDARİKÇİ"}
                             </p>
-                            <p className="text-sm font-bold text-white leading-tight">
+                            <p className="text-sm font-bold text-v3-text leading-tight">
                               {selectedTicket.agent}
                               <br />
                               <span className="text-xs text-gray-500">
@@ -1135,7 +1135,7 @@ export default function TicketCalendarPage() {
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
                                 {t('home.airline') || "HAVAYOLU"}
                               </p>
-                              <p className="text-[11px] font-bold text-white">
+                              <p className="text-[11px] font-bold text-v3-text">
                                 {selectedTicket.airline || "-"}
                               </p>
                             </div>
@@ -1143,7 +1143,7 @@ export default function TicketCalendarPage() {
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
                                 {t('ticketsCalendar.lblFlightType') || "UÇUŞ TİPİ"}
                               </p>
-                              <p className="text-[11px] font-bold text-white">
+                              <p className="text-[11px] font-bold text-v3-text">
                                 {selectedTicket.flight_type || "-"}
                               </p>
                             </div>
@@ -1152,7 +1152,7 @@ export default function TicketCalendarPage() {
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
                               {t('ticketsCalendar.lblRoutePNR') || "GÜZERGAH / PNR"}
                             </p>
-                            <p className="text-sm font-bold text-white tracking-tighter">
+                            <p className="text-sm font-bold text-v3-text tracking-tighter">
                               {selectedTicket.route || "-"}
                               <br />
                               <span className="text-xs text-blue-600">
@@ -1165,7 +1165,7 @@ export default function TicketCalendarPage() {
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
                                 {t('ticketsPayments.excelPaxCount') || "YOLCU SAYISI"}
                               </p>
-                              <p className="text-[11px] font-bold text-white">
+                              <p className="text-[11px] font-bold text-v3-text">
                                 {selectedTicket.passenger_count || 0} PAX
                               </p>
                             </div>
@@ -1173,12 +1173,12 @@ export default function TicketCalendarPage() {
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
                                 {t('ticketsCalendar.lblRegDate') || "KAYIT TARİHİ"}
                               </p>
-                              <p className="text-[11px] font-bold text-white">
+                              <p className="text-[11px] font-bold text-v3-text">
                                 {formatDate(selectedTicket.entry_date || "")}
                               </p>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-v3-border">
                             <div>
                               <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">
                                 {t('ticketsCalendar.lblProjectCode') || "PROJE KODU"}
@@ -1197,7 +1197,7 @@ export default function TicketCalendarPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="space-y-6 bg-white/5 p-6 rounded-[2rem]">
+                        <div className="space-y-6 bg-black/5 dark:bg-white/5 p-6 rounded-[2rem]">
                           <div>
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
                               {t('ticketsCalendar.lblTransactionAmount') || "HAREKET TUTARI"}
@@ -1218,7 +1218,7 @@ export default function TicketCalendarPage() {
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
                               {t('ticketsCalendar.lblTotalCost') || "TOPLAM BİLET MALİYETİ"}
                             </p>
-                            <p className="text-sm font-black text-white">
+                            <p className="text-sm font-black text-v3-text">
                               {formatCurrency(
                                 selectedTicket.total_cost || 0,
                                 selectedTicket.currency || "TRY",
@@ -1229,7 +1229,7 @@ export default function TicketCalendarPage() {
                             <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">
                               {t('ticketsCalendar.lblTransactionDate') || "İŞLEM TARİHİ"}
                             </p>
-                            <p className="text-sm font-black text-white">
+                            <p className="text-sm font-black text-v3-text">
                               {formatDate(
                                 selectedTicket.installment?.date ||
                                   selectedTicket.payment?.payment_date ||
@@ -1241,7 +1241,7 @@ export default function TicketCalendarPage() {
                       </div>
                       <button
                         onClick={() => setIsModalOpen(false)}
-                        className="w-full py-5 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-[2rem] font-black text-[11px] tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
+                        className="w-full py-5 bg-gray-900 dark:bg-white dark:text-gray-900 text-v3-text rounded-[2rem] font-black text-[11px] tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gray-900/20 dark:shadow-white/10"
                       >
                         {t('common.close') || "KAPAT"}
                       </button>
@@ -1270,9 +1270,9 @@ export default function TicketCalendarPage() {
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative w-full max-w-3xl bg-[#0f172a] border border-white/10 rounded-[3rem] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col max-h-[85vh]"
+                    className="relative w-full max-w-3xl bg-v3-surface border border-v3-border rounded-[3rem] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col max-h-[85vh]"
                   >
-                    <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                    <div className="p-8 border-b border-v3-border flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="p-4 bg-blue-500/10 dark:bg-blue-900/30 text-blue-600 rounded-2xl">
                           <CalendarIcon className="w-6 h-6" />
@@ -1281,7 +1281,7 @@ export default function TicketCalendarPage() {
                           <h2 className="text-[10px] font-black text-gray-400 tracking-[0.2em]">
                             {t('ticketsCalendar.lblPeriodMovements') || "DÖNEM HAREKETLERİ"}
                           </h2>
-                          <p className="text-xl font-black text-white">
+                          <p className="text-xl font-black text-v3-text">
                             {formatDate(selectedPeriod.startDate.toISOString())}
                           </p>
                         </div>
@@ -1301,7 +1301,7 @@ export default function TicketCalendarPage() {
                             setSelectedTicket(item);
                             setIsModalOpen(true);
                           }}
-                          className="group p-5 bg-white/5 rounded-3xl border border-transparent hover:border-blue-500/50 hover:bg-white dark:hover:bg-gray-800 transition-all cursor-pointer flex items-center justify-between"
+                          className="group p-5 bg-black/5 dark:bg-white/5 rounded-3xl border border-transparent hover:border-blue-500/50 hover:bg-white dark:hover:bg-gray-800 transition-all cursor-pointer flex items-center justify-between"
                         >
                           <div className="flex items-center gap-4">
                             <div
@@ -1317,13 +1317,13 @@ export default function TicketCalendarPage() {
                               <p className="text-[10px] font-black text-gray-400 mb-0.5">
                                 {item.type === "installment" ? (t('ticketsCalendar.lblInstallment') || "TAKSİT").toUpperCase() : (t('ticketsCalendar.lblPayment') || "ÖDEME").toUpperCase()}
                               </p>
-                              <p className="text-sm font-black text-white">
+                              <p className="text-sm font-black text-v3-text">
                                 {item.voucher_no} • {item.agent}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-black text-white">
+                            <p className="text-sm font-black text-v3-text">
                               {formatCurrency(
                                 item.installment?.amount || item.payment?.amount || 0,
                                 item.installment?.currency ||
@@ -1332,7 +1332,7 @@ export default function TicketCalendarPage() {
                                   "TRY",
                               )}
                             </p>
-                            <div className="flex items-center justify-end gap-1 text-[8px] font-black text-blue-400 tracking-tighter mt-1">
+                            <div className="flex items-center justify-end gap-1 text-[8px] font-black text-blue-600 dark:text-blue-400 tracking-tighter mt-1">
                               {t('common.detail') || "DETAY"} <ArrowUpRight className="w-2 h-2" />
                             </div>
                           </div>

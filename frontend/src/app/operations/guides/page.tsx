@@ -832,10 +832,10 @@ export default function GuidesPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             {t('guides.authRequired') || "Yetki Gerekli"}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             {t('guides.authMessage') || "Bu sayfaya erişim yetkiniz bulunmuyor."}
           </p>
           <a
@@ -854,16 +854,16 @@ export default function GuidesPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2">
           {/* Left: Title */}
           <div className="shrink-0 mr-4">
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('guides.title') || "Kokartlı Rehber Yönetimi"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('guides.description') || "MICE ve Sejour rehber operasyonlarını tek ekrandan yönetin"}
             </p>
           </div>
@@ -900,11 +900,11 @@ export default function GuidesPage() {
 
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 border-l border-white/10 pl-3">
+            <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
               <button
                 type="button"
                 onClick={exportGuidesToExcel}
-                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
                 title={t('guides.exportExcel') || "Excel İndir"}
               >
                 <svg
@@ -927,9 +927,9 @@ export default function GuidesPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
+        <div className="flex flex-wrap items-center gap-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium uppercase tracking-wider ml-2">
+            <span className="text-v3-muted font-medium uppercase tracking-wider ml-2">
               {t('guides.source') || "KAYNAK:"}
             </span>
             <button
@@ -937,7 +937,7 @@ export default function GuidesPage() {
                 setFilter("all");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('guides.tabAll') || "TÜMÜ"}</span>
               <span className="font-bold">{typeCounts.all}</span>
@@ -947,7 +947,7 @@ export default function GuidesPage() {
                 setFilter("mice");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "mice" ? "bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('guides.tabMice') || "MICE"}</span>
               <span className="font-bold">{typeCounts.mice}</span>
@@ -957,7 +957,7 @@ export default function GuidesPage() {
                 setFilter("sejour");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-teal-500/20 border border-teal-500/50 text-white" : "hover:bg-white/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${filter === "sejour" ? "bg-teal-500/20 border border-teal-500/50 text-teal-700 dark:text-teal-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
               <span>{t('guides.tabSejour') || "SEJOUR"}</span>
               <span className="font-bold">{typeCounts.sejour}</span>
@@ -967,14 +967,14 @@ export default function GuidesPage() {
 
         {/* Kokartlı Rehberler Tablosu */}
         <div
-          className={`flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
+          className={`flex-1 bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden shadow-inner flex flex-col min-h-[400px] relative ${tableBusy ? "opacity-80" : ""}`}
         >
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead className="bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-20">
+              <thead className="bg-v3-surface backdrop-blur-xl border-b border-v3-border sticky top-0 z-20">
                 <tr>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("voucher_number")}
                   >
                     <div className="flex items-center">
@@ -997,7 +997,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("check_in_date")}
                   >
                     <div className="flex items-center">
@@ -1020,7 +1020,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("customer_type")}
                   >
                     <div className="flex items-center">
@@ -1043,14 +1043,14 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                   >
                     <div className="flex items-center">
                       {t('guides.colCheckInOut') || "C-IN / C-OUT"}
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("company_name")}
                   >
                     <div className="flex items-center">
@@ -1073,7 +1073,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("customer_name")}
                   >
                     <div className="flex items-center">
@@ -1096,7 +1096,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("hotel_name")}
                   >
                     <div className="flex items-center">
@@ -1119,7 +1119,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("service_type")}
                   >
                     <div className="flex items-center">
@@ -1142,7 +1142,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("supplier")}
                   >
                     <div className="flex items-center">
@@ -1165,7 +1165,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("guide_name")}
                   >
                     <div className="flex items-center">
@@ -1188,7 +1188,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("cost_price")}
                   >
                     <div className="flex items-center">
@@ -1211,7 +1211,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("currency")}
                   >
                     <div className="flex items-center">
@@ -1234,7 +1234,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("fx")}
                   >
                     <div className="flex items-center">
@@ -1257,7 +1257,7 @@ export default function GuidesPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-white/10 transition-colors border-b border-white/10"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
                     onClick={() => handleSort("totalTRY")}
                   >
                     <div className="flex items-center">
@@ -1287,7 +1287,7 @@ export default function GuidesPage() {
                     key={guide.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    <td className="px-2 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <button
                         onClick={() =>
                           handleVoucherClick(
@@ -1296,15 +1296,15 @@ export default function GuidesPage() {
                             guide.project_id,
                           )
                         }
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline cursor-pointer transition-colors duration-200"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600 dark:text-blue-300 underline cursor-pointer transition-colors duration-200"
                       >
                         {guide.voucher_number}
                       </button>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatDate(guide.check_in_date)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           guide.customer_type === "mice"
@@ -1315,7 +1315,7 @@ export default function GuidesPage() {
                         {guide.customer_type === "mice" ? "MICE" : "Sejour"}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.check_in_date && guide.check_out_date
                         ? `${formatDate(guide.check_in_date)} / ${formatDate(guide.check_out_date)}`
                         : guide.check_in_date
@@ -1324,34 +1324,34 @@ export default function GuidesPage() {
                             ? formatDate(guide.check_out_date)
                             : "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.company_name || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.customer_name || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.hotel_name || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.service_type || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.supplier || "-"}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.guide_name || "-"}
                     </td>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(guide.cost_price || 0)}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.currency}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber(guide.fx || 1)}
                     </td>
-                    <td className="px-2 py-2 text-xs font-medium text-gray-900 dark:text-white transition-colors duration-200 whitespace-nowrap">
+                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {formatNumber((guide.cost_price || 0) * (guide.fx || 1))}
                     </td>
                   </tr>
@@ -1361,7 +1361,7 @@ export default function GuidesPage() {
                   <tr>
                     <td
                       colSpan={20}
-                      className="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                      className="px-3 py-8 text-center text-sm text-v3-muted"
                     >
                       {t('guides.noData') || "Filtrelere uygun kayıt bulunamadı."}
                     </td>

@@ -666,10 +666,10 @@ export default function CategoriesPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Kategoriler sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <Link
@@ -705,13 +705,13 @@ export default function CategoriesPage() {
   );
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-white">
+    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
           {/* Title Area */}
           <div className="flex items-center gap-4 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-400 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -727,10 +727,10 @@ export default function CategoriesPage() {
               </svg>
             </div>
             <div className="space-y-0.5">
-              <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
                 Kategori Yönetimi
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-v3-muted mt-1">
                 Ana kategorileri ve alt kategorileri yönetin
               </p>
             </div>
@@ -740,7 +740,7 @@ export default function CategoriesPage() {
           <div className="flex flex-row items-end justify-start xl:justify-end gap-3 flex-1 flex-wrap">
             {/* Search Bar */}
             <div className="flex flex-col gap-1.5 flex-[2] min-w-[250px] max-w-lg shrink-0">
-              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">
                 GENEL ARAMA (KATEGORİ, KOD, AÇIKLAMA...)
               </label>
               <div className="h-10">
@@ -793,7 +793,7 @@ export default function CategoriesPage() {
             <div className="w-px h-6 bg-white/10 shrink-0 mx-1 hidden sm:block"></div>
 
             {/* Actions */}
-            <label className="h-10 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
+            <label className="h-10 bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -820,7 +820,7 @@ export default function CategoriesPage() {
             <button
               onClick={handleExportExcel}
               disabled={exporting}
-              className="h-10 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+              className="h-10 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" />
@@ -831,7 +831,7 @@ export default function CategoriesPage() {
             {canCreate(Module.CATEGORIES) && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="h-10 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                className="h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
                 + YENİ KATEGORİ
               </button>
@@ -846,43 +846,43 @@ export default function CategoriesPage() {
         )}
 
         {success && (
-          <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl transition-colors duration-200 text-xs font-medium">
+          <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-xl transition-colors duration-200 text-xs font-medium">
             {success}
           </div>
         )}
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-sm shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span className="text-[11px] font-medium text-white">Durum:</span>
+            <span className="text-[11px] font-medium text-v3-text">Durum:</span>
           </div>
 
           <button
             onClick={() => setStatsFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TÜMÜ
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "all" ? "bg-blue-500/20 text-blue-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "all" ? "bg-blue-500/20 text-blue-600 dark:text-blue-300" : "bg-white/10"}`}
             >
               {categories.length}
             </span>
           </button>
           <button
             onClick={() => setStatsFilter("main")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "main" ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "main" ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             ANA KATEGORİ
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "main" ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "main" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" : "bg-white/10"}`}
             >
               {categories.filter((c) => !c.parent_id).length}
             </span>
           </button>
           <button
             onClick={() => setStatsFilter("sub")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "sub" ? "bg-purple-500/20 border border-purple-500/30 text-purple-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "sub" ? "bg-purple-500/20 border border-purple-500/30 text-purple-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             ALT KATEGORİ
             <span
@@ -893,11 +893,11 @@ export default function CategoriesPage() {
           </button>
           <button
             onClick={() => setStatsFilter("active")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "active" ? "bg-orange-500/20 border border-orange-500/30 text-orange-300" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"}`}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${statsFilter === "active" ? "bg-orange-500/20 border border-orange-500/30 text-orange-600 dark:text-orange-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             AKTİF
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "active" ? "bg-orange-500/20 text-orange-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${statsFilter === "active" ? "bg-orange-500/20 text-orange-600 dark:text-orange-300" : "bg-white/10"}`}
             >
               {categories.filter((c) => c.is_active).length}
             </span>
@@ -921,11 +921,11 @@ export default function CategoriesPage() {
             return (
               <div
                 key={mainCategory.id}
-                className="bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden transition-all duration-300"
+                className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl overflow-hidden transition-all duration-300"
               >
                 {/* Ana Kategori Başlığı */}
                 <div
-                  className="bg-white/5 border-l-4 border-blue-500/50 px-4 py-3 group hover:bg-blue-500/10 cursor-pointer transition-colors"
+                  className="bg-v3-border border-l-4 border-blue-500/50 px-4 py-3 group hover:bg-blue-500/10 cursor-pointer transition-colors"
                   onDoubleClick={() => {
                     setSelectedCategory(mainCategory);
                     setShowEditModal(true);
@@ -939,7 +939,7 @@ export default function CategoriesPage() {
                             e.stopPropagation();
                             moveMainCategoryUp(mainCategory.id);
                           }}
-                          className="p-0.5 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"
+                          className="p-0.5 hover:bg-v3-surface rounded text-v3-muted hover:text-v3-text transition-colors"
                           title="Yukarı Taşı"
                         >
                           <svg
@@ -961,7 +961,7 @@ export default function CategoriesPage() {
                             e.stopPropagation();
                             moveMainCategoryDown(mainCategory.id);
                           }}
-                          className="p-0.5 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"
+                          className="p-0.5 hover:bg-v3-surface rounded text-v3-muted hover:text-v3-text transition-colors"
                           title="Aşağı Taşı"
                         >
                           <svg
@@ -980,15 +980,15 @@ export default function CategoriesPage() {
                         </button>
                       </div>
                       <div className="w-8 h-8 bg-blue-500/20 border border-blue-500/30 rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.1)]">
-                        <span className="text-blue-400 text-sm font-bold">
+                        <span className="text-blue-600 dark:text-blue-400 text-sm font-bold">
                           📂
                         </span>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
+                        <h3 className="text-sm font-medium text-v3-text group-hover:text-blue-600 dark:text-blue-300 transition-colors">
                           {mainCategory.name}
                         </h3>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[11px] text-v3-muted">
                           {mainCategory.description || "Ana Kategori"}
                         </p>
                       </div>
@@ -1004,7 +1004,7 @@ export default function CategoriesPage() {
                         }}
                         className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full border cursor-pointer hover:opacity-80 transition-opacity ${
                           mainCategory.is_active
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                             : "bg-red-500/10 text-red-400 border-red-500/20"
                         }`}
                         title="Durumu Değiştir"
@@ -1015,7 +1015,7 @@ export default function CategoriesPage() {
                         {canEdit(Module.CATEGORIES) && (
                           <button
                             onClick={() => openEditModal(mainCategory)}
-                            className="text-emerald-400 hover:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-600 dark:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Düzenle"
                           >
                             <svg
@@ -1063,21 +1063,21 @@ export default function CategoriesPage() {
                   {/* Ana Kategori Muhasebe Bilgileri */}
                   <div className="mt-2 grid grid-cols-2 gap-4 text-[11px]">
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-400 font-medium">Gider:</span>
-                      <span className="font-mono text-emerald-300">
+                      <span className="text-v3-muted font-medium">Gider:</span>
+                      <span className="font-mono text-emerald-600 dark:text-emerald-300">
                         {mainCategory.expense_accounting_code || "-"}
                       </span>
-                      <span className="text-slate-500 bg-black/20 px-1.5 py-0.5 rounded ml-1 border border-white/5">
+                      <span className="text-v3-muted bg-black/20 px-1.5 py-0.5 rounded ml-1 border border-v3-border">
                         KDV: {mainCategory.expense_vat_accounting_code || "-"} (
                         {mainCategory.expense_vat_rate || 0}%)
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-400 font-medium">Gelir:</span>
-                      <span className="font-mono text-blue-300">
+                      <span className="text-v3-muted font-medium">Gelir:</span>
+                      <span className="font-mono text-blue-600 dark:text-blue-300">
                         {mainCategory.revenue_accounting_code || "-"}
                       </span>
-                      <span className="text-slate-500 bg-black/20 px-1.5 py-0.5 rounded ml-1 border border-white/5">
+                      <span className="text-v3-muted bg-black/20 px-1.5 py-0.5 rounded ml-1 border border-v3-border">
                         KDV: {mainCategory.revenue_vat_accounting_code || "-"} (
                         {mainCategory.revenue_vat_rate || 0}%)
                       </span>
@@ -1087,12 +1087,12 @@ export default function CategoriesPage() {
 
                 {/* Alt Kategoriler Listesi */}
                 {visibleSubCategories.length > 0 && (
-                  <div className="px-4 py-3 bg-white/5">
+                  <div className="px-4 py-3 bg-v3-border">
                     <div className="flex items-center space-x-2 mb-3">
                       <div className="w-4 h-4 bg-purple-500/20 border border-purple-500/30 rounded flex items-center justify-center">
                         <span className="text-purple-400 text-[10px]">📄</span>
                       </div>
-                      <span className="text-[11px] font-medium text-slate-400">
+                      <span className="text-[11px] font-medium text-v3-muted">
                         Alt Kategoriler ({visibleSubCategories.length}) -
                         Yukarı/Aşağı okları ile sıralayabilirsiniz
                       </span>
@@ -1102,15 +1102,15 @@ export default function CategoriesPage() {
                       {visibleSubCategories.map((subCategory, index) => (
                         <div
                           key={subCategory.id}
-                          className="flex items-center justify-between p-3 bg-[#0f172a]/40 border border-white/5 rounded-xl hover:bg-blue-500/10 cursor-pointer transition-all duration-200 group"
+                          className="flex items-center justify-between p-3 bg-v3-surface border border-v3-border rounded-xl hover:bg-blue-500/10 cursor-pointer transition-all duration-200 group"
                           onDoubleClick={() => {
                             setSelectedCategory(subCategory);
                             setShowEditModal(true);
                           }}
                         >
                           <div className="flex items-center space-x-3 flex-1">
-                            <div className="w-6 h-6 bg-white/5 border border-white/10 rounded-full flex items-center justify-center">
-                              <span className="text-slate-400 text-xs font-bold">
+                            <div className="w-6 h-6 bg-v3-border border border-v3-border rounded-full flex items-center justify-center">
+                              <span className="text-v3-muted text-xs font-bold">
                                 {index + 1}
                               </span>
                             </div>
@@ -1123,7 +1123,7 @@ export default function CategoriesPage() {
                                     subCategory.parent_id!,
                                   );
                                 }}
-                                className="p-0.5 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"
+                                className="p-0.5 hover:bg-v3-surface rounded text-v3-muted hover:text-v3-text transition-colors"
                                 title="Yukarı Taşı"
                               >
                                 <svg
@@ -1148,7 +1148,7 @@ export default function CategoriesPage() {
                                     subCategory.parent_id!,
                                   );
                                 }}
-                                className="p-0.5 hover:bg-white/10 rounded text-slate-500 hover:text-white transition-colors"
+                                className="p-0.5 hover:bg-v3-surface rounded text-v3-muted hover:text-v3-text transition-colors"
                                 title="Aşağı Taşı"
                               >
                                 <svg
@@ -1167,10 +1167,10 @@ export default function CategoriesPage() {
                               </button>
                             </div>
                             <div className="flex-1">
-                              <h4 className="text-xs font-medium text-white group-hover:text-purple-300 transition-colors">
+                              <h4 className="text-xs font-medium text-v3-text group-hover:text-purple-300 transition-colors">
                                 {subCategory.name}
                               </h4>
-                              <p className="text-[10px] text-slate-400">
+                              <p className="text-[10px] text-v3-muted">
                                 {subCategory.description || "Alt kategori"}
                               </p>
                             </div>
@@ -1180,13 +1180,13 @@ export default function CategoriesPage() {
                             {/* Muhasebe Kodları */}
                             <div className="hidden md:flex items-center space-x-6 text-[10px]">
                               <div className="flex items-center gap-1">
-                                <span className="text-slate-500 font-medium">
+                                <span className="text-v3-muted font-medium">
                                   Gider:
                                 </span>
-                                <span className="font-mono text-emerald-300/80">
+                                <span className="font-mono text-emerald-600 dark:text-emerald-300/80">
                                   {subCategory.expense_accounting_code || "-"}
                                 </span>
-                                <span className="text-slate-500 bg-black/20 px-1 py-0.5 rounded ml-1 border border-white/5">
+                                <span className="text-v3-muted bg-black/20 px-1 py-0.5 rounded ml-1 border border-v3-border">
                                   KDV:{" "}
                                   {subCategory.expense_vat_accounting_code ||
                                     "-"}{" "}
@@ -1194,13 +1194,13 @@ export default function CategoriesPage() {
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <span className="text-slate-500 font-medium">
+                                <span className="text-v3-muted font-medium">
                                   Gelir:
                                 </span>
-                                <span className="font-mono text-blue-300/80">
+                                <span className="font-mono text-blue-600 dark:text-blue-300/80">
                                   {subCategory.revenue_accounting_code || "-"}
                                 </span>
-                                <span className="text-slate-500 bg-black/20 px-1 py-0.5 rounded ml-1 border border-white/5">
+                                <span className="text-v3-muted bg-black/20 px-1 py-0.5 rounded ml-1 border border-v3-border">
                                   KDV:{" "}
                                   {subCategory.revenue_vat_accounting_code ||
                                     "-"}{" "}
@@ -1220,7 +1220,7 @@ export default function CategoriesPage() {
                               }}
                               className={`inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full border cursor-pointer hover:opacity-80 transition-opacity ${
                                 subCategory.is_active
-                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                                   : "bg-red-500/10 text-red-400 border-red-500/20"
                               }`}
                               title="Durumu Değiştir"
@@ -1229,11 +1229,11 @@ export default function CategoriesPage() {
                             </button>
 
                             {/* İşlemler */}
-                            <div className="flex items-center space-x-1 border-l border-white/10 pl-3">
+                            <div className="flex items-center space-x-1 border-l border-v3-border pl-3">
                               {canEdit(Module.CATEGORIES) && (
                                 <button
                                   onClick={() => openEditModal(subCategory)}
-                                  className="text-emerald-400 hover:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 opacity-50 group-hover:opacity-100"
+                                  className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-600 dark:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 opacity-50 group-hover:opacity-100"
                                   title="Düzenle"
                                 >
                                   <svg
@@ -1285,7 +1285,7 @@ export default function CategoriesPage() {
                 {/* Alt Kategori Yoksa Mesaj */}
                 {visibleSubCategories.length === 0 && (
                   <div className="px-4 py-3 text-center">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                    <p className="text-xs text-v3-muted italic">
                       Bu ana kategori için henüz alt kategori eklenmemiş
                     </p>
                   </div>
@@ -1300,10 +1300,10 @@ export default function CategoriesPage() {
               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📂</span>
               </div>
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-v3-text mb-2">
                 Henüz kategori eklenmemiş
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-v3-muted">
                 Yeni kategori ekleyerek başlayın
               </p>
             </div>
@@ -1345,7 +1345,7 @@ export default function CategoriesPage() {
       >
         <form onSubmit={handleCreateCategory} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-white mb-1.5">
+            <label className="block text-xs font-semibold text-v3-text mb-1.5">
               Kategori Tipi *
             </label>
             <select
@@ -1356,12 +1356,12 @@ export default function CategoriesPage() {
                   isMainCategory: e.target.value === "main",
                 })
               }
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
             >
-              <option value="main" className="bg-[#0f172a]">
+              <option value="main" className="bg-v3-surface">
                 Ana Kategori
               </option>
-              <option value="sub" className="bg-[#0f172a]">
+              <option value="sub" className="bg-v3-surface">
                 Alt Kategori
               </option>
             </select>
@@ -1369,7 +1369,7 @@ export default function CategoriesPage() {
 
           {newCategory.isMainCategory && (
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Kategori ID *
               </label>
               <input
@@ -1380,12 +1380,12 @@ export default function CategoriesPage() {
                 }
                 required
                 placeholder="CAT_008"
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               />
             </div>
           )}
           <div>
-            <label className="block text-xs font-semibold text-white mb-1.5">
+            <label className="block text-xs font-semibold text-v3-text mb-1.5">
               Kategori Adı *
             </label>
             <input
@@ -1396,11 +1396,11 @@ export default function CategoriesPage() {
               }
               required
               autoFocus
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-white mb-1.5">
+            <label className="block text-xs font-semibold text-v3-text mb-1.5">
               Açıklama
             </label>
             <textarea
@@ -1409,12 +1409,12 @@ export default function CategoriesPage() {
                 setNewCategory({ ...newCategory, description: e.target.value })
               }
               rows={2}
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm resize-none"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm resize-none"
             />
           </div>
           {!newCategory.isMainCategory && (
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Ana Kategori *
               </label>
               <select
@@ -1423,9 +1423,9 @@ export default function CategoriesPage() {
                   setNewCategory({ ...newCategory, parent_id: e.target.value })
                 }
                 required
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               >
-                <option value="" className="bg-[#0f172a]">
+                <option value="" className="bg-v3-surface">
                   Ana Kategori Seçin
                 </option>
                 {categories
@@ -1434,7 +1434,7 @@ export default function CategoriesPage() {
                     <option
                       key={category.id}
                       value={category.id}
-                      className="bg-[#0f172a]"
+                      className="bg-v3-surface"
                     >
                       {category.name}
                     </option>
@@ -1444,7 +1444,7 @@ export default function CategoriesPage() {
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Gider Muhasebe Kodu
               </label>
               <input
@@ -1456,11 +1456,11 @@ export default function CategoriesPage() {
                     expense_accounting_code: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Gelir Muhasebe Kodu
               </label>
               <input
@@ -1472,21 +1472,21 @@ export default function CategoriesPage() {
                     revenue_accounting_code: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               />
             </div>
           </div>
 
           {/* KDV Alanları */}
-          <div className="border-t border-white/10 pt-4 mt-2">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+          <div className="border-t border-v3-border pt-4 mt-2">
+            <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 mb-4">
               KDV Bilgileri
             </h4>
 
             {/* Gelir KDV */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gelir KDV Muhasebe Kodu
                 </label>
                 <input
@@ -1498,11 +1498,11 @@ export default function CategoriesPage() {
                       revenue_vat_accounting_code: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gelir KDV Oranı (%)
                 </label>
                 <input
@@ -1517,7 +1517,7 @@ export default function CategoriesPage() {
                       revenue_vat_rate: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
             </div>
@@ -1525,7 +1525,7 @@ export default function CategoriesPage() {
             {/* Gider KDV */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gider KDV Muhasebe Kodu
                 </label>
                 <input
@@ -1537,11 +1537,11 @@ export default function CategoriesPage() {
                       expense_vat_accounting_code: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gider KDV Oranı (%)
                 </label>
                 <input
@@ -1556,12 +1556,12 @@ export default function CategoriesPage() {
                       expense_vat_rate: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
+          <div className="flex justify-end gap-3 pt-6 border-t border-v3-border mt-4">
             <button
               type="button"
               onClick={() => {
@@ -1580,13 +1580,13 @@ export default function CategoriesPage() {
                   isMainCategory: true,
                 });
               }}
-              className="px-6 py-2.5 text-sm font-bold text-white bg-[#0f172a]/40 border border-white/10 rounded-xl hover:bg-white/5 transition-all"
+              className="px-6 py-2.5 text-sm font-bold text-v3-text bg-v3-surface border border-v3-border rounded-xl hover:bg-v3-border transition-all"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all"
+              className="px-6 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all"
             >
               Kaydet
             </button>
@@ -1607,7 +1607,7 @@ export default function CategoriesPage() {
         <form onSubmit={handleUpdateCategory} className="space-y-4">
           {!selectedCategory?.parent_id && (
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Kategori ID *
               </label>
               <input
@@ -1623,12 +1623,12 @@ export default function CategoriesPage() {
                 }
                 required
                 autoFocus
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               />
             </div>
           )}
           <div>
-            <label className="block text-xs font-semibold text-white mb-1.5">
+            <label className="block text-xs font-semibold text-v3-text mb-1.5">
               Kategori Adı *
             </label>
             <input
@@ -1638,11 +1638,11 @@ export default function CategoriesPage() {
                 setEditCategory({ ...editCategory, name: e.target.value })
               }
               required
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-white mb-1.5">
+            <label className="block text-xs font-semibold text-v3-text mb-1.5">
               Açıklama
             </label>
             <textarea
@@ -1654,12 +1654,12 @@ export default function CategoriesPage() {
                 })
               }
               rows={2}
-              className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm resize-none"
+              className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm resize-none"
             />
           </div>
           {selectedCategory?.parent_id && (
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Üst Kategori
               </label>
               <select
@@ -1670,9 +1670,9 @@ export default function CategoriesPage() {
                     parent_id: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               >
-                <option value="" className="bg-[#0f172a]">
+                <option value="" className="bg-v3-surface">
                   Ana Kategori
                 </option>
                 {categories
@@ -1681,7 +1681,7 @@ export default function CategoriesPage() {
                     <option
                       key={category.id}
                       value={category.id}
-                      className="bg-[#0f172a]"
+                      className="bg-v3-surface"
                     >
                       {category.name}
                     </option>
@@ -1691,7 +1691,7 @@ export default function CategoriesPage() {
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Gider Muhasebe Kodu
               </label>
               <input
@@ -1703,11 +1703,11 @@ export default function CategoriesPage() {
                     expense_accounting_code: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-white mb-1.5">
+              <label className="block text-xs font-semibold text-v3-text mb-1.5">
                 Gelir Muhasebe Kodu
               </label>
               <input
@@ -1719,21 +1719,21 @@ export default function CategoriesPage() {
                     revenue_accounting_code: e.target.value,
                   })
                 }
-                className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
               />
             </div>
           </div>
 
           {/* KDV Alanları */}
-          <div className="border-t border-white/10 pt-4 mt-2">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+          <div className="border-t border-v3-border pt-4 mt-2">
+            <h4 className="text-sm font-bold text-v3-text flex items-center gap-2 mb-4">
               KDV Bilgileri
             </h4>
 
             {/* Gelir KDV */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gelir KDV Muhasebe Kodu
                 </label>
                 <input
@@ -1745,11 +1745,11 @@ export default function CategoriesPage() {
                       revenue_vat_accounting_code: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gelir KDV Oranı (%)
                 </label>
                 <input
@@ -1764,7 +1764,7 @@ export default function CategoriesPage() {
                       revenue_vat_rate: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
             </div>
@@ -1772,7 +1772,7 @@ export default function CategoriesPage() {
             {/* Gider KDV */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gider KDV Muhasebe Kodu
                 </label>
                 <input
@@ -1784,11 +1784,11 @@ export default function CategoriesPage() {
                       expense_vat_accounting_code: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white mb-1.5">
+                <label className="block text-xs font-semibold text-v3-text mb-1.5">
                   Gider KDV Oranı (%)
                 </label>
                 <input
@@ -1803,25 +1803,25 @@ export default function CategoriesPage() {
                       expense_vat_rate: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-4 py-2.5 bg-[#0f172a]/40 border border-white/10 text-white rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
+          <div className="flex justify-end gap-3 pt-6 border-t border-v3-border mt-4">
             <button
               type="button"
               onClick={() => {
                 setShowEditModal(false);
                 setSelectedCategory(null);
               }}
-              className="px-6 py-2.5 text-sm font-bold text-white bg-[#0f172a]/40 border border-white/10 rounded-xl hover:bg-white/5 transition-all"
+              className="px-6 py-2.5 text-sm font-bold text-v3-text bg-v3-surface border border-v3-border rounded-xl hover:bg-v3-border transition-all"
             >
               İptal
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all"
+              className="px-6 py-2.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-sm font-bold rounded-xl hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all"
             >
               Güncelle
             </button>

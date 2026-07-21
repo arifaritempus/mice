@@ -67,11 +67,11 @@ function ComboBox({
   return (
     <div className="relative">
       <div
-        className={`relative flex items-center bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 ${className}`}
+        className={`relative flex items-center bg-v3-surface border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 ${className}`}
       >
         <input
           ref={setInputRef}
-          className="w-full px-2 py-1 bg-transparent text-xs font-bold text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+          className="w-full px-2 py-1 bg-transparent text-xs font-bold text-v3-text placeholder-gray-400 outline-none"
           placeholder={placeholder}
           value={open ? query : selected ? getName(selected) : ""}
           onChange={(e) => {
@@ -113,7 +113,7 @@ function ComboBox({
           }}
           autoComplete="off"
         />
-        <div className="pr-4 pointer-events-none text-gray-400">
+        <div className="pr-4 pointer-events-none text-v3-muted">
           <svg
             className={`w-4 h-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
             fill="none"
@@ -131,7 +131,7 @@ function ComboBox({
       </div>
       {open && (
         <div
-          className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm max-h-56 overflow-auto animate-in fade-in zoom-in-95 duration-200"
+          className="fixed z-[9999] bg-v3-surface border border-v3-border rounded shadow-sm max-h-56 overflow-auto animate-in fade-in zoom-in-95 duration-200"
           style={{
             top: position.top,
             left: position.left,
@@ -140,14 +140,14 @@ function ComboBox({
           }}
         >
           {filtered.length === 0 ? (
-            <div className="px-2 py-1 text-xs font-bold text-gray-400">
+            <div className="px-2 py-1 text-xs font-bold text-v3-muted">
               Sonuç bulunamadı
             </div>
           ) : (
             filtered.map((o, i) => (
               <div
                 key={o.id}
-                className={`px-2 py-1 text-xs font-bold cursor-pointer transition-colors duration-200 ${i === highlight ? "bg-blue-500 text-white" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
+                className={`px-2 py-1 text-xs font-bold cursor-pointer transition-colors duration-200 ${i === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
                 onMouseEnter={() => setHighlight(i)}
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -943,10 +943,10 @@ export default function EditSejourPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Yetki Gerekli
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-v3-muted mb-6">
             Sejour kaydını düzenlemek için yetkiniz bulunmuyor.
           </p>
           <button
@@ -1000,7 +1000,7 @@ export default function EditSejourPage() {
     };
     return (
       <div className={`relative w-full ${className}`}>
-        <div className="relative flex items-center bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
+        <div className="relative flex items-center bg-v3-surface border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
           <input
             type="text"
             value={display}
@@ -1042,9 +1042,9 @@ export default function EditSejourPage() {
             }}
             onBlur={() => setTimeout(() => setOpen(false), 120)}
             placeholder={placeholder}
-            className="w-full px-2 py-1.5 bg-transparent text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+            className="w-full px-2 py-1.5 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
           />
-          <div className="pr-6 pointer-events-none text-gray-400">
+          <div className="pr-6 pointer-events-none text-v3-muted">
             <svg
               className={`w-5 h-5 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
               fill="none"
@@ -1061,8 +1061,8 @@ export default function EditSejourPage() {
           </div>
         </div>
         {open && (
-          <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
+          <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-auto bg-v3-surface border border-v3-border rounded-lg shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-4 py-2 text-[10px] font-black text-v3-muted uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
               {filtered.length} sonuç
             </div>
             {filtered.map((opt, idx) => (
@@ -1072,13 +1072,13 @@ export default function EditSejourPage() {
                 onMouseEnter={() => setHighlight(idx)}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(opt.id)}
-                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
+                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
               >
                 {opt.name}
               </button>
             ))}
             {filtered.length === 0 && (
-              <div className="px-5 py-4 text-xs font-bold text-gray-400 italic">
+              <div className="px-5 py-4 text-xs font-bold text-v3-muted italic">
                 Sonuç bulunamadı
               </div>
             )}
@@ -1090,7 +1090,7 @@ export default function EditSejourPage() {
 
   if (permissionsLoading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="flex flex-col items-center">
           <svg
             className="animate-spin h-10 w-10 text-blue-600 mb-4"
@@ -1123,10 +1123,10 @@ export default function EditSejourPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-v3-text mb-4">
             Erişim Reddedildi
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-1">
+          <p className="text-v3-muted mb-1">
             Sejour düzenleme sayfasına erişim için yetkiniz bulunmuyor.
           </p>
           <button
@@ -1145,11 +1145,11 @@ export default function EditSejourPage() {
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-1 animate-in fade-in slide-in-from-top-1 duration-500">
-          <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-1 rounded border border-gray-100 dark:border-gray-700 shadow-sm">
+          <div className="flex justify-between items-center bg-v3-surface p-1 rounded border border-gray-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center space-x-3">
               <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
               <div>
-                <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                <h1 className="text-3xl font-black text-v3-text tracking-tight">
                   Sejour Düzenle
                 </h1>
                 <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 mt-0.5 uppercase tracking-widest">
@@ -1208,7 +1208,7 @@ export default function EditSejourPage() {
               </button>
               <button
                 onClick={() => router.push("/sejour")}
-                className="px-6 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-[0.98] transition-all duration-200 shadow-sm"
+                className="px-6 py-2.5 bg-white dark:bg-gray-700 text-v3-text text-xs rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-[0.98] transition-all duration-200 shadow-sm"
               >
                 Geri Dön
               </button>
@@ -1219,13 +1219,13 @@ export default function EditSejourPage() {
         {/* Status and Messages */}
         <div className="max-w-[1800px] mx-auto mb-2">
           {error && (
-            <div className="bg-red-50/80 dark:bg-red-900/20 backdrop-blur-md border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-red-500/10 animate-in zoom-in-95 duration-300">
+            <div className="bg-red-50 dark:bg-red-900/20/80 dark:bg-red-900/20 backdrop-blur-md border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-red-500/10 animate-in zoom-in-95 duration-300">
               <span className="mr-3 text-xl">⚠️</span>
               <p className="font-bold text-sm tracking-tight">{error}</p>
             </div>
           )}
           {success && (
-            <div className="bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-emerald-500/10 animate-in zoom-in-95 duration-300">
+            <div className="bg-emerald-50 dark:bg-emerald-900/20/80 dark:bg-emerald-900/20 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-emerald-500/10 animate-in zoom-in-95 duration-300">
               <span className="mr-3 text-xl">✅</span>
               <p className="font-bold text-sm tracking-tight">{success}</p>
             </div>
@@ -1235,7 +1235,7 @@ export default function EditSejourPage() {
         <form onSubmit={handleSubmit} className="relative">
           {/* Main Navigation Tabs */}
           <div className="relative mb-2">
-            <div className="flex p-1 space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm max-w-md mx-auto">
+            <div className="flex p-1 space-x-1 bg-v3-surface border border-v3-border rounded-lg shadow-sm max-w-md mx-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -1244,7 +1244,7 @@ export default function EditSejourPage() {
                   className={`flex items-center justify-center flex-1 px-2 py-1.5 text-xs font-black leading-5 rounded transition-all duration-300 ${
                     activeTab === tab.id
                       ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      : "text-v3-muted hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   <span className="mr-2 text-base">{tab.icon}</span>
@@ -1259,7 +1259,7 @@ export default function EditSejourPage() {
             {activeTab === "sales" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-xl font-black text-v3-text tracking-tight">
                     Satış Bilgileri
                   </h2>
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-6"></div>
@@ -1268,7 +1268,7 @@ export default function EditSejourPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 responsive-filter-grid">
                   {/* Left Column: General Info */}
                   <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm transition-all duration-300">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm transition-all duration-300">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 responsive-filter-grid">
                         <div className="space-y-4">
                           <div>
@@ -1280,7 +1280,7 @@ export default function EditSejourPage() {
                               name="voucherNumber"
                               value={salesData.voucherNumber}
                               onChange={handleInputChange}
-                              className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                              className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               placeholder="VOU-2024-001"
                               required
                             />
@@ -1302,8 +1302,8 @@ export default function EditSejourPage() {
                                 }
                                 className={`flex-1 py-3 px-4 rounded text-xs font-black tracking-widest transition-all duration-300 ${
                                   salesData.customerType === "agency"
-                                    ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
-                                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    ? "bg-v3-surface text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
+                                    : "text-v3-muted hover:text-gray-600 dark:hover:text-v3-muted"
                                 }`}
                               >
                                 ACENTE
@@ -1320,8 +1320,8 @@ export default function EditSejourPage() {
                                 }
                                 className={`flex-1 py-3 px-4 rounded text-xs font-black tracking-widest transition-all duration-300 ${
                                   salesData.customerType === "individual"
-                                    ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
-                                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    ? "bg-v3-surface text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700"
+                                    : "text-v3-muted hover:text-gray-600 dark:hover:text-v3-muted"
                                 }`}
                               >
                                 ŞAHIS
@@ -1359,7 +1359,7 @@ export default function EditSejourPage() {
                                   name="customerName"
                                   value={salesData.customerName}
                                   onChange={handleInputChange}
-                                  className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   placeholder="Örn: Ahmet Yılmaz"
                                 />
                               </>
@@ -1376,7 +1376,7 @@ export default function EditSejourPage() {
                                 name="checkInDate"
                                 value={salesData.checkInDate}
                                 onChange={handleInputChange}
-                                className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               />
                             </div>
                             <div>
@@ -1388,7 +1388,7 @@ export default function EditSejourPage() {
                                 name="checkOutDate"
                                 value={salesData.checkOutDate}
                                 onChange={handleInputChange}
-                                className="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1.5 bg-v3-surface border-2 border-gray-100 dark:border-gray-700 rounded text-xs text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               />
                             </div>
                           </div>
@@ -1416,7 +1416,7 @@ export default function EditSejourPage() {
                                     : status === "KONFIRME"
                                       ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 border-2 border-emerald-200 dark:border-emerald-800"
                                       : "bg-red-100 dark:bg-red-900/30 text-red-600 border-2 border-red-200 dark:border-red-800"
-                                  : "bg-white dark:bg-gray-900 text-gray-400 border-2 border-gray-100 dark:border-gray-700 grayscale"
+                                  : "bg-v3-surface text-v3-muted border-2 border-gray-100 dark:border-gray-700 grayscale"
                               }`}
                             >
                               {status === "BEKLEMEDE"
@@ -1433,8 +1433,8 @@ export default function EditSejourPage() {
 
                   {/* Right Column: Service Selection Quick Cards */}
                   <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
-                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
+                      <h3 className="text-xs font-black text-v3-muted uppercase tracking-widest mb-1">
                         Hizmet Seçimi
                       </h3>
                       <div className="grid grid-cols-1 gap-1">
@@ -1446,7 +1446,7 @@ export default function EditSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showAccommodation
                               ? "bg-blue-500/10 dark:bg-blue-900/20 border-blue-500 text-blue-600 shadow-lg shadow-blue-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1466,7 +1466,7 @@ export default function EditSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showFlight
                               ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-600 shadow-lg shadow-emerald-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1486,7 +1486,7 @@ export default function EditSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showTransfer
                               ? "bg-purple-50 dark:bg-purple-900/20 border-purple-500 text-purple-600 shadow-lg shadow-purple-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1508,7 +1508,7 @@ export default function EditSejourPage() {
                           className={`flex items-center justify-between p-1 rounded-lg border-2 transition-all duration-300 ${
                             showExtraServices
                               ? "bg-orange-50 dark:bg-orange-900/20 border-orange-500 text-orange-600 shadow-lg shadow-orange-500/10"
-                              : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400"
+                              : "bg-v3-surface border-gray-100 dark:border-gray-700 text-v3-muted"
                           }`}
                         >
                           <div className="flex items-center">
@@ -1528,7 +1528,7 @@ export default function EditSejourPage() {
 
                 {/* Accommodation Section */}
                 {showAccommodation && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-v3-surface border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500">
                     <div className="px-2 py-1.5 bg-blue-500/10/50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30">
@@ -1574,14 +1574,14 @@ export default function EditSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeRoom(room.id)}
-                              className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-10 h-10 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[3] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1.5]">
                             <div className="md:col-span-2">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Otel Seçimi
                               </label>
                               <SearchableSelect
@@ -1595,11 +1595,11 @@ export default function EditSejourPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Konaklama Tipi
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 value={room.accommodationType || ""}
                                 onChange={(e) =>
                                   updateRoom(
@@ -1635,11 +1635,11 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Oda Tipi
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 value={room.roomType}
                                 onChange={(e) =>
                                   updateRoom(
@@ -1658,11 +1658,11 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Misafir Bilgileri
                               </label>
                               <input
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="text"
                                 value={room.guestInfo}
                                 onChange={(e) =>
@@ -1676,12 +1676,12 @@ export default function EditSejourPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satş Tutarı
                               </label>
                               <div className="flex gap-1">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -1711,7 +1711,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-2 py-3 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={room.currency}
                                   onChange={(e) =>
                                     updateRoom(
@@ -1735,8 +1735,8 @@ export default function EditSejourPage() {
                   </div>
                 )}
                 {showFlight && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="px-3 py-2 bg-emerald-50/60 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex flex-wrap gap-2 justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20/60 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-emerald-500/30">
                           <span className="text-lg">✈️</span>
@@ -1814,14 +1814,14 @@ export default function EditSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeFlight(flight.id)}
-                              className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-10 h-10 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[3.5] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.5]">
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Uçuş Tarihi
                               </label>
                               <input
@@ -1834,11 +1834,11 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Havayolu
                               </label>
                               <input
@@ -1851,12 +1851,12 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 placeholder="Örn: THY"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Güzergah
                               </label>
                               <input
@@ -1869,12 +1869,12 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 placeholder="Örn: IST-AYT"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Uçuş No
                               </label>
                               <input
@@ -1887,12 +1887,12 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 placeholder="Örn: TK1234"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Kalkış - Varış
                               </label>
                               <div className="grid grid-cols-2 gap-1">
@@ -1906,7 +1906,7 @@ export default function EditSejourPage() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 />
                                 <input
                                   type="time"
@@ -1918,12 +1918,12 @@ export default function EditSejourPage() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi & PNR
                               </label>
                               <div className="grid grid-cols-2 gap-1">
@@ -1953,13 +1953,13 @@ export default function EditSejourPage() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                  className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                   placeholder="PNR"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Biletleme Tarihi
                               </label>
                               <input
@@ -1972,16 +1972,16 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                               />
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
                               <div className="flex gap-2">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-emerald-600 dark:text-emerald-400 text-right focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none h-9"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-emerald-600 dark:text-emerald-400 text-right focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none h-9"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2015,7 +2015,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none h-9"
+                                  className="w-20 px-1 py-1 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none h-9"
                                   value={flight.currency}
                                   onChange={(e) =>
                                     updateFlight(
@@ -2040,8 +2040,8 @@ export default function EditSejourPage() {
                 )}
                 {/* Transfer Information */}
                 {showTransfer && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-purple-100 dark:border-purple-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="px-3 py-2 bg-purple-50/60 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex flex-wrap gap-2 justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-purple-100 dark:border-purple-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/20/60 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-purple-500/30">
                           <span className="text-lg">🚗</span>
@@ -2094,18 +2094,18 @@ export default function EditSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeTransfer(transfer.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tarih
                               </label>
                               <input
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="date"
                                 value={transfer.date}
                                 onChange={(e) =>
@@ -2118,7 +2118,7 @@ export default function EditSejourPage() {
                               />
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi
                               </label>
                               <ComboBox
@@ -2135,11 +2135,11 @@ export default function EditSejourPage() {
                               />
                             </div>
                             <div className="md:col-span-1">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tip
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text transition-all duration-300 outline-none"
                                 value={transfer.type}
                                 onChange={(e) =>
                                   updateTransfer(
@@ -2154,11 +2154,11 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                             <div className="md:col-span-1">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Araç
                               </label>
                               <select
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text transition-all duration-300 outline-none"
                                 value={transfer.vehicle}
                                 onChange={(e) =>
                                   updateTransfer(
@@ -2177,11 +2177,11 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Saat
                               </label>
                               <input
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="time"
                                 value={transfer.time}
                                 onChange={(e) =>
@@ -2194,12 +2194,12 @@ export default function EditSejourPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
                               <div className="flex gap-2">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-purple-600 dark:text-purple-400 focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-purple-600 dark:text-purple-400 focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2238,7 +2238,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-1 py-1 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={transfer.currency}
                                   onChange={(e) =>
                                     updateTransfer(
@@ -2263,8 +2263,8 @@ export default function EditSejourPage() {
                 )}
                 {/* Extra Services Information */}
                 {showExtraServices && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-orange-100 dark:border-orange-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
-                    <div className="px-3 py-2 bg-orange-50/60 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex flex-wrap gap-2 justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-orange-100 dark:border-orange-900/30 rounded-xl shadow-xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="px-3 py-2 bg-orange-50 dark:bg-orange-900/20/60 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex flex-wrap gap-2 justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-orange-500/30">
                           <span className="text-lg">✨</span>
@@ -2309,14 +2309,14 @@ export default function EditSejourPage() {
                             <button
                               type="button"
                               onClick={() => removeExtraService(service.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                             >
                               ✕
                             </button>
                           </div>
                           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Hizmet Tipi
                               </label>
                               <select
@@ -2328,7 +2328,7 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-3 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-[10px] font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none h-9"
+                                className="w-full px-3 py-3 bg-v3-surface border border-v3-border rounded text-[10px] font-bold text-v3-text focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none h-9"
                               >
                                 <option value="">Seçin</option>
                                 {supplierServiceTypes.map((type) => (
@@ -2339,7 +2339,7 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Tedarikçi
                               </label>
                               <ComboBox
@@ -2356,7 +2356,7 @@ export default function EditSejourPage() {
                               />
                             </div>
                             <div className="xl:col-span-4">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Açıklama
                               </label>
                               <input
@@ -2369,17 +2369,17 @@ export default function EditSejourPage() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none h-9"
+                                className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded text-xs font-bold text-v3-text focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all duration-300 outline-none h-9"
                                 placeholder="Örn: Rehberlik"
                               />
                             </div>
                             <div className="flex-[2]">
-                              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                              <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Satış Tutarı
                               </label>
                               <div className="flex gap-2">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-orange-600 dark:text-orange-400 text-right focus:ring-4 focus:ring-orange-500/10 focus:border-blue-500 transition-all duration-300 outline-none h-9"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-orange-600 dark:text-orange-400 text-right focus:ring-4 focus:ring-orange-500/10 focus:border-blue-500 transition-all duration-300 outline-none h-9"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2417,7 +2417,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none h-9"
+                                  className="w-20 px-1 py-1 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none h-9"
                                   value={service.currency}
                                   onChange={(e) =>
                                     updateExtraService(
@@ -2442,12 +2442,12 @@ export default function EditSejourPage() {
                 )}
 
                 {/* Summary Section */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
+                <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-[9px] font-black text-gray-500 dark:text-gray-300 uppercase tracking-widest ml-1">
                       Özet ve Toplamlar
                     </h3>
-                    <div className="h-px flex-1 bg-gray-100 dark:bg-gray-700 mx-8"></div>
+                    <div className="h-px flex-1 bg-black/5 dark:bg-white/5 mx-8"></div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                     <div className="bg-blue-500 p-1 rounded-lg text-white shadow-sm">
@@ -2464,7 +2464,7 @@ export default function EditSejourPage() {
                           return (
                             <div
                               key={curr}
-                              className="flex justify-between items-center bg-white/10 px-3 py-1.5 rounded backdrop-blur-md"
+                              className="flex justify-between items-center bg-v3-surface/10 px-3 py-1.5 rounded backdrop-blur-md"
                             >
                               <span className="text-[10px] font-black opacity-80">
                                 {curr}
@@ -2482,42 +2482,42 @@ export default function EditSejourPage() {
                         )}
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 p-1 rounded shadow-sm">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 p-1 rounded shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xl">🏨</span>
-                        <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                        <span className="text-[10px] font-black text-v3-muted tracking-widest uppercase">
                           Konaklama
                         </span>
                       </div>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+                      <p className="text-2xl font-black text-v3-text tracking-tighter">
                         {rooms.length}
                       </p>
                       <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 tracking-widest mt-1">
                         ODA TOPLAMI
                       </p>
                     </div>
-                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 p-1 rounded shadow-sm">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 p-1 rounded shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xl">✈️</span>
-                        <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                        <span className="text-[10px] font-black text-v3-muted tracking-widest uppercase">
                           Uçuş
                         </span>
                       </div>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+                      <p className="text-2xl font-black text-v3-text tracking-tighter">
                         {flights.length}
                       </p>
                       <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 tracking-widest mt-1">
                         UÇUŞ TOPLAMI
                       </p>
                     </div>
-                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 p-1 rounded shadow-sm">
+                    <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 p-1 rounded shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xl">🚗</span>
-                        <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                        <span className="text-[10px] font-black text-v3-muted tracking-widest uppercase">
                           Transfer
                         </span>
                       </div>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+                      <p className="text-2xl font-black text-v3-text tracking-tighter">
                         {transfers.length}
                       </p>
                       <p className="text-[10px] font-black text-purple-600 dark:text-purple-400 tracking-widest mt-1">
@@ -2533,19 +2533,19 @@ export default function EditSejourPage() {
             {activeTab === "purchase" && (
               <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-2xl font-black text-v3-text tracking-tight">
                     Alış ve Maliyet Yönetimi
                   </h2>
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-8"></div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
+                <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded p-2 shadow-sm">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
                     <div>
                       <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 ml-1">
                         Voucher Numarası
                       </label>
-                      <div className="px-2 py-1 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-lg text-xs text-gray-500 dark:text-gray-400 select-none cursor-not-allowed">
+                      <div className="px-2 py-1 bg-black/5 dark:bg-white/5/50 border-2 border-transparent rounded-lg text-xs text-v3-muted select-none cursor-not-allowed">
                         {salesData.voucherNumber}
                       </div>
                     </div>
@@ -2553,7 +2553,7 @@ export default function EditSejourPage() {
                       <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 ml-1">
                         Acente
                       </label>
-                      <div className="px-2 py-1 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-lg text-xs text-gray-500 dark:text-gray-400 select-none cursor-not-allowed truncate">
+                      <div className="px-2 py-1 bg-black/5 dark:bg-white/5/50 border-2 border-transparent rounded-lg text-xs text-v3-muted select-none cursor-not-allowed truncate">
                         {agencies.find((a) => a.id === salesData.agencyId)
                           ?.name || "-"}
                       </div>
@@ -2562,7 +2562,7 @@ export default function EditSejourPage() {
                       <label className="block text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 ml-1">
                         Konaklama Tarihleri
                       </label>
-                      <div className="px-2 py-1 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-lg text-xs text-gray-500 dark:text-gray-400 select-none cursor-not-allowed">
+                      <div className="px-2 py-1 bg-black/5 dark:bg-white/5/50 border-2 border-transparent rounded-lg text-xs text-v3-muted select-none cursor-not-allowed">
                         {salesData.checkInDate} / {salesData.checkOutDate}
                       </div>
                     </div>
@@ -2573,8 +2573,8 @@ export default function EditSejourPage() {
                       <div
                         className={`px-2 py-1 border-2 border-transparent rounded-lg text-[10px] font-black tracking-widest uppercase select-none cursor-not-allowed inline-flex items-center ${
                           salesData.status === "KONFIRME"
-                            ? "bg-emerald-50 text-emerald-600"
-                            : "bg-amber-50 text-amber-600"
+                            ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600"
+                            : "bg-amber-50 dark:bg-amber-900/20 text-amber-600"
                         }`}
                       >
                         {salesData.status}
@@ -2585,7 +2585,7 @@ export default function EditSejourPage() {
 
                 {/* Accommodation Costs */}
                 {showAccommodation && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-150">
+                  <div className="bg-v3-surface border-2 border-blue-100 dark:border-blue-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-150">
                     <div className="px-2 py-1.5 bg-blue-500/10/50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30">
@@ -2615,19 +2615,19 @@ export default function EditSejourPage() {
                             </h4>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Misafir & Oda Tipi
                               </label>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                              <p className="text-xs font-bold text-v3-text truncate">
                                 {room.guestInfo || "-"} / {room.roomType || "-"}
                               </p>
                             </div>
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Satış Tutarı
                               </label>
-                              <p className="text-xs font-black text-gray-900 dark:text-white">
+                              <p className="text-xs font-black text-v3-text">
                                 {formatAmount(room.price)} {room.currency}
                               </p>
                             </div>
@@ -2637,7 +2637,7 @@ export default function EditSejourPage() {
                               </label>
                               <div className="flex gap-1">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border-2 border-blue-50 dark:border-blue-900/30 rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border-2 border-blue-50 dark:border-blue-900/30 rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2671,7 +2671,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border-2 border-blue-50 dark:border-blue-900/30 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-2 py-3 bg-v3-surface border-2 border-blue-50 dark:border-blue-900/30 rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={room.costCurrency || room.currency}
                                   onChange={(e) =>
                                     updateRoom(
@@ -2708,8 +2708,8 @@ export default function EditSejourPage() {
                   </div>
                 )}
                 {showFlight && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-emerald-100 dark:border-emerald-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-200">
-                    <div className="px-2 py-1.5 bg-emerald-50/50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-emerald-100 dark:border-emerald-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-200">
+                    <div className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-900/20/50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-emerald-500/30">
                           <span className="text-lg">✈️</span>
@@ -2735,11 +2735,11 @@ export default function EditSejourPage() {
                             </h4>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Satış Tutarı
                               </label>
-                              <p className="text-xs font-black text-gray-900 dark:text-white">
+                              <p className="text-xs font-black text-v3-text">
                                 {formatAmount(flight.price)} {flight.currency}
                               </p>
                             </div>
@@ -2749,7 +2749,7 @@ export default function EditSejourPage() {
                               </label>
                               <div className="flex gap-1">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border-2 border-emerald-50 dark:border-emerald-900/30 rounded-lg text-xs font-black text-emerald-600 dark:text-emerald-400 focus:ring-4 focus:ring-emerald-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border-2 border-emerald-50 dark:border-emerald-900/30 rounded-lg text-xs font-black text-emerald-600 dark:text-emerald-400 focus:ring-4 focus:ring-emerald-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2789,7 +2789,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border-2 border-emerald-50 dark:border-emerald-900/30 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-2 py-3 bg-v3-surface border-2 border-emerald-50 dark:border-emerald-900/30 rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={flight.costCurrency || flight.currency}
                                   onChange={(e) =>
                                     updateFlight(
@@ -2827,8 +2827,8 @@ export default function EditSejourPage() {
                 )}
                 {/* Transfer Costs */}
                 {showTransfer && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-purple-100 dark:border-purple-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-300">
-                    <div className="px-10 py-6 bg-purple-50/50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-purple-100 dark:border-purple-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-300">
+                    <div className="px-10 py-6 bg-purple-50 dark:bg-purple-900/20/50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-purple-600 rounded flex items-center justify-center text-white mr-4 shadow-lg shadow-purple-500/30">
                           <span className="text-xl">🚗</span>
@@ -2860,19 +2860,19 @@ export default function EditSejourPage() {
                             </h4>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Tarih & Saat
                               </label>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                              <p className="text-xs font-bold text-v3-text truncate">
                                 {transfer.date} / {transfer.time}
                               </p>
                             </div>
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Satış Tutarı
                               </label>
-                              <p className="text-xs font-black text-gray-900 dark:text-white">
+                              <p className="text-xs font-black text-v3-text">
                                 {formatAmount(transfer.price)}{" "}
                                 {transfer.currency}
                               </p>
@@ -2883,7 +2883,7 @@ export default function EditSejourPage() {
                               </label>
                               <div className="flex gap-1">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border-2 border-purple-50 dark:border-blue-900/30 rounded-lg text-xs font-black text-purple-600 dark:text-purple-400 focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border-2 border-purple-50 dark:border-blue-900/30 rounded-lg text-xs font-black text-purple-600 dark:text-purple-400 focus:ring-4 focus:ring-purple-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -2922,7 +2922,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border-2 border-purple-50 dark:border-blue-900/30 rounded-lg text-[10px] font-black transition-all duration-300 outline-none"
+                                  className="w-20 px-2 py-3 bg-v3-surface border-2 border-purple-50 dark:border-blue-900/30 rounded-lg text-[10px] font-black transition-all duration-300 outline-none"
                                   value={
                                     transfer.costCurrency || transfer.currency
                                   }
@@ -2963,8 +2963,8 @@ export default function EditSejourPage() {
 
                 {/* Extra Services Costs */}
                 {showExtraServices && (
-                  <div className="bg-white dark:bg-gray-800 border-2 border-orange-100 dark:border-orange-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-400 mt-8">
-                    <div className="px-2 py-1.5 bg-orange-50/50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex justify-between items-center">
+                  <div className="bg-v3-surface border-2 border-orange-100 dark:border-orange-900/30 rounded shadow-xl animate-in fade-in zoom-in-95 duration-500 delay-400 mt-8">
+                    <div className="px-2 py-1.5 bg-orange-50 dark:bg-orange-900/20/50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/20 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-orange-500/30">
                           <span className="text-lg">✨</span>
@@ -2992,21 +2992,21 @@ export default function EditSejourPage() {
                             </h4>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 responsive-filter-grid">
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Hizmet Tipi
                               </label>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                              <p className="text-xs font-bold text-v3-text truncate">
                                 {supplierServiceTypes.find(
                                   (t) => t.id === service.serviceType,
                                 )?.name || "Bilinmiyor"}
                               </p>
                             </div>
-                            <div className="opacity-60 bg-white/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <label className="block text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                            <div className="opacity-60 bg-v3-surface/50 dark:bg-gray-800/50 p-1 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <label className="block text-[9px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                 Satış Tutarı
                               </label>
-                              <p className="text-xs font-black text-gray-900 dark:text-white">
+                              <p className="text-xs font-black text-v3-text">
                                 {formatAmount(service.price)} {service.currency}
                               </p>
                             </div>
@@ -3016,7 +3016,7 @@ export default function EditSejourPage() {
                               </label>
                               <div className="flex gap-1">
                                 <input
-                                  className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border-2 border-orange-50 dark:border-orange-900/30 rounded-lg text-xs font-black text-orange-600 dark:text-orange-400 focus:ring-4 focus:ring-orange-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                  className="flex-1 px-2 py-1 bg-v3-surface border-2 border-orange-50 dark:border-orange-900/30 rounded-lg text-xs font-black text-orange-600 dark:text-orange-400 focus:ring-4 focus:ring-orange-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                   type="text"
                                   inputMode="decimal"
                                   value={
@@ -3055,7 +3055,7 @@ export default function EditSejourPage() {
                                   }}
                                 />
                                 <select
-                                  className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border-2 border-orange-50 dark:border-orange-900/30 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                  className="w-20 px-2 py-3 bg-v3-surface border-2 border-orange-50 dark:border-orange-900/30 rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                   value={
                                     service.costCurrency || service.currency
                                   }
@@ -3100,13 +3100,13 @@ export default function EditSejourPage() {
             {activeTab === "collections" && (
               <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-2xl font-black text-v3-text tracking-tight">
                     Tahsilat ve Odeme Yönetimi
                   </h2>
                   <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700 mx-8"></div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded shadow-sm">
+                <div className="bg-v3-surface border border-gray-100 dark:border-gray-700 rounded shadow-sm">
                   <div className="px-2 py-1.5 bg-blue-500/10/50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/20 flex justify-between items-center">
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30">
@@ -3144,7 +3144,7 @@ export default function EditSejourPage() {
                         key={collection.id}
                         className="group relative flex items-center gap-1 bg-gray-50/50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg p-1 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-700"
                       >
-                        <div className="flex-none w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center text-[10px] font-black text-blue-600 dark:text-blue-400 shadow-sm border border-blue-50 dark:border-blue-900/30">
+                        <div className="flex-none w-12 h-12 bg-v3-surface rounded-lg flex items-center justify-center text-[10px] font-black text-blue-600 dark:text-blue-400 shadow-sm border border-blue-50 dark:border-blue-900/30">
                           {index + 1}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1 responsive-filter-grid">
@@ -3154,7 +3154,7 @@ export default function EditSejourPage() {
                             </label>
                             <input
                               type="date"
-                              className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                              className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               value={collection.date}
                               onChange={(e) =>
                                 updateCollection(
@@ -3166,11 +3166,11 @@ export default function EditSejourPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                            <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                               Ödeme Yöntemi
                             </label>
                             <select
-                              className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                              className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text transition-all duration-300 outline-none"
                               value={collection.type || "cash"}
                               onChange={(e) =>
                                 updateCollection(
@@ -3187,12 +3187,12 @@ export default function EditSejourPage() {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                            <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                               Tutar & Döviz
                             </label>
                             <div className="flex gap-1">
                               <input
-                                className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                                className="flex-1 px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                                 type="text"
                                 inputMode="decimal"
                                 value={
@@ -3232,7 +3232,7 @@ export default function EditSejourPage() {
                                 }}
                               />
                               <select
-                                className="w-20 px-2 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-black text-gray-900 dark:text-white transition-all duration-300 outline-none"
+                                className="w-20 px-2 py-3 bg-v3-surface border border-v3-border rounded-lg text-[10px] font-black text-v3-text transition-all duration-300 outline-none"
                                 value={collection.currency}
                                 onChange={(e) =>
                                   updateCollection(
@@ -3250,12 +3250,12 @@ export default function EditSejourPage() {
                             </div>
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                            <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                               Referans / Not
                             </label>
                             <input
                               type="text"
-                              className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
+                              className="w-full px-2 py-1 bg-v3-surface border border-v3-border rounded-lg text-xs font-bold text-v3-text focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 outline-none"
                               placeholder="Orn: Dekont no..."
                               value={collection.note || ""}
                               onChange={(e) =>
@@ -3271,7 +3271,7 @@ export default function EditSejourPage() {
                         <button
                           type="button"
                           onClick={() => removeCollection(collection.id)}
-                          className="w-12 h-12 flex-none flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
+                          className="w-12 h-12 flex-none flex items-center justify-center rounded-lg bg-v3-surface text-red-500 border border-red-50 dark:border-red-900/30 shadow-sm hover:bg-red-500 hover:text-white transition-all duration-200"
                         >
                           ✕
                         </button>
@@ -3296,7 +3296,7 @@ export default function EditSejourPage() {
                         return (
                           <div
                             key={curr}
-                            className="flex justify-between items-center bg-white/20 px-3 py-1.5 rounded border border-white/10"
+                            className="flex justify-between items-center bg-v3-surface/20 px-3 py-1.5 rounded border border-v3-border"
                           >
                             <span className="text-[10px] font-black opacity-80">
                               {curr}
@@ -3323,7 +3323,7 @@ export default function EditSejourPage() {
                         return (
                           <div
                             key={curr}
-                            className="flex justify-between items-center bg-white/20 px-3 py-1.5 rounded border border-white/10"
+                            className="flex justify-between items-center bg-v3-surface/20 px-3 py-1.5 rounded border border-v3-border"
                           >
                             <span className="text-[10px] font-black opacity-80">
                               {curr}
@@ -3351,7 +3351,7 @@ export default function EditSejourPage() {
                         return (
                           <div
                             key={curr}
-                            className="flex justify-between items-center bg-white/20 px-3 py-1.5 rounded border border-white/10"
+                            className="flex justify-between items-center bg-v3-surface/20 px-3 py-1.5 rounded border border-v3-border"
                           >
                             <span className="text-[10px] font-black opacity-80">
                               {curr}
@@ -3372,11 +3372,11 @@ export default function EditSejourPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800 mt-10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2 pt-2 border-t border-v3-border mt-10">
             <button
               type="button"
               onClick={() => router.push("/sejour")}
-              className="w-full md:w-auto flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs font-black tracking-widest rounded border-2 border-gray-50 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300"
+              className="w-full md:w-auto flex items-center justify-center px-8 py-4 bg-v3-surface text-v3-muted hover:text-gray-600 dark:hover:text-gray-200 text-xs font-black tracking-widest rounded border-2 border-gray-50 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300"
             >
               <svg
                 className="w-4 h-4 mr-2"
@@ -3463,7 +3463,7 @@ export default function EditSejourPage() {
           }}
         >
           <div
-            className="bg-white px-10 py-12 w-full min-h-[297mm] text-gray-900"
+            className="bg-v3-surface px-10 py-12 w-full min-h-[297mm] text-gray-900"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             {/* Elegant Header with Logos */}
@@ -3574,7 +3574,7 @@ export default function EditSejourPage() {
                     {rooms.map((room, idx) => (
                       <div
                         key={idx}
-                        className="bg-white border border-gray-200 p-4 rounded-sm flex justify-between items-center"
+                        className="bg-v3-surface border border-gray-200 p-4 rounded-sm flex justify-between items-center"
                       >
                         <div>
                           <span className="block text-[8px] tracking-widest text-gray-600 uppercase mb-1">
@@ -3711,7 +3711,7 @@ export default function EditSejourPage() {
 
             {/* IMPORTANT NOTES */}
             {salesData.notes && (
-              <div className="mt-12 bg-white border border-gray-200 p-4">
+              <div className="mt-12 bg-v3-surface border border-gray-200 p-4">
                 <h3 className="text-[9px] tracking-widest text-gray-900 font-bold uppercase mb-2">
                   IMPORTANT NOTES
                 </h3>
@@ -3740,7 +3740,7 @@ export default function EditSejourPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[7px] text-gray-300 uppercase tracking-widest mb-1">
+                  <div className="text-[7px] text-v3-muted uppercase tracking-widest mb-1">
                     Generated By System
                   </div>
                   <div className="text-[10px] font-semibold text-gray-800 tracking-[0.2em]">

@@ -291,7 +291,7 @@ export default function QuotePreviewPage() {
           </div>
           <Link
             href="/quotes"
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-600 dark:text-blue-300 font-medium"
           >
             ← Tekliflere Dön
           </Link>
@@ -307,10 +307,10 @@ export default function QuotePreviewPage() {
         <div className="mb-8 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+              <h1 className="text-3xl font-bold text-v3-text transition-colors duration-200">
                 Teklif Önizleme
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
+              <p className="text-v3-muted mt-2 transition-colors duration-200">
                 Referans: {quote.reference} |{" "}
                 {new Date(quote.created_at).toLocaleDateString("tr-TR")}
               </p>
@@ -324,7 +324,7 @@ export default function QuotePreviewPage() {
               </Link>
               <Link
                 href="/quotes"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-v3-text rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
               >
                 Tekliflere Dön
               </Link>
@@ -335,21 +335,21 @@ export default function QuotePreviewPage() {
         {/* Quote Details */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mx-6 mb-6 transition-colors duration-200">
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
+            <h2 className="text-2xl font-bold text-v3-text mb-6 transition-colors duration-200">
               Teklif Bilgileri
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Referans
                 </label>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg font-semibold text-v3-text transition-colors duration-200">
                   {quote.reference}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Durum
                 </label>
                 <span
@@ -365,82 +365,82 @@ export default function QuotePreviewPage() {
                 </span>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Acente
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {getAgencyName(quote.agency_id)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Firma
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {quote.company_name}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Otel
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {getHotelName(quote.hotel_id)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Otel Konsepti
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {getHotelConcept(quote.hotel_id)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Giriş Tarihi
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {new Date(quote.check_in_date).toLocaleDateString("tr-TR")}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Çıkış Tarihi
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {new Date(quote.check_out_date).toLocaleDateString("tr-TR")}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Oda Sayısı
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {quote.room_count || 0}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Pax Sayısı
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {quote.pax_count || 0}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Teklif Türü
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {quote.quote_type}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Opsiyon
                 </label>
-                <p className="text-lg text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-lg text-v3-text transition-colors duration-200">
                   {quote.option}
                 </p>
               </div>
@@ -448,10 +448,10 @@ export default function QuotePreviewPage() {
 
             {quote.notes && (
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+                <label className="block text-sm font-medium text-v3-text mb-2 transition-colors duration-200">
                   Notlar
                 </label>
-                <p className="text-gray-900 dark:text-white transition-colors duration-200">
+                <p className="text-v3-text transition-colors duration-200">
                   {quote.notes}
                 </p>
               </div>
@@ -463,7 +463,7 @@ export default function QuotePreviewPage() {
         {quote.items && quote.items.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mx-6 mb-6 transition-colors duration-200">
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-200">
+              <h2 className="text-2xl font-bold text-v3-text mb-6 transition-colors duration-200">
                 Teklif Kalemleri
               </h2>
 
@@ -471,28 +471,28 @@ export default function QuotePreviewPage() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Kategori
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Alt Kategori
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Açıklama
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Adet
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Tekrar
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Birim Fiyat
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Döviz
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-v3-muted uppercase tracking-wider transition-colors duration-200">
                         Toplam
                       </th>
                     </tr>
@@ -503,32 +503,32 @@ export default function QuotePreviewPage() {
                         key={item.id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {getCategoryName(
                             item.main_category || item.category_id || "",
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {getCategoryName(
                             item.sub_category || item.sub_category_id || "",
                           ) || "Bilinmiyor"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {item.description || item.detail_description || "-"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {item.unit_quantity || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {item.repeat_frequency || item.sefer || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {item.unit_price?.toFixed(2) || "0.00"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-v3-text transition-colors duration-200">
                           {item.currency || "EUR"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-v3-text transition-colors duration-200">
                           {item.currency || "EUR"}{" "}
                           {item.total_price?.toFixed(2) ||
                             item.total?.toFixed(2) ||
@@ -542,10 +542,10 @@ export default function QuotePreviewPage() {
 
               {/* Total */}
               <div className="mt-6 text-right">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+                <div className="text-2xl font-bold text-v3-text transition-colors duration-200">
                   TOPLAM: {quote.total_amount?.toFixed(2) || "0.00"} EUR
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">
+                <div className="text-sm text-v3-muted transition-colors duration-200">
                   KDV DAHİL
                 </div>
               </div>

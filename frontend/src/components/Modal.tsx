@@ -70,7 +70,7 @@ export default function Modal({
             {/* Premium Header */}
             <div className="px-10 py-8 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                <h3 className="text-xl font-black text-gray-900 dark:text-v3-text tracking-tight">
                   {title}
                 </h3>
               </div>

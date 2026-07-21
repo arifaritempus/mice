@@ -223,26 +223,26 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
     if (data && ('Ciro' in data || 'Satış' in data || 'Maliyet' in data || 'Kar/Zarar' in data || 'Adet' in data)) {
       const formatMoneySafe = (val: any) => formatMoney(val, language);
       return (
-        <div className="bg-[#0f172a]/95 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-2xl z-50 relative min-w-[150px]">
-          <p className="text-white font-bold mb-2 pb-2 border-b border-white/10">{label}</p>
-          {('Proje Ref' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('dashboard.projectRef') || "Ref:"}</span> <span>{data['Proje Ref']}</span></p>}
-          {('Firma' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('home.company') || "Firma:"}</span> <span className="truncate max-w-[120px]">{data['Firma']}</span></p>}
-          {('Tarih' in data) && <p className="text-slate-300 text-[11px] flex justify-between gap-4 font-mono mb-2 border-b border-white/10 pb-2"><span>{t('home.date') || "Tarih:"}</span> <span>{data['Tarih']}</span></p>}
-          {('Ciro' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.totalRevShort') || "Ciro:"}</span> <span>{formatMoneySafe(data['Ciro'])}</span></p>}
-          {('Satış' in data) && <p className="text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.sales') || "Satış:"}</span> <span>{formatMoneySafe(data['Satış'])}</span></p>}
-          {('Maliyet' in data) && <p className="text-rose-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.totalCostShort') || "Maliyet:"}</span> <span>{formatMoneySafe(data['Maliyet'])}</span></p>}
-          {('Kar/Zarar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar/Zarar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>{t('dashboard.profitLoss') || "Kar/Zarar:"}</span> <span>{formatMoneySafe(data['Kar/Zarar'])}</span></p>}
-          {('Kar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar'] || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}><span>{t('dashboard.profit') || "Kâr:"}</span> <span>{formatMoneySafe(data['Kar'])}</span></p>}
-          {('Marj' in data) && <p className="text-amber-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.margin') || "Marj:"}</span> <span>%{data['Marj']}</span></p>}
-          {('Adet' in data) && <p className="text-cyan-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.count') || "Adet:"}</span> <span>{data['Adet']}</span></p>}
-          {('value' in data && !('Ciro' in data) && !('Adet' in data)) && <p className="text-white text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.value') || "Değer:"}</span> <span>{data['value']}</span></p>}
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border p-3 rounded-xl shadow-2xl z-50 relative min-w-[150px]">
+          <p className="text-v3-text font-bold mb-2 pb-2 border-b border-v3-border">{label}</p>
+          {('Proje Ref' in data) && <p className="text-v3-text/90 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('dashboard.projectRef') || "Ref:"}</span> <span>{data['Proje Ref']}</span></p>}
+          {('Firma' in data) && <p className="text-v3-text/90 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('home.company') || "Firma:"}</span> <span className="truncate max-w-[120px]">{data['Firma']}</span></p>}
+          {('Tarih' in data) && <p className="text-v3-text/90 text-[11px] flex justify-between gap-4 font-mono mb-2 border-b border-v3-border pb-2"><span>{t('home.date') || "Tarih:"}</span> <span>{data['Tarih']}</span></p>}
+          {('Ciro' in data) && <p className="text-emerald-600 dark:text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.totalRevShort') || "Ciro:"}</span> <span>{formatMoneySafe(data['Ciro'])}</span></p>}
+          {('Satış' in data) && <p className="text-emerald-600 dark:text-emerald-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.sales') || "Satış:"}</span> <span>{formatMoneySafe(data['Satış'])}</span></p>}
+          {('Maliyet' in data) && <p className="text-rose-600 dark:text-rose-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.totalCostShort') || "Maliyet:"}</span> <span>{formatMoneySafe(data['Maliyet'])}</span></p>}
+          {('Kar/Zarar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar/Zarar'] || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}><span>{t('dashboard.profitLoss') || "Kar/Zarar:"}</span> <span>{formatMoneySafe(data['Kar/Zarar'])}</span></p>}
+          {('Kar' in data) && <p className={`text-[11px] flex justify-between gap-4 font-mono ${(data['Kar'] || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}><span>{t('dashboard.profit') || "Kâr:"}</span> <span>{formatMoneySafe(data['Kar'])}</span></p>}
+          {('Marj' in data) && <p className="text-amber-600 dark:text-amber-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.margin') || "Marj:"}</span> <span>%{data['Marj']}</span></p>}
+          {('Adet' in data) && <p className="text-cyan-600 dark:text-cyan-400 text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.count') || "Adet:"}</span> <span>{data['Adet']}</span></p>}
+          {('value' in data && !('Ciro' in data) && !('Adet' in data)) && <p className="text-v3-text text-[11px] flex justify-between gap-4 font-mono"><span>{t('dashboard.value') || "Değer:"}</span> <span>{data['value']}</span></p>}
         </div>
       );
     }
 
     return (
-      <div className="bg-[#0f172a]/95 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-2xl z-50 relative">
-        <p className="text-white font-bold mb-2">{label}</p>
+      <div className="bg-v3-surface backdrop-blur-md border border-v3-border p-3 rounded-xl shadow-2xl z-50 relative">
+        <p className="text-v3-text font-bold mb-2">{label}</p>
         {payload.map((entry: any, index: number) => {
           const isMoney =
             [
@@ -263,8 +263,8 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: entry.color }}
               ></span>
-              <span className="text-slate-300">{entry.name}:</span>
-              <span className="text-white font-bold">
+              <span className="text-v3-text/90">{entry.name}:</span>
+              <span className="text-v3-text font-bold">
                 {isMoney ? formatMoney(entry.value, language) : formatInt(entry.value, language)}
               </span>
             </p>
@@ -279,7 +279,7 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
 // --- Components ---
 const GlassCard = ({ children, className = "", glowColor = "" }: any) => (
   <div
-    className={`relative bg-[#0f172a]/50 backdrop-blur-xl border border-white/10 rounded-3xl overflow-visible ${className}`}
+    className={`relative bg-v3-surface backdrop-blur-xl border border-v3-border rounded-3xl overflow-visible ${className}`}
   >
     {glowColor && (
       <div
@@ -302,20 +302,20 @@ const KPICard = ({
   language = "tr",
 }: any) => {
   const colors: Record<string, string> = {
-    blue: "text-blue-400 bg-blue-500/20 border-blue-500/30",
-    emerald: "text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
-    rose: "text-rose-400 bg-rose-500/20 border-rose-500/30",
-    fuchsia: "text-fuchsia-400 bg-fuchsia-500/20 border-fuchsia-500/30",
-    amber: "text-amber-400 bg-amber-500/20 border-amber-500/30",
-    violet: "text-violet-400 bg-violet-500/20 border-violet-500/30",
-    cyan: "text-cyan-400 bg-cyan-500/20 border-cyan-500/30",
+    blue: "text-blue-600 dark:text-blue-400 bg-blue-500/20 border-blue-500/30",
+    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
+    rose: "text-rose-600 dark:text-rose-400 bg-rose-500/20 border-rose-500/30",
+    fuchsia: "text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-500/20 border-fuchsia-500/30",
+    amber: "text-amber-600 dark:text-amber-400 bg-amber-500/20 border-amber-500/30",
+    violet: "text-violet-600 dark:text-violet-400 bg-violet-500/20 border-violet-500/30",
+    cyan: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/20 border-cyan-500/30",
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`glass-card p-5 flex flex-col justify-between relative overflow-hidden group border border-white/5 bg-gradient-to-br from-white/5 to-transparent rounded-3xl`}
+      className={`glass-card p-5 flex flex-col justify-between relative overflow-hidden group border border-v3-border bg-gradient-to-br from-white/5 to-transparent rounded-3xl`}
     >
       <div className="absolute -top-4 -right-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
         <Icon size={100} />
@@ -328,7 +328,7 @@ const KPICard = ({
         </div>
         {trend !== undefined && (
           <div
-            className={`flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg ${trend >= 0 ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"}`}
+            className={`flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg ${trend >= 0 ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/20 text-rose-600 dark:text-rose-400"}`}
           >
             {trend >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
             {Math.abs(trend)}%
@@ -336,10 +336,10 @@ const KPICard = ({
         )}
       </div>
       <div className="mt-4 z-10">
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">
+        <p className="text-[9px] font-black text-v3-muted uppercase tracking-widest leading-tight">
           {title}
         </p>
-        <h4 className="text-xl lg:text-2xl font-black text-white mt-1 tracking-tight truncate">
+        <h4 className="text-xl lg:text-2xl font-black text-v3-text mt-1 tracking-tight truncate">
           {isMoney ? (
             <CountUp value={value} prefix="₺" decimals={decimals} language={language} />
           ) : (
@@ -1157,7 +1157,7 @@ export default function UltimateDashboard() {
 
   if (loading)
     return (
-      <div className="flex h-screen items-center justify-center bg-[#020617]">
+      <div className="flex h-screen items-center justify-center bg-v3-bg">
         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -1168,16 +1168,16 @@ export default function UltimateDashboard() {
       <div className="shrink-0 flex flex-col gap-3 z-10">
         <div className="flex flex-wrap items-center justify-start gap-8">
           <div>
-            <h1 className="text-2xl font-light tracking-wide text-white glow-text">
+            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
               {t('dashboard.title') || "Dashboard"}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-v3-muted mt-1">
               {t('dashboard.subtitle')}
             </p>
           </div>
 
           <div className="flex items-end gap-2">
-            <div className="flex items-center gap-2 p-1 bg-[#0f172a]/40 backdrop-blur-md border border-white/10 rounded-xl w-fit h-[40px]">
+            <div className="flex items-center gap-2 p-1 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl w-fit h-[40px]">
               {(
                 [
                   { id: "today", label: t('home.today') || "Bugün" },
@@ -1197,8 +1197,8 @@ export default function UltimateDashboard() {
                   }}
                   className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${
                     period === item.id
-                      ? "bg-blue-500/20 text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
-                      : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                      ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                      : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                   }`}
                 >
                   {item.label}
@@ -1211,8 +1211,8 @@ export default function UltimateDashboard() {
                 }}
                 className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center gap-1 ${
                   period === "custom"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                    ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                    : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                 }`}
               >
                 <Calendar size={14} />
@@ -1248,7 +1248,7 @@ export default function UltimateDashboard() {
 
             <button
               onClick={loadData}
-              className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
+              className="bg-v3-border border border-v3-border hover:bg-v3-surface text-v3-text px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               {t('home.refresh') || "Yenile"}
@@ -1272,47 +1272,47 @@ export default function UltimateDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-6 relative z-10">
           <div className="xl:col-span-12 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <BarChart3 size={18} className="text-fuchsia-400" /> {t('dashboard.monthlyFinSummary') || "Aylık Finansal Özet"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <BarChart3 size={18} className="text-fuchsia-600 dark:text-fuchsia-400" /> {t('dashboard.monthlyFinSummary') || "Aylık Finansal Özet"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.monthlyFinSummaryDesc')}
               </p>
               <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-4 pt-2">
                 {m.monthlyFinancialData.map((row: any, i: number) => (
-                  <div key={i} className="min-w-[140px] shrink-0 bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group hover:bg-white/10 transition-all duration-300">
-                    <div className="absolute -right-4 -top-6 text-white/[0.03] text-5xl font-black pointer-events-none group-hover:text-white/[0.06] transition-colors duration-300">
+                  <div key={i} className="min-w-[140px] shrink-0 bg-v3-border border border-v3-border rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group hover:bg-v3-surface transition-all duration-300">
+                    <div className="absolute -right-4 -top-6 text-v3-text/[0.03] text-5xl font-black pointer-events-none group-hover:text-v3-text/[0.06] transition-colors duration-300">
                       {row.name.split(' ')[0]}
                     </div>
-                    <h3 className="font-bold text-white text-sm relative z-10">{row.name}</h3>
+                    <h3 className="font-bold text-v3-text text-sm relative z-10">{row.name}</h3>
                     
                     <div className="flex flex-col gap-1.5 relative z-10">
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-slate-400">{t('dashboard.totalRevShort') || "Ciro"}</span>
-                        <span className="text-emerald-400 font-mono font-medium">{formatMoney(row.Ciro, language)}</span>
+                        <span className="text-v3-muted">{t('dashboard.totalRevShort') || "Ciro"}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-mono font-medium">{formatMoney(row.Ciro, language)}</span>
                       </div>
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-slate-400">{t('dashboard.totalCostShort') || "Maliyet"}</span>
-                        <span className="text-rose-400 font-mono font-medium">{formatMoney(row.Maliyet, language)}</span>
+                        <span className="text-v3-muted">{t('dashboard.totalCostShort') || "Maliyet"}</span>
+                        <span className="text-rose-600 dark:text-rose-400 font-mono font-medium">{formatMoney(row.Maliyet, language)}</span>
                       </div>
                     </div>
                     
-                    <div className="mt-auto pt-2 border-t border-white/10 flex justify-between items-end relative z-10">
+                    <div className="mt-auto pt-2 border-t border-v3-border flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-1">{t('dashboard.profitLoss') || "Kâr/Zarar"}</p>
-                        <p className={`font-black text-xs ${row['Kar/Zarar'] >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        <p className="text-[8px] text-v3-muted uppercase tracking-widest mb-1">{t('dashboard.profitLoss') || "Kâr/Zarar"}</p>
+                        <p className={`font-black text-xs ${row['Kar/Zarar'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                           {formatMoney(row['Kar/Zarar'], language)}
                         </p>
                       </div>
-                      <div className="bg-[#0f172a]/80 px-1.5 py-0.5 rounded-lg border border-white/10 shadow-inner">
-                        <span className="text-amber-400 font-mono font-bold text-[10px]">%{row.Marj}</span>
+                      <div className="bg-v3-surface px-1.5 py-0.5 rounded-lg border border-v3-border shadow-inner">
+                        <span className="text-amber-600 dark:text-amber-400 font-mono font-bold text-[10px]">%{row.Marj}</span>
                       </div>
                     </div>
                   </div>
                 ))}
 
                 {m.monthlyFinancialData.length === 0 && (
-                  <div className="w-full p-8 text-center text-slate-500 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">
+                  <div className="w-full p-8 text-center text-v3-muted bg-v3-border rounded-2xl border border-v3-border flex items-center justify-center">
                     {t('dashboard.noFinData') || "Bu tarih aralığı için finansal veri bulunmuyor."}
                   </div>
                 )}
@@ -1322,28 +1322,28 @@ export default function UltimateDashboard() {
                     <div className="absolute -right-6 -bottom-6 text-fuchsia-500/10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                       <BarChart3 size={80} />
                     </div>
-                    <h3 className="font-black text-fuchsia-100 text-sm relative z-10">{t('dashboard.annualTotal') || "Yıllık Toplam"}</h3>
+                    <h3 className="font-black text-fuchsia-900 dark:text-fuchsia-100 text-sm relative z-10">{t('dashboard.annualTotal') || "Yıllık Toplam"}</h3>
                     
                     <div className="flex flex-col gap-1.5 relative z-10">
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-fuchsia-200/70">{t('dashboard.totalRevShort') || "Top. Ciro"}</span>
-                        <span className="text-emerald-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0), language)}</span>
+                        <span className="text-fuchsia-800 dark:text-fuchsia-200/70">{t('dashboard.totalRevShort') || "Top. Ciro"}</span>
+                        <span className="text-emerald-600 dark:text-emerald-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0), language)}</span>
                       </div>
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-fuchsia-200/70">{t('dashboard.totalCostShort') || "Top. Mal."}</span>
-                        <span className="text-rose-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0), language)}</span>
+                        <span className="text-fuchsia-800 dark:text-fuchsia-200/70">{t('dashboard.totalCostShort') || "Top. Mal."}</span>
+                        <span className="text-rose-600 dark:text-rose-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0), language)}</span>
                       </div>
                     </div>
                     
                     <div className="mt-auto pt-2 border-t border-fuchsia-500/30 flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[9px] text-fuchsia-300/70 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "Net Kâr"}</p>
-                        <p className={`font-black text-sm ${m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                        <p className="text-[9px] text-fuchsia-600 dark:text-fuchsia-300/70 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "Net Kâr"}</p>
+                        <p className={`font-black text-sm ${m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
                           {formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0), language)}
                         </p>
                       </div>
                       <div className="bg-[#4a044e]/50 px-1.5 py-0.5 rounded-lg border border-fuchsia-500/30 backdrop-blur-md">
-                        <span className="text-fuchsia-300 font-mono font-black text-xs">
+                        <span className="text-fuchsia-600 dark:text-fuchsia-300 font-mono font-black text-xs">
                           %{m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0) > 0 ? Math.round((m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) / m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0)) * 100) : 0}
                         </span>
                       </div>
@@ -1360,10 +1360,10 @@ export default function UltimateDashboard() {
           {/* Marketing Funnel */}
           <div className="xl:col-span-4 flex flex-col gap-4">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="violet">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Target size={18} className="text-violet-400" /> {t('dashboard.marketingFunnel') || "Pazarlama Hunisi"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Target size={18} className="text-violet-600 dark:text-violet-400" /> {t('dashboard.marketingFunnel') || "Pazarlama Hunisi"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.marketingFunnelDesc')}
               </p>
               <div className="flex-1 min-h-[200px] w-full">
@@ -1383,7 +1383,7 @@ export default function UltimateDashboard() {
                     >
                       <LabelList
                         position="right"
-                        fill="#fff"
+                        fill="var(--v3-text)"
                         stroke="none"
                         dataKey="name"
                         fontSize={11}
@@ -1392,26 +1392,26 @@ export default function UltimateDashboard() {
                   </FunnelChart>)}
                 </ResponsiveContainer>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/10">
+              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-v3-border">
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] text-v3-muted uppercase tracking-widest">
                     {t('dashboard.pendingQuoteRev') || "Bekleyen Teklif Ciro"}
                   </p>
-                  <p className="text-xl font-black text-amber-400 mt-1">
+                  <p className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
                     {formatMoney(m.pendingQtsValue, language)}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-v3-muted">
                     {m.pendingQts} {t('dashboard.quoteCountText') || "Adet Teklif"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] text-v3-muted uppercase tracking-widest">
                     {t('dashboard.wonQuote') || "Kazanılan Teklif"}
                   </p>
-                  <p className="text-xl font-black text-emerald-400 mt-1">
+                  <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
                     {m.wonQts} {t('dashboard.projectedCountText') || "Adet"}
                   </p>
-                  <p className="text-xs text-slate-500">{t('dashboard.projectedLabel') || "Projeleşen"}</p>
+                  <p className="text-xs text-v3-muted">{t('dashboard.projectedLabel') || "Projeleşen"}</p>
                 </div>
               </div>
             </GlassCard>
@@ -1420,10 +1420,10 @@ export default function UltimateDashboard() {
           {/* Agency Volume & Profit */}
           <div className="xl:col-span-8 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Building2 size={18} className="text-blue-400" /> {t('dashboard.agencyVolume') || "Acente Bazlı Hacim ve Kârlılık"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Building2 size={18} className="text-blue-600 dark:text-blue-400" /> {t('dashboard.agencyVolume') || "Acente Bazlı Hacim ve Kârlılık"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.agencyVolumeDesc')}
               </p>
               <div className="flex-1 min-h-[300px] w-full">
@@ -1434,7 +1434,7 @@ export default function UltimateDashboard() {
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="#ffffff10"
+                      stroke="var(--v3-border)"
                       vertical={false}
                     />
                     <XAxis
@@ -1508,10 +1508,10 @@ export default function UltimateDashboard() {
           {/* Top Hotels */}
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="cyan">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Hotel size={18} className="text-cyan-400" /> {t('dashboard.hotelRevenue') || "Otel Bazlı Ciro Analizi"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Hotel size={18} className="text-cyan-600 dark:text-cyan-400" /> {t('dashboard.hotelRevenue') || "Otel Bazlı Ciro Analizi"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.hotelRevenueDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
@@ -1523,7 +1523,7 @@ export default function UltimateDashboard() {
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="#ffffff10"
+                      stroke="var(--v3-border)"
                       horizontal={false}
                     />
                     <XAxis
@@ -1537,7 +1537,7 @@ export default function UltimateDashboard() {
                     <YAxis
                       type="category"
                       dataKey="name"
-                      stroke="#cbd5e1"
+                      stroke="var(--v3-muted)"
                       fontSize={10}
                       tickLine={false}
                       axisLine={false}
@@ -1571,10 +1571,10 @@ export default function UltimateDashboard() {
           {/* Project Efficiency */}
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Target size={18} className="text-emerald-400" /> {t('dashboard.projectEfficiency') || "Proje Verimliliği"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Target size={18} className="text-emerald-600 dark:text-emerald-400" /> {t('dashboard.projectEfficiency') || "Proje Verimliliği"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.projectEfficiencyDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
@@ -1584,9 +1584,9 @@ export default function UltimateDashboard() {
                     layout="vertical"
                     margin={{ top: 0, right: 30, left: 40, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
-                    <YAxis type="category" dataKey="name" stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} width={100} />
+                    <YAxis type="category" dataKey="name" stroke="var(--v3-muted)" fontSize={10} tickLine={false} axisLine={false} width={100} />
                     <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
                     <Bar dataKey="Ciro" name={t('dashboard.sales') || "Ciro"} fill="#10b981" radius={[0, 4, 4, 0]} barSize={8} />
@@ -1601,10 +1601,10 @@ export default function UltimateDashboard() {
           {/* Sejour Efficiency */}
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Hotel size={18} className="text-blue-400" /> {t('dashboard.sejourEfficiency') || "Sejour Verimliliği"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Hotel size={18} className="text-blue-600 dark:text-blue-400" /> {t('dashboard.sejourEfficiency') || "Sejour Verimliliği"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.sejourEfficiencyDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
@@ -1614,9 +1614,9 @@ export default function UltimateDashboard() {
                     layout="vertical"
                     margin={{ top: 0, right: 30, left: 40, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 100000).toFixed(1)}K`} />
-                    <YAxis type="category" dataKey="name" stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} width={100} />
+                    <YAxis type="category" dataKey="name" stroke="var(--v3-muted)" fontSize={10} tickLine={false} axisLine={false} width={100} />
                     <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
                     <Bar dataKey="Ciro" name={t('dashboard.sales') || "Ciro"} fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={8} />
@@ -1634,8 +1634,8 @@ export default function UltimateDashboard() {
           {/* Airlines */}
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="amber">
-              <h2 className="text-md font-black text-white flex items-center gap-2">
-                <Plane size={16} className="text-amber-400" /> {t('dashboard.airlineDistribution') || "Havayolu Dağılımı"}
+              <h2 className="text-md font-black text-v3-text flex items-center gap-2">
+                <Plane size={16} className="text-amber-600 dark:text-amber-400" /> {t('dashboard.airlineDistribution') || "Havayolu Dağılımı"}
               </h2>
               <div className="flex-1 min-h-[180px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1668,8 +1668,8 @@ export default function UltimateDashboard() {
           {/* Vehicles */}
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia">
-              <h2 className="text-md font-black text-white flex items-center gap-2">
-                <Bus size={16} className="text-fuchsia-400" /> {t('dashboard.vehicleUsage') || "Araç Tipi Kullanımı"}
+              <h2 className="text-md font-black text-v3-text flex items-center gap-2">
+                <Bus size={16} className="text-fuchsia-600 dark:text-fuchsia-400" /> {t('dashboard.vehicleUsage') || "Araç Tipi Kullanımı"}
               </h2>
               <div className="flex-1 min-h-[180px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1702,8 +1702,8 @@ export default function UltimateDashboard() {
           {/* Transfer Suppliers */}
           <div className="xl:col-span-4 flex flex-col">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose">
-              <h2 className="text-md font-black text-white flex items-center gap-2">
-                <Building2 size={16} className="text-rose-400" /> {t('dashboard.transferSuppliers') || "Transfer Tedarikçi Dağılımı"}
+              <h2 className="text-md font-black text-v3-text flex items-center gap-2">
+                <Building2 size={16} className="text-rose-600 dark:text-rose-400" /> {t('dashboard.transferSuppliers') || "Transfer Tedarikçi Dağılımı"}
               </h2>
               <div className="flex-1 min-h-[180px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1741,10 +1741,10 @@ export default function UltimateDashboard() {
           {/* Conversion Chart (Teklif -> Proje Dönüşüm) */}
           <div className="xl:col-span-8 flex flex-col mb-4">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Target size={18} className="text-emerald-400" /> {t('dashboard.conversionChart') || "Teklif & Proje Dönüşüm Grafiği"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Target size={18} className="text-emerald-600 dark:text-emerald-400" /> {t('dashboard.conversionChart') || "Teklif & Proje Dönüşüm Grafiği"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.conversionChartDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
@@ -1753,7 +1753,7 @@ export default function UltimateDashboard() {
                     data={m.conversionChartData}
                     margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} allowDecimals={false} />
                     <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
@@ -1771,10 +1771,10 @@ export default function UltimateDashboard() {
           {/* Supplier Cost Analysis */}
           <div className="xl:col-span-4 flex flex-col mb-4">
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose">
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Building2 size={18} className="text-rose-400" /> {t('dashboard.supplierCost') || "Tedarikçi Gider Analizi"}
+              <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                <Building2 size={18} className="text-rose-600 dark:text-rose-400" /> {t('dashboard.supplierCost') || "Tedarikçi Gider Analizi"}
               </h2>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+              <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.supplierCostDesc')}
               </p>
               <div className="flex-1 min-h-[250px] w-full">
@@ -1784,9 +1784,9 @@ export default function UltimateDashboard() {
                     layout="vertical"
                     margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 }).format(value)} />
-                    <YAxis dataKey="name" type="category" width={80} stroke="#cbd5e1" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis dataKey="name" type="category" width={80} stroke="var(--v3-muted)" fontSize={10} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#fb7185" radius={[0, 4, 4, 0]} barSize={12}>
                       {m.supplierCostData.map((entry: any, index: number) => (
@@ -1803,10 +1803,10 @@ export default function UltimateDashboard() {
             <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
                 <div>
-                  <h2 className="text-lg font-black text-white flex items-center gap-2">
-                    <Clock size={18} className="text-blue-400" /> {t('dashboard.calendar') || "Operasyonel Takvim"}
+                  <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
+                    <Clock size={18} className="text-blue-600 dark:text-blue-400" /> {t('dashboard.calendar') || "Operasyonel Takvim"}
                   </h2>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] text-v3-muted uppercase tracking-widest">
                     {t('dashboard.calendarDesc')}
                   </p>
                 </div>
@@ -1818,7 +1818,7 @@ export default function UltimateDashboard() {
                       className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
                         calendarFilter === f 
                           ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30" 
-                          : "bg-white/5 text-slate-300 hover:bg-white/10"
+                          : "bg-v3-border text-v3-text/90 hover:bg-v3-surface"
                       }`}
                     >
                       {f}
@@ -1826,27 +1826,27 @@ export default function UltimateDashboard() {
                   ))}
                 </div>
               </div>
-              <div className="flex-1 w-full bg-white/5 rounded-2xl p-4 border border-white/10 overflow-hidden relative dashboard-calendar">
+              <div className="flex-1 w-full bg-v3-border rounded-2xl p-4 border border-v3-border overflow-hidden relative dashboard-calendar">
                 <style dangerouslySetInnerHTML={{__html: `
                   .dashboard-calendar .react-calendar {
                     width: 100%;
                     background: transparent;
                     border: none;
                     font-family: inherit;
-                    color: white;
+                    color: var(--v3-text);
                   }
                   .dashboard-calendar .react-calendar__navigation button {
-                    color: white;
+                    color: var(--v3-text);
                     font-weight: bold;
                     border-radius: 8px;
                   }
                   .dashboard-calendar .react-calendar__navigation button:enabled:hover,
                   .dashboard-calendar .react-calendar__navigation button:enabled:focus {
-                    background-color: rgba(255, 255, 255, 0.1);
+                    background-color: var(--v3-border);
                   }
                   .dashboard-calendar .react-calendar__month-view__days__day {
-                    color: white;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    color: var(--v3-text);
+                    border: 1px solid var(--v3-border);
                     height: 100px;
                     display: flex;
                     flex-direction: column;
@@ -1862,19 +1862,19 @@ export default function UltimateDashboard() {
                     overflow: visible !important;
                   }
                   .dashboard-calendar .react-calendar__month-view__days__day--neighboringMonth {
-                    color: rgba(255, 255, 255, 0.2);
+                    color: var(--v3-muted);
                   }
                   .dashboard-calendar .react-calendar__tile:enabled:hover,
                   .dashboard-calendar .react-calendar__tile:enabled:focus {
-                    background-color: rgba(255, 255, 255, 0.05);
+                    background-color: var(--v3-border);
                   }
                   .dashboard-calendar .react-calendar__tile--now {
                     background-color: rgba(59, 130, 246, 0.1);
                     border: 1px solid rgba(59, 130, 246, 0.5);
                   }
                   .dashboard-calendar .react-calendar__tile--active {
-                    background-color: rgba(255, 255, 255, 0.1) !important;
-                    color: white;
+                    background-color: var(--v3-border) !important;
+                    color: var(--v3-text);
                   }
                   .dashboard-calendar abbr {
                     text-decoration: none;
@@ -1895,7 +1895,7 @@ export default function UltimateDashboard() {
                 `}} />
                 <CalendarComponent
                   locale={language === 'en' ? 'en-US' : 'tr-TR'}
-                  className="dashboard-calendar w-full border-none shadow-sm rounded-xl p-2 bg-white/50 backdrop-blur-sm"
+                  className="dashboard-calendar w-full border-none shadow-sm rounded-xl p-2 bg-v3-border0 backdrop-blur-sm"
                   view={calendarViewMode}
                   onViewChange={({ view }) => setCalendarViewMode(view as any)}
                   activeStartDate={calendarViewDate}
@@ -1964,7 +1964,7 @@ export default function UltimateDashboard() {
                               return (
                                 <div 
                                   key={op.id} 
-                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-white ${op.color} shadow-sm ${extraClasses}`}
+                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-v3-text ${op.color} shadow-sm ${extraClasses}`}
                                   style={{ 
                                     top: `${op.rowIndex * 19}px`,
                                     width: `calc(${span * 100}% + ${(span - 1) * 8}px + ${(span - 1) * 2}px)`,
@@ -1979,7 +1979,7 @@ export default function UltimateDashboard() {
                             })}
                             {hiddenCount > 0 && (
                               <div 
-                                className="absolute left-0 right-0 h-[16px] text-[9px] leading-[16px] font-bold text-center text-slate-400 bg-slate-800/50 rounded-sm shadow-sm"
+                                className="absolute left-0 right-0 h-[16px] text-[9px] leading-[16px] font-bold text-center text-v3-muted bg-v3-surface/50 rounded-sm shadow-sm"
                                 style={{ top: `${maxDisplayRows * 19}px` }}
                               >
                                 +{hiddenCount} {t('dashboard.other') || "DİĞER"}
@@ -2012,17 +2012,17 @@ export default function UltimateDashboard() {
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg"
+              className="bg-white dark:bg-v3-bg rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-v3-surface/50">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-v3-text flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-brand-500" />
                   {selectedCalendarDate.toLocaleDateString("tr-TR", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </h3>
                 <button
                   onClick={() => setSelectedCalendarDate(null)}
-                  className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500"
+                  className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-v3-muted"
                 >
                   ✕
                 </button>
@@ -2031,23 +2031,23 @@ export default function UltimateDashboard() {
                 {(() => {
                   const ops = m.allOps.filter((op:any) => op.date.toDateString() === selectedCalendarDate.toDateString());
                   if (ops.length === 0) {
-                    return <div className="text-center text-slate-500 py-8">{t('dashboard.noOpData') || "Bu tarihte herhangi bir operasyon kaydı bulunmuyor."}</div>;
+                    return <div className="text-center text-v3-muted py-8">{t('dashboard.noOpData') || "Bu tarihte herhangi bir operasyon kaydı bulunmuyor."}</div>;
                   }
                   
                   const filteredOps = calendarFilter === "Tümü" ? ops : ops.filter((op: any) => op.category === calendarFilter);
                   
                   if (filteredOps.length === 0) {
-                    return <div className="text-center text-slate-500 py-8">{t('dashboard.noFilterData') || "Seçili filtreye uygun kayıt bulunmuyor."}</div>;
+                    return <div className="text-center text-v3-muted py-8">{t('dashboard.noFilterData') || "Seçili filtreye uygun kayıt bulunmuyor."}</div>;
                   }
 
                   return filteredOps.map((op: any, i: number) => (
-                    <div key={i} className="flex gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <div key={i} className="flex gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-v3-surface/30 hover:bg-slate-100 dark:hover:bg-v3-surface transition-colors">
                       <div className={`w-2 rounded-full ${op.color}`} />
                       <div className="flex-1">
-                        <div className={`text-xs font-bold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400`}>
+                        <div className={`text-xs font-bold uppercase tracking-wider mb-1 text-slate-600 dark:text-v3-muted`}>
                           {op.category}
                         </div>
-                        <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                        <div className="text-sm text-slate-700 dark:text-v3-text/90 whitespace-pre-wrap leading-relaxed">
                           {op.title.split(' | ').map((part:string, idx:number) => (
                             <div key={idx} className="mb-0.5">
                               {part}
