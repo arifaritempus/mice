@@ -896,7 +896,7 @@ export default function QuoteViewPublicPage() {
       appSettings?.darkIconLogo ||
       "";
     return (
-      <div className="min-h-screen bg-v3-surface flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
         {/* Dekoratif arka plan */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
@@ -917,13 +917,13 @@ export default function QuoteViewPublicPage() {
 
           <form
             onSubmit={handlePasswordSubmit}
-            className="bg-v3-border backdrop-blur-2xl border border-v3-border p-10 rounded-3xl shadow-2xl w-full"
+            className="bg-slate-50 backdrop-blur-2xl border border-slate-200 p-10 rounded-3xl shadow-2xl w-full"
           >
             <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-v3-text mb-2 tracking-tight">
+              <h2 className="text-2xl font-bold text-slate-800 mb-2 tracking-tight">
                 Güvenli Erişim
               </h2>
-              <p className="text-v3-muted text-sm">
+              <p className="text-slate-500 text-sm">
                 Devam etmek için teklif şifresini giriniz
               </p>
             </div>
@@ -935,7 +935,7 @@ export default function QuoteViewPublicPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifre"
-                  className="w-full h-14 px-6 bg-v3-border border border-v3-border rounded-2xl text-v3-text placeholder:text-v3-muted focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
                   required
                   autoFocus
                 />
@@ -956,7 +956,7 @@ export default function QuoteViewPublicPage() {
               </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-v3-border text-center"></div>
+            <div className="mt-8 pt-6 border-t border-slate-200 text-center"></div>
           </form>
         </div>
       </div>
@@ -965,7 +965,7 @@ export default function QuoteViewPublicPage() {
 
   return (
     <div
-      className="min-h-screen h-full overflow-y-auto p-4 md:p-8 transition-colors duration-500"
+      className="fixed inset-0 overflow-y-auto p-4 md:p-8 transition-colors duration-500 z-50"
       style={{ backgroundColor: appSettings?.lightBgMain || "#f8fafc" }}
     >
       <div
@@ -988,7 +988,7 @@ export default function QuoteViewPublicPage() {
                 className="h-10 w-auto"
               />
             )}
-            <span className="text-v3-text text-lg font-bold tracking-tight">
+            <span className="text-slate-800 text-lg font-bold tracking-tight">
               {appSettings?.companyName ||
                 process.env.NEXT_PUBLIC_AGENCY_NAME ||
                 "COOP EVENT"}
@@ -1015,7 +1015,7 @@ export default function QuoteViewPublicPage() {
               </svg>
               {exporting ? "İşleniyor..." : "EXCEL İNDİR"}
             </button>
-            <div className="text-v3-text text-right border-l border-v3-border pl-4">
+            <div className="text-slate-800 text-right border-l border-slate-200 pl-4">
               <p className="text-[10px] text-gray-100 font-bold uppercase tracking-wider">
                 TEKLİF REFERANS
               </p>
@@ -1051,7 +1051,7 @@ export default function QuoteViewPublicPage() {
               <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-IN TARİHİ
               </label>
-              <p className="text-sm font-bold text-v3-text">
+              <p className="text-sm font-bold text-slate-800">
                 {quote?.check_in_date
                   ? new Date(quote.check_in_date).toLocaleDateString("tr-TR")
                   : "-"}
@@ -1061,7 +1061,7 @@ export default function QuoteViewPublicPage() {
               <label className="block text-[10px] text-gray-600 font-black uppercase tracking-tighter mb-2 underline decoration-blue-600/30">
                 C-OUT TARİHİ
               </label>
-              <p className="text-sm font-bold text-v3-text">
+              <p className="text-sm font-bold text-slate-800">
                 {quote?.check_out_date
                   ? new Date(quote.check_out_date).toLocaleDateString("tr-TR")
                   : "-"}
@@ -1076,7 +1076,7 @@ export default function QuoteViewPublicPage() {
                   value={tempStatus}
                   onChange={(e) => setTempStatus(e.target.value)}
                   disabled={linkData?.approval?.is_approved}
-                  className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-v3-text focus:border-blue-500 focus:outline-none bg-v3-surface shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
+                  className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
                 >
                   <option value="BEKLEMEDE">BEKLEMEDE</option>
                   <option value="KONFİRME">KONFİRME</option>
@@ -1286,7 +1286,7 @@ export default function QuoteViewPublicPage() {
                             )
                           }
                           disabled={linkData?.approval?.is_approved}
-                          className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-v3-text focus:border-blue-500 focus:outline-none bg-v3-surface shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
+                          className="w-full max-w-[200px] h-10 px-3 text-xs font-bold rounded-lg border-2 border-gray-400 text-slate-800 focus:border-blue-500 focus:outline-none bg-white shadow-sm appearance-none pr-8 disabled:bg-black/5 dark:bg-white/5 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-300"
                         >
                           <option value="BEKLEMEDE">BEKLEMEDE</option>
                           <option value="KONFİRME">KONFİRME</option>
@@ -1430,7 +1430,7 @@ export default function QuoteViewPublicPage() {
                                 className="hover:bg-blue-500/10/20 transition-colors"
                               >
                                 <td className="py-4 px-4">
-                                  <p className="text-xs font-bold text-v3-text">
+                                  <p className="text-xs font-bold text-slate-800">
                                     {scrubText(
                                       getCategoryName(
                                         item.sub_category || "",
@@ -1446,10 +1446,10 @@ export default function QuoteViewPublicPage() {
                                     </p>
                                   )}
                                 </td>
-                                <td className="py-4 text-xs font-medium text-right text-v3-muted whitespace-nowrap">
+                                <td className="py-4 text-xs font-medium text-right text-slate-500 whitespace-nowrap">
                                   {item.unit_quantity} x {item.sefer}
                                 </td>
-                                <td className="py-4 text-xs font-medium text-right text-v3-muted whitespace-nowrap">
+                                <td className="py-4 text-xs font-medium text-right text-slate-500 whitespace-nowrap">
                                   {formatTr(item.unit_price)}{" "}
                                   {item.currency === "TRY"
                                     ? "₺"
@@ -1457,7 +1457,7 @@ export default function QuoteViewPublicPage() {
                                       ? "€"
                                       : item.currency}
                                 </td>
-                                <td className="py-4 px-4 text-sm font-black text-right text-v3-text whitespace-nowrap">
+                                <td className="py-4 px-4 text-sm font-black text-right text-slate-800 whitespace-nowrap">
                                   {formatEUR(item.total)}
                                 </td>
                               </tr>
@@ -1466,7 +1466,7 @@ export default function QuoteViewPublicPage() {
                             {/* Category Subtotal Row */}
                             <tr className="bg-black/5 dark:bg-white/5">
                               <td colSpan={3} className="py-3 text-right">
-                                <span className="text-[9px] font-black text-v3-muted uppercase tracking-widest italic pr-4">
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic pr-4">
                                   ARA TOPLAM ({catName})
                                 </span>
                               </td>
@@ -1483,12 +1483,12 @@ export default function QuoteViewPublicPage() {
               </table>
             </div>
 
-            <div className="mt-10 flex flex-wrap justify-between items-end gap-6 bg-black/5 dark:bg-v3-surface/5 p-8 rounded-2xl shadow-xl">
+            <div className="mt-10 flex flex-wrap justify-between items-end gap-6 bg-black/5 dark:bg-white/5 p-8 rounded-2xl shadow-xl">
               <div className="flex-1 min-w-[300px]">
-                <h4 className="text-[10px] text-v3-text/80 font-bold uppercase tracking-wider mb-2">
+                <h4 className="text-[10px] text-slate-800/80 font-bold uppercase tracking-wider mb-2">
                   NOTLAR & ŞARTLAR
                 </h4>
-                <ul className="text-[11px] text-v3-muted space-y-1.5 leading-relaxed">
+                <ul className="text-[11px] text-slate-500 space-y-1.5 leading-relaxed">
                   {quote?.notes ? (
                     quote.notes
                       .split("\n")
@@ -1505,10 +1505,10 @@ export default function QuoteViewPublicPage() {
                 </ul>
               </div>
               <div className="text-right">
-                <h3 className="text-[10px] text-v3-text/80 font-bold mb-1 uppercase tracking-widest">
+                <h3 className="text-[10px] text-slate-800/80 font-bold mb-1 uppercase tracking-widest">
                   TOPLAM GENEL TUTAR
                 </h3>
-                <p className="text-3xl font-black text-v3-text">
+                <p className="text-3xl font-black text-slate-800">
                   {formatEUR(filteredItems.reduce((s, i) => s + i.total, 0))}
                 </p>
               </div>
@@ -1582,13 +1582,13 @@ export default function QuoteViewPublicPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-v3-surface rounded-3xl shadow-2xl overflow-hidden border-2 border-blue-50 group hover:border-blue-100 transition-all duration-500">
+                <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-blue-50 group hover:border-blue-100 transition-all duration-500">
                   <div className="bg-blue-500 p-8 flex flex-wrap justify-between items-center gap-6 group-hover:bg-blue-500/90 transition-colors">
-                    <div className="max-w-xl text-v3-text text-left">
-                      <h3 className="text-2xl font-black mb-2 uppercase tracking-tight text-v3-text">
+                    <div className="max-w-xl text-slate-800 text-left">
+                      <h3 className="text-2xl font-black mb-2 uppercase tracking-tight text-slate-800">
                         Teklif Onayı
                       </h3>
-                      <p className="text-sm font-medium opacity-80 leading-relaxed text-v3-text/90">
+                      <p className="text-sm font-medium opacity-80 leading-relaxed text-slate-800/90">
                         Bu teklifi onaylayarak seçimlerinizi kaydedip, yukarıda
                         belirtilen tüm hizmetleri ve şartları kabul etmiş
                         sayılırsınız. Onayınız dijital olarak mühürlenecek ve
@@ -1610,7 +1610,7 @@ export default function QuoteViewPublicPage() {
                           }
                           setShowApprovalForm(true);
                         }}
-                        className="bg-v3-surface text-blue-600 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-blue-900/20"
+                        className="bg-white text-blue-600 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-blue-900/20"
                       >
                         TEKLİFİ ONAYLA
                       </button>
@@ -1638,7 +1638,7 @@ export default function QuoteViewPublicPage() {
                                 })
                               }
                               placeholder="Adınız"
-                              className="w-full px-5 py-4 bg-v3-surface border-2 border-v3-border rounded-2xl text-sm font-bold text-v3-muted outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-500 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
                               required
                             />
                           </div>
@@ -1656,7 +1656,7 @@ export default function QuoteViewPublicPage() {
                                 })
                               }
                               placeholder="Soyadınız"
-                              className="w-full px-5 py-4 bg-v3-surface border-2 border-v3-border rounded-2xl text-sm font-bold text-v3-muted outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-500 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
                               required
                             />
                           </div>
@@ -1674,12 +1674,12 @@ export default function QuoteViewPublicPage() {
                                 })
                               }
                               placeholder="Email adresiniz"
-                              className="w-full px-5 py-4 bg-v3-surface border-2 border-v3-border rounded-2xl text-sm font-bold text-v3-muted outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                              className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-500 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
                               required
                             />
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-4 justify-end items-center pt-6 border-t border-v3-border">
+                        <div className="flex flex-wrap gap-4 justify-end items-center pt-6 border-t border-slate-200">
                           <button
                             type="button"
                             onClick={() => setShowApprovalForm(false)}
@@ -1693,7 +1693,7 @@ export default function QuoteViewPublicPage() {
                             className="px-12 py-4 bg-green-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-700 hover:scale-105 disabled:opacity-50 shadow-2xl shadow-green-900/20 active:scale-95 transition-all flex items-center gap-3"
                           >
                             {approving ? (
-                              <div className="w-4 h-4 border-2 border-v3-border border-t-white rounded-full animate-spin" />
+                              <div className="w-4 h-4 border-2 border-slate-200 border-t-white rounded-full animate-spin" />
                             ) : (
                               <svg
                                 className="w-4 h-4"
