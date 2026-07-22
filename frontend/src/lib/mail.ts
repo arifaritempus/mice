@@ -17,16 +17,15 @@ export async function sendMail(options: MailOptions) {
       throw new Error("Sistem ayarları bulunamadı.");
     }
 
-    const {
-      smtp_host,
-      smtp_port,
-      smtp_username,
-      smtp_password,
-      smtp_secure,
-      mail_from_email,
-      mail_from_name,
-      mail_reply_to,
-    } = generalSettings;
+    // Hem snake_case (eski) hem de camelCase (yeni) anahtarları destekle
+    const smtp_host = generalSettings.smtp_host || generalSettings.smtpServer;
+    const smtp_port = generalSettings.smtp_port || generalSettings.smtpPort;
+    const smtp_username = generalSettings.smtp_username || generalSettings.smtpUser;
+    const smtp_password = generalSettings.smtp_password || generalSettings.smtpPass;
+    const smtp_secure = generalSettings.smtp_secure || (generalSettings.smtpSecure === "ssl" || generalSettings.smtpSecure === "tls" || generalSettings.smtpSecure === true);
+    const mail_from_email = generalSettings.mail_from_email || generalSettings.mailFromEmail;
+    const mail_from_name = generalSettings.mail_from_name || generalSettings.mailFromName;
+    const mail_reply_to = generalSettings.mail_reply_to || generalSettings.mailReplyTo;
 
     if (!smtp_host || !smtp_username || !smtp_password || !mail_from_email) {
       throw new Error("Eksik SMTP yapılandırması.");
