@@ -27,19 +27,24 @@ export async function POST(request: NextRequest) {
       const settings = await SettingsService.getSettings();
       const generalSettings = settings?.general_settings;
       if (generalSettings) {
-        companyName = generalSettings.company_name || process.env.NEXT_PUBLIC_AGENCY_NAME || "Firma";
-        logoUrl = generalSettings.light_icon_logo || generalSettings.lightIconLogo || "";
+        companyName = generalSettings.companyName || generalSettings.company_name || process.env.NEXT_PUBLIC_AGENCY_NAME || "Firma";
+        logoUrl = generalSettings.lightIconLogo || generalSettings.light_icon_logo || "";
       }
     } catch (e) {
       console.warn("Ayarlar çekilemedi, varsayılan değerler kullanılacak", e);
     }
+
+    // Origin ve Host tespiti (Şifre sıfırlama linki için)
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const protocol = request.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const siteUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:6002");
 
     // 2. Supabase üzerinden (admin yetkisiyle) şifre sıfırlama linki üret (Mail GÖNDERMEZ, sadece linki döndürür)
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: email,
       options: {
-        redirectTo: `${request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:6002'}/reset-password`,
+        redirectTo: `${siteUrl}/reset-password`,
       }
     });
 
