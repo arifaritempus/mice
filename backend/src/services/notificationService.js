@@ -1,4 +1,5 @@
 const { supabase } = require('../config/database');
+const { emailService } = require('./emailService');
 
 class NotificationService {
   constructor() {
@@ -262,12 +263,58 @@ class NotificationService {
       console.error('❌ Zamanlanmış bildirim kontrolü hatası:', error);
     }
   }
+
+  // Merkezi Bildirim Dinleyici (E-posta Gönderimi İçin)
+  setupRealtimeListener() {
+    console.log('🔔 Merkezi bildirim dinleyicisi (E-posta) başlatılıyor...');
+    
+    supabase
+      .channel('global-notifications-email-sender')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications'
+        },
+        async (payload) => {
+          try {
+            const notification = payload.new;
+            
+            // Bildirimi alan kullanıcının bilgilerini çek
+            const { data: user, error } = await supabase
+              .from('users')
+              .select('email, full_name')
+              .eq('id', notification.user_id)
+              .single();
+              
+            if (error || !user || !user.email) {
+              console.error('❌ E-posta için kullanıcı bulunamadı:', error);
+              return;
+            }
+
+            // E-postayı gönder
+            await emailService.sendSystemNotificationEmail(user, notification);
+            console.log(`📧 E-posta bildirimi gönderildi: ${user.email} - ${notification.title}`);
+            
+          } catch (err) {
+            console.error('❌ Bildirim e-postası gönderilirken hata oluştu:', err);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Bildirim-Eposta dinleyicisi aktif');
+        }
+      });
+  }
 }
 
 const notificationService = new NotificationService();
 
 const setupNotificationService = () => {
   console.log('🔔 Bildirim servisi başlatıldı');
+  notificationService.setupRealtimeListener();
 };
 
 module.exports = {

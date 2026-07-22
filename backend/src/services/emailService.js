@@ -163,6 +163,61 @@ class EmailService {
 
     return this.sendEmail(user.email, subject, html);
   }
+
+  // Modern Sistem Bildirimi
+  async sendSystemNotificationEmail(user, notification) {
+    const subject = notification.title || 'Yeni Bildirim';
+    
+    // Type-based colors
+    let typeColor = '#2563eb'; // Info (blue)
+    let typeIcon = 'ℹ️';
+    let bgColor = '#eff6ff';
+    
+    if (notification.type === 'success') {
+      typeColor = '#16a34a';
+      typeIcon = '✅';
+      bgColor = '#f0fdf4';
+    } else if (notification.type === 'warning') {
+      typeColor = '#d97706';
+      typeIcon = '⚠️';
+      bgColor = '#fffbeb';
+    } else if (notification.type === 'error') {
+      typeColor = '#dc2626';
+      typeIcon = '🚫';
+      bgColor = '#fef2f2';
+    }
+
+    const html = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+        <div style="background-color: ${typeColor}; padding: 32px 24px; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 16px;">${typeIcon}</div>
+          <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">${subject}</h2>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #475569; font-size: 16px; line-height: 1.5; margin-top: 0;">Merhaba <strong>${user.full_name || 'Kullanıcı'}</strong>,</p>
+          <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">Sistemden yeni bir bildiriminiz var:</p>
+          
+          <div style="background-color: ${bgColor}; border-left: 4px solid ${typeColor}; padding: 20px; border-radius: 0 8px 8px 0; margin-bottom: 32px;">
+            <p style="color: #1e293b; font-size: 15px; line-height: 1.6; margin: 0;">${notification.message.replace(/<[^>]*>?/gm, '')}</p>
+          </div>
+          
+          ${notification.action_url ? `
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${notification.action_url.startsWith('http') ? notification.action_url : process.env.FRONTEND_URL + notification.action_url}" style="background-color: ${typeColor}; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Detayları Görüntüle</a>
+          </div>
+          ` : ''}
+          
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; margin-top: 32px; text-align: center;">
+            <p style="color: #94a3b8; font-size: 13px; margin: 0;">Bu e-posta sistem tarafından otomatik olarak gönderilmiştir.</p>
+            <p style="color: #94a3b8; font-size: 13px; margin: 8px 0 0 0;">EventIQ &copy; ${new Date().getFullYear()}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return this.sendEmail(user.email, subject, html);
+  }
 }
 
 const emailService = new EmailService();
