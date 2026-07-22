@@ -310,12 +310,18 @@ export const quotesService = {
     const confirmedHotelIds = normalizedHotels.map((h: any) => h.hotel_id);
     const confirmedTabIds = normalizedHotels.map((h: any) => h.id);
     
+    const extractTabId = (desc: string) => {
+      const match = String(desc || '').match(/\[T:([^\]]+)\]/);
+      return match ? match[1] : null;
+    };
+
     const relevantItemsRaw = normalizedHotels.length > 0
-      ? (quoteItems || []).filter(item =>
-          confirmedTabIds.includes(item.hotel_id || '') ||
-          confirmedHotelIds.includes(item.hotel_id || '') ||
-          !item.hotel_id || item.hotel_id === 'general'
-        )
+      ? (quoteItems || []).filter(item => {
+          const tabId = extractTabId(item.description) || item.hotel_id;
+          return confirmedTabIds.includes(tabId || '') ||
+                 confirmedHotelIds.includes(tabId || '') ||
+                 !tabId || tabId === 'general';
+        })
       : (quoteItems || []);
 
     const seen = new Set<string>();
@@ -359,7 +365,8 @@ export const quotesService = {
     if (pErr) throw pErr;
 
     const salesInserts = relevantItems.map(item => {
-      const originalIndex = hotelsToProcess.findIndex((h: any) => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
+      const tabId = extractTabId(item.description) || item.hotel_id;
+      const originalIndex = hotelsToProcess.findIndex((h: any) => h.id === tabId || h.hotel_id === tabId);
       const realHotelId = originalIndex !== -1 ? (normalizedHotels[originalIndex].hotel_id || null) : null;
       const tabUUID = originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
       
@@ -381,7 +388,8 @@ export const quotesService = {
     });
 
     const purchaseInserts = relevantItems.map(item => {
-      const originalIndex = hotelsToProcess.findIndex((h: any) => h.id === item.hotel_id || h.hotel_id === item.hotel_id);
+      const tabId = extractTabId(item.description) || item.hotel_id;
+      const originalIndex = hotelsToProcess.findIndex((h: any) => h.id === tabId || h.hotel_id === tabId);
       const realHotelId = originalIndex !== -1 ? (normalizedHotels[originalIndex].hotel_id || null) : null;
       const tabUUID = originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
       
