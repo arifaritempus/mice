@@ -31,12 +31,18 @@ function ResetPasswordForm() {
         setAppSettings(generalSettings);
 
         const currentLogo =
+          generalSettings.darkMenuLogo ||
           generalSettings.dark_menu_logo ||
-          generalSettings.dark_wordmark_logo ||
+          generalSettings.darkIconLogo ||
           generalSettings.dark_icon_logo ||
+          generalSettings.darkWordmarkLogo ||
+          generalSettings.dark_wordmark_logo ||
+          generalSettings.lightMenuLogo ||
           generalSettings.light_menu_logo ||
-          generalSettings.light_wordmark_logo ||
-          generalSettings.light_icon_logo;
+          generalSettings.lightIconLogo ||
+          generalSettings.light_icon_logo ||
+          generalSettings.lightWordmarkLogo ||
+          generalSettings.light_wordmark_logo;
         setMenuLogo(currentLogo || "");
       } catch {
         setMenuLogo("");
@@ -129,14 +135,14 @@ function ResetPasswordForm() {
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
               <span className="text-v3-text text-2xl font-bold">
-                {appSettings?.company_name
-                  ? appSettings.company_name.substring(0, 2).toUpperCase()
+                {(appSettings?.companyName || appSettings?.company_name)
+                  ? (appSettings.companyName || appSettings.company_name).substring(0, 2).toUpperCase()
                   : process.env.NEXT_PUBLIC_AGENCY_NAME
                     ? process.env.NEXT_PUBLIC_AGENCY_NAME.substring(
                         0,
                         2,
                       ).toUpperCase()
-                    : "TT"}
+                    : "FİRMA"}
               </span>
             </div>
           )}

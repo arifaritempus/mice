@@ -64,6 +64,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Supabase linki yerine kendi domainimiz üzerinden bir link oluşturuyoruz.
+    // actionLink örneği: https://xxx.supabase.co/auth/v1/verify?token=abc&type=recovery&redirect_to=...
+    let finalLink = actionLink;
+    try {
+      const url = new URL(actionLink);
+      const token = url.searchParams.get("token");
+      if (token) {
+        // Doğrudan kendi sitemize yönlendirip frontend'de verifyOtp ile token'ı doğrulayacağız
+        finalLink = `${siteUrl}/reset-password?token_hash=${token}&type=recovery`;
+      }
+    } catch (e) {
+      console.warn("Link parse edilemedi, orijinal link kullanılacak", e);
+    }
+
     // 3. E-posta şablonunu hazırla
     const htmlTemplate = `
       <div style="font-family: Arial, sans-serif; max-w-6xl mx-auto p-6 bg-gray-50 text-gray-800 rounded-xl border border-gray-200">
@@ -75,7 +89,7 @@ export async function POST(request: NextRequest) {
           <p>Merhaba,</p>
           <p>Hesabınızın şifresini sıfırlamak için bir talepte bulundunuz. Aşağıdaki butona tıklayarak yeni şifrenizi belirleyebilirsiniz:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${actionLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Şifremi Sıfırla</a>
+            <a href="${finalLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Şifremi Sıfırla</a>
           </div>
           <p style="font-size: 14px; color: #64748b;">Eğer bu talebi siz yapmadıysanız, bu e-postayı görmezden gelebilirsiniz.</p>
           <p style="font-size: 14px; color: #64748b; margin-top: 20px;">Saygılarımızla,<br/><strong>${companyName} Ekibi</strong></p>
