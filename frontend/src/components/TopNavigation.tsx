@@ -761,7 +761,7 @@ export default function TopNavigation() {
                                   {n.title}
                                 </h4>
                                 <span className="text-[9px] text-v3-muted shrink-0">
-                                  {moment(n.created_at).fromNow(true)}
+                                  {moment.utc(n.created_at).local().fromNow(true)}
                                 </span>
                               </div>
                               <p className="text-[10px] text-v3-muted line-clamp-2 leading-relaxed">

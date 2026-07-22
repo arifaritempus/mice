@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendMail } from "@/lib/mail";
 
 // Server-side Supabase admin client
 function getAdminClient() {
@@ -156,6 +157,18 @@ export async function POST(req: Request) {
         </div>
       `;
 
+      // Fetch user emails for email notifications
+      let creatorEmail = null;
+      if (creatorId) {
+        const { data: creator } = await admin.from("users").select("email").eq("id", creatorId).single();
+        if (creator) creatorEmail = creator.email;
+      }
+
+      const { data: admins } = await admin
+        .from("users")
+        .select("id, email")
+        .eq("role", "super_admin");
+
       // Creator'a bildirim gönder
       if (creatorId) {
         await admin.from("notifications").insert({
@@ -165,24 +178,41 @@ export async function POST(req: Request) {
           type: "success",
           action_url: `/quotes`,
         });
+        
+        if (creatorEmail) {
+          sendMail({
+            to: creatorEmail,
+            subject: notificationTitle,
+            html: notificationHtml
+          }).catch(err => console.error("Creator email send error:", err));
+        }
       }
 
       // Adminlere de gönder
-      const { data: admins } = await admin
-        .from("users")
-        .select("id")
-        .eq("role", "super_admin");
       if (admins) {
-        const bulk = admins
-          .filter((a) => a.id !== creatorId)
-          .map((a) => ({
-            user_id: a.id,
-            title: notificationTitle,
-            message: notificationHtml,
-            type: "success",
-            action_url: `/quotes`,
-          }));
-        if (bulk.length > 0) await admin.from("notifications").insert(bulk);
+        const adminTargets = admins.filter((a) => a.id !== creatorId);
+        
+        const bulk = adminTargets.map((a) => ({
+          user_id: a.id,
+          title: notificationTitle,
+          message: notificationHtml,
+          type: "success",
+          action_url: `/quotes`,
+        }));
+        
+        if (bulk.length > 0) {
+          await admin.from("notifications").insert(bulk);
+        }
+        
+        for (const a of adminTargets) {
+          if (a.email) {
+            sendMail({
+              to: a.email,
+              subject: notificationTitle,
+              html: notificationHtml
+            }).catch(err => console.error("Admin email send error:", err));
+          }
+        }
       }
     } catch (notifErr) {
       console.error("Notification creation error (non-fatal):", notifErr);

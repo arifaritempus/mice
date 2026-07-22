@@ -48,10 +48,22 @@ export default function NotificationModal({
     } else {
       document.body.style.overflow = "unset";
     }
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    
     return () => {
       document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, mounted]);
+  }, [isOpen, mounted, onClose]);
 
   if (!isOpen || !notification || !mounted) return null;
 
