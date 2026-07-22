@@ -16,7 +16,7 @@ logger.debug('Modüller yükleniyor...');
 logger.debug('Middleware ve servisler yükleniyor...');
 const { authMiddleware } = require('./middleware/auth');
 const { emailService } = require('./services/emailService');
-const { notificationService } = require('./services/notificationService');
+const { notificationService, setupNotificationService } = require('./services/notificationService');
 const { reportService } = require('./services/reportService');
 const { reminderService } = require('./services/reminderService');
 logger.success('Middleware ve servisler yüklendi');
@@ -243,6 +243,7 @@ cron.schedule('0 9 * * *', async () => {
 const PORT = process.env.PORT || 3000;
 
 console.log(`🌍 Sunucu ${PORT} portunda dinlemeye başlıyor...`);
+setupNotificationService();
 server.listen(PORT, () => {
   console.log('='.repeat(50));
   console.log(`🚀 EventIQ Backend Server ${PORT} portunda çalışıyor`);
