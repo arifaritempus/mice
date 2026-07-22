@@ -35,6 +35,9 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import CommandCenter from "@/components/CommandCenter";
+import NotificationModal from "./NotificationModal";
+import moment from "moment";
+import "moment/locale/tr";
 import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
 import { SettingsService } from "@/lib/supabaseService";
@@ -76,7 +79,11 @@ export default function TopNavigation() {
   const router = useRouter();
 
   const pathname = usePathname();
-  const [unreadCount] = useState(3);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [selectedNotification, setSelectedNotification] = useState<any>(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { t, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -140,6 +147,104 @@ export default function TopNavigation() {
     };
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      audioRef.current = new Audio("/notification.mp3");
+    }
+  }, []);
+
+  useEffect(() => {
+    let cleanup: any;
+    let channel: any;
+
+    const setupNotifications = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const fetchNotifications = async () => {
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        if (!error && data) {
+          setNotifications(data);
+          setUnreadCount(data.filter((n) => !n.is_read).length);
+        }
+      };
+
+      fetchNotifications();
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "visible") {
+          fetchNotifications();
+        }
+      };
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      cleanup = () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+      const channelName = `topnav-notifications-${user.id}`;
+      supabase.getChannels().forEach((ch) => {
+        if (ch.topic === `realtime:${channelName}`) {
+          supabase.removeChannel(ch);
+        }
+      });
+
+      channel = supabase
+        .channel(channelName)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            setNotifications((prev) => [payload.new, ...prev].slice(0, 20));
+            setUnreadCount((prev) => prev + 1);
+
+            if (audioRef.current) {
+              audioRef.current
+                .play()
+                .catch((err) => console.log("Audio play blocked:", err));
+            }
+          },
+        )
+        .subscribe();
+    };
+
+    setupNotifications();
+
+    return () => {
+      if (cleanup) cleanup();
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleNotificationClick = async (n: any) => {
+    setSelectedNotification(n);
+    setIsNotificationModalOpen(true);
+    if (!n.is_read) {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", n.id);
+      if (!error) {
+        setNotifications((prev) =>
+          prev.map((item) =>
+            item.id === n.id ? { ...item, is_read: true } : item,
+          ),
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    }
+  };
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -645,8 +750,44 @@ export default function TopNavigation() {
                       Bildirimler
                     </h3>
                   </div>
-                  <div className="p-4 text-center text-v3-muted text-xs h-32 flex items-center justify-center">
-                    Henüz yeni bildiriminiz yok.
+                  <div className="flex-1 overflow-y-auto max-h-96 custom-scrollbar">
+                    {notifications.length > 0 ? (
+                      <div className="flex flex-col">
+                        {notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            onClick={() => handleNotificationClick(n)}
+                            className={`w-full p-4 text-left transition-all flex gap-3 border-b border-v3-border last:border-0 ${
+                              !n.is_read ? "bg-blue-500/5 hover:bg-blue-500/10" : "hover:bg-v3-border"
+                            }`}
+                          >
+                            <div className="text-xl shrink-0 mt-0.5">
+                              {n.type === "error" ? "🚫" : n.type === "warning" ? "⚠️" : n.type === "success" ? "✅" : "ℹ️"}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start mb-1 gap-2">
+                                <h4 className={`text-xs truncate ${!n.is_read ? "font-bold text-v3-text" : "font-medium text-v3-muted"}`}>
+                                  {n.title}
+                                </h4>
+                                <span className="text-[9px] text-v3-muted shrink-0">
+                                  {moment(n.created_at).fromNow(true)}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-v3-muted line-clamp-2 leading-relaxed">
+                                {n.message.replace(/<[^>]*>?/gm, "")}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="h-32 flex flex-col items-center justify-center p-8 text-v3-muted">
+                        <span className="text-3xl mb-2">📭</span>
+                        <p className="text-xs font-medium uppercase tracking-widest">
+                          Bildirim yok
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -720,6 +861,12 @@ export default function TopNavigation() {
         isOpen={isCommandCenterOpen}
         onClose={() => setIsCommandCenterOpen(false)}
         initialQuery={headerSearchQuery}
+      />
+
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        notification={selectedNotification}
       />
     </>
   );
