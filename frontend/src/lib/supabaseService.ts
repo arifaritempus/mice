@@ -279,7 +279,9 @@ export const quotesService = {
       : [];
 
     let hotelsToProcess = confirmedHotels;
-    if (confirmedHotels.length === 0 && quote.hotel_id) {
+    if (confirmedHotels.length === 0 && hotelsData.length > 0) {
+      hotelsToProcess = hotelsData; // Eğer hiç konfirme otel seçilmemişse ama otel verisi varsa veri kaybını önlemek için tümünü aktar
+    } else if (confirmedHotels.length === 0 && quote.hotel_id) {
       hotelsToProcess = [{
         id: Math.random().toString(36).substring(2, 11),
         hotel_id: quote.hotel_id,
