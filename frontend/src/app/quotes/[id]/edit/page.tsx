@@ -1239,13 +1239,17 @@ export default function QuoteEditPage() {
                               type="checkbox"
                               checked={formData.operation_managers.includes(user.id)}
                               onChange={(e) => {
-                                const managers = e.target.checked
-                                  ? [...formData.operation_managers, user.id]
-                                  : formData.operation_managers.filter((id) => id !== user.id);
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  operation_managers: managers,
-                                }));
+                                if (e.target.checked) {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    operation_managers: [...prev.operation_managers, user.id],
+                                  }));
+                                } else {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    operation_managers: prev.operation_managers.filter((id) => id !== user.id),
+                                  }));
+                                }
                               }}
                               className="mr-3 text-blue-600 focus:ring-blue-500 rounded border-v3-border bg-v3-surface"
                             />

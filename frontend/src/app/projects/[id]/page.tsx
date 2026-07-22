@@ -14477,7 +14477,7 @@ export default function ProjectDetailPage() {
             Proje Sorumlusu
           </p>
           {isEditingProject ? (
-            <div className="relative">
+            <div className="relative user-dropdown">
               <div className="flex flex-wrap gap-1 mb-1">
                 {selectedUsers.map((userId) => {
                   const user = users.find((u) => u.id === userId);
