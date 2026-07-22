@@ -35,9 +35,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Origin ve Host tespiti (Şifre sıfırlama linki için)
-    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
-    const protocol = request.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
-    const siteUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:6002");
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!siteUrl) {
+      siteUrl = request.nextUrl.origin || "https://mice.codeicon.co";
+    }
+    
+    // Kullanıcı localhost linki görmek istemediği için, localhost ise production url'ye zorluyoruz
+    if (siteUrl.includes("localhost")) {
+      siteUrl = "https://mice.codeicon.co";
+    }
 
     // 2. Supabase üzerinden (admin yetkisiyle) şifre sıfırlama linki üret (Mail GÖNDERMEZ, sadece linki döndürür)
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
