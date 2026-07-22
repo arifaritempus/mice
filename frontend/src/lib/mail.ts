@@ -32,10 +32,15 @@ export async function sendMail(options: MailOptions) {
     }
 
     // 2. Nodemailer Transport oluştur
+    const port = parseInt(smtp_port || "587");
+    // Nodemailer'da secure: true sadece 465 (Implicit SSL) içindir.
+    // 587 (STARTTLS) portu için secure: false olmalıdır.
+    const isSecure = port === 465;
+
     const transporter = nodemailer.createTransport({
       host: smtp_host,
-      port: parseInt(smtp_port || "587"),
-      secure: smtp_secure ?? (smtp_port === "465"), // 465 is commonly secure, 587 is STARTTLS
+      port: port,
+      secure: isSecure,
       auth: {
         user: smtp_username,
         pass: smtp_password,
