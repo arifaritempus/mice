@@ -296,11 +296,16 @@ export const authService = {
 
   // Şifre sıfırlama e-postası gönder
   async resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+    const res = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
     });
-
-    if (error) throw error;
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Şifre sıfırlama işlemi başarısız oldu.");
+    }
+    return data;
   },
 
   // Kullanıcı kaydı (sadece admin)

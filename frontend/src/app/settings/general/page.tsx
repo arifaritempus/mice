@@ -43,6 +43,7 @@ interface GeneralSettings {
   mail_from_name: string; // Gönderen adı
   mail_from_email: string; // Gönderen e-posta
   mail_reply_to: string; // Yanıt adresi
+  mail_notification_email: string; // Alıcı e-posta
   // Renk Ayarları
   primary_color?: string; // Ana renk
   secondary_color?: string; // İkincil renk
@@ -95,6 +96,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
       : "Firma",
   mail_from_email: "noreply@tempustravel.co",
   mail_reply_to: "info@tempustravel.co",
+  mail_notification_email: "info@tempustravel.co",
   primary_color: "#2563eb",
   secondary_color: "#6b7280",
   success_color: "#10b981",
@@ -1634,9 +1636,23 @@ export default function GeneralSettingsPage() {
                     type="email"
                     value={settings.mail_reply_to}
                     onChange={(e) =>
-                      handleChange("mail_reply_to", e.target.value)
+                      setSettings({ ...settings, mail_reply_to: e.target.value })
                     }
-                    placeholder="info@tempustravel.co"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
+                  />
+                </div>
+
+                {/* Alıcı E-posta */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-medium text-v3-text">
+                    Alıcı E-Posta (Bildirimler İçin)
+                  </label>
+                  <input
+                    type="email"
+                    value={settings.mail_notification_email}
+                    onChange={(e) =>
+                      setSettings({ ...settings, mail_notification_email: e.target.value })
+                    }
                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>

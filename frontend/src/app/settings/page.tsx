@@ -34,6 +34,7 @@ export default function SettingsPage() {
     mailFromName: "Tempus Travel",
     mailFromEmail: "noreply@tempustravel.com",
     mailReplyTo: "info@tempustravel.com",
+    mailNotificationEmail: "info@tempustravel.com",
 
     // AI Asistan
     aiAssistantEnabled: true,
@@ -774,7 +775,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
-                    Gönderen E-posta
+                    Gönderen E-Posta
                   </label>
                   <input
                     type="email"
@@ -797,6 +798,19 @@ export default function SettingsPage() {
                     value={settings.mailReplyTo}
                     onChange={(e) =>
                       setSettings({ ...settings, mailReplyTo: e.target.value })
+                    }
+                    className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
+                    Alıcı E-Posta (Bildirimler İçin)
+                  </label>
+                  <input
+                    type="email"
+                    value={settings.mailNotificationEmail}
+                    onChange={(e) =>
+                      setSettings({ ...settings, mailNotificationEmail: e.target.value })
                     }
                     className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
