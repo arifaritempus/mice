@@ -112,15 +112,14 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col justify-center py-6 sm:px-4 lg:px-6 relative overflow-hidden">
-      {/* Dekoratif arka plan */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-slate-700/20 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-v3-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[20%] left-[10%] w-[600px] h-[600px] bg-blue-500/20 dark:bg-blue-900/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-v3-bg/80 to-v3-bg z-0" />
       </div>
 
-      <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="relative sm:mx-auto sm:w-full sm:max-w-md z-10">
         {/* Logo */}
         <div className="flex justify-center mb-8">
           {logoLoading ? (
@@ -134,7 +133,7 @@ function ResetPasswordForm() {
             />
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30">
-              <span className="text-v3-text text-2xl font-bold">
+              <span className="text-white text-2xl font-bold">
                 {(appSettings?.companyName || appSettings?.company_name)
                   ? (appSettings.companyName || appSettings.company_name).substring(0, 2).toUpperCase()
                   : process.env.NEXT_PUBLIC_AGENCY_NAME
@@ -148,7 +147,8 @@ function ResetPasswordForm() {
           )}
         </div>
 
-        <div className="bg-white/[0.04] backdrop-blur-2xl border border-v3-border rounded-2xl shadow-2xl shadow-black/40 px-8 py-8">
+        <div className="glass-panel backdrop-blur-2xl bg-v3-border border border-v3-border shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-2xl p-8 sm:p-10 relative overflow-hidden group">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="mb-6">
             <h1 className="text-xl font-bold text-v3-text text-center">
               Yeni Şifre Belirle
