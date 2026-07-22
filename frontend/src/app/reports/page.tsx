@@ -259,9 +259,7 @@ const parseIsoDate = (value: string) => {
 export default function ReportsPage() {
   const { t, language } = useLanguage();
   const { canView, loading: permissionsLoading } = usePermissions();
-  const [activeReportId, setActiveReportId] = useState(
-    REPORT_GROUPS[0].reports[0].id,
-  );
+  const [activeReportId, setActiveReportId] = useState("kar_zarar_detay");
   const [datePreset, setDatePreset] = useState<DatePreset>("bu_yil");
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
