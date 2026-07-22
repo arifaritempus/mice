@@ -148,11 +148,7 @@ export default function TopNavigation() {
     fetchUser();
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      audioRef.current = new Audio("/notification.mp3");
-    }
-  }, []);
+
 
   useEffect(() => {
     let cleanup: any;
@@ -208,12 +204,7 @@ export default function TopNavigation() {
           (payload) => {
             setNotifications((prev) => [payload.new, ...prev].slice(0, 20));
             setUnreadCount((prev) => prev + 1);
-
-            if (audioRef.current) {
-              audioRef.current
-                .play()
-                .catch((err) => console.log("Audio play blocked:", err));
-            }
+            // Audio feature removed to prevent 404 error
           },
         )
         .subscribe();
