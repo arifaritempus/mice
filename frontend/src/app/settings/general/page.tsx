@@ -94,9 +94,9 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
     typeof document !== "undefined"
       ? document.title.split("-")[0].trim()
       : "Firma",
-  mail_from_email: "noreply@tempustravel.co",
-  mail_reply_to: "info@tempustravel.co",
-  mail_notification_email: "info@tempustravel.co",
+  mail_from_email: "noreply@firma.com",
+  mail_reply_to: "info@firma.com",
+  mail_notification_email: "info@firma.com",
   primary_color: "#2563eb",
   secondary_color: "#6b7280",
   success_color: "#10b981",
@@ -1622,7 +1622,7 @@ export default function GeneralSettingsPage() {
                     onChange={(e) =>
                       handleChange("mail_from_email", e.target.value)
                     }
-                    placeholder="noreply@tempustravel.co"
+                    placeholder="noreply@firma.com"
                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-v3-text transition-colors duration-200"
                   />
                 </div>

@@ -15,7 +15,7 @@ export default function SettingsPage() {
       typeof document !== "undefined"
         ? document.title.split("-")[0].trim()
         : "Firma",
-    companyEmail: "info@tempustravel.com",
+    companyEmail: "info@firma.com",
     companyPhone: "+90 212 555 0000",
     companyAddress: "İstanbul, Türkiye",
 
@@ -28,13 +28,13 @@ export default function SettingsPage() {
     // Mail Ayarları
     smtpServer: "smtp.mailgun.org",
     smtpPort: "587",
-    smtpUser: "postmaster@mail.tempustravel.com",
+    smtpUser: "postmaster@mail.firma.com",
     smtpPass: "********",
     smtpSecure: "tls",
     mailFromName: "Tempus Travel",
-    mailFromEmail: "noreply@tempustravel.com",
-    mailReplyTo: "info@tempustravel.com",
-    mailNotificationEmail: "info@tempustravel.com",
+    mailFromEmail: "noreply@firma.com",
+    mailReplyTo: "info@firma.com",
+    mailNotificationEmail: "info@firma.com",
 
     // AI Asistan
     aiAssistantEnabled: true,

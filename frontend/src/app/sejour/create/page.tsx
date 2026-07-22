@@ -276,10 +276,10 @@ export default function CreateSejourPage() {
       typeof document !== "undefined"
         ? document.title.split("-")[0].trim()
         : "Firma",
-    company_email: "info@tempustravel.co",
+    company_email: "info@firma.com",
     company_phone: "",
     company_address: "",
-    company_website: "www.tempustravel.co",
+    company_website: "www.firma.com",
   });
 
   // Sales Form Data
@@ -395,11 +395,11 @@ export default function CreateSejourPage() {
           (typeof document !== "undefined"
             ? document.title.split("-")[0].trim()
             : "Firma"),
-        company_email: generalSettings.companyEmail || generalSettings.company_email || "info@tempustravel.co",
+        company_email: generalSettings.companyEmail || generalSettings.company_email || "info@firma.com",
         company_phone: generalSettings.companyPhone || generalSettings.company_phone || "",
         company_address: generalSettings.companyAddress || generalSettings.company_address || "",
         company_website:
-          generalSettings.companyWebsite || generalSettings.company_website || "www.tempustravel.co",
+          generalSettings.companyWebsite || generalSettings.company_website || "www.firma.com",
       });
     } catch (error) {
       console.error("Error loading company info:", error);

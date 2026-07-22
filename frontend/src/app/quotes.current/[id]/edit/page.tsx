@@ -191,13 +191,13 @@ export default function QuoteEditPage() {
             id: "1",
             first_name: "Arif",
             last_name: "Ari",
-            email: "arif.ari@tempustravel.co",
+            email: "arif.ari@firma.com",
           },
           {
             id: "2",
             first_name: "John",
             last_name: "Doe",
-            email: "john.doe@tempustravel.co",
+            email: "john.doe@firma.com",
           },
         ];
         setUsers(defaultUsers);

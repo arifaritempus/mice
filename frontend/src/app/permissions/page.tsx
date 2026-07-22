@@ -66,7 +66,7 @@ export default function PermissionsPage() {
         currentUsers = [
           {
             id: "1",
-            email: "admin@tempustravel.com",
+            email: "admin@firma.com",
             first_name: "Sistem",
             last_name: "Yöneticisi",
             role: "super_admin",
@@ -75,7 +75,7 @@ export default function PermissionsPage() {
           },
           {
             id: "2",
-            email: "manager@tempustravel.com",
+            email: "manager@firma.com",
             first_name: "Proje",
             last_name: "Müdürü",
             role: "manager",
@@ -84,7 +84,7 @@ export default function PermissionsPage() {
           },
           {
             id: "3",
-            email: "user@tempustravel.com",
+            email: "user@firma.com",
             first_name: "Standart",
             last_name: "Kullanıcı",
             role: "user",

@@ -290,8 +290,8 @@ export default function InvoicePreview({
               <p>DR. BURHAN NALBANTOĞLU CAD.</p>
               <p>No: 18/1 ORTAKÖY, LEFKOŞA / KKTC</p>
               <p>VERGİ SİCİL NO: MŞ 25733</p>
-              <p>MUHASEBE@TEMPUSTRAVEL.CO</p>
-              <p>WWW.TEMPUSTRAVEL.CO</p>
+              <p>MUHASEBE@FIRMA.COM</p>
+              <p>WWW.FIRMA.COM</p>
             </div>
 
             {/* Signature Placeholder - Matbu */}
