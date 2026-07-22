@@ -787,10 +787,10 @@ export default function HomePage() {
                         className="block group-hover:bg-v3-border p-3 rounded-2xl border border-transparent group-hover:border-v3-border transition-all"
                       >
                         <div className="flex justify-between items-start gap-2 mb-1">
-                          <h3 className="text-sm font-bold text-v3-text group-hover:text-blue-600 dark:text-blue-300 transition-colors line-clamp-2 leading-tight">
+                          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:text-blue-300 transition-colors line-clamp-2 leading-tight">
                             {item.title}
                           </h3>
-                          <span className="text-[10px] font-mono text-v3-muted bg-black/30 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
+                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-200/80 dark:bg-slate-700/80 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
                             {format(
                               item.date,
                               getFormatStrDate(),
@@ -800,12 +800,12 @@ export default function HomePage() {
                         </div>
                         <div className="flex justify-between items-center mt-2">
                           <p
-                            className="text-xs text-v3-muted font-medium truncate pr-2"
+                            className="text-xs text-slate-600 dark:text-slate-400 font-medium truncate pr-2"
                             title={item.subtitle}
                           >
                             {item.subtitle}
                           </p>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-v3-muted bg-v3-border px-2 py-1 rounded-md shrink-0">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md shrink-0 border border-slate-200 dark:border-slate-700">
                             {item.module}
                           </span>
                         </div>
@@ -862,7 +862,7 @@ export default function HomePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
                         <h4
-                          className={`text-xs font-bold uppercase tracking-wider line-clamp-2 ${warn.isUrgent ? "text-rose-900 dark:text-rose-100" : "text-v3-text"}`}
+                          className={`text-xs font-bold uppercase tracking-wider line-clamp-2 ${warn.isUrgent ? "text-rose-900 dark:text-rose-100" : "text-slate-800 dark:text-slate-200"}`}
                         >
                           {warn.title}
                         </h4>
@@ -873,7 +873,7 @@ export default function HomePage() {
                         )}
                       </div>
                       <p
-                        className="text-[11px] text-v3-muted mt-1 truncate"
+                        className="text-[11px] text-slate-600 dark:text-slate-400 font-medium mt-1 truncate"
                         title={warn.subtitle}
                       >
                         {warn.subtitle}
@@ -895,7 +895,7 @@ export default function HomePage() {
                               ? t('home.todayEnd')
                               : `${warn.daysLeft} ${t('home.daysLeft')}`}
                         </span>
-                        <span className="text-[10px] text-v3-muted ml-auto whitespace-nowrap">
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md ml-auto whitespace-nowrap">
                           {format(
                             warn.date,
                             getFormatStrWarn(),
@@ -941,15 +941,15 @@ export default function HomePage() {
                   className="block p-4 rounded-2xl bg-fuchsia-950/20 border border-fuchsia-500/10 hover:border-fuchsia-500/30 hover:bg-fuchsia-900/30 transition-all group"
                 >
                   <div className="flex justify-between items-start mb-2 gap-2">
-                    <h4 className="text-sm font-bold text-v3-text group-hover:text-fuchsia-600 dark:text-fuchsia-300 transition-colors line-clamp-2 leading-tight">
+                    <h4 className="text-sm font-bold text-fuchsia-900 dark:text-fuchsia-100 group-hover:text-fuchsia-600 dark:text-fuchsia-300 transition-colors line-clamp-2 leading-tight">
                       {appt.title}
                     </h4>
-                    <span className="text-[10px] font-mono text-v3-muted bg-black/30 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
+                    <span className="text-[10px] font-bold text-fuchsia-800 dark:text-fuchsia-200 bg-fuchsia-200/50 dark:bg-fuchsia-900/50 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
                       {format(appt.date, getFormatStrDate(), getFormatLocale())}
                     </span>
                   </div>
 
-                  <div className="mt-2 text-[11px] text-v3-muted flex flex-col gap-1">
+                  <div className="mt-2 text-[11px] text-fuchsia-800/80 dark:text-fuchsia-300/80 font-medium flex flex-col gap-1">
                     <span className="flex items-center gap-1.5">
                       <Users size={12} className="text-fuchsia-600 dark:text-fuchsia-400/70" />{" "}
                       {appt.contacts}
