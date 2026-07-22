@@ -264,7 +264,7 @@ export const quotesService = {
   // Teklifi projeye aktar
   async transferToProject(quoteId: string, customClient?: any): Promise<any> {
     const client = customClient || supabase;
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     
     // 1. Teklifi ve verilerini getir
     const { data: quote, error: qErr } = await client.from('quotes').select('*').eq('id', quoteId).single();
@@ -310,7 +310,7 @@ export const quotesService = {
     const end_date = firstH?.check_out_date || quote.check_out_date || start_date;
 
     const confirmedHotelIds = normalizedHotels.map((h: any) => h.hotel_id);
-    const confirmedTabIds = normalizedHotels.map((h: any) => h.id);
+    const confirmedTabIds = hotelsToProcess.map((h: any) => h.id); // Orijinal tab ID'lerini kullan ki quote item'larındaki [T:...] tag'leri ile eşleşebilsin
     
     const extractTabId = (desc: string) => {
       const match = String(desc || '').match(/\[T:([^\]]+)\]/);
@@ -4551,7 +4551,7 @@ export const invoicesService = {
       return acc;
     }, {});
 
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
     // Sejour'ları map'le
     const sejoursMap = (sejoursRes.data || []).reduce((acc: any, s: any) => {
