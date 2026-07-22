@@ -141,9 +141,9 @@ export default function AuthWrapper({
         const resolvedRole = (role || Role.VIEWER) as string;
         const module = resolveModule(currentPathname);
 
-        if (!module) {
+        if (!module || module === Module.HOME) {
           console.debug(
-            `[AuthWrapper] Path "${currentPathname}" has no module mapping, allowing access`,
+            `[AuthWrapper] Path "${currentPathname}" has no module mapping or is HOME, allowing access`,
           );
           setHasAccess(true);
           finishLoading();
