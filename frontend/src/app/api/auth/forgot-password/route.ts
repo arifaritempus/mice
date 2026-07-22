@@ -64,19 +64,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Supabase linki yerine kendi domainimiz üzerinden bir link oluşturuyoruz.
-    // actionLink örneği: https://xxx.supabase.co/auth/v1/verify?token=abc&type=recovery&redirect_to=...
-    let finalLink = actionLink;
-    try {
-      const url = new URL(actionLink);
-      const token = url.searchParams.get("token");
-      if (token) {
-        // Doğrudan kendi sitemize yönlendirip frontend'de verifyOtp ile token'ı doğrulayacağız
-        finalLink = `${siteUrl}/reset-password?token_hash=${token}&type=recovery`;
-      }
-    } catch (e) {
-      console.warn("Link parse edilemedi, orijinal link kullanılacak", e);
-    }
+    // Supabase linki yerine kendi domainimiz üzerinden bir yönlendirme (redirect) linki oluşturuyoruz.
+    // Böylece e-postada supabase.co görünmez.
+    const encodedLink = Buffer.from(actionLink).toString('base64');
+    const finalLink = `${siteUrl}/api/auth/verify-redirect?q=${encodedLink}`;
 
     // 3. E-posta şablonunu hazırla
     const htmlTemplate = `
