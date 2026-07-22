@@ -431,7 +431,7 @@ export default function QuoteEditPage() {
           setActiveHotelId(initialId);
         }
 
-        const TAB_TAG_REGEX = /\[T:([^\]]+)\]$/;
+        const TAB_TAG_REGEX = /\[T:([^\]]+)\]/;
         const items = await quoteItemsService.getByQuoteId(quoteId);
         const fixedItems = (items || []).map((item: any) => {
           let uiHotelId = item.hotel_id;
@@ -442,7 +442,7 @@ export default function QuoteEditPage() {
           if (match) {
             uiHotelId = match[1];
             cleanDescription = cleanDescription
-              .replace(TAB_TAG_REGEX, "")
+              .replace(/\[T:[^\]]+\]/g, "")
               .trim();
           } else if (item.hotel_id && hData) {
             // Eğer etiket yoksa eski usul eşleme yap (Geriye dönük uyumluluk)

@@ -86,8 +86,8 @@ export default function RootLayout({
             __html: `
               try {
                 // Read theme from cookie or fallback to dark mode
-                var match = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
-                var theme = match ? decodeURIComponent(match[1]) : "dark";
+                var match = document.cookie.match(/(?:^|;\\s*)theme=([^;]+)/);
+                var theme = match ? decodeURIComponent(match[1]) : "system";
                 if (theme === "light") {
                   document.documentElement.classList.add("light");
                   document.documentElement.classList.remove("dark");

@@ -307,7 +307,7 @@ export default function QuoteViewPage() {
           } else {
             setActiveViewHotelId("general");
           }
-          const TAB_TAG_REGEX = /\[T:([^\]]+)\]$/;
+          const TAB_TAG_REGEX = /\[T:([^\]]+)\]/;
           const items = await quoteItemsService.getByQuoteId(q.id);
           const fixedItems = (items || []).map((item: any) => {
             let uiHotelId = item.hotel_id;
@@ -318,7 +318,7 @@ export default function QuoteViewPage() {
             if (match) {
               uiHotelId = match[1];
               cleanDescription = cleanDescription
-                .replace(TAB_TAG_REGEX, "")
+                .replace(/\[T:[^\]]+\]/g, "")
                 .trim();
             } else if (item.hotel_id && hData.length > 0) {
               // Geriye dönük uyumluluk için eski eşleme

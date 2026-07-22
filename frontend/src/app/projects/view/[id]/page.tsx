@@ -316,13 +316,17 @@ export default function ProjectViewPublicPage() {
 
         const mappedSales = uniqueSales.map((it) => {
           let uiHotelId = it.hotel_id;
-          if (it.hotel_id && hData.length > 0) {
+          const { cleanDesc, tabTag, repeatTag } = parseDescriptionTags(
+            it.description || "",
+          );
+
+          if (tabTag) {
+            uiHotelId = tabTag;
+          } else if (it.hotel_id && hData.length > 0) {
             const matched = hData.find((h: any) => h.hotel_id === it.hotel_id);
             if (matched) uiHotelId = matched.id;
           }
-          const { cleanDesc, repeatTag } = parseDescriptionTags(
-            it.description || "",
-          );
+
           let inferredRepeat = 1;
           if (repeatTag !== null && repeatTag !== undefined && repeatTag !== "")
             inferredRepeat = Number(repeatTag);
@@ -1067,7 +1071,7 @@ export default function ProjectViewPublicPage() {
   const hotelsData = project?.hotels_data || [];
 
   if (loading)
-    return <div className="p-8 text-center text-slate-800">Yükleniyor...</div>;
+    return <div className="p-8 text-center text-v3-text">Yükleniyor...</div>;
   if (error && !showPasswordForm)
     return <div className="p-8 text-center text-red-500">{error}</div>;
 
@@ -1078,7 +1082,7 @@ export default function ProjectViewPublicPage() {
       appSettings?.darkIconLogo ||
       "";
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-v3-surface flex items-center justify-center p-4 relative overflow-hidden">
         {/* Dekoratif arka plan */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
@@ -1099,13 +1103,13 @@ export default function ProjectViewPublicPage() {
 
           <form
             onSubmit={handlePasswordSubmit}
-            className="bg-slate-50 backdrop-blur-2xl border border-slate-200 p-10 rounded-3xl shadow-2xl w-full"
+            className="bg-v3-surface backdrop-blur-2xl border border-v3-border p-10 rounded-3xl shadow-2xl w-full"
           >
             <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-slate-800 mb-2 tracking-tight">
+              <h2 className="text-2xl font-bold text-v3-text mb-2 tracking-tight">
                 Güvenli Erişim
               </h2>
-              <p className="text-slate-800 text-sm">
+              <p className="text-v3-muted text-sm">
                 Devam etmek için proje şifresini giriniz
               </p>
             </div>
@@ -1117,7 +1121,7 @@ export default function ProjectViewPublicPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifre"
-                  className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
+                  className="w-full h-14 px-6 bg-v3-surface border border-v3-border rounded-2xl text-v3-text placeholder:text-v3-muted focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all text-center text-lg tracking-widest"
                   required
                   autoFocus
                 />

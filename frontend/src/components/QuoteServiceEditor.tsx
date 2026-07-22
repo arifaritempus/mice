@@ -1093,9 +1093,14 @@ export default function QuoteServiceEditor({
                     className={`rounded-md p-2 flex flex-wrap md:flex-nowrap items-center gap-2 ${
                       it.isEditing
                         ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700"
-                        : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                        : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
                     }`}
                     onKeyDown={(e) => handleRowKeyDown(e, it)}
+                    onDoubleClick={() => {
+                      if (!disabled && !it.isEditing) {
+                        onEdit(it);
+                      }
+                    }}
                     tabIndex={it.isEditing ? 0 : -1}
                   >
                     {it.isEditing ? (

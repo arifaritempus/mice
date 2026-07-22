@@ -1051,6 +1051,15 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         );
         const dbHotelId = matchedHotel ? matchedHotel.hotel_id : null;
 
+        let saveDescription = item.description || "";
+        if (
+          item.hotel_id &&
+          item.hotel_id !== "general" &&
+          !saveDescription.includes(`[T:${item.hotel_id}]`)
+        ) {
+          saveDescription = `${saveDescription} [T:${item.hotel_id}]`.trim();
+        }
+
         await quoteItemsService.create({
           quote_id: createdQuote.id,
           reference: createdQuote.reference,
@@ -1063,7 +1072,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
           total: Number(item.total || 0),
           total_price: Number(item.total || 0),
           total_try: Number(item.total_try || 0),
-          description: item.description || "",
+          description: saveDescription,
           vat: Number(item.vat || 0),
           fx: Number(item.fx || 1),
           hotel_id: dbHotelId,
