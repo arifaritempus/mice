@@ -103,8 +103,7 @@ export default function AuthWrapper({
         if (sessionError || !session?.user) {
           console.debug("[AuthWrapper] No session found, redirecting to login");
           if (isMounted && pathname === currentPathname) {
-            setHasAccess(false);
-            finishLoading();
+            // Yönlendirme sırasında loading'i kapatmıyoruz ki "Erişim Sınırlandırıldı" ekranı gözükmesin
             router.push("/login");
           }
           return;
@@ -166,8 +165,7 @@ export default function AuthWrapper({
       } catch (error) {
         console.error("Auth check global catch:", error);
         if (isMounted && pathname === currentPathname) {
-          setHasAccess(false);
-          finishLoading();
+          // Yönlendirme sırasında loading'i kapatmıyoruz ki "Erişim Sınırlandırıldı" ekranı gözükmesin
           router.push("/login");
         }
       }
