@@ -1250,6 +1250,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                     className="w-full text-xs font-semibold text-v3-text bg-transparent border-none outline-none focus:ring-0"
                   >
                     <option value="TEKLİF">TEKLİF</option>
+                    <option value="BEKLEMEDE">BEKLEMEDE</option>
                     <option value="KONFİRME">KONFİRME</option>
                     <option value="İPTAL">İPTAL</option>
                   </select>

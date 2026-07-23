@@ -239,11 +239,16 @@ export const quotesService = {
       await projectsService.delete(p.id);
     }
 
-    const { error } = await supabase
+    const { data: deletedQuote, error } = await supabase
       .from('quotes')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select();
+    
     if (error) throw error;
+    if (!deletedQuote || deletedQuote.length === 0) {
+      throw new Error("Silme işlemi gerçekleşmedi. RLS kısıtlaması nedeniyle yetkiniz olmayabilir veya teklif zaten silinmiş.");
+    }
   },
 
   // ID'ye göre teklif getir
