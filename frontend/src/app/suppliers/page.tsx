@@ -1387,7 +1387,7 @@ export default function SuppliersPage() {
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1">
-                      İletişim Kişisi *
+                      İletişim Kişisi
                     </label>
                     <input
                       ref={
@@ -1397,7 +1397,6 @@ export default function SuppliersPage() {
                       }
                       type="text"
                       defaultValue={editingSupplier?.contact_person || ""}
-                      required
                       className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       placeholder="Ad Soyad"
                     />
@@ -1405,7 +1404,7 @@ export default function SuppliersPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
-                        <Phone size={12} /> Telefon *
+                        <Phone size={12} /> Telefon
                       </label>
                       <input
                         ref={
@@ -1413,13 +1412,12 @@ export default function SuppliersPage() {
                         }
                         type="tel"
                         defaultValue={editingSupplier?.phone || ""}
-                        required
                         className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       />
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
-                        <Mail size={12} /> E-posta *
+                        <Mail size={12} /> E-posta
                       </label>
                       <input
                         ref={
@@ -1427,14 +1425,13 @@ export default function SuppliersPage() {
                         }
                         type="email"
                         defaultValue={editingSupplier?.email || ""}
-                        required
                         className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-v3-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
-                      <MapPin size={12} /> Adres *
+                      <MapPin size={12} /> Adres
                     </label>
                     <textarea
                       ref={
@@ -1443,7 +1440,6 @@ export default function SuppliersPage() {
                           : newAddressInputRef
                       }
                       defaultValue={editingSupplier?.address || ""}
-                      required
                       rows={4}
                       className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm resize-none"
                       placeholder="Fatura ve şirket adresi"
