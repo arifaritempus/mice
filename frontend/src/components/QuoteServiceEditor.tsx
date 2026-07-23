@@ -1032,7 +1032,7 @@ export default function QuoteServiceEditor({
                       <h3 className="text-sm font-bold text-v3-text">
                         {row.category}
                       </h3>
-                      {!disabled && (
+                      {!disabled && !isViewMode && (
                         <button
                           type="button"
                           onClick={() => handleDeleteMainCategory(row.category)}
@@ -1097,7 +1097,7 @@ export default function QuoteServiceEditor({
                     }`}
                     onKeyDown={(e) => handleRowKeyDown(e, it)}
                     onDoubleClick={() => {
-                      if (!disabled && !it.isEditing) {
+                      if (!disabled && !isViewMode && !it.isEditing) {
                         onEdit(it);
                       }
                     }}
