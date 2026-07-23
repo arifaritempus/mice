@@ -70,6 +70,14 @@ const MODULE_META: Record<string, ModuleMeta> = {
   settings: { id: "settings", name: "Ayarlar", icon: "⚙️" },
   marketing: { id: "marketing", name: "Pazarlama (Marketing)", icon: "📢" },
   profile: { id: "profile", name: "Profil", icon: "👤" },
+  roles: { id: "roles", name: "Yetki Yönetimi", icon: "🛡️" },
+  supplier_categories: { id: "supplier_categories", name: "Tedarikçi Hizmet Kategorisi", icon: "🏷️" },
+  invoices_income: { id: "invoices_income", name: "Gelir Faturaları", icon: "📄" },
+  invoices_expense: { id: "invoices_expense", name: "Gider Faturaları", icon: "🧾" },
+  sejour_services: { id: "sejour_services", name: "Sejour Hizmet Listesi", icon: "🔧" },
+  tickets_options: { id: "tickets_options", name: "Bilet Opsiyon Takip", icon: "📋" },
+  tickets_payments: { id: "tickets_payments", name: "Bilet Ödeme Takip", icon: "💳" },
+  tickets_calendar: { id: "tickets_calendar", name: "Bilet Takvim Takip", icon: "📅" },
 };
 
 const MODULE_ORDER = [
@@ -96,6 +104,14 @@ const MODULE_ORDER = [
   "marketing",
   "settings",
   "profile",
+  "roles",
+  "supplier_categories",
+  "invoices_income",
+  "invoices_expense",
+  "sejour_services",
+  "tickets_options",
+  "tickets_payments",
+  "tickets_calendar",
 ];
 
 const MODULE_ALIASES: Record<string, string> = {
