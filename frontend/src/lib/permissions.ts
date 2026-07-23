@@ -47,7 +47,15 @@ export enum Module {
   SUPPLIERS = 'suppliers',
   TICKETS = 'tickets',
   MARKETING = 'marketing',
-  PROFILE = 'profile'
+  PROFILE = 'profile',
+  ROLES = 'roles',
+  SUPPLIER_CATEGORIES = 'supplier_categories',
+  INVOICES_INCOME = 'invoices_income',
+  INVOICES_EXPENSE = 'invoices_expense',
+  SEJOUR_SERVICES = 'sejour_services',
+  TICKETS_OPTIONS = 'tickets_options',
+  TICKETS_PAYMENTS = 'tickets_payments',
+  TICKETS_CALENDAR = 'tickets_calendar'
 }
 
 export enum Role {
@@ -119,15 +127,30 @@ const MODULE_ALIASES: Record<string, Module> = {
   'part-time': Module.PART_TIME,
   supplier: Module.SUPPLIERS,
   tedarikci: Module.SUPPLIERS,
-  service_types: Module.SUPPLIERS,
-  'service-types': Module.SUPPLIERS,
+  supplier_categories: Module.SUPPLIER_CATEGORIES,
+  'supplier-categories': Module.SUPPLIER_CATEGORIES,
+  service_types: Module.SUPPLIER_CATEGORIES,
+  'service-types': Module.SUPPLIER_CATEGORIES,
   tickets: Module.TICKETS,
   ticket: Module.TICKETS,
   bilet: Module.TICKETS,
   marketing: Module.MARKETING,
   pazarlama: Module.MARKETING,
   profile: Module.PROFILE,
-  profil: Module.PROFILE
+  profil: Module.PROFILE,
+  roles: Module.ROLES,
+  invoices_income: Module.INVOICES_INCOME,
+  'invoices-income': Module.INVOICES_INCOME,
+  invoices_expense: Module.INVOICES_EXPENSE,
+  'invoices-expense': Module.INVOICES_EXPENSE,
+  sejour_services: Module.SEJOUR_SERVICES,
+  'sejour-services': Module.SEJOUR_SERVICES,
+  tickets_options: Module.TICKETS_OPTIONS,
+  'tickets-options': Module.TICKETS_OPTIONS,
+  tickets_payments: Module.TICKETS_PAYMENTS,
+  'tickets-payments': Module.TICKETS_PAYMENTS,
+  tickets_calendar: Module.TICKETS_CALENDAR,
+  'tickets-calendar': Module.TICKETS_CALENDAR
 };
 
 const ACTION_ALIASES: Record<string, Permission> = {
@@ -377,7 +400,15 @@ export const permissionService = {
       [Module.SUPPLIERS]: 'Tedarikçiler',
       [Module.TICKETS]: 'Bilet',
       [Module.MARKETING]: 'Pazarlama (Marketing)',
-      [Module.PROFILE]: 'Profil'
+      [Module.PROFILE]: 'Profil',
+      [Module.ROLES]: 'Yetki Yönetimi',
+      [Module.SUPPLIER_CATEGORIES]: 'Tedarikçi Hizmet Kategorisi',
+      [Module.INVOICES_INCOME]: 'Gelir Faturaları',
+      [Module.INVOICES_EXPENSE]: 'Gider Faturaları',
+      [Module.SEJOUR_SERVICES]: 'Sejour Hizmet Listesi',
+      [Module.TICKETS_OPTIONS]: 'Bilet Opsiyon Takip',
+      [Module.TICKETS_PAYMENTS]: 'Bilet Ödeme Takip',
+      [Module.TICKETS_CALENDAR]: 'Bilet Takvim Takip'
     };
     return map[module];
   },
@@ -522,6 +553,13 @@ export const getModuleFromHref = (href: string): Module | null => {
   if (href === '/') return Module.HOME;
   
   // Exact paths or specific sub-paths
+  if (href.startsWith('/permissions/roles')) return Module.ROLES;
+  if (href.startsWith('/suppliers/service-types')) return Module.SUPPLIER_CATEGORIES;
+  if (href.startsWith('/sejour/services')) return Module.SEJOUR_SERVICES;
+  if (href.startsWith('/tickets/options')) return Module.TICKETS_OPTIONS;
+  if (href.startsWith('/tickets/payments')) return Module.TICKETS_PAYMENTS;
+  if (href.startsWith('/tickets/calendar')) return Module.TICKETS_CALENDAR;
+  
   if (href.startsWith('/operations/tickets')) return Module.TICKETS;
   if (href.startsWith('/operations/transfers')) return Module.TRANSFERS;
   if (href.startsWith('/operations/guides')) return Module.GUIDES;
@@ -529,6 +567,8 @@ export const getModuleFromHref = (href: string): Module | null => {
   if (href.startsWith('/operations')) return Module.OPERATIONS;
   
   if (href.startsWith('/accounting/cash-flow')) return Module.CASH_FLOW;
+  if (href.startsWith('/accounting/invoices/income')) return Module.INVOICES_INCOME;
+  if (href.startsWith('/accounting/invoices/expense')) return Module.INVOICES_EXPENSE;
   if (href.startsWith('/accounting/invoices')) return Module.INVOICES;
   if (href.startsWith('/accounting/exchange-rates')) return Module.EXCHANGE_RATES;
   if (href.startsWith('/accounting')) return Module.ACCOUNTING;
@@ -551,7 +591,7 @@ export const getModuleFromHref = (href: string): Module | null => {
     case 'suppliers': return Module.SUPPLIERS;
     case 'categories': return Module.CATEGORIES;
     case 'users': return Module.USERS;
-    case 'permissions': return Module.SETTINGS; // Permissions are usually under settings
+    case 'permissions': return Module.SETTINGS; // General settings fallback for other permission pages if any
     default: return null;
   }
 };
