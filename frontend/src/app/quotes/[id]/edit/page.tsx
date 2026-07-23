@@ -833,6 +833,15 @@ export default function QuoteEditPage() {
       return;
     }
 
+    if (formData.status === "KONFİRME") {
+      setNotification({
+        message: "Bu teklif konfirme edilmiştir. Lütfen önce durumunu değiştirin.",
+        type: "error",
+      });
+      setSubmitting(false);
+      return;
+    }
+
     try {
       if (
         !formData.reference ||
@@ -1024,6 +1033,8 @@ export default function QuoteEditPage() {
     );
   }
 
+  const isFormDisabled = hasLinkedProject || formData.status === "KONFİRME";
+
   return (
     <div className="h-full w-full overflow-y-auto pb-32 scroll-pt-32 bg-transparent transition-colors duration-200 compact">
       {/* NEW: Sticky Main Tabs - Full Width Minimal */}
@@ -1084,7 +1095,7 @@ export default function QuoteEditPage() {
       </div>
       <div className="p-4">
 
-        {hasLinkedProject && (
+        {(hasLinkedProject || formData.status === "KONFİRME") && (
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-4 flex items-start gap-3 shadow-lg shadow-amber-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
               <svg
@@ -1106,8 +1117,9 @@ export default function QuoteEditPage() {
                 TEKLİF KİLİTLİ
               </h4>
               <p className="text-[10px] font-medium text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-                Bu teklif konfirme edilip projeye aktarılmıştır. Teklif üzerinde
-                düzenleme yapabilmek için önce bağlı olan projeyi silmelisiniz.
+                {hasLinkedProject 
+                  ? "Bu teklif konfirme edilip projeye aktarılmıştır. Teklif üzerinde düzenleme yapabilmek için önce bağlı olan projeyi silmelisiniz." 
+                  : "Bu teklifin durumu KONFİRME olarak işaretlenmiştir. Düzenleme yapabilmek için lütfen önce durumunu değiştirin."}
               </p>
             </div>
           </div>
@@ -1131,7 +1143,7 @@ export default function QuoteEditPage() {
                   <input
                     type="text"
                     value={formData.reference}
-                    disabled={hasLinkedProject}
+                    disabled={isFormDisabled}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
@@ -1171,7 +1183,7 @@ export default function QuoteEditPage() {
                   <input
                     type="text"
                     value={formData.company_name}
-                    disabled={hasLinkedProject}
+                    disabled={isFormDisabled}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
@@ -1189,7 +1201,7 @@ export default function QuoteEditPage() {
                   <SearchableSelect
                     options={agencies}
                     value={formData.agency_id}
-                    disabled={hasLinkedProject}
+                    disabled={isFormDisabled}
                     onChange={(id) =>
                       setFormData((prev) => ({ ...prev, agency_id: id }))
                     }
@@ -1203,9 +1215,9 @@ export default function QuoteEditPage() {
                   <div className="relative z-50 operation-managers-dropdown">
                     <button
                       type="button"
-                      disabled={hasLinkedProject}
+                      disabled={isFormDisabled}
                       onClick={() =>
-                        !hasLinkedProject &&
+                        !isFormDisabled &&
                         setShowOperationManagersDropdown(!showOperationManagersDropdown)
                       }
                       className="w-full text-left text-xs font-semibold text-v3-text bg-transparent border-none outline-none focus:ring-0 flex justify-between items-center disabled:text-v3-muted"
@@ -1283,7 +1295,7 @@ export default function QuoteEditPage() {
                               <div className="flex-1 min-w-[150px]">
                                 <select
                                   value={h.hotel_id || ""}
-                                  disabled={hasLinkedProject}
+                                  disabled={isFormDisabled}
                                   onChange={(e) => handleHotelListChange(h.id, 'hotel_id', e.target.value)}
                                   className="w-full bg-v3-surface text-v3-text text-[11px] font-bold border border-v3-border rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
                                 >
@@ -1297,7 +1309,7 @@ export default function QuoteEditPage() {
                                 <input
                                   type="date"
                                   value={h.check_in_date ? h.check_in_date.substring(0, 10) : ""}
-                                  disabled={hasLinkedProject}
+                                  disabled={isFormDisabled}
                                   onChange={(e) => handleHotelListChange(h.id, 'check_in_date', e.target.value)}
                                   className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
                                   title="Giriş Tarihi"
@@ -1306,12 +1318,12 @@ export default function QuoteEditPage() {
                                 <input
                                   type="date"
                                   value={h.check_out_date ? h.check_out_date.substring(0, 10) : ""}
-                                  disabled={hasLinkedProject}
+                                  disabled={isFormDisabled}
                                   onChange={(e) => handleHotelListChange(h.id, 'check_out_date', e.target.value)}
                                   className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
                                   title="Çıkış Tarihi"
                                 />
-                                {!hasLinkedProject && (
+                                {!isFormDisabled && (
                                   <button
                                     type="button"
                                     onClick={() => removeHotelRow(h.id)}
@@ -1330,7 +1342,7 @@ export default function QuoteEditPage() {
                       )}
                     </div>
                     
-                    {!hasLinkedProject && (
+                    {!isFormDisabled && (
                       <button
                         type="button"
                         onClick={addHotelRow}
@@ -1357,7 +1369,7 @@ export default function QuoteEditPage() {
                     </p>
                     <select
                       value={formData.quote_type}
-                      disabled={hasLinkedProject}
+                      disabled={isFormDisabled}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -1382,7 +1394,7 @@ export default function QuoteEditPage() {
                 </label>
                 <textarea
                   value={formData.notes}
-                  disabled={hasLinkedProject}
+                  disabled={isFormDisabled}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, notes: e.target.value }))
                   }
@@ -1432,7 +1444,7 @@ export default function QuoteEditPage() {
                         {h.check_in_date ? new Date(h.check_in_date).toLocaleDateString('tr-TR', {day: '2-digit', month:'2-digit'}) : ''}
                         {h.check_out_date ? '-' + new Date(h.check_out_date).toLocaleDateString('tr-TR', {day: '2-digit', month:'2-digit'}) : ''}
                       </span>
-                      {!hasLinkedProject && (
+                      {!isFormDisabled && (
                         <div className="flex items-center ml-3 space-x-1">
                           <button
                             type="button"
@@ -1500,7 +1512,7 @@ export default function QuoteEditPage() {
                     </span>
                   </div>
 
-                  {!hasLinkedProject && (
+                  {!isFormDisabled && (
                     <button
                       type="button"
                       onClick={addHotelRow}
@@ -1544,7 +1556,7 @@ export default function QuoteEditPage() {
                               <SearchableSelect
                                 options={hotels}
                                 value={h.hotel_id}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(val) =>
                                   handleHotelListChange(h.id, "hotel_id", val)
                                 }
@@ -1558,7 +1570,7 @@ export default function QuoteEditPage() {
                               <input
                                 type="text"
                                 value={h.hotel_concept}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1577,7 +1589,7 @@ export default function QuoteEditPage() {
                               <input
                                 type="date"
                                 value={h.check_in_date}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1596,7 +1608,7 @@ export default function QuoteEditPage() {
                               <input
                                 type="date"
                                 value={h.check_out_date}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1616,7 +1628,7 @@ export default function QuoteEditPage() {
                               <input
                                 type="number"
                                 value={h.room_count}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1635,7 +1647,7 @@ export default function QuoteEditPage() {
                               <input
                                 type="number"
                                 value={h.pax_count}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1653,7 +1665,7 @@ export default function QuoteEditPage() {
                               </label>
                               <select
                                 value={h.option}
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1697,7 +1709,7 @@ export default function QuoteEditPage() {
                                   h.hotel_status ||
                                   (h.is_confirmed ? "KONFİRME" : "BEKLEMEDE")
                                 }
-                                disabled={hasLinkedProject}
+                                disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
@@ -1737,7 +1749,7 @@ export default function QuoteEditPage() {
                               items={serviceItems.filter(
                                 (item) => item.hotel_id === h.id,
                               )}
-                              disabled={hasLinkedProject}
+                              disabled={isFormDisabled}
                               onAdd={() => handleAddItem(h.id)}
                               onEdit={handleEditItem}
                               onDelete={handleDeleteItem}
@@ -1796,7 +1808,7 @@ export default function QuoteEditPage() {
                       items={serviceItems.filter(
                         (item) => !item.hotel_id || item.hotel_id === "general",
                       )}
-                      disabled={hasLinkedProject}
+                      disabled={isFormDisabled}
                       onAdd={() => handleAddItem("general")}
                       onEdit={handleEditItem}
                       onDelete={handleDeleteItem}
@@ -1837,7 +1849,7 @@ export default function QuoteEditPage() {
             >
               İPTAL
             </Link>
-            {!hasLinkedProject && (
+            {!isFormDisabled && (
               <button
                 type="submit"
                 className="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-v3-text bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5"

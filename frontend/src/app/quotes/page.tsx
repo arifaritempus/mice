@@ -1749,7 +1749,7 @@ export default function QuotesPage() {
                           </svg>
                         </button>
 
-                        {canDelete(Module.QUOTES) && !isQuoteLocked(quote) && (
+                        {canDelete(Module.QUOTES) && !isQuoteLocked(quote) && quote.status !== "KONFİRME" && (
                           <button
                             onClick={() => handleDeleteQuote(quote)}
                             className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
