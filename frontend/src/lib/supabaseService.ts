@@ -206,15 +206,19 @@ export const quotesService = {
 
   // Teklif güncelle
   async update(id: string, quote: Partial<Quote>): Promise<Quote> {
-    const { data, error } = await supabase
-      .from('quotes')
-      .update({ ...quote, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
+    const response = await fetch(`/api/quotes/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(quote)
+    });
 
-    if (error) throw error;
-    return data;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Teklif güncellenirken hata oluştu.");
+    }
+    
+    const result = await response.json();
+    return result.data;
   },
 
   async delete(id: string): Promise<void> {

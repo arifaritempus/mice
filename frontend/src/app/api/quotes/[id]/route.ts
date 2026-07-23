@@ -22,11 +22,11 @@ function getAdminClient() {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminClient = getAdminClient();
-    const id = params.id;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
@@ -65,6 +65,41 @@ export async function DELETE(
     console.error("Quotes Delete Error:", error);
     return NextResponse.json(
       { error: error.message || "Teklif silinemedi" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const adminClient = getAdminClient();
+    const { id } = await params;
+    
+    if (!id) {
+      return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
+    }
+
+    const body = await request.json();
+
+    const { data, error } = await adminClient
+      .from('quotes')
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    
+    return NextResponse.json({ success: true, data });
+  } catch (error: any) {
+    console.error("Quotes Update Error:", error);
+    return NextResponse.json(
+      { error: error.message || "Teklif güncellenemedi" },
       { status: 500 }
     );
   }
