@@ -449,8 +449,12 @@ export default function QuotesPage() {
     }
   };
 
-  const handleDeleteQuote = (id: string) => {
-    setQuoteToDelete(id);
+  const handleDeleteQuote = (quote: Quote) => {
+    if (quote.status === "KONFİRME") {
+      toast.error("Konfirme durumundaki teklifler silinemez. Lütfen önce durumunu değiştirin.");
+      return;
+    }
+    setQuoteToDelete(quote.id);
     setShowDeleteConfirm(true);
   };
 
@@ -1745,7 +1749,7 @@ export default function QuotesPage() {
 
                         {canDelete(Module.QUOTES) && !isQuoteLocked(quote) && (
                           <button
-                            onClick={() => handleDeleteQuote(quote.id)}
+                            onClick={() => handleDeleteQuote(quote)}
                             className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/20 transition-all duration-200 opacity-70 group-hover:opacity-100"
                             title="Sil"
                           >

@@ -32,6 +32,24 @@ export async function DELETE(
       return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
     }
 
+    // Teklifi bul ve durumunu kontrol et
+    const { data: quoteToVerify, error: quoteError } = await adminClient
+      .from('quotes')
+      .select('status')
+      .eq('id', id)
+      .single();
+
+    if (quoteError) {
+      return NextResponse.json({ error: "Teklif bulunamadı" }, { status: 404 });
+    }
+
+    if (quoteToVerify?.status === "KONFİRME") {
+      return NextResponse.json(
+        { error: "Konfirme durumundaki teklifler silinemez. Lütfen önce durumunu değiştirin." },
+        { status: 400 }
+      );
+    }
+
     // Projeleri bul ve sil
     const { data: linkedProjects } = await adminClient
       .from('projects')
