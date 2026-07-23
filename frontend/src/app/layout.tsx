@@ -86,7 +86,7 @@ export default function RootLayout({
             __html: `
               try {
                 // Read theme from cookie or fallback to light mode
-                var match = document.cookie.match(/(?:^|;\\s*)theme=([^;]+)/);
+                var match = document.cookie.match(/(?:^|;\\s*)nexus_theme=([^;]+)/);
                 var theme = match ? decodeURIComponent(match[1]) : "light";
                 if (theme === "dark") {
                   document.documentElement.classList.add("dark");

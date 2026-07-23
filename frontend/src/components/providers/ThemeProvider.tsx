@@ -40,7 +40,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const getThemeFromCookie = (): Theme | null => {
     if (typeof document === "undefined") return null;
-    const match = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
+    const match = document.cookie.match(/(?:^|;\s*)nexus_theme=([^;]+)/);
     const value = match ? decodeURIComponent(match[1]) : "";
     if (value === "light" || value === "dark" || value === "system")
       return value;
@@ -49,7 +49,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const setThemeCookie = (value: Theme) => {
     if (typeof document === "undefined") return;
-    document.cookie = `theme=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
+    document.cookie = `nexus_theme=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
   };
 
   useEffect(() => {
