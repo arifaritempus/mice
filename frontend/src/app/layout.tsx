@@ -85,21 +85,24 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                // Read theme from cookie or fallback to dark mode
+                // Read theme from cookie or fallback to light mode
                 var match = document.cookie.match(/(?:^|;\\s*)theme=([^;]+)/);
-                var theme = match ? decodeURIComponent(match[1]) : "system";
-                if (theme === "light") {
-                  document.documentElement.classList.add("light");
-                  document.documentElement.classList.remove("dark");
+                var theme = match ? decodeURIComponent(match[1]) : "light";
+                if (theme === "dark") {
+                  document.documentElement.classList.add("dark");
+                  document.documentElement.classList.remove("light");
                 } else if (theme === "system") {
                   var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
                   if (systemDark) {
                     document.documentElement.classList.add("dark");
+                    document.documentElement.classList.remove("light");
                   } else {
                     document.documentElement.classList.add("light");
+                    document.documentElement.classList.remove("dark");
                   }
                 } else {
-                  document.documentElement.classList.add("dark");
+                  document.documentElement.classList.add("light");
+                  document.documentElement.classList.remove("dark");
                 }
 
                 

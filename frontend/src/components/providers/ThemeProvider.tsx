@@ -33,8 +33,8 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [isDark, setIsDark] = useState(true);
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isInitialMount = useRef(true); // İlk yüklemede yenileme yapmamak için
 
@@ -61,9 +61,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       setThemeState(savedTheme);
       applyTheme(savedTheme);
     } else {
-      // Varsayılan her zaman koyu tema
-      setThemeState("dark");
-      applyTheme("dark");
+      // Varsayılan her zaman açık tema
+      setThemeState("light");
+      applyTheme("light");
     }
   }, []);
 
