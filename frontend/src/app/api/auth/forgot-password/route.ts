@@ -3,14 +3,15 @@ import { createClient } from "@supabase/supabase-js";
 import { sendMail } from "@/lib/mail";
 import { SettingsService } from "@/lib/supabaseService";
 
-// Admin yetkili Supabase istemcisini oluştur
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(request: NextRequest) {
   try {
+    // Admin yetkili Supabase istemcisini oluştur
+    // (Build zamanı hataları önlemek için handler içinde oluşturuyoruz)
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     const { email } = await request.json();
 
     if (!email) {

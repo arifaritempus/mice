@@ -2,14 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { XMLParser } from "fast-xml-parser";
 
-// Supabase client (Servis rolü ile oluşturuyoruz ki RLS'e takılmadan yazabilsin)
-// Cron job çalışırken authenticate olmayacak.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY! ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
+// Supabase client oluşturma kodları içeride (Build zamanı sorun olmaması için)
 export const revalidate = 0; // Disable cache for this route
 
 async function fetchTcmbDate(dateStr: string) {
@@ -82,6 +75,11 @@ async function fetchTcmbDate(dateStr: string) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Supabase client (Servis rolü ile oluşturuyoruz ki RLS'e takılmadan yazabilsin)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY! || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // Güvenlik kontrolü: Vercel Cron isteğini doğrula
     const authHeader = request.headers.get("authorization");
     if (
