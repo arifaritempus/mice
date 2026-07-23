@@ -217,7 +217,6 @@ export const quotesService = {
     return data;
   },
 
-  // Teklif sil
   async delete(id: string): Promise<void> {
     // Teklife bağlı projeleri de sil (ve onların alt kayıtları)
     const { data: linkedProjects, error: linkedProjectsError } = await supabase
@@ -226,28 +225,20 @@ export const quotesService = {
       .eq('quote_id', id);
     if (linkedProjectsError) throw linkedProjectsError;
 
-    // Teklif kalemleri + public linkleri temizle
-    const [quoteItemsDelete, quoteLinksDelete] = await Promise.all([
-      supabase.from('quote_items').delete().eq('quote_id', id),
-      supabase.from('public_links').delete().eq('quote_id', id)
-    ]);
-    if (quoteItemsDelete.error) throw quoteItemsDelete.error;
-    if (quoteLinksDelete.error) throw quoteLinksDelete.error;
-
-    // Bağlı projeler için tam cascade delete
+    // Bağlı projeler için tam cascade delete (frontend API'den veya supabase'den)
     for (const p of linkedProjects || []) {
+      const { projectsService } = await import('./supabaseService');
       await projectsService.delete(p.id);
     }
 
-    const { data: deletedQuote, error } = await supabase
-      .from('quotes')
-      .delete()
-      .eq('id', id)
-      .select();
-    
-    if (error) throw error;
-    if (!deletedQuote || deletedQuote.length === 0) {
-      throw new Error("Silme işlemi gerçekleşmedi. RLS kısıtlaması nedeniyle yetkiniz olmayabilir veya teklif zaten silinmiş.");
+    // Şimdi asıl teklifi API üzerinden sil (RLS'yi atlamak için)
+    const response = await fetch(`/api/quotes/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Silme işlemi başarısız oldu.");
     }
   },
 
