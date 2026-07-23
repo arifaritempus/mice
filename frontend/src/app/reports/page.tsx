@@ -823,7 +823,7 @@ export default function ReportsPage() {
   return (
     <div className="flex flex-col h-full overflow-auto pt-4 pb-4 px-4 lg:px-8 gap-4 max-w-[1920px] mx-auto w-full custom-scrollbar text-slate-900 dark:text-slate-100 transition-colors duration-300">
       {/* Header Section */}
-      <div className="flex flex-row items-center justify-between gap-4 mb-4 shrink-0 w-full overflow-x-auto custom-scrollbar">
+      <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-4 shrink-0 w-full">
         {/* Title Area */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-600 dark:text-blue-400 shrink-0">
@@ -852,7 +852,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Filters Area (Single Row) */}
-        <div className="flex flex-row items-center justify-end gap-3 flex-1 min-w-0">
+        <div className="flex flex-row flex-wrap items-center justify-end gap-3 flex-1 min-w-0">
           {/* Report Period Toggle */}
           <div className="inline-flex bg-v3-surface p-1 rounded-xl border border-v3-border shrink-0 h-10">
             {(["bu_hafta", "bu_ay", "bu_yil", "ozel"] as DatePreset[]).map(
