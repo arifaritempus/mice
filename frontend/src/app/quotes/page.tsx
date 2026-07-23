@@ -119,6 +119,7 @@ export default function QuotesPage() {
     canEdit,
     canDelete,
     userRole,
+    isSuperAdmin,
     loading: permissionsLoading,
   } = usePermissions();
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -232,7 +233,7 @@ export default function QuotesPage() {
   };
 
   const toggleLock = async (quote: Quote) => {
-    if (userRole !== "super_admin") return;
+    if (!isSuperAdmin) return;
     if (lockUpdatingId) return;
     try {
       setLockUpdatingId(quote.id);
@@ -908,7 +909,7 @@ export default function QuotesPage() {
 
   // Toplam teklif sayısı (filtrelenmiş)
   const totalFilteredCount = totalCount;
-  const tableColumnCount = userRole === "super_admin" ? 16 : 15;
+  const tableColumnCount = isSuperAdmin ? 16 : 15;
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -1503,7 +1504,7 @@ export default function QuotesPage() {
                     </div>
                   </th>
                   {/* Kilit durumu (sadece süper admin için) */}
-                  {userRole === "super_admin" && (
+                  {isSuperAdmin && (
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Kilit
                     </th>
@@ -1633,7 +1634,7 @@ export default function QuotesPage() {
                       </span>
                     </td>
                     {/* Kilit sütunu */}
-                    {userRole === "super_admin" && (
+                    {isSuperAdmin && (
                       <td className="px-3 py-2 whitespace-nowrap text-xs">
                         <button
                           onClick={() => toggleLock(quote)}
