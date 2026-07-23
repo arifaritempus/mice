@@ -852,7 +852,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Filters Area (Single Row) */}
-        <div className="flex flex-row flex-wrap items-center justify-end gap-3 flex-1 min-w-0">
+        <div className="flex flex-row flex-wrap items-end justify-end gap-3 flex-1 min-w-0">
           {/* Report Period Toggle */}
           <div className="inline-flex bg-v3-surface p-1 rounded-xl border border-v3-border shrink-0 h-10">
             {(["bu_hafta", "bu_ay", "bu_yil", "ozel"] as DatePreset[]).map(

@@ -276,9 +276,12 @@ export default function ResponsiveDateRangeField({
 
   return (
     <div className={`min-w-0 relative flex flex-col w-full ${className}`} ref={containerRef}>
-      <label className="block text-xs font-semibold text-slate-700 dark:text-v3-text/90 mb-1.5 truncate" title={label}>
-        {label}
-      </label>
+      {label && label.trim().length > 0 && (
+        <label className="block text-xs font-semibold text-slate-700 dark:text-v3-text/90 mb-1.5 truncate" title={label}>
+          {label}
+        </label>
+      )}
+
       
       {/* Trigger Button */}
       <button
