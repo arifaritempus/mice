@@ -479,8 +479,10 @@ export default function QuotesPage() {
     try {
       const created = await quotesService.create({
         reference: `${quote.reference}-COPY`,
+        quote_number: `${quote.reference}-COPY`,
         agency_id: quote.agency_id,
         company_name: quote.company_name,
+        client_name: quote.company_name,
         check_in_date: quote.check_in_date,
         check_out_date: quote.check_out_date,
         hotel_id: quote.hotel_id,
