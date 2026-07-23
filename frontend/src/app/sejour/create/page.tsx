@@ -1449,7 +1449,7 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[3] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1.5]">
+                          <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-end w-full lg:[&>*:nth-child(1)]:flex-[3] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1.5]">
                             <div className="md:col-span-2">
                               <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Otel Seçimi
@@ -1686,7 +1686,7 @@ export default function CreateSejourPage() {
                               ✕
                             </button>
                           </div>
-                          <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[3.5] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.5]">
+                          <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[3.5] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.5]">
                             <div>
                               <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-2 ml-1">
                                 Uçuş Tarihi
@@ -2397,7 +2397,7 @@ export default function CreateSejourPage() {
                               key={room.id}
                               className="group bg-gray-50/50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg p-1 transition-all duration-300 hover:border-red-300"
                             >
-                              <div className="flex flex-col lg:flex-row gap-2 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.5]">
+                              <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.5]">
                                 <div className="md:col-span-2">
                                   <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1">
                                     Otel & Oda

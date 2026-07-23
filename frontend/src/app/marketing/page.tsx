@@ -217,8 +217,8 @@ export default function MarketingPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
-      <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-4">
+    <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden pt-4 pb-20 px-4 sm:px-8 gap-6 custom-scrollbar font-sans text-v3-text">
+      <div className="w-full min-w-0 flex flex-col flex-1 space-y-4">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2 shrink-0">
           {/* Left Side: Title + Date Filter */}
@@ -333,8 +333,8 @@ export default function MarketingPage() {
         </div>
 
         {/* Content Section */}
-        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-v3-border overflow-hidden flex flex-col flex-1 min-h-0 shadow-inner">
-          <div className="flex border-b border-v3-border p-2 gap-2 overflow-x-auto custom-scrollbar shrink-0">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-v3-border flex flex-col flex-1 shadow-inner min-h-[500px]">
+          <div className="flex border-b border-v3-border p-2 gap-2 overflow-x-auto custom-scrollbar shrink-0 rounded-t-2xl">
             <button
               onClick={() => setActiveTab("clients")}
               className={`px-4 py-2 text-[11px] font-semibold tracking-widest transition-all duration-300 rounded-xl whitespace-nowrap ${activeTab === "clients" ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
@@ -355,7 +355,7 @@ export default function MarketingPage() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <div className="flex-1 overflow-visible p-4 sm:p-6">
             {activeTab === "clients" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <AnimatePresence>

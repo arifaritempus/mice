@@ -606,7 +606,7 @@ export default function RolePermissionsPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
+    <div className="h-full w-full p-3 sm:p-6 lg:p-8 flex flex-col gap-4 sm:gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">
@@ -665,8 +665,8 @@ export default function RolePermissionsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 flex-1 min-h-0">
-          <div className="xl:col-span-1 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border flex flex-col min-h-0 p-3 shadow-sm">
+        <div className="flex flex-col xl:flex-row gap-4 flex-1 min-h-0">
+          <div className="w-full xl:w-1/4 h-48 xl:h-auto shrink-0 xl:shrink-0 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border flex flex-col min-h-0 p-3 shadow-sm">
             <h2 className="text-[11px] font-semibold text-v3-text uppercase tracking-wider mb-2">
               Roller
             </h2>
@@ -719,7 +719,7 @@ export default function RolePermissionsPage() {
             </div>
           </div>
 
-          <div className="xl:col-span-3 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border shadow-sm flex flex-col min-h-0">
+          <div className="w-full xl:w-3/4 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border shadow-sm flex flex-col min-h-0 flex-1">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-v3-border shrink-0">
               <div>
                 <h2 className="text-base font-medium text-v3-text">

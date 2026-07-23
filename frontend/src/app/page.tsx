@@ -640,18 +640,30 @@ export default function HomePage() {
     <div className="flex flex-col h-full overflow-y-auto pt-4 pb-4 px-4 gap-4 custom-scrollbar">
       {/* Top Header: Title & Filters */}
       <div className="shrink-0 flex flex-col gap-3 z-10">
-        <div className="flex flex-wrap items-center justify-start gap-8">
-          <div>
-            <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
-              {t('home.title')}
-            </h1>
-            <p className="text-xs text-v3-muted mt-1">
-              {t('home.subtitle')}
-            </p>
+        <div className="flex flex-col gap-4 max-w-full">
+          
+          {/* Header Row: Title and Refresh Button */}
+          <div className="flex items-start justify-between gap-4 w-full">
+            <div>
+              <h1 className="text-2xl font-light tracking-wide text-v3-text glow-text">
+                {t('home.title')}
+              </h1>
+              <p className="text-xs text-v3-muted mt-1">
+                {t('home.subtitle')}
+              </p>
+            </div>
+            <button
+              onClick={loadData}
+              className="shrink-0 bg-v3-border border border-v3-border hover:bg-v3-surface text-v3-text w-[40px] h-[40px] rounded-xl transition-all duration-300 flex items-center justify-center"
+              title={t('home.refresh')}
+            >
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            </button>
           </div>
 
-          <div className="flex items-end gap-2">
-            <div className="flex items-center gap-2 p-1 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl w-fit h-[40px]">
+          {/* Filter Row */}
+          <div className="w-full">
+            <div className="flex items-center gap-1 p-1 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl w-full flex-nowrap h-[40px]">
               {(
                 [
                   { id: "today", label: t('home.today') },
@@ -666,13 +678,13 @@ export default function HomePage() {
                     setPeriod(item.id as PeriodFilter);
                     setShowCustomDate(false);
                   }}
-                  className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${
+                  className={`flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center ${
                     period === item.id
                       ? "bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.15)]"
                       : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                   }`}
                 >
-                  {item.label}
+                  <span className="truncate">{item.label}</span>
                 </button>
               ))}
               <button
@@ -680,26 +692,26 @@ export default function HomePage() {
                   setPeriod("custom");
                   setShowCustomDate(true);
                 }}
-                className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center gap-1 ${
+                className={`flex-[1.2] min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-1 ${
                   period === "custom"
                     ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
                     : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"
                 }`}
               >
-                <Calendar size={14} />
-                {t('home.customDate')}
+                <Calendar size={12} className="shrink-0" />
+                <span className="truncate">{t('home.customDate')}</span>
               </button>
             </div>
 
             <AnimatePresence>
               {showCustomDate && (
                   <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="flex items-end gap-2"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="w-full mt-3"
                 >
-                  <div className="w-64">
+                  <div className="w-full sm:w-64">
                     <ResponsiveDateRangeField
                       label={t('home.dateRange')}
                       startValue={customDate.start}
@@ -716,14 +728,6 @@ export default function HomePage() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            <button
-              onClick={loadData}
-              className="bg-v3-border border border-v3-border hover:bg-v3-surface text-v3-text px-4 py-2 rounded-xl transition-all duration-300 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ml-1 h-[40px]"
-            >
-              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-              {t('home.refresh')}
-            </button>
           </div>
         </div>
       </div>

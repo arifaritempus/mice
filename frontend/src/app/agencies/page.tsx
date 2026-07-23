@@ -803,62 +803,64 @@ export default function AgenciesPage() {
             <div className="w-px h-6 bg-white/10 shrink-0 mx-1 hidden sm:block"></div>
 
             {/* Actions */}
-            <label className="h-10 bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0">
+              <label className="flex-1 sm:flex-none justify-center h-10 bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center gap-2 shrink-0">
+                <svg
+                  className="w-4 h-4 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                  />
+                </svg>
+                <span>{importing ? "YÜKLENİYOR..." : "EXCEL YÜKLE"}</span>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileImport}
+                  disabled={importing}
+                  className="hidden"
                 />
-              </svg>
-              {importing ? "YÜKLENİYOR..." : "EXCEL YÜKLE"}
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleFileImport}
-                disabled={importing}
-                className="hidden"
-              />
-            </label>
+              </label>
 
-            <button
-              onClick={exportAgenciesToExcel}
-              disabled={exporting}
-              className="h-10 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" />
-              </svg>
-              {exporting ? "İNDİRİLİYOR..." : "EXCEL İNDİR"}
-            </button>
-
-            {canCreate(Module.AGENCIES) && (
               <button
-                onClick={() => setShowAddModal(true)}
-                className="h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                onClick={exportAgenciesToExcel}
+                disabled={exporting}
+                className="flex-1 sm:flex-none justify-center h-10 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
               >
-                <Plus size={16} /> YENİ ACENTE
+                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.5,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V7.5L14.5,2M10,19L7,19V15H10V19M13,19L10,19V15H13V19M16,19L13,19V15H16V19M10,14L7,14V10H10V14M13,14L10,14V10H13V14M16,14L13,14V10H16V14M13,7V3.5L18.5,9H14A1,1 0 0,1 13,8V7Z" />
+                </svg>
+                <span>{exporting ? "İNDİRİLİYOR..." : "EXCEL İNDİR"}</span>
               </button>
-            )}
+
+              {canCreate(Module.AGENCIES) && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="flex-1 sm:flex-none justify-center h-10 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shrink-0"
+                >
+                  <Plus size={16} className="shrink-0" /> <span>YENİ ACENTE</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Unified Stats Strip */}
         <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-            <span className="text-[11px] font-medium text-v3-text">Durum:</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-v3-border w-full sm:w-auto">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shrink-0"></div>
+            <span className="text-[11px] font-medium text-v3-text shrink-0">Durum:</span>
           </div>
 
           <button
             onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
+            className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shrink-0 ${filter === "all" ? "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             TÜMÜ
             <span
@@ -869,7 +871,7 @@ export default function AgenciesPage() {
           </button>
           <button
             onClick={() => setFilter("active")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-600 dark:text-teal-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
+            className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shrink-0 ${filter === "active" ? "bg-teal-500/20 border border-teal-500/30 text-teal-600 dark:text-teal-300 shadow-[0_0_10px_rgba(20,184,166,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             AKTİF
             <span
@@ -880,11 +882,11 @@ export default function AgenciesPage() {
           </button>
           <button
             onClick={() => setFilter("inactive")}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${filter === "inactive" ? "bg-red-500/20 border border-red-500/30 text-red-300" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
+            className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shrink-0 ${filter === "inactive" ? "bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.15)]" : "text-v3-muted hover:text-v3-text hover:bg-v3-border border border-transparent"}`}
           >
             PASİF
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "inactive" ? "bg-red-500/20 text-red-300" : "bg-white/10"}`}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === "inactive" ? "bg-red-500/20 text-red-600 dark:text-red-300" : "bg-white/10"}`}
             >
               {agencies.filter((a) => !a.is_active).length}
             </span>

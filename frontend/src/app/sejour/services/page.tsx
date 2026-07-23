@@ -1128,9 +1128,9 @@ export default function SejourServicesPage() {
         </div>
 
         {/* Unified Stats Strip for Tabs */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1">
+        <div className="mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm w-full overflow-x-auto custom-scrollbar">
+          <div className="flex items-center gap-2 min-w-max">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1 shrink-0">
               VERİ TÜRÜ:
             </span>
             <button
@@ -1138,18 +1138,18 @@ export default function SejourServicesPage() {
                 setActiveTab("sales");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "sales" ? "bg-blue-500/20 border border-blue-500/50 text-white" : "hover:bg-v3-surface/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${activeTab === "sales" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
-              <span>SATIŞ HİZMETLERİ</span>
+              <span className="text-[10px] sm:text-xs">SATIŞ HİZMETLERİ</span>
             </button>
             <button
               onClick={() => {
                 setActiveTab("costs");
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === "costs" ? "bg-emerald-500/20 border border-emerald-500/50 text-white" : "hover:bg-v3-surface/5 border border-transparent text-white"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${activeTab === "costs" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
-              <span>ALIŞ HİZMETLERİ</span>
+              <span className="text-[10px] sm:text-xs">MALİYET VERİLERİ</span>
             </button>
           </div>
         </div>

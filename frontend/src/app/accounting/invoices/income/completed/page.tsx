@@ -509,10 +509,9 @@ export default function IncomeCompletedPage() {
                     <tr>
                       <td
                         colSpan={10}
-                        className="px-6 py-16 text-center italic text-v3-muted"
+                        className="px-6 py-16 text-center text-v3-muted dark:text-v3-muted"
                       >
-                        Kayıtlı fatura bulunamadı veya filtrelere uyan sonuç
-                        yok.
+                        Tamamlanmış fatura kaydı yok.
                       </td>
                     </tr>
                   )}

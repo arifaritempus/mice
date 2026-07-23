@@ -1142,38 +1142,38 @@ export default function SejourPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1">
+        <div className="mb-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm w-full overflow-x-auto custom-scrollbar">
+          <div className="flex items-center gap-2 min-w-max">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1 pl-1 shrink-0">
               DURUM:
             </span>
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${statusFilter === "all" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
-              <span>TÜMÜ</span>
-              <span className="font-bold">{totalCount}</span>
+              <span className="text-[10px] sm:text-xs">TÜMÜ</span>
+              <span className="font-bold text-[10px] sm:text-xs">{totalCount}</span>
             </button>
             <button
               onClick={() => setStatusFilter("konfirme")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "konfirme" ? "bg-green-500/20 border border-green-500/50 text-green-700 dark:text-green-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${statusFilter === "konfirme" ? "bg-green-500/20 border border-green-500/50 text-green-700 dark:text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
-              <span>KONFİRME</span>
-              <span className="font-bold">{sejoursKonfirmeCount}</span>
+              <span className="text-[10px] sm:text-xs">KONFİRME</span>
+              <span className="font-bold text-[10px] sm:text-xs">{sejoursKonfirmeCount}</span>
             </button>
             <button
               onClick={() => setStatusFilter("bekleyen")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "bekleyen" ? "bg-yellow-500/20 border border-yellow-500/50 text-amber-700 dark:text-amber-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${statusFilter === "bekleyen" ? "bg-yellow-500/20 border border-yellow-500/50 text-amber-700 dark:text-amber-300 shadow-[0_0_10px_rgba(234,179,8,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
-              <span>BEKLEYEN</span>
-              <span className="font-bold">{sejoursBekleyenCount}</span>
+              <span className="text-[10px] sm:text-xs">BEKLEYEN</span>
+              <span className="font-bold text-[10px] sm:text-xs">{sejoursBekleyenCount}</span>
             </button>
             <button
               onClick={() => setStatusFilter("iptal")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "iptal" ? "bg-red-500/20 border border-red-500/50 text-red-700 dark:text-red-300" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${statusFilter === "iptal" ? "bg-red-500/20 border border-red-500/50 text-red-700 dark:text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
             >
-              <span>İPTAL</span>
-              <span className="font-bold">{sejoursIptalCount}</span>
+              <span className="text-[10px] sm:text-xs">İPTAL</span>
+              <span className="font-bold text-[10px] sm:text-xs">{sejoursIptalCount}</span>
             </button>
           </div>
         </div>

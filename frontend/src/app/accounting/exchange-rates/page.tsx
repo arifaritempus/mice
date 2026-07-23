@@ -214,7 +214,7 @@ export default function ExchangeRatesPage() {
 
       {/* ═══════════════ DATA GRID ═══════════════ */}
       <div className="bg-v3-surface backdrop-blur-2xl border border-v3-border rounded-2xl flex-1 flex flex-col min-h-0 overflow-hidden relative shadow-2xl ring-1 ring-white/5">
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay"></div>
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }}></div>
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
         <div className="overflow-auto flex-1 min-h-0 custom-scrollbar relative z-10">

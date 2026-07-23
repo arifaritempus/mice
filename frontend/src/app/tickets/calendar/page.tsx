@@ -758,7 +758,7 @@ export default function TicketCalendarPage() {
     );
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
+    <div className="h-full w-full p-4 sm:p-8 flex flex-col gap-6 overflow-y-auto overflow-x-hidden custom-scrollbar font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0 space-y-2">
         {/* Unified Header */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-2 shrink-0">
@@ -817,7 +817,7 @@ export default function TicketCalendarPage() {
             </div>
 
             {/* Search */}
-            <div className="flex-[2] min-w-[300px]">
+            <div className="flex-[2] w-full sm:w-auto sm:min-w-[300px]">
               <MultiTokenFilterInput
                 label={t('ticketsCalendar.phSearch') || "Genel Arama (Voucher, PNR, Firma vb.)"}
                 tokens={searchTokens}
@@ -909,41 +909,42 @@ export default function TicketCalendarPage() {
 
           {/* Calendar Grid Container */}
           <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-v3-border flex-1 min-h-0 flex flex-col overflow-hidden">
-            {(viewMode === "monthly" || viewMode === "weekly") && (
-              <div className="grid grid-cols-7 border-b border-v3-border bg-v3-surface shrink-0">
-                {(
-                  [
-                    t('common.dayMon') || "Pazartesi",
-                    t('common.dayTue') || "Salı",
-                    t('common.dayWed') || "Çarşamba",
-                    t('common.dayThu') || "Perşembe",
-                    t('common.dayFri') || "Cuma",
-                    t('common.daySat') || "Cumartesi",
-                    t('common.daySun') || "Pazar",
-                  ] as string[]
-                ).map((day) => (
-                  <div key={day} className="py-3 text-center">
-                    <span className="text-[10px] font-semibold text-v3-muted uppercase tracking-widest">
-                      {day}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex-1 flex flex-col overflow-x-auto custom-scrollbar">
+              {(viewMode === "monthly" || viewMode === "weekly") && (
+                <div className="grid grid-cols-7 min-w-[800px] lg:min-w-0 border-b border-v3-border bg-v3-surface shrink-0">
+                  {(
+                    [
+                      t('common.dayMon') || "Pazartesi",
+                      t('common.dayTue') || "Salı",
+                      t('common.dayWed') || "Çarşamba",
+                      t('common.dayThu') || "Perşembe",
+                      t('common.dayFri') || "Cuma",
+                      t('common.daySat') || "Cumartesi",
+                      t('common.daySun') || "Pazar",
+                    ] as string[]
+                  ).map((day) => (
+                    <div key={day} className="py-3 text-center">
+                      <span className="text-[10px] font-semibold text-v3-muted uppercase tracking-widest">
+                        {day}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {/* Scrollable grid body */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div
-                className={`grid min-h-full ${
-                  viewMode === "daily"
-                    ? "grid-cols-1"
-                    : viewMode === "weekly"
-                      ? "grid-cols-7"
-                      : viewMode === "yearly"
-                        ? "grid-cols-4"
-                        : "grid-cols-7"
-                }`}
-              >
+              {/* Scrollable grid body */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div
+                  className={`grid min-h-full ${
+                    viewMode === "daily"
+                      ? "grid-cols-1"
+                      : viewMode === "weekly"
+                        ? "grid-cols-7 min-w-[800px] lg:min-w-0"
+                        : viewMode === "yearly"
+                          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                          : "grid-cols-7 min-w-[800px] lg:min-w-0"
+                  }`}
+                >
                 {calendarData.map((period, idx) => {
                   const isToday =
                     period.startDate.toDateString() ===
@@ -1064,6 +1065,7 @@ export default function TicketCalendarPage() {
                 })}
               </div>
             </div>
+            </div>
           </div>
         </div>
 
@@ -1112,7 +1114,7 @@ export default function TicketCalendarPage() {
                           <Plus className="w-6 h-6 rotate-45" />
                         </button>
                       </div>
-                      <div className="grid grid-cols-2 gap-10">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                         <div className="space-y-6">
                           <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">

@@ -1286,35 +1286,37 @@ export default function TicketPaymentsPage() {
         </div>
 
         {/* Unified Stats Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0 mb-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-v3-muted font-medium uppercase tracking-wider ml-2">
-              {t('ticketsPayments.sortBy') || "SIRALAMA / FİLTRE"}:
-            </span>
-            <button
-              onClick={() => setSortBy("payment")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${sortBy === "payment" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
-            >
-              <span>{t('ticketsPayments.sortPayment') || "ÖDEME TARİHİ"}</span>
-            </button>
-            <button
-              onClick={() => setSortBy("flight")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${sortBy === "flight" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
-            >
-              <span>{t('ticketsPayments.sortFlight') || "UÇUŞ TARİHİ"}</span>
-            </button>
-            <button
-              onClick={() => setSortBy("balance")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${sortBy === "balance" ? "bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
-            >
-              <span>{t('ticketsPayments.sortBalance') || "BAKİYESİ OLAN"}</span>
-            </button>
-          </div>
-          <div className="flex items-center gap-2 border-l border-v3-border pl-4 text-v3-muted">
-            <span className="font-medium text-v3-text">
-              {filteredTickets.length} / {confirmedTickets.length}
-            </span>{" "}
-            {t('ticketsPayments.showingTickets') || "bilet gösteriliyor"}
+        <div className="mb-3 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm w-full overflow-x-auto custom-scrollbar">
+          <div className="flex items-center justify-between gap-4 min-w-max text-xs">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-v3-muted font-medium uppercase tracking-wider ml-2 shrink-0">
+                {t('ticketsPayments.sortBy') || "SIRALAMA / FİLTRE"}:
+              </span>
+              <button
+                onClick={() => setSortBy("payment")}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${sortBy === "payment" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              >
+                <span className="text-[10px] sm:text-xs">{t('ticketsPayments.sortPayment') || "ÖDEME TARİHİ"}</span>
+              </button>
+              <button
+                onClick={() => setSortBy("flight")}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${sortBy === "flight" ? "bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              >
+                <span className="text-[10px] sm:text-xs">{t('ticketsPayments.sortFlight') || "UÇUŞ TARİHİ"}</span>
+              </button>
+              <button
+                onClick={() => setSortBy("balance")}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${sortBy === "balance" ? "bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]" : "hover:bg-v3-surface/5 border border-transparent text-v3-text"}`}
+              >
+                <span className="text-[10px] sm:text-xs">{t('ticketsPayments.sortBalance') || "BAKİYESİ OLAN"}</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2 border-l border-v3-border pl-4 text-v3-muted shrink-0">
+              <span className="font-medium text-v3-text">
+                {filteredTickets.length} / {confirmedTickets.length}
+              </span>{" "}
+              {t('ticketsPayments.showingTickets') || "bilet gösteriliyor"}
+            </div>
           </div>
         </div>
 
@@ -2072,7 +2074,7 @@ export default function TicketPaymentsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />

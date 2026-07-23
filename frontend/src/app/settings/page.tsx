@@ -937,7 +937,7 @@ export default function SettingsPage() {
                               [color.key]: e.target.value,
                             })
                           }
-                          className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"
+                          className="w-8 h-8 shrink-0 rounded cursor-pointer bg-transparent border-0 p-0"
                         />
                         <input
                           type="text"
@@ -948,7 +948,7 @@ export default function SettingsPage() {
                               [color.key]: e.target.value,
                             })
                           }
-                          className="flex-1 bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none uppercase font-mono"
+                          className="flex-1 min-w-0 bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none uppercase font-mono"
                         />
                       </div>
                     </div>
