@@ -40,6 +40,7 @@ export default function AuthWrapper({
     if (path.startsWith("/projects")) return Module.PROJECTS;
     if (path.startsWith("/accounting/cash-flow")) return Module.CASH_FLOW;
     if (path.startsWith("/accounting/invoices")) return Module.INVOICES;
+    if (path.startsWith("/accounting/exchange-rates")) return Module.EXCHANGE_RATES;
     if (path.startsWith("/accounting")) return Module.ACCOUNTING;
     if (path.startsWith("/agencies")) return Module.AGENCIES;
     if (path.startsWith("/hotels")) return Module.HOTELS;
@@ -52,6 +53,7 @@ export default function AuthWrapper({
     if (path.startsWith("/operations/transfers")) return Module.TRANSFERS;
     if (path.startsWith("/operations/guides")) return Module.GUIDES;
     if (path.startsWith("/operations/part-time")) return Module.PART_TIME;
+    if (path.startsWith("/operations/tickets")) return Module.TICKETS;
     if (path.startsWith("/operations")) return Module.OPERATIONS;
     if (path.startsWith("/suppliers")) return Module.SUPPLIERS;
     if (path.startsWith("/tickets")) return Module.TICKETS;
