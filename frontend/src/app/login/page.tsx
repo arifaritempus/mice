@@ -225,7 +225,7 @@ export default function LoginPage() {
                     value={credentials.email}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-sm text-v3-text placeholder:text-v3-muted focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                    placeholder="e.g., alex.chen@nexus.co"
+                    placeholder="ornek@eposta.com"
                   />
                 </div>
               </div>
