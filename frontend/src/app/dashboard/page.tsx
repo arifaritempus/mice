@@ -1331,7 +1331,7 @@ export default function UltimateDashboard() {
                     
                     <div className="mt-auto pt-2 border-t border-fuchsia-500/20 flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[8px] text-fuchsia-800 dark:text-fuchsia-200/70 uppercase tracking-widest mb-1">{t('dashboard.netKar') || "NET KÂR"}</p>
+                        <p className="text-[8px] text-fuchsia-800 dark:text-fuchsia-200/70 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "NET KÂR"}</p>
                         <p className="font-black text-xs text-emerald-600 dark:text-emerald-400">
                           {formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0), language)}
                         </p>
