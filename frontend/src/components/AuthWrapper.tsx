@@ -304,13 +304,8 @@ export default function AuthWrapper({
     return <>{children}</>;
   }
 
-  // Tüm sayfalar için Merkezi Cam Pencere (Floating App Window) layout'u
   return (
-    <div className="flex items-center justify-center h-screen w-screen overflow-hidden transition-colors duration-200 mobile-auth-wrapper bg-transparent relative">
-      {/* Arka plan renkli çember efektleri (Blurred Circles) */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
-
+    <div className="flex items-center justify-center h-screen w-full overflow-hidden transition-colors duration-200 mobile-auth-wrapper bg-transparent relative">
       {/* Main Glass Window (Now Edge to Edge) */}
       <div className="w-full h-full glass-panel shadow-2xl flex flex-col overflow-hidden relative z-10 backdrop-blur-2xl bg-[#0a0f1c]/60">
         <TopNavigation />

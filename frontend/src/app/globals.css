@@ -68,6 +68,9 @@ body {
     );
   background-attachment: fixed;
   color: var(--theme-text-color);
+  max-width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 .dark body {
@@ -170,6 +173,14 @@ body {
 }
 .compact .gap-4 {
   gap: 0.5rem;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 /* Custom scrollbar styles (Native App Feel) */

@@ -223,7 +223,7 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
     if (data && ('Ciro' in data || 'Satış' in data || 'Maliyet' in data || 'Kar/Zarar' in data || 'Adet' in data)) {
       const formatMoneySafe = (val: any) => formatMoney(val, language);
       return (
-        <div className="bg-v3-surface backdrop-blur-md border border-v3-border p-3 rounded-xl shadow-2xl z-50 relative min-w-[150px]">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border p-3 rounded-xl shadow-lg z-50 relative min-w-[150px]">
           <p className="text-v3-text font-bold mb-2 pb-2 border-b border-v3-border">{label}</p>
           {('Proje Ref' in data) && <p className="text-v3-text/90 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('dashboard.projectRef') || "Ref:"}</span> <span>{data['Proje Ref']}</span></p>}
           {('Firma' in data) && <p className="text-v3-text/90 text-[11px] flex justify-between gap-4 font-mono mb-1"><span>{t('home.company') || "Firma:"}</span> <span className="truncate max-w-[120px]">{data['Firma']}</span></p>}
@@ -241,7 +241,7 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
     }
 
     return (
-      <div className="bg-v3-surface backdrop-blur-md border border-v3-border p-3 rounded-xl shadow-2xl z-50 relative">
+      <div className="bg-v3-surface backdrop-blur-md border border-v3-border p-3 rounded-xl shadow-lg z-50 relative">
         <p className="text-v3-text font-bold mb-2">{label}</p>
         {payload.map((entry: any, index: number) => {
           const isMoney =
@@ -279,7 +279,7 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
 // --- Components ---
 const GlassCard = ({ children, className = "", glowColor = "" }: any) => (
   <div
-    className={`relative bg-v3-surface backdrop-blur-xl border border-v3-border rounded-3xl overflow-visible ${className}`}
+    className={`relative bg-white dark:bg-v3-surface rounded-3xl overflow-visible shadow-sm ${className}`}
   >
     {glowColor && (
       <div
@@ -315,14 +315,14 @@ const KPICard = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`glass-card p-5 flex flex-col justify-between relative overflow-hidden group border border-v3-border bg-gradient-to-br from-white/5 to-transparent rounded-3xl`}
+      className={`bg-white dark:bg-v3-surface p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm rounded-3xl`}
     >
       <div className="absolute -top-4 -right-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
         <Icon size={100} />
       </div>
       <div className="flex justify-between items-start z-10">
         <div
-          className={`p-2.5 rounded-xl ${colors[color] || colors.blue} border shadow-[0_0_20px_rgba(0,0,0,0.3)]`}
+          className={`p-2.5 rounded-xl ${colors[color] || colors.blue} shadow-[0_4px_15px_rgba(0,0,0,0.02)]`}
         >
           <Icon size={20} />
         </div>
@@ -1163,7 +1163,7 @@ export default function UltimateDashboard() {
     );
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden pt-4 pb-10 px-4 gap-4 custom-scrollbar">
+    <div className="flex flex-col h-full w-full max-w-full overflow-y-auto overflow-x-hidden pt-4 pb-10 px-4 gap-4">
       {/* Top Header: Title & Filters */}
       <div className="shrink-0 flex flex-col gap-3 z-10">
         <div className="flex flex-wrap items-center justify-start gap-8">
@@ -1257,7 +1257,7 @@ export default function UltimateDashboard() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 relative custom-scrollbar pr-2 relative">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 relative">
         {/* ROW 1: KONSOLİDE FİNANS & CİRO DAĞILIMI */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6 relative z-10">
           <KPICard title={t('dashboard.totalRevenue')} value={m.totalRev} isMoney icon={Landmark} color="emerald" language={language} />
@@ -1278,7 +1278,7 @@ export default function UltimateDashboard() {
               <p className="text-[10px] text-v3-muted uppercase tracking-widest mb-4">
                 {t('dashboard.monthlyFinSummaryDesc')}
               </p>
-              <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-4 pt-2">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 pt-2">
                 {m.monthlyFinancialData.map((row: any, i: number) => (
                   <div key={i} className="min-w-[140px] shrink-0 bg-v3-border border border-v3-border rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group hover:bg-v3-surface transition-all duration-300">
                     <div className="absolute -right-4 -top-6 text-v3-text/[0.03] text-5xl font-black pointer-events-none group-hover:text-v3-text/[0.06] transition-colors duration-300">
@@ -1311,12 +1311,6 @@ export default function UltimateDashboard() {
                   </div>
                 ))}
 
-                {m.monthlyFinancialData.length === 0 && (
-                  <div className="w-full p-8 text-center text-v3-muted bg-v3-border rounded-2xl border border-v3-border flex items-center justify-center">
-                    {t('dashboard.noFinData') || "Bu tarih aralığı için finansal veri bulunmuyor."}
-                  </div>
-                )}
-
                 {m.monthlyFinancialData.length > 0 && (
                   <div className="min-w-[180px] shrink-0 bg-gradient-to-br from-fuchsia-500/20 to-purple-600/20 border border-fuchsia-500/30 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group shadow-lg shadow-fuchsia-500/10">
                     <div className="absolute -right-6 -bottom-6 text-fuchsia-500/10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
@@ -1335,10 +1329,10 @@ export default function UltimateDashboard() {
                       </div>
                     </div>
                     
-                    <div className="mt-auto pt-2 border-t border-fuchsia-500/30 flex justify-between items-end relative z-10">
+                    <div className="mt-auto pt-2 border-t border-fuchsia-500/20 flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[9px] text-fuchsia-600 dark:text-fuchsia-300/70 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "Net Kâr"}</p>
-                        <p className={`font-black text-sm ${m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
+                        <p className="text-[8px] text-fuchsia-800 dark:text-fuchsia-200/70 uppercase tracking-widest mb-1">{t('dashboard.netKar') || "NET KÂR"}</p>
+                        <p className="font-black text-xs text-emerald-600 dark:text-emerald-400">
                           {formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0), language)}
                         </p>
                       </div>

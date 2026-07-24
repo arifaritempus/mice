@@ -78,7 +78,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" suppressHydrationWarning className={outfit.variable}>
+    <html lang="tr" suppressHydrationWarning className={`${outfit.variable} max-w-[100vw] overflow-x-hidden`}>
       <head>
         <link rel="stylesheet" href="/styles.css" />
         <script
