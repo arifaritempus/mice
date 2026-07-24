@@ -80,6 +80,14 @@ export async function POST(req: Request) {
       throw quoteFetchError;
     }
 
+    // 2.5 Prevent duplicate approvals
+    if (quote.status === "KONFİRME") {
+      return NextResponse.json(
+        { error: "Bu teklif zaten daha önce onaylanmış." },
+        { status: 400 }
+      );
+    }
+
     // Update public_link approval
     const { error: approvalError } = await admin
       .from("public_links")

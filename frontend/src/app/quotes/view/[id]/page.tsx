@@ -125,7 +125,14 @@ export default function QuoteViewPublicPage() {
       maximumFractionDigits: 2,
     }).format(value);
   };
-  const formatEUR = (value: number) => `€ ${formatNumberTR(value)}`;
+  const getCurrencySymbol = (currencyCode: string) => {
+    const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", TL: "₺", GBP: "£" };
+    return curMap[currencyCode] || currencyCode + " ";
+  };
+  const formatCurrency = (value: number) => {
+    const c = quote?.currency || (quote as any)?.main_currency || "EUR";
+    return `${getCurrencySymbol(c)}${formatNumberTR(value)}`;
+  };
 
   const scrubText = (text: string) => {
     if (!text) return "";
@@ -433,8 +440,8 @@ export default function QuoteViewPublicPage() {
           }
         }
 
-        const currencyCode = (quote as any).main_currency || "EUR";
-        const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", GBP: "£" };
+        const currencyCode = (quote as any).currency || (quote as any).main_currency || "EUR";
+        const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", TL: "₺", GBP: "£" };
         const sym = curMap[currencyCode] || currencyCode + " ";
         const numFmt = `"${sym}" #,##0.00`;
 
@@ -479,20 +486,20 @@ export default function QuoteViewPublicPage() {
           const rowValues: any[] = new Array(6);
           rowValues[0] = lLabel;
           rowValues[1] = lVal;
-          rowValues[4] = rLabel;
-          rowValues[5] = rVal;
+          rowValues[3] = rLabel;
+          rowValues[4] = rVal;
           const row = sheet.addRow(rowValues);
           row.height = 24;
           row.getCell(1).font = { bold: true, size: 12 };
           row.getCell(1).alignment = { horizontal: "left", vertical: "middle" };
           row.getCell(2).font = { size: 12 };
           row.getCell(2).alignment = { horizontal: "left", vertical: "middle" };
-          row.getCell(5).font = { bold: true, size: 12 };
+          row.getCell(4).font = { bold: true, size: 12 };
+          row.getCell(4).alignment = { horizontal: "left", vertical: "middle" };
+          row.getCell(5).font = { size: 12 };
           row.getCell(5).alignment = { horizontal: "left", vertical: "middle" };
-          row.getCell(6).font = { size: 12 };
-          row.getCell(6).alignment = { horizontal: "left", vertical: "middle" };
-          sheet.mergeCells(`B${rowIndex}:D${rowIndex}`);
-          sheet.mergeCells(`F${rowIndex}:F${rowIndex}`);
+          sheet.mergeCells(`B${rowIndex}:C${rowIndex}`);
+          sheet.mergeCells(`E${rowIndex}:F${rowIndex}`);
           for (let c = 1; c <= 6; c++)
             row.getCell(c).fill = {
               type: "pattern",
@@ -505,7 +512,7 @@ export default function QuoteViewPublicPage() {
         // Title
         sheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
         const titleCell = sheet.getCell(`A${rowIndex}`);
-        titleCell.value = "SATIŞLAR";
+        titleCell.value = "TEKLİF";
         titleCell.font = { size: 20, bold: true };
         titleCell.alignment = { horizontal: "center", vertical: "middle" };
         sheet.getRow(rowIndex).height = 35;
@@ -877,9 +884,9 @@ export default function QuoteViewPublicPage() {
       toast.success(
         "Teklif başarıyla onaylandı. İlginiz için teşekkür ederiz.",
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Approval error:", err);
-      toast.error("Onay işlemi sırasında bir hata oluştu.");
+      toast.error(err.message || "Onay işlemi sırasında bir hata oluştu.");
     } finally {
       setApproving(false);
     }
@@ -1333,7 +1340,7 @@ export default function QuoteViewPublicPage() {
                       BİRİM FİYAT
                     </th>
                     <th className="py-4 px-4 text-[10px] font-black text-gray-700 uppercase tracking-tighter text-right">
-                      TOPLAM EUR
+                      TOPLAM DÖVİZ
                     </th>
                   </tr>
                 </thead>
@@ -1447,7 +1454,7 @@ export default function QuoteViewPublicPage() {
                                       : item.currency}
                                 </td>
                                 <td className="py-4 px-4 text-sm font-black text-right text-slate-800 whitespace-nowrap">
-                                  {formatEUR(item.total)}
+                                  {formatCurrency(item.total)}
                                 </td>
                               </tr>
                             ))}
@@ -1460,7 +1467,7 @@ export default function QuoteViewPublicPage() {
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-sm font-black text-gray-900 text-right whitespace-nowrap border-t border-slate-200">
-                                {formatEUR(catSubtotal)}
+                                {formatCurrency(catSubtotal)}
                               </td>
                             </tr>
                           </Fragment>
@@ -1498,7 +1505,7 @@ export default function QuoteViewPublicPage() {
                   TOPLAM GENEL TUTAR
                 </h3>
                 <p className="text-3xl font-black text-slate-800">
-                  {formatEUR(filteredItems.reduce((s, i) => s + i.total, 0))}
+                  {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0))}
                 </p>
               </div>
             </div>

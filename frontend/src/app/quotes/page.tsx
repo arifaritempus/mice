@@ -1959,14 +1959,26 @@ export default function QuotesPage() {
                       ).map((h: any) => ({
                         ...h,
                         is_confirmed: selectedHotels[h.id] || false,
+                        hotel_status: selectedHotels[h.id] ? "KONFİRME" : h.hotel_status,
                       }));
+                      const updatedQuote = {
+                        ...quoteToConfirm,
+                        status: "KONFİRME",
+                        locked: true,
+                        hotels_data: updatedHotelsData,
+                      } as Quote;
+
                       await quotesService.update(quoteToConfirm.id, {
                         status: "KONFİRME",
                         locked: true,
                         hotels_data: updatedHotelsData,
                       } as any);
+
+                      setQuotes((prev) =>
+                        prev.map((q) => (q.id === quoteToConfirm.id ? updatedQuote : q)),
+                      );
                       setShowConfirmModal(false);
-                      await transferConfirmedToProjects();
+                      await executeTransfer([updatedQuote]);
                     } catch (err) {
                       console.error("Konfirme hatası:", err);
                       toast.error("Konfirme işlemi sırasında bir hata oluştu.");

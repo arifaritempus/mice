@@ -504,8 +504,8 @@ export default function QuoteViewPage() {
       ) => {
         if (items.length === 0 && sheetName !== "GENEL HİZMETLER") return;
 
-        const currencyCode = (quote as any).main_currency || "EUR";
-        const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", GBP: "£" };
+        const currencyCode = (quote as any).currency || (quote as any).main_currency || "EUR";
+        const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", TL: "₺", GBP: "£" };
         const sym = curMap[currencyCode] || currencyCode + " ";
         const numFmt = `"${sym}" #,##0.00`;
 
@@ -529,8 +529,8 @@ export default function QuoteViewPage() {
 
         const topBandRow = sheet.addRow([]);
         topBandRow.height = 70;
-        sheet.mergeCells("A1:H1");
-        for (let c = 1; c <= 8; c++) {
+        sheet.mergeCells("A1:F1");
+        for (let c = 1; c <= 6; c++) {
           sheet.getRow(1).getCell(c).fill = {
             type: "pattern",
             pattern: "solid",
@@ -598,23 +598,24 @@ export default function QuoteViewPage() {
 
         let rowIndex = 2;
         headerInfo.forEach(([lLabel, lVal, rLabel, rVal]) => {
-          const rowValues: any[] = new Array(8);
+          const rowValues: any[] = new Array(6);
           rowValues[0] = lLabel;
           rowValues[1] = lVal;
-          rowValues[5] = rLabel;
-          rowValues[6] = rVal;
+          rowValues[3] = rLabel;
+          rowValues[4] = rVal;
           const row = sheet.addRow(rowValues);
           row.height = 24;
           row.getCell(1).font = { bold: true, size: 12 };
           row.getCell(1).alignment = { horizontal: "left", vertical: "middle" };
           row.getCell(2).font = { size: 12 };
           row.getCell(2).alignment = { horizontal: "left", vertical: "middle" };
-          row.getCell(6).font = { bold: true, size: 12 };
-          row.getCell(6).alignment = { horizontal: "left", vertical: "middle" };
-          row.getCell(7).font = { size: 12 };
-          row.getCell(7).alignment = { horizontal: "left", vertical: "middle" };
-          sheet.mergeCells(`G${rowIndex}:H${rowIndex}`);
-          for (let c = 1; c <= 8; c++)
+          row.getCell(4).font = { bold: true, size: 12 };
+          row.getCell(4).alignment = { horizontal: "left", vertical: "middle" };
+          row.getCell(5).font = { size: 12 };
+          row.getCell(5).alignment = { horizontal: "left", vertical: "middle" };
+          sheet.mergeCells(`B${rowIndex}:C${rowIndex}`);
+          sheet.mergeCells(`E${rowIndex}:F${rowIndex}`);
+          for (let c = 1; c <= 6; c++)
             row.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
@@ -624,13 +625,13 @@ export default function QuoteViewPage() {
         });
 
         // Title
-        sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+        sheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
         const titleCell = sheet.getCell(`A${rowIndex}`);
-        titleCell.value = "SATIŞLAR";
+        titleCell.value = "TEKLİF";
         titleCell.font = { size: 20, bold: true };
         titleCell.alignment = { horizontal: "center", vertical: "middle" };
         sheet.getRow(rowIndex).height = 35;
-        for (let c = 1; c <= 8; c++)
+        for (let c = 1; c <= 6; c++)
           sheet.getRow(rowIndex).getCell(c).fill = {
             type: "pattern",
             pattern: "solid",
@@ -647,19 +648,17 @@ export default function QuoteViewPage() {
         });
 
         const subtotalRowsE: number[] = [];
-        const subtotalRowsG: number[] = [];
-
         Object.entries(grouped).forEach(([mainCat, catItems], i) => {
           const catRow = sheet.addRow([`${i + 1}. ${mainCat}`]);
           catRow.font = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
-          for (let c = 1; c <= 8; c++)
+          for (let c = 1; c <= 6; c++)
             catRow.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
               fgColor: { argb: "FF666666" },
             };
           catRow.height = 25;
-          sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
+          sheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
           rowIndex++;
 
           const hRow = sheet.addRow([
@@ -667,14 +666,12 @@ export default function QuoteViewPage() {
             "BİRİM/ADET",
             "SEFER/TEKRAR",
             "BİRİM/FİYAT",
-            `TOPLAM ${currencyCode}`,
-            "KUR",
-            "TOPLAM TL",
+            "TOPLAM DÖVİZ",
             "AÇIKLAMA",
           ]);
           hRow.font = { bold: true, size: 11 };
           hRow.height = 22;
-          for (let c = 1; c <= 8; c++)
+          for (let c = 1; c <= 6; c++)
             hRow.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
@@ -690,32 +687,24 @@ export default function QuoteViewPage() {
               item.sefer,
               item.unit_price || 0,
               0,
-              item.fx || 0,
-              0,
               item.description || "",
             ]);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
             sRow.getCell(4).numFmt = numFmt;
             sRow.getCell(5).numFmt = numFmt;
-            sRow.getCell(6).numFmt = "₺#,##0.00";
-            sRow.getCell(7).numFmt = "₺#,##0.00";
             sRow.getCell(5).value = {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
-            } as any;
-            sRow.getCell(7).value = {
-              formula: `E${r}*F${r}`,
-              result: item.total_try ?? 0,
             } as any;
             sRow.height = 18;
             rowIndex++;
           });
 
           const lastItemRow = rowIndex - 1;
-          const araRow = sheet.addRow(["ARA TOPLAM", "", "", "", 0, "", 0, ""]);
+          const araRow = sheet.addRow(["ARA TOPLAM", "", "", "", 0, ""]);
           araRow.font = { bold: true, size: 12 };
-          for (let c = 1; c <= 8; c++)
+          for (let c = 1; c <= 6; c++)
             araRow.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
@@ -726,16 +715,10 @@ export default function QuoteViewPage() {
               formula: `SUM(E${firstItemRow}:E${lastItemRow})`,
               result: catItems.reduce((s, i) => s + (i.total || 0), 0),
             } as any;
-            araRow.getCell(7).value = {
-              formula: `SUM(G${firstItemRow}:G${lastItemRow})`,
-              result: catItems.reduce((s, i) => s + (i.total_try || 0), 0),
-            } as any;
           }
           araRow.getCell(5).numFmt = numFmt;
-          araRow.getCell(7).numFmt = "₺#,##0.00";
           araRow.height = 22;
           subtotalRowsE.push(araRow.number);
-          subtotalRowsG.push(araRow.number);
           rowIndex++;
           sheet.addRow([]);
           rowIndex++;
@@ -748,11 +731,9 @@ export default function QuoteViewPage() {
           "",
           0,
           "",
-          0,
-          "",
         ]);
         totalRow.font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
-        for (let c = 1; c <= 8; c++)
+        for (let c = 1; c <= 6; c++)
           totalRow.getCell(c).fill = {
             type: "pattern",
             pattern: "solid",
@@ -763,13 +744,8 @@ export default function QuoteViewPage() {
             formula: `SUM(${subtotalRowsE.map((r) => `E${r}`).join(",")})`,
             result: items.reduce((s, i) => s + (i.total || 0), 0),
           } as any;
-          totalRow.getCell(7).value = {
-            formula: `SUM(${subtotalRowsG.map((r) => `G${r}`).join(",")})`,
-            result: items.reduce((s, i) => s + (i.total_try || 0), 0),
-          } as any;
         }
         totalRow.getCell(5).numFmt = numFmt;
-        totalRow.getCell(7).numFmt = "₺#,##0.00";
         totalRow.height = 30;
 
         // Restore missing formatting: column widths and grid lines
@@ -778,8 +754,6 @@ export default function QuoteViewPage() {
           { width: 12 },
           { width: 12 },
           { width: 15 },
-          { width: 18 },
-          { width: 10 },
           { width: 18 },
           { width: 45 },
         ];
