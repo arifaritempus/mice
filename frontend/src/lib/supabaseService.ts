@@ -360,7 +360,6 @@ export const quotesService = {
       room_count: firstH?.room_count || quote.room_count || 0,
       pax_count: firstH?.pax_count || quote.pax_count || 0,
       room_pax: `${firstH?.room_count || 0} | ${firstH?.pax_count || 0}`,
-      confirmed_at: new Date().toISOString(),
       hotels_data: normalizedHotels
     }]).select().single();
 

@@ -433,6 +433,11 @@ export default function QuoteViewPublicPage() {
           }
         }
 
+        const currencyCode = quote.main_currency || "EUR";
+        const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", GBP: "£" };
+        const sym = curMap[currencyCode] || currencyCode + " ";
+        const numFmt = `"${sym}" #,##0.00`;
+
         const isGeneral = sheetName === "GENEL HİZMETLER";
         const headerInfo = [
           [
@@ -584,7 +589,7 @@ export default function QuoteViewPublicPage() {
             "BİRİM/ADET",
             "SEFER/TEKRAR",
             "BİRİM/FİYAT",
-            "TOPLAM EUR",
+            `TOPLAM ${currencyCode}`,
             "AÇIKLAMA",
           ]);
           hRow.font = { bold: true, size: 11 };
@@ -609,8 +614,8 @@ export default function QuoteViewPublicPage() {
             ]);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
-            sRow.getCell(4).numFmt = "€ #,##0.00";
-            sRow.getCell(5).numFmt = "€ #,##0.00";
+            sRow.getCell(4).numFmt = numFmt;
+            sRow.getCell(5).numFmt = numFmt;
             sRow.getCell(5).value = {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
@@ -634,7 +639,7 @@ export default function QuoteViewPublicPage() {
               result: catItems.reduce((s, i) => s + (i.total || 0), 0),
             } as any;
           }
-          araRow.getCell(5).numFmt = "€ #,##0.00";
+          araRow.getCell(5).numFmt = numFmt;
           araRow.height = 22;
           subtotalRowsE.push(araRow.number);
           rowIndex++;
@@ -663,7 +668,7 @@ export default function QuoteViewPublicPage() {
             result: items.reduce((s, i) => s + (i.total || 0), 0),
           } as any;
         }
-        totalRow.getCell(5).numFmt = "€ #,##0.00";
+        totalRow.getCell(5).numFmt = numFmt;
         totalRow.height = 30;
 
         sheet.columns = [

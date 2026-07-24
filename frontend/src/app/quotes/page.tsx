@@ -1964,7 +1964,6 @@ export default function QuotesPage() {
                         status: "KONFİRME",
                         locked: true,
                         hotels_data: updatedHotelsData,
-                        confirmed_at: new Date().toISOString(),
                       } as any);
                       setShowConfirmModal(false);
                       await transferConfirmedToProjects();
