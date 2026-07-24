@@ -68,6 +68,7 @@ interface Quote {
   room_count: number;
   pax_count: number;
   notes?: string;
+  currency?: string;
 }
 
 // FIXED_PUBLIC_LOGO_URL removed to use dynamic logo from appSettings
