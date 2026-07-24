@@ -504,6 +504,11 @@ export default function QuoteViewPage() {
       ) => {
         if (items.length === 0 && sheetName !== "GENEL HİZMETLER") return;
 
+        const currencyCode = (quote as any).main_currency || "EUR";
+        const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", GBP: "£" };
+        const sym = curMap[currencyCode] || currencyCode + " ";
+        const numFmt = `"${sym}" #,##0.00`;
+
         const sheet = workbook.addWorksheet(sheetName.substring(0, 31)); // Excel sheet name limit is 31
         sheet.pageSetup = {
           orientation: "landscape",
@@ -662,7 +667,7 @@ export default function QuoteViewPage() {
             "BİRİM/ADET",
             "SEFER/TEKRAR",
             "BİRİM/FİYAT",
-            "TOPLAM EUR",
+            `TOPLAM ${currencyCode}`,
             "KUR",
             "TOPLAM TL",
             "AÇIKLAMA",
@@ -691,8 +696,8 @@ export default function QuoteViewPage() {
             ]);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
-            sRow.getCell(4).numFmt = "€ #,##0.00";
-            sRow.getCell(5).numFmt = "€ #,##0.00";
+            sRow.getCell(4).numFmt = numFmt;
+            sRow.getCell(5).numFmt = numFmt;
             sRow.getCell(6).numFmt = "₺#,##0.00";
             sRow.getCell(7).numFmt = "₺#,##0.00";
             sRow.getCell(5).value = {
@@ -726,7 +731,7 @@ export default function QuoteViewPage() {
               result: catItems.reduce((s, i) => s + (i.total_try || 0), 0),
             } as any;
           }
-          araRow.getCell(5).numFmt = "€ #,##0.00";
+          araRow.getCell(5).numFmt = numFmt;
           araRow.getCell(7).numFmt = "₺#,##0.00";
           araRow.height = 22;
           subtotalRowsE.push(araRow.number);
@@ -763,7 +768,7 @@ export default function QuoteViewPage() {
             result: items.reduce((s, i) => s + (i.total_try || 0), 0),
           } as any;
         }
-        totalRow.getCell(5).numFmt = "€ #,##0.00";
+        totalRow.getCell(5).numFmt = numFmt;
         totalRow.getCell(7).numFmt = "₺#,##0.00";
         totalRow.height = 30;
 
