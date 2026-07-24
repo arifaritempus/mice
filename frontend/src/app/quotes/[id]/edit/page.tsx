@@ -964,6 +964,25 @@ export default function QuoteEditPage() {
               message: "Teklif güncellendi ve proje oluşturuldu.",
               type: "success",
             });
+
+            // Notify via email
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              await fetch("/api/notifications/quote-confirmed", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  quoteId: quoteId,
+                  confirmedBy: { 
+                    name: user?.user_metadata?.first_name ? 
+                      \`\${user.user_metadata.first_name} \${user.user_metadata.last_name || ''}\` : 
+                      "Sistem Kullanıcısı" 
+                  }
+                })
+              });
+            } catch (err) {
+              console.error("Failed to send quote confirmed notification:", err);
+            }
           }
         } catch (err: any) {
           console.error("Proje aktarım hatası:", err);

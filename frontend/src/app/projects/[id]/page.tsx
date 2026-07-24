@@ -305,6 +305,7 @@ export default function ProjectDetailPage() {
   const [logSearchInput, setLogSearchInput] = useState("");
   const [logStartDate, setLogStartDate] = useState("");
   const [logEndDate, setLogEndDate] = useState("");
+  const [initialTotals, setInitialTotals] = useState<any>(null);
 
   const fetchLogs = async () => {
     try {
@@ -6251,6 +6252,48 @@ export default function ProjectDetailPage() {
       currencyText: "MIX",
     };
   };
+  useEffect(() => {
+    // Only capture initialTotals once, when not loading and initialTotals is still null
+    if (!loading && !initialTotals && financialTotals) {
+      // Small timeout to ensure all items are fetched and calculated
+      const timer = setTimeout(() => {
+        setInitialTotals(financialTotals);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, financialTotals, initialTotals]);
+
+  const handleNotifyFinancialChanges = async () => {
+    if (!initialTotals) {
+      toast.error("Önceki finansal veriler yüklenemedi.");
+      return;
+    }
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const res = await fetch("/api/notifications/project-updated", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: projectId,
+          beforeStats: initialTotals,
+          afterStats: financialTotals,
+          updatedBy: { 
+            name: user?.user_metadata?.first_name ? 
+              \`\${user.user_metadata.first_name} \${user.user_metadata.last_name || ''}\` : 
+              "Sistem Kullanıcısı" 
+          }
+        })
+      });
+      if (!res.ok) throw new Error("API Hatası");
+      toast.success("Finansal değişiklikler başarıyla bildirildi!");
+      // Update initial totals to current so they can't notify same diff again
+      setInitialTotals(financialTotals);
+    } catch (err) {
+      console.error("Failed to notify financial changes:", err);
+      toast.error("Bildirim gönderilirken bir hata oluştu.");
+    }
+  };
+
   const filteredHrExtras = useMemo(() => {
     let filtered = hrExtras.map((item, index) => ({
       ...item,
@@ -14237,6 +14280,10 @@ export default function ProjectDetailPage() {
                     </button>
                     <button onClick={exportProjectFullToExcel} className="w-full text-left bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg hover:bg-green-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> Excel (Tam Rapor)
+                    </button>
+                    
+                    <button onClick={handleNotifyFinancialChanges} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2 mt-2 border-t border-v3-border pt-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg> Değişiklikleri Bildir
                     </button>
                     {isEditingProject ? (
                       <>
