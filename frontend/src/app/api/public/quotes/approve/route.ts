@@ -207,8 +207,10 @@ export async function POST(req: Request) {
       
       // E-posta bildirimlerini merkezi API üzerinden tetikle
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:6002";
-        await fetch(`${baseUrl}/api/notifications/quote-confirmed`, {
+        const { POST: sendQuoteConfirmedEmail } = await import("@/app/api/notifications/quote-confirmed/route");
+        
+        // Mock a Request object
+        const mockReq = new Request("http://localhost/api/notifications/quote-confirmed", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -217,9 +219,11 @@ export async function POST(req: Request) {
               name: `${approvalData.name} ${approvalData.surname}`.trim(), 
               type: "customer_link" 
             }
-          }),
+          })
         });
-        console.log("Triggered centralized email notification successfully.");
+
+        await sendQuoteConfirmedEmail(mockReq);
+        console.log("Triggered centralized email notification successfully via direct handler call.");
       } catch (err) {
         console.error("Failed to trigger centralized email API:", err);
       }

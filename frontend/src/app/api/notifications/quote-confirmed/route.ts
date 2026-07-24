@@ -57,26 +57,31 @@ export async function POST(req: Request) {
     let pmName = "Atanmamış";
     let creatorEmail = null;
     
-    if (quote.operation_managers && Array.isArray(quote.operation_managers) && quote.operation_managers.length > 0) {
+    let opManagers = quote.operation_managers;
+    if (typeof opManagers === "string") {
+      try { opManagers = JSON.parse(opManagers); } catch(e) {}
+    }
+
+    if (opManagers && Array.isArray(opManagers) && opManagers.length > 0) {
       const { data: managers } = await admin
         .from("users")
-        .select("first_name, last_name")
-        .in("id", quote.operation_managers);
+        .select("full_name")
+        .in("id", opManagers);
       if (managers && managers.length > 0) {
-        pmName = managers.map(m => `${m.first_name || ""} ${m.last_name || ""}`.trim()).join(", ");
+        pmName = managers.map(m => m.full_name || "Bilinmeyen Kullanıcı").join(", ");
       }
     }
 
     if (quote.created_by) {
       const { data: creator } = await admin
         .from("users")
-        .select("email, first_name, last_name")
+        .select("email, full_name")
         .eq("id", quote.created_by)
         .single();
       if (creator) {
         creatorEmail = creator.email;
         if (pmName === "Atanmamış") {
-          pmName = `${creator.first_name || ""} ${creator.last_name || ""}`.trim() || "Atanmamış";
+          pmName = creator.full_name || "Atanmamış";
         }
       }
     }
