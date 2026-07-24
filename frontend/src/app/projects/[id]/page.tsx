@@ -6279,7 +6279,7 @@ export default function ProjectDetailPage() {
           afterStats: financialTotals,
           updatedBy: { 
             name: user?.user_metadata?.first_name ? 
-              \`\${user.user_metadata.first_name} \${user.user_metadata.last_name || ''}\` : 
+              `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}` : 
               "Sistem Kullanıcısı" 
           }
         })

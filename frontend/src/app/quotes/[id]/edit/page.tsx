@@ -975,7 +975,7 @@ export default function QuoteEditPage() {
                   quoteId: quoteId,
                   confirmedBy: { 
                     name: user?.user_metadata?.first_name ? 
-                      \`\${user.user_metadata.first_name} \${user.user_metadata.last_name || ''}\` : 
+                      `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}` : 
                       "Sistem Kullanıcısı" 
                   }
                 })
