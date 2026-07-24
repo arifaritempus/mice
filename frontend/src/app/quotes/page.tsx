@@ -39,6 +39,7 @@ import { usePermissions, Module } from "@/lib/permissions";
 import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
 import { toast } from "react-hot-toast";
 import { Trash2, AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 // import { loadTeklifler } from '../../../../src/supabaseClient';
 
 // async function fetchData() {

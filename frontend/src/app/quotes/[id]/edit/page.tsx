@@ -18,6 +18,7 @@ import {
 import QuoteServiceEditor from "@/components/QuoteServiceEditor";
 import { usePermissions, Module } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { supabase } from "@/lib/supabase";
 
 // ─── NotificationModal ────────────────────────────────────────────────────────
 interface NotificationModalProps {
