@@ -93,6 +93,14 @@ export async function POST(req: Request) {
       allHotels.forEach((h: any) => hotelMap.set(h.id, h.name));
     }
 
+    // Fetch categories to map UUIDs to actual names
+    const { data: allCategories } = await admin.from("categories").select("id, name");
+    const categoryMap = new Map();
+    if (allCategories) {
+      allCategories.forEach((c: any) => categoryMap.set(c.id, c.name));
+    }
+    const isUUID = (str: string) => str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
     const currency = quote.currency || quote.main_currency || "EUR";
     const curSym = currency === "TRY" || currency === "TL" ? "₺" : currency === "USD" ? "$" : currency === "GBP" ? "£" : "€";
     
@@ -161,16 +169,26 @@ export async function POST(req: Request) {
                 </tr>
               </thead>
               <tbody>
-                ${hotelItems.length > 0 ? hotelItems.map((item: any) => `
+                ${hotelItems.length > 0 ? hotelItems.map((item: any) => {
+                  const subCatStr = item.sub_category || "";
+                  const mainCatStr = item.main_category || "";
+                  
+                  const resolvedSub = isUUID(subCatStr) ? categoryMap.get(subCatStr) : subCatStr;
+                  const resolvedMain = isUUID(mainCatStr) ? categoryMap.get(mainCatStr) : mainCatStr;
+                  
+                  const finalName = resolvedSub || resolvedMain || "Diğer";
+
+                  return `
                   <tr style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 10px 16px; color: #1e293b; font-weight: 500;">
-                      ${item.sub_category || item.main_category || "Diğer"}
+                      ${finalName}
                     </td>
                     <td style="padding: 10px 16px; text-align: right; color: #334155;">${item.unit_quantity} x ${item.sefer || 1}</td>
                     <td style="padding: 10px 16px; text-align: right; color: #334155; white-space: nowrap;">${curSym}${fmtMoney(item.unit_price)}</td>
                     <td style="padding: 10px 16px; text-align: right; color: #0f172a; font-weight: 600; white-space: nowrap;">${curSym}${fmtMoney(item.total_price || item.total)}</td>
                   </tr>
-                `).join("") : `<tr><td colspan="4" style="padding: 10px 16px; text-align: center; color: #94a3b8;">Bu otele ait kalem bulunmuyor</td></tr>`}
+                  `;
+                }).join("") : `<tr><td colspan="4" style="padding: 10px 16px; text-align: center; color: #94a3b8;">Bu otele ait kalem bulunmuyor</td></tr>`}
               </tbody>
               <tfoot>
                 <tr style="background-color: #f8fafc;">
