@@ -433,7 +433,7 @@ export default function QuoteViewPublicPage() {
           }
         }
 
-        const currencyCode = quote.main_currency || "EUR";
+        const currencyCode = (quote as any).main_currency || "EUR";
         const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", GBP: "£" };
         const sym = curMap[currencyCode] || currencyCode + " ";
         const numFmt = `"${sym}" #,##0.00`;
