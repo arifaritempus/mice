@@ -69,51 +69,106 @@ export async function POST(req: Request) {
     }
 
     const confirmedByName = confirmedBy?.name || "Sistem Kullanıcısı";
-    const agencyName = quote.agencies?.name || quote.company_name || "Bilinmiyor";
-    const hotelName = quote.hotels?.name || "Çoklu Otel / Belirtilmemiş";
+    const agencyName = quote.company_name && quote.agencies?.name 
+      ? `${quote.agencies.name} - ${quote.company_name}` 
+      : quote.company_name || quote.agencies?.name || "Bilinmiyor";
+      
+    // Fetch hotels to map hotel_id to name
+    const { data: allHotels } = await admin.from("hotels").select("id, name");
+    const hotelMap = new Map();
+    if (allHotels) {
+      allHotels.forEach((h: any) => hotelMap.set(h.id, h.name));
+    }
+
     const currency = quote.currency || quote.main_currency || "EUR";
     const curSym = currency === "TRY" || currency === "TL" ? "₺" : currency === "USD" ? "$" : currency === "GBP" ? "£" : "€";
     
     const fmtMoney = (val: number) => {
       return new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0);
     };
+    
+    const formatDateStr = (dateStr: string) => {
+       if (!dateStr) return "-";
+       try { return new Date(dateStr).toLocaleDateString("tr-TR"); } catch (e) { return dateStr; }
+    };
 
-    // Generate Items Table HTML
+    let hotelsData = [];
+    if (typeof quote.hotels_data === "string") {
+      try { hotelsData = JSON.parse(quote.hotels_data); } catch(e) {}
+    } else if (Array.isArray(quote.hotels_data)) {
+      hotelsData = quote.hotels_data;
+    }
+    
+    // Sadece KONFİRME olan otelleri al
+    let confirmedHotels = hotelsData.filter((h: any) => h.is_confirmed || h.hotel_status === "KONFİRME");
+    
+    // Eski sistem teklifi ise (hotels_data yoksa)
+    if (confirmedHotels.length === 0 && quote.hotel_id) {
+      confirmedHotels.push({
+        id: "legacy",
+        hotel_id: quote.hotel_id,
+        check_in_date: quote.check_in_date,
+        check_out_date: quote.check_out_date
+      });
+    }
+
     let itemsTableHtml = "";
-    if (items && items.length > 0) {
-      itemsTableHtml = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-          <thead>
-            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-              <th style="padding: 12px 8px; text-align: left; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Hizmet Detayı</th>
-              <th style="padding: 12px 8px; text-align: right; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Miktar</th>
-              <th style="padding: 12px 8px; text-align: right; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Birim Fiyat</th>
-              <th style="padding: 12px 8px; text-align: right; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Toplam</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map((item: any) => `
-              <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding: 12px 8px; color: #1e293b; font-weight: 500;">
-                  ${item.sub_category || item.main_category || "Diğer"}
-                  ${item.description ? `<br><span style="font-size: 11px; color: #64748b; font-weight: normal;">${item.description}</span>` : ""}
-                </td>
-                <td style="padding: 12px 8px; text-align: right; color: #334155;">${item.unit_quantity} x ${item.sefer || 1}</td>
-                <td style="padding: 12px 8px; text-align: right; color: #334155; white-space: nowrap;">${curSym}${fmtMoney(item.unit_price)}</td>
-                <td style="padding: 12px 8px; text-align: right; color: #0f172a; font-weight: 600; white-space: nowrap;">${curSym}${fmtMoney(item.total_price || item.total)}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3" style="padding: 16px 8px; text-align: right; font-weight: 700; color: #0f172a; font-size: 14px;">GENEL TOPLAM:</td>
-              <td style="padding: 16px 8px; text-align: right; font-weight: 800; color: #0f172a; font-size: 16px; white-space: nowrap; background-color: #f8fafc;">
-                ${curSym}${fmtMoney(quote.total_amount || 0)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      `;
+    
+    if (confirmedHotels.length > 0) {
+       confirmedHotels.forEach((hotelData: any) => {
+         const hName = hotelMap.get(hotelData.hotel_id) || "Bilinmeyen Otel";
+         
+         // Sadece bu otele ait kalemleri filtrele
+         let hotelItems = [];
+         if (hotelData.id === "legacy") {
+           hotelItems = items || [];
+         } else {
+           hotelItems = (items || []).filter((item: any) => item.hotel_id === hotelData.id);
+         }
+         
+         const hotelTotal = hotelItems.reduce((acc: number, item: any) => acc + Number(item.total_price || item.total || 0), 0);
+         
+         itemsTableHtml += `
+          <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #f1f5f9; padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
+              <h4 style="margin: 0; color: #0f172a; font-size: 14px;">${hName}</h4>
+              <p style="margin: 4px 0 0 0; color: #64748b; font-size: 12px;">Giriş: ${formatDateStr(hotelData.check_in_date)} | Çıkış: ${formatDateStr(hotelData.check_out_date)}</p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+              <thead>
+                <tr style="background-color: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                  <th style="padding: 10px 16px; text-align: left; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Hizmet Detayı</th>
+                  <th style="padding: 10px 16px; text-align: right; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Miktar</th>
+                  <th style="padding: 10px 16px; text-align: right; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Birim Fiyat</th>
+                  <th style="padding: 10px 16px; text-align: right; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px;">Toplam</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${hotelItems.length > 0 ? hotelItems.map((item: any) => `
+                  <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 16px; color: #1e293b; font-weight: 500;">
+                      ${item.sub_category || item.main_category || "Diğer"}
+                    </td>
+                    <td style="padding: 10px 16px; text-align: right; color: #334155;">${item.unit_quantity} x ${item.sefer || 1}</td>
+                    <td style="padding: 10px 16px; text-align: right; color: #334155; white-space: nowrap;">${curSym}${fmtMoney(item.unit_price)}</td>
+                    <td style="padding: 10px 16px; text-align: right; color: #0f172a; font-weight: 600; white-space: nowrap;">${curSym}${fmtMoney(item.total_price || item.total)}</td>
+                  </tr>
+                `).join("") : `<tr><td colspan="4" style="padding: 10px 16px; text-align: center; color: #94a3b8;">Bu otele ait kalem bulunmuyor</td></tr>`}
+              </tbody>
+              <tfoot>
+                <tr style="background-color: #f8fafc;">
+                  <td colspan="3" style="padding: 12px 16px; text-align: right; font-weight: 700; color: #0f172a; font-size: 13px;">TOPLAM:</td>
+                  <td style="padding: 12px 16px; text-align: right; font-weight: 800; color: #0f172a; font-size: 14px; white-space: nowrap;">
+                    ${curSym}${fmtMoney(hotelTotal)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+         `;
+       });
+    } else {
+       itemsTableHtml = `<p style="color:#64748b; font-size:13px; text-align: center; padding: 20px; background: #f8fafc; border-radius: 8px;">Konfirme edilen otel bulunamadı.</p>`;
     }
 
     const notificationTitle = `✅ Sistemden Teklif Onaylandı: ${quote.reference}`;
@@ -134,12 +189,8 @@ export async function POST(req: Request) {
               <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${quote.reference}</td>
             </tr>
             <tr>
-              <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Müşteri / Acente:</td>
+              <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Müşteri / Acente / Firma:</td>
               <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${agencyName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Ana Otel:</td>
-              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${hotelName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Proje Sorumlusu:</td>
@@ -154,7 +205,7 @@ export async function POST(req: Request) {
 
         <!-- Sales Details -->
         <div>
-          <h3 style="color: #0f172a; font-size: 16px; margin: 0 0 12px 0; padding-left: 8px; border-left: 4px solid #3b82f6;">Satış Detayları</h3>
+          <h3 style="color: #0f172a; font-size: 16px; margin: 0 0 16px 0; padding-left: 8px; border-left: 4px solid #3b82f6;">Onaylanan Oteller & Detaylar</h3>
           ${itemsTableHtml}
         </div>
 
