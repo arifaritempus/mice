@@ -116,8 +116,8 @@ export async function POST(req: Request) {
       `;
     }
 
-    const notificationTitle = \`✅ Sistemden Teklif Onaylandı: \${quote.reference}\`;
-    const notificationHtml = \`
+    const notificationTitle = `✅ Sistemden Teklif Onaylandı: ${quote.reference}`;
+    const notificationHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         
         <!-- Header -->
@@ -131,23 +131,23 @@ export async function POST(req: Request) {
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <tr>
               <td style="padding: 8px 0; color: #64748b; width: 140px; font-weight: 500;">Referans:</td>
-              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">\${quote.reference}</td>
+              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${quote.reference}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Müşteri / Acente:</td>
-              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">\${agencyName}</td>
+              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${agencyName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Ana Otel:</td>
-              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">\${hotelName}</td>
+              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${hotelName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Proje Sorumlusu:</td>
-              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">\${pmName}</td>
+              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${pmName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">İşlemi Yapan:</td>
-              <td style="padding: 8px 0; color: #2563eb; font-weight: 600;">\${confirmedByName}</td>
+              <td style="padding: 8px 0; color: #2563eb; font-weight: 600;">${confirmedByName}</td>
             </tr>
           </table>
         </div>
@@ -155,15 +155,15 @@ export async function POST(req: Request) {
         <!-- Sales Details -->
         <div>
           <h3 style="color: #0f172a; font-size: 16px; margin: 0 0 12px 0; padding-left: 8px; border-left: 4px solid #3b82f6;">Satış Detayları</h3>
-          \${itemsTableHtml}
+          ${itemsTableHtml}
         </div>
 
         <div style="margin-top: 32px; text-align: center; padding-top: 24px; border-top: 1px solid #f1f5f9;">
-          <a href="\${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:6002'}/projects" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">Projeye Git</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:6002'}/projects" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">Projeye Git</a>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 16px;">Bu e-posta otomatik olarak gönderilmiştir.</p>
         </div>
       </div>
-    \`;
+    `;
 
     // Send Emails
     const { data: admins } = await admin
