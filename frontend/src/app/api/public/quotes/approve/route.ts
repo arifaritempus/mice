@@ -177,7 +177,7 @@ export async function POST(req: Request) {
         .select("id, email")
         .eq("role", "super_admin");
 
-      // Creator'a bildirim gönder
+      // Creator'a uygulama içi bildirim gönder
       if (creatorId) {
         await admin.from("notifications").insert({
           user_id: creatorId,
@@ -186,17 +186,9 @@ export async function POST(req: Request) {
           type: "success",
           action_url: `/quotes`,
         });
-        
-        if (creatorEmail) {
-          sendMail({
-            to: creatorEmail,
-            subject: notificationTitle,
-            html: notificationHtml
-          }).catch(err => console.error("Creator email send error:", err));
-        }
       }
 
-      // Adminlere de gönder
+      // Adminlere de uygulama içi bildirim gönder
       if (admins) {
         const adminTargets = admins.filter((a) => a.id !== creatorId);
         
@@ -211,17 +203,27 @@ export async function POST(req: Request) {
         if (bulk.length > 0) {
           await admin.from("notifications").insert(bulk);
         }
-        
-        for (const a of adminTargets) {
-          if (a.email) {
-            sendMail({
-              to: a.email,
-              subject: notificationTitle,
-              html: notificationHtml
-            }).catch(err => console.error("Admin email send error:", err));
-          }
-        }
       }
+      
+      // E-posta bildirimlerini merkezi API üzerinden tetikle
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:6002";
+        await fetch(`${baseUrl}/api/notifications/quote-confirmed`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            quoteId: quoteId,
+            confirmedBy: { 
+              name: `${approvalData.name} ${approvalData.surname}`.trim(), 
+              type: "customer_link" 
+            }
+          }),
+        });
+        console.log("Triggered centralized email notification successfully.");
+      } catch (err) {
+        console.error("Failed to trigger centralized email API:", err);
+      }
+      
     } catch (notifErr) {
       console.error("Notification creation error (non-fatal):", notifErr);
     }

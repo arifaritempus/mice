@@ -54,17 +54,30 @@ export async function POST(req: Request) {
       .order("created_at", { ascending: true });
 
     // Fetch project manager / creator
-    let pmName = "Sistem";
+    let pmName = "Atanmamış";
     let creatorEmail = null;
+    
+    if (quote.operation_managers && Array.isArray(quote.operation_managers) && quote.operation_managers.length > 0) {
+      const { data: managers } = await admin
+        .from("users")
+        .select("first_name, last_name")
+        .in("id", quote.operation_managers);
+      if (managers && managers.length > 0) {
+        pmName = managers.map(m => `${m.first_name || ""} ${m.last_name || ""}`.trim()).join(", ");
+      }
+    }
+
     if (quote.created_by) {
       const { data: creator } = await admin
         .from("users")
-        .select("first_name, last_name, email")
+        .select("email, first_name, last_name")
         .eq("id", quote.created_by)
         .single();
       if (creator) {
-        pmName = `${creator.first_name || ""} ${creator.last_name || ""}`.trim() || "Sistem";
         creatorEmail = creator.email;
+        if (pmName === "Atanmamış") {
+          pmName = `${creator.first_name || ""} ${creator.last_name || ""}`.trim() || "Atanmamış";
+        }
       }
     }
 
@@ -123,7 +136,11 @@ export async function POST(req: Request) {
          if (hotelData.id === "legacy") {
            hotelItems = items || [];
          } else {
-           hotelItems = (items || []).filter((item: any) => item.hotel_id === hotelData.id);
+           hotelItems = (items || []).filter((item: any) => {
+             if (item.description && item.description.includes(`[T:${hotelData.id}]`)) return true;
+             if (item.hotel_id === hotelData.hotel_id || item.hotel_id === hotelData.id) return true;
+             return false;
+           });
          }
          
          const hotelTotal = hotelItems.reduce((acc: number, item: any) => acc + Number(item.total_price || item.total || 0), 0);
@@ -172,13 +189,17 @@ export async function POST(req: Request) {
     }
 
     const notificationTitle = `✅ Sistemden Teklif Onaylandı: ${quote.reference}`;
+    const approvalTypeBadge = confirmedBy?.type === "customer_link" 
+      ? `<span style="background-color: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; border: 1px solid #34d399;">Müşteri (Link)</span>`
+      : `<span style="background-color: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; border: 1px solid #bfdbfe;">Sistem İçi</span>`;
+
     const notificationHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         
         <!-- Header -->
         <div style="text-align: center; padding-bottom: 24px; border-bottom: 1px solid #f1f5f9; margin-bottom: 24px;">
           <h2 style="color: #0f172a; margin: 0 0 8px 0; font-size: 24px; letter-spacing: -0.5px;">Teklif Başarıyla Onaylandı</h2>
-          <p style="color: #64748b; margin: 0; font-size: 14px;">Bu teklif sistem üzerinden konfirme edilerek projelere aktarılmıştır.</p>
+          <p style="color: #64748b; margin: 0; font-size: 14px;">Bu teklif ${confirmedBy?.type === 'customer_link' ? 'müşteri tarafından link üzerinden' : 'sistem üzerinden'} konfirme edilerek projelere aktarılmıştır.</p>
         </div>
 
         <!-- Meta Info -->
@@ -195,6 +216,10 @@ export async function POST(req: Request) {
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Proje Sorumlusu:</td>
               <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${pmName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-weight: 500;">Onay Tipi:</td>
+              <td style="padding: 8px 0;">${approvalTypeBadge}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #64748b; font-weight: 500;">İşlemi Yapan:</td>
