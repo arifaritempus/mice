@@ -309,6 +309,42 @@ export default function TopNavigation() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Kısayollar: F10 (CommandCenter) ve Alt+Shift / Option+Shift Navigasyonları
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // 1. F10 ile CommandCenter'ı (Menü Modalı) aç
+      if (e.key === "F10") {
+        e.preventDefault();
+        setIsCommandCenterOpen(true);
+        return;
+      }
+
+      // 2. Alt + Shift + [Harf] kombinasyonları
+      if (e.altKey && e.shiftKey) {
+        let targetPath = "";
+        
+        // Farklı klavye dillerinde sorun yaşamamak için e.key yerine e.code kullanıyoruz.
+        switch (e.code) {
+          case "KeyH": targetPath = "/"; break;
+          case "KeyD": targetPath = "/dashboard"; break;
+          case "KeyQ": targetPath = "/quotes"; break;
+          case "KeyP": targetPath = "/projects"; break;
+          case "KeyS": targetPath = "/sejour"; break;
+          case "KeyR": targetPath = "/reports"; break;
+          case "KeyM": targetPath = "/marketing"; break;
+        }
+
+        if (targetPath) {
+          e.preventDefault();
+          router.push(targetPath);
+        }
+      }
+    };
+    
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [router]);
+
   const toggleFullscreen = async () => {
     try {
       if (!document.fullscreenElement) {

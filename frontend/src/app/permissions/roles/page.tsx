@@ -665,8 +665,8 @@ export default function RolePermissionsPage() {
           </div>
         )}
 
-        <div className="flex flex-col xl:flex-row gap-4 flex-1 min-h-0">
-          <div className="w-full xl:w-1/4 h-48 xl:h-auto shrink-0 xl:shrink-0 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border flex flex-col min-h-0 p-3 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 min-h-0">
+          <div className="md:col-span-4 lg:col-span-3 h-64 md:h-auto rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border flex flex-col min-h-0 p-3 shadow-sm">
             <h2 className="text-[11px] font-semibold text-v3-text uppercase tracking-wider mb-2">
               Roller
             </h2>
@@ -711,7 +711,7 @@ export default function RolePermissionsPage() {
                       )}
                     </div>
                     <p className="text-xs text-v3-muted dark:text-v3-muted mt-1 line-clamp-2">
-                      {role.description || "Aciklama yok"}
+                      {role.description || "Açıklama yok"}
                     </p>
                   </div>
                 );
@@ -719,7 +719,7 @@ export default function RolePermissionsPage() {
             </div>
           </div>
 
-          <div className="w-full xl:w-3/4 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border shadow-sm flex flex-col min-h-0 flex-1">
+          <div className="md:col-span-8 lg:col-span-9 rounded-2xl bg-v3-surface backdrop-blur-md border border-v3-border shadow-sm flex flex-col min-h-0 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-v3-border shrink-0">
               <div>
                 <h2 className="text-base font-medium text-v3-text">
