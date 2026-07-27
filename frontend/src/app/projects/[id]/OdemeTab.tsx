@@ -432,10 +432,16 @@ const exportToExcel = async () => {
           }
         };
         data.forEach(item => {
+          let typeLabel = item.paymentType;
+          if (typeLabel === "banka") typeLabel = "Banka Havalesi";
+          else if (typeLabel === "pos") typeLabel = "Kredi Kartı / Pos";
+          else if (typeLabel === "cek") typeLabel = "Çek / Senet";
+          else if (typeLabel === "nakit") typeLabel = "Nakit";
+
           sheet.addRow({
             date: item.date,
             hotel: item.hotel,
-            paymentType: item.paymentType,
+            paymentType: typeLabel || "-",
             description: item.description,
             amount: Number(item.amount || 0),
             currency: item.currency,

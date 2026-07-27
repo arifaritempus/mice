@@ -544,8 +544,8 @@ export default function QuoteViewPage() {
               extension: guessExt(iconLogoBase64),
             }),
             {
-              tl: { col: 0.15, row: 0.15 },
-              ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) },
+              tl: { col: 0.05, row: 0.1 },
+              ext: { width: 85, height: 85 },
             },
           );
         if (wordmarkLogoBase64)
@@ -555,8 +555,8 @@ export default function QuoteViewPage() {
               extension: guessExt(wordmarkLogoBase64),
             }),
             {
-              tl: { col: 7.9, row: 0.23 },
-              ext: { width: (typeof iconWidth !== "undefined" ? iconWidth : 120), height: (typeof iconHeight !== "undefined" ? iconHeight : 60) },
+              tl: { nativeCol: 5, nativeColOff: 2300000, nativeRow: 0, nativeRowOff: 90000 } as any,
+              ext: { width: 85, height: 85 },
             },
           );
 
@@ -697,6 +697,11 @@ export default function QuoteViewPage() {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
             } as any;
+            
+            // Description column formatting (Metni kaydır)
+            sRow.getCell(6).alignment = { wrapText: true, vertical: "top" };
+            
+            // Satır yüksekliğini sabit tutarak metnin aşağı doğru hücreyi genişletmesini engelliyoruz
             sRow.height = 18;
             rowIndex++;
           });

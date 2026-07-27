@@ -302,9 +302,15 @@ const exportToExcel = async () => {
           }
         };
         data.forEach(item => {
+          let typeLabel = item.collectionType;
+          if (typeLabel === "banka") typeLabel = "Banka Havalesi";
+          else if (typeLabel === "pos") typeLabel = "Kredi Kartı / Pos";
+          else if (typeLabel === "cek") typeLabel = "Çek / Senet";
+          else if (typeLabel === "nakit") typeLabel = "Nakit";
+
           sheet.addRow({
             date: item.date,
-            collectionType: item.collectionType,
+            collectionType: typeLabel || "-",
             description: item.description,
             amount: Number(item.amount || 0),
             currency: item.currency,

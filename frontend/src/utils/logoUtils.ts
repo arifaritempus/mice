@@ -81,8 +81,8 @@ export async function getLogosForExcel(isDark: boolean = false, appSettings?: an
         : (appSettings.lightIconLogo || appSettings.light_icon_logo || appSettings.darkIconLogo || appSettings.dark_icon_logo || '');
       
       wordmarkLogoUrl = isDark 
-        ? (appSettings.darkWordmarkLogo || appSettings.dark_wordmark_logo || appSettings.dark_menu_logo || '') 
-        : (appSettings.lightWordmarkLogo || appSettings.light_wordmark_logo || appSettings.light_menu_logo || '');
+        ? (appSettings.darkWordmarkLogo || appSettings.dark_wordmark_logo || appSettings.darkMenuLogo || appSettings.dark_menu_logo || '') 
+        : (appSettings.lightWordmarkLogo || appSettings.light_wordmark_logo || appSettings.lightMenuLogo || appSettings.light_menu_logo || '');
     } else {
       // Fallback if appSettings is not provided
       iconLogoUrl = '';

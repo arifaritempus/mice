@@ -108,7 +108,9 @@ router.post('/:projectId', async (req, res) => {
       'gidis_tarihi', 'gidis_saati', 'gidis_ucus_kodu',
       'donus_tarihi', 'donus_saati', 'donus_ucus_kodu',
       'guzergah', 'kisi_sayisi', 'pp_maliyet', 'toplam_maliyet',
-      'doviz', 'misafirler', 'durum', 'islemler'
+      'doviz', 'misafirler', 'durum', 'islemler',
+      'satis_pax', 'pp_satis', 'toplam_satis', 'doviz_satis', 
+      'satis_kur', 'toplam_satis_tl', 'satis_doviz', 'hotel_id'
     ];
 
     // Yeni alanları kontrol et ve ekle (eğer mevcut ise)
@@ -206,7 +208,9 @@ router.put('/:projectId/:id', async (req, res) => {
       'gidis_tarihi', 'gidis_saati', 'gidis_ucus_kodu',
       'donus_tarihi', 'donus_saati', 'donus_ucus_kodu',
       'guzergah', 'kisi_sayisi', 'pp_maliyet', 'toplam_maliyet',
-      'doviz', 'misafirler', 'durum', 'islemler'
+      'doviz', 'misafirler', 'durum', 'islemler',
+      'satis_pax', 'pp_satis', 'toplam_satis', 'doviz_satis', 
+      'satis_kur', 'toplam_satis_tl', 'satis_doviz', 'hotel_id'
     ];
 
     const updateData = {};

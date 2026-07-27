@@ -488,6 +488,7 @@ export default function QuotesPage() {
         check_out_date: quote.check_out_date,
         hotel_id: quote.hotel_id,
         hotel_concept: quote.hotel_concept || "",
+        hotels_data: (quote as any).hotels_data || [],
         room_count: quote.room_count || 0,
         pax_count: quote.pax_count || 0,
         option: quote.option,
@@ -497,21 +498,29 @@ export default function QuotesPage() {
         operation_managers: (quote as any).operation_managers || [],
         notes: quote.notes || "",
         total_amount: quote.total_amount || 0,
+        currency: (quote as any).currency || "EUR",
       } as any);
 
       try {
-        const items = (quote as any).items || [];
-        for (const item of items) {
+        const fullItems = await quoteItemsService.getByQuoteId(quote.id);
+        const isValidUUID = (id: any) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        
+        for (const item of fullItems) {
           await quoteItemsService.create({
             quote_id: (created as any).id,
-            main_category: item.main_category || item.category_id || "",
-            sub_category: item.sub_category || item.sub_category_id || "",
-            unit_quantity: Number(item.unit_quantity || 0),
-            sefer: Number(item.sefer || item.repeat_frequency || 0),
-            unit_price: Number(item.unit_price || 0),
-            currency: item.currency || "EUR",
-            total: Number(item.total || item.total_price || 0),
-            description: item.description || item.detail_description || "",
+            main_category: isValidUUID((item as any).main_category) ? (item as any).main_category : (isValidUUID((item as any).category_id) ? (item as any).category_id : null),
+            sub_category: isValidUUID((item as any).sub_category) ? (item as any).sub_category : (isValidUUID((item as any).sub_category_id) ? (item as any).sub_category_id : null),
+            unit_quantity: Number((item as any).unit_quantity || 0),
+            sefer: Number((item as any).sefer || (item as any).repeat_frequency || 0),
+            unit_price: Number((item as any).unit_price || 0),
+            currency: (item as any).currency || "EUR",
+            total: Number((item as any).total || (item as any).total_price || 0),
+            total_price: Number((item as any).total_price || (item as any).total || 0),
+            total_try: Number((item as any).total_try || 0),
+            vat: Number((item as any).vat || 0),
+            fx: Number((item as any).fx || 1),
+            description: (item as any).description || (item as any).detail_description || "",
+            hotel_id: isValidUUID((item as any).hotel_id) ? (item as any).hotel_id : null,
           } as any);
         }
       } catch (err) {

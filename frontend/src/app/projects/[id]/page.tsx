@@ -661,13 +661,13 @@ export default function ProjectDetailPage() {
       kisiSayisi: ticket.kisi_sayisi || ticket.kisiSayisi || 1,
       ppMaliyet: ticket.pp_maliyet || ticket.ppMaliyet || 0,
       toplamMaliyet: ticket.toplam_maliyet || ticket.toplamMaliyet || 0,
-      doviz: ticket.doviz || "EUR",
-      kur: ticket.kur || ticket.kur || 1.0,
+      doviz: (ticket.doviz || "EUR") === "TRY" ? "TL" : (ticket.doviz || "EUR"),
+      kur: ticket.kur || 1.0,
       toplamTl: ticket.toplam_tl || ticket.toplamTl || 0,
       satisPax: ticket.satis_pax || ticket.satisPax || 0,
       ppSatis: ticket.pp_satis || ticket.ppSatis || 0,
       toplamSatis: ticket.toplam_satis || ticket.toplamSatis || 0,
-      satisDoviz: ticket.satis_doviz || ticket.satisDoviz || "TRY",
+      satisDoviz: (ticket.satis_doviz || ticket.satisDoviz) === "TRY" ? "TL" : (ticket.satis_doviz || ticket.satisDoviz || "TL"),
       satisKur: ticket.satis_kur || ticket.satisKur || 1.0,
       toplamSatisTl: ticket.toplam_satis_tl || ticket.toplamSatisTl || 0,
       misafirler: ticket.misafirler || "",
@@ -4347,6 +4347,12 @@ export default function ProjectDetailPage() {
       doviz: "EUR",
       kur: 1.0,
       toplamTl: 0,
+      satisPax: 0,
+      ppSatis: 0,
+      toplamSatis: 0,
+      satisDoviz: "TL",
+      satisKur: 1.0,
+      toplamSatisTl: 0,
       misafirler: "",
       durum: "aktif",
     };
@@ -4414,13 +4420,13 @@ export default function ProjectDetailPage() {
           kisi_sayisi: String(tempFlightItem.kisiSayisi) === "" || tempFlightItem.kisiSayisi === null ? 0 : Number(tempFlightItem.kisiSayisi),
           pp_maliyet: String(tempFlightItem.ppMaliyet) === "" || tempFlightItem.ppMaliyet === null ? 0 : Number(tempFlightItem.ppMaliyet),
           toplam_maliyet: String(tempFlightItem.toplamMaliyet) === "" || tempFlightItem.toplamMaliyet === null ? 0 : Number(tempFlightItem.toplamMaliyet),
-          doviz: tempFlightItem.doviz || "TRY",
+          doviz: tempFlightItem.doviz || "TL",
           kur: String(tempFlightItem.kur) === "" || tempFlightItem.kur === null ? 1.0 : Number(tempFlightItem.kur),
           toplam_tl: String(tempFlightItem.toplamTl) === "" || tempFlightItem.toplamTl === null || tempFlightItem.toplamTl === undefined ? 0 : Number(tempFlightItem.toplamTl),
           satis_pax: String(tempFlightItem.satisPax) === "" || tempFlightItem.satisPax == null ? 0 : Number(tempFlightItem.satisPax),
           pp_satis: String(tempFlightItem.ppSatis) === "" || tempFlightItem.ppSatis == null ? 0 : Number(tempFlightItem.ppSatis),
           toplam_satis: String(tempFlightItem.toplamSatis) === "" || tempFlightItem.toplamSatis == null ? 0 : Number(tempFlightItem.toplamSatis),
-          satis_doviz: tempFlightItem.satisDoviz || "TRY",
+          satis_doviz: tempFlightItem.satisDoviz === "TRY" ? "TL" : (tempFlightItem.satisDoviz || "TL"),
           satis_kur: String(tempFlightItem.satisKur) === "" || tempFlightItem.satisKur == null ? 1.0 : Number(tempFlightItem.satisKur),
           toplam_satis_tl: String(tempFlightItem.toplamSatisTl) === "" || tempFlightItem.toplamSatisTl == null ? 0 : Number(tempFlightItem.toplamSatisTl),
           misafirler: tempFlightItem.misafirler || null,
@@ -5525,13 +5531,13 @@ export default function ProjectDetailPage() {
         },
       } as any;
 
-      // Üst Bant (A1:T1) - zemin rengi ve logolar
+      // Üst Bant (A1:Z1) - zemin rengi ve logolar
       const topBandRow = sheet.addRow([]);
       topBandRow.height = 70;
-      sheet.mergeCells("A1:T1");
+      sheet.mergeCells("A1:Z1");
 
-      // A1:T1 zemin rengi #232f38
-      for (let c = 1; c <= 20; c++) {
+      // A1:Z1 zemin rengi #232f38
+      for (let c = 1; c <= 26; c++) {
         sheet.getRow(1).getCell(c).fill = {
           type: "pattern",
           pattern: "solid",
@@ -5554,8 +5560,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -5565,8 +5571,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 17.5, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 24, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -5583,11 +5589,11 @@ export default function ProjectDetailPage() {
         const rightValue =
           index === 0 ? new Date().toLocaleDateString("tr-TR") : "Aktif";
 
-        const rowValues: any[] = new Array(20);
+        const rowValues: any[] = new Array(26);
         rowValues[0] = item.left;
         rowValues[1] = leftValue;
-        rowValues[18] = item.right;
-        rowValues[19] = rightValue;
+        rowValues[24] = item.right;
+        rowValues[25] = rightValue;
 
         const headerRow = sheet.addRow(rowValues);
         headerRow.height = 24;
@@ -5610,20 +5616,20 @@ export default function ProjectDetailPage() {
           vertical: "middle",
         };
 
-        // Sağ etiket (S)
-        headerRow.getCell(19).font = {
+        // Sağ etiket (Y)
+        headerRow.getCell(25).font = {
           bold: true,
           size: 12,
           color: { argb: "FF000000" },
         };
-        headerRow.getCell(19).alignment = {
+        headerRow.getCell(25).alignment = {
           horizontal: "left",
           vertical: "middle",
         };
 
-        // Sağ değer (T)
-        headerRow.getCell(20).font = { size: 12, color: { argb: "FF000000" } };
-        headerRow.getCell(20).alignment = {
+        // Sağ değer (Z)
+        headerRow.getCell(26).font = { size: 12, color: { argb: "FF000000" } };
+        headerRow.getCell(26).alignment = {
           horizontal: "left",
           vertical: "middle",
         };
@@ -5649,12 +5655,18 @@ export default function ProjectDetailPage() {
         "DÖNÜŞ SAATİ",
         "DÖNÜŞ UÇUŞ KODU",
         "GÜZERGAH",
-        "KİŞİ SAYISI",
+        "MALİYET PAX",
         "PP MALİYET",
         "TOPLAM MALİYET",
-        "DÖVİZ",
+        "Döviz",
         "KUR",
-        "TOPLAM TL",
+        "Toplam Maliyet TL",
+        "SATIŞ PAX",
+        "PP SATIŞ",
+        "TOPLAM SATIŞ",
+        "Döviz",
+        "KUR",
+        "Toplam Satış TL",
         "MİSAFİRLER",
         "DURUM",
       ]);
@@ -5667,7 +5679,7 @@ export default function ProjectDetailPage() {
       tableHeaderRow.height = 25;
 
       // Başlık hücrelerini biçimlendir
-      for (let col = 1; col <= 20; col++) {
+      for (let col = 1; col <= 26; col++) {
         const cell = tableHeaderRow.getCell(col);
         cell.fill = {
           type: "pattern",
@@ -5725,6 +5737,12 @@ export default function ProjectDetailPage() {
           ticket.doviz || "",
           ticket.kur || 0,
           ticket.toplamTl || 0,
+          ticket.satisPax || 0,
+          ticket.ppSatis || 0,
+          ticket.toplamSatis || 0,
+          ticket.satisDoviz || "",
+          ticket.satisKur || 0,
+          ticket.toplamSatisTl || 0,
           ticket.misafirler || "",
           ticket.durum || "",
         ]);
@@ -5732,7 +5750,7 @@ export default function ProjectDetailPage() {
         dataRow.height = 20;
 
         // Veri hücrelerini biçimlendir
-        for (let col = 1; col <= 20; col++) {
+        for (let col = 1; col <= 26; col++) {
           const cell = dataRow.getCell(col);
           cell.border = {
             top: { style: "thin", color: { argb: "FFCCCCCC" } },
@@ -5742,9 +5760,9 @@ export default function ProjectDetailPage() {
           };
 
           // Sayısal sütunları sağa hizala
-          if ([13, 14, 15, 17, 18].includes(col)) {
+          if ([13, 14, 15, 17, 18, 19, 20, 21, 23, 24].includes(col)) {
             cell.alignment = { horizontal: "right", vertical: "middle" };
-            cell.numFmt = col === 18 ? "₺#,##0.00" : "#,##0.00";
+            cell.numFmt = col === 18 || col === 24 ? "₺#,##0.00" : "#,##0.00";
           } else {
             cell.alignment = { horizontal: "left", vertical: "middle" };
           }
@@ -5771,6 +5789,12 @@ export default function ProjectDetailPage() {
         { width: 8 }, // DÖVİZ
         { width: 10 }, // KUR
         { width: 15 }, // TOPLAM TL
+        { width: 10 }, // SATIŞ PAX
+        { width: 12 }, // PP SATIŞ
+        { width: 15 }, // TOPLAM SATIŞ
+        { width: 10 }, // SATIŞ DÖVİZ
+        { width: 10 }, // SATIŞ KUR
+        { width: 15 }, // TOPLAM SATIŞ TL
         { width: 20 }, // MİSAFİRLER
         { width: 10 }, // DURUM
       ];
@@ -5808,6 +5832,12 @@ export default function ProjectDetailPage() {
             (sum, total) => sum + total.toplamTl,
             0,
           ),
+          filteredFlightTickets.reduce((sum, ticket) => sum + (ticket.satisPax || 0), 0),
+          filteredFlightTickets.reduce((sum, ticket) => sum + (ticket.ppSatis || 0), 0),
+          filteredFlightTickets.reduce((sum, ticket) => sum + (ticket.toplamSatis || 0), 0),
+          "",
+          "",
+          filteredFlightTickets.reduce((sum, ticket) => sum + (ticket.toplamSatisTl || 0), 0),
           "",
           "",
         ]);
@@ -5816,7 +5846,7 @@ export default function ProjectDetailPage() {
         totalRow.height = 25;
 
         // Toplam satırını biçimlendir
-        for (let col = 1; col <= 20; col++) {
+        for (let col = 1; col <= 26; col++) {
           const cell = totalRow.getCell(col);
           cell.fill = {
             type: "pattern",
@@ -5830,9 +5860,9 @@ export default function ProjectDetailPage() {
             right: { style: "thin", color: { argb: "FF000000" } },
           };
 
-          if ([13, 14, 15, 18].includes(col)) {
+          if ([13, 14, 15, 18, 19, 20, 21, 24].includes(col)) {
             cell.alignment = { horizontal: "right", vertical: "middle" };
-            cell.numFmt = col === 18 ? "₺#,##0.00" : "#,##0.00";
+            cell.numFmt = col === 18 || col === 24 ? "₺#,##0.00" : "#,##0.00";
           } else {
             cell.alignment = { horizontal: "center", vertical: "middle" };
           }
@@ -7129,8 +7159,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -7140,8 +7170,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 7.5, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 8, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -7769,8 +7799,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -7780,8 +7810,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 5.5, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 6, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -8022,8 +8052,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -8033,8 +8063,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 5.5, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 6, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -8305,8 +8335,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -8316,8 +8346,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 5.5, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 6, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -8593,8 +8623,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -8604,8 +8634,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 5.5, row: 0.23 },
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 6, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -11886,20 +11916,19 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         worksheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) } as any,
-        } as any);
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
+        });
       }
-
       if (wordmarkLogoBase64) {
-        const markId = workbook.addImage({
+        const wordmarkId = workbook.addImage({
           base64: wordmarkLogoBase64,
           extension: guessExt(wordmarkLogoBase64),
         });
-        worksheet.addImage(markId, {
-          tl: { col: 9.5, row: 0.23 },
-          ext: { width: inchToPx(2.0), height: inchToPx(0.5) } as any,
-        } as any);
+        worksheet.addImage(wordmarkId, {
+          tl: { nativeCol: 11, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
+        });
       }
 
       // Ana başlık - TRANSFER & TUR LİSTESİ
@@ -12558,17 +12587,116 @@ export default function ProjectDetailPage() {
   const exportProjectFullToExcel = async () => {
     try {
       setLoading(true);
+
+      // Lazy loaded dataları kontrol et, boşsa DB'den anlık çek (Kullanıcı sekmeyi açmadan Export basmış olabilir)
+      let finalAccommodationItems = accommodationItems;
+      if (!finalAccommodationItems || finalAccommodationItems.length === 0) {
+        try {
+          const rawAcc = await projectAccommodationItemsService.getByProjectId(projectId as string);
+          if (rawAcc && rawAcc.length > 0) {
+            finalAccommodationItems = rawAcc.map((item: any) => ({
+              ...item,
+              gelis_tarihi: item.check_in_date ? formatDateAccommodation(item.check_in_date) : "",
+              cikis_tarihi: item.check_out_date ? formatDateAccommodation(item.check_out_date) : "",
+              oda_no: item.room_number,
+              oda_no_2: item.room_number_2 || "",
+              oda_tipi: item.room_type,
+              yatak_tipi: item.bed_type,
+              isim: item.first_name,
+              soyisim: item.last_name,
+              ucus_gelis: item.flight_arrival,
+              ucus_gidis: item.flight_departure,
+              gece_sayisi: item.nights,
+              geceleme: item.nights,
+              paket: item.package,
+              otel: item.hotel,
+              ucus: item.flight,
+              ucak: item.flight,
+              toplam: item.total,
+              doviz: item.currency,
+              oda_notu: item.room_note || "",
+              gelis_ucus_kodu: item.arrival_flight_code || "",
+              gelis_ucak_kalkis: item.arrival_flight_departure || "",
+              gelis_ucak_inis: item.arrival_flight_arrival || "",
+              donus_ucus_kodu: item.return_flight_code || "",
+              donus_ucak_kalkis: item.return_flight_departure || "",
+              donus_ucak_inis: item.return_flight_arrival || "",
+            }));
+          }
+        } catch (e) {
+          console.error("Export öncesi konaklama çekilemedi", e);
+        }
+      }
+
+      let finalTransfers = transfers;
+      if (!finalTransfers || finalTransfers.length === 0) {
+        try {
+          const rawTrans = await projectTransfersService.getByProjectId(projectId as string);
+          if (rawTrans && rawTrans.length > 0) {
+            finalTransfers = rawTrans.map((item: any) => ({
+              ...item,
+              direction: item.direction,
+              typeLabel: item.type_label,
+              date: item.date ? formatDateFromSupabase(item.date) : item.date,
+              time: item.time ? formatTimeFromSupabase(item.time) : item.time,
+              flightCode: item.flight_code,
+              route: item.route,
+              passengerCount: item.passenger_count,
+              passengers: item.passengers || [],
+              transferType: item.transfer_type,
+              vehicleType: item.vehicle_type,
+              supplierId: item.supplier_id,
+              supplierName: item.supplier_name,
+              vehicleAssigned: item.vehicle_assigned,
+              costAmount: item.cost_amount,
+              currency: item.currency,
+              isGroup: item.is_group,
+              groupTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+              originalTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+              isEditing: false,
+              isNew: false,
+            }));
+          }
+        } catch (e) {
+          console.error("Export öncesi transfer çekilemedi", e);
+        }
+      }
+
+      let finalOthers = projectOthers;
+      if (!finalOthers || finalOthers.length === 0) {
+        try {
+          const rawOthers = await projectOthersService.getByProjectId(projectId as string);
+          if (rawOthers && rawOthers.length > 0) {
+            finalOthers = rawOthers;
+          }
+        } catch (e) {
+          console.error("Export öncesi diğer hizmetler çekilemedi", e);
+        }
+      }
+
+      // Compute TRY values for projectOthers before exporting
+      finalOthers = finalOthers.map((item: any) => ({
+        ...item,
+        cost_amount_try: (Number(item.cost_amount) || 0) * (Number(item.cost_exchange_rate) || 1),
+        sale_amount_try: (Number(item.sale_amount) || 0) * (Number(item.sale_exchange_rate) || 1)
+      }));
+
       const { generateProjectFullReport } = await import('@/utils/projectFullReportExport');
       await generateProjectFullReport({
         project,
         salesItems: filteredSalesItems,
         purchaseItems: filteredPurchaseItems,
         flightTickets,
-        projectOthers,
+        projectOthers: finalOthers,
         collectionPlans,
         paymentPlans,
-        accommodationItems,
-        transfers,
+        collections,
+        payments,
+        categories,
+        hotels,
+        suppliers,
+        accommodationItems: finalAccommodationItems,
+        transfers: finalTransfers,
         getCategoryName,
         getSupplierName,
         getHotelName,
@@ -12626,16 +12754,15 @@ export default function ProjectDetailPage() {
         };
 
         // Logo
-        const inchToPx = (inch: number) => Math.round(inch * 96);
         if (iconLogoBase64) {
           const iconId = workbook.addImage({
             base64: iconLogoBase64,
             extension: "png",
           });
           sheet.addImage(iconId, {
-            tl: { col: 0.1, row: 0.1 },
-            ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
-          });
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
+        });
         }
         if (wordmarkLogoBase64) {
           const wordmarkId = workbook.addImage({
@@ -12643,9 +12770,9 @@ export default function ProjectDetailPage() {
             extension: "png",
           });
           sheet.addImage(wordmarkId, {
-            tl: { col: 7.4, row: 0.15 },
-            ext: { width: 180, height: 45 },
-          });
+          tl: { nativeCol: 7, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
+        });
         }
 
         // 2. Bilgi Paneli (Beige #D3CBBE)
@@ -12816,6 +12943,7 @@ export default function ProjectDetailPage() {
             row.getCell(7).numFmt = "₺#,##0.00";
 
             row.getCell(8).value = it.notes;
+            row.getCell(8).alignment = { wrapText: true, vertical: "top" };
             currentRow++;
           });
           const endDataRow = currentRow - 1;
@@ -13417,8 +13545,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(iconLogoBase64),
         });
         sheet.addImage(iconId, {
-          tl: { col: 0.15, row: 0.15 },
-          ext: { width: inchToPx(1.25), height: inchToPx(0.7) },
+          tl: { col: 0.05, row: 0.1 },
+          ext: { width: 85, height: 85 },
         });
       }
 
@@ -13428,8 +13556,8 @@ export default function ProjectDetailPage() {
           extension: guessExt(wordmarkLogoBase64),
         });
         sheet.addImage(wordmarkId, {
-          tl: { col: 20.5, row: 0.23 }, // 28 sütun için sağa hizalama
-          ext: { width: inchToPx(2.4), height: inchToPx(0.55) },
+          tl: { nativeCol: 7, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+          ext: { width: 85, height: 85 },
         });
       }
 

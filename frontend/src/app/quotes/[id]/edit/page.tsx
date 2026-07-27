@@ -315,6 +315,8 @@ export default function QuoteEditPage() {
     quote_type: "BİRİM",
     operation_managers: [] as string[],
     notes: "",
+    room_count: 0,
+    pax_count: 0,
   });
 
   const [activeHotelId, setActiveHotelId] = useState<string | null>(null);
@@ -404,6 +406,8 @@ export default function QuoteEditPage() {
           quote_type: (q as any).quote_type || "BİRİM",
           operation_managers: (q as any).operation_managers || [],
           notes: (q as any).notes || "",
+          room_count: Number((q as any).room_count) || 0,
+          pax_count: Number((q as any).pax_count) || 0,
         });
 
         const hData = (q as any).hotels_data;
@@ -917,12 +921,13 @@ export default function QuoteEditPage() {
         ) {
           saveDescription = `${saveDescription} [T:${item.hotel_id}]`.trim();
         }
+        const isValidUUID = (id: any) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
         await quoteItemsService.create({
           quote_id: quoteId,
           reference: formData.reference,
-          main_category: item.main_category || "",
-          sub_category: item.sub_category || "",
+          main_category: isValidUUID(item.main_category) ? item.main_category : null,
+          sub_category: isValidUUID(item.sub_category) ? item.sub_category : null,
           unit_quantity: Number(item.unit_quantity || 0),
           sefer: Number(item.sefer || 0),
           unit_price: Number(item.unit_price || 0),
@@ -933,7 +938,7 @@ export default function QuoteEditPage() {
           description: saveDescription,
           vat: Number(item.vat || 0),
           fx: Number(item.fx || 1),
-          hotel_id: dbHotelId,
+          hotel_id: isValidUUID(dbHotelId) ? dbHotelId : null,
         } as any);
       }
 
@@ -1214,7 +1219,7 @@ export default function QuoteEditPage() {
                     className="w-full text-base font-bold text-v3-text bg-transparent border-none outline-none focus:ring-0 disabled:text-v3-muted"
                   />
                 </div>
-                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors relative z-[60]">
                   <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     ACENTE *
                   </label>
@@ -1228,11 +1233,11 @@ export default function QuoteEditPage() {
                     placeholder="Acente seç / ara..."
                   />
                 </div>
-                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
+                <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors relative z-[50]">
                   <label className="block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     OPERASYON SORUMLULARI
                   </label>
-                  <div className="relative z-50 operation-managers-dropdown">
+                  <div className="relative operation-managers-dropdown">
                     <button
                       type="button"
                       disabled={isFormDisabled}
@@ -1310,68 +1315,28 @@ export default function QuoteEditPage() {
                     <div className="flex flex-col gap-2">
                       {selectedHotels && selectedHotels.length > 0 ? (
                         selectedHotels.map((h: any, idx: number) => {
+                          const hotelName = hotels?.find((mh: any) => mh.id === h.hotel_id)?.name || "Otel Seçilmedi";
+                          const ciDate = h.check_in_date ? new Date(h.check_in_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "-";
+                          const coDate = h.check_out_date ? new Date(h.check_out_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "-";
                           return (
-                            <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-black/5 dark:bg-white/5 p-2 rounded-xl border border-v3-border">
+                            <div key={idx} className="flex flex-wrap lg:flex-nowrap items-center gap-2 bg-black/5 dark:bg-white/5 p-3 rounded-xl border border-v3-border">
                               <div className="flex-1 min-w-[150px]">
-                                <select
-                                  value={h.hotel_id || ""}
-                                  disabled={isFormDisabled}
-                                  onChange={(e) => handleHotelListChange(h.id, 'hotel_id', e.target.value)}
-                                  className="w-full bg-v3-surface text-v3-text text-[11px] font-bold border border-v3-border rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 transition-colors"
-                                >
-                                  <option value="">Otel Seçiniz</option>
-                                  {hotels?.map((mh: any) => (
-                                    <option key={mh.id} value={mh.id}>{mh.name}</option>
-                                  ))}
-                                </select>
+                                <span className="text-xs font-bold text-v3-text">{hotelName}</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <input
-                                  type="date"
-                                  value={h.check_in_date ? h.check_in_date.substring(0, 10) : ""}
-                                  disabled={isFormDisabled}
-                                  onChange={(e) => handleHotelListChange(h.id, 'check_in_date', e.target.value)}
-                                  className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
-                                  title="Giriş Tarihi"
-                                />
+                                <span className="text-[11px] font-medium text-v3-muted">{ciDate}</span>
                                 <span className="text-v3-muted font-bold">-</span>
-                                <input
-                                  type="date"
-                                  value={h.check_out_date ? h.check_out_date.substring(0, 10) : ""}
-                                  disabled={isFormDisabled}
-                                  onChange={(e) => handleHotelListChange(h.id, 'check_out_date', e.target.value)}
-                                  className="bg-v3-surface text-v3-text text-[10px] font-bold border border-v3-border rounded-lg px-2 py-1.5 w-[115px] outline-none focus:border-blue-500 transition-colors"
-                                  title="Çıkış Tarihi"
-                                />
-                                {!isFormDisabled && (
-                                  <button
-                                    type="button"
-                                    onClick={() => removeHotelRow(h.id)}
-                                    className="p-1.5 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors"
-                                    title="Oteli Kaldır"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                  </button>
-                                )}
+                                <span className="text-[11px] font-medium text-v3-muted">{coDate}</span>
                               </div>
                             </div>
                           );
                         })
                       ) : (
-                        <div className="text-[10px] text-v3-muted italic">Otel eklenmemiş.</div>
+                        <p className="text-xs text-v3-muted text-center py-4 bg-black/5 dark:bg-white/5 rounded-xl border border-dashed border-v3-border">
+                          Henüz bir otel seçilmedi. (Teklif Detayları sekmesinden ekleyebilirsiniz)
+                        </p>
                       )}
                     </div>
-                    
-                    {!isFormDisabled && (
-                      <button
-                        type="button"
-                        onClick={addHotelRow}
-                        className="w-full mt-2 py-2 bg-v3-surface hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-dashed border-v3-border hover:border-blue-500/50 transition-colors flex justify-center items-center gap-1.5"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                        Yeni Otel Satırı Ekle
-                      </button>
-                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1379,9 +1344,35 @@ export default function QuoteEditPage() {
                     <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       ODA | PAX
                     </p>
-                    <p className="text-base font-bold text-v3-text leading-tight">
-                      {selectedHotels.reduce((acc, h) => acc + (Number(h.room_count) || 0), 0)} | {selectedHotels.reduce((acc, h) => acc + (Number(h.pax_count) || 0), 0)}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        disabled={isFormDisabled}
+                        value={formData.room_count || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            room_count: Number(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-16 text-base font-bold text-v3-text bg-transparent border-b border-dashed border-v3-border outline-none focus:border-blue-500 p-0 text-center disabled:text-v3-muted"
+                        placeholder="0"
+                      />
+                      <span className="text-v3-muted font-bold">|</span>
+                      <input
+                        type="number"
+                        disabled={isFormDisabled}
+                        value={formData.pax_count || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            pax_count: Number(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-16 text-base font-bold text-v3-text bg-transparent border-b border-dashed border-v3-border outline-none focus:border-blue-500 p-0 text-center disabled:text-v3-muted"
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
                   <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
                     <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">

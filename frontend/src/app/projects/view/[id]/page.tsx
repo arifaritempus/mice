@@ -776,8 +776,8 @@ export default function ProjectViewPublicPage() {
                 extension: guessExt(iconLogoBase64) as any,
               }),
               {
-                tl: { col: 0.15, row: 0.15 },
-                ext: { width: iconWidth, height: iconHeight },
+                tl: { col: 0.05, row: 0.1 },
+                ext: { width: 85, height: 85 },
               },
             );
           } catch (e) {
@@ -792,8 +792,8 @@ export default function ProjectViewPublicPage() {
                 extension: guessExt(wordmarkLogoBase64) as any,
               }),
               {
-                tl: { col: 5.9, row: 0.23 },
-                ext: { width: wordmarkWidth, height: wordmarkHeight },
+                tl: { nativeCol: 5, nativeColOff: 2300000, nativeRow: 0, nativeRowOff: 90000 } as any,
+                ext: { width: 85, height: 85 },
               },
             );
           } catch (e) {
@@ -950,6 +950,7 @@ export default function ProjectViewPublicPage() {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
             } as any;
+            sRow.getCell(6).alignment = { wrapText: true, vertical: "top" };
             sRow.height = 18;
             rowIndex++;
           });

@@ -163,7 +163,12 @@ export default function DigerTab(props: DigerTabProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   useEffect(() => {
-    setLocalOthers(others || []);
+    const processedOthers = (others || []).map(item => ({
+      ...item,
+      cost_amount_try: (Number(item.cost_amount) || 0) * (Number(item.cost_exchange_rate) || 1),
+      sale_amount_try: (Number(item.sale_amount) || 0) * (Number(item.sale_exchange_rate) || 1)
+    }));
+    setLocalOthers(processedOthers);
   }, [others]);
   const formatNumberForDisplay = (val: any) => {
     if (val === null || val === undefined || val === "") return "";
@@ -338,31 +343,19 @@ export default function DigerTab(props: DigerTabProps) {
             extension: guessExt(iconLogoBase64)
           });
           sheet.addImage(iconId, {
-            tl: {
-              col: 0.15,
-              row: 0.15
-            },
-            ext: {
-              width: inchToPx(1.25),
-              height: inchToPx(0.70)
-            } as any
-          } as any);
+            tl: { col: 0.05, row: 0.1 },
+            ext: { width: 85, height: 85 },
+          });
         }
         if (wordmarkLogoBase64) {
-          const markId = workbook.addImage({
+          const wordmarkId = workbook.addImage({
             base64: wordmarkLogoBase64,
-            extension: guessExt(wordmarkLogoBase64)
+            extension: guessExt(wordmarkLogoBase64),
           });
-          sheet.addImage(markId, {
-            tl: {
-              col: 8.5,
-              row: 0.23
-            },
-            ext: {
-              width: inchToPx(2.4),
-              height: inchToPx(0.55)
-            } as any
-          } as any);
+          sheet.addImage(wordmarkId, {
+            tl: { nativeCol: 11, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
+            ext: { width: 85, height: 85 },
+          });
         }
       } catch (e) {
         console.warn("Logo eklenemedi:", e);
@@ -370,11 +363,11 @@ export default function DigerTab(props: DigerTabProps) {
       sheet.columns = [{
         header: 'Tarih',
         key: 'date',
-        width: 14
+        width: 12
       }, {
         header: 'Otel/Tedarikçi',
         key: 'contact',
-        width: 25
+        width: 20
       }, {
         header: 'Ana Kategori',
         key: 'main_cat',
@@ -386,17 +379,21 @@ export default function DigerTab(props: DigerTabProps) {
       }, {
         header: 'Açıklama',
         key: 'desc',
-        width: 35
+        width: 30
       }, {
         header: 'Maliyet',
         key: 'cost_amount',
         width: 15
       }, {
-        header: 'M.Döviz',
+        header: 'Döviz',
         key: 'cost_cur',
         width: 10
       }, {
-        header: 'M.Top (TL)',
+        header: 'Kur',
+        key: 'cost_rate',
+        width: 10
+      }, {
+        header: 'Top. Mlyt(TL)',
         key: 'cost_try',
         width: 15
       }, {
@@ -404,11 +401,15 @@ export default function DigerTab(props: DigerTabProps) {
         key: 'sale_amount',
         width: 15
       }, {
-        header: 'S.Döviz',
+        header: 'Döviz',
         key: 'sale_cur',
         width: 10
       }, {
-        header: 'S.Top (TL)',
+        header: 'Kur',
+        key: 'sale_rate',
+        width: 10
+      }, {
+        header: 'Top. Stş(TL)',
         key: 'sale_try',
         width: 15
       }];
@@ -442,13 +443,15 @@ export default function DigerTab(props: DigerTabProps) {
           desc: item.description || '',
           cost_amount: Number(item.cost_amount || 0),
           cost_cur: item.cost_currency || '',
+          cost_rate: Number(item.cost_exchange_rate || 0),
           cost_try: Number(item.cost_amount_try || 0),
           sale_amount: Number(item.sale_amount || 0),
           sale_cur: item.sale_currency || '',
+          sale_rate: Number(item.sale_exchange_rate || 0),
           sale_try: Number(item.sale_amount_try || 0)
         });
       }
-      ['cost_amount', 'cost_try', 'sale_amount', 'sale_try'].forEach(key => {
+      ['cost_amount', 'cost_rate', 'cost_try', 'sale_amount', 'sale_rate', 'sale_try'].forEach(key => {
         sheet.getColumn(key).numFmt = '#,##0.00';
       });
       const buffer = await workbook.xlsx.writeBuffer();
