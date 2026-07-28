@@ -153,6 +153,8 @@ export const generateProjectFullReport = async ({
       if (c === "GBP") return "£";
       return "€";
     };
+    
+    const fmtN = (val: number) => Number(val).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     const grouped: any = {};
     items.forEach(it => {
@@ -172,9 +174,9 @@ export const generateProjectFullReport = async ({
       });
     });
 
-    let globalTotalEur = 0; let globalTotalTl = 0;
+    let globalTotalTl = 0;
+    const globalCurTotals: any = {};
     const subTotalRows: number[] = [];
-    let firstCurrency = "EUR"; // For global total fallback
 
     Object.keys(grouped).forEach(catId => {
       const catTitle = getCategoryName(catId) || catId;
@@ -196,20 +198,21 @@ export const generateProjectFullReport = async ({
       });
       r++;
 
-      let subTotalEur = 0; let subTotalTl = 0;
+      let subTotalTl = 0;
+      const catCurTotals: any = {};
       const startRow = r;
-      let catFirstCur = "EUR";
       
       grouped[catId].forEach((it: any, idx: number) => {
-        if (globalTotalEur === 0 && idx === 0) firstCurrency = it.currency;
-        if (idx === 0) catFirstCur = it.currency;
+        const cur = it.currency;
+        catCurTotals[cur] = (catCurTotals[cur] || 0) + it.totalEur;
+        globalCurTotals[cur] = (globalCurTotals[cur] || 0) + it.totalEur;
         
         const row = sheet.getRow(r); row.height = 18;
         row.getCell(1).value = it.desc;
         row.getCell(2).value = it.qty;
         row.getCell(3).value = it.repeat;
         
-        const sym = getSym(it.currency);
+        const sym = getSym(cur);
         row.getCell(4).value = it.price; row.getCell(4).numFmt = `"${sym}"#,##0.00`;
         row.getCell(5).value = { formula: `B${r}*C${r}*D${r}`, result: it.totalEur }; row.getCell(5).numFmt = `"${sym}"#,##0.00`;
         row.getCell(6).value = it.fx;
@@ -221,7 +224,7 @@ export const generateProjectFullReport = async ({
           row.getCell(c).alignment = { vertical: 'middle', wrapText: true };
         }
         
-        subTotalEur += it.totalEur; subTotalTl += it.totalTl;
+        subTotalTl += it.totalTl;
         r++;
       });
       const endRow = r - 1;
@@ -229,22 +232,35 @@ export const generateProjectFullReport = async ({
       const subRow = sheet.getRow(r);
       subRow.getCell(1).value = "ARA TOPLAM"; subRow.getCell(1).font = { bold: true };
       
+      const catCurKeys = Object.keys(catCurTotals);
+      if (catCurKeys.length === 1) {
+        // Single currency, we can use SUM formula
+        const cur = catCurKeys[0];
+        if (endRow >= startRow) {
+          subRow.getCell(5).value = { formula: `SUM(E${startRow}:E${endRow})`, result: catCurTotals[cur] };
+        } else {
+          subRow.getCell(5).value = catCurTotals[cur];
+        }
+        subRow.getCell(5).numFmt = `"${getSym(cur)}"#,##0.00`;
+      } else {
+        // Mixed currencies, display as static string breakdown
+        subRow.getCell(5).value = catCurKeys.map(c => `${fmtN(catCurTotals[c])} ${getSym(c)}`).join(" + ");
+        subRow.getCell(5).alignment = { horizontal: "right", vertical: "middle" };
+      }
+      subRow.getCell(5).font = { bold: true };
+
       if (endRow >= startRow) {
-        subRow.getCell(5).value = { formula: `SUM(E${startRow}:E${endRow})`, result: subTotalEur };
         subRow.getCell(7).value = { formula: `SUM(G${startRow}:G${endRow})`, result: subTotalTl };
       } else {
-        subRow.getCell(5).value = subTotalEur;
         subRow.getCell(7).value = subTotalTl;
       }
-      const catSym = getSym(catFirstCur);
-      subRow.getCell(5).numFmt = `"${catSym}"#,##0.00`; subRow.getCell(5).font = { bold: true };
       subRow.getCell(7).numFmt = `"₺"#,##0.00`; subRow.getCell(7).font = { bold: true };
       
       for (let c=1; c<=9; c++) subRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFEFEFEF" } };
       
       subTotalRows.push(r);
       r += 2;
-      globalTotalEur += subTotalEur; globalTotalTl += subTotalTl;
+      globalTotalTl += subTotalTl;
     });
 
     const totalRow = sheet.getRow(r);
@@ -252,16 +268,28 @@ export const generateProjectFullReport = async ({
     totalRow.getCell(1).value = `${sheetName} GENEL TOPLAMLARI`;
     totalRow.getCell(1).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
     
+    const globCurKeys = Object.keys(globalCurTotals);
+    if (globCurKeys.length === 1) {
+      // Single global currency
+      const cur = globCurKeys[0];
+      if (subTotalRows.length > 0) {
+        totalRow.getCell(5).value = { formula: subTotalRows.map(rowIdx => `E${rowIdx}`).join('+'), result: globalCurTotals[cur] };
+      } else {
+        totalRow.getCell(5).value = globalCurTotals[cur];
+      }
+      totalRow.getCell(5).numFmt = `"${getSym(cur)}"#,##0.00`;
+    } else {
+      // Mixed global currencies
+      totalRow.getCell(5).value = globCurKeys.map(c => `${fmtN(globalCurTotals[c])} ${getSym(c)}`).join(" + ");
+      totalRow.getCell(5).alignment = { horizontal: "right", vertical: "middle" };
+    }
+    totalRow.getCell(5).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    
     if (subTotalRows.length > 0) {
-      totalRow.getCell(5).value = { formula: subTotalRows.map(rowIdx => `E${rowIdx}`).join('+'), result: globalTotalEur };
       totalRow.getCell(7).value = { formula: subTotalRows.map(rowIdx => `G${rowIdx}`).join('+'), result: globalTotalTl };
     } else {
-      totalRow.getCell(5).value = globalTotalEur;
       totalRow.getCell(7).value = globalTotalTl;
     }
-    
-    const globSym = getSym(firstCurrency);
-    totalRow.getCell(5).numFmt = `"${globSym}"#,##0.00`; totalRow.getCell(5).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
     totalRow.getCell(7).numFmt = `"₺"#,##0.00`; totalRow.getCell(7).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
     
     sheet.mergeCells(`A${r}:D${r}`); sheet.mergeCells(`E${r}:F${r}`); sheet.mergeCells(`G${r}:I${r}`);
