@@ -12720,6 +12720,7 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } =
         await getLogosForExcel(true);
       const allSales = itemsSales;
+      const sym = project.currency === "USD" ? "$" : project.currency === "GBP" ? "£" : project.currency === "TRY" ? "₺" : "€";
 
       const createStyledSheet = (
         sheetName: string,
@@ -12898,7 +12899,7 @@ export default function ProjectDetailPage() {
             "BİRİM/ADET",
             "SEFER/TEKRAR",
             "BİRİM/FİYAT",
-            "TOPLAM EUR",
+            "TOPLAM DÖVİZ",
             "KUR",
             "TOPLAM TL",
             "AÇIKLAMA",
@@ -12932,7 +12933,7 @@ export default function ProjectDetailPage() {
             row.getCell(2).value = it.qty;
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
-            row.getCell(4).numFmt = "#,##0.00";
+            row.getCell(4).numFmt = `"${sym}"#,##0.00`;
 
             for (let c = 1; c <= 7; c++) {
               row.getCell(c).alignment = { vertical: "middle", wrapText: true };
@@ -12943,7 +12944,7 @@ export default function ProjectDetailPage() {
               formula: `B${currentRow}*C${currentRow}*D${currentRow}`,
               result: it.totalEur,
             };
-            row.getCell(5).numFmt = "€#,##0.00";
+            row.getCell(5).numFmt = `"${sym}"#,##0.00`;
 
             row.getCell(6).value = it.fx;
 
@@ -12971,7 +12972,7 @@ export default function ProjectDetailPage() {
             formula: `SUM(E${startDataRow}:E${endDataRow})`,
             result: items.reduce((acc, i) => acc + i.totalEur, 0),
           };
-          subRow.getCell(5).numFmt = "€#,##0.00";
+          subRow.getCell(5).numFmt = `"${sym}"#,##0.00`;
           subRow.getCell(5).font = { bold: true };
 
           // Formula for Subtotal TL
@@ -13062,7 +13063,7 @@ export default function ProjectDetailPage() {
           gRow.getCell(7).value = { formula: tlSumFormula, result: 0 };
         }
 
-        gRow.getCell(5).numFmt = "€#,##0.00";
+        gRow.getCell(5).numFmt = `"${sym}"#,##0.00`;
         gRow.getCell(5).font = {
           bold: true,
           color: { argb: "FFFFFFFF" },
