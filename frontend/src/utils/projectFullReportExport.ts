@@ -147,6 +147,13 @@ export const generateProjectFullReport = async ({
     sheet.mergeCells(`A${r}:I${r}`);
     r += 2;
 
+    const getSym = (c: string) => {
+      if (c === "TRY" || c === "TL") return "₺";
+      if (c === "USD") return "$";
+      if (c === "GBP") return "£";
+      return "€";
+    };
+
     const grouped: any = {};
     items.forEach(it => {
       const cat = it.main_category || "other";
@@ -160,12 +167,14 @@ export const generateProjectFullReport = async ({
         fx: it.fx || 1,
         totalTl: (it.total || 0) * (it.fx || 1),
         notes: it.description || "",
-        hotel: getHotelName(it.hotel_id) || (it.hotel_id ? "-" : "GENEL")
+        hotel: getHotelName(it.hotel_id) || (it.hotel_id ? "-" : "GENEL"),
+        currency: it.currency || "EUR"
       });
     });
 
     let globalTotalEur = 0; let globalTotalTl = 0;
     const subTotalRows: number[] = [];
+    let firstCurrency = "EUR"; // For global total fallback
 
     Object.keys(grouped).forEach(catId => {
       const catTitle = getCategoryName(catId) || catId;
@@ -189,15 +198,22 @@ export const generateProjectFullReport = async ({
 
       let subTotalEur = 0; let subTotalTl = 0;
       const startRow = r;
-      grouped[catId].forEach((it: any) => {
+      let catFirstCur = "EUR";
+      
+      grouped[catId].forEach((it: any, idx: number) => {
+        if (globalTotalEur === 0 && idx === 0) firstCurrency = it.currency;
+        if (idx === 0) catFirstCur = it.currency;
+        
         const row = sheet.getRow(r); row.height = 18;
         row.getCell(1).value = it.desc;
         row.getCell(2).value = it.qty;
         row.getCell(3).value = it.repeat;
-        row.getCell(4).value = it.price; row.getCell(4).numFmt = "#,##0.00";
-        row.getCell(5).value = { formula: `B${r}*C${r}*D${r}`, result: it.totalEur }; row.getCell(5).numFmt = "€#,##0.00";
+        
+        const sym = getSym(it.currency);
+        row.getCell(4).value = it.price; row.getCell(4).numFmt = `"${sym}"#,##0.00`;
+        row.getCell(5).value = { formula: `B${r}*C${r}*D${r}`, result: it.totalEur }; row.getCell(5).numFmt = `"${sym}"#,##0.00`;
         row.getCell(6).value = it.fx;
-        row.getCell(7).value = { formula: `E${r}*F${r}`, result: it.totalTl }; row.getCell(7).numFmt = "₺#,##0.00";
+        row.getCell(7).value = { formula: `E${r}*F${r}`, result: it.totalTl }; row.getCell(7).numFmt = `"₺"#,##0.00`;
         row.getCell(8).value = it.notes;
         row.getCell(9).value = it.hotel;
         
@@ -220,8 +236,9 @@ export const generateProjectFullReport = async ({
         subRow.getCell(5).value = subTotalEur;
         subRow.getCell(7).value = subTotalTl;
       }
-      subRow.getCell(5).numFmt = "€#,##0.00"; subRow.getCell(5).font = { bold: true };
-      subRow.getCell(7).numFmt = "₺#,##0.00"; subRow.getCell(7).font = { bold: true };
+      const catSym = getSym(catFirstCur);
+      subRow.getCell(5).numFmt = `"${catSym}"#,##0.00`; subRow.getCell(5).font = { bold: true };
+      subRow.getCell(7).numFmt = `"₺"#,##0.00`; subRow.getCell(7).font = { bold: true };
       
       for (let c=1; c<=9; c++) subRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFEFEFEF" } };
       
@@ -243,9 +260,10 @@ export const generateProjectFullReport = async ({
       totalRow.getCell(7).value = globalTotalTl;
     }
     
-    totalRow.getCell(5).numFmt = "€#,##0.00"; totalRow.getCell(5).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    const globSym = getSym(firstCurrency);
+    totalRow.getCell(5).numFmt = `"${globSym}"#,##0.00`; totalRow.getCell(5).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    totalRow.getCell(7).numFmt = `"₺"#,##0.00`; totalRow.getCell(7).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
     
-    totalRow.getCell(7).numFmt = "₺#,##0.00"; totalRow.getCell(7).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
     sheet.mergeCells(`A${r}:D${r}`); sheet.mergeCells(`E${r}:F${r}`); sheet.mergeCells(`G${r}:I${r}`);
     const color = isSales ? "FF2563EB" : "FFDC2626"; // Blue for Sales, Red for Purchases
     for (let c=1; c<=9; c++) {
