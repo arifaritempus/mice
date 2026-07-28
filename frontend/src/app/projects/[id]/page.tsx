@@ -12745,7 +12745,7 @@ export default function ProjectDetailPage() {
 
         // 1. Üst Band
         sheet.getRow(1).height = 70;
-        sheet.mergeCells("A1:I1");
+        sheet.mergeCells("A1:H1");
         const bandCell = sheet.getCell("A1");
         bandCell.fill = {
           type: "pattern",
@@ -12820,8 +12820,7 @@ export default function ProjectDetailPage() {
             cell.alignment = { horizontal: "left", vertical: "middle" };
           });
           sheet.mergeCells(`B${rowIndex}:F${rowIndex}`);
-          sheet.mergeCells(`H${rowIndex}:I${rowIndex}`);
-          for (let c = 1; c <= 9; c++) {
+          for (let c = 1; c <= 8; c++) {
             row.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
@@ -12832,7 +12831,7 @@ export default function ProjectDetailPage() {
 
         // 3. Başlık
         const rowIndex = 7;
-        sheet.mergeCells(`A${rowIndex}:I${rowIndex}`);
+        sheet.mergeCells(`A${rowIndex}:H${rowIndex}`);
         const headerRow = sheet.getRow(rowIndex);
         headerRow.height = 35;
         headerRow.getCell(1).value = title.toUpperCase();
@@ -12881,8 +12880,8 @@ export default function ProjectDetailPage() {
           catRow.height = 25;
           catRow.getCell(1).value = `${catIndex}. ${title.toUpperCase()}`;
           catRow.getCell(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
-          sheet.mergeCells(`A${currentRow}:I${currentRow}`);
-          for (let c = 1; c <= 9; c++)
+          sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+          for (let c = 1; c <= 8; c++)
             catRow.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
@@ -12928,6 +12927,7 @@ export default function ProjectDetailPage() {
           const startDataRow = currentRow;
           items.forEach((it) => {
             const row = sheet.getRow(currentRow);
+            row.height = 18;
             row.getCell(1).value = it.desc;
             row.getCell(2).value = it.qty;
             row.getCell(3).value = it.repeat;
@@ -12962,6 +12962,7 @@ export default function ProjectDetailPage() {
 
           // Subtotal Row
           const subRow = sheet.getRow(currentRow);
+          subRow.height = 22;
           subRow.getCell(1).value = "ARA TOPLAM";
           subRow.getCell(1).font = { bold: true };
 
@@ -13073,24 +13074,12 @@ export default function ProjectDetailPage() {
           color: { argb: "FFFFFFFF" },
           size: 14,
         };
-        for (let c = 1; c <= 9; c++)
+        for (let c = 1; c <= 8; c++)
           gRow.getCell(c).fill = {
             type: "pattern",
             pattern: "solid",
             fgColor: { argb: "FF222222" },
           };
-
-        sheet.columns = [
-          { width: 45 },
-          { width: 12 },
-          { width: 12 },
-          { width: 15 },
-          { width: 20 },
-          { width: 10 },
-          { width: 20 },
-          { width: 35 },
-          { width: 5 },
-        ];
       };
 
       hotelsData.forEach((h: any, idx: number) => {
