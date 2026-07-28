@@ -12720,7 +12720,8 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } =
         await getLogosForExcel(true);
       const allSales = itemsSales;
-      const sym = project.currency === "USD" ? "$" : project.currency === "GBP" ? "£" : project.currency === "TRY" ? "₺" : "€";
+      const cur = project.currency || "EUR";
+      const sym = cur === "USD" ? "$" : cur === "GBP" ? "£" : (cur === "TRY" || cur === "TL") ? "₺" : "€";
 
       const createStyledSheet = (
         sheetName: string,
