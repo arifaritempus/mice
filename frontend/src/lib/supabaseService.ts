@@ -4787,7 +4787,7 @@ export const invoicesService = {
         ...p,
         title: cleanTitle,
         description: cleanDescription(projectDesc),
-        company_name: p.quote_type === 'MICE' ? (p.company_name || agencyName || '') : (hotelName || agencyName || p.company_name || ''),
+        company_name: p.quote_type !== 'SEJOUR' ? (p.company_name || agencyName || '') : (hotelName || agencyName || p.company_name || ''),
         date_start: p.start_date || null,
         date_end: p.end_date || null,
       };
