@@ -12944,6 +12944,7 @@ export default function ProjectDetailPage() {
 
             row.getCell(8).value = it.notes;
             row.getCell(8).alignment = { wrapText: true, vertical: "top" };
+            row.getCell(9).alignment = { wrapText: true, vertical: "top" };
             currentRow++;
           });
           const endDataRow = currentRow - 1;

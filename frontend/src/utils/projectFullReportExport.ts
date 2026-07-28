@@ -222,9 +222,11 @@ export const generateProjectFullReport = async ({
         row.getCell(8).value = it.notes;
         row.getCell(9).value = it.hotel;
         
-        for (let c=1; c<=9; c++) {
+        for (let c=1; c<=7; c++) {
           row.getCell(c).alignment = { vertical: 'middle', wrapText: true };
         }
+        row.getCell(8).alignment = { wrapText: true, vertical: 'top' };
+        row.getCell(9).alignment = { wrapText: true, vertical: 'top' };
         
         subTotalTl += it.totalTl;
         r++;
