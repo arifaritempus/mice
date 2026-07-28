@@ -1038,6 +1038,15 @@ export default function PurchaseTab({
                             setPurchaseSupplierSearch(e.target.value);
                             setShowPurchaseSupplierDropdown(true);
                             setSelectedPurchaseSupplierIndex(-1);
+                            
+                            // Yeni yazı girildiğinde veya silindiğinde eski seçimi temizle
+                            setItemsPurchase((prev: any[]) =>
+                              prev.map((p) =>
+                                p.id === it.id
+                                  ? { ...p, vendorId: null, supplier: null, hotel_id: null }
+                                  : p
+                              )
+                            );
                           }}
                           onFocus={() => {
                             setShowPurchaseSupplierDropdown(true);
