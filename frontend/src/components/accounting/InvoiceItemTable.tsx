@@ -26,10 +26,11 @@ export default function InvoiceItemTable({
         const catName = (item.category_name || "").toLowerCase();
         const projTitle = (item.project?.title || "").toLowerCase();
         const projDesc = (item.project?.description || "").toLowerCase();
-        const compName = (item.project?.company_name || "").toLowerCase();
+        const compName = (item.project?.company_name || item.company_name || "").toLowerCase();
         const lineDesc = (item.description || "").toLowerCase();
         const voucher = (item.project?.voucher_number || "").toLowerCase();
-        const hotelName = (item.project?.hotel_name || "").toLowerCase();
+        const hotelName = (item.project?.hotel_name || item.hotel_name || "").toLowerCase();
+        const supplierName = (item.project?.supplier_name || item.supplier_name || item.supplier?.name || "").toLowerCase();
         const dateStart = (item.project?.date_start || "").toLowerCase();
         const dateEnd = (item.project?.date_end || "").toLowerCase();
         return (
@@ -40,6 +41,7 @@ export default function InvoiceItemTable({
           lineDesc.includes(s) ||
           voucher.includes(s) ||
           hotelName.includes(s) ||
+          supplierName.includes(s) ||
           dateStart.includes(s) ||
           dateEnd.includes(s)
         );

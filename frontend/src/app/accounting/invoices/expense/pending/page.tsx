@@ -69,6 +69,9 @@ export default function ExpensePendingPage() {
       const category = (item.category_name || "").toLowerCase();
       const hotelSearchTarget = [
         item.project?.hotel_name || "",
+        item.hotel_name || "",
+        item.supplier_name || "",
+        item.supplier?.name || "",
         !isSejour ? item.project?.title || "" : "",
         item.project?.description || "",
         item.description || "",
@@ -77,9 +80,10 @@ export default function ExpensePendingPage() {
         .toLowerCase();
 
       const firmaBarHaystack = (
+        item.project?.company_name ||
+        item.company_name ||
         item.project?.agency_name ||
         item.project?.agency?.name ||
-        (isSejour ? item.project?.company_name : "") ||
         ""
       ).toLowerCase();
 
