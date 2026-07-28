@@ -76,6 +76,7 @@ export const generateProjectFullReport = async ({
   const createProjectInfoSheet = () => {
     const sheet = workbook.addWorksheet("PROJE BİLGİLERİ");
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.3, footer: 0.3 } };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [ { width: 30 }, { width: 40 }, { width: 30 }, { width: 40 } ];
     drawHeaders(sheet, "A1:D1", 3.1);
 
@@ -132,6 +133,7 @@ export const generateProjectFullReport = async ({
   const createSalesPurchaseSheet = (sheetName: string, items: any[], isSales: boolean) => {
     const sheet = workbook.addWorksheet(sheetName);
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [
       { key: "desc", width: 45 }, { key: "qty", width: 12 }, { key: "repeat", width: 12 },
       { key: "price", width: 15 }, { key: "totalEur", width: 15 }, { key: "fx", width: 10 },
@@ -183,18 +185,18 @@ export const generateProjectFullReport = async ({
       const catRow = sheet.getRow(r);
       catRow.height = 25;
       catRow.getCell(1).value = catTitle.toUpperCase();
-      catRow.getCell(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+      catRow.getCell(1).font = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
       sheet.mergeCells(`A${r}:I${r}`);
-      for (let c=1; c<=9; c++) catRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF444444" } };
+      for (let c=1; c<=9; c++) catRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF666666" } };
       r++;
 
       const hRow = sheet.getRow(r);
       hRow.height = 22;
       ["DETAY/AÇIKLAMA", "BİRİM/ADET", "SEFER/TEKRAR", "BİRİM/FİYAT", "TOPLAM DÖVİZ", "KUR", "TOPLAM TL", "AÇIKLAMA", "OTEL"].forEach((h, i) => {
         hRow.getCell(i+1).value = h;
-        hRow.getCell(i+1).font = { bold: true, size: 10 };
+        hRow.getCell(i+1).font = { bold: true, size: 11 };
         hRow.getCell(i+1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0F0F0" } };
-        hRow.getCell(i+1).alignment = { horizontal: "center" };
+        hRow.getCell(i+1).alignment = { horizontal: "center", vertical: "middle" };
       });
       r++;
 
@@ -230,11 +232,10 @@ export const generateProjectFullReport = async ({
       const endRow = r - 1;
 
       const subRow = sheet.getRow(r);
-      subRow.getCell(1).value = "ARA TOPLAM"; subRow.getCell(1).font = { bold: true };
+      subRow.getCell(1).value = "ARA TOPLAM"; subRow.getCell(1).font = { bold: true, size: 12 };
       
       const catCurKeys = Object.keys(catCurTotals);
       if (catCurKeys.length === 1) {
-        // Single currency, we can use SUM formula
         const cur = catCurKeys[0];
         if (endRow >= startRow) {
           subRow.getCell(5).value = { formula: `SUM(E${startRow}:E${endRow})`, result: catCurTotals[cur] };
@@ -243,20 +244,19 @@ export const generateProjectFullReport = async ({
         }
         subRow.getCell(5).numFmt = `"${getSym(cur)}"#,##0.00`;
       } else {
-        // Mixed currencies, display as static string breakdown
         subRow.getCell(5).value = catCurKeys.map(c => `${fmtN(catCurTotals[c])} ${getSym(c)}`).join(" + ");
         subRow.getCell(5).alignment = { horizontal: "right", vertical: "middle" };
       }
-      subRow.getCell(5).font = { bold: true };
+      subRow.getCell(5).font = { bold: true, size: 12 };
 
       if (endRow >= startRow) {
         subRow.getCell(7).value = { formula: `SUM(G${startRow}:G${endRow})`, result: subTotalTl };
       } else {
         subRow.getCell(7).value = subTotalTl;
       }
-      subRow.getCell(7).numFmt = `"₺"#,##0.00`; subRow.getCell(7).font = { bold: true };
+      subRow.getCell(7).numFmt = `"₺"#,##0.00`; subRow.getCell(7).font = { bold: true, size: 12 };
       
-      for (let c=1; c<=9; c++) subRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFEFEFEF" } };
+      for (let c=1; c<=9; c++) subRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD0D0D0" } };
       
       subTotalRows.push(r);
       r += 2;
@@ -266,11 +266,10 @@ export const generateProjectFullReport = async ({
     const totalRow = sheet.getRow(r);
     totalRow.height = 30;
     totalRow.getCell(1).value = `${sheetName} GENEL TOPLAMLARI`;
-    totalRow.getCell(1).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    totalRow.getCell(1).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 16 };
     
     const globCurKeys = Object.keys(globalCurTotals);
     if (globCurKeys.length === 1) {
-      // Single global currency
       const cur = globCurKeys[0];
       if (subTotalRows.length > 0) {
         totalRow.getCell(5).value = { formula: subTotalRows.map(rowIdx => `E${rowIdx}`).join('+'), result: globalCurTotals[cur] };
@@ -279,23 +278,21 @@ export const generateProjectFullReport = async ({
       }
       totalRow.getCell(5).numFmt = `"${getSym(cur)}"#,##0.00`;
     } else {
-      // Mixed global currencies
       totalRow.getCell(5).value = globCurKeys.map(c => `${fmtN(globalCurTotals[c])} ${getSym(c)}`).join(" + ");
       totalRow.getCell(5).alignment = { horizontal: "right", vertical: "middle" };
     }
-    totalRow.getCell(5).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    totalRow.getCell(5).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 16 };
     
     if (subTotalRows.length > 0) {
       totalRow.getCell(7).value = { formula: subTotalRows.map(rowIdx => `G${rowIdx}`).join('+'), result: globalTotalTl };
     } else {
       totalRow.getCell(7).value = globalTotalTl;
     }
-    totalRow.getCell(7).numFmt = `"₺"#,##0.00`; totalRow.getCell(7).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    totalRow.getCell(7).numFmt = `"₺"#,##0.00`; totalRow.getCell(7).font = { bold: true, color: { argb: "FFFFFFFF" }, size: 16 };
     
     sheet.mergeCells(`A${r}:D${r}`); sheet.mergeCells(`E${r}:F${r}`); sheet.mergeCells(`G${r}:I${r}`);
-    const color = isSales ? "FF2563EB" : "FFDC2626"; // Blue for Sales, Red for Purchases
     for (let c=1; c<=9; c++) {
-      totalRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: color } };
+      totalRow.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF333333" } };
       totalRow.getCell(c).alignment = { vertical: 'middle', horizontal: 'center' };
     }
     totalRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
@@ -304,6 +301,7 @@ export const generateProjectFullReport = async ({
   // --- 4. KONAKLAMA ---
   const createAccommodationSheet = () => {
     const sheet = workbook.addWorksheet("KONAKLAMA");
+    sheet.views = [{ state: "normal", showGridLines: false }];
     
     let minD = new Date(2100, 1, 1);
     let maxD = new Date(1900, 1, 1);
@@ -450,6 +448,7 @@ export const generateProjectFullReport = async ({
   const createTransferSheet = () => {
     const sheet = workbook.addWorksheet("TRANSFER & TUR");
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [
       { key: "type", width: 15 }, { key: "hotel", width: 20 }, { key: "date", width: 12 },
       { key: "time", width: 10 }, { key: "flight", width: 15 }, { key: "route", width: 20 },
@@ -519,6 +518,7 @@ export const generateProjectFullReport = async ({
   const createFlightSheet = () => {
     const sheet = workbook.addWorksheet("UÇAK BİLETİ");
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [
       { key: "biletTarihi", width: 15 }, { key: "tedarikci", width: 15 }, { key: "airline", width: 15 }, { key: "pnr", width: 15 },
       { key: "ucusTipi", width: 15 }, { key: "gidisTarih", width: 15 }, { key: "gidisSaat", width: 10 }, { key: "gidisUcusKod", width: 15 },
@@ -599,6 +599,7 @@ export const generateProjectFullReport = async ({
   const createOthersSheet = () => {
     const sheet = workbook.addWorksheet("DİĞER");
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [
       { key: "date", width: 12 }, { key: "supplier", width: 20 }, { key: "mainCat", width: 20 },
       { key: "subCat", width: 20 }, { key: "desc", width: 30 }, { key: "cost", width: 15 },
@@ -659,6 +660,7 @@ export const generateProjectFullReport = async ({
   const createFinanceSheet = (sheetName: string, plans: any[], actuals: any[], isCollection: boolean) => {
     const sheet = workbook.addWorksheet(sheetName);
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [
       { key: "date", width: 15 }, { key: "type", width: 20 }, { key: "desc", width: 40 },
       { key: "amount", width: 15 }, { key: "currency", width: 10 }, { key: "fx", width: 10 }, { key: "total", width: 15 }
@@ -733,6 +735,7 @@ export const generateProjectFullReport = async ({
   const createProfitLossSheet = () => {
     const sheet = workbook.addWorksheet("KAR ZARAR ANALİZİ");
     sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    sheet.views = [{ state: "normal", showGridLines: false }];
     sheet.columns = [
       { key: "cat", width: 40 },
       { key: "salesEur", width: 15 }, { key: "salesFx", width: 10 }, { key: "salesTl", width: 15 },
