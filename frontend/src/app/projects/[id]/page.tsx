@@ -12903,17 +12903,26 @@ export default function ProjectDetailPage() {
             "KUR",
             "TOPLAM TL",
             "AÇIKLAMA",
+            "OTEL",
           ];
+          
+          // Set column widths
+          sheet.columns = [
+            { width: 45 }, { width: 12 }, { width: 12 },
+            { width: 15 }, { width: 15 }, { width: 10 },
+            { width: 15 }, { width: 35 }, { width: 25 },
+          ];
+
           for (let i = 1; i <= 9; i++) {
             const cell = hRow.getCell(i);
-            if (i <= 8) cell.value = headers[i - 1];
+            cell.value = headers[i - 1];
             cell.font = { bold: true, size: 10 };
             cell.fill = {
               type: "pattern",
               pattern: "solid",
               fgColor: { argb: "FFF0F0F0" },
             };
-            cell.alignment = { horizontal: "center" };
+            cell.alignment = { horizontal: "center", vertical: "middle" };
           }
           currentRow++;
 
@@ -12925,6 +12934,10 @@ export default function ProjectDetailPage() {
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
             row.getCell(4).numFmt = "#,##0.00";
+
+            for (let c = 1; c <= 7; c++) {
+              row.getCell(c).alignment = { vertical: "middle", wrapText: true };
+            }
 
             // Formula for TOPLAM EUR: Qty * Repeat * Price
             row.getCell(5).value = {
@@ -12943,6 +12956,7 @@ export default function ProjectDetailPage() {
             row.getCell(7).numFmt = "₺#,##0.00";
 
             row.getCell(8).value = it.notes;
+            row.getCell(9).value = it.hotel;
             row.getCell(8).alignment = { wrapText: true, vertical: "top" };
             row.getCell(9).alignment = { wrapText: true, vertical: "top" };
             currentRow++;
@@ -12981,8 +12995,8 @@ export default function ProjectDetailPage() {
           currentRow += 2;
         };
 
-        // 1. OTEL | KONAKLAMA
         const hotelId = h.id || h.hotel_id;
+        const hotelName = hotels.find((ht) => ht.id === hotelId)?.name || "GENEL";
         const accItems = accommodationItems
           .filter((it) => it.hotel_id === hotelId)
           .map((it) => ({
@@ -12994,6 +13008,7 @@ export default function ProjectDetailPage() {
             fx: it.fx || 1,
             totalTl: (it.total_price || 0) * (it.fx || 1),
             notes: "",
+            hotel: hotelName,
           }));
         addCategory("OTEL | KONAKLAMA", accItems);
 
@@ -13012,6 +13027,7 @@ export default function ProjectDetailPage() {
             fx: it.fx || 1,
             totalTl: (it.total || 0) * (it.fx || 1),
             notes: it.description || "",
+            hotel: hotels.find((ht) => ht.id === it.hotel_id)?.name || hotelName,
           });
         });
 
