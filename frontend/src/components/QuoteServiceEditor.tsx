@@ -82,6 +82,23 @@ export default function QuoteServiceEditor({
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
+  
+  const [originalItems, setOriginalItems] = useState<Record<string, ServiceItem>>({});
+
+  useEffect(() => {
+    items.forEach((it) => {
+      if (it.isEditing && !originalItems[it.id]) {
+        setOriginalItems((prev) => ({ ...prev, [it.id]: { ...it } }));
+      } else if (!it.isEditing && originalItems[it.id]) {
+        setOriginalItems((prev) => {
+          const next = { ...prev };
+          delete next[it.id];
+          return next;
+        });
+      }
+    });
+  }, [items, originalItems]);
+
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -145,8 +162,9 @@ export default function QuoteServiceEditor({
 
     if (e.key === "Escape") {
       e.preventDefault();
+      const orig = originalItems[rowItem.id];
       const updatedItems = items.map((item) =>
-        item.id === rowItem.id ? { ...item, isEditing: false } : item,
+        item.id === rowItem.id ? (orig ? { ...orig, isEditing: false } : { ...item, isEditing: false }) : item,
       );
       onSave(updatedItems);
     }
@@ -198,7 +216,7 @@ export default function QuoteServiceEditor({
     onSave(updatedItems);
   };
 
-  const handleTotalTRYChange = (itemId: string, newTotalTRY: number) => {
+  const handleTotalTRYChange = (itemId: string, newTotalTRY: any) => {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
 
@@ -208,7 +226,7 @@ export default function QuoteServiceEditor({
 
     let newUnitPrice = Number(item.unit_price) || 0;
     if (fx > 0 && qty > 0 && sefer > 0) {
-      newUnitPrice = newTotalTRY / fx / (qty * sefer);
+      newUnitPrice = (newTotalTRY === "" ? "" : Number(newTotalTRY) / fx / (qty * sefer)) as any;
     }
 
     const newTotal = qty * sefer * newUnitPrice;
@@ -1145,7 +1163,7 @@ export default function QuoteServiceEditor({
                             handleItemChange(
                               it.id,
                               "unit_quantity",
-                              Number(e.target.value),
+                              (e.target.value === "" ? "" : Number(e.target.value)) as any,
                             )
                           }
                           type="number"
@@ -1159,7 +1177,7 @@ export default function QuoteServiceEditor({
                             handleItemChange(
                               it.id,
                               "sefer",
-                              Number(e.target.value),
+                              (e.target.value === "" ? "" : Number(e.target.value)) as any,
                             )
                           }
                           type="number"
@@ -1172,7 +1190,7 @@ export default function QuoteServiceEditor({
                             handleItemChange(
                               it.id,
                               "unit_price",
-                              Number(e.target.value),
+                              (e.target.value === "" ? "" : Number(e.target.value)) as any,
                             )
                           }
                           type="number"
@@ -1201,7 +1219,7 @@ export default function QuoteServiceEditor({
                             handleItemChange(
                               it.id,
                               "vat",
-                              Number(e.target.value),
+                              (e.target.value === "" ? "" : Number(e.target.value)) as any,
                             )
                           }
                           type="number"
@@ -1217,7 +1235,7 @@ export default function QuoteServiceEditor({
                             handleItemChange(
                               it.id,
                               "fx",
-                              Number(e.target.value),
+                              (e.target.value === "" ? "" : Number(e.target.value)) as any,
                             )
                           }
                           type="number"
@@ -1227,7 +1245,7 @@ export default function QuoteServiceEditor({
                         <input
                           value={it.total_try || 0}
                           onChange={(e) =>
-                            handleTotalTRYChange(it.id, Number(e.target.value))
+                            handleTotalTRYChange(it.id, e.target.value === "" ? "" : Number(e.target.value))
                           }
                           type="number"
                           step="0.01"
