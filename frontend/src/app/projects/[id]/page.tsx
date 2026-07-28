@@ -12903,17 +12903,16 @@ export default function ProjectDetailPage() {
             "KUR",
             "TOPLAM TL",
             "AÇIKLAMA",
-            "OTEL",
           ];
           
           // Set column widths
           sheet.columns = [
             { width: 45 }, { width: 12 }, { width: 12 },
             { width: 15 }, { width: 15 }, { width: 10 },
-            { width: 15 }, { width: 35 }, { width: 25 },
+            { width: 15 }, { width: 35 },
           ];
 
-          for (let i = 1; i <= 9; i++) {
+          for (let i = 1; i <= 8; i++) {
             const cell = hRow.getCell(i);
             cell.value = headers[i - 1];
             cell.font = { bold: true, size: 10 };
@@ -12956,9 +12955,7 @@ export default function ProjectDetailPage() {
             row.getCell(7).numFmt = "₺#,##0.00";
 
             row.getCell(8).value = it.notes;
-            row.getCell(9).value = it.hotel;
             row.getCell(8).alignment = { wrapText: true, vertical: "top" };
-            row.getCell(9).alignment = { wrapText: true, vertical: "top" };
             currentRow++;
           });
           const endDataRow = currentRow - 1;
@@ -12984,7 +12981,7 @@ export default function ProjectDetailPage() {
           subRow.getCell(7).numFmt = "₺#,##0.00";
           subRow.getCell(7).font = { bold: true };
 
-          for (let c = 1; c <= 9; c++)
+          for (let c = 1; c <= 8; c++)
             subRow.getCell(c).fill = {
               type: "pattern",
               pattern: "solid",
@@ -13008,7 +13005,6 @@ export default function ProjectDetailPage() {
             fx: it.fx || 1,
             totalTl: (it.total_price || 0) * (it.fx || 1),
             notes: "",
-            hotel: hotelName,
           }));
         addCategory("OTEL | KONAKLAMA", accItems);
 
@@ -13027,7 +13023,6 @@ export default function ProjectDetailPage() {
             fx: it.fx || 1,
             totalTl: (it.total || 0) * (it.fx || 1),
             notes: it.description || "",
-            hotel: hotels.find((ht) => ht.id === it.hotel_id)?.name || hotelName,
           });
         });
 
