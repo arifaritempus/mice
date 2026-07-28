@@ -9721,17 +9721,38 @@ export default function ProjectDetailPage() {
   const handlePurchaseSupplierSelect = useCallback(
     (supplier: any, itemId: string) => {
       console.log("ALIŞ tedarikçi seçildi:", supplier, "itemId:", itemId);
-      const updated = itemsPurchase.map((item: any) =>
+      
+      const isHotel = supplier.type === "hotel";
+      
+      const updatedForUI = itemsPurchase.map((item: any) =>
         item.id === itemId
-          ? { ...item, vendorId: supplier.id, isEditing: true } // isEditing set to true so saveItems will trigger
+          ? { 
+              ...item, 
+              vendorId: isHotel ? null : supplier.id, 
+              hotel_id: isHotel ? supplier.id : null, 
+              supplier: isHotel ? null : supplier,
+              isEditing: true 
+            }
           : item,
       );
-      setItemsPurchase(updated); // Update local state immediately
+      setItemsPurchase(updatedForUI); // Sadece UI için güncelle (edit modu açık kalsın)
 
-      // We then trigger saveItems manually since the selection happened outside the normal cell flow
-      const selectedItem = updated.find((it) => it.id === itemId);
+      // Veritabanına kaydetmek için isEditing: false yapılmış kopyasını gönderiyoruz
+      const updatedForDB = itemsPurchase.map((item: any) =>
+        item.id === itemId
+          ? { 
+              ...item, 
+              vendorId: isHotel ? null : supplier.id, 
+              hotel_id: isHotel ? supplier.id : null, 
+              supplier: isHotel ? null : supplier,
+              isEditing: false 
+            }
+          : item,
+      );
+      
+      const selectedItem = updatedForDB.find((it) => it.id === itemId);
       if (selectedItem) {
-        saveItems("purchase", updated);
+        saveItems("purchase", updatedForDB);
       }
 
       setPurchaseSupplierSearch("");
