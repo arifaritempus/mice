@@ -87,7 +87,8 @@ export async function GET(request: NextRequest) {
       authHeader !== `Bearer ${process.env.CRON_SECRET}` &&
       !request.nextUrl.searchParams.has("manual") // Manuel tetikleme için escape hatch
     ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error(`[CRON AUTH FAIL] authHeader is present: ${!!authHeader}, envSecret is present: ${!!process.env.CRON_SECRET}`);
+      return NextResponse.json({ error: "Unauthorized", debug: { hasAuth: !!authHeader, hasEnv: !!process.env.CRON_SECRET } }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
