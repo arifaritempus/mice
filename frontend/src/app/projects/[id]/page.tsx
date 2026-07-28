@@ -9752,7 +9752,7 @@ export default function ProjectDetailPage() {
       
       const selectedItem = updatedForDB.find((it) => it.id === itemId);
       if (selectedItem) {
-        saveItems("purchase", updatedForDB);
+        saveItems("purchase", [selectedItem]);
       }
 
       setPurchaseSupplierSearch("");

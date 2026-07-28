@@ -153,8 +153,13 @@ export default function PurchaseTab({
   const categoryModalRefPurchase = useRef<HTMLDivElement>(null);
 
   // Gelişmiş isim çözücü: Önce hotelsData (Tab UUID) kontrolü yapar
-  const getExtendedVendorName = (id?: string) => {
-    if (!id) return "";
+  const getExtendedVendorName = (idOrObj?: any) => {
+    if (!idOrObj) return "";
+    if (typeof idOrObj === "object") {
+      return idOrObj.name || idOrObj.title || "";
+    }
+    
+    const id = String(idOrObj);
     if (id === "general") return "GENEL HİZMETLER";
 
     // 1. Önce hotelsData (Tab Verileri) içinden eşleştir
