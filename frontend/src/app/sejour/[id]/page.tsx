@@ -432,7 +432,7 @@ export default function SejourDetailPage() {
       <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
         <div className="max-w-7xl mx-auto animate-pulse">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-          <div className="bg-v3-surface rounded-lg shadow-sm p-6 space-y-4">
+          <div className="bg-v3-surface rounded-lg shadow-sm p-4 space-y-4">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
@@ -1054,7 +1054,7 @@ export default function SejourDetailPage() {
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {loadingLogs ? (
-              <div className="flex justify-center p-8">Yükleniyor...</div>
+              <div className="flex justify-center p-4">Yükleniyor...</div>
             ) : logsData.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 Bu sejour'a ait log kaydı bulunamadı.

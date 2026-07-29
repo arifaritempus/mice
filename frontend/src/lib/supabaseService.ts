@@ -1461,14 +1461,10 @@ export class SejourService {
         ),
         sejour_flights(*),
         sejour_transfers(
-          *,
-          suppliers(*)
-        ),
+          *),
         sejour_extra_services(
           *,
-          service_types(*),
-          suppliers(*)
-        ),
+          service_types(*)),
         sejour_collections(*)
       `, { count: 'exact' });
 
@@ -1518,6 +1514,9 @@ export class SejourService {
       rooms: (sejour.sejour_rooms || []).map((room: any) => ({
         id: room.id,
         roomNumber: room.room_number || room.roomNumber,
+        supplierId: room.supplier_id || room.supplierId || "",
+        checkIn: room.check_in_date || room.check_in || room.checkIn || "",
+        checkOut: room.check_out_date || room.check_out || room.checkOut || "",
         hotelId: room.hotel_id || room.hotelId,
         hotelName: room.hotels?.name || sejour.hotels?.name || room.hotel_id,
         accommodationType: room.accommodation_type || room.accommodationType,
@@ -1583,14 +1582,10 @@ export class SejourService {
         ),
         sejour_flights(*),
         sejour_transfers(
-          *,
-          suppliers(*)
-        ),
+          *),
         sejour_extra_services(
           *,
-          service_types(*),
-          suppliers(*)
-        ),
+          service_types(*)),
         sejour_collections(*)
       `);
 
@@ -1621,6 +1616,9 @@ export class SejourService {
       rooms: (sejour.sejour_rooms || []).map((room: any) => ({
         id: room.id,
         roomNumber: room.room_number || room.roomNumber,
+        supplierId: room.supplier_id || room.supplierId || "",
+        checkIn: room.check_in_date || room.check_in || room.checkIn || "",
+        checkOut: room.check_out_date || room.check_out || room.checkOut || "",
         hotelId: room.hotel_id || room.hotelId,
         // Öncelik oda üzerinden gelen otel, ardından sejour'un kendi oteli, en son id
         hotelName: room.hotels?.name || sejour.hotels?.name || room.hotel_id,
@@ -1698,6 +1696,7 @@ export class SejourService {
         serviceName: service.service_name || service.serviceName || '',
         description: service.service_description || service.description || '',
         serviceDescription: service.service_description,
+        date: service.date || null,
         price: service.price || 0,
         currency: service.currency || 'TRY',
         // Maliyet bilgileri
@@ -1729,14 +1728,10 @@ export class SejourService {
         ),
         sejour_flights(*),
         sejour_transfers(
-          *,
-          suppliers(*)
-        ),
+          *),
         sejour_extra_services(
           *,
-          service_types(*),
-          suppliers(*)
-        ),
+          service_types(*)),
         sejour_collections(*)
       `)
       .eq('id', sejourId)
@@ -1767,6 +1762,9 @@ export class SejourService {
       rooms: (data.sejour_rooms || []).map((room: any) => ({
         id: room.id,
         roomNumber: room.room_number || room.roomNumber,
+        supplierId: room.supplier_id || room.supplierId || "",
+        checkIn: room.check_in_date || room.check_in || room.checkIn || "",
+        checkOut: room.check_out_date || room.check_out || room.checkOut || "",
         hotelId: room.hotel_id || room.hotelId,
         hotelName: room.hotels?.name || data.hotels?.name,
         hotel: room.hotels || data.hotels,
@@ -1876,6 +1874,7 @@ export class SejourService {
         serviceName: service.service_name || service.serviceName || '',
         description: service.service_description || service.description || '',
         serviceDescription: service.service_description || service.description || '',
+        date: service.date || null,
         price: service.price || 0,
         currency: service.currency || 'TRY',
         // Maliyet bilgileri
@@ -1935,6 +1934,9 @@ export class SejourService {
           sejour_id: sejour.id,
           voucher_number: sejour.voucher_number,
           room_number: room.roomNumber || null,
+          supplier_id: room.supplierId || null,
+          check_in_date: room.checkIn || null,
+          check_out_date: room.checkOut || null,
           hotel_id: room.hotelId || null,
           room_type: room.roomType || null,
           accommodation_type: room.accommodationType || null,
@@ -2148,6 +2150,7 @@ export class SejourService {
           supplier_id: service.provider || service.supplierId || null,
           service_name: service.serviceName || service.service_types?.name || service.serviceTypeName || null,
           service_description: service.description || service.serviceDescription || null,
+          date: service.date || null,
           price: service.price || 0,
           currency: service.currency || 'TRY'
         };
@@ -2266,7 +2269,10 @@ export class SejourService {
             sejour_id: sejourId,
             voucher_number: sejourData.voucherNumber,
             room_number: room.roomNumber,
+            supplier_id: room.supplierId || null,
             hotel_id: room.hotelId,
+            check_in_date: room.checkIn || null,
+            check_out_date: room.checkOut || null,
             room_type: room.roomType,
             accommodation_type: room.accommodationType,
             guest_info: room.guestInfo,
@@ -2471,6 +2477,7 @@ export class SejourService {
             supplier_id: service.provider || service.supplierId || null,
             service_name: service.serviceName || null,
             service_description: service.description || service.serviceDescription || null,
+          date: service.date || null,
             price: service.price !== undefined ? service.price : 0,
             currency: service.currency || 'TRY'
           };
