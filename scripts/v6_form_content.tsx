@@ -1,1157 +1,16 @@
-"use client";
-
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import {
-  SejourService,
-  AgencyService,
-  HotelService,
-  SupplierService,
-  ServiceTypeService,
-  SettingsService,
-} from "@/lib/supabaseService";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { getLogosForExcel } from "@/utils/logoUtils";
-import { usePermissions, Module } from "@/lib/permissions";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import { toast } from "react-hot-toast";
-
-// Basit arama ve klavye destekli ComboBox - Modernize Edildi
-function ComboBox({
-  options,
-  value,
-  onChange,
-  placeholder = "Seçin...",
-  className = "",
-}: {
-  options: { id: string; name: string }[];
-  value: string;
-  onChange: (id: string) => void;
-  placeholder?: string;
-  className?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [highlight, setHighlight] = useState(-1);
-  const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null);
-
-  const getName = (o: any) =>
-    String((o && (o.name ?? o.label ?? o.title)) || "");
-  const selected = options.find((o) => o.id === value);
-  const filtered = options.filter((o) =>
-    getName(o).toLowerCase().includes(query.toLowerCase()),
-  );
-
-  function handleSelect(id: string) {
-    onChange(id);
-    setOpen(false);
-    setQuery("");
-    setHighlight(-1);
-  }
-
-  const getDropdownPosition = () => {
-    if (!inputRef) return { top: 0, left: 0, width: 300 };
-    const rect = inputRef.getBoundingClientRect();
-    return {
-      top: rect.bottom + window.scrollY + 4,
-      left: rect.left + window.scrollX,
-      width: Math.max(rect.width, 200),
-    };
-  };
-
-  const position = getDropdownPosition();
-
-  return (
-    <div className="relative">
-      <div
-        className={`relative flex items-center bg-v3-surface border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 ${className}`}
-      >
-        <input
-          ref={setInputRef}
-          className="w-full px-2 py-1 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
-          placeholder={placeholder}
-          value={open ? query : selected ? getName(selected) : ""}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (!open) setOpen(true);
-            setHighlight(0);
-          }}
-          onFocus={() => {
-            setOpen(true);
-            setHighlight(0);
-          }}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
-          onKeyDown={(e) => {
-            if (!open && (e.key === "ArrowDown" || e.key === "Enter")) {
-              setOpen(true);
-              return;
-            }
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              setHighlight((h) => (h + 1) % Math.max(filtered.length, 1));
-            }
-            if (e.key === "ArrowUp") {
-              e.preventDefault();
-              setHighlight(
-                (h) =>
-                  (h - 1 + Math.max(filtered.length, 1)) %
-                  Math.max(filtered.length, 1),
-              );
-            }
-            if (e.key === "Enter") {
-              if (filtered.length > 0)
-                handleSelect(filtered[Math.max(highlight, 0)].id);
-            }
-            if (e.key === "Escape") {
-              setOpen(false);
-              setQuery("");
-              setHighlight(-1);
-            }
-          }}
-          autoComplete="off"
-        />
-        <div className="pr-4 pointer-events-none text-v3-muted">
-          <svg
-            className={`w-4 h-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
-      </div>
-      {open && (
-        <div
-          className="fixed z-[9999] bg-v3-surface/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white dark:border-gray-700 rounded-lg shadow-2xl max-h-56 overflow-auto animate-in fade-in zoom-in-95 duration-200"
-          style={{
-            top: position.top,
-            left: position.left,
-            width: position.width,
-            minWidth: "200px",
-          }}
-        >
-          {filtered.length === 0 ? (
-            <div className="px-2 py-1 text-xs font-bold text-v3-muted">
-              Sonuç bulunamadı
-            </div>
-          ) : (
-            filtered.map((o, i) => (
-              <div
-                key={o.id}
-                className={`px-2 py-1 text-xs cursor-pointer transition-colors duration-200 ${i === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
-                onMouseEnter={() => setHighlight(i)}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleSelect(o.id);
-                }}
-              >
-                {getName(o)}
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface Room {
-  id: string;
-  roomNumber: string;
-  hotelId: string;
-  supplierId?: string;
-  checkIn?: string;
-  checkOut?: string;
-  accommodationType?: string;
-  roomType: string;
-  guestInfo: string;
-  adultCount: number;
-  childCount: number;
-  infantCount: number;
-  pricePerNight: number;
-  totalNights: number;
-  totalPrice: number;
-  currency: string;
-  price: number;
-  costPrice?: number;
-  costCurrency?: string;
-}
-
-interface FlightInfo {
-  id: string;
-  type?: "departure" | "return";
-  flightType: string;
-  departureAirline: string;
-  departureFlightNumber: string;
-  departureDate: string;
-  departureTime: string;
-  departureAirport: string;
-  arrivalAirport: string;
-  returnAirline: string;
-  returnFlightNumber: string;
-  returnDate: string;
-  returnTime: string;
-  pricePerPerson: number;
-  totalPassengers: number;
-  totalPrice: number;
-  currency: string;
-  // UI fields
-  flightDate?: string;
-  airline?: string;
-  route?: string;
-  flightNo?: string;
-  ticketingProvider?: string;
-  ticketingDate?: string;
-  arrivalTime?: string;
-  pnr?: string;
-  price: number;
-  costPrice?: number;
-  costCurrency?: string;
-}
-
-interface TransferInfo {
-  id: string;
-  direction?: "arrival" | "return" | "intermediate";
-  supplierId: string;
-  transferType: string;
-  vehicleType: string;
-  routeDescription: string;
-  price: number;
-  currency: string;
-  // UI fields
-  date?: string;
-  provider?: string;
-  type?: string;
-  vehicle?: string;
-  time?: string;
-  costPrice?: number;
-  costCurrency?: string;
-}
-
-interface ExtraService {
-  id: string;
-  serviceTypeId: string;
-  supplierId: string;
-  serviceName: string;
-  serviceDescription: string;
-  price: number;
-  currency: string;
-  // UI fields
-  serviceType?: string;
-  date?: string;
-  provider?: string;
-  description?: string;
-  costPrice?: number;
-  costCurrency?: string;
-}
-
-interface Collection {
-  id: string;
-  type: string;
-  amount: number;
-  date: string;
-  description: string;
-  currency: string;
-}
-
-export default function CreateSejourPage() {
-  // --- V6 INJECTED STATES ---
-  const [activeTabV6, setActiveTabV6] = useState("sales");
-  const [isEditingInfoV6, setIsEditingInfoV6] = useState(false);
-  const [expandedSectionV6, setExpandedSectionV6] = useState<string | null>(null);
-  const [roomPriceInputV6, setRoomPriceInputV6] = useState<Record<string, string>>({});
-  const [roomCostInputV6, setRoomCostInputV6] = useState<Record<string, string>>({});
-  const [servicePriceInputV6, setServicePriceInputV6] = useState<Record<string, string>>({});
-  const [serviceCostInputV6, setServiceCostInputV6] = useState<Record<string, string>>({});
-
-  const parseAmountV6 = (val: string) => {
-    if (!val) return 0;
-    const clean = val.replace(/\./g, '').replace(',', '.');
-    return parseFloat(clean) || 0;
-  };
-  
-  const formatAmountV6 = (val: number) => {
-    if (!val && val !== 0) return "";
-    return val.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
-  // -------------------------
-
-  const { isDark } = useTheme();
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("sales");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-
-  // Voucher PDF states
-  const voucherRef = useRef<HTMLDivElement>(null);
-  const [darkIconLogo, setDarkIconLogo] = useState<string>("");
-  const [darkWordmarkLogo, setDarkWordmarkLogo] = useState<string>("");
-  const [companyInfo, setCompanyInfo] = useState({
-    company_name:
-      typeof document !== "undefined"
-        ? document.title.split("-")[0].trim()
-        : "Firma",
-    company_email: "info@firma.com",
-    company_phone: "",
-    company_address: "",
-    company_website: "www.firma.com",
-  });
-
-  // Sales Form Data
-  const [salesData, setSalesData] = useState({
-    voucherNumber: "",
-    customerType: "agency", // 'agency' or 'individual'
-    agencyId: "",
-    customerName: "",
-    checkInDate: "",
-    checkOutDate: "",
-    totalAmount: 0,
-    currency: "TRY",
-    status: "BEKLEMEDE",
-    notes: "",
-  });
-
-  // Rooms
-  const [rooms, setRooms] = useState<Room[]>([]);
-
-  // Flight Info
-  const [flights, setFlights] = useState<FlightInfo[]>([]);
-
-  // Transfer Info
-  const [transfers, setTransfers] = useState<TransferInfo[]>([]);
-
-  // Extra Services
-  const [extraServices, setExtraServices] = useState<ExtraService[]>([]);
-
-  // Collections
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [newCollection, setNewCollection] = useState({
-    type: "",
-    amount: "",
-    date: "",
-    currency: "TRY",
-    description: "",
-  });
-
-  const { canCreate, loading: permissionsLoading } = usePermissions();
-
-  // Real Data States
-  const [agencies, setAgencies] = useState<any[]>([]);
-  const [hotels, setHotels] = useState<any[]>([]);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [supplierServiceTypes, setSupplierServiceTypes] = useState<any[]>([]);
-
-  const [roomTypes] = useState([
-    "Standart Oda",
-    "Kara Manzaralı",
-    "Deniz Manzaralı",
-    "Kısmi Deniz Manzaralı",
-    "Suite",
-    "King Suite",
-    "Villa",
-    "Deluxe Oda",
-    "Executive Suite",
-  ]);
-
-  const [vehicleTypes] = useState([
-    "Vito",
-    "Binek",
-    "S Class",
-    "Sprinter",
-    "Otobüs",
-  ]);
-
-  // Load data from Supabase
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load agencies
-        const agenciesData = await AgencyService.getAgencies();
-        setAgencies(agenciesData);
-
-        // Load hotels
-        const hotelsData = await HotelService.getHotels();
-        setHotels(hotelsData);
-
-        // Load suppliers
-        const suppliersData = await SupplierService.getSuppliers();
-        setSuppliers(suppliersData);
-
-        // Load service types
-        const serviceTypesData = await ServiceTypeService.getServiceTypes();
-        setSupplierServiceTypes(serviceTypesData);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
-
-    loadData();
-    loadLogos();
-    loadCompanyInfo();
-  }, []);
-
-  const loadLogos = async () => {
-    try {
-      const { iconLogoBase64, wordmarkLogoBase64, iconWidth, iconHeight, wordmarkWidth, wordmarkHeight } = await getLogosForExcel(true);
-      if (iconLogoBase64) setDarkIconLogo(iconLogoBase64);
-      if (wordmarkLogoBase64) setDarkWordmarkLogo(wordmarkLogoBase64);
-    } catch (error) {
-      console.error("Error loading logos:", error);
-    }
-  };
-
-  const loadCompanyInfo = async () => {
-    try {
-      const settings = await SettingsService.getSettings();
-      const generalSettings = settings.general_settings || {};
-      setCompanyInfo({
-        company_name:
-          generalSettings.companyName || generalSettings.company_name ||
-          (typeof document !== "undefined"
-            ? document.title.split("-")[0].trim()
-            : "Firma"),
-        company_email: generalSettings.companyEmail || generalSettings.company_email || "info@firma.com",
-        company_phone: generalSettings.companyPhone || generalSettings.company_phone || "",
-        company_address: generalSettings.companyAddress || generalSettings.company_address || "",
-        company_website:
-          generalSettings.companyWebsite || generalSettings.company_website || "www.firma.com",
-      });
-    } catch (error) {
-      console.error("Error loading company info:", error);
-    }
-  };
-
-  const handleDownloadPDF = async () => {
-    if (!voucherRef.current) return;
-
-    try {
-      setIsGeneratingPDF(true);
-      const voucherElement = voucherRef.current;
-
-      const canvas = await html2canvas(voucherElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        width: 794,
-        windowWidth: 794,
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
-      pdf.save(`voucher-${salesData.voucherNumber || "draft"}.pdf`);
-    } catch (error) {
-      console.error("PDF oluşturma hatası:", error);
-      toast.error(
-        "PDF oluşturulurken hata oluştu: " + (error as Error).message,
-      );
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  // Section visibility states
-  const [showAccommodation, setShowAccommodation] = useState(false);
-  const [showFlight, setShowFlight] = useState(false);
-  const [showTransfer, setShowTransfer] = useState(false);
-  const [showExtraServices, setShowExtraServices] = useState(false);
-
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-    setSalesData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSalesData((prev) => ({
-      ...prev,
-      [name]: parseFloat(value) || 0,
-    }));
-  };
-
-  // Room Management
-  const addRoom = () => {
-    const newRoom: Room = {
-      id: Date.now().toString(),
-      roomNumber: `Oda ${rooms.length + 1}`,
-      hotelId: "",
-      accommodationType: "",
-      roomType: "",
-      guestInfo: "",
-      adultCount: 1,
-      childCount: 0,
-      infantCount: 0,
-      pricePerNight: 0,
-      totalNights: 1,
-      totalPrice: 0,
-      price: 0,
-      currency: "TRY",
-      costCurrency: "TRY",
-    };
-    setRooms([...rooms, newRoom]);
-  };
-
-  // Flight Management
-  const addFlight = (type: "departure" | "return") => {
-    const newFlight: FlightInfo = {
-      id: Date.now().toString(),
-      type: type,
-      flightType: "round_trip",
-      departureAirline: "",
-      departureFlightNumber: "",
-      departureDate:
-        type === "departure" ? salesData.checkInDate : salesData.checkOutDate,
-      departureTime: "",
-      departureAirport: "",
-      arrivalAirport: "",
-      returnAirline: "",
-      returnFlightNumber: "",
-      returnDate: type === "return" ? salesData.checkOutDate : "",
-      returnTime: "",
-      pricePerPerson: 0,
-      totalPassengers: 1,
-      totalPrice: 0,
-      currency: "TRY",
-      costCurrency: "TRY",
-      flightDate:
-        type === "departure" ? salesData.checkInDate : salesData.checkOutDate,
-      airline: "",
-      route: "",
-      flightNo: "",
-      ticketingProvider: "",
-      ticketingDate: "",
-      arrivalTime: "",
-      price: 0,
-    };
-    setFlights([...flights, newFlight]);
-  };
-
-  const updateFlight = (
-    id: string,
-    field: keyof FlightInfo,
-    value: string | number,
-  ) => {
-    setFlights(
-      flights.map((flight) =>
-        flight.id === id ? { ...flight, [field]: value } : flight,
-      ),
-    );
-  };
-
-  const removeFlight = (id: string) => {
-    setFlights(flights.filter((flight) => flight.id !== id));
-  };
-
-  // Transfer Management
-  const addTransfer = (direction: "arrival" | "return" | "intermediate") => {
-    const newTransfer: TransferInfo = {
-      id: Date.now().toString(),
-      direction: direction,
-      supplierId: "",
-      transferType: "private",
-      vehicleType: "",
-      routeDescription: "",
-      price: 0,
-      currency: "TRY",
-      costCurrency: "TRY",
-      date:
-        direction === "arrival"
-          ? salesData.checkInDate
-          : direction === "return"
-            ? salesData.checkOutDate
-            : "",
-      provider: "",
-      type: "private",
-      vehicle: "",
-      time: "",
-    };
-    setTransfers([...transfers, newTransfer]);
-  };
-
-  const updateTransfer = (
-    id: string,
-    field: keyof TransferInfo,
-    value: string | number,
-  ) => {
-    setTransfers(
-      transfers.map((transfer) =>
-        transfer.id === id ? { ...transfer, [field]: value } : transfer,
-      ),
-    );
-  };
-
-  const removeTransfer = (id: string) => {
-    setTransfers(transfers.filter((transfer) => transfer.id !== id));
-  };
-
-  const updateRoom = (
-    id: string,
-    field: keyof Room,
-    value: string | number,
-  ) => {
-    setRooms(
-      rooms.map((room) =>
-        room.id === id ? { ...room, [field]: value } : room,
-      ),
-    );
-  };
-
-  const removeRoom = (id: string) => {
-    setRooms(rooms.filter((room) => room.id !== id));
-  };
-
-  // Extra Service Management
-  const addExtraService = () => {
-    const newService: ExtraService = {
-      id: Date.now().toString(),
-      serviceTypeId: "",
-      supplierId: "",
-      serviceName: "",
-      serviceDescription: "",
-      price: 0,
-      currency: "TRY",
-      costCurrency: "TRY",
-      // UI fields - form'da kullanılan alanlar
-      serviceType: "",
-      provider: "",
-      description: "",
-    };
-    setExtraServices([...extraServices, newService]);
-  };
-
-  const updateExtraService = (
-    id: string,
-    field: keyof ExtraService,
-    value: string | number,
-  ) => {
-    setExtraServices(
-      extraServices.map((service) =>
-        service.id === id ? { ...service, [field]: value } : service,
-      ),
-    );
-  };
-
-  const removeExtraService = (id: string) => {
-    setExtraServices(extraServices.filter((service) => service.id !== id));
-  };
-
-  // TR format helpers
-  const formatAmount = (value: number) => {
-    if (value === undefined || value === null || isNaN(value)) return "0,00";
-    return new Intl.NumberFormat("tr-TR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
-  const parseTrAmount = (val: string) => {
-    if (!val) return 0;
-    const normalized = val.replace(/\./g, "").replace(",", ".");
-    const num = parseFloat(normalized);
-    return isNaN(num) ? 0 : num;
-  };
-
-  // Transient input states to allow free typing; we only format on blur
-  const [roomPriceInput, setRoomPriceInput] = useState<Record<string, string>>(
-    {},
-  );
-  const [roomCostInput, setRoomCostInput] = useState<Record<string, string>>(
-    {},
-  );
-  const [servicePriceInput, setServicePriceInput] = useState<
-    Record<string, string>
-  >({});
-
-  const normalizeTyping = (val: string) => {
-    // allow digits, dot and comma; collapse spaces
-    return val.replace(/[^0-9.,]/g, "");
-  };
-
-  // Calculate total amount by currency
-  const calculateTotalAmount = () => {
-    const totals = {
-      TRY: 0,
-      EUR: 0,
-      USD: 0,
-      GBP: 0,
-    } as Record<string, number>;
-
-    // Room totals
-    rooms.forEach((room) => {
-      totals[room.currency as keyof typeof totals] += room.price;
-    });
-
-    // Flight totals
-    flights.forEach((flight) => {
-      totals[flight.currency as keyof typeof totals] += flight.price;
-    });
-
-    // Transfer totals
-    transfers.forEach((transfer) => {
-      totals[transfer.currency as keyof typeof totals] += transfer.price;
-    });
-
-    // Service totals
-    extraServices.forEach((service) => {
-      totals[service.currency as keyof typeof totals] += service.price;
-    });
-
-    return totals;
-  };
-
-  // Calculate total cost by currency
-  const calculateTotalCost = () => {
-    const costs = {
-      TRY: 0,
-      EUR: 0,
-      USD: 0,
-      GBP: 0,
-    } as Record<string, number>;
-
-    // Room costs
-    rooms.forEach((room) => {
-      const costCurrency = room.costCurrency || room.currency;
-      costs[costCurrency as keyof typeof costs] += room.costPrice || 0;
-    });
-
-    // Flight costs
-    flights.forEach((flight) => {
-      const costCurrency = flight.costCurrency || flight.currency;
-      costs[costCurrency as keyof typeof costs] += flight.costPrice || 0;
-    });
-
-    // Transfer costs
-    transfers.forEach((transfer) => {
-      const costCurrency = transfer.costCurrency || transfer.currency;
-      costs[costCurrency as keyof typeof costs] += transfer.costPrice || 0;
-    });
-
-    // Service costs
-    extraServices.forEach((service) => {
-      const costCurrency = service.costCurrency || service.currency;
-      costs[costCurrency as keyof typeof costs] += service.costPrice || 0;
-    });
-
-    return costs;
-  };
-
-  // Get total for specific currency
-  const getTotalForCurrency = (currency: string) => {
-    const totals = calculateTotalAmount();
-    return totals[currency as keyof typeof totals] || 0;
-  };
-
-  // Get cost for specific currency
-  const getCostForCurrency = (currency: string) => {
-    const costs = calculateTotalCost();
-    return costs[currency as keyof typeof costs] || 0;
-  };
-
-  // Calculate profit/loss for specific currency
-  const getProfitForCurrency = (currency: string) => {
-    const total = getTotalForCurrency(currency);
-    const cost = getCostForCurrency(currency);
-    return total - cost;
-  };
-
-  const getCollectionForCurrency = (currency: string) => {
-    return collections
-      .filter((c) => c.currency === currency)
-      .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-  };
-
-  // Collections Management
-  const addCollection = () => {
-    const collection: Collection = {
-      id: Date.now().toString(),
-      type: "Banka Havalesi",
-      amount: 0,
-      date: new Date().toISOString().split('T')[0],
-      description: "",
-      currency: "TRY",
-    };
-    setCollections([...collections, collection]);
-  };
-
-  const updateCollection = (
-    id: string,
-    field: keyof Collection,
-    value: string | number,
-  ) => {
-    setCollections(
-      collections.map((collection) =>
-        collection.id === id ? { ...collection, [field]: value } : collection,
-      ),
-    );
-  };
-
-  const removeCollection = (id: string) => {
-    setCollections(collections.filter((collection) => collection.id !== id));
-  };
-
-  const calculateTotalCollections = () => {
-    return collections.reduce((sum, collection) => sum + collection.amount, 0);
-  };
-
-  const calculateTotalCollectionsByCurrency = (currency: string) => {
-    return collections
-      .filter((collection) => collection.currency === currency)
-      .reduce((sum, collection) => sum + collection.amount, 0);
-  };
-
-  const calculateBalance = () => {
-    const totalAmount = getTotalForCurrency(salesData.currency);
-    return totalAmount - calculateTotalCollections();
-  };
-
-  const calculateBalanceByCurrency = (currency: string) => {
-    const totalAmount = getTotalForCurrency(currency);
-    const totalCollections = calculateTotalCollectionsByCurrency(currency);
-    return totalAmount - totalCollections;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      // Validation
-      if (!salesData.voucherNumber.trim()) {
-        setError("Voucher numarası gereklidir");
-        return;
-      }
-
-      // Müşteri tipi Acenta ise acente seçimi zorunlu, Şahıs ise zorunlu değil
-      if (salesData.customerType === "agency" && !salesData.agencyId) {
-        setError("Acente seçimi gereklidir");
-        return;
-      }
-
-      if (!salesData.checkInDate || !salesData.checkOutDate) {
-        setError("Giriş ve çıkış tarihleri gereklidir");
-        return;
-      }
-
-      if (new Date(salesData.checkInDate) >= new Date(salesData.checkOutDate)) {
-        setError("Çıkış tarihi giriş tarihinden sonra olmalıdır");
-        return;
-      }
-
-      // Create sejour object
-      const sejourData = {
-        voucherNumber: salesData.voucherNumber,
-        customerType: salesData.customerType,
-        customerName: salesData.customerName,
-        agencyId: salesData.agencyId,
-        checkInDate: salesData.checkInDate,
-        checkOutDate: salesData.checkOutDate,
-        rooms: rooms,
-        flights: flights,
-        transfers: transfers,
-        extraServices: extraServices,
-        totalAmount:
-          calculateTotalAmount()[
-            salesData.currency as keyof ReturnType<typeof calculateTotalAmount>
-          ] ||
-          calculateTotalAmount().TRY ||
-          0,
-        currency: salesData.currency || "TRY",
-        status: salesData.status || "BEKLEMEDE",
-        notes: salesData.notes,
-        costs: calculateTotalCost(),
-        totals: calculateTotalAmount(),
-        collections: collections,
-        profits: {
-          EUR: getProfitForCurrency("EUR"),
-          USD: getProfitForCurrency("USD"),
-          TRY: getProfitForCurrency("TRY"),
-        },
-      };
-
-      // Save to Supabase
-      await SejourService.createSejour(sejourData);
-
-      console.log("Sejour created and saved to Supabase:", {
-        sejourData,
-      });
-
-      toast.success("Sejour başarıyla oluşturuldu!");
-      setSuccess("Sejour başarıyla oluşturuldu!");
-
-      // Redirect after 2 seconds
-      setTimeout(() => {
-        router.push("/sejour");
-      }, 2000);
-    } catch (error: any) {
-      console.error("Error creating sejour:", error);
-      // Hata mesajını kullanıcıya göster
-      const errorMessage =
-        error?.message ||
-        error?.error?.message ||
-        "Sejour oluşturulurken bir hata oluştu";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const tabs = [
-    { id: "sales", name: "SATIŞ", icon: "💰" },
-    { id: "purchase", name: "ALIŞ", icon: "🛒" },
-    { id: "collections", name: "TAHSİLAT", icon: "💳" },
-  ];
-
-  // Basit arama destekli açılır liste (klavye destekli) - Modernize Edildi
-  const SearchableSelect = ({
-    options,
-    value,
-    onChange,
-    placeholder,
-    className = "",
-  }: {
-    options: { id: string; name: string }[];
-    value: string;
-    onChange: (id: string) => void;
-    placeholder: string;
-    className?: string;
-  }) => {
-    const [open, setOpen] = useState(false);
-    const [query, setQuery] = useState("");
-    const [highlight, setHighlight] = useState(0);
-    const selected = options.find((o) => o.id === value);
-    const display = open ? query : selected?.name || "";
-
-    const filtered = useMemo(() => {
-      if (!query) return options.slice(0, 100);
-      const lowerQuery = query.toLowerCase();
-      return options
-        .filter((o) => o.name?.toLowerCase().includes(lowerQuery))
-        .slice(0, 100);
-    }, [options, query]);
-
-    const handleSelect = (id: string) => {
-      onChange(id);
-      setOpen(false);
-      setQuery("");
-    };
-    return (
-      <div className={`relative w-full ${className}`}>
-        <div className="relative flex items-center bg-v3-surface border-2 border-gray-100 dark:border-gray-700/50 rounded-lg transition-all duration-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10">
-          <input
-            type="text"
-            value={display}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setOpen(true);
-              setHighlight(0);
-            }}
-            onFocus={() => {
-              setQuery("");
-              setOpen(true);
-              setHighlight(0);
-            }}
-            onKeyDown={(e) => {
-              if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
-                setOpen(true);
-                e.preventDefault();
-                return;
-              }
-              if (!open) return;
-              if (e.key === "ArrowDown") {
-                setHighlight((h) =>
-                  Math.min(h + 1, Math.max(filtered.length - 1, 0)),
-                );
-                e.preventDefault();
-              }
-              if (e.key === "ArrowUp") {
-                setHighlight((h) => Math.max(h - 1, 0));
-                e.preventDefault();
-              }
-              if (e.key === "Enter") {
-                const opt = filtered[highlight];
-                if (opt) handleSelect(opt.id);
-                e.preventDefault();
-              }
-              if (e.key === "Escape") {
-                setOpen(false);
-              }
-            }}
-            onBlur={() => setTimeout(() => setOpen(false), 120)}
-            placeholder={placeholder}
-            className="w-full px-2 py-1.5 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
-          />
-          <div className="pr-6 pointer-events-none text-v3-muted">
-            <svg
-              className={`w-5 h-5 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-        </div>
-        {open && (
-          <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-auto bg-v3-surface border border-v3-border rounded-lg shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-4 py-2 text-[10px] font-black text-v3-muted uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
-              {filtered.length} sonuç
-            </div>
-            {filtered.map((opt, idx) => (
-              <button
-                type="button"
-                key={opt.id}
-                onMouseEnter={() => setHighlight(idx)}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleSelect(opt.id)}
-                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
-              >
-                {opt.name}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div className="px-5 py-4 text-xs font-bold text-v3-muted italic">
-                Sonuç bulunamadı
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-  if (permissionsLoading) {
-    return <LoadingSpinner message="Yükleniyor..." />;
-  }
-
-  // Sejour oluşturma yetkisi kontrolü
-  if (!canCreate(Module.SEJOUR)) {
-    return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-v3-text mb-4">
-            Yetki Gerekli
-          </h1>
-          <p className="text-v3-muted mb-6">
-            Yeni sejour kaydı oluşturmak için yetkiniz bulunmuyor.
-          </p>
-          <button
-            onClick={() => router.push("/sejour")}
-            className="bg-blue-500 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-500/90 dark:hover:bg-blue-500 transition-colors duration-200"
-          >
-            Sejour Listesine Dön
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  
-
-
-  return (
-    <div className="w-full overflow-y-auto h-[90vh] pb-32 scroll-pt-32 bg-transparent p-2 transition-colors duration-200 compact">
-      <div className="max-w-[1800px] mx-auto">
-        {/* Header */}
-        <div className="mb-1 animate-in fade-in slide-in-from-top-1 duration-500">
-          <div className="flex justify-between items-center bg-v3-surface p-1 rounded border border-gray-100 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-              <div>
-                <h1 className="text-xl font-bold text-v3-text tracking-tight">
-                  Yeni Sejour Oluştur
-                </h1>
-                <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 mt-0.5 uppercase tracking-widest">
-                  {salesData.voucherNumber || "YENİ KAYIT"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                type="button"
-                onClick={handleDownloadPDF}
-                className="px-6 py-2.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-500/90 active:scale-[0.98] transition-all duration-200 flex items-center shadow-sm"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                PDF İNDİR
-              </button>
-              <button
-                onClick={() => router.push("/sejour")}
-                className="px-6 py-2.5 bg-white dark:bg-gray-700 text-v3-text text-xs rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-[0.98] transition-all duration-200 shadow-sm"
-              >
-                Geri Dön
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Status and Messages */}
-        <div className="max-w-[1800px] mx-auto mb-2">
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20/80 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-red-500/10 animate-in zoom-in-95 duration-300">
-              <span className="mr-3 text-xl">⚠️</span>
-              <p className="font-bold text-sm tracking-tight">{error}</p>
-            </div>
-          )}
-          {success && (
-            <div className="bg-emerald-50 dark:bg-emerald-900/20/80 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200 px-2 py-1.5 rounded-lg mb-1 flex items-center shadow-lg shadow-emerald-500/10 animate-in zoom-in-95 duration-300">
-              <span className="mr-3 text-xl">✅</span>
-              <p className="font-bold text-sm tracking-tight">{success}</p>
-            </div>
-          )}
-        </div>
-
-                <form onSubmit={handleSubmit} className="relative pb-32">
+        <form onSubmit={handleSubmit} className="relative pb-32">
           
           {/* Main Navigation Tabs */}
           <div className="relative mb-6">
             <div className="flex p-1.5 space-x-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm max-w-lg mx-auto">
-              <button type="button" onClick={() => setActiveTabV6('sales')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTabV6 === 'sales' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>SATIŞ BİLGİLERİ</button>
-              <button type="button" onClick={() => setActiveTabV6('purchase')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTabV6 === 'purchase' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>ALIŞ (MALİYET)</button>
-              <button type="button" onClick={() => setActiveTabV6('collection')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTabV6 === 'collection' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>TAHSİLAT</button>
+              <button type="button" onClick={() => setActiveTab('sales')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTab === 'sales' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>SATIŞ BİLGİLERİ</button>
+              <button type="button" onClick={() => setActiveTab('purchase')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTab === 'purchase' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>ALIŞ (MALİYET)</button>
+              <button type="button" onClick={() => setActiveTab('collection')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTab === 'collection' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>TAHSİLAT</button>
             </div>
           </div>
 
           {/* SATIŞ BİLGİLERİ TABI */}
-          {activeTabV6 === 'sales' && (
+          {activeTab === 'sales' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               
               {/* SEJOUR BİLGİLERİ (HEADER) */}
@@ -1168,15 +27,15 @@ export default function CreateSejourPage() {
                   </div>
                   <button 
                     type="button" 
-                    onClick={() => setIsEditingInfoV6(!isEditingInfoV6)}
+                    onClick={() => setIsEditingInfo(!isEditingInfo)}
                     className="px-4 py-2 flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    {isEditingInfoV6 ? "Detayları Gizle" : "Detayları Düzenle"}
+                    {isEditingInfo ? "Detayları Gizle" : "Detayları Düzenle"}
                   </button>
                 </div>
 
-                {!isEditingInfoV6 ? (
+                {!isEditingInfo ? (
                   <div className="grid grid-cols-2 md:grid-cols-6 gap-4 p-5">
                     <div>
                       <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wider font-semibold">Voucher No</p>
@@ -1268,17 +127,17 @@ export default function CreateSejourPage() {
                   <p className="text-xs text-gray-500">Sejour için eklenen hizmetlerin satış bedellerini ve detaylarını aşağıda yönetebilirsiniz.</p>
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => { setShowAccommodation(true); setExpandedSectionV6("rooms"); }} className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">+ Konaklama</button>
-                  <button type="button" onClick={() => { setShowFlight(true); setExpandedSectionV6("flights"); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">+ Uçuş</button>
-                  <button type="button" onClick={() => { setShowTransfer(true); setExpandedSectionV6("transfers"); }} className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">+ Transfer</button>
-                  <button type="button" onClick={() => { setShowExtraServices(true); setExpandedSectionV6("extras"); }} className="px-3 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">+ Ekstra</button>
+                  <button type="button" onClick={() => { setShowAccommodation(true); setExpandedSection("rooms"); }} className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">+ Konaklama</button>
+                  <button type="button" onClick={() => { setShowFlight(true); setExpandedSection("flights"); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">+ Uçuş</button>
+                  <button type="button" onClick={() => { setShowTransfer(true); setExpandedSection("transfers"); }} className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">+ Transfer</button>
+                  <button type="button" onClick={() => { setShowExtraServices(true); setExpandedSection("extras"); }} className="px-3 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">+ Ekstra</button>
                 </div>
               </div>
 
               {/* KONAKLAMA ACCORDION ROW */}
               {showAccommodation && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "rooms" ? "border border-blue-200 dark:border-blue-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'rooms' ? 'bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'rooms' ? null : 'rooms')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSection === "rooms" ? "border border-blue-200 dark:border-blue-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSection === 'rooms' ? 'bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSection(expandedSection === 'rooms' ? null : 'rooms')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600">
                       <span className="text-lg">🏨</span>
                     </div>
@@ -1287,7 +146,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{rooms.reduce((acc, r) => acc + (r.adultCount||0) + (r.childCount||0) + (r.infantCount||0), 0)} kişi • {rooms.length} oda</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'rooms' && (
+                      {expandedSection !== 'rooms' && (
                         rooms.length > 0 ? rooms.map((r, i) => (
                           <div key={r.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1317,8 +176,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'rooms' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'rooms' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSection === 'rooms' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSection === 'rooms' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1332,7 +191,7 @@ export default function CreateSejourPage() {
                   </div>
                   
                   {/* KONAKLAMA İÇERİĞİ (AÇIK DURUM) */}
-                  {expandedSectionV6 === "rooms" && (
+                  {expandedSection === "rooms" && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4">
                         <button type="button" onClick={addRoom} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1395,7 +254,7 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={roomPriceInputV6[room.id] !== undefined ? roomPriceInputV6[room.id] : room.price ? room.price.toString().replace(".", ",") : ""} onChange={(e) => setRoomPriceInputV6((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateRoom(room.id, "price", parsed); setRoomPriceInputV6((prev) => ({ ...prev, [room.id]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-blue-600 outline-none focus:border-blue-500 bg-blue-50/30" />
+                                  <input type="text" placeholder="0,00" value={roomPriceInput[room.id] !== undefined ? roomPriceInput[room.id] : room.price ? room.price.toString().replace(".", ",") : ""} onChange={(e) => setRoomPriceInput((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateRoom(room.id, "price", parsed); setRoomPriceInput((prev) => ({ ...prev, [room.id]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-blue-600 outline-none focus:border-blue-500 bg-blue-50/30" />
                                   <select value={room.currency || "TRY"} onChange={(e) => updateRoom(room.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
@@ -1412,8 +271,8 @@ export default function CreateSejourPage() {
 
               {/* UÇUŞ ACCORDION ROW */}
               {showFlight && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "flights" ? "border border-emerald-200 dark:border-emerald-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'flights' ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'flights' ? null : 'flights')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSection === "flights" ? "border border-emerald-200 dark:border-emerald-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSection === 'flights' ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSection(expandedSection === 'flights' ? null : 'flights')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600">
                       <span className="text-lg">✈️</span>
                     </div>
@@ -1422,7 +281,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{flights.length} uçuş eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'flights' && (
+                      {expandedSection !== 'flights' && (
                         flights.length > 0 ? flights.map((f, i) => (
                           <div key={f.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1452,8 +311,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'flights' ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'flights' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSection === 'flights' ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSection === 'flights' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1466,7 +325,7 @@ export default function CreateSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "flights" && (
+                  {expandedSection === "flights" && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4 gap-2">
                         <button type="button" onClick={() => addFlight("departure")} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1523,7 +382,7 @@ export default function CreateSejourPage() {
 <div>
                                 <label className="block text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={servicePriceInputV6[`flight_${flight.id}`] !== undefined ? servicePriceInputV6[`flight_${flight.id}`] : flight.price ? flight.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateFlight(flight.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-emerald-600 outline-none focus:border-emerald-500 bg-emerald-50/30" />
+                                  <input type="text" placeholder="0,00" value={servicePriceInput[`flight_${flight.id}`] !== undefined ? servicePriceInput[`flight_${flight.id}`] : flight.price ? flight.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInput((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateFlight(flight.id, "price", parsed); setServicePriceInput((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-emerald-600 outline-none focus:border-emerald-500 bg-emerald-50/30" />
                                   <select value={flight.currency || "TRY"} onChange={(e) => updateFlight(flight.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
@@ -1540,8 +399,8 @@ export default function CreateSejourPage() {
 
               {/* TRANSFER ACCORDION ROW */}
               {showTransfer && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "transfers" ? "border border-purple-200 dark:border-purple-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'transfers' ? 'bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'transfers' ? null : 'transfers')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSection === "transfers" ? "border border-purple-200 dark:border-purple-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSection === 'transfers' ? 'bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSection(expandedSection === 'transfers' ? null : 'transfers')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-purple-50 dark:bg-purple-900/20 text-purple-600">
                       <span className="text-lg">🚗</span>
                     </div>
@@ -1550,7 +409,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{transfers.length} transfer eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'transfers' && (
+                      {expandedSection !== 'transfers' && (
                         transfers.length > 0 ? transfers.map((t, i) => (
                           <div key={t.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1580,8 +439,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'transfers' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'transfers' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSection === 'transfers' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSection === 'transfers' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1594,7 +453,7 @@ export default function CreateSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "transfers" && (
+                  {expandedSection === "transfers" && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4 gap-2">
                         <button type="button" onClick={() => addTransfer("arrival")} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1644,7 +503,7 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-purple-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={servicePriceInputV6[`transfer_${transfer.id}`] !== undefined ? servicePriceInputV6[`transfer_${transfer.id}`] : transfer.price ? transfer.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-purple-600 outline-none focus:border-purple-500 bg-purple-50/30" />
+                                  <input type="text" placeholder="0,00" value={servicePriceInput[`transfer_${transfer.id}`] !== undefined ? servicePriceInput[`transfer_${transfer.id}`] : transfer.price ? transfer.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInput((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "price", parsed); setServicePriceInput((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-purple-600 outline-none focus:border-purple-500 bg-purple-50/30" />
                                   <select value={transfer.currency || "TRY"} onChange={(e) => updateTransfer(transfer.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
@@ -1661,8 +520,8 @@ export default function CreateSejourPage() {
 
               {/* EKSTRA HİZMETLER ACCORDION ROW */}
               {showExtraServices && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "extras" ? "border border-orange-200 dark:border-orange-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'extras' ? 'bg-orange-50/30 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'extras' ? null : 'extras')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSection === "extras" ? "border border-orange-200 dark:border-orange-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSection === 'extras' ? 'bg-orange-50/30 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSection(expandedSection === 'extras' ? null : 'extras')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-orange-50 dark:bg-orange-900/20 text-orange-600">
                       <span className="text-lg">✨</span>
                     </div>
@@ -1671,7 +530,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{extraServices.length} hizmet eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'extras' && (
+                      {expandedSection !== 'extras' && (
                         extraServices.length > 0 ? extraServices.map((e, i) => (
                           <div key={e.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1701,8 +560,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'extras' ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'extras' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSection === 'extras' ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSection === 'extras' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(ev) => ev.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1715,7 +574,7 @@ export default function CreateSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "extras" && (
+                  {expandedSection === "extras" && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4">
                         <button type="button" onClick={addExtraService} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1750,7 +609,7 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-orange-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={servicePriceInputV6[`extra_${service.id}`] !== undefined ? servicePriceInputV6[`extra_${service.id}`] : service.price ? service.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateExtraService(service.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-orange-600 outline-none focus:border-orange-500 bg-orange-50/30" />
+                                  <input type="text" placeholder="0,00" value={servicePriceInput[`extra_${service.id}`] !== undefined ? servicePriceInput[`extra_${service.id}`] : service.price ? service.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInput((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateExtraService(service.id, "price", parsed); setServicePriceInput((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-orange-600 outline-none focus:border-orange-500 bg-orange-50/30" />
                                   <select value={service.currency || "TRY"} onChange={(e) => updateExtraService(service.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
@@ -1768,7 +627,7 @@ export default function CreateSejourPage() {
           )}
 
           {/* ALIŞ (MALİYET) BİLGİLERİ TABI */}
-          {activeTabV6 === 'purchase' && (
+          {activeTab === 'purchase' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -1802,7 +661,7 @@ export default function CreateSejourPage() {
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={roomCostInputV6?.[room.id] !== undefined ? roomCostInputV6[room.id] : room.costPrice ? room.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setRoomCostInputV6((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateRoom(room.id, "costPrice", parsed); setRoomCostInputV6((prev) => ({ ...prev, [room.id]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
+                              <input type="text" placeholder="0,00" value={roomCostInput?.[room.id] !== undefined ? roomCostInput[room.id] : room.costPrice ? room.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setRoomCostInput((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateRoom(room.id, "costPrice", parsed); setRoomCostInput((prev) => ({ ...prev, [room.id]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
                               <select value={room.costCurrency || "TRY"} onChange={(e) => updateRoom(room.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
@@ -1842,7 +701,7 @@ export default function CreateSejourPage() {
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={serviceCostInputV6?.[`flight_${flight.id}`] !== undefined ? serviceCostInputV6[`flight_${flight.id}`] : flight.costPrice ? flight.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateFlight(flight.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
+                              <input type="text" placeholder="0,00" value={serviceCostInput?.[`flight_${flight.id}`] !== undefined ? serviceCostInput[`flight_${flight.id}`] : flight.costPrice ? flight.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInput((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateFlight(flight.id, "costPrice", parsed); setServiceCostInput((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
                               <select value={flight.costCurrency || "TRY"} onChange={(e) => updateFlight(flight.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
@@ -1874,13 +733,13 @@ export default function CreateSejourPage() {
                                                         <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
-                                  {transfer.price ? transfer.price.toLocaleString("tr-TR") : "0"} {transfer.currency || "TRY"}
+                                  {room.price ? room.price.toLocaleString("tr-TR") : "0"} {room.currency || "TRY"}
                                 </div>
                               </div>
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={serviceCostInputV6?.[`transfer_${transfer.id}`] !== undefined ? serviceCostInputV6[`transfer_${transfer.id}`] : transfer.costPrice ? transfer.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
+                              <input type="text" placeholder="0,00" value={serviceCostInput?.[`transfer_${transfer.id}`] !== undefined ? serviceCostInput[`transfer_${transfer.id}`] : transfer.costPrice ? transfer.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInput((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "costPrice", parsed); setServiceCostInput((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
                               <select value={transfer.costCurrency || "TRY"} onChange={(e) => updateTransfer(transfer.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
@@ -1913,13 +772,13 @@ export default function CreateSejourPage() {
                                                         <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
-                                  {service.price ? service.price.toLocaleString("tr-TR") : "0"} {service.currency || "TRY"}
+                                  {room.price ? room.price.toLocaleString("tr-TR") : "0"} {room.currency || "TRY"}
                                 </div>
                               </div>
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={serviceCostInputV6?.[`extra_${service.id}`] !== undefined ? serviceCostInputV6[`extra_${service.id}`] : service.costPrice ? service.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateExtraService(service.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
+                              <input type="text" placeholder="0,00" value={serviceCostInput?.[`extra_${service.id}`] !== undefined ? serviceCostInput[`extra_${service.id}`] : service.costPrice ? service.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInput((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmount(e.target.value); if (parsed !== null) { updateExtraService(service.id, "costPrice", parsed); setServiceCostInput((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmount(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
                               <select value={service.costCurrency || "TRY"} onChange={(e) => updateExtraService(service.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
@@ -1936,7 +795,7 @@ export default function CreateSejourPage() {
           )}
 
           {/* TAHSİLAT TABI */}
-          {activeTabV6 === 'collection' && (
+          {activeTab === 'collection' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -1996,55 +855,41 @@ export default function CreateSejourPage() {
           )}
 
           {/* TOTALS FOOTER */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-3 z-40 transition-all duration-300">
-            <div className="max-w-[1800px] mx-auto flex items-center justify-between relative">
-              <div className="flex-1"></div>
-              <div className="flex items-center justify-center gap-6 overflow-x-auto pb-1 absolute left-1/2 -translate-x-1/2 w-max max-w-[70vw]">
-                {["TRY", "USD", "EUR", "GBP"].filter(c => getTotalForCurrency(c) !== 0 || getCostForCurrency(c) !== 0 || getCollectionForCurrency(c) !== 0).length === 0 ? (
-                  <div className="text-sm font-semibold text-gray-400">Veri yok</div>
-                ) : (
-                  ["TRY", "USD", "EUR", "GBP"].filter(c => getTotalForCurrency(c) !== 0 || getCostForCurrency(c) !== 0 || getCollectionForCurrency(c) !== 0).map(c => {
-                    const total = getTotalForCurrency(c);
-                    const cost = getCostForCurrency(c);
-                    const col = getCollectionForCurrency(c);
-                    const profit = total - cost;
-                    const balance = total - col;
-                    
-                    return (
-                      <div key={c} className="flex items-center gap-4 min-w-max border-r border-gray-200 pr-6 last:border-0 last:pr-0">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">{c} DÖVİZİ</span>
-                          <div className="flex items-center gap-3">
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-gray-400 uppercase">Satış</span>
-                              <span className="text-xs font-bold text-gray-900">{total.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-gray-400 uppercase">Maliyet</span>
-                              <span className="text-xs font-bold text-red-600">{cost.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-gray-400 uppercase">Kâr/Zarar</span>
-                              <span className={`text-xs font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{profit.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="w-px h-6 bg-gray-200 mx-1"></div>
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-gray-400 uppercase">Tahsilat</span>
-                              <span className="text-xs font-bold text-blue-600">{col.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-gray-400 uppercase">Bakiye</span>
-                              <span className={`text-xs font-bold ${balance > 0 ? 'text-orange-500' : 'text-gray-900'}`}>{balance.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+          <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-4 z-40 transition-all duration-300">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">Toplam Satış</p>
+                    <p className="text-sm font-bold text-gray-900">{getTotalForCurrency("USD").toLocaleString("tr-TR", { minimumFractionDigits: 2 })} USD</p>
+                  </div>
+                </div>
+                <div className="w-px h-8 bg-gray-200"></div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">Toplam Alış (Maliyet)</p>
+                    <p className="text-sm font-bold text-gray-900">{getCostForCurrency("USD").toLocaleString("tr-TR", { minimumFractionDigits: 2 })} USD</p>
+                  </div>
+                </div>
+                <div className="w-px h-8 bg-gray-200"></div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-emerald-600/70 font-semibold uppercase tracking-wider mb-0.5">Tahmini Kâr</p>
+                    <p className="text-sm font-bold text-emerald-600">{(getTotalForCurrency("USD") - getCostForCurrency("USD")).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} USD</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 flex-1 relative z-10">
+              <div className="flex items-center gap-3">
                 <button type="button" onClick={() => router.push("/sejour/list")} className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
                   İptal
                 </button>
@@ -2060,339 +905,3 @@ export default function CreateSejourPage() {
             </div>
           </div>
         </form>
-
-
-        {/* PDF Voucher - Gizli bölüm (Capture için off-screen) */}
-        <div
-          ref={voucherRef}
-          className="absolute pointer-events-none"
-          style={{
-            position: "absolute",
-            left: "-9999px",
-            top: "0",
-            width: "210mm",
-            backgroundColor: "white",
-            color: "#1a1a1a",
-            fontFamily: "'Inter', system-ui, sans-serif",
-            zIndex: -100,
-          }}
-        >
-          <div
-            className="bg-v3-surface px-10 py-12 w-full min-h-[297mm] text-gray-900"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            {/* Elegant Header with Logos */}
-            <div className="flex justify-between items-center border-b-[3px] border-gray-900 pb-6 mb-8">
-              <div className="flex items-center">
-                {darkIconLogo && (
-                  <img
-                    src={darkIconLogo}
-                    alt="Logo"
-                    className="w-16 h-auto object-contain"
-                  />
-                )}
-              </div>
-              <div className="text-right flex flex-col items-end">
-                {darkWordmarkLogo && (
-                  <img
-                    src={darkWordmarkLogo}
-                    alt="Wordmark"
-                    className="h-6 w-auto object-contain mb-2"
-                  />
-                )}
-                <div className="text-[10px] tracking-[0.2em] text-gray-600 font-medium uppercase mt-1">
-                  OFFICIAL VOUCHER
-                </div>
-              </div>
-            </div>
-
-            {/* Voucher & Guest Profile */}
-            <div className="flex justify-between items-end mb-10">
-              <div>
-                <h1 className="text-2xl font-light text-gray-900 tracking-wider mb-4 uppercase">
-                  RESERVATION DIRECTORY
-                </h1>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-4 responsive-filter-grid">
-                  <div>
-                    <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">
-                      GUEST NAME
-                    </span>
-                    <span className="block text-sm font-medium text-gray-900">
-                      {salesData.customerName}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">
-                      GUEST TYPE
-                    </span>
-                    <span className="block text-sm font-medium text-gray-900">
-                      {salesData.customerType === "agency"
-                        ? `Agency (${agencies.find((a) => a.id === salesData.agencyId)?.name || ""})`
-                        : "Individual"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">
-                      CHECK IN
-                    </span>
-                    <span className="block text-sm font-medium text-gray-900">
-                      {salesData.checkInDate
-                        ? new Date(salesData.checkInDate).toLocaleDateString(
-                            "tr-TR",
-                          )
-                        : "-"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-1">
-                      CHECK OUT
-                    </span>
-                    <span className="block text-sm font-medium text-gray-900">
-                      {salesData.checkOutDate
-                        ? new Date(salesData.checkOutDate).toLocaleDateString(
-                            "tr-TR",
-                          )
-                        : "-"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="block text-[8px] tracking-[0.2em] text-gray-600 uppercase mb-2">
-                  VOUCHER NO
-                </span>
-                <span className="block text-3xl font-light tracking-widest text-gray-900">
-                  {salesData.voucherNumber}
-                </span>
-              </div>
-            </div>
-
-            {/* ITINERARY */}
-            <div className="space-y-8">
-              {/* Accommodation */}
-              {rooms.length > 0 &&
-                hotels.find((h) => h.id === rooms[0].hotelId) && (
-                  <div>
-                    <div className="border-b border-gray-300 pb-2 mb-4">
-                      <h2 className="text-[10px] tracking-[0.3em] text-gray-900 font-bold uppercase">
-                        Accommodation Details
-                      </h2>
-                    </div>
-                    <div className="mb-3">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        {hotels.find((h) => h.id === rooms[0].hotelId)?.name}
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {rooms.map((room, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-gray-50 border border-gray-100 p-4 rounded-sm flex justify-between items-center"
-                        >
-                          <div>
-                            <span className="block text-[8px] tracking-widest text-gray-600 uppercase mb-1">
-                              ROOM {room.roomNumber || idx + 1}
-                            </span>
-                            <span className="block text-xs font-semibold text-gray-900">
-                              {room.roomType}
-                            </span>
-                          </div>
-                          <div className="text-right">
-                            <span className="block text-[8px] tracking-widest text-gray-600 uppercase mb-1">
-                              GUESTS
-                            </span>
-                            <span className="block text-xs font-medium text-gray-700">
-                              {room.guestInfo}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {/* Flights */}
-              {flights.length > 0 && (
-                <div>
-                  <div className="border-b border-gray-300 pb-2 mb-4 mt-6">
-                    <h2 className="text-[10px] tracking-[0.3em] text-gray-900 font-bold uppercase">
-                      Flight Itinerary
-                    </h2>
-                  </div>
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100">
-                          Direction
-                        </th>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100">
-                          Airline / Flight No
-                        </th>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100">
-                          Date
-                        </th>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100">
-                          Route
-                        </th>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100 text-right">
-                          PNR / Timing
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-xs">
-                      {flights.map((flight, idx) => (
-                        <tr key={idx} className="border-b border-gray-50">
-                          <td className="py-3 font-medium text-gray-900">
-                            {flight.type === "departure" ? "Gidiş" : "Dönüş"}
-                          </td>
-                          <td className="py-3 text-gray-700">
-                            {flight.airline}{" "}
-                            <span className="text-gray-600 ml-1">
-                              ({flight.flightNo})
-                            </span>
-                          </td>
-                          <td className="py-3 text-gray-700">
-                            {flight.flightDate
-                              ? new Date(flight.flightDate).toLocaleDateString(
-                                  "tr-TR",
-                                )
-                              : "-"}
-                          </td>
-                          <td className="py-3 font-medium text-gray-900">
-                            {flight.route}
-                          </td>
-                          <td className="py-3 text-right">
-                            <span className="block font-semibold text-gray-900">
-                              {(flight as any).pnr || "N/A"}
-                            </span>
-                            <span className="block text-[9px] text-gray-600 mt-0.5">
-                              {flight.departureTime} → {flight.arrivalTime}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Transfers */}
-              {transfers.length > 0 && (
-                <div>
-                  <div className="border-b border-gray-300 pb-2 mb-4 mt-6">
-                    <h2 className="text-[10px] tracking-[0.3em] text-gray-900 font-bold uppercase">
-                      Transfer Services
-                    </h2>
-                  </div>
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100">
-                          Direction
-                        </th>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100">
-                          Vehicle Type
-                        </th>
-                        <th className="py-2 text-[8px] tracking-widest text-gray-600 font-normal uppercase border-b border-gray-100 text-right">
-                          Time
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-xs">
-                      {transfers.map((trans, idx) => (
-                        <tr key={idx} className="border-b border-gray-50">
-                          <td className="py-3 font-medium text-gray-900">
-                            {trans.direction === "arrival"
-                              ? "Varış"
-                              : trans.direction === "return"
-                                ? "Dönüş"
-                                : "Ara"}
-                          </td>
-                          <td className="py-3 text-gray-700">
-                            {trans.vehicleType}
-                          </td>
-                          <td className="py-3 font-semibold text-gray-900 text-right">
-                            {trans.time || "-"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Extras */}
-              {extraServices.length > 0 && (
-                <div>
-                  <div className="border-b border-gray-300 pb-2 mb-4 mt-6">
-                    <h2 className="text-[10px] tracking-[0.3em] text-gray-900 font-bold uppercase">
-                      Extra Services
-                    </h2>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-100 p-4 rounded-sm">
-                    {extraServices.map((extra, idx) => (
-                      <div
-                        key={idx}
-                        className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0 last:pb-0"
-                      >
-                        <span className="text-xs font-semibold text-gray-900 flex-1">
-                          {supplierServiceTypes.find(
-                            (t) => t.id === extra.serviceType,
-                          )?.name || extra.serviceType}
-                        </span>
-                        <span className="text-xs text-gray-500 pl-4">
-                          {extra.description || "-"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* IMPORTANT NOTES */}
-            {salesData.notes && (
-              <div className="mt-12 bg-gray-50 border-l-[3px] border-gray-900 p-4">
-                <h3 className="text-[9px] tracking-widest text-gray-900 font-bold uppercase mb-2">
-                  IMPORTANT NOTES
-                </h3>
-                <p className="text-xs text-gray-600 leading-relaxed italic">
-                  {salesData.notes}
-                </p>
-              </div>
-            )}
-
-            {/* Footer (Extremely clean, like a letterhead footer) */}
-            <div className="mt-16 pt-8 border-t-[1px] border-gray-200">
-              <div className="flex justify-between items-end">
-                <div>
-                  <div className="text-sm font-semibold tracking-wide text-gray-900 mb-1">
-                    {companyInfo.company_name}
-                  </div>
-                  <div className="text-[9px] text-gray-500 uppercase tracking-widest mb-3">
-                    {companyInfo.company_address}
-                  </div>
-                  <div className="flex gap-4 text-[9px] font-medium text-gray-600">
-                    {companyInfo.company_phone && (
-                      <span>T: {companyInfo.company_phone}</span>
-                    )}
-                    <span>E: {companyInfo.company_email}</span>
-                    <span>W: {companyInfo.company_website}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[7px] text-v3-muted uppercase tracking-widest mb-1">
-                    Generated By System
-                  </div>
-                  <div className="text-[10px] font-semibold text-gray-800 tracking-[0.2em]">
-                    {new Date().toLocaleDateString("tr-TR")}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

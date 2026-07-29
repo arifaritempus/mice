@@ -1,0 +1,61 @@
+                      {sejour.agencyName || "-"}
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
+                      <div className="text-xs max-w-xs">
+                        {sejour.rooms &&
+                        Array.isArray(sejour.rooms) &&
+                        sejour.rooms.length > 0 ? (
+                          sejour.rooms.map((room: any, index: number) => {
+                            const isMatchedGuest =
+                              globalTokens.length > 0 &&
+                              globalTokens.some((token) =>
+                                (room.guestInfo || "")
+                                  .toLowerCase()
+                                  .includes(token.toLowerCase()),
+                              );
+
+                            return (
+                              <div
+                                key={index}
+                                className={`mb-1 p-1.5 rounded-lg ${
+                                  isMatchedGuest
+                                    ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50"
+                                    : ""
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="font-medium text-v3-text text-xs">
+                                    {String(room.roomNumber || "")
+                                      .toLowerCase()
+                                      .includes("oda")
+                                      ? room.roomNumber
+                                      : `Oda ${room.roomNumber || index + 1}`}
+                                  </div>
+                                  {isMatchedGuest && (
+                                    <span className="text-yellow-600 dark:text-yellow-400 text-xs font-bold bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
+                                      ✓ Eşleşti
+                                    </span>
+                                  )}
+                                </div>
+                                <div
+                                  className={`truncate ${
+                                    isMatchedGuest
+                                      ? "text-yellow-800 dark:text-yellow-200 font-semibold"
+                                      : "text-v3-text"
+                                  }`}
+                                  title={room.guestInfo}
+                                >
+                                  {room.guestInfo || "Misafir bilgisi yok"}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <span className="text-v3-muted dark:text-gray-500">
+                            Misafir bilgisi yok
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-v3-text transition-colors duration-200">
+                      {formatDate(

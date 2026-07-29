@@ -255,7 +255,7 @@ export default function EditSejourPage() {
   // --- V6 INJECTED STATES ---
   const [activeTabV6, setActiveTabV6] = useState("sales");
   const [isEditingInfoV6, setIsEditingInfoV6] = useState(false);
-  const [expandedSectionV6, setExpandedSectionV6] = useState<string | null>("rooms");
+  const [expandedSectionV6, setExpandedSectionV6] = useState<string | null>(null);
   const [roomPriceInputV6, setRoomPriceInputV6] = useState<Record<string, string>>({});
   const [roomCostInputV6, setRoomCostInputV6] = useState<Record<string, string>>({});
   const [servicePriceInputV6, setServicePriceInputV6] = useState<Record<string, string>>({});
@@ -486,7 +486,7 @@ export default function EditSejourPage() {
 
             if (sejour.rooms) {
               setRooms(sejour.rooms.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
-              if (sejour.rooms.length > 0) setShowAccommodation(true);
+              // if (sejour.rooms.length > 0) setShowAccommodation(true);
             }
             if (sejour.flights) {
               setFlights(sejour.flights.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
@@ -794,6 +794,12 @@ export default function EditSejourPage() {
     const total = getTotalForCurrency(currency);
     const cost = getCostForCurrency(currency);
     return total - cost;
+  };
+
+  const getCollectionForCurrency = (currency: string) => {
+    return collections
+      .filter((c) => c.currency === currency)
+      .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   };
 
   // Collections Management
@@ -2124,41 +2130,55 @@ export default function EditSejourPage() {
           )}
 
           {/* TOTALS FOOTER */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-4 z-40 transition-all duration-300">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">Toplam Satış</p>
-                    <p className="text-sm font-bold text-gray-900">{getTotalForCurrency("USD").toLocaleString("tr-TR", { minimumFractionDigits: 2 })} USD</p>
-                  </div>
-                </div>
-                <div className="w-px h-8 bg-gray-200"></div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">Toplam Alış (Maliyet)</p>
-                    <p className="text-sm font-bold text-gray-900">{getCostForCurrency("USD").toLocaleString("tr-TR", { minimumFractionDigits: 2 })} USD</p>
-                  </div>
-                </div>
-                <div className="w-px h-8 bg-gray-200"></div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-emerald-600/70 font-semibold uppercase tracking-wider mb-0.5">Tahmini Kâr</p>
-                    <p className="text-sm font-bold text-emerald-600">{(getTotalForCurrency("USD") - getCostForCurrency("USD")).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} USD</p>
-                  </div>
-                </div>
+          <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-3 z-40 transition-all duration-300">
+            <div className="max-w-[1800px] mx-auto flex items-center justify-between relative">
+              <div className="flex-1"></div>
+              <div className="flex items-center justify-center gap-6 overflow-x-auto pb-1 absolute left-1/2 -translate-x-1/2 w-max max-w-[70vw]">
+                {["TRY", "USD", "EUR", "GBP"].filter(c => getTotalForCurrency(c) !== 0 || getCostForCurrency(c) !== 0 || getCollectionForCurrency(c) !== 0).length === 0 ? (
+                  <div className="text-sm font-semibold text-gray-400">Veri yok</div>
+                ) : (
+                  ["TRY", "USD", "EUR", "GBP"].filter(c => getTotalForCurrency(c) !== 0 || getCostForCurrency(c) !== 0 || getCollectionForCurrency(c) !== 0).map(c => {
+                    const total = getTotalForCurrency(c);
+                    const cost = getCostForCurrency(c);
+                    const col = getCollectionForCurrency(c);
+                    const profit = total - cost;
+                    const balance = total - col;
+                    
+                    return (
+                      <div key={c} className="flex items-center gap-4 min-w-max border-r border-gray-200 pr-6 last:border-0 last:pr-0">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">{c} DÖVİZİ</span>
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-gray-400 uppercase">Satış</span>
+                              <span className="text-xs font-bold text-gray-900">{total.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-gray-400 uppercase">Maliyet</span>
+                              <span className="text-xs font-bold text-red-600">{cost.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-gray-400 uppercase">Kâr/Zarar</span>
+                              <span className={`text-xs font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{profit.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="w-px h-6 bg-gray-200 mx-1"></div>
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-gray-400 uppercase">Tahsilat</span>
+                              <span className="text-xs font-bold text-blue-600">{col.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-gray-400 uppercase">Bakiye</span>
+                              <span className={`text-xs font-bold ${balance > 0 ? 'text-orange-500' : 'text-gray-900'}`}>{balance.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-end gap-3 flex-1 relative z-10">
                 <button type="button" onClick={() => router.push("/sejour/list")} className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
                   İptal
                 </button>

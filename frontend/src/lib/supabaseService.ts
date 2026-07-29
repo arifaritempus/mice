@@ -1471,8 +1471,22 @@ export class SejourService {
     if (params.startDate) query = query.gte('check_in_date', params.startDate);
     if (params.endDate) query = query.lte('check_in_date', params.endDate);
     if (params.searchTerm?.trim()) {
-      const s = params.searchTerm.trim().replace(/[%_]/g, '\\$&');
-      query = query.or(`voucher_number.ilike.%${s}%,customer_name.ilike.%${s}%,status.ilike.%${s}%`);
+      const s = params.searchTerm.trim().replace(/[%_]/g, '\$&');
+      
+      // Misafir isimlerinde arama yapabilmek için önce odaları bulalım
+      const { data: roomMatches } = await supabase
+        .from('sejour_rooms')
+        .select('sejour_id')
+        .ilike('guest_info', `%${s}%`);
+        
+      const matchedSejourIds = roomMatches?.map(r => r.sejour_id) || [];
+      
+      if (matchedSejourIds.length > 0) {
+        // Hem ana tablodaki alanlarda hem de eşleşen oda ID'lerinde ara
+        query = query.or(`voucher_number.ilike.%${s}%,customer_name.ilike.%${s}%,status.ilike.%${s}%,id.in.(${matchedSejourIds.join(',')})`);
+      } else {
+        query = query.or(`voucher_number.ilike.%${s}%,customer_name.ilike.%${s}%,status.ilike.%${s}%`);
+      }
     }
     if (params.statusFilter && params.statusFilter !== 'all') {
       const status = params.statusFilter.toLowerCase();
