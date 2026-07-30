@@ -1092,7 +1092,7 @@ export default function ReportsPage() {
       {/* Content Container */}
       <div className="bg-white dark:bg-v3-surface backdrop-blur-md rounded-3xl border border-slate-200 dark:border-v3-border shadow-xl flex flex-col mb-4">
         {/* Table Area */}
-        <div className="flex-1 overflow-visible relative w-full">
+        <div className="flex-1 overflow-x-auto relative w-full custom-scrollbar">
           {loading && (
             <div className="absolute inset-0 bg-v3-border0 dark:bg-slate-950/50 backdrop-blur-[2px] z-20 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
