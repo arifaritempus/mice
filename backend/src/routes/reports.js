@@ -588,15 +588,10 @@ router.get('/data', async (req, res) => {
                 talep_durumu: rh.status || '-',
                 alt_kategori: catMap[p.sub_category] || p.sub_category || '-',
                 fiyat: toNum(p.unit_price || p.total),
-                para_birimi: p.currency || rh.currency || '-',
-                yanit_detayi: yanit.join(' - ') || '-'
+                para_birimi: p.currency || rh.currency || '-'
               });
             }
           } else {
-            let yanitDetayi = '-';
-            if (rh.response_details) {
-              yanitDetayi = rh.response_details.notes || (typeof rh.response_details === 'string' ? rh.response_details : '-');
-            }
             flatRows.push({
               talep_no: req.reference || '-',
               talep_tarihi: req.request_date || null,
@@ -610,8 +605,7 @@ router.get('/data', async (req, res) => {
               talep_durumu: rh.status || '-',
               alt_kategori: '-',
               fiyat: toNum(rh.price),
-              para_birimi: rh.currency || '-',
-              yanit_detayi: yanitDetayi
+              para_birimi: rh.currency || '-'
             });
           }
         }

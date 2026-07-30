@@ -177,7 +177,6 @@ const COLUMN_LABELS: Record<string, string> = {
   talep_no: "TALEP NO",
   talep_tarihi: "TALEP TARIHI",
   esnek_tarih: "ESNEK TARIH",
-  yanit_detayi: "YANIT DETAYI",
   gece_sayisi: "GECE SAYISI",
   talep_durumu: "TALEP DURUMU",
   fiyat: "BİRİM FİYAT",
@@ -346,8 +345,8 @@ export default function ReportsPage() {
       return [
         "talep_tarihi",
         "talep_no",
-        "esnek_tarih",
         "cin_cout_tarihi",
+        "esnek_tarih",
         "gece_sayisi",
         "firma_adi",
         "acente",
@@ -356,7 +355,6 @@ export default function ReportsPage() {
         "alt_kategori",
         "fiyat",
         "para_birimi",
-        "yanit_detayi",
       ];
     }
     if (activeReport.id === "otel_detay_proje_maliyet") {
