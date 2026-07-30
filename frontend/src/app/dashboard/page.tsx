@@ -504,7 +504,7 @@ export default function UltimateDashboard() {
 
     // Filtering base data
     const fProj = data.rpProjectRows.filter((r: any) =>
-      inRange(r.bitis_tarihi || r.end_date || r.created_at, range),
+      inRange(r.cikis_tarihi || r.end_date || r.created_at, range),
     );
     const fSej = data.rpSejourRows.filter((r: any) =>
       inRange(r.cikis_tarihi || r.checkOutDate || r.created_at, range),
