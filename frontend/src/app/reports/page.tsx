@@ -251,13 +251,21 @@ const parseSearchTerms = (value: string) =>
     .map((part) => part.trim())
     .filter(Boolean);
 
-const applyClientSearchTerms = (rows: DataRow[], value: string) => {
+const applyClientSearchTerms = (rows: DataRow[], value: string, t?: any) => {
   const terms = parseSearchTerms(value).map((term) =>
     term.toLocaleLowerCase("tr-TR"),
   );
   if (!terms.length) return rows;
   return rows.filter((row) => {
-    const haystack = Object.values(row).join(" ").toLocaleLowerCase("tr-TR");
+    const haystack = Object.entries(row)
+      .map(([k, v]) => {
+        if (k === "cin_cout_tarihi") {
+          return `${row.cin_tarihi ? formatDate(String(row.cin_tarihi)) : ''} ${row.cout_tarihi ? formatDate(String(row.cout_tarihi)) : ''}`;
+        }
+        return formatCell(v, k, t);
+      })
+      .join(" ")
+      .toLocaleLowerCase("tr-TR");
     return terms.every((term) => haystack.includes(term));
   });
 };
@@ -504,7 +512,7 @@ export default function ReportsPage() {
         params?.searchValue ?? appliedSearchInput
       ).trim();
       const searchTerms = parseSearchTerms(effectiveSearch);
-      const hasMultiSearch = searchTerms.length > 1;
+      const hasSearch = searchTerms.length > 0;
       const effectivePage = params?.pageOverride ?? currentPage;
       const {
         data: { session },
@@ -517,12 +525,10 @@ export default function ReportsPage() {
       }
       const query = new URLSearchParams();
       query.set("reportId", activeReport.id);
-      query.set("page", String(hasMultiSearch ? 1 : effectivePage));
-      query.set("pageSize", String(hasMultiSearch ? 1000 : pageSize));
+      query.set("page", String(hasSearch ? 1 : effectivePage));
+      query.set("pageSize", String(hasSearch ? 10000 : pageSize));
       if (startDate) query.set("startDate", startDate);
       if (endDate) query.set("endDate", endDate);
-      if (!hasMultiSearch && searchTerms.length > 0)
-        query.set("searchTerm", searchTerms.join(" "));
       if (otelFilterInput.trim())
         query.set("otelFilter", otelFilterInput.trim());
       if (opsiyonDurumuFilter) query.set("opsiyonDurumu", opsiyonDurumuFilter);
@@ -543,9 +549,9 @@ export default function ReportsPage() {
         throw new Error(json?.message || "Rapor verisi alınamadı");
       }
       const serverRows = (json.data || []) as DataRow[];
-      const filteredRows = applyClientSearchTerms(serverRows, effectiveSearch);
+      const filteredRows = applyClientSearchTerms(serverRows, effectiveSearch, t);
       setRows(filteredRows);
-      if (hasMultiSearch) {
+      if (hasSearch) {
         setTotalCount(filteredRows.length);
         setTotalPages(1);
       } else {
