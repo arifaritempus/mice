@@ -561,29 +561,62 @@ router.get('/data', async (req, res) => {
           )
         `);
       if (error) throw error;
+      const { data: catData } = await db.from('categories').select('id, name');
+      const catMap = {};
+      (catData || []).forEach(c => { catMap[c.id] = c.name; });
+
       const flatRows = [];
       for (const req of (data || [])) {
         for (const rh of (req.mice_request_hotels || [])) {
-          flatRows.push({
-            olusturulma_tarihi: req.created_at || null,
-            talep_no: req.reference || '-',
-            talep_tarihi: req.request_date || null,
-            esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
-            cin_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_in || null) : null,
-            cout_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_out || null) : null,
-            firma_adi: req.company_name || '-',
-            acente: req.agencies?.name || '-',
-            otel: rh.hotels?.name || '-',
-            talep_durumu: rh.status || '-',
-            fiyat: toNum(rh.price),
-            para_birimi: rh.currency || '-',
-            opsiyon_tarihi: rh.option_date || null,
-            yanit_detayi: rh.response_details || '-',
-            gece_sayisi: toNum(req.nights)
-          });
+          const prices = rh.response_details?.prices || [];
+          if (prices.length > 0) {
+            for (const p of prices) {
+              const yanit = [];
+              if (rh.response_details?.notes) yanit.push(rh.response_details.notes);
+              if (p.description) yanit.push(p.description);
+
+              flatRows.push({
+                talep_no: req.reference || '-',
+                talep_tarihi: req.request_date || null,
+                esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
+                cin_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_in || null) : null,
+                cout_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_out || null) : null,
+                gece_sayisi: toNum(req.nights),
+                firma_adi: req.company_name || '-',
+                acente: req.agencies?.name || '-',
+                otel: rh.hotels?.name || '-',
+                talep_durumu: rh.status || '-',
+                alt_kategori: catMap[p.sub_category] || p.sub_category || '-',
+                fiyat: toNum(p.unit_price || p.total),
+                para_birimi: p.currency || rh.currency || '-',
+                yanit_detayi: yanit.join(' - ') || '-'
+              });
+            }
+          } else {
+            let yanitDetayi = '-';
+            if (rh.response_details) {
+              yanitDetayi = rh.response_details.notes || (typeof rh.response_details === 'string' ? rh.response_details : '-');
+            }
+            flatRows.push({
+              talep_no: req.reference || '-',
+              talep_tarihi: req.request_date || null,
+              esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
+              cin_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_in || null) : null,
+              cout_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_out || null) : null,
+              gece_sayisi: toNum(req.nights),
+              firma_adi: req.company_name || '-',
+              acente: req.agencies?.name || '-',
+              otel: rh.hotels?.name || '-',
+              talep_durumu: rh.status || '-',
+              alt_kategori: '-',
+              fiyat: toNum(rh.price),
+              para_birimi: rh.currency || '-',
+              yanit_detayi: yanitDetayi
+            });
+          }
         }
       }
-      rows = applyDateFilter(flatRows, 'olusturulma_tarihi', startDate, endDate);
+      rows = applyDateFilter(flatRows, 'talep_tarihi', startDate, endDate);
     } else if (reportId === 'otel_detay_teklif') {
       const { data, error } = await db.from('vw_rp_otel_detay_teklif').select('*');
       if (error) throw error;

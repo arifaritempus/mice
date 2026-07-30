@@ -52,7 +52,7 @@ const REPORT_GROUPS: ReportGroup[] = [
         id: "otel_detay_talep",
         title: "Otel Detaylı Talep Raporu",
         description: "Otellerden gelen fiyat yanıtları",
-        dateField: "olusturulma_tarihi",
+        dateField: "talep_tarihi",
       },
     ],
   },
@@ -126,7 +126,7 @@ const COLUMN_LABELS: Record<string, string> = {
   teklif_no: "TEKLIF NO",
   cin_tarihi: "C/IN TARIHI",
   cout_tarihi: "C/OUT TARIHI",
-  cin_cout_tarihi: "C/IN - C/OUT TARIHI",
+  cin_cout_tarihi: "C-IN C-OUT",
   firma_adi: "FIRMA ADI",
   acente: "ACENTE",
   otel: "OTEL",
@@ -178,10 +178,9 @@ const COLUMN_LABELS: Record<string, string> = {
   talep_tarihi: "TALEP TARIHI",
   esnek_tarih: "ESNEK TARIH",
   yanit_detayi: "YANIT DETAYI",
-  olusturulma_tarihi: "OLUSTURULMA TARIHI",
   gece_sayisi: "GECE SAYISI",
   talep_durumu: "TALEP DURUMU",
-  fiyat: "FIYAT",
+  fiyat: "BİRİM FİYAT",
 };
 
 const formatDateWithDay = (dateVal: unknown, language: string): string => {
@@ -345,19 +344,18 @@ export default function ReportsPage() {
     }
     if (activeReport.id === "otel_detay_talep") {
       return [
-        "olusturulma_tarihi",
-        "talep_no",
         "talep_tarihi",
+        "talep_no",
         "esnek_tarih",
         "cin_cout_tarihi",
+        "gece_sayisi",
         "firma_adi",
         "acente",
         "otel",
         "talep_durumu",
+        "alt_kategori",
         "fiyat",
         "para_birimi",
-        "opsiyon_tarihi",
-        "gece_sayisi",
         "yanit_detayi",
       ];
     }
@@ -674,7 +672,7 @@ export default function ReportsPage() {
       rows.forEach((row, index) => {
         const rowData = columns.map((col) => {
           if (col === "cin_cout_tarihi") {
-            return `${formatDateWithDay(row.cin_tarihi, language)}\n${formatDateWithDay(row.cout_tarihi, language)}`;
+            return `${row.cin_tarihi ? formatDateWithDay(row.cin_tarihi, language) : '-'}${row.cout_tarihi ? ` - ${formatDateWithDay(row.cout_tarihi, language)}` : ''}`;
           }
           if (col === "organizasyon_cikis_tarihi") {
             return `${formatDateWithDay(row.organizasyon_tarihi, language)}\n${formatDateWithDay(row.cikis_tarihi, language)}`;
@@ -1162,9 +1160,9 @@ export default function ReportsPage() {
                             className="px-6 py-4 text-xs font-medium text-slate-700 dark:text-v3-text"
                           >
                             {col === "cin_cout_tarihi" ? (
-                              <div className="flex flex-col gap-0.5">
-                                <div>{formatDateWithDay(row.cin_tarihi, language)}</div>
-                                <div>{formatDateWithDay(row.cout_tarihi, language)}</div>
+                              <div className="whitespace-nowrap">
+                                {row.cin_tarihi ? formatDateWithDay(row.cin_tarihi, language) : '-'}
+                                {row.cout_tarihi ? ` - ${formatDateWithDay(row.cout_tarihi, language)}` : ''}
                               </div>
                             ) : col === "organizasyon_cikis_tarihi" ? (
                               <div className="flex flex-col gap-0.5">
