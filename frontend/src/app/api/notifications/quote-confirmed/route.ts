@@ -288,15 +288,6 @@ export async function POST(req: Request) {
 
     const sentEmails = new Set<string>();
 
-    if (creatorEmail) {
-      await sendMail({
-        to: creatorEmail,
-        subject: notificationTitle,
-        html: notificationHtml
-      }).catch(err => console.error("Creator email send error:", err));
-      sentEmails.add(creatorEmail);
-    }
-
     if (notificationEmail && !sentEmails.has(notificationEmail)) {
       // Virgülle ayrılmış birden fazla mail olabilir diye kontrol edebiliriz ama varsayılan olarak tekil string
       const emails = notificationEmail.split(",").map((e: string) => e.trim()).filter(Boolean);
