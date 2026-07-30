@@ -730,7 +730,7 @@ export default function UltimateDashboard() {
     fProj.forEach((p: any) => {
       const c = Number(p.satis_tl) || 0;
       const m = Number(p.maliyet_tl) || 0;
-      const dateStr = p.organizasyon_tarihi || p.created_at;
+      const dateStr = p.cikis_tarihi || p.end_date || p.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
       const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
@@ -753,7 +753,7 @@ export default function UltimateDashboard() {
     fSej.forEach((s: any) => {
       const c = Number(s.satis_tl) || 0;
       const m = Number(s.maliyet_tl) || 0;
-      const dateStr = s.giris_tarihi || s.created_at;
+      const dateStr = s.cikis_tarihi || s.checkOutDate || s.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
       const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
@@ -777,7 +777,7 @@ export default function UltimateDashboard() {
     fProj.forEach((p: any) => {
       const c = Number(p.satis_tl) || 0;
       const m = Number(p.maliyet_tl) || 0;
-      const dateStr = p.organizasyon_tarihi || p.created_at;
+      const dateStr = p.cikis_tarihi || p.end_date || p.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
       const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
@@ -794,7 +794,7 @@ export default function UltimateDashboard() {
     fSej.forEach((s: any) => {
       const c = Number(s.satis_tl) || 0;
       const m = Number(s.maliyet_tl) || 0;
-      const dateStr = s.giris_tarihi || s.created_at;
+      const dateStr = s.cikis_tarihi || s.checkOutDate || s.created_at;
       if (!dateStr) return;
       const date = new Date(dateStr);
       const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
