@@ -195,7 +195,7 @@ const formatDateWithDay = (dateVal: unknown, language: string): string => {
   if (isNaN(date.getTime())) return String(dateVal);
 
   const formattedDate = `${parts[2].padStart(2, "0")}.${parts[1].padStart(2, "0")}.${parts[0]}`;
-  const dayName = date.toLocaleDateString(language === "en" ? "en-US" : "tr-TR", { weekday: "long" });
+  const dayName = date.toLocaleDateString(language === "en" ? "en-US" : "tr-TR", { weekday: "short" });
 
   return `${formattedDate}, ${dayName}`;
 };

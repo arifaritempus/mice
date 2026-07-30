@@ -1077,7 +1077,7 @@ export const translations = {
     'reports.col_teklif_no': 'TEKLIF NO',
     'reports.col_cin_tarihi': 'C/IN TARIHI',
     'reports.col_cout_tarihi': 'C/OUT TARIHI',
-    'reports.col_cin_cout_tarihi': 'C/IN - C/OUT TARIHI',
+    'reports.col_cin_cout_tarihi': 'C-IN C-OUT',
     'reports.col_firma_adi': 'FIRMA ADI',
     'reports.col_acente': 'ACENTE',
     'reports.col_otel': 'OTEL',
