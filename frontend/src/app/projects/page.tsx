@@ -932,7 +932,7 @@ export default function ProjectsPage() {
         </div>
 
         {/* Projects Table */}
-        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 flex-grow shrink-0 flex flex-col relative overflow-hidden">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 min-h-0 flex-1 flex flex-col relative overflow-hidden">
           <div className="w-full flex-1 overflow-auto custom-scrollbar">
             <table className="min-w-full divide-y divide-white/10">
               <thead className="bg-v3-surface sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-v3-border">
