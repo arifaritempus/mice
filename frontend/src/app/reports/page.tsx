@@ -48,6 +48,12 @@ const REPORT_GROUPS: ReportGroup[] = [
         description: "",
         dateField: "cin_tarihi",
       },
+      {
+        id: "otel_detay_talep",
+        title: "Otel Detaylı Talep Raporu",
+        description: "Otellerden gelen fiyat yanıtları",
+        dateField: "olusturulma_tarihi",
+      },
     ],
   },
   {
@@ -168,6 +174,14 @@ const COLUMN_LABELS: Record<string, string> = {
   ekim: "EKIM",
   kasim: "KASIM",
   aralik: "ARALIK",
+  talep_no: "TALEP NO",
+  talep_tarihi: "TALEP TARIHI",
+  esnek_tarih: "ESNEK TARIH",
+  yanit_detayi: "YANIT DETAYI",
+  olusturulma_tarihi: "OLUSTURULMA TARIHI",
+  gece_sayisi: "GECE SAYISI",
+  talep_durumu: "TALEP DURUMU",
+  fiyat: "FIYAT",
 };
 
 const formatDateWithDay = (dateVal: unknown, language: string): string => {
@@ -327,6 +341,24 @@ export default function ReportsPage() {
         "birim_satis",
         "para_birimi",
         "teklif_durumu",
+      ];
+    }
+    if (activeReport.id === "otel_detay_talep") {
+      return [
+        "olusturulma_tarihi",
+        "talep_no",
+        "talep_tarihi",
+        "esnek_tarih",
+        "cin_cout_tarihi",
+        "firma_adi",
+        "acente",
+        "otel",
+        "talep_durumu",
+        "fiyat",
+        "para_birimi",
+        "opsiyon_tarihi",
+        "gece_sayisi",
+        "yanit_detayi",
       ];
     }
     if (activeReport.id === "otel_detay_proje_maliyet") {
@@ -653,6 +685,7 @@ export default function ReportsPage() {
             col.includes("tutar") ||
             col.includes("satis") ||
             col.includes("maliyet") ||
+            col.includes("fiyat") ||
             col.includes("tl") ||
             col.includes("adet") ||
             col.includes("sefer") ||
@@ -697,6 +730,7 @@ export default function ReportsPage() {
               colKey.includes("tutar") ||
               colKey.includes("satis") ||
               colKey.includes("maliyet") ||
+              colKey.includes("fiyat") ||
               colKey.includes("tl")
                 ? "right"
                 : "left",
@@ -709,6 +743,7 @@ export default function ReportsPage() {
             colKey.includes("tutar") ||
             colKey.includes("satis") ||
             colKey.includes("maliyet") ||
+            colKey.includes("fiyat") ||
             colKey.includes("tl")
           ) {
             cell.numFmt = "#,##0.00";

@@ -537,6 +537,53 @@ router.get('/data', async (req, res) => {
         const want = normalizeOpsiyonDurumuKey(opsiyonDurumu);
         rows = rows.filter((r) => normalizeOpsiyonDurumuKey(r.opsiyon_durumu) === want);
       }
+    } else if (reportId === 'otel_detay_talep') {
+      const { data, error } = await db
+        .from('mice_requests')
+        .select(`
+          id,
+          created_at,
+          reference,
+          request_date,
+          date_type,
+          date_details,
+          company_name,
+          nights,
+          agencies(name),
+          mice_request_hotels!inner(
+            id,
+            status,
+            price,
+            currency,
+            option_date,
+            response_details,
+            hotels(name)
+          )
+        `);
+      if (error) throw error;
+      const flatRows = [];
+      for (const req of (data || [])) {
+        for (const rh of (req.mice_request_hotels || [])) {
+          flatRows.push({
+            olusturulma_tarihi: req.created_at || null,
+            talep_no: req.reference || '-',
+            talep_tarihi: req.request_date || null,
+            esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
+            cin_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_in || null) : null,
+            cout_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_out || null) : null,
+            firma_adi: req.company_name || '-',
+            acente: req.agencies?.name || '-',
+            otel: rh.hotels?.name || '-',
+            talep_durumu: rh.status || '-',
+            fiyat: toNum(rh.price),
+            para_birimi: rh.currency || '-',
+            opsiyon_tarihi: rh.option_date || null,
+            yanit_detayi: rh.response_details || '-',
+            gece_sayisi: toNum(req.nights)
+          });
+        }
+      }
+      rows = applyDateFilter(flatRows, 'olusturulma_tarihi', startDate, endDate);
     } else if (reportId === 'otel_detay_teklif') {
       const { data, error } = await db.from('vw_rp_otel_detay_teklif').select('*');
       if (error) throw error;
@@ -680,6 +727,7 @@ router.get('/data', async (req, res) => {
     if (
       otelFilter &&
       (reportId === 'otel_detay_teklif' ||
+        reportId === 'otel_detay_talep' ||
         reportId === 'otel_detay_proje_maliyet' ||
         reportId === 'otel_kar_zarar' ||
         reportId === 'otel_marj')
