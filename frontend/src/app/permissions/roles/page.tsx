@@ -558,7 +558,20 @@ export default function RolePermissionsPage() {
     }
 
     try {
+      const trMap: { [key: string]: string } = {
+        'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u',
+        'Ç': 'c', 'Ğ': 'g', 'İ': 'i', 'Ö': 'o', 'Ş': 's', 'Ü': 'u'
+      };
+      
+      const roleId = newRole.name.trim()
+        .replace(/[çğıöşüÇĞİÖŞÜ]/g, match => trMap[match])
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+
       const newRoleData = await rolesService.create({
+        id: roleId,
         name: newRole.name.trim(),
         description: newRole.description.trim(),
         is_active: true,

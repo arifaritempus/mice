@@ -23,7 +23,11 @@ function getAdminClient() {
 
 export async function POST(req: Request) {
   try {
-    const { quoteId, confirmedBy } = await req.json();
+    const host = req.headers.get("host");
+    const protocol = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const appUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:6002");
+
+    const { projectId, quoteId, confirmedBy } = await req.json();
 
     if (!quoteId) {
       return NextResponse.json(
@@ -258,7 +262,7 @@ export async function POST(req: Request) {
         </div>
 
         <div style="margin-top: 32px; text-align: center; padding-top: 24px; border-top: 1px solid #f1f5f9;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:6002'}/projects" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">Projeye Git</a>
+          <a href="${appUrl}/projects" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">Projeye Git</a>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 16px;">Bu e-posta otomatik olarak gönderilmiştir.</p>
         </div>
       </div>

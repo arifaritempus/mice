@@ -97,6 +97,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
       items: [
         { label: "Projeler", href: "/projects", icon: <Briefcase size={16} /> },
         { label: "Teklifler", href: "/quotes", icon: <FileText size={16} /> },
+        { label: "Talepler", href: "/requests", icon: <FileText size={16} /> },
       ],
     },
     {

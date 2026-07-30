@@ -1,0 +1,151 @@
+        unit_quantity: item.unit_quantity ?? 1,
+        sefer: item.sefer ?? 1,
+        unit_price: item.unit_price ?? 0,
+        total_price: item.total ?? 0,
+        currency: item.currency || "EUR",
+        vat: item.vat ?? 0,
+        fx: item.fx ?? 1,
+        hotel_id: realHotelId,
+      });
+    }
+
+    // Alış kalemleri (satış kalemlerinden fiyatsız kopya)
+    for (const item of relevantItems) {
+      const originalIndex = confirmedHotels.findIndex(
+        (h) => h.id === item.hotel_id || h.hotel_id === item.hotel_id,
+      );
+      const realHotelId =
+        originalIndex !== -1
+          ? confirmedHotels[originalIndex].hotel_id || null
+          : null;
+      const tabUUID =
+        originalIndex !== -1 ? normalizedHotels[originalIndex].id : null;
+
+      await projectPurchaseItemsService.create({
+        project_id: created.id,
+        category: item.main_category || "",
+        sub_category: item.sub_category || "",
+        description: withTabTag(item.description || "", tabUUID),
+        unit_quantity: item.unit_quantity ?? 1,
+        sefer: item.sefer ?? 1,
+        unit_price: 0,
+        total_price: 0,
+        currency: item.currency || "EUR",
+        vat: item.vat ?? 0,
+        fx: item.fx ?? 1,
+        hotel_id: realHotelId,
+      });
+    }
+  };
+
+  // Excel Export Fonksiyonu - Tüm filtreleri uygular
+  const exportToExcel = async () => {
+    setExporting(true);
+
+    try {
+      // Tüm filtreleri uygula (arama, tarih, durum, opsiyon)
+      const fullyFilteredQuotes = sortQuotes(
+        filterQuotesByDatesAndOptions(
+          searchQuotes(
+            filter === "all"
+              ? quotes
+              : quotes.filter((q) => q.status === filter),
+            searchTerm,
+          ),
+        ),
+        sortField,
+        sortDirection,
+      );
+
+      console.log("Export edilecek teklif sayısı:", fullyFilteredQuotes.length);
+      console.log("Uygulanan filtreler:", {
+        statusFilter: filter,
+        searchTerm,
+        quoteDateStart,
+        quoteDateEnd,
+        checkInDate,
+        checkOutDate,
+        optionStart,
+        optionEnd,
+        optionFilter,
+      });
+
+      await ExcelUtils.exportQuotes(fullyFilteredQuotes, agencies, hotels);
+      toast.success(
+        `Excel dosyası başarıyla indirildi! (${fullyFilteredQuotes.length} teklif)`,
+      );
+    } catch (error) {
+      console.error("Excel export hatası:", error);
+      toast.error("Excel dosyası oluşturulurken bir hata oluştu.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  useEffect(() => {
+    setPage(1);
+  }, [filter, optionFilter, sortField, sortDirection]);
+
+  // Calculate counts based on current filtered data
+  // İstatistik kartları - Filtrelenmiş verilere göre hesapla
+  const beklemedeCount = quotes.filter(
+    (q) => q.status === "BEKLEMEDE" || q.status === "TEKLİF",
+  ).length;
+  const konfirmeCount = quotes.filter((q) => q.status === "KONFİRME").length;
+  const iptalCount = quotes.filter((q) => q.status === "İPTAL").length;
+  const option1Count = quotes.filter((q) => q.option === "1. OPSİYON").length;
+  const option2Count = quotes.filter((q) => q.option === "2. OPSİYON").length;
+  const sorSatCount = quotes.filter((q) => q.option === "SOR-SAT").length;
+
+  const includesByTokens = (value: string, tokens: string[]) => {
+    if (tokens.length === 0) return true;
+    const normalized = (value || "").toLowerCase();
+    // Aynı input içinde birden fazla token varsa OR mantığı kullan:
+    // kayıt, token'lardan en az birini içeriyorsa eşleşmiş sayılır.
+    return tokens.some((token) => normalized.includes(token.toLowerCase()));
+  };
+
+  const addToken = (
+    value: string,
+    setTokens: Dispatch<SetStateAction<string[]>>,
+    setInput: Dispatch<SetStateAction<string>>,
+  ) => {
+    const normalized = value.trim();
+    if (!normalized) return;
+    setTokens((prev) => {
+      if (
+        prev.some((item) => item.toLowerCase() === normalized.toLowerCase())
+      ) {
+        return prev;
+      }
+      return [...prev, normalized];
+    });
+    setInput("");
+  };
+
+  const removeToken = (
+    value: string,
+    setTokens: Dispatch<SetStateAction<string[]>>,
+  ) => {
+    setTokens((prev) => prev.filter((item) => item !== value));
+  };
+
+  const globalSuggestions = useMemo(() => {
+    const refs = quotes.map((q) => (q.reference || "").trim());
+    const comps = quotes.map((q) => (q.company_name || "").trim());
+    const agns = quotes.map((q) => (getAgencyName(q.agency_id) || "").trim());
+    const stats = quotes.map((q) => (q.status || "").trim());
+    return Array.from(
+      new Set([
+        ...refs,
+        ...comps,
+        ...agns,
+        ...stats,
+        "TEKLİF",
+        "BEKLEMEDE",
+        "KONFİRME",
+        "İPTAL",
+      ]),
+    ).filter(Boolean);
+  }, [quotes, agencies]);
+

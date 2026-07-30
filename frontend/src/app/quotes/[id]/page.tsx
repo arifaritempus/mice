@@ -1379,7 +1379,7 @@ export default function QuoteViewPage() {
                           ODA | PAX
                         </p>
                         <p className="text-base font-bold text-v3-text leading-tight">
-                          {hotelsData ? hotelsData.reduce((acc: number, h: any) => acc + (Number(h.room_count) || 0), 0) : 0} | {hotelsData ? hotelsData.reduce((acc: number, h: any) => acc + (Number(h.pax_count) || 0), 0) : 0}
+                          {quote.room_count || 0} | {quote.pax_count || 0}
                         </p>
                       </div>
                       <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">

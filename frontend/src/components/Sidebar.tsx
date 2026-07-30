@@ -93,6 +93,13 @@ export default function Sidebar() {
       module: Module.QUOTES,
       children: [
         {
+          id: "requests",
+          label: "Talepler",
+          icon: "📨",
+          href: "/requests",
+          module: Module.QUOTES,
+        },
+        {
           id: "quotes",
           label: t('menu.quotes') || "Teklif",
           icon: "📋",

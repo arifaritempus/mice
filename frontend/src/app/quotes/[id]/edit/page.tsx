@@ -17,6 +17,7 @@ import {
 } from "@/lib/supabaseService";
 import QuoteServiceEditor from "@/components/QuoteServiceEditor";
 import { usePermissions, Module } from "@/lib/permissions";
+import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
 
@@ -501,7 +502,7 @@ export default function QuoteEditPage() {
           return { ...h, hotel_status: value as string, is_confirmed: isConf };
         }
         if (field === "room_count" || field === "pax_count")
-          return { ...h, [field]: Number(value) };
+          return { ...h, [field]: value === "" ? 0 : Number(value) };
         if (field === "is_confirmed")
           return {
             ...h,
@@ -550,8 +551,8 @@ export default function QuoteEditPage() {
         hotel_concept: "",
         check_in_date: "",
         check_out_date: "",
-        room_count: 1,
-        pax_count: 1,
+        room_count: 0,
+        pax_count: 0,
         option: "1. OPSİYON",
         option_date: "",
         is_confirmed: false,
@@ -710,10 +711,6 @@ export default function QuoteEditPage() {
       0,
     );
 
-    const isUUID = (str: string) =>
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        str,
-      );
     const normalizedHotels = confirmedHotels.map((h) => ({
       ...h,
       id: crypto.randomUUID(), // Her tab için yeni ve benzersiz bir UUID oluştur
@@ -1167,7 +1164,7 @@ export default function QuoteEditPage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.reference}
+                    value={formData.reference ?? ""}
                     disabled={isFormDisabled}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -1207,7 +1204,7 @@ export default function QuoteEditPage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.company_name}
+                    value={formData.company_name ?? ""}
                     disabled={isFormDisabled}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -1225,7 +1222,7 @@ export default function QuoteEditPage() {
                   </label>
                   <SearchableSelect
                     options={agencies}
-                    value={formData.agency_id}
+                    value={formData.agency_id ?? ""}
                     disabled={isFormDisabled}
                     onChange={(id) =>
                       setFormData((prev) => ({ ...prev, agency_id: id }))
@@ -1404,7 +1401,7 @@ export default function QuoteEditPage() {
                   NOTLAR
                 </label>
                 <textarea
-                  value={formData.notes}
+                  value={formData.notes ?? ""}
                   disabled={isFormDisabled}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, notes: e.target.value }))
@@ -1559,7 +1556,7 @@ export default function QuoteEditPage() {
                           key={h.id}
                           className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-blue-500 ring-2 ring-blue-500/10 shadow-sm space-y-4"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end animate-in fade-in duration-300">
+                          <div className="grid grid-cols-1 hotel-grid-layout gap-3 items-end animate-in fade-in duration-300">
                             <div className="w-full">
                               <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Otel *
@@ -1580,7 +1577,7 @@ export default function QuoteEditPage() {
                               </label>
                               <input
                                 type="text"
-                                value={h.hotel_concept}
+                                value={h.hotel_concept ?? ""}
                                 disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
@@ -1594,57 +1591,28 @@ export default function QuoteEditPage() {
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
-                                C/IN Tarihi *
-                              </label>
-                              <input
-                                type="date"
-                                value={h.check_in_date}
-                                disabled={isFormDisabled}
-                                onChange={(e) =>
-                                  handleHotelListChange(
-                                    h.id,
-                                    "check_in_date",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
+                              <ResponsiveDateRangeField
+                                label="C/IN - C/OUT Tarihi *"
+                                startValue={h.check_in_date || ""}
+                                endValue={h.check_out_date || ""}
+                                onStartChange={(val) => handleHotelListChange(h.id, "check_in_date", val)}
+                                onEndChange={(val) => handleHotelListChange(h.id, "check_out_date", val)}
+                                onApply={() => {}}
                               />
                             </div>
-                            <div className="w-full">
-                              <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
-                                C/OUT Tarihi *
-                              </label>
-                              <input
-                                type="date"
-                                value={h.check_out_date}
-                                disabled={isFormDisabled}
-                                onChange={(e) =>
-                                  handleHotelListChange(
-                                    h.id,
-                                    "check_out_date",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
-                              />
-                            </div>
-                          
                             <div className="w-full">
                               <label className="block text-[10px] font-black text-blue-500/80 uppercase tracking-widest mb-1.5">
                                 Oda Sayısı
                               </label>
                               <input
                                 type="number"
-                                value={h.room_count}
+                                value={h.room_count === 0 ? "" : h.room_count ?? ""}
                                 disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
                                     "room_count",
-                                    parseInt(e.target.value) || 0,
+                                    e.target.value === "" ? 0 : (parseInt(e.target.value) || 0) as any,
                                   )
                                 }
                                 min="1"
@@ -1657,13 +1625,13 @@ export default function QuoteEditPage() {
                               </label>
                               <input
                                 type="number"
-                                value={h.pax_count}
+                                value={h.pax_count === 0 ? "" : h.pax_count ?? ""}
                                 disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
                                     "pax_count",
-                                    parseInt(e.target.value) || 0,
+                                    e.target.value === "" ? 0 : (parseInt(e.target.value) || 0) as any,
                                   )
                                 }
                                 min="1"
@@ -1675,7 +1643,7 @@ export default function QuoteEditPage() {
                                 Opsiyon
                               </label>
                               <select
-                                value={h.option}
+                                value={h.option ?? ""}
                                 disabled={isFormDisabled}
                                 onChange={(e) =>
                                   handleHotelListChange(
@@ -1686,9 +1654,9 @@ export default function QuoteEditPage() {
                                 }
                                 className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text disabled:bg-gray-200 dark:disabled:bg-gray-800"
                               >
-                                <option value="1. OPSİYON">1. OPSİYON</option>
-                                <option value="2. OPSİYON">2. OPSİYON</option>
-                                <option value="SOR-SAT">SOR-SAT</option>
+                                <option value="1. Opsiyon">1. OPSİYON</option>
+                                <option value="2. Opsiyon">2. OPSİYON</option>
+                                <option value="Sor-Sat">SOR-SAT</option>
                               </select>
                             </div>
                             <div className="w-full">
@@ -1697,7 +1665,7 @@ export default function QuoteEditPage() {
                               </label>
                               <input
                                 type="date"
-                                value={h.option_date}
+                                value={h.option_date ?? ""}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,

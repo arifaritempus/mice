@@ -37,6 +37,7 @@ export default function AuthWrapper({
     if (path.startsWith("/quotes/view/")) return undefined; // public
     if (path.startsWith("/projects/view/")) return undefined; // public
     if (path.startsWith("/quotes")) return Module.QUOTES;
+    if (path.startsWith("/requests")) return Module.QUOTES;
     if (path.startsWith("/projects")) return Module.PROJECTS;
     if (path.startsWith("/accounting/cash-flow")) return Module.CASH_FLOW;
     if (path.startsWith("/accounting/invoices/income")) return Module.INVOICES_INCOME;

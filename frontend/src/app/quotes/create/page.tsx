@@ -20,6 +20,7 @@ import {
 } from "@/lib/supabaseService";
 import QuoteServiceEditor from "@/components/QuoteServiceEditor";
 import { usePermissions, Module } from "@/lib/permissions";
+import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 // ─── NotificationModal ────────────────────────────────────────────────────────
@@ -1578,7 +1579,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                           key={h.id}
                           className="p-4 bg-white dark:bg-gray-800/80 rounded-lg border border-blue-500 ring-2 ring-blue-500/10 shadow-sm relative group space-y-4"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.8fr_0.8fr_1fr_1fr_1.2fr] gap-3 items-end">
+                          <div className="grid grid-cols-1 hotel-grid-layout gap-3 items-end">
                             <div className="w-full">
                               <label className="block text-[9px] font-bold text-v3-muted mb-1 uppercase">
                                 Otel *
@@ -1611,54 +1612,27 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                               />
                             </div>
                             <div className="w-full">
-                              <label className="block text-[9px] font-bold text-v3-muted mb-1 uppercase">
-                                C/IN Tarihi *
-                              </label>
-                              <input
-                                type="date"
-                                value={h.check_in_date}
-                                onChange={(e) =>
-                                  handleHotelListChange(
-                                    h.id,
-                                    "check_in_date",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text"
+                              <ResponsiveDateRangeField
+                                label="C/IN - C/OUT Tarihi *"
+                                startValue={h.check_in_date || ""}
+                                endValue={h.check_out_date || ""}
+                                onStartChange={(val) => handleHotelListChange(h.id, "check_in_date", val)}
+                                onEndChange={(val) => handleHotelListChange(h.id, "check_out_date", val)}
+                                onApply={() => {}}
                               />
                             </div>
-                            <div className="w-full">
-                              <label className="block text-[9px] font-bold text-v3-muted mb-1 uppercase">
-                                C/OUT Tarihi *
-                              </label>
-                              <input
-                                type="date"
-                                value={h.check_out_date}
-                                onChange={(e) =>
-                                  handleHotelListChange(
-                                    h.id,
-                                    "check_out_date",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                className="w-full px-1 py-1 h-8 text-[11px] bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-v3-text"
-                              />
-                            </div>
-                          
                             <div className="w-full">
                               <label className="block text-[9px] font-bold text-v3-muted mb-1 uppercase">
                                 Oda Sayısı
                               </label>
                               <input
                                 type="number"
-                                value={h.room_count}
+                                value={h.room_count === 0 ? "" : h.room_count}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
                                     "room_count",
-                                    (e.target.value === "" ? "" : parseInt(e.target.value)) as unknown as number,
+                                    e.target.value === "" ? 0 : (parseInt(e.target.value) || 0) as any,
                                   )
                                 }
                                 min="1"
@@ -1671,12 +1645,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                               </label>
                               <input
                                 type="number"
-                                value={h.pax_count}
+                                value={h.pax_count === 0 ? "" : h.pax_count}
                                 onChange={(e) =>
                                   handleHotelListChange(
                                     h.id,
                                     "pax_count",
-                                    (e.target.value === "" ? "" : parseInt(e.target.value)) as unknown as number,
+                                    e.target.value === "" ? 0 : (parseInt(e.target.value) || 0) as any,
                                   )
                                 }
                                 min="1"

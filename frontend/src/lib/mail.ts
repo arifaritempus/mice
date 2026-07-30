@@ -3,6 +3,7 @@ import { SettingsService } from "./supabaseService";
 
 interface MailOptions {
   to: string;
+  cc?: string | string[];
   subject: string;
   html: string;
 }
@@ -51,6 +52,7 @@ export async function sendMail(options: MailOptions) {
     const info = await transporter.sendMail({
       from: `"${mail_from_name || "Sistem"}" <${mail_from_email}>`,
       to: options.to,
+      cc: options.cc,
       replyTo: mail_reply_to || mail_from_email,
       subject: options.subject,
       html: options.html,

@@ -60,6 +60,13 @@ export async function GET(req: Request) {
     const { data: allUsers } = await admin.from("users").select("id, full_name, email");
     const userMap = new Map((allUsers || []).map((u: any) => [u.id, u.full_name || u.email || "Bilinmiyor"]));
 
+    let systemNotificationEmail = "";
+    const { data: settingsData } = await admin.from("settings").select("value").eq("key", "general_settings").single();
+    if (settingsData && settingsData.value) {
+       const gs = typeof settingsData.value === 'string' ? JSON.parse(settingsData.value) : settingsData.value;
+       systemNotificationEmail = gs.mailNotificationEmail || gs.mail_notification_email || "";
+    }
+
     const { start: in3DaysStart, end: in3DaysEnd } = getFutureDateRange(3);
     const { start: tomorrowStart, end: tomorrowEnd } = getFutureDateRange(1);
 
@@ -106,16 +113,28 @@ export async function GET(req: Request) {
       `;
     };
 
-    const pushNotification = (title: string, desc: string, fields: any[], link: string, linkText: string, type: string, titleColor: string, bgColor: string) => {
+    const pushNotification = (title: string, desc: string, fields: any[], link: string, linkText: string, type: string, titleColor: string, bgColor: string, extraUserIds: string[] = [], extraEmails: string[] = []) => {
       const emailHtml = buildEmailHtml(title, desc, titleColor, fields, link, linkText, bgColor);
       const modalHtml = buildModalHtml(desc, fields);
-      for (const adminUser of adminTargets) {
-        notificationsToInsert.push({ user_id: adminUser.id, title, message: modalHtml, type, action_url: new URL(link).pathname });
-        if (adminUser.email) emailsToSend.push({ to: adminUser.email, subject: title, html: emailHtml });
+      
+      const sentUserIds = new Set<string>();
+      const sentEmails = new Set<string>();
+
+      for (const user of allUsers || []) {
+        notificationsToInsert.push({ user_id: user.id, title, message: modalHtml, type, action_url: new URL(link).pathname });
+      }
+      
+      const allTargetEmails = [systemNotificationEmail, ...extraEmails];
+      for (const email of allTargetEmails) {
+        if (!email || sentEmails.has(email)) continue;
+        emailsToSend.push({ to: email, subject: title, html: emailHtml });
+        sentEmails.add(email);
       }
     };
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:6002";
+    const host = req.headers.get("host");
+    const protocol = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const appUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:6002");
 
     // --- 1. FATURALAR ---
     const { data: invoices } = await admin.from("invoices").select("*").gte("due_date", in3DaysStart).lte("due_date", in3DaysEnd).not("status", "in", '("completed","paid")');
@@ -228,7 +247,9 @@ export async function GET(req: Request) {
           "Pazarlama Paneline Git",
           "info",
           "#6d28d9",
-          "#f5f3ff"
+          "#f5f3ff",
+          mkt.user_id ? [mkt.user_id] : [],
+          systemNotificationEmail ? [systemNotificationEmail] : []
         );
       }
     }

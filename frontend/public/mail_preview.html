@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MICE Talep Detayı</title>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 40px 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .header { background: #0f172a; padding: 30px; text-align: center; color: white; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+    .header p { margin: 8px 0 0 0; font-size: 14px; opacity: 0.9; }
+    .content { padding: 40px 30px; }
+    .greeting { font-size: 15px; color: #374151; margin-bottom: 25px; line-height: 1.6; }
+    .details-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
+    .row { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 12px 0; }
+    .row:last-child { border-bottom: none; }
+    .label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .value { font-size: 14px; font-weight: 700; color: #0f172a; text-align: right; }
+    .events { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
+    .event-badge { display: inline-block; background: #eff6ff; color: #1d4ed8; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: 8px; margin-bottom: 8px; border: 1px solid #bfdbfe; }
+    .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; font-size: 14px; color: #92400e; margin-bottom: 30px; line-height: 1.5; }
+    .cta { text-align: center; margin-top: 35px; }
+    .btn { display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+    .btn:hover { background: #1e293b; }
+    .footer { text-align: center; padding: 25px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #f8fafc; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header" style="background-color: #0f172a; color: #ffffff;">
+      <div style="margin-bottom: 20px;">
+         <!-- Örnek Koyu Tema Logosu (Placeholder) -->
+         <img src="https://placehold.co/200x50/0f172a/ffffff?text=LA+TOUR+SISTEM" alt="Firma Logo" style="max-height: 50px; width: auto;" />
+      </div>
+      <h1>Yeni MICE Talebi</h1>
+      <p>Referans: #TMI260729001</p>
+    </div>
+    <div class="content">
+      <div class="greeting">
+        Sayın <strong>Concorde Luxury Resort</strong> Yetkilisi,<br><br>
+        Aşağıda detayları belirtilen grubumuz için tesisinizin müsaitlik durumunu ve fiyat teklifinizi rica ederiz.
+      </div>
+      
+      <div class="details-box">
+        <div class="row">
+          <span class="label">Firma / Sektör</span>
+          <span class="value">DEMO HOLDİNG A.Ş.</span>
+        </div>
+        <div class="row">
+          <span class="label">Tarih Aralığı</span>
+          <span class="value">31 Tem 2026 - 02 Ağu 2026</span>
+        </div>
+        <div class="row">
+          <span class="label">Geceleme</span>
+          <span class="value">2 Gece</span>
+        </div>
+        <div class="row">
+          <span class="label">Oda / Kişi</span>
+          <span class="value">250 Oda / 500 Pax</span>
+        </div>
+        
+        <div class="events">
+          <span class="label" style="display:block; margin-bottom: 12px;">İstenen Etkinlikler</span>
+          <span class="event-badge">📅 Toplantı (31 Tem)</span>
+          <span class="event-badge">🍸 Welcome Cocktail</span>
+          <span class="event-badge">🍽️ Gala Yemeği (01 Ağu)</span>
+        </div>
+      </div>
+      
+      <div class="notes-box">
+        <strong>Özel Notlar:</strong> Gala gecesi için özel sahne kurulumu yapılacaktır. Toplantı salonunun kesinlikle sütunsuz olması gerekmektedir.
+      </div>
+
+      <div class="cta">
+        <a href="mailto:info@tempus.com?subject=RE: MICE Talebi #TMI260729001 - Concorde Luxury Resort" class="btn">Yanıtla & Fiyat İlet</a>
+      </div>
+    </div>
+    <div class="footer">
+      Bu e-posta <a href="https://www.codeicon.co" target="_blank" style="color: #0f172a; font-weight: bold; text-decoration: none;">La Tour Sistem</a> üzerinden otomatik olarak gönderilmiştir.<br>
+      Acente İletişim: +90 212 555 44 33 | info@latour.com
+    </div>
+  </div>
+</body>
+</html>

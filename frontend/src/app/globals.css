@@ -461,3 +461,9 @@ input[type="number"] {
       minmax(0, 0.9fr) auto !important;
   }
 }
+
+@media (min-width: 768px) {
+  .hotel-grid-layout {
+    grid-template-columns: 1.5fr 1fr 2.4fr 0.8fr 0.8fr 1fr 1fr 1.2fr !important;
+  }
+}

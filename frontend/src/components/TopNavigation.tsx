@@ -48,6 +48,7 @@ const SYSTEM_PAGES = [
   { title: "Raporlar", href: "/reports", keywords: "rapor analiz" },
   { title: "Projeler", href: "/projects", keywords: "mice proje" },
   { title: "Teklifler", href: "/quotes", keywords: "mice teklif" },
+  { title: "Talepler", href: "/requests", keywords: "mice talep" },
   { title: "Sejour Yönetimi", href: "/sejour", keywords: "sejour tur" },
   { title: "Servisler", href: "/sejour/services", keywords: "sejour servis" },
   { title: "Uçuş & Biletler", href: "/operations/tickets", keywords: "operasyon bilet uçuş" },

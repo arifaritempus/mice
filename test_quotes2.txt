@@ -1,0 +1,51 @@
+                    </svg>
+                    Excel
+                  </>
+                )}
+              </button>
+              {canCreate(Module.QUOTES) && (
+                <Link
+                  href="/quotes/create"
+                  className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  Yeni Teklif
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Unified Stats Strip */}
+        <div className="flex flex-wrap items-center gap-2 mb-2 bg-v3-surface backdrop-blur-md border border-v3-border rounded-xl p-2 shadow-sm shrink-0">
+          {/* Durum Filters */}
+          <div className="flex flex-wrap items-center gap-1.5 border-r border-v3-border pr-3">
+            <span className="text-[10px] uppercase font-semibold text-v3-muted mr-1">
+              Durum:
+            </span>
+
+            <button
+              onClick={() => setFilter("all")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "all" ? "bg-blue-500/20 border-blue-500/50 text-blue-600 dark:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
+            >
+              <span className="text-[10px] font-medium uppercase tracking-wider">
+                Tümü
+              </span>
+              <span className="font-bold text-xs bg-black/20 px-1.5 py-0.5 rounded-md">
+                {totalFilteredCount}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setFilter("BEKLEMEDE")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "BEKLEMEDE" ? "bg-orange-500/20 border-orange-500/50 text-orange-600 dark:text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
+            >
+              <span className="text-[10px] font-medium uppercase tracking-wider">
+                Beklemede
+              </span>
+              <span className="font-bold text-xs bg-black/20 px-1.5 py-0.5 rounded-md">
+                {beklemedeCount}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setFilter("KONFİRME")}

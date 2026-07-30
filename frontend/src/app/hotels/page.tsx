@@ -36,6 +36,8 @@ interface Hotel {
   contact_person?: string;
   phone?: string;
   email?: string;
+  cc_mail?: string;
+  agency_cc_mail?: string;
   address?: string;
   tax_number?: string;
   tax_office?: string;
@@ -84,6 +86,8 @@ export default function HotelsPage() {
     contact_person: "",
     phone: "",
     email: "",
+    cc_mail: "",
+    agency_cc_mail: "",
     address: "",
     tax_number: "",
     tax_office: "",
@@ -102,6 +106,8 @@ export default function HotelsPage() {
   const contactPersonInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const ccMailInputRef = useRef<HTMLInputElement>(null);
+  const agencyCcMailInputRef = useRef<HTMLInputElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
   const taxNumberInputRef = useRef<HTMLInputElement>(null);
   const taxOfficeInputRef = useRef<HTMLInputElement>(null);
@@ -131,6 +137,8 @@ export default function HotelsPage() {
           contact_person: h.contact_person || "",
           phone: h.phone || "",
           email: h.email || "",
+          cc_mail: h.cc_mail || "",
+          agency_cc_mail: h.agency_cc_mail || "",
           address: h.address || "",
           tax_number: h.tax_number || "",
           tax_office: h.tax_office || "",
@@ -165,6 +173,8 @@ export default function HotelsPage() {
     const contactPersonValue = contactPersonInputRef.current?.value || "";
     const phoneValue = phoneInputRef.current?.value || "";
     const emailValue = emailInputRef.current?.value || "";
+    const ccMailValue = ccMailInputRef.current?.value || "";
+    const agencyCcMailValue = agencyCcMailInputRef.current?.value || "";
     const addressValue = addressInputRef.current?.value || "";
     const taxNumberValue = taxNumberInputRef.current?.value || "";
     const taxOfficeValue = taxOfficeInputRef.current?.value || "";
@@ -186,6 +196,8 @@ export default function HotelsPage() {
             contact_person: contactPersonValue,
             phone: phoneValue,
             email: emailValue,
+            cc_mail: ccMailValue,
+            agency_cc_mail: agencyCcMailValue,
             address: addressValue,
             tax_number: taxNumberValue,
             tax_office: taxOfficeValue,
@@ -214,6 +226,8 @@ export default function HotelsPage() {
             contact_person: contactPersonValue,
             phone: phoneValue,
             email: emailValue,
+            cc_mail: ccMailValue,
+            agency_cc_mail: agencyCcMailValue,
             address: addressValue,
             tax_number: taxNumberValue,
             tax_office: taxOfficeValue,
@@ -242,6 +256,8 @@ export default function HotelsPage() {
         contact_person: "",
         phone: "",
         email: "",
+        cc_mail: "",
+        agency_cc_mail: "",
         address: "",
         tax_number: "",
         tax_office: "",
@@ -271,6 +287,8 @@ export default function HotelsPage() {
       contact_person: hotel.contact_person || "",
       phone: hotel.phone || "",
       email: hotel.email || "",
+      cc_mail: hotel.cc_mail || "",
+      agency_cc_mail: hotel.agency_cc_mail || "",
       address: hotel.address || "",
       tax_number: hotel.tax_number || "",
       tax_office: hotel.tax_office || "",
@@ -298,6 +316,10 @@ export default function HotelsPage() {
         phoneInputRef.current.value = hotel.phone || "";
       if (emailInputRef.current)
         emailInputRef.current.value = hotel.email || "";
+      if (ccMailInputRef.current)
+        ccMailInputRef.current.value = hotel.cc_mail || "";
+      if (agencyCcMailInputRef.current)
+        agencyCcMailInputRef.current.value = hotel.agency_cc_mail || "";
       if (addressInputRef.current)
         addressInputRef.current.value = hotel.address || "";
       if (taxNumberInputRef.current)
@@ -348,6 +370,8 @@ export default function HotelsPage() {
         "İletişim Kişisi",
         "Telefon",
         "E-posta",
+        "CC Mail",
+        "Acente CC Mail",
         "Adres",
         "Vergi Numarası",
         "Vergi Dairesi",
@@ -372,6 +396,8 @@ export default function HotelsPage() {
           hotel.contact_person || "",
           hotel.phone || "",
           hotel.email || "",
+          hotel.cc_mail || "",
+          hotel.agency_cc_mail || "",
           hotel.address || "",
           hotel.tax_number || "",
           hotel.tax_office || "",
@@ -449,6 +475,8 @@ export default function HotelsPage() {
         contact_person: row["İletişim Kişisi"] || "",
         phone: row["Telefon"] || "",
         email: row["E-posta"] || "",
+        cc_mail: row["CC Mail"] || "",
+        agency_cc_mail: row["Acente CC Mail"] || "",
         address: row["Adres"] || "",
         tax_number: row["Vergi Numarası"] || "",
         tax_office: row["Vergi Dairesi"] || "",
@@ -523,6 +551,8 @@ export default function HotelsPage() {
       contact_person: "",
       phone: "",
       email: "",
+      cc_mail: "",
+      agency_cc_mail: "",
       address: "",
       tax_number: "",
       tax_office: "",
@@ -557,6 +587,8 @@ export default function HotelsPage() {
             hotel.contact_person.toLowerCase().includes(lowerS)) ||
           (hotel.phone && hotel.phone.toLowerCase().includes(lowerS)) ||
           (hotel.email && hotel.email.toLowerCase().includes(lowerS)) ||
+          (hotel.cc_mail && hotel.cc_mail.toLowerCase().includes(lowerS)) ||
+          (hotel.agency_cc_mail && hotel.agency_cc_mail.toLowerCase().includes(lowerS)) ||
           (hotel.address && hotel.address.toLowerCase().includes(lowerS)) ||
           (hotel.tax_number &&
             hotel.tax_number.toLowerCase().includes(lowerS)) ||
@@ -1204,6 +1236,30 @@ export default function HotelsPage() {
                     defaultValue=""
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="otel@eposta.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
+                    <Mail size={12} /> CC Mail
+                  </label>
+                  <input
+                    ref={ccMailInputRef}
+                    type="email"
+                    defaultValue=""
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                    placeholder="cc@eposta.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
+                    <Mail size={12} /> Acente CC Mail
+                  </label>
+                  <input
+                    ref={agencyCcMailInputRef}
+                    type="email"
+                    defaultValue=""
+                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
+                    placeholder="acente-cc@eposta.com"
                   />
                 </div>
                 <div>

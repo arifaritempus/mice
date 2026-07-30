@@ -23,6 +23,10 @@ function getAdminClient() {
 
 export async function POST(req: Request) {
   try {
+    const host = req.headers.get("host");
+    const protocol = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const appUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:6002");
+
     const { projectId, beforeStats, afterStats, updatedBy } = await req.json();
 
     if (!projectId || !beforeStats || !afterStats) {
@@ -198,7 +202,7 @@ export async function POST(req: Request) {
           </table>
 
           <div style="margin-top: 32px; text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:6002'}/projects/${project.id}" style="background-color: #0284c7; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">Proje Detayını Görüntüle</a>
+            <a href="${appUrl}/projects/${project.id}" style="background-color: #0284c7; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">Proje Detayını Görüntüle</a>
           </div>
         </div>
       </div>

@@ -76,6 +76,43 @@ export default function QuoteServiceEditor({
 }: QuoteServiceEditorProps) {
   // Modal state
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  const isUuid = (value?: string) =>
+    !!value &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    );
+
+  const getCategorySortKey = (category: any) => {
+    const code = (category.code || "").toString().trim();
+    if (code) return code;
+    const id = (category.id || "").toString().trim();
+    if (id && !isUuid(id)) return id;
+    return (category.name || "").toString().trim();
+  };
+
+  const getCategorySortWeight = (category: any) => {
+    const key = getCategorySortKey(category);
+    const nums = key.match(/\d+/g);
+    if (!nums) return Number.MAX_SAFE_INTEGER;
+    const weight = Number(nums.join(""));
+    return Number.isFinite(weight) ? weight : Number.MAX_SAFE_INTEGER;
+  };
+
+  const compareByCategoryId = (a: any, b: any) => {
+    const aOrder = a.sort_order ?? 9999;
+    const bOrder = b.sort_order ?? 9999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
+    const wa = getCategorySortWeight(a);
+    const wb = getCategorySortWeight(b);
+    if (wa !== wb) return wa - wb;
+    return getCategorySortKey(a).localeCompare(getCategorySortKey(b), "tr", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  };
+
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set(),
   );
@@ -250,14 +287,7 @@ export default function QuoteServiceEditor({
   const mainCategories = useMemo(() => {
     return categories
       .filter((c) => !c.parent_id)
-      .sort((a, b) => {
-        const aKey = (a.code || a.name || "").toString();
-        const bKey = (b.code || b.name || "").toString();
-        return aKey.localeCompare(bKey, "tr", {
-          numeric: true,
-          sensitivity: "base",
-        });
-      });
+      .sort(compareByCategoryId);
   }, [categories]);
 
   // Alt kategorileri ana kategoriye göre grupla
@@ -810,18 +840,7 @@ export default function QuoteServiceEditor({
                 className="w-full px-3 py-2 text-sm border border-v3-border rounded-md bg-white dark:bg-gray-800 text-gray-900 text-v3-text focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Ana Kategori Seçin</option>
-                {categories
-                  .filter((c) => !c.parent_id)
-                  .sort((a, b) => {
-                    // /categories sayfasındaki sıralama ile aynı: code veya name'e göre
-                    const aKey = (a.code || a.name || "").toString();
-                    const bKey = (b.code || b.name || "").toString();
-                    return aKey.localeCompare(bKey, "tr", {
-                      numeric: true,
-                      sensitivity: "base",
-                    });
-                  })
-                  .map((c) => (
+                {mainCategories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -1158,7 +1177,7 @@ export default function QuoteServiceEditor({
                             ))}
                         </select>
                         <input
-                          value={it.unit_quantity}
+                          value={it.unit_quantity ?? ""}
                           onChange={(e) =>
                             handleItemChange(
                               it.id,
@@ -1172,7 +1191,7 @@ export default function QuoteServiceEditor({
                           autoFocus
                         />
                         <input
-                          value={it.sefer}
+                          value={it.sefer ?? ""}
                           onChange={(e) =>
                             handleItemChange(
                               it.id,
@@ -1185,7 +1204,7 @@ export default function QuoteServiceEditor({
                           className="w-20 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text"
                         />
                         <input
-                          value={it.unit_price}
+                          value={it.unit_price ?? ""}
                           onChange={(e) =>
                             handleItemChange(
                               it.id,
@@ -1201,7 +1220,7 @@ export default function QuoteServiceEditor({
                           {formatTRY(it.total)}
                         </div>
                         <select
-                          value={it.currency}
+                          value={it.currency ?? "EUR"}
                           onChange={(e) =>
                             handleItemChange(it.id, "currency", e.target.value)
                           }
