@@ -39,6 +39,7 @@ import {
   Banknote,
   ChevronRight,
   ArrowRight,
+  FilterX,
 } from "lucide-react";
 
 interface ConfirmedTicket {
@@ -183,6 +184,14 @@ export default function TicketPaymentsPage() {
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const handleClearFilters = useCallback(() => {
+    setVoucherTokens([]);
+    setVoucherInput("");
+    setDepartureDateRange({ startDate: "", endDate: "" });
+    setPaymentDateRange({ startDate: "", endDate: "" });
+    setPage(1);
+  }, []);
 
   // Sıralama State'i
   const [sortBy, setSortBy] = useState<"flight" | "payment" | "balance">(
@@ -1260,6 +1269,14 @@ export default function TicketPaymentsPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="bg-v3-surface hover:bg-red-500/10 text-v3-muted hover:text-red-500 border border-v3-border hover:border-red-500/30 px-3 h-10 rounded-xl transition-all duration-300 flex items-center justify-center shadow-sm"
+                title="Filtreleri Temizle"
+              >
+                <FilterX className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={exportPaymentsExcel}
