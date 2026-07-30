@@ -504,10 +504,10 @@ export default function UltimateDashboard() {
 
     // Filtering base data
     const fProj = data.rpProjectRows.filter((r: any) =>
-      inRange(r.organizasyon_tarihi || r.created_at, range),
+      inRange(r.bitis_tarihi || r.end_date || r.created_at, range),
     );
     const fSej = data.rpSejourRows.filter((r: any) =>
-      inRange(r.giris_tarihi || r.created_at, range),
+      inRange(r.cikis_tarihi || r.checkOutDate || r.created_at, range),
     );
     const fCols = data.collectionPlans.filter((c: any) =>
       inRange(c.due_date || c.date, range),
@@ -522,19 +522,19 @@ export default function UltimateDashboard() {
       inRange(t.transfer_date || t.created_at, range),
     );
     const fFlights = data.flights.filter((f: any) =>
-      inRange(f.gidis_tarihi || f.created_at, range),
+      inRange(f.donus_tarihi || f.gidis_tarihi || f.created_at, range),
     );
     const fHr = data.hrRows.filter((h: any) =>
-      inRange(h.start_date || h.created_at, range),
+      inRange(h.end_date || h.start_date || h.created_at, range),
     );
     const fEvents = data.events.filter((e: any) =>
-      inRange(e.event_date || e.created_at, range),
+      inRange(e.end_date || e.event_date || e.created_at, range),
     );
     const fMkt = data.marketingInteractions.filter((m: any) =>
       inRange(m.created_at || m.date, range),
     );
     const fAccs = (data.accommodations || []).filter((a: any) =>
-      inRange(a.check_in_date || a.created_at, range),
+      inRange(a.check_out_date || a.created_at, range),
     );
 
     // KPI: Revenues
