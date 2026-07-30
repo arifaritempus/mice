@@ -158,8 +158,8 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-v3-bg">
-      <div className="flex-1 overflow-auto p-4 md:p-6 pb-24">
+    <div className="flex-1 min-h-0 w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text bg-v3-bg">
+      <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         <div className="flex flex-col xl:flex-row gap-4 mb-4 items-start xl:items-center">
           {/* Left: Title */}
           <div className="shrink-0">
@@ -267,8 +267,8 @@ export default function RequestsPage() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-v3-surface border border-v3-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="overflow-x-auto min-h-[400px]">
+        <div className="bg-v3-surface backdrop-blur-md border border-v3-border rounded-2xl w-full min-w-0 min-h-0 flex-1 flex flex-col relative overflow-hidden mt-2">
+          <div className="w-full flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-v3-border bg-v3-bg/50">
@@ -284,7 +284,7 @@ export default function RequestsPage() {
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">BAR GECESİ</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">TOPLANTI</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">GALA</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">Mail Durumu</th>
+                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">Durum</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-right">İşlemler</th>
                 </tr>
               </thead>
@@ -334,10 +334,24 @@ export default function RequestsPage() {
                     <td className="px-4 py-3 text-xs text-center">{req.bar_night?.requested ? <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
                     <td className="px-4 py-3 text-xs text-center">{req.meeting?.requested ? <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
                     <td className="px-4 py-3 text-xs text-center">{req.gala?.requested ? <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
-                    <td className="px-4 py-3 text-xs text-center"><span className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 px-2 py-1 rounded font-medium">{req.status}</span></td>
+                    <td className="px-4 py-3 text-xs text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className={`px-2 py-1 rounded font-medium ${
+                          req.status === "TEKLİFE AKTARILDI" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" :
+                          "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                        }`}>
+                          {req.status}
+                        </span>
+                        {req.status === "TEKLİFE AKTARILDI" && (
+                          <svg className="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Kilitli">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-xs text-right whitespace-nowrap">
                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         {canEdit(Module.REQUESTS) && (
+                         {canEdit(Module.REQUESTS) && req.status !== "TEKLİFE AKTARILDI" && (
                            <button onClick={() => router.push(`/requests/edit/${req.id}`)} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Düzenle / İçine Gir">
                              <Edit className="w-4 h-4" />
                            </button>
@@ -347,7 +361,7 @@ export default function RequestsPage() {
                              <Copy className="w-4 h-4" />
                            </button>
                          )}
-                         {canDelete(Module.REQUESTS) && (
+                         {canDelete(Module.REQUESTS) && req.status !== "TEKLİFE AKTARILDI" && (
                            <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, id: req.id, title: req.reference || req.company_name }); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Sil">
                              <Trash2 className="w-4 h-4" />
                            </button>

@@ -256,6 +256,8 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
   const [gala, setGala] = useState({ requested: false, date: "", notes: "" });
   const [barNight, setBarNight] = useState({ requested: false, date: "", notes: "" });
 
+  const [requestStatus, setRequestStatus] = useState<string>("");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -292,6 +294,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           setCompanyName(data.company_name || "");
           setAgencyId(data.agency_id || "");
           setNotes(data.notes || "");
+          setRequestStatus(data.status || "");
           
           setDateType(data.date_type || "EXACT");
           if (data.date_type === "EXACT" && data.date_details) {
@@ -552,8 +555,8 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
               return {
                 id: hr.hotel_id,
                 hotel_id: hr.hotel_id,
-                check_in_date: checkIn || null,
-                check_out_date: checkOut || null,
+                check_in_date: hr.response_details?.c_in || checkIn || null,
+                check_out_date: hr.response_details?.c_out || checkOut || null,
                 option: hr.response_details?.option_type || "",
                 option_date: hr.response_details?.option_date || null,
                 hotel_concept: hotelConcept,
@@ -569,8 +572,8 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
             reference: quoteReference,
             agency_id: agencyId || null,
             company_name: companyName || "",
-            check_in_date: checkIn || null,
-            check_out_date: checkOut || null,
+            check_in_date: firstHr?.response_details?.c_in || checkIn || null,
+            check_out_date: firstHr?.response_details?.c_out || checkOut || null,
             status: "TEKLİF",
             quote_type: "BİRİM",
             notes: `Otomatik olarak ${reference} talebinden dönüştürüldü.`,
@@ -596,8 +599,8 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
               return {
                 id: hr.hotel_id,
                 hotel_id: hr.hotel_id,
-                check_in_date: checkIn || null,
-                check_out_date: checkOut || null,
+                check_in_date: hr.response_details?.c_in || checkIn || null,
+                check_out_date: hr.response_details?.c_out || checkOut || null,
                 option: hr.response_details?.option_type || "",
                 option_date: hr.response_details?.option_date || null,
                 hotel_concept: hotelConcept,
@@ -643,6 +646,10 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
 
       await supabase.from("quotes").update({ total_amount: total, currency }).eq("id", createdQuote.id);
 
+      // Update the request status to TEKLİFE AKTARILDI to lock it
+      await supabase.from("mice_requests").update({ status: "TEKLİFE AKTARILDI" }).eq("id", requestId);
+      setRequestStatus("TEKLİFE AKTARILDI");
+
       toast.success("Teklif başarıyla oluşturuldu!");
       router.push(`/quotes/${createdQuote.id}`);
     } catch (e: any) {
@@ -680,33 +687,39 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
             >
               İptal
             </button>
-            <button
-              onClick={() => handleSave(false)}
-              disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors disabled:opacity-50"
-            >
-              Kaydet
-            </button>
-            <button
-              onClick={() => handleSave(true)}
-              disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSubmitting && <svg className="animate-spin h-3 w-3 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
-              Kaydet & Mail Gönder
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const priced = hotelResponses.filter((hr: any) => hr.status === "FİYAT GİRDİ");
-                setSelectedQuoteHotels(priced.map((hr: any) => hr.hotel_id));
-                setQuoteModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 h-10 px-4 text-[11px] font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              SEÇİLİ OTELLERİ TEKLİFE ÇEVİR
-            </button>
+            {requestStatus !== "TEKLİFE AKTARILDI" && (
+              <>
+                <button
+                  onClick={() => handleSave(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors disabled:opacity-50"
+                >
+                  Kaydet
+                </button>
+                <button
+                  onClick={() => handleSave(true)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isSubmitting && <svg className="animate-spin h-3 w-3 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                  Kaydet & Mail Gönder
+                </button>
+              </>
+            )}
+            {requestStatus !== "TEKLİFE AKTARILDI" && (
+              <button
+                type="button"
+                onClick={() => {
+                  const priced = hotelResponses.filter((hr: any) => hr.status === "FİYAT GİRDİ");
+                  setSelectedQuoteHotels(priced.map((hr: any) => hr.hotel_id));
+                  setQuoteModalOpen(true);
+                }}
+                className="flex items-center gap-1.5 h-10 px-4 text-[11px] font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                SEÇİLİ OTELLERİ TEKLİFE ÇEVİR
+              </button>
+            )}
           </div>
         </div>
 
@@ -1177,11 +1190,13 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
             
             <div className="flex gap-3 mt-8">
               <button onClick={() => setResponseModalOpen(false)} className="flex-1 px-4 py-3 bg-v3-bg text-v3-text rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                İptal
+                Kapat
               </button>
-              <button onClick={handleSaveResponse} className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors">
-                Yanıtı Kaydet
-              </button>
+              {requestStatus !== "TEKLİFE AKTARILDI" && (
+                <button onClick={handleSaveResponse} className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors">
+                  Yanıtı Kaydet
+                </button>
+              )}
             </div>
           </div>
         </div>

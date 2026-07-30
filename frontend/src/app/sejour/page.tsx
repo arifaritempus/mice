@@ -1043,7 +1043,7 @@ export default function SejourPage() {
 
   return (
     <div className="flex-1 min-h-0 w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
-      <div className="w-full min-w-0 flex-1 flex flex-col">
+      <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg mb-4 transition-colors duration-200">
