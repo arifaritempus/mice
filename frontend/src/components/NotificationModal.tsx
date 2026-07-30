@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import moment from "moment";
 import "moment/locale/tr";
+import DOMPurify from "dompurify";
 import {
   X,
   Info,
@@ -177,7 +178,7 @@ export default function NotificationModal({
           >
             {isHtml(notification.message) ? (
               <div
-                dangerouslySetInnerHTML={{ __html: notification.message }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(notification.message) }}
                 className="notification-html-content"
               />
             ) : (

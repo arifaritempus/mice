@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const cron = require('node-cron');
@@ -77,13 +78,24 @@ const limiter = rateLimit({
   max: 1000, // Increased for development
   message: { success: false, message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.' }
 });
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // Strict limit for auth attempts
+  message: { success: false, message: 'Çok fazla giriş/kayıt denemesi yapıldı. Lütfen 15 dakika sonra tekrar deneyin.' }
+});
+
 app.use(limiter);
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false, // Leave false if using Supabase client directly which might need external resources
+  xssFilter: true, // Prevent Cross-Site Scripting (XSS)
+  noSniff: true // Prevent MIME type sniffing
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Kept at 10mb for future bulk Excel processing
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(hpp()); // HTTP Parameter Pollution Protection
 
 // Socket.io bağlantı yönetimi
 const socketLogger = require('./utils/logger')('Socket.IO');
@@ -150,7 +162,7 @@ app.get('/health', (req, res) => {
 });
 
 // API rotaları - Auth middleware uygulandı
-app.use('/api/auth', authRoutes); // Public - no auth needed
+app.use('/api/auth', authLimiter, authRoutes); // Public - no auth needed, but protected against brute force
 app.use('/api/companies', authMiddleware, companiesRoutes);
 app.use('/api/projects', authMiddleware, projectsRoutes);
 app.use('/api/tasks', authMiddleware, tasksRoutes);
