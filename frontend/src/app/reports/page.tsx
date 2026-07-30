@@ -647,9 +647,11 @@ export default function ReportsPage() {
       // 3. TABLE HEADERS (Starting from Row 6)
       const startRow = 6;
       const headerRow = worksheet.getRow(startRow);
-      headerRow.values = columns.map(
-        (col) => t(`reports.col_${col}` as any) || COLUMN_LABELS[col] || col.replace(/_/g, " ").toUpperCase(),
-      );
+      headerRow.values = columns.map((col) => {
+        const transKey = `reports.col_${col}`;
+        const translated = t(transKey as any);
+        return translated === transKey ? (COLUMN_LABELS[col] || col.replace(/_/g, " ").toUpperCase()) : translated;
+      });
       headerRow.height = 25;
 
       headerRow.eachCell((cell) => {
@@ -1061,7 +1063,11 @@ export default function ReportsPage() {
                   }`}
                 >
                   <span className="text-xs font-bold leading-tight">
-                    {t(`reports.rep_${report.id}` as any) || report.title}
+                    {(() => {
+                      const tk = `reports.rep_${report.id}`;
+                      const tr = t(tk as any);
+                      return tr === tk ? report.title : tr;
+                    })()}
                   </span>
                   <svg
                     className={`w-4 h-4 transition-transform duration-200 ${activeReportId === report.id ? "translate-x-1" : "group-hover:translate-x-1 opacity-50"}`}
@@ -1106,8 +1112,11 @@ export default function ReportsPage() {
                     className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-v3-muted cursor-pointer select-none group"
                   >
                     <div className="flex items-center gap-2 group-hover:text-blue-600 dark:text-blue-400 transition-colors">
-                      {t(`reports.col_${col}` as any) || COLUMN_LABELS[col] ||
-                        col.replace(/_/g, " ").toUpperCase()}
+                      {(() => {
+                        const tk = `reports.col_${col}`;
+                        const tr = t(tk as any);
+                        return tr === tk ? (COLUMN_LABELS[col] || col.replace(/_/g, " ").toUpperCase()) : tr;
+                      })()}
                       <div className="flex flex-col scale-75 opacity-50">
                         <svg
                           className={`w-2 h-2 ${sortKey === col && sortDirection === "asc" ? "text-blue-600 dark:text-blue-400 opacity-100" : ""}`}
