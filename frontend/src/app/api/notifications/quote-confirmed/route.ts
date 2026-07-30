@@ -269,10 +269,22 @@ export async function POST(req: Request) {
     `;
 
     // Send Emails
-    const { data: admins } = await admin
-      .from("users")
-      .select("id, email")
-      .eq("role", "super_admin");
+    const { data: settingsData } = await admin
+      .from("settings")
+      .select("value")
+      .eq("key", "general_settings")
+      .maybeSingle();
+
+    let notificationEmail = null;
+    if (settingsData && settingsData.value) {
+      let parsed = settingsData.value;
+      if (typeof parsed === "string") {
+        try { parsed = JSON.parse(parsed); } catch(e) {}
+      }
+      if (parsed && parsed.mailNotificationEmail) {
+        notificationEmail = parsed.mailNotificationEmail;
+      }
+    }
 
     const sentEmails = new Set<string>();
 
@@ -285,15 +297,17 @@ export async function POST(req: Request) {
       sentEmails.add(creatorEmail);
     }
 
-    if (admins) {
-      for (const a of admins) {
-        if (a.email && !sentEmails.has(a.email)) {
+    if (notificationEmail && !sentEmails.has(notificationEmail)) {
+      // Virgülle ayrılmış birden fazla mail olabilir diye kontrol edebiliriz ama varsayılan olarak tekil string
+      const emails = notificationEmail.split(",").map((e: string) => e.trim()).filter(Boolean);
+      for (const email of emails) {
+        if (!sentEmails.has(email)) {
           await sendMail({
-            to: a.email,
+            to: email,
             subject: notificationTitle,
             html: notificationHtml
-          }).catch(err => console.error("Admin email send error:", err));
-          sentEmails.add(a.email);
+          }).catch(err => console.error("Notification email send error:", err));
+          sentEmails.add(email);
         }
       }
     }
