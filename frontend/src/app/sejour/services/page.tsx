@@ -1006,7 +1006,7 @@ export default function SejourServicesPage() {
   }
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
+    <div className="flex-1 min-h-0 w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex-1 flex flex-col">
         {/* Header */}
 

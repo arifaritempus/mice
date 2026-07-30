@@ -151,7 +151,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="h-full w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
+    <div className="flex-1 min-h-0 w-full p-6 sm:p-8 flex flex-col gap-6 overflow-hidden font-sans text-v3-text">
       <div className="w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-4 shrink-0">

@@ -310,7 +310,7 @@ export default function AuthWrapper({
       {/* Main Glass Window (Now Edge to Edge) */}
       <div className="w-full h-full glass-panel shadow-2xl flex flex-col overflow-hidden relative z-10 backdrop-blur-2xl bg-[#0a0f1c]/60">
         <TopNavigation />
-        <main className="flex-1 overflow-hidden transition-colors duration-200 bg-transparent relative pb-[84px] md:pb-0 md:pt-[76px]">
+        <main className="flex-1 min-h-0 flex flex-col overflow-hidden transition-colors duration-200 bg-transparent relative pb-[84px] md:pb-0 md:pt-[76px]">
           {children}
         </main>
         <BottomNavigation />
