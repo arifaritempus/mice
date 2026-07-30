@@ -487,13 +487,13 @@ export default function TopNavigation() {
             </div>
 
             {/* Yeni Oluştur Genişleyen Buton */}
-            {(canCreate(Module.QUOTES) || canCreate(Module.SEJOUR)) && (
+            {(canCreate(Module.QUOTES) || canCreate(Module.SEJOUR) || canCreate(Module.REQUESTS)) && (
             <div className="flex items-center group ml-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
               <div className="w-8 h-8 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500 relative z-10">
                 <Plus size={18} className="font-black" />
               </div>
               <div className="flex items-center nav-expand-container gap-2">
-                {canCreate(Module.QUOTES) && (
+                {canCreate(Module.REQUESTS) && (
                 <Link
                   href="/requests/create"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
@@ -525,13 +525,13 @@ export default function TopNavigation() {
             )}
 
             {/* Düzenleme/Listeleme Genişleyen Buton */}
-            {(canView(Module.QUOTES) || canView(Module.PROJECTS) || canView(Module.SEJOUR)) && (
+            {(canView(Module.QUOTES) || canView(Module.PROJECTS) || canView(Module.SEJOUR) || canView(Module.REQUESTS)) && (
             <div className="flex items-center group ml-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
               <div className="w-8 h-8 shrink-0 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-500 relative z-10">
                 <Edit size={16} />
               </div>
               <div className="flex items-center nav-expand-container gap-2">
-                {canView(Module.QUOTES) && (
+                {canView(Module.REQUESTS) && (
                 <Link
                   href="/requests"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"

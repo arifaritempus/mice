@@ -145,7 +145,7 @@ export default function RequestsPage() {
     return <LoadingSpinner message="Yetkiler kontrol ediliyor..." />;
   }
 
-  if (!canView(Module.QUOTES)) {
+  if (!canView(Module.REQUESTS)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-xl shadow-sm border border-v3-border p-8 text-center">
         <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
@@ -229,7 +229,7 @@ export default function RequestsPage() {
                 </svg>
                 Excel
               </button>
-              {canCreate(Module.QUOTES) && (
+              {canCreate(Module.REQUESTS) && (
                 <button
                   onClick={() => router.push("/requests/create")}
                   className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-xs font-medium flex items-center justify-center gap-2 whitespace-nowrap"
@@ -337,17 +337,17 @@ export default function RequestsPage() {
                     <td className="px-4 py-3 text-xs text-center"><span className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 px-2 py-1 rounded font-medium">{req.status}</span></td>
                     <td className="px-4 py-3 text-xs text-right whitespace-nowrap">
                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         {canEdit(Module.QUOTES) && (
+                         {canEdit(Module.REQUESTS) && (
                            <button onClick={() => router.push(`/requests/edit/${req.id}`)} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Düzenle / İçine Gir">
                              <Edit className="w-4 h-4" />
                            </button>
                          )}
-                         {canCreate(Module.QUOTES) && (
+                         {canCreate(Module.REQUESTS) && (
                            <button onClick={(e) => { e.stopPropagation(); handleCopy(req); }} className="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors" title="Kopyala">
                              <Copy className="w-4 h-4" />
                            </button>
                          )}
-                         {canDelete(Module.QUOTES) && (
+                         {canDelete(Module.REQUESTS) && (
                            <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, id: req.id, title: req.reference || req.company_name }); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Sil">
                              <Trash2 className="w-4 h-4" />
                            </button>
