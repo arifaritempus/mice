@@ -608,6 +608,46 @@ export default function CreateRequestPage() {
               <h2 className="text-sm font-bold uppercase tracking-wider text-v3-text mb-4 border-b border-v3-border pb-2">5. Etkinlik Detayları</h2>
               
               <div className="space-y-6">
+                {/* Cocktail */}
+                <div className={`p-4 rounded-xl border transition-all ${cocktail.requested ? "bg-rose-50/30 border-rose-200 dark:bg-rose-900/10 dark:border-rose-800" : "bg-v3-bg border-v3-border"}`}>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500" checked={cocktail.requested} onChange={(e) => setCocktail({...cocktail, requested: e.target.checked})} />
+                    <span className="font-semibold text-sm text-v3-text">Welcome Cocktail</span>
+                  </label>
+                  
+                  {cocktail.requested && (
+                    <div className="mt-4 space-y-3 pl-7 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <ResponsiveDateField
+                        label="Tarih (Opsiyonel)"
+                        value={cocktail.date}
+                        onChange={(d) => setCocktail({...cocktail, date: d})}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Bar Gecesi */}
+                <div className={`p-4 rounded-xl border transition-all ${barNight.requested ? "bg-blue-50/30 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800" : "bg-v3-bg border-v3-border"}`}>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500" checked={barNight.requested} onChange={(e) => setBarNight({...barNight, requested: e.target.checked})} />
+                    <span className="font-semibold text-sm text-v3-text">Bar Gecesi</span>
+                  </label>
+                  
+                  {barNight.requested && (
+                    <div className="mt-4 space-y-3 pl-7 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <ResponsiveDateField
+                        label="Tarih (Opsiyonel)"
+                        value={barNight.date}
+                        onChange={(d) => setBarNight({...barNight, date: d})}
+                      />
+                      <div>
+                        <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">Not / Konsept</label>
+                        <textarea rows={2} value={barNight.notes} onChange={(e) => setBarNight({...barNight, notes: e.target.value})} className="w-full bg-white dark:bg-gray-800 border border-v3-border rounded-lg px-4 py-2.5 text-sm resize-none" placeholder="Limitsiz yerli/yabancı alkol, DJ vb..." />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Toplantı */}
                 <div className={`p-4 rounded-xl border transition-all ${meeting.requested ? "bg-amber-50/30 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800" : "bg-v3-bg border-v3-border"}`}>
                   <label className="flex items-center gap-3 cursor-pointer">
@@ -626,24 +666,6 @@ export default function CreateRequestPage() {
                         <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">Not / Düzen</label>
                         <textarea rows={2} value={meeting.notes} onChange={(e) => setMeeting({...meeting, notes: e.target.value})} className="w-full bg-white dark:bg-gray-800 border border-v3-border rounded-lg px-4 py-2.5 text-sm resize-none" placeholder="U-Düzen, Tiyatro vb..." />
                       </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Cocktail */}
-                <div className={`p-4 rounded-xl border transition-all ${cocktail.requested ? "bg-rose-50/30 border-rose-200 dark:bg-rose-900/10 dark:border-rose-800" : "bg-v3-bg border-v3-border"}`}>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500" checked={cocktail.requested} onChange={(e) => setCocktail({...cocktail, requested: e.target.checked})} />
-                    <span className="font-semibold text-sm text-v3-text">Welcome Cocktail</span>
-                  </label>
-                  
-                  {cocktail.requested && (
-                    <div className="mt-4 space-y-3 pl-7 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <ResponsiveDateField
-                        label="Tarih (Opsiyonel)"
-                        value={cocktail.date}
-                        onChange={(d) => setCocktail({...cocktail, date: d})}
-                      />
                     </div>
                   )}
                 </div>

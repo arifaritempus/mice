@@ -21,8 +21,11 @@ export default function RequestsPage() {
   const [globalTokens, setGlobalTokens] = useState<string[]>([]);
   const [globalInput, setGlobalInput] = useState("");
   
-  const [dateStart, setDateStart] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [dateEnd, setDateEnd] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [reqDateStart, setReqDateStart] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [reqDateEnd, setReqDateEnd] = useState<string>("");
+
+  const [eventDateStart, setEventDateStart] = useState<string>("");
+  const [eventDateEnd, setEventDateEnd] = useState<string>("");
 
   const addToken = (value: string, setTokens: any, setInput: any) => {
     if (value && !globalTokens.includes(value)) {
@@ -112,8 +115,10 @@ export default function RequestsPage() {
           )
         `, { count: "exact" });
       
-      if (dateStart) query = query.gte("request_date", dateStart);
-      if (dateEnd) query = query.lte("request_date", dateEnd);
+      if (reqDateStart) query = query.gte("request_date", reqDateStart);
+      if (reqDateEnd) query = query.lte("request_date", reqDateEnd);
+      if (eventDateStart) query = query.gte("date_details->>check_in", eventDateStart);
+      if (eventDateEnd) query = query.lte("date_details->>check_out", eventDateEnd);
       if (globalInput) {
         query = query.or(`reference.ilike.%${globalInput}%,company_name.ilike.%${globalInput}%`);
       }
@@ -133,7 +138,7 @@ export default function RequestsPage() {
 
   useEffect(() => {
     fetchRequests();
-  }, [page, pageSize, dateStart, dateEnd, globalInput]);
+  }, [page, pageSize, reqDateStart, reqDateEnd, eventDateStart, eventDateEnd, globalInput]);
 
 
   if (permissionsLoading) {
@@ -170,20 +175,20 @@ export default function RequestsPage() {
             <div className="w-[240px] shrink-0">
               <ResponsiveDateRangeField
                 label="Talep Tarihi"
-                startValue={dateStart}
-                endValue={dateEnd}
-                onStartChange={setDateStart}
-                onEndChange={setDateEnd}
+                startValue={reqDateStart}
+                endValue={reqDateEnd}
+                onStartChange={setReqDateStart}
+                onEndChange={setReqDateEnd}
                 onApply={() => {}}
               />
             </div>
             <div className="w-[240px] shrink-0">
               <ResponsiveDateRangeField
                 label="Tarih Aralığı"
-                startValue={dateStart}
-                endValue={dateEnd}
-                onStartChange={setDateStart}
-                onEndChange={setDateEnd}
+                startValue={eventDateStart}
+                endValue={eventDateEnd}
+                onStartChange={setEventDateStart}
+                onEndChange={setEventDateEnd}
                 onApply={() => {}}
               />
             </div>
@@ -275,9 +280,10 @@ export default function RequestsPage() {
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap">Firma / Sektör</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap">Acente</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap">Çalışılan Oteller</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">Toplantı</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">W. COCKTAIL</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">Gala</th>
+                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">BAR GECESİ</th>
+                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">TOPLANTI</th>
+                  <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">GALA</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-center">Mail Durumu</th>
                   <th className="px-4 py-3 text-[10px] font-bold text-v3-text uppercase tracking-wider whitespace-nowrap text-right">İşlemler</th>
                 </tr>
@@ -324,8 +330,9 @@ export default function RequestsPage() {
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-b-white dark:border-b-gray-800 drop-shadow-sm"></div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-center">{req.meeting?.requested ? <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
                     <td className="px-4 py-3 text-xs text-center">{req.cocktail?.requested ? <span className="bg-rose-100 text-rose-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
+                    <td className="px-4 py-3 text-xs text-center">{req.bar_night?.requested ? <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
+                    <td className="px-4 py-3 text-xs text-center">{req.meeting?.requested ? <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
                     <td className="px-4 py-3 text-xs text-center">{req.gala?.requested ? <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold">VAR</span> : "-"}</td>
                     <td className="px-4 py-3 text-xs text-center"><span className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 px-2 py-1 rounded font-medium">{req.status}</span></td>
                     <td className="px-4 py-3 text-xs text-right whitespace-nowrap">

@@ -23,6 +23,8 @@ import {
   Edit,
   Briefcase,
   Menu,
+  ClipboardList,
+  ListPlus,
   Check,
   ChevronDown,
   Loader2,
@@ -493,6 +495,15 @@ export default function TopNavigation() {
               <div className="flex items-center nav-expand-container gap-2">
                 {canCreate(Module.QUOTES) && (
                 <Link
+                  href="/requests/create"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
+                >
+                  <ListPlus size={14} />
+                  <span className="text-xs font-bold">Yeni Talep</span>
+                </Link>
+                )}
+                {canCreate(Module.QUOTES) && (
+                <Link
                   href="/quotes/create"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
                 >
@@ -520,6 +531,15 @@ export default function TopNavigation() {
                 <Edit size={16} />
               </div>
               <div className="flex items-center nav-expand-container gap-2">
+                {canView(Module.QUOTES) && (
+                <Link
+                  href="/requests"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"
+                >
+                  <ClipboardList size={14} />
+                  <span className="text-xs font-bold">Talep</span>
+                </Link>
+                )}
                 {canView(Module.QUOTES) && (
                 <Link
                   href="/quotes"
