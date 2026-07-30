@@ -672,7 +672,7 @@ export default function ReportsPage() {
       rows.forEach((row, index) => {
         const rowData = columns.map((col) => {
           if (col === "cin_cout_tarihi") {
-            return `${row.cin_tarihi ? formatDateWithDay(row.cin_tarihi, language) : '-'}${row.cout_tarihi ? ` - ${formatDateWithDay(row.cout_tarihi, language)}` : ''}`;
+            return `${row.cin_tarihi ? formatDateWithDay(row.cin_tarihi, language) : '-'}${row.cout_tarihi ? `\n${formatDateWithDay(row.cout_tarihi, language)}` : ''}`;
           }
           if (col === "organizasyon_cikis_tarihi") {
             return `${formatDateWithDay(row.organizasyon_tarihi, language)}\n${formatDateWithDay(row.cikis_tarihi, language)}`;
@@ -1160,9 +1160,9 @@ export default function ReportsPage() {
                             className="px-6 py-4 text-xs font-medium text-slate-700 dark:text-v3-text"
                           >
                             {col === "cin_cout_tarihi" ? (
-                              <div className="whitespace-nowrap">
-                                {row.cin_tarihi ? formatDateWithDay(row.cin_tarihi, language) : '-'}
-                                {row.cout_tarihi ? ` - ${formatDateWithDay(row.cout_tarihi, language)}` : ''}
+                              <div className="flex flex-col gap-0.5 whitespace-nowrap">
+                                <div>{row.cin_tarihi ? formatDateWithDay(row.cin_tarihi, language) : '-'}</div>
+                                {row.cout_tarihi && <div>{formatDateWithDay(row.cout_tarihi, language)}</div>}
                               </div>
                             ) : col === "organizasyon_cikis_tarihi" ? (
                               <div className="flex flex-col gap-0.5">
