@@ -240,6 +240,22 @@ export default function TopNavigation() {
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+      
+    if (!error) {
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    }
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -319,6 +335,28 @@ export default function TopNavigation() {
       if (e.key === "F10") {
         e.preventDefault();
         setIsCommandCenterOpen(true);
+        return;
+      }
+      
+      // F-Keys için kısayollar
+      if (e.key === "F1") {
+        e.preventDefault();
+        router.push("/requests/create");
+        return;
+      }
+      if (e.key === "F2") {
+        e.preventDefault();
+        router.push("/quotes/create");
+        return;
+      }
+      if (e.key === "F3") {
+        e.preventDefault();
+        router.push("/sejour/create");
+        return;
+      }
+      if (e.key === "F4") {
+        e.preventDefault();
+        router.push("/marketing");
         return;
       }
 
@@ -793,10 +831,15 @@ export default function TopNavigation() {
                   )}
                 </button>
                 <div className="absolute top-full right-0 mt-4 w-80 bg-v3-surface backdrop-blur-xl border border-v3-border rounded-2xl shadow-2xl opacity-0 invisible group-hover/bell:opacity-100 group-hover/bell:visible transition-all duration-200 overflow-hidden z-50 origin-top-right transform group-hover/bell:scale-100 scale-95 flex flex-col">
-                  <div className="p-4 border-b border-v3-border">
+                  <div className="p-4 border-b border-v3-border flex justify-between items-center">
                     <h3 className="text-v3-text font-bold text-sm">
                       Bildirimler
                     </h3>
+                    {unreadCount > 0 && (
+                      <button onClick={(e) => { e.stopPropagation(); handleMarkAllAsRead(); }} className="text-[10px] uppercase font-bold text-blue-500 hover:text-blue-600 transition-colors">
+                        Tümünü Okundu İşaretle
+                      </button>
+                    )}
                   </div>
                   <div className="flex-1 overflow-y-auto max-h-96 custom-scrollbar">
                     {notifications.length > 0 ? (
