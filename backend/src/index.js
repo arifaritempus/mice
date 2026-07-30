@@ -244,9 +244,9 @@ const PORT = process.env.PORT || 3000;
 
 console.log(`🌍 Sunucu ${PORT} portunda dinlemeye başlıyor...`);
 setupNotificationService();
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
-  console.log(`🚀 EventIQ Backend Server ${PORT} portunda çalışıyor`);
+  console.log(`🚀 EventIQ Backend Server ${PORT} portunda çalışıyor (0.0.0.0)`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔌 Socket.io aktif`);
   console.log(`⏰ Cron jobs aktif`);
