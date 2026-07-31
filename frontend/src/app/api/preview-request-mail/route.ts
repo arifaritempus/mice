@@ -13,13 +13,22 @@ export async function GET() {
       reference: "TMI260730005",
       hotel_name: "Örnek Test Oteli Resort & Spa",
       company_name: "DEMO TEKNOLOJİ A.Ş.",
-      date_range: "15.10.2026 - 18.10.2026",
+      date_range: "15.10.2026, Perşembe - 18.10.2026, Pazar",
       nights: 3,
       room_pax: "SNG: 100, DBL: 50, TRP: 0",
       events_html: `
-        <span class="event-badge">📅 Toplantı (16.10.2026)</span>
-        <span class="event-badge">🍸 Welcome Cocktail (15.10.2026)</span>
-        <span class="event-badge">🍽️ Gala Yemeği (17.10.2026)</span>
+        <div class="event-item">
+          <span class="event-badge">📅 Toplantı (16.10.2026, Cuma)</span>
+          <div class="event-note">U düzeni, perde ve projeksiyon gerekli.</div>
+        </div>
+        <div class="event-item">
+          <span class="event-badge">🍸 Welcome Cocktail (15.10.2026)</span>
+          <div class="event-note">Havuz başı kokteyli, hafif atıştırmalıklar.</div>
+        </div>
+        <div class="event-item">
+          <span class="event-badge">🍽️ Gala Yemeği (17.10.2026)</span>
+          <div class="event-note">Sınırsız yerli içki, orkestra için sahne kurulumu.</div>
+        </div>
       `,
       notes: "Bu bir önizleme mailidir. Gala gecesi için deniz manzaralı salon talep edilmektedir.",
       reply_to_email: generalSettings?.mailReplyTo || generalSettings?.mailFromEmail || "info@test.com",

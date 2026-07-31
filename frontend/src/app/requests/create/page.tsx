@@ -297,20 +297,36 @@ export default function CreateRequestPage() {
           
           const formatDate = (dateStr: string | null | undefined) => {
             if (!dateStr) return "";
-            const parts = dateStr.split("-");
-            if (parts.length === 3) {
-              return `${parts[2]}.${parts[1]}.${parts[0]}`;
+            try {
+              const d = new Date(dateStr);
+              if (isNaN(d.getTime())) {
+                const parts = dateStr.split("-");
+                if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                return dateStr;
+              }
+              const dayStr = String(d.getDate()).padStart(2, '0');
+              const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+              const yearStr = d.getFullYear();
+              const weekday = new Intl.DateTimeFormat("tr-TR", { weekday: "long" }).format(d);
+              const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+              return `${dayStr}.${monthStr}.${yearStr}, ${capitalizedWeekday}`;
+            } catch (e) {
+              return dateStr;
             }
-            return dateStr;
           };
 
           const eventsArr = [];
-          if (meeting.requested) eventsArr.push(meeting.date ? `📅 Toplantı (${formatDate(meeting.date)})` : "📅 Toplantı");
-          if (cocktail.requested) eventsArr.push(cocktail.date ? `🍸 Welcome Cocktail (${formatDate(cocktail.date)})` : "🍸 Welcome Cocktail");
-          if (barNight.requested) eventsArr.push(barNight.date ? `🍷 Bar Gecesi (${formatDate(barNight.date)})` : "🍷 Bar Gecesi");
-          if (gala.requested) eventsArr.push(gala.date ? `🍽️ Gala Yemeği (${formatDate(gala.date)})` : "🍽️ Gala Yemeği");
+          if (meeting.requested) eventsArr.push({ name: "📅 Toplantı", date: meeting.date, note: meeting.notes });
+          if (cocktail.requested) eventsArr.push({ name: "🍸 Welcome Cocktail", date: cocktail.date, note: cocktail.notes });
+          if (barNight.requested) eventsArr.push({ name: "🍷 Bar Gecesi", date: barNight.date, note: barNight.notes });
+          if (gala.requested) eventsArr.push({ name: "🍽️ Gala Yemeği", date: gala.date, note: gala.notes });
           
-          const eventsHtml = eventsArr.map(e => `<span class="event-badge">${e}</span>`).join("");
+          const eventsHtml = eventsArr.map(e => `
+            <div class="event-item">
+              <span class="event-badge">${e.name} ${e.date ? `(${formatDate(e.date)})` : ''}</span>
+              ${e.note ? `<div class="event-note">${e.note}</div>` : ''}
+            </div>
+          `).join("");
           
           const roomPaxStr = roomType === "TOTAL" 
             ? `${roomCount} Oda / ${paxCount} Pax`

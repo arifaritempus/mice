@@ -1631,12 +1631,14 @@ export default function ProjectDetailPage() {
             const cat = (it.category || it.main_category || "")
               .trim()
               .toLowerCase();
+            const subCat = (it.sub_category || "").trim().toLowerCase();
             const name = (it.description || "").trim().toLowerCase();
             const qty = Number(it.unit_quantity || 0);
             const repeat = Number(it.sefer ?? it.repeat ?? 1);
             const price = Math.round(Number(it.unit_price || 0) * 100) / 100;
-            const hId = it.hotel_id || "";
-            const contentKey = `${cat}|${name}|${qty}|${repeat}|${price}|${hId}`;
+            const hId = (it.hotel_id || "").trim().toLowerCase();
+            const curr = (it.currency || "").trim().toLowerCase();
+            const contentKey = `${cat}|${subCat}|${name}|${qty}|${repeat}|${price}|${hId}|${curr}`;
             if (seen.has(contentKey)) return false;
             seen.add(contentKey);
             return true;
