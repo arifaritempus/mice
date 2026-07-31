@@ -105,7 +105,7 @@ export default function HotelsPage() {
   const conceptInputRef = useRef<HTMLInputElement>(null);
   const contactPersonInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
-  const emailInputRef = useRef<HTMLInputElement>(null);
+
   const ccMailInputRef = useRef<HTMLInputElement>(null);
   const agencyCcMailInputRef = useRef<HTMLInputElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
@@ -172,7 +172,7 @@ export default function HotelsPage() {
     const conceptValue = conceptInputRef.current?.value || "";
     const contactPersonValue = contactPersonInputRef.current?.value || "";
     const phoneValue = phoneInputRef.current?.value || "";
-    const emailValue = emailInputRef.current?.value || "";
+    const emailValue = "";
     const ccMailValue = ccMailInputRef.current?.value || "";
     const agencyCcMailValue = agencyCcMailInputRef.current?.value || "";
     const addressValue = addressInputRef.current?.value || "";
@@ -314,8 +314,7 @@ export default function HotelsPage() {
         contactPersonInputRef.current.value = hotel.contact_person || "";
       if (phoneInputRef.current)
         phoneInputRef.current.value = hotel.phone || "";
-      if (emailInputRef.current)
-        emailInputRef.current.value = hotel.email || "";
+
       if (ccMailInputRef.current)
         ccMailInputRef.current.value = hotel.cc_mail || "";
       if (agencyCcMailInputRef.current)
@@ -369,7 +368,6 @@ export default function HotelsPage() {
         "Yıldız",
         "İletişim Kişisi",
         "Telefon",
-        "E-posta",
         "Otel Mail",
         "CC Mail",
         "Adres",
@@ -474,7 +472,7 @@ export default function HotelsPage() {
         rating: row["Yıldız"] ? parseInt(row["Yıldız"]) : 5,
         contact_person: row["İletişim Kişisi"] || "",
         phone: row["Telefon"] || "",
-        email: row["E-posta"] || "",
+        email: "",
         cc_mail: row["Otel Mail"] || "",
         agency_cc_mail: row["CC Mail"] || "",
         address: row["Adres"] || "",
@@ -1226,18 +1224,7 @@ export default function HotelsPage() {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
-                    <Mail size={12} /> E-posta
-                  </label>
-                  <input
-                    ref={emailInputRef}
-                    type="text"
-                    defaultValue=""
-                    className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
-                    placeholder="otel@eposta.com, baska@eposta.com"
-                  />
-                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
                     <Mail size={12} /> Otel Mail
