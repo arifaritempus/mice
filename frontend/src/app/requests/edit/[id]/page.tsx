@@ -255,6 +255,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
   const [cocktail, setCocktail] = useState({ requested: false, date: "", notes: "" });
   const [gala, setGala] = useState({ requested: false, date: "", notes: "" });
   const [barNight, setBarNight] = useState({ requested: false, date: "", notes: "" });
+  const [programs, setPrograms] = useState<{name: string, date: string, notes: string}[]>([]);
 
   const [requestStatus, setRequestStatus] = useState<string>("");
 
@@ -320,9 +321,11 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           if (data.meeting) setMeeting({ requested: data.meeting.requested, date: data.meeting.date?.split("T")[0] || "", notes: data.meeting.notes || "" });
           if (data.cocktail) setCocktail({ requested: data.cocktail.requested, date: data.cocktail.date?.split('T')[0] || "", notes: data.cocktail.notes || "" });
           if (data.bar_night) setBarNight({ requested: data.bar_night.requested, date: data.bar_night.date?.split("T")[0] || "", notes: data.bar_night.notes || "" });
-          if (data.bar_night) setBarNight({ requested: data.bar_night.requested, date: data.bar_night.date?.split('T')[0] || "", notes: data.bar_night.notes || "" });
-          // REMOVE THIS({ requested: data.cocktail.requested, date: data.cocktail.date?.split("T")[0] || "", notes: data.cocktail.notes || "" });
           if (data.gala) setGala({ requested: data.gala.requested, date: data.gala.date?.split("T")[0] || "", notes: data.gala.notes || "" });
+          
+          if (data.programs && Array.isArray(data.programs)) {
+            setPrograms(data.programs);
+          }
 
           if (data.mice_request_hotels) {
             const uniqueHotels = Array.from(new Set(data.mice_request_hotels.map((h: any) => h.hotel_id)));
@@ -401,6 +404,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           cocktail: { requested: cocktail.requested, date: cocktail.date || null, notes: cocktail.notes },
           bar_night: { requested: barNight.requested, date: barNight.date || null, notes: barNight.notes },
           gala: { requested: gala.requested, date: gala.date || null, notes: gala.notes },
+          programs: programs.map(p => ({ ...p, date: p.date || null })),
           notes: notes,
           status: sendMail ? "MAİL GÖNDERİLDİ" : "BEKLEMEDE"
         })
@@ -462,6 +466,10 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           if (cocktail.requested) eventsArr.push({ name: "Welcome Cocktail", date: cocktail.date, note: cocktail.notes });
           if (barNight.requested) eventsArr.push({ name: "Bar Gecesi", date: barNight.date, note: barNight.notes });
           if (gala.requested) eventsArr.push({ name: "Gala Yemeği", date: gala.date, note: gala.notes });
+          
+          programs.forEach(p => {
+            if (p.name) eventsArr.push({ name: p.name, date: p.date, note: p.notes });
+          });
           
           eventsArr.sort((a, b) => {
             if (!a.date && !b.date) return 0;
@@ -943,13 +951,80 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          {/* Sağ Kolon: Etkinlikler */}
+          {/* Sağ Kolon: Etkinlikler / Program Akışı */}
           <div className="xl:col-span-1 space-y-6">
-            <div className="bg-v3-surface rounded-2xl border border-v3-border p-5 shadow-sm h-full">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-v3-text mb-4 border-b border-v3-border pb-2">5. Etkinlik Detayları</h2>
+            <div className="bg-v3-surface rounded-2xl border border-v3-border p-5 shadow-sm h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4 border-b border-v3-border pb-2">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-v3-text">5. Program Akışı</h2>
+                <button
+                  type="button"
+                  onClick={() => setPrograms([...programs, { name: "", date: "", notes: "" }])}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Ekle
+                </button>
+              </div>
               
-              <div className="space-y-6">
-                {/* Cocktail */}
+              <div className="space-y-6 flex-1">
+                {/* Dinamik Programlar */}
+                {programs.map((prog, idx) => (
+                  <div key={idx} className="p-4 rounded-xl border bg-blue-50/30 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800 relative group animate-in fade-in slide-in-from-top-2">
+                    <button
+                      type="button"
+                      onClick={() => setPrograms(programs.filter((_, i) => i !== idx))}
+                      className="absolute top-2 right-2 p-1.5 text-red-500 hover:bg-red-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      title="Sil"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-v3-muted uppercase tracking-wider mb-1.5">Program Adı *</label>
+                        <input 
+                          type="text" 
+                          value={prog.name} 
+                          onChange={(e) => {
+                            const newP = [...programs];
+                            newP[idx].name = e.target.value;
+                            setPrograms(newP);
+                          }} 
+                          placeholder="Örn: Serbest Zaman"
+                          className="w-full bg-white dark:bg-gray-800 border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 font-medium"
+                        />
+                      </div>
+                      <ResponsiveDateField
+                        label="Tarih (Opsiyonel)"
+                        value={prog.date}
+                        onChange={(d) => {
+                          const newP = [...programs];
+                          newP[idx].date = d;
+                          setPrograms(newP);
+                        }}
+                      />
+                      <div>
+                        <label className="block text-xs font-semibold text-v3-muted uppercase tracking-wider mb-1.5">Notlar (Opsiyonel)</label>
+                        <textarea 
+                          value={prog.notes} 
+                          onChange={(e) => {
+                            const newP = [...programs];
+                            newP[idx].notes = e.target.value;
+                            setPrograms(newP);
+                          }} 
+                          rows={2} 
+                          className="w-full bg-white dark:bg-gray-800 border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500" 
+                          placeholder="Etkinlik ile ilgili notlar..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Standart Etkinlikler */}
                 <div className={`p-4 rounded-xl border transition-all ${cocktail.requested ? "bg-rose-50/30 border-rose-200 dark:bg-rose-900/10 dark:border-rose-800" : "bg-v3-bg border-v3-border"}`}>
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500" checked={cocktail.requested} onChange={(e) => setCocktail({...cocktail, requested: e.target.checked})} />

@@ -354,11 +354,6 @@ export default function TopNavigation() {
         router.push("/sejour/create");
         return;
       }
-      if (e.key === "F4") {
-        e.preventDefault();
-        router.push("/marketing");
-        return;
-      }
 
       // 2. Alt + Shift + [Harf] kombinasyonları
       if (e.altKey && e.shiftKey) {

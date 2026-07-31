@@ -8,6 +8,7 @@ export interface RequestMailData {
   events_html: string;
   notes: string;
   reply_to_email: string;
+  cc_addresses?: string;
   system_company_name: string;
   system_company_phone: string;
   system_company_email: string;
@@ -38,8 +39,8 @@ export function getRequestMailHtml(data: RequestMailData): string {
     .event-item { margin-bottom: 15px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; }
     .event-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .event-badge { display: inline-block; background: #eff6ff; color: #1d4ed8; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-right: 8px; margin-bottom: 8px; border: 1px solid #bfdbfe; }
-    .event-note { display: block; font-size: 13px; color: #64748b; margin-top: 6px; line-height: 1.5; padding-left: 10px; border-left: 3px solid #e2e8f0; }
-    .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; font-size: 14px; color: #92400e; margin-bottom: 30px; line-height: 1.5; }
+    .event-note { display: block; font-size: 13px; color: #64748b; margin-top: 6px; line-height: 1.5; padding-left: 10px; border-left: 3px solid #e2e8f0; white-space: pre-wrap; }
+    .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; font-size: 14px; color: #92400e; margin-bottom: 30px; line-height: 1.5; white-space: pre-wrap; }
     .cta { text-align: center; margin-top: 35px; }
     .btn { display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 15px; transition: background 0.2s; }
     .btn:hover { background: #1e293b; }
@@ -91,11 +92,11 @@ export function getRequestMailHtml(data: RequestMailData): string {
       ` : ''}
 
       <div class="cta">
-        <a href="mailto:${data.reply_to_email}?subject=RE: TALEP #${data.reference} - ${data.hotel_name}" class="btn">Yanıtla & Fiyat İlet</a>
+        <a href="mailto:${data.reply_to_email}?${data.cc_addresses ? `cc=${data.cc_addresses}&` : ''}subject=RE: TALEP #${data.reference} - ${data.hotel_name}" class="btn">Yanıtla & Fiyat İlet</a>
       </div>
     </div>
     <div class="footer">
-      Bu e-posta <strong>${data.system_company_name || "Sistem"}</strong> üzerinden <a href="https://www.codeicon.co/" target="_blank" style="color: inherit; text-decoration: underline; font-weight: 600;">Codeicon</a> ile otomatik olarak gönderilmiştir.<br>
+      Bu e-posta <strong>${data.system_company_name || "Sistem"}</strong> üzerinden <a href="https://www.codeicon.co/" target="_blank" style="color: inherit; text-decoration: underline; font-weight: 600;">CODEICON</a> ile otomatik olarak gönderilmiştir.<br>
       Acente İletişim: ${data.system_company_phone || "-"} | <a href="mailto:${data.system_company_email || data.reply_to_email}" style="color: inherit; text-decoration: none;">${data.system_company_email || data.reply_to_email}</a>
     </div>
   </div>
