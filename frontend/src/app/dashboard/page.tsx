@@ -24,6 +24,8 @@ import {
   Ticket,
   PartyPopper,
   Filter,
+  Maximize2,
+  X,
   Building2,
 } from "lucide-react";
 import {
@@ -277,14 +279,19 @@ const CustomTooltip = ({ active, payload, label, language = "tr", t = (k: any) =
 };
 
 // --- Components ---
-const GlassCard = ({ children, className = "", glowColor = "" }: any) => (
+const GlassCard = ({ children, className = "", glowColor = "", onExpand = null }: any) => (
   <div
-    className={`relative bg-white dark:bg-v3-surface rounded-3xl overflow-visible shadow-sm ${className}`}
+    className={`relative bg-white dark:bg-v3-surface rounded-3xl overflow-visible shadow-lg border border-slate-100 dark:border-v3-border group ${className}`}
   >
     {glowColor && (
       <div
         className={`absolute -top-10 -right-10 w-40 h-40 bg-${glowColor}-500/20 blur-3xl rounded-full pointer-events-none`}
       />
+    )}
+      {onExpand && (
+      <button onClick={onExpand} className="absolute top-4 right-4 p-2 bg-white/50 dark:bg-v3-border/50 hover:bg-white dark:hover:bg-v3-surface rounded-lg opacity-0 group-hover:opacity-100 transition-all z-20 shadow-sm border border-slate-200 dark:border-v3-border" title="Tam Ekran Göster">
+        <Maximize2 size={16} className="text-v3-text" />
+      </button>
     )}
     {children}
   </div>
@@ -315,7 +322,7 @@ const KPICard = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white dark:bg-v3-surface p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm rounded-3xl`}
+      className={`bg-white dark:bg-v3-surface p-5 flex flex-col justify-between relative overflow-hidden group shadow-lg border border-slate-100 dark:border-v3-border rounded-3xl`}
     >
       <div className="absolute -top-4 -right-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
         <Icon size={100} />
@@ -358,6 +365,7 @@ export default function UltimateDashboard() {
   const [customDate, setCustomDate] = useState({ start: "", end: "" });
   const [showCustomDate, setShowCustomDate] = useState(false);
   const [calendarFilter, setCalendarFilter] = useState("Tümü");
+  const [fullscreenChart, setFullscreenChart] = useState<string | null>(null);
 
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   const [calendarViewDate, setCalendarViewDate] = useState<Date>(new Date());
@@ -650,8 +658,7 @@ export default function UltimateDashboard() {
         "Kar/Zarar": a.ciro - a.maliyet,
         Marj: a.ciro > 0 ? Math.round(((a.ciro - a.maliyet) / a.ciro) * 100) : 0,
       }))
-      .sort((a, b) => b.Ciro - a.Ciro)
-      .slice(0, 10);
+      .sort((a, b) => b.Ciro - a.Ciro);
 
     // Hotel Analysis
     const htlMap: Record<string, { ciro: number; maliyet: number }> = {};
@@ -692,8 +699,7 @@ export default function UltimateDashboard() {
         "Kar/Zarar": htlMap[k].ciro - htlMap[k].maliyet,
         Marj: htlMap[k].ciro > 0 ? Math.round(((htlMap[k].ciro - htlMap[k].maliyet) / htlMap[k].ciro) * 100) : 0,
       }))
-      .sort((a, b) => b.Ciro - a.Ciro)
-      .slice(0, 10);
+      .sort((a, b) => b.Ciro - a.Ciro);
 
     // Airline Distribution
     const airMap: Record<string, number> = {};
@@ -937,7 +943,7 @@ export default function UltimateDashboard() {
     const supplierCostData = Object.keys(supplierCostMap).map(k => ({
       name: k,
       Maliyet: Math.round(supplierCostMap[k])
-    })).sort((a,b) => b.Maliyet - a.Maliyet).slice(0, 10);
+    })).sort((a,b) => b.Maliyet - a.Maliyet);
     const supMap: Record<string, number> = {};
     fTransfers.forEach((transferItem: any) => {
       const s = getSupplierName(transferItem.supplier_id, t('dashboard.unknownSupplier') || "Bilinmeyen Tedarikçi");
@@ -1312,32 +1318,32 @@ export default function UltimateDashboard() {
                 ))}
 
                 {m.monthlyFinancialData.length > 0 && (
-                  <div className="min-w-[180px] shrink-0 bg-gradient-to-br from-fuchsia-500/20 to-purple-600/20 border border-fuchsia-500/30 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group shadow-lg shadow-fuchsia-500/10">
-                    <div className="absolute -right-6 -bottom-6 text-fuchsia-500/10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                  <div className="min-w-[180px] shrink-0 bg-slate-800 dark:bg-slate-900 border border-slate-700 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group shadow-xl">
+                    <div className="absolute -right-6 -bottom-6 text-slate-700/50 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                       <BarChart3 size={80} />
                     </div>
-                    <h3 className="font-black text-fuchsia-900 dark:text-fuchsia-100 text-sm relative z-10">{t('dashboard.annualTotal') || "Yıllık Toplam"}</h3>
+                    <h3 className="font-black text-white text-sm relative z-10">{t('dashboard.annualTotal') || "Yıllık Toplam"}</h3>
                     
                     <div className="flex flex-col gap-1.5 relative z-10">
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-fuchsia-800 dark:text-fuchsia-200/70">{t('dashboard.totalRevShort') || "Top. Ciro"}</span>
-                        <span className="text-emerald-600 dark:text-emerald-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0), language)}</span>
+                        <span className="text-slate-300">{t('dashboard.totalRevShort') || "Top. Ciro"}</span>
+                        <span className="text-emerald-400 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0), language)}</span>
                       </div>
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-fuchsia-800 dark:text-fuchsia-200/70">{t('dashboard.totalCostShort') || "Top. Mal."}</span>
-                        <span className="text-rose-600 dark:text-rose-300 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0), language)}</span>
+                        <span className="text-slate-300">{t('dashboard.totalCostShort') || "Top. Mal."}</span>
+                        <span className="text-rose-400 font-mono font-bold">{formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0), language)}</span>
                       </div>
                     </div>
                     
-                    <div className="mt-auto pt-2 border-t border-fuchsia-500/20 flex justify-between items-end relative z-10">
+                    <div className="mt-auto pt-2 border-t border-slate-700 flex justify-between items-end relative z-10">
                       <div>
-                        <p className="text-[8px] text-fuchsia-800 dark:text-fuchsia-200/70 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "NET KÂR"}</p>
-                        <p className="font-black text-xs text-emerald-600 dark:text-emerald-400">
+                        <p className="text-[8px] text-slate-400 uppercase tracking-widest mb-1">{t('dashboard.netProfit') || "NET KÂR"}</p>
+                        <p className="font-black text-xs text-emerald-400">
                           {formatMoney(m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0), language)}
                         </p>
                       </div>
-                      <div className="bg-[#4a044e]/50 px-1.5 py-0.5 rounded-lg border border-fuchsia-500/30 backdrop-blur-md">
-                        <span className="text-fuchsia-600 dark:text-fuchsia-300 font-mono font-black text-xs">
+                      <div className="bg-slate-700 px-1.5 py-0.5 rounded-lg border border-slate-600">
+                        <span className="text-white font-mono font-black text-xs">
                           %{m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0) > 0 ? Math.round((m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) / m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0)) * 100) : 0}
                         </span>
                       </div>
@@ -1353,7 +1359,7 @@ export default function UltimateDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-6 relative z-10">
           {/* Marketing Funnel */}
           <div className="xl:col-span-4 flex flex-col gap-4">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="violet">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="violet" onExpand={() => setFullscreenChart('funnel')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Target size={18} className="text-violet-600 dark:text-violet-400" /> {t('dashboard.marketingFunnel') || "Pazarlama Hunisi"}
               </h2>
@@ -1413,7 +1419,7 @@ export default function UltimateDashboard() {
 
           {/* Agency Volume & Profit */}
           <div className="xl:col-span-8 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue" onExpand={() => setFullscreenChart('agency')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Building2 size={18} className="text-blue-600 dark:text-blue-400" /> {t('dashboard.agencyVolume') || "Acente Bazlı Hacim ve Kârlılık"}
               </h2>
@@ -1423,7 +1429,7 @@ export default function UltimateDashboard() {
               <div className="flex-1 min-h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
-                    data={m.agencyData}
+                    data={m.agencyData.slice(0, 10)}
                     margin={{ top: 10, right: 0, left: 0, bottom: 20 }}
                   >
                     <CartesianGrid
@@ -1439,8 +1445,9 @@ export default function UltimateDashboard() {
                       axisLine={false}
                       angle={-45}
                       textAnchor="end"
-                      height={60}
+                      height={90}
                       interval={0}
+                      tickFormatter={(val: string) => val.length > 15 ? val.substring(0, 15) + '...' : val}
                     />
                     <YAxis
                       yAxisId="left"
@@ -1564,7 +1571,7 @@ export default function UltimateDashboard() {
 
           {/* Project Efficiency */}
           <div className="xl:col-span-4 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald" onExpand={() => setFullscreenChart('projEff')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Target size={18} className="text-emerald-600 dark:text-emerald-400" /> {t('dashboard.projectEfficiency') || "Proje Verimliliği"}
               </h2>
@@ -1594,7 +1601,7 @@ export default function UltimateDashboard() {
 
           {/* Sejour Efficiency */}
           <div className="xl:col-span-4 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="blue" onExpand={() => setFullscreenChart('sejEff')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Hotel size={18} className="text-blue-600 dark:text-blue-400" /> {t('dashboard.sejourEfficiency') || "Sejour Verimliliği"}
               </h2>
@@ -2058,6 +2065,156 @@ export default function UltimateDashboard() {
         )}
       </AnimatePresence>
 
-    </div>
+    
+      <AnimatePresence>
+        {fullscreenChart && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-white/90 dark:bg-v3-bg/95 backdrop-blur-md flex flex-col p-6 overflow-hidden"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-v3-text uppercase tracking-widest">{t('dashboard.fullscreenView' as any) || "TAM EKRAN GÖRÜNÜM"}</h2>
+              <button onClick={() => setFullscreenChart(null)} className="p-3 bg-white dark:bg-v3-surface rounded-full shadow-lg border border-slate-200 dark:border-v3-border hover:bg-slate-50 dark:hover:bg-v3-border transition-colors">
+                <X size={24} className="text-v3-text" />
+              </button>
+            </div>
+            <div className="flex-1 bg-white dark:bg-v3-surface rounded-3xl shadow-xl border border-slate-200 dark:border-v3-border p-6 overflow-y-auto no-scrollbar">
+              <div className="w-full h-full min-h-[600px]">
+                {/* Render the full chart based on ID */}
+                {fullscreenChart === 'funnel' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <FunnelChart>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Funnel dataKey="value" data={m.funnelData} isAnimationActive>
+                        <LabelList position="right" fill="var(--v3-text)" stroke="none" dataKey="name" fontSize={14} />
+                      </Funnel>
+                    </FunnelChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'agency' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={m.agencyData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={100} interval={0} tickFormatter={(val: string) => val.length > 25 ? val.substring(0, 25) + '...' : val} />
+                      <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `%${v}`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="Ciro" fill="#3b82f6" radius={[4, 4, 0, 0]} name={t('dashboard.sales') || "Satış"} />
+                      <Line yAxisId="right" type="monotone" dataKey="Marj" stroke="#10b981" strokeWidth={3} dot={{ r: 6, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }} name={t('dashboard.margin') || "Marj"} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'hotel' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={m.hotelData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={100} interval={0} tickFormatter={(val: string) => val.length > 25 ? val.substring(0, 25) + '...' : val} />
+                      <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `%${v}`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="Ciro" fill="#06b6d4" radius={[4, 4, 0, 0]} name={t('dashboard.sales') || "Satış"} />
+                      <Line yAxisId="right" type="monotone" dataKey="Marj" stroke="#10b981" strokeWidth={3} dot={{ r: 6, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }} name={t('dashboard.margin') || "Marj"} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'projEff' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={m.projectEfficiencyData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `%${v}`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="Ciro" fill="#10b981" radius={[4, 4, 0, 0]} name={t('dashboard.totalRevShort') || "Ciro"} />
+                      <Line yAxisId="right" type="monotone" dataKey="Marj" stroke="#3b82f6" strokeWidth={3} dot={{ r: 6, fill: "#3b82f6", strokeWidth: 2, stroke: "#fff" }} name={t('dashboard.margin') || "Marj"} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'sejEff' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={m.sejourEfficiencyData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#10b981" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `%${v}`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="Ciro" fill="#f59e0b" radius={[4, 4, 0, 0]} name={t('dashboard.totalRevShort') || "Ciro"} />
+                      <Line yAxisId="right" type="monotone" dataKey="Marj" stroke="#3b82f6" strokeWidth={3} dot={{ r: 6, fill: "#3b82f6", strokeWidth: 2, stroke: "#fff" }} name={t('dashboard.margin') || "Marj"} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'airline' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={m.airlineData} cx="50%" cy="50%" innerRadius={120} outerRadius={160} paddingAngle={2} dataKey="Adet">
+                        {m.airlineData.map((_: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '14px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'vehicle' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={m.vehicleData} cx="50%" cy="50%" innerRadius={120} outerRadius={160} paddingAngle={2} dataKey="Adet">
+                        {m.vehicleData.map((_: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '14px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'supplierTransfer' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={m.transferSupplierData} cx="50%" cy="50%" innerRadius={120} outerRadius={160} paddingAngle={2} dataKey="Adet">
+                        {m.transferSupplierData.map((_: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '14px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'quoteConv' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={m.conversionChartData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={100} interval={0} tickFormatter={(val: string) => val.length > 25 ? val.substring(0, 25) + '...' : val} />
+                      <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Bar dataKey="Tutar" fill="#6366f1" radius={[4, 4, 0, 0]} name={t('dashboard.amount' as any) || "Tutar"} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'supplierCost' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={m.supplierCostData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={100} interval={0} tickFormatter={(val: string) => val.length > 25 ? val.substring(0, 25) + '...' : val} />
+                      <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Bar dataKey="Maliyet" fill="#f43f5e" radius={[4, 4, 0, 0]} name={t('dashboard.totalCostShort') || "Maliyet"} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+\n    </div>
   );
 }
