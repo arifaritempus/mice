@@ -244,11 +244,11 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
 
   // Room State
   const [roomType, setRoomType] = useState<"TOTAL" | "DETAILED">("TOTAL");
-  const [roomCount, setRoomCount] = useState<number>(0);
-  const [paxCount, setPaxCount] = useState<number>(0);
-  const [sng, setSng] = useState<number>(0);
-  const [dbl, setDbl] = useState<number>(0);
-  const [trp, setTrp] = useState<number>(0);
+  const [roomCount, setRoomCount] = useState<number | "">("");
+  const [paxCount, setPaxCount] = useState<number | "">("");
+  const [sng, setSng] = useState<number | "">("");
+  const [dbl, setDbl] = useState<number | "">("");
+  const [trp, setTrp] = useState<number | "">("");
 
   // Event State
   const [meeting, setMeeting] = useState({ requested: false, date: "", notes: "" });
@@ -381,9 +381,37 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
   };
 
   const handleSave = async (sendMail: boolean) => {
+    if (!reference) {
+      toast.error("Lütfen Referans alanını doldurunuz.");
+      return;
+    }
     if (!companyName || !agencyId || selectedHotels.length === 0) {
       toast.error("Lütfen Firma Adı, Acente ve en az 1 Otel seçiniz.");
       return;
+    }
+
+    if (dateType === "EXACT") {
+      if (!checkIn || !checkOut) {
+        toast.error("Net Tarih seçildiğinde Check-in ve Check-out tarihleri zorunludur.");
+        return;
+      }
+    } else {
+      if (!flexibleDateText || !nights) {
+        toast.error("Esnek Tarih seçildiğinde Esnek Tarih Açıklaması ve Geceleme zorunludur.");
+        return;
+      }
+    }
+
+    if (roomType === "TOTAL") {
+      if (roomCount === "" || paxCount === "") {
+        toast.error("Toplam oda/kişi sayısı alanları zorunludur.");
+        return;
+      }
+    } else {
+      if (sng === "" || dbl === "" || trp === "") {
+        toast.error("Detaylı oda dağılımı (SNG, DBL, TRP) alanları zorunludur. (İstenmeyenlere 0 yazabilirsiniz)");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -921,30 +949,30 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-v3-muted uppercase tracking-wider mb-1.5">Toplam Oda</label>
-                    <input type="number" min="0" value={roomCount} onChange={(e) => setRoomCount(Number(e.target.value))} className="w-full bg-v3-bg border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 font-medium text-center" />
+                    <input type="number" min="0" value={roomCount} onChange={(e) => setRoomCount(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-v3-bg border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 font-medium text-center" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-v3-muted uppercase tracking-wider mb-1.5">Toplam Kişi (Pax)</label>
-                    <input type="number" min="0" value={paxCount} onChange={(e) => setPaxCount(Number(e.target.value))} className="w-full bg-v3-bg border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 font-medium text-center" />
+                    <input type="number" min="0" value={paxCount} onChange={(e) => setPaxCount(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-v3-bg border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 font-medium text-center" />
                   </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-purple-50/50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-100 dark:border-purple-800/50">
                     <label className="block text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1.5 text-center">SNG ODA</label>
-                    <input type="number" min="0" value={sng} onChange={(e) => setSng(Number(e.target.value))} className="w-full bg-white dark:bg-gray-800 border-none rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center" />
+                    <input type="number" min="0" value={sng} onChange={(e) => setSng(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-white dark:bg-gray-800 border-none rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center" />
                   </div>
                   <div className="bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                     <label className="block text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1.5 text-center">DBL ODA</label>
-                    <input type="number" min="0" value={dbl} onChange={(e) => setDbl(Number(e.target.value))} className="w-full bg-white dark:bg-gray-800 border-none rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-center" />
+                    <input type="number" min="0" value={dbl} onChange={(e) => setDbl(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-white dark:bg-gray-800 border-none rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-center" />
                   </div>
                   <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
                     <label className="block text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1.5 text-center">TRP ODA</label>
-                    <input type="number" min="0" value={trp} onChange={(e) => setTrp(Number(e.target.value))} className="w-full bg-white dark:bg-gray-800 border-none rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center" />
+                    <input type="number" min="0" value={trp} onChange={(e) => setTrp(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-white dark:bg-gray-800 border-none rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center" />
                   </div>
                   
                   <div className="col-span-3 mt-2 text-center text-[10px] text-v3-muted font-medium bg-gray-50 dark:bg-gray-800/50 py-1.5 rounded-lg border border-v3-border">
-                    Tahmini Toplam: <span className="font-bold text-v3-text">{sng + dbl + trp} Oda / {sng + (dbl*2) + (trp*3)} Pax</span>
+                    Tahmini Toplam: <span className="font-bold text-v3-text">{(Number(sng)||0) + (Number(dbl)||0) + (Number(trp)||0)} Oda / {(Number(sng)||0) + ((Number(dbl)||0)*2) + ((Number(trp)||0)*3)} Pax</span>
                   </div>
                 </div>
               )}

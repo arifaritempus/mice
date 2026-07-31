@@ -39,7 +39,7 @@ export function getRequestMailHtml(data: RequestMailData): string {
     .event-item { margin-bottom: 15px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; }
     .event-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .event-badge { display: inline-block; background: #eff6ff; color: #1d4ed8; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-right: 8px; margin-bottom: 8px; border: 1px solid #bfdbfe; }
-    .event-note { display: block; font-size: 13px; color: #64748b; margin-top: 6px; line-height: 1.5; padding-left: 10px; border-left: 3px solid #e2e8f0; white-space: pre-wrap; }
+    .event-note { display: block; font-size: 13px; color: #334155; margin-top: 6px; line-height: 1.5; padding-left: 10px; border-left: 3px solid #cbd5e1; white-space: pre-wrap; font-weight: 500; }
     .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; font-size: 14px; color: #92400e; margin-bottom: 30px; line-height: 1.5; white-space: pre-wrap; }
     .cta { text-align: center; margin-top: 35px; }
     .btn { display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 15px; transition: background 0.2s; }
