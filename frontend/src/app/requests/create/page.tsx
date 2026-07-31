@@ -319,9 +319,9 @@ export default function CreateRequestPage() {
           const hotel = hotels.find((h: any) => h.id === hId);
           if (!hotel) continue;
           
-          const toAddress = hotel.cc_mail || hotel.email;
+          const toAddress = hotel.cc_mail;
           if (!toAddress) {
-            console.warn("Otelin e-posta adresi yok:", hotel.name);
+            console.warn("Otelin 'Otel Mail' (cc_mail) adresi yok:", hotel.name);
             continue;
           }
           

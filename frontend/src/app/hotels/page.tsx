@@ -370,8 +370,8 @@ export default function HotelsPage() {
         "İletişim Kişisi",
         "Telefon",
         "E-posta",
+        "Otel Mail",
         "CC Mail",
-        "Acente CC Mail",
         "Adres",
         "Vergi Numarası",
         "Vergi Dairesi",
@@ -475,8 +475,8 @@ export default function HotelsPage() {
         contact_person: row["İletişim Kişisi"] || "",
         phone: row["Telefon"] || "",
         email: row["E-posta"] || "",
-        cc_mail: row["CC Mail"] || "",
-        agency_cc_mail: row["Acente CC Mail"] || "",
+        cc_mail: row["Otel Mail"] || "",
+        agency_cc_mail: row["CC Mail"] || "",
         address: row["Adres"] || "",
         tax_number: row["Vergi Numarası"] || "",
         tax_office: row["Vergi Dairesi"] || "",
@@ -1240,7 +1240,7 @@ export default function HotelsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
-                    <Mail size={12} /> CC Mail
+                    <Mail size={12} /> Otel Mail
                   </label>
                   <input
                     ref={ccMailInputRef}
@@ -1252,7 +1252,7 @@ export default function HotelsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-v3-text mb-1.5 flex items-center gap-1">
-                    <Mail size={12} /> Acente CC Mail
+                    <Mail size={12} /> CC Mail
                   </label>
                   <input
                     ref={agencyCcMailInputRef}
