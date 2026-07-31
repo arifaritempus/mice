@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       events_html: requestData.events_html || "",
       notes: requestData.notes || "",
       reply_to_email: mail_reply_to,
+      cc_addresses: Array.isArray(cc) ? cc.join(",") : (cc || ""),
       system_company_name: generalSettings?.companyName || generalSettings?.company_name || "",
       system_company_phone: generalSettings?.companyPhone || generalSettings?.company_phone || "",
       system_company_email: generalSettings?.companyEmail || generalSettings?.company_email || ""
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Konu başlığı formatı: Tarih Planı | Firma / Sektör Adı | Referans No | Genel Ayarlarda Tanımlı Firma Adı
     const baseSubject = subject || `${requestData.date_range} | ${requestData.company_name} | #${requestData.reference} | ${generalSettings?.companyName || generalSettings?.company_name || ""}`;
-    const mailSubject = `📋 ${baseSubject}`;
+    const mailSubject = baseSubject;
 
     // E-postayı gönder
     const result = await sendMail({

@@ -18,20 +18,21 @@ export async function GET() {
       room_pax: "SNG: 100, DBL: 50, TRP: 0",
       events_html: `
         <div class="event-item">
-          <span class="event-badge">📅 Toplantı (16.10.2026, Cuma)</span>
+          <span class="event-badge">Toplantı (16.10.2026, Cuma)</span>
           <div class="event-note">U düzeni, perde ve projeksiyon gerekli.</div>
         </div>
         <div class="event-item">
-          <span class="event-badge">🍸 Welcome Cocktail (15.10.2026)</span>
+          <span class="event-badge">Welcome Cocktail (15.10.2026)</span>
           <div class="event-note">Havuz başı kokteyli, hafif atıştırmalıklar.</div>
         </div>
         <div class="event-item">
-          <span class="event-badge">🍽️ Gala Yemeği (17.10.2026)</span>
+          <span class="event-badge">Gala Yemeği (17.10.2026)</span>
           <div class="event-note">Sınırsız yerli içki, orkestra için sahne kurulumu.</div>
         </div>
       `,
       notes: "Bu bir önizleme mailidir. Gala gecesi için deniz manzaralı salon talep edilmektedir.",
       reply_to_email: generalSettings?.mailReplyTo || generalSettings?.mailFromEmail || "info@test.com",
+      cc_addresses: "agency@test.com",
       system_company_name: generalSettings?.companyName || generalSettings?.company_name || "MICE SİSTEMİ",
       system_company_phone: generalSettings?.companyPhone || generalSettings?.company_phone || "+90 555 123 4567",
       system_company_email: generalSettings?.companyEmail || generalSettings?.company_email || "hello@test.com"

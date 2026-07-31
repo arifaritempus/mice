@@ -458,10 +458,17 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           };
 
           const eventsArr = [];
-          if (meeting.requested) eventsArr.push({ name: "📅 Toplantı", date: meeting.date, note: meeting.notes });
-          if (cocktail.requested) eventsArr.push({ name: "🍸 Welcome Cocktail", date: cocktail.date, note: cocktail.notes });
-          if (barNight.requested) eventsArr.push({ name: "🍷 Bar Gecesi", date: barNight.date, note: barNight.notes });
-          if (gala.requested) eventsArr.push({ name: "🍽️ Gala Yemeği", date: gala.date, note: gala.notes });
+          if (meeting.requested) eventsArr.push({ name: "Toplantı", date: meeting.date, note: meeting.notes });
+          if (cocktail.requested) eventsArr.push({ name: "Welcome Cocktail", date: cocktail.date, note: cocktail.notes });
+          if (barNight.requested) eventsArr.push({ name: "Bar Gecesi", date: barNight.date, note: barNight.notes });
+          if (gala.requested) eventsArr.push({ name: "Gala Yemeği", date: gala.date, note: gala.notes });
+          
+          eventsArr.sort((a, b) => {
+            if (!a.date && !b.date) return 0;
+            if (!a.date) return 1;
+            if (!b.date) return -1;
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+          });
           
           const eventsHtml = eventsArr.map(e => `
             <div class="event-item">
