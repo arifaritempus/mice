@@ -1215,11 +1215,15 @@ export default function ProjectsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
-                      {project.company_name || "-"}
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[180px]">
+                      <span className="block truncate" title={project.company_name || "-"}>
+                        {project.company_name || "-"}
+                      </span>
                     </td>
-                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
-                      {getAgencyName(project.agency_id)}
+                    <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[160px]">
+                      <span className="block truncate" title={getAgencyName(project.agency_id) || "-"}>
+                        {getAgencyName(project.agency_id)}
+                      </span>
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[160px]">
                       {(() => {
