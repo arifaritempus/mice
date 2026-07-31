@@ -263,18 +263,26 @@ export default function HomePage() {
         (p.status || "").toLowerCase() !== "cancelled" &&
         (p.status || "").toLowerCase() !== "iptal"
       ) {
-        const agencyName =
-          p.marketing_clients?.name ||
-          p.agencies?.name ||
-          p.company_name ||
-          `${t('home.company')}/${t('home.agency')}`;
+        const formatStrDate = (dStr: string) => {
+          if (!dStr) return "";
+          const parts = dStr.split('-');
+          return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : dStr;
+        };
+        
+        let agencyName = "";
+        if (p.company_name && p.agencies?.name) {
+          agencyName = `${p.company_name} | ${p.agencies.name}`;
+        } else {
+          agencyName = p.company_name || p.agencies?.name || p.marketing_clients?.name || `${t('home.company')}/${t('home.agency')}`;
+        }
+
         items.push({
           id: `p-${p.id}`,
           date: d,
           type: "hotel",
           module: "MICE",
           title: `${t('home.project')}: ${localizeTitle(p.title || p.referans_no) || t('home.unspecified')}`,
-          subtitle: `${agencyName} | C-In: ${p.start_date} C-Out: ${p.end_date}`,
+          subtitle: `${agencyName} | C-In: ${formatStrDate(p.start_date)} C-Out: ${formatStrDate(p.end_date)}`,
           icon: Briefcase,
           color: "blue",
           link: `/projects/${p.id}`,
@@ -559,13 +567,23 @@ export default function HomePage() {
           // Try to find the project name for better context
           const proj = data.projects.find((pr) => pr.id === p.project_id);
           const projName = proj ? localizeTitle(proj.title) || t('home.project') : t('home.project');
-          const agencyName = proj
-            ? proj.marketing_clients?.name ||
-              proj.agencies?.name ||
-              proj.company_name
-            : t('home.unspecified');
+          let agencyName = t('home.unspecified');
+          if (proj) {
+            if (proj.company_name && proj.agencies?.name) {
+              agencyName = `${proj.company_name} | ${proj.agencies.name}`;
+            } else {
+              agencyName = proj.company_name || proj.agencies?.name || proj.marketing_clients?.name || t('home.unspecified');
+            }
+          }
+
+          const formatStrDate = (dStr: string) => {
+            if (!dStr) return "";
+            const parts = dStr.split('-');
+            return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : dStr;
+          };
+
           const datesInfo = proj
-            ? `C-In: ${proj.start_date} C-Out: ${proj.end_date}`
+            ? `C-In: ${formatStrDate(proj.start_date)} C-Out: ${formatStrDate(proj.end_date)}`
             : "";
 
           items.push({

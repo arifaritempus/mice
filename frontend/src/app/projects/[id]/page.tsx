@@ -13280,7 +13280,9 @@ export default function ProjectDetailPage() {
           gRow.getCell(7).value = { formula: tlSumFormula, result: 0 };
         }
 
-        gRow.getCell(5).numFmt = `"${sym}"#,##0.00`;
+        const gCur = allSales.length > 0 ? (allSales[0].currency || cur) : cur;
+        const gSym = gCur === "USD" ? "$" : gCur === "GBP" ? "£" : (gCur === "TRY" || gCur === "TL") ? "₺" : "€";
+        gRow.getCell(5).numFmt = `"${gSym}"#,##0.00`;
         gRow.getCell(5).font = {
           bold: true,
           color: { argb: "FFFFFFFF" },

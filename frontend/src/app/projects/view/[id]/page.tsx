@@ -1017,8 +1017,8 @@ export default function ProjectViewPublicPage() {
             result: items.reduce((s, i) => s + (i.total || 0), 0),
           } as any;
         }
-        const projCurTotal = (project as any)?.currency || "EUR";
-        const projSymTotal = getCurrencySymbol(projCurTotal).trim();
+        const firstItemCur = items.length > 0 ? (items[0].currency || (project as any)?.currency || "EUR") : ((project as any)?.currency || "EUR");
+        const projSymTotal = getCurrencySymbol(firstItemCur).trim();
         totalRow.getCell(5).numFmt = `"${projSymTotal}" #,##0.00`;
         totalRow.height = 30;
 
@@ -1616,7 +1616,7 @@ export default function ProjectViewPublicPage() {
                 </h3>
                 <div className="space-y-1">
                   <p className="text-3xl font-black text-slate-800">
-                    {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0), (project as any)?.currency || 'EUR')}
+                    {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0), filteredItems[0]?.currency || (project as any)?.currency || 'EUR')}
                   </p>
                 </div>
               </div>
