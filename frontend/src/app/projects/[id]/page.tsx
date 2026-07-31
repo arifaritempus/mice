@@ -13144,18 +13144,20 @@ export default function ProjectDetailPage() {
             row.getCell(2).value = it.qty;
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
-            row.getCell(4).numFmt = `"${sym}"#,##0.00`;
+            const itemCur = it.currency || cur;
+            const itemSym = itemCur === "USD" ? "$" : itemCur === "GBP" ? "£" : (itemCur === "TRY" || itemCur === "TL") ? "₺" : "€";
+            row.getCell(4).numFmt = `"${itemSym}"#,##0.00`;
 
             for (let c = 1; c <= 7; c++) {
               row.getCell(c).alignment = { vertical: "middle", wrapText: true };
             }
 
-            // Formula for TOPLAM EUR: Qty * Repeat * Price
+            // Formula for TOPLAM DÖVİZ: Qty * Repeat * Price
             row.getCell(5).value = {
               formula: `B${currentRow}*C${currentRow}*D${currentRow}`,
               result: it.totalEur,
             };
-            row.getCell(5).numFmt = `"${sym}"#,##0.00`;
+            row.getCell(5).numFmt = `"${itemSym}"#,##0.00`;
 
             row.getCell(6).value = it.fx;
 
@@ -13218,6 +13220,7 @@ export default function ProjectDetailPage() {
             fx: it.fx || 1,
             totalTl: (it.total_price || 0) * (it.fx || 1),
             notes: "",
+            currency: it.currency || cur,
           }));
         addCategory("OTEL | KONAKLAMA", accItems);
 
@@ -13236,6 +13239,7 @@ export default function ProjectDetailPage() {
             fx: it.fx || 1,
             totalTl: (it.total || 0) * (it.fx || 1),
             notes: it.description || "",
+            currency: it.currency || cur,
           });
         });
 

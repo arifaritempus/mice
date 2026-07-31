@@ -212,9 +212,12 @@ export default function QuoteViewPublicPage() {
 
   const loadAppSettings = async () => {
     try {
-      const settings = await SettingsService.getSettings();
-      if (settings?.general_settings) {
-        setAppSettings(settings.general_settings);
+      const res = await fetch('/api/theme-settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.general_settings) {
+          setAppSettings(data.general_settings);
+        }
       }
     } catch (error) {
       console.error("Settings load error:", error);

@@ -47,8 +47,17 @@ export default function LoginPage() {
   useEffect(() => {
     const loadLogo = async () => {
       try {
-        const settings = await SettingsService.getSettings();
-        const generalSettings = settings.general_settings || {};
+        let generalSettings: any = {};
+        try {
+          const res = await fetch('/api/theme-settings');
+          if (res.ok) {
+            const data = await res.json();
+            generalSettings = data.general_settings || {};
+          }
+        } catch (fetchErr) {
+          console.error("Theme settings fetch error:", fetchErr);
+        }
+        
         const currentLogo =
           generalSettings.darkMenuLogo ||
           generalSettings.dark_menu_logo ||

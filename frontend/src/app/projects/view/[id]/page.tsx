@@ -121,6 +121,14 @@ export default function ProjectViewPublicPage() {
       maximumFractionDigits: 2,
     }).format(value);
   };
+  const getCurrencySymbol = (currencyCode: string) => {
+    const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", TL: "₺", GBP: "£" };
+    return curMap[currencyCode || "EUR"] || (currencyCode || "EUR") + " ";
+  };
+  const formatCurrency = (value: number, currencyCode: string) => {
+    const sym = getCurrencySymbol(currencyCode);
+    return `${sym}${formatNumberTR(value)}`;
+  };
   const formatEUR = (value: number) => `€ ${formatNumberTR(value)}`;
   const formatTRY = (value: number) => `₺${formatNumberTR(value)}`;
 
@@ -223,9 +231,12 @@ export default function ProjectViewPublicPage() {
 
   const loadAppSettings = async () => {
     try {
-      const settings = await SettingsService.getSettings();
-      if (settings?.general_settings) {
-        setAppSettings(settings.general_settings);
+      const res = await fetch('/api/theme-settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.general_settings) {
+          setAppSettings(data.general_settings);
+        }
       }
     } catch (error) {
       console.error("Settings load error:", error);
@@ -944,8 +955,11 @@ export default function ProjectViewPublicPage() {
             ]);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
-            sRow.getCell(4).numFmt = "€ #,##0.00";
-            sRow.getCell(5).numFmt = "€ #,##0.00";
+            const itemCurrency = item.currency || (project as any)?.currency || "EUR";
+            const sym = getCurrencySymbol(itemCurrency).trim();
+            const formatStr = `"${sym}" #,##0.00`;
+            sRow.getCell(4).numFmt = formatStr;
+            sRow.getCell(5).numFmt = formatStr;
             sRow.getCell(5).value = {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
@@ -970,7 +984,9 @@ export default function ProjectViewPublicPage() {
               result: catItems.reduce((s, i) => s + (i.total || 0), 0),
             } as any;
           }
-          araRow.getCell(5).numFmt = "€ #,##0.00";
+          const projCur = (project as any)?.currency || "EUR";
+          const projSym = getCurrencySymbol(projCur).trim();
+          araRow.getCell(5).numFmt = `"${projSym}" #,##0.00`;
           araRow.height = 22;
           subtotalRowsE.push(araRow.number);
           rowIndex++;
@@ -1001,7 +1017,9 @@ export default function ProjectViewPublicPage() {
             result: items.reduce((s, i) => s + (i.total || 0), 0),
           } as any;
         }
-        totalRow.getCell(5).numFmt = "€ #,##0.00";
+        const projCurTotal = (project as any)?.currency || "EUR";
+        const projSymTotal = getCurrencySymbol(projCurTotal).trim();
+        totalRow.getCell(5).numFmt = `"${projSymTotal}" #,##0.00`;
         totalRow.height = 30;
 
         // Column widths
@@ -1549,7 +1567,7 @@ export default function ProjectViewPublicPage() {
                                       : item.currency}
                                 </td>
                                 <td className="py-4 px-4 text-sm font-black text-right text-slate-800 whitespace-nowrap">
-                                  {formatEUR(item.total)}
+                                  {formatCurrency(item.total, item.currency || (project as any)?.currency || 'EUR')}
                                 </td>
                               </tr>
                             ))}
@@ -1562,7 +1580,7 @@ export default function ProjectViewPublicPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-sm font-black text-gray-900 text-right whitespace-nowrap border-t border-slate-200">
-                              {formatEUR(catTotalEur)}
+                              {formatCurrency(catTotalEur, (project as any)?.currency || 'EUR')}
                             </td>
                           </tr>
                         </tbody>
@@ -1598,7 +1616,7 @@ export default function ProjectViewPublicPage() {
                 </h3>
                 <div className="space-y-1">
                   <p className="text-3xl font-black text-slate-800">
-                    {formatEUR(filteredItems.reduce((s, i) => s + i.total, 0))}
+                    {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0), (project as any)?.currency || 'EUR')}
                   </p>
                 </div>
               </div>

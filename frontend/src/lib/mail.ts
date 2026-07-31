@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { SettingsService } from "./supabaseService";
+import { createClient } from "@supabase/supabase-js";
 
 interface MailOptions {
   to: string;
@@ -10,8 +10,31 @@ interface MailOptions {
 
 export async function sendMail(options: MailOptions) {
   try {
-    // 1. Ayarları Supabase'den çek
-    const settings = await SettingsService.getSettings();
+    // 1. Ayarları Supabase'den çek (Server side olduğu için admin yetkisi ile çekmeli)
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.SUPABASE_SERVICE_ROLE_KEY as string
+    );
+    const { data: settingsData, error } = await supabaseAdmin.from('settings').select('*');
+    if (error) throw error;
+
+    const settings: any = {};
+    settingsData?.forEach(setting => {
+      try {
+        if (typeof setting.value === 'string') {
+          try {
+            settings[setting.key] = JSON.parse(setting.value);
+          } catch {
+            settings[setting.key] = setting.value;
+          }
+        } else {
+          settings[setting.key] = setting.value;
+        }
+      } catch (e) {
+        settings[setting.key] = setting.value;
+      }
+    });
+
     const generalSettings = settings?.general_settings;
 
     if (!generalSettings) {
