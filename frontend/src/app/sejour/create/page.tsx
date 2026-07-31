@@ -2045,7 +2045,7 @@ export default function CreateSejourPage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 flex-1 relative z-10">
-                <button type="button" onClick={() => router.push("/sejour/list")} className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
+                <button type="button" onClick={() => router.push("/sejour")} className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
                   İptal
                 </button>
                 <button type="submit" disabled={loading} className="px-8 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center">
