@@ -930,7 +930,7 @@ export default function ProjectViewPublicPage() {
             "BİRİM/ADET",
             "SEFER/TEKRAR",
             "BİRİM/FİYAT",
-            "TOPLAM EUR",
+            "TOPLAM TUTAR",
             "AÇIKLAMA",
           ]);
           hRow.font = { bold: true, size: 11 };
@@ -984,9 +984,9 @@ export default function ProjectViewPublicPage() {
               result: catItems.reduce((s, i) => s + (i.total || 0), 0),
             } as any;
           }
-          const projCur = (project as any)?.currency || "EUR";
-          const projSym = getCurrencySymbol(projCur).trim();
-          araRow.getCell(5).numFmt = `"${projSym}" #,##0.00`;
+          const catCur = catItems.length > 0 ? (catItems[0].currency || (project as any)?.currency || "EUR") : ((project as any)?.currency || "EUR");
+          const catSym = getCurrencySymbol(catCur).trim();
+          araRow.getCell(5).numFmt = `"${catSym}" #,##0.00`;
           araRow.height = 22;
           subtotalRowsE.push(araRow.number);
           rowIndex++;
@@ -1450,7 +1450,7 @@ export default function ProjectViewPublicPage() {
                       BİRİM FİYAT
                     </th>
                     <th className="py-4 px-4 text-[10px] font-black text-gray-700 uppercase tracking-tighter text-right">
-                      TOPLAM EUR
+                      TOPLAM TUTAR
                     </th>
                   </tr>
                 </thead>
@@ -1580,7 +1580,7 @@ export default function ProjectViewPublicPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-sm font-black text-gray-900 text-right whitespace-nowrap border-t border-slate-200">
-                              {formatCurrency(catTotalEur, (project as any)?.currency || 'EUR')}
+                              {formatCurrency(catTotalEur, items[0]?.currency || (project as any)?.currency || 'EUR')}
                             </td>
                           </tr>
                         </tbody>
