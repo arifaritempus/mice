@@ -111,9 +111,12 @@ export default function TopNavigation() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const settings = await SettingsService.getSettings();
-        if (settings?.general_settings) {
-          setGeneralSettings(settings.general_settings);
+        const res = await fetch(`/api/theme-settings?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.general_settings) {
+            setGeneralSettings(data.general_settings);
+          }
         }
       } catch (err) {
         console.error("TopNav settings error:", err);
@@ -470,20 +473,20 @@ export default function TopNavigation() {
             <Link href="/" className="flex items-center group">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 group-hover:scale-105 transition-all duration-300 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:-translate-y-full transition-transform duration-500 ease-in-out" />
-                {generalSettings?.darkIconLogo ? (
-                  <img src={generalSettings.darkIconLogo} alt="Logo" className="w-8 h-8 object-contain relative z-10" />
+                {generalSettings?.darkIconLogo || generalSettings?.lightIconLogo || generalSettings?.logo_url ? (
+                  <img src={generalSettings.darkIconLogo || generalSettings.lightIconLogo || generalSettings.logo_url} alt="Logo" className="w-8 h-8 object-contain relative z-10" />
                 ) : (
                   <span className="text-v3-text font-black text-xl relative z-10">
-                    {generalSettings?.companyName?.charAt(0) || "N"}
+                    {generalSettings?.companyName?.charAt(0) || "T"}
                   </span>
                 )}
               </div>
               <div className="flex flex-col logo-expand-container">
                 <span className="text-v3-text font-black text-sm tracking-widest leading-none">
-                  {generalSettings?.companyName?.split(" ")[0] || "NEXUS"}
+                  {generalSettings?.companyName?.split(" ")[0] || "TEMPUS"}
                 </span>
                 <span className="text-blue-600 dark:text-blue-400 text-[10px] font-bold tracking-widest uppercase mt-0.5">
-                  {generalSettings?.companyName?.split(" ").slice(1).join(" ") || "Analytics"}
+                  {generalSettings?.companyName?.split(" ").slice(1).join(" ") || "TRAVEL"}
                 </span>
               </div>
             </Link>

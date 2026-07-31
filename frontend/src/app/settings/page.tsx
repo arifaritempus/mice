@@ -64,6 +64,9 @@ export default function SettingsPage() {
     lightSidebarHeader: "#e7e7e5",
     lightText: "#101827",
     lightSidebarBorder: "#e7e7e5",
+    
+    // Banka Hesapları
+    bankAccounts: [] as any[],
   });
 
   const [activeTab, setActiveTab] = useState("company");
@@ -144,6 +147,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: "company", label: "Şirket & Sistem" },
+    { id: "banks", label: "Banka Hesapları" },
     { id: "logos", label: "Logolar" },
     { id: "mail", label: "Mail Ayarları" },
     { id: "ai", label: "AI Asistan" },
@@ -420,6 +424,133 @@ export default function SettingsPage() {
                       </option>
                     </select>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "banks" && (
+            <div className="space-y-6">
+              <div className="bg-v3-surface border border-v3-border backdrop-blur-md rounded-2xl p-6 shadow-sm">
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-v3-border">
+                  <h2 className="text-sm font-semibold text-v3-text uppercase tracking-wider flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-v3-muted"
+                    >
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <line x1="2" y1="10" x2="22" y2="10" />
+                    </svg>
+                    Banka Hesapları
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setSettings(prev => ({
+                        ...prev,
+                        bankAccounts: [...(prev.bankAccounts || []), { companyTitle: '', bankName: '', currency: '', iban: '', swiftCode: '' }]
+                      }))
+                    }}
+                    className="px-3 py-1.5 bg-blue-500/10 text-blue-600 rounded-lg text-xs font-medium border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                  >
+                    + Yeni Hesap Ekle
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {(settings.bankAccounts || []).map((account: any, index: number) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-v3-border rounded-xl bg-v3-surface relative group">
+                      <button
+                        onClick={() => {
+                          const newAccs = [...(settings.bankAccounts || [])];
+                          newAccs.splice(index, 1);
+                          setSettings(prev => ({ ...prev, bankAccounts: newAccs }));
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                        title="Sil"
+                      >
+                        ✕
+                      </button>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">Firma Unvanı</label>
+                        <input
+                          type="text"
+                          value={account.companyTitle}
+                          onChange={(e) => {
+                            const newAccs = [...(settings.bankAccounts || [])];
+                            newAccs[index].companyTitle = e.target.value;
+                            setSettings(prev => ({ ...prev, bankAccounts: newAccs }));
+                          }}
+                          className="w-full px-3 py-2 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">Banka Adı</label>
+                        <input
+                          type="text"
+                          value={account.bankName}
+                          onChange={(e) => {
+                            const newAccs = [...(settings.bankAccounts || [])];
+                            newAccs[index].bankName = e.target.value;
+                            setSettings(prev => ({ ...prev, bankAccounts: newAccs }));
+                          }}
+                          className="w-full px-3 py-2 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">Döviz</label>
+                        <input
+                          type="text"
+                          value={account.currency}
+                          placeholder="EUR, USD, TRY..."
+                          onChange={(e) => {
+                            const newAccs = [...(settings.bankAccounts || [])];
+                            newAccs[index].currency = e.target.value;
+                            setSettings(prev => ({ ...prev, bankAccounts: newAccs }));
+                          }}
+                          className="w-full px-3 py-2 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">IBAN</label>
+                        <input
+                          type="text"
+                          value={account.iban}
+                          onChange={(e) => {
+                            const newAccs = [...(settings.bankAccounts || [])];
+                            newAccs[index].iban = e.target.value;
+                            setSettings(prev => ({ ...prev, bankAccounts: newAccs }));
+                          }}
+                          className="w-full px-3 py-2 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-v3-muted uppercase tracking-wider">Swift Code</label>
+                        <input
+                          type="text"
+                          value={account.swiftCode}
+                          onChange={(e) => {
+                            const newAccs = [...(settings.bankAccounts || [])];
+                            newAccs[index].swiftCode = e.target.value;
+                            setSettings(prev => ({ ...prev, bankAccounts: newAccs }));
+                          }}
+                          className="w-full px-3 py-2 bg-v3-surface border border-v3-border rounded-lg text-sm text-v3-text focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {(!settings.bankAccounts || settings.bankAccounts.length === 0) && (
+                    <div className="text-center py-8 text-sm text-v3-muted border border-dashed border-v3-border rounded-xl">
+                      Henüz banka hesabı eklenmemiş. Yeni hesap eklemek için yukarıdaki butonu kullanın.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

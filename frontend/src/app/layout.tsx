@@ -27,7 +27,7 @@ export const revalidate = 0;
 import { createClient } from "@supabase/supabase-js";
 
 export async function generateMetadata(): Promise<Metadata> {
-  let title = "NEXUS Analytics";
+  let title = "TEMPUS TRAVEL";
   let icon = "/favicon.ico";
 
   try {

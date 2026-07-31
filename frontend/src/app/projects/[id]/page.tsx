@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import ContractTemplate from './ContractTemplate';
 import {
   TrendingUp,
   TrendingDown,
@@ -283,6 +284,12 @@ const getItemContext = (log: any, uuidMap: Record<string, string>) => {
 };
 
 export default function ProjectDetailPage() {
+  const contractRef = useRef<HTMLDivElement>(null);
+  const [contractData, setContractData] = useState<any>(null);
+  const [isGeneratingContract, setIsGeneratingContract] = useState(false);
+  const [isGeneratingContractWord, setIsGeneratingContractWord] = useState(false);
+
+  const params = useParams();
   const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
   const {
     canView,
@@ -12607,6 +12614,186 @@ export default function ProjectDetailPage() {
   };
 
   // "Tam Rapor" - Tüm tabları ayrı sheetler olarak verir
+  const handleGenerateContract = async () => {
+    try {
+      setIsGeneratingContract(true);
+      
+      const res = await fetch(`/api/theme-settings?t=${Date.now()}`, { cache: "no-store" });
+      let settings = {};
+      if (res.ok) {
+        const data = await res.json();
+        if (data.general_settings) {
+          settings = data.general_settings;
+        }
+      }
+
+      let totalSingles = 0;
+      let totalDoubles = 0;
+      let pax = 0;
+      
+      const hotelAccommodations = accommodationItems || [];
+      hotelAccommodations.forEach((acc: any) => {
+        if (acc.room_type === 'SINGLE') { totalSingles += Number(acc.count || 0); pax += Number(acc.count || 0) * 1; }
+        if (acc.room_type === 'DOUBLE') { totalDoubles += Number(acc.count || 0); pax += Number(acc.count || 0) * 2; }
+        if (acc.room_type === 'TRIPLE') { pax += Number(acc.count || 0) * 3; }
+      });
+      const roomsText = `${totalSingles} SINGLE - ${totalDoubles} DOUBLE`;
+      const paxText = `${pax} PAX`;
+      
+      const hasMeeting = eventsActivities.some((a: any) => {
+          const catName = categories?.find(c => c.id === a.category_id)?.name?.toLowerCase() || '';
+          const desc = (a.description || '').toLowerCase();
+          return catName.includes('toplantı') || catName.includes('meeting') || desc.includes('toplantı') || desc.includes('meeting');
+      });
+      const hasGala = eventsActivities.some((a: any) => {
+          const catName = categories?.find(c => c.id === a.category_id)?.name?.toLowerCase() || '';
+          const desc = (a.description || '').toLowerCase();
+          return catName.includes('gala') || desc.includes('gala');
+      });
+      
+      const budgetTotal = salesTotals?.totalByCurrency?.[project?.currency || 'EUR'] || 0;
+      const hotel = hotels.find((h: any) => h.id === project?.hotel_id);
+      const hotelName = hotel?.name || '-';
+      const hotelConcept = hotel?.concept || '-';
+      const agencyData = agencies.find((a: any) => a.id === project?.agency_id) || {};
+      
+      setContractData({
+        settings,
+        roomsText,
+        paxText,
+        hasMeeting,
+        hasGala,
+        hotelName,
+        hotelConcept,
+        budgetTotal,
+        budgetCurrency: project?.currency || 'EUR',
+        paymentPlans: collectionPlans // pass collection plans (Tahsilat) from state instead of paymentPlans
+      });
+      
+      setTimeout(async () => {
+        if (!contractRef.current) {
+            setIsGeneratingContract(false);
+            return;
+        }
+        
+        try {
+            const html2pdf = (await import('html2pdf.js')).default;
+            const opt: any = {
+                margin:       [0.5, 0.4, 0.5, 0.4], // 0.5 inch top/bottom, 0.4 inch left/right
+                filename:     `${project?.reference_no || 'sozlesme'}.pdf`,
+                image:        { type: 'jpeg' as const, quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['p', 'tr', 'h3', 'h4', 'li', '.avoid-break'] },
+                jsPDF:        { unit: 'in' as const, format: 'a4' as const, orientation: 'portrait' as const }
+            };
+            await html2pdf().set(opt).from(contractRef.current).save();
+        } catch (e) {
+            console.error("PDF oluşturma hatası:", e);
+        } finally {
+            setIsGeneratingContract(false);
+            setContractData(null);
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error generating contract:", error);
+      setIsGeneratingContract(false);
+      setContractData(null);
+    }
+  };
+
+  const handleGenerateContractWord = async () => {
+    try {
+      setIsGeneratingContractWord(true);
+      
+      const res = await fetch(`/api/theme-settings?t=${Date.now()}`, { cache: "no-store" });
+      let settings = {};
+      if (res.ok) {
+        const data = await res.json();
+        if (data.general_settings) {
+          settings = data.general_settings;
+        }
+      }
+
+      let totalSingles = 0;
+      let totalDoubles = 0;
+      let pax = 0;
+      
+      const hotelAccommodations = accommodationItems || [];
+      hotelAccommodations.forEach((acc: any) => {
+        if (acc.room_type === 'SINGLE') { totalSingles += Number(acc.count || 0); pax += Number(acc.count || 0) * 1; }
+        if (acc.room_type === 'DOUBLE') { totalDoubles += Number(acc.count || 0); pax += Number(acc.count || 0) * 2; }
+        if (acc.room_type === 'TRIPLE') { pax += Number(acc.count || 0) * 3; }
+      });
+      const roomsText = `${totalSingles} SINGLE - ${totalDoubles} DOUBLE`;
+      const paxText = `${pax} PAX`;
+      
+      const hasMeeting = eventsActivities.some((a: any) => {
+          const catName = categories?.find(c => c.id === a.category_id)?.name?.toLowerCase() || '';
+          const desc = (a.description || '').toLowerCase();
+          return catName.includes('toplantı') || catName.includes('meeting') || desc.includes('toplantı') || desc.includes('meeting');
+      });
+      const hasGala = eventsActivities.some((a: any) => {
+          const catName = categories?.find(c => c.id === a.category_id)?.name?.toLowerCase() || '';
+          const desc = (a.description || '').toLowerCase();
+          return catName.includes('gala') || desc.includes('gala');
+      });
+      
+      const budgetTotal = salesTotals?.totalByCurrency?.[project?.currency || 'EUR'] || 0;
+      const hotel = hotels.find((h: any) => h.id === project?.hotel_id);
+      const hotelName = hotel?.name || '-';
+      const hotelConcept = hotel?.concept || '-';
+      
+      setContractData({
+        settings,
+        roomsText,
+        paxText,
+        hasMeeting,
+        hasGala,
+        hotelName,
+        hotelConcept,
+        budgetTotal,
+        budgetCurrency: project?.currency || 'EUR',
+        paymentPlans: collectionPlans
+      });
+      
+      setTimeout(() => {
+        if (!contractRef.current) {
+            setIsGeneratingContractWord(false);
+            return;
+        }
+        
+        try {
+            const html = contractRef.current.innerHTML;
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
+                 "xmlns:w='urn:schemas-microsoft-com:office:word' " +
+                 "xmlns='http://www.w3.org/TR/REC-html40'>" +
+                 "<head><meta charset='utf-8'><title>Sözleşme</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + html + footer;
+            
+            const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            const fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = `${project?.reference_no || 'sozlesme'}.doc`;
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        } catch (e) {
+            console.error("Word oluşturma hatası:", e);
+        } finally {
+            setIsGeneratingContractWord(false);
+            setContractData(null);
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error generating contract Word:", error);
+      setIsGeneratingContractWord(false);
+      setContractData(null);
+    }
+  };
+
   const exportProjectFullToExcel = async () => {
     try {
       setLoading(true);
@@ -14454,9 +14641,36 @@ export default function ProjectDetailPage() {
                       </>
                     ) : (
                       canEdit(Module.PROJECTS) && (!project?.locked || isSuperAdmin) && (
-                        <button onClick={handleEditProject} className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-xs font-bold flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Düzenle
-                        </button>
+                        <>
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <button onClick={handleGenerateContract} disabled={isGeneratingContract || isGeneratingContractWord} className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-xs font-bold flex items-center justify-center gap-2 ${isGeneratingContract ? 'bg-gray-500 text-gray-300' : 'bg-red-600 text-white hover:bg-red-500'}`}>
+                              {isGeneratingContract ? (
+                                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                  <circle cx="12" cy="12" r="10" strokeWidth="4" className="opacity-25"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <ScrollText className="w-4 h-4" />
+                              )}
+                              {isGeneratingContract ? 'Hazırlanıyor...' : 'PDF İndir'}
+                            </button>
+                            
+                            <button onClick={handleGenerateContractWord} disabled={isGeneratingContract || isGeneratingContractWord} className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-xs font-bold flex items-center justify-center gap-2 ${isGeneratingContractWord ? 'bg-gray-500 text-gray-300' : 'bg-blue-700 text-white hover:bg-blue-600'}`}>
+                              {isGeneratingContractWord ? (
+                                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                  <circle cx="12" cy="12" r="10" strokeWidth="4" className="opacity-25"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <ScrollText className="w-4 h-4" />
+                              )}
+                              {isGeneratingContractWord ? 'Hazırlanıyor...' : 'Word İndir'}
+                            </button>
+                          </div>
+                          <button onClick={handleEditProject} className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-xs font-bold flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Düzenle
+                          </button>
+                        </>
                       )
                     )}
                   </>
@@ -27395,6 +27609,28 @@ export default function ProjectDetailPage() {
           </div>,
           document.body,
         )}
+        
+      {/* Hidden Contract Template for PDF generation */}
+      <div style={{ display: 'none' }}>
+        {contractData && (
+          <ContractTemplate 
+            ref={contractRef}
+            project={project}
+            agency={agencies.find((a: any) => a.id === project?.agency_id) || {}}
+            settings={contractData.settings}
+            hotelName={contractData.hotelName}
+            roomsText={contractData.roomsText}
+            paxText={contractData.paxText}
+            hasMeeting={contractData.hasMeeting}
+            hasGala={contractData.hasGala}
+            hotelConcept={contractData.hotelConcept}
+            paymentPlans={contractData.paymentPlans}
+            budgetTotal={contractData.budgetTotal}
+            budgetCurrency={contractData.budgetCurrency}
+          />
+        )}
+      </div>
+
     </div>
   );
 }
