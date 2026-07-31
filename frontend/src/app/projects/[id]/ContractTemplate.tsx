@@ -238,18 +238,20 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
                   </tr>
                 </thead>
                 <tbody>
-                    <td style={{ padding: '8px 4px' }}>TR85 0006 4000 0026 8040 2776 92</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '8px 4px' }}>SWIFT CODE</td>
-                    <td style={{ padding: '8px 4px' }}>TGBATRISXXX</td>
-                    <td style={{ padding: '8px 4px' }}>ISBKTRISXXX</td>
-                  </tr>
+                  {settings.bankAccounts.map((acc: any, i: number) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '8px 4px' }}>{acc.companyTitle}</td>
+                      <td style={{ padding: '8px 4px' }}>{acc.bankName}</td>
+                      <td style={{ padding: '8px 4px' }}>{acc.currency}</td>
+                      <td style={{ padding: '8px 4px' }}>{acc.iban}</td>
+                      <td style={{ padding: '8px 4px' }}>{acc.swiftCode}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
 
         <h3 style={{ fontSize: '13px', fontWeight: 500, marginTop: '20px', marginBottom: '10px' }}>6. DİĞER HALLER</h3>
         <h4 style={{ fontSize: '13px', fontWeight: 500, marginTop: '10px', marginBottom: '10px' }}>6.1. Rezervasyonların İptali (Konaklama Rezervasyonları)</h4>
