@@ -86,9 +86,8 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
             
             {/* Sağ Üst */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ fontSize: '24px', letterSpacing: '2px', fontWeight: 300, color: '#000' }}>SÖZLEŞME</div>
               {hasIconOrWordmark && lightWordmark && (
-                <img src={lightWordmark} alt="Wordmark Logo" style={{ height: '35px', objectFit: 'contain' }} />
+                <img src={lightWordmark} alt="Wordmark Logo" style={{ height: '63px', objectFit: 'contain' }} />
               )}
             </div>
           </div>
@@ -116,7 +115,7 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
           <div style={{ marginTop: 'auto', paddingTop: '50px' }}>
             <div style={{ borderTop: '1px solid #000', paddingTop: '10px', textAlign: 'center', fontSize: '10px', letterSpacing: '1px' }}>
               <span style={{ fontWeight: 500 }}>{companyName}</span> {companyAddress}<br/>
-              {settings?.companyPhone || '+90 (539) 112 33 33'} &nbsp; {companyEmail} &nbsp; {settings?.companyWebsite || 'WWW.TEMPUSTRAVEL.CO'}
+              {settings?.companyPhone || '+90 (539) 112 33 33'} &nbsp; {companyEmail} {settings?.companyWebsite ? <>&nbsp; {settings.companyWebsite}</> : null}
             </div>
           </div>
         </div>
@@ -202,7 +201,7 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
                    <td style={{ padding: '8px 4px' }}>{planDate}</td>
                    <td style={{ padding: '8px 4px' }}>{planAmount}</td>
                    <td style={{ padding: '8px 4px' }}>{methodStr}</td>
-                   <td style={{ padding: '8px 4px' }}>{plan.notes || plan.note || 'Geri Ödenmez Tutar'}</td>
+                   <td style={{ padding: '8px 4px' }}>{plan.notes || plan.note || (idx === 0 ? 'Geri Ödenmez Tutar' : '')}</td>
                  </tr>
                );
             }) : (
@@ -217,71 +216,28 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
 
         <h4 style={{ fontSize: '13px', fontWeight: 500, marginTop: '10px', marginBottom: '10px' }}>5.4. Ödeme Koşulları</h4>
         <p style={{ textAlign: 'justify', marginBottom: '15px' }}>MÜŞTERİ, ödemelerini banka havalesi veya kredi kartı ile yapabilir.<br/>
-        MÜŞTERİ, ödemelerini kredi kartı ile yaparsa %3,8 banka komisyonu ödemeyi kabul eder.<br/>
+        MÜŞTERİ, ödemelerini kredi kartı ile yaparsa %4,5 banka komisyonu ödemeyi kabul eder.<br/>
         MÜŞTERİ, ödemelerini geciktirirse eksik ödemeye aylık %5 vade farkı ödemeyi kabul eder.<br/>
         MÜŞTERİ, ödemelerini ilgili tarihte TL olarak yapması durumunda çekin bankadan hesaba geçtiği gün itibarı ile sözleşmede belirtilen {budgetCurrency} tutar (kambiyo vergiside eklenerek) alımı yapılır arada oluşan fark + , - olarak iade veya tahsilatı şirketler tarafından bir sonraki iş günü ödemeleri gerçekleştirilir.</p>
 
         <h4 style={{ fontSize: '13px', fontWeight: 500, marginTop: '10px', marginBottom: '10px' }}>5.5. Para Birimi</h4>
         <p style={{ textAlign: 'justify', marginBottom: '15px' }}>İş bu sözleşme kapsamında kullanılacak para birimi {budgetCurrency}'dur. MÜŞTERİ tüm ödemeleri {budgetCurrency} olarak yapacağını peşinen taahhüt etmiştir ancak ödemelerin TL ile yapılması halinde, ödeme yapılan güne ait TCMB {budgetCurrency} Döviz Efektif Satış kuru baz alınacaktır.</p>
 
-        <h4 style={{ fontSize: '13px', fontWeight: 500, marginTop: '10px', marginBottom: '10px' }}>5.6. Faturalandırma</h4>
-        <p style={{ textAlign: 'justify', marginBottom: '15px' }}>Sözleşme ile bildirilen tüm fiyatlara katma değer vergisi (KDV) ve tüm diğer lokal vergiler dahildir. KKTC VUY’a göre konaklama ve transfer hizmeti %5 KDV ile uçak bileti %0 KDV ile faturalandırılır. Aksi belirtilmedikçe fatura ödemenin gerçekleştiği para birimi ile düzenlenecektir.</p>
-
-        <h4 style={{ fontSize: '13px', fontWeight: 500, marginTop: '10px', marginBottom: '10px' }}>5.6. Banka Hesapları</h4>
-        <div style={{ marginBottom: '20px' }}>
-          {settings?.bankAccounts && settings.bankAccounts.length > 0 ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #ccc' }}>
-                  <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>FİRMA UNVANI</th>
-                  <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>BANKA ADI</th>
-                  <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>DÖVİZ</th>
-                  <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>IBAN</th>
-                  <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>SWIFT KODU</th>
-                </tr>
-              </thead>
-              <tbody>
-                {settings.bankAccounts.map((acc: any, i: number) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px 4px' }}>{acc.companyTitle}</td>
-                    <td style={{ padding: '8px 4px' }}>{acc.bankName}</td>
-                    <td style={{ padding: '8px 4px' }}>{acc.currency}</td>
-                    <td style={{ padding: '8px 4px' }}>{acc.iban}</td>
-                    <td style={{ padding: '8px 4px' }}>{acc.swiftCode}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <>
-              <p style={{ marginBottom: '10px' }}>{companyName} | MŞ No 25733 | Lefkoşa Vergi Dairesi</p>
+        {settings?.bankAccounts && settings.bankAccounts.length > 0 && (
+          <>
+            <h4 style={{ fontSize: '13px', fontWeight: 500, marginTop: '10px', marginBottom: '10px' }}>5.6. Banka Hesapları</h4>
+            <div style={{ marginBottom: '20px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #ccc' }}>
-                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>BANKA</th>
-                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>GARANTİ BANKASI</th>
-                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>İŞ BANKASI</th>
+                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>FİRMA UNVANI</th>
+                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>BANKA ADI</th>
+                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>DÖVİZ</th>
+                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>IBAN</th>
+                    <th style={{ padding: '8px 4px', textAlign: 'left', fontWeight: 500 }}>SWIFT KODU</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px 4px' }}>TL</td>
-                    <td style={{ padding: '8px 4px' }}>TR82 0006 2000 4930 0006 2935 35</td>
-                    <td style={{ padding: '8px 4px' }}>TR97 0006 4000 0016 8040 2013 36</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px 4px' }}>EURO</td>
-                    <td style={{ padding: '8px 4px' }}>TR96 0006 2000 4930 0009 0644 76</td>
-                    <td style={{ padding: '8px 4px' }}>TR26 0006 4000 0026 8040 2776 87</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px 4px' }}>USD</td>
-                    <td style={{ padding: '8px 4px' }}>TR42 0006 2000 4930 0009 0644 78</td>
-                    <td style={{ padding: '8px 4px' }}>TR16 0006 4000 0026 8040 2776 73</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px 4px' }}>GBP</td>
-                    <td style={{ padding: '8px 4px' }}>TR69 0006 2000 4930 0009 0644 77</td>
                     <td style={{ padding: '8px 4px' }}>TR85 0006 4000 0026 8040 2776 92</td>
                   </tr>
                   <tr>
