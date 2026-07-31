@@ -251,7 +251,6 @@ router.get('/transfers', async (req, res) => {
         created_at,
         updated_at,
         direction,
-        suppliers(name),
         sejours!inner(
           id,
           voucher_number,
@@ -827,11 +826,19 @@ router.get('/guides', async (req, res) => {
       .range(0, Math.max(0, requestedRows - 1));
 
     const [
-      { data: sejourExtras, count: sejourCount, error: sejourError },
+      { data: sejourExtrasRaw, count: sejourCount, error: sejourError },
       { data: projectHrRaw, count: projectCount, error: projectError }
     ] = await Promise.all([sejourExtrasQuery, projectHrQuery]);
     
-    if (sejourError) throw sejourError;
+    let sejourExtras = sejourExtrasRaw;
+    if (sejourError) {
+      if (sejourError.code === 'PGRST205' || String(sejourError.message).includes('Could not find the table')) {
+        console.warn('⚠️ sejour_extras tablosu bulunamadı, Sejour rehber kayıtları boş olarak dönülecek.');
+        sejourExtras = [];
+      } else {
+        throw sejourError;
+      }
+    }
     
     let projectHr = projectHrRaw;
     if (projectError) {
@@ -1083,11 +1090,19 @@ router.get('/part-time', async (req, res) => {
       .range(0, Math.max(0, requestedRows - 1));
 
     const [
-      { data: sejourExtras, count: sejourCount, error: sejourError },
+      { data: sejourExtrasRaw, count: sejourCount, error: sejourError },
       { data: projectHrRaw, count: projectCount, error: projectError }
     ] = await Promise.all([sejourExtrasQuery, projectHrQuery]);
     
-    if (sejourError) throw sejourError;
+    let sejourExtras = sejourExtrasRaw;
+    if (sejourError) {
+      if (sejourError.code === 'PGRST205' || String(sejourError.message).includes('Could not find the table')) {
+        console.warn('⚠️ sejour_extras tablosu bulunamadı, Sejour part-time kayıtları boş olarak dönülecek.');
+        sejourExtras = [];
+      } else {
+        throw sejourError;
+      }
+    }
     
     let projectHr = projectHrRaw;
     if (projectError) {
