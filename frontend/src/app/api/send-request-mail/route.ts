@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Konu başlığı formatı: Tarih Planı | Firma / Sektör Adı | Referans No | Genel Ayarlarda Tanımlı Firma Adı
-    const mailSubject = subject || `${requestData.date_range} | ${requestData.company_name} | #${requestData.reference} | ${generalSettings?.companyName || generalSettings?.company_name || ""}`;
+    const baseSubject = subject || `${requestData.date_range} | ${requestData.company_name} | #${requestData.reference} | ${generalSettings?.companyName || generalSettings?.company_name || ""}`;
+    const mailSubject = `📋 ${baseSubject}`;
 
     // E-postayı gönder
     const result = await sendMail({

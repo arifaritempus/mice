@@ -22,7 +22,7 @@ export function getRequestMailHtml(data: RequestMailData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TALEP</title>
   <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 40px 0; }
+    body { font-family: 'Avenir Next Medium', 'Avenir Next', Avenir, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 40px 0; }
     .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
     .header { background: #0f172a; padding: 30px; text-align: center; color: white; }
     .header h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
@@ -45,20 +45,17 @@ export function getRequestMailHtml(data: RequestMailData): string {
 </head>
 <body>
   <div class="container">
-    <div class="header" style="background-color: #0f172a; color: #ffffff;">
-      <div style="margin-bottom: 20px; font-size: 28px; font-weight: 800; letter-spacing: -1px; text-transform: uppercase;">
-         ${data.system_company_name || "MICE SİSTEMİ"}
-      </div>
-      <h1>TALEP</h1>
-      <p>Referans: #${data.reference}</p>
-    </div>
     <div class="content">
       <div class="greeting">
-        Sayın <strong>${data.hotel_name}</strong> Yetkilisi,<br><br>
+        Sayın Otel Yetkilisi,<br><br>
         Aşağıda detayları belirtilen grubumuz için tesisinizin müsaitlik durumunu ve fiyat teklifinizi rica ederiz.
       </div>
       
       <div class="details-box">
+        <div class="row">
+          <span class="label">REFERANS</span>
+          <span class="value">#${data.reference}</span>
+        </div>
         <div class="row">
           <span class="label">Firma / Sektör</span>
           <span class="value">${data.company_name || "-"}</span>
