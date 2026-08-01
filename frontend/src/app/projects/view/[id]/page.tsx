@@ -1299,19 +1299,21 @@ export default function ProjectViewPublicPage() {
             }}
           >
             <div className="flex-1 flex flex-nowrap overflow-x-auto scrollbar-hide py-1 px-1">
-              <button
-                onClick={() => setActiveViewHotelId("all")}
-                className={`px-6 py-4 text-xs font-bold transition-all whitespace-nowrap ${activeViewHotelId === "all" ? "text-blue-700 border-b-2 border-blue-600" : "text-gray-700 hover:text-gray-900"}`}
-                style={{
-                  backgroundColor:
-                    activeViewHotelId === "all"
-                      ? appSettings?.lightBgSecondary || "#ffffff"
-                      : "transparent",
-                  minWidth: "fit-content",
-                }}
-              >
-                TÜMÜ
-              </button>
+              {hotelsData && hotelsData.length > 1 && (
+                <button
+                  onClick={() => setActiveViewHotelId("all")}
+                  className={`px-6 py-4 text-xs font-bold transition-all whitespace-nowrap ${activeViewHotelId === "all" ? "text-blue-700 border-b-2 border-blue-600" : "text-gray-700 hover:text-gray-900"}`}
+                  style={{
+                    backgroundColor:
+                      activeViewHotelId === "all"
+                        ? appSettings?.lightBgSecondary || "#ffffff"
+                        : "transparent",
+                    minWidth: "fit-content",
+                  }}
+                >
+                  TÜMÜ
+                </button>
+              )}
               {hotelsData.map((h: any, idx: number) => (
                 <button
                   key={h.id}

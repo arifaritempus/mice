@@ -15173,16 +15173,18 @@ export default function ProjectDetailPage() {
       {project?.hotels_data && project.hotels_data.length > 0 && (
         <div className="mb-4">
           <div className="flex md:justify-center bg-gray-50 dark:bg-v3-surface dark:backdrop-blur-md p-1.5 rounded-xl border border-gray-100 dark:border-v3-border space-x-2 overflow-x-auto shadow-sm">
-            <button
-              onClick={() => handleHotelChange("all")}
-              className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
-                activeHotelId === "all"
-                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-                  : "bg-white dark:bg-gray-800 text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              TÜMÜ
-            </button>
+            {project.hotels_data && project.hotels_data.length > 1 && (
+              <button
+                onClick={() => handleHotelChange("all")}
+                className={`flex items-center px-2 py-1 rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap shadow-sm font-bold uppercase tracking-tight text-[9px] ${
+                  activeHotelId === "all"
+                    ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                    : "bg-white dark:bg-gray-800 text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                TÜMÜ
+              </button>
+            )}
             {project.hotels_data.map((h: any, idx: number) => {
               const hObj = hotels.find((ht) => ht.id === h.hotel_id);
               return (

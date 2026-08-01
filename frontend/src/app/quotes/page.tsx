@@ -1637,7 +1637,19 @@ export default function QuotesPage() {
                         : quote.room_pax || "N/A"}
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
-                      {formatNumber(quote.total_amount || 0)}
+                      {(() => {
+                        let displayAmount = quote.total_amount || 0;
+                        if (quote.hotels_data && Array.isArray(quote.hotels_data) && quote.hotels_data.length > 0 && quote.items && Array.isArray(quote.items)) {
+                          const firstHotelId = quote.hotels_data[0].hotel_id;
+                          if (firstHotelId) {
+                            const hotelItems = quote.items.filter((i: any) => i.hotel_id === firstHotelId);
+                            if (hotelItems.length > 0) {
+                              displayAmount = hotelItems.reduce((sum: number, i: any) => sum + (Number(i.total) || 0), 0);
+                            }
+                          }
+                        }
+                        return formatNumber(displayAmount);
+                      })()}
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {getCurrencyDisplay(quote.items?.[0]?.currency || "EUR")}

@@ -116,7 +116,7 @@ export const quotesService = {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    let query = supabase.from('quotes').select('*, items:quote_items(currency)', { count: 'exact' });
+    let query = supabase.from('quotes').select('*, items:quote_items(currency, total, hotel_id)', { count: 'exact' });
 
     // RLS/Permission Filter
     const { data: sessionData } = await supabase.auth.getSession();
@@ -185,7 +185,7 @@ export const quotesService = {
   async getAll(): Promise<Quote[]> {
     const { data, error } = await supabase
       .from('quotes')
-      .select('*, items:quote_items(currency)')
+      .select('*, items:quote_items(currency, total, hotel_id)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
