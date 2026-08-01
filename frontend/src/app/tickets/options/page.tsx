@@ -511,6 +511,7 @@ export default function TicketOptionsPage() {
     route: "",
     passenger_count: 0,
     pp_cost: 0,
+    pp_cost_str: "",
     total_cost: 0,
     currency: "TRY",
     option_end_date: toCalendarYmd(new Date()),
@@ -534,6 +535,7 @@ export default function TicketOptionsPage() {
     route: "",
     passenger_count: 0,
     pp_cost: 0,
+    pp_cost_str: "",
     total_cost: 0,
     currency: "EUR",
     option_end_date: toCalendarYmd(new Date()),
@@ -564,7 +566,9 @@ export default function TicketOptionsPage() {
         setLoading(true);
         const data = await ticketOptionsService.getAll();
         // Tarih formatlarını düzenle (Supabase'den gelen formatı sayfa formatına çevir)
-        const formattedData = data.map((option: any) => ({
+        const formattedData = data
+          .filter((option: any) => (option.status || "").toLowerCase() !== "confirmed" && (option.status || "").toLowerCase() !== "cancelled")
+          .map((option: any) => ({
           ...option,
           departure_date: toCalendarYmd(option.departure_date),
           return_date: toCalendarYmd(option.return_date),
@@ -975,6 +979,7 @@ export default function TicketOptionsPage() {
       route: "",
       passenger_count: 0,
       pp_cost: 0,
+      pp_cost_str: "",
       total_cost: 0,
       currency: "EUR",
       option_end_date: toCalendarYmd(new Date()),
@@ -1108,6 +1113,7 @@ export default function TicketOptionsPage() {
       route: ticket.route,
       passenger_count: ticket.passenger_count,
       pp_cost: ticket.pp_cost,
+      pp_cost_str: ticket.pp_cost.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       total_cost: ticket.total_cost,
       currency: ticket.currency,
       option_end_date: ticket.option_end_date,
@@ -1410,13 +1416,6 @@ export default function TicketOptionsPage() {
               <span className="font-bold">{statusCardCounts.all}</span>
             </button>
             <button
-              onClick={() => setStatusFilter("confirmed")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "confirmed" ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-600 dark:text-emerald-400" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
-            >
-              <span className="uppercase">{t('ticketsOptions.tabConfirmed') || "KONFİRME"}</span>
-              <span className="font-bold">{statusCardCounts.confirmed}</span>
-            </button>
-            <button
               onClick={() => setStatusFilter("active")}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "active" ? "bg-purple-500/20 border border-purple-500/50 text-purple-400" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
             >
@@ -1429,13 +1428,6 @@ export default function TicketOptionsPage() {
             >
               <span className="uppercase">{t('ticketsOptions.tabExpired') || "SÜRESİ DOLMUŞ"}</span>
               <span className="font-bold">{statusCardCounts.expired}</span>
-            </button>
-            <button
-              onClick={() => setStatusFilter("cancelled")}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "cancelled" ? "bg-red-500/20 border border-red-500/50 text-red-400" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
-            >
-              <span className="uppercase">{t('ticketsOptions.tabCancelled') || "İPTAL"}</span>
-              <span className="font-bold">{statusCardCounts.cancelled}</span>
             </button>
           </div>
           <div className="flex items-center gap-2 border-l border-v3-border pl-4 text-v3-muted">
@@ -1990,7 +1982,7 @@ export default function TicketOptionsPage() {
                 <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[2] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[2]">
                   <div>
                     <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblVoucher') || "Voucher No"}</label>
-                    <input type="text" value={newTicketOption.voucher_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-v3-border rounded-lg text-xs font-bold text-v3-text bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder={t('ticketsOptions.lblVoucher') || "Voucher"} />
+                    <input autoFocus type="text" value={newTicketOption.voucher_no} onChange={(e) => setNewTicketOption({ ...newTicketOption, voucher_no: e.target.value })} className="w-full px-3 py-2 border border-gray-200 dark:border-v3-border rounded-lg text-xs font-bold text-v3-text bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder={t('ticketsOptions.lblVoucher') || "Voucher"} />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblAgent') || "Acente *"}</label>
@@ -2081,7 +2073,7 @@ export default function TicketOptionsPage() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPpCost') || "PP Maliyet"}</label>
-                    <input type="number" step="0.01" value={newTicketOption.pp_cost === 0 ? "" : newTicketOption.pp_cost} onChange={(e) => setNewTicketOption({ ...newTicketOption, pp_cost: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-v3-border rounded-lg text-xs font-bold text-v3-text bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0.00" />
+                    <input type="text" value={newTicketOption.pp_cost_str} onChange={(e) => { const val = e.target.value; const parsed = parseFloat(val.replace(/\./g, "").replace(",", ".")) || 0; setNewTicketOption({ ...newTicketOption, pp_cost_str: val, pp_cost: parsed }); }} onBlur={(e) => { const val = e.target.value; const parsed = parseFloat(val.replace(/\./g, "").replace(",", ".")) || 0; const formatted = parsed.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); setNewTicketOption({ ...newTicketOption, pp_cost_str: formatted, pp_cost: parsed }); }} className="w-full px-3 py-2 border border-gray-200 dark:border-v3-border rounded-lg text-xs font-bold text-v3-text bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0,00" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblCurrency') || "Döviz"}</label>
@@ -2248,7 +2240,7 @@ export default function TicketOptionsPage() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblPpCost') || "PP Maliyet"}</label>
-                    <input type="number" step="0.01" value={editTicketOption.pp_cost === 0 ? "" : editTicketOption.pp_cost} onChange={(e) => setEditTicketOption({ ...editTicketOption, pp_cost: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-200 dark:border-v3-border rounded-lg text-xs font-bold text-v3-text bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0.00" />
+                    <input type="text" value={editTicketOption.pp_cost_str} onChange={(e) => { const val = e.target.value; const parsed = parseFloat(val.replace(/\./g, "").replace(",", ".")) || 0; setEditTicketOption({ ...editTicketOption, pp_cost_str: val, pp_cost: parsed }); }} onBlur={(e) => { const val = e.target.value; const parsed = parseFloat(val.replace(/\./g, "").replace(",", ".")) || 0; const formatted = parsed.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); setEditTicketOption({ ...editTicketOption, pp_cost_str: formatted, pp_cost: parsed }); }} className="w-full px-3 py-2 border border-gray-200 dark:border-v3-border rounded-lg text-xs font-bold text-v3-text bg-white dark:bg-gray-800 focus:ring-2 focus:ring-orange-500 outline-none" placeholder="0,00" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-v3-muted uppercase tracking-widest mb-1 ml-1">{t('ticketsOptions.lblCurrency') || "Döviz"}</label>

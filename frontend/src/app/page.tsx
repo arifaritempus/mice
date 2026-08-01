@@ -486,6 +486,7 @@ export default function HomePage() {
 
     // Ticket Options
     data.ticketOptions.forEach((o: any) => {
+      if ((o.status || "").toLowerCase() === "confirmed" || (o.status || "").toLowerCase() === "cancelled") return;
       const d = parseDateSafe(o.option_end_date);
       if (d && isInRange(d, range)) {
         const daysLeft = differenceInDays(d, new Date());

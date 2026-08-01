@@ -265,7 +265,7 @@ interface Collection {
 export default function CreateSejourPage() {
   // --- V6 INJECTED STATES ---
   const [activeTabV6, setActiveTabV6] = useState("sales");
-  const [isEditingInfoV6, setIsEditingInfoV6] = useState(false);
+  const [isEditingInfoV6, setIsEditingInfoV6] = useState(true);
   const [expandedSectionV6, setExpandedSectionV6] = useState<string | null>(null);
   const [roomPriceInputV6, setRoomPriceInputV6] = useState<Record<string, string>>({});
   const [roomCostInputV6, setRoomCostInputV6] = useState<Record<string, string>>({});
@@ -1214,7 +1214,7 @@ export default function CreateSejourPage() {
                     <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[1.5]">
                       <div>
                         <label className="block text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Voucher No *</label>
-                        <input type="text" name="voucherNumber" value={salesData.voucherNumber} onChange={handleInputChange} className="w-full h-[36px] px-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-[11px] font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" required />
+                        <input type="text" name="voucherNumber" value={salesData.voucherNumber} onChange={handleInputChange} className="w-full h-[36px] px-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-[11px] font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" required autoFocus />
                       </div>
                       <div>
                         <label className="block text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Müşteri Tipi *</label>

@@ -36,7 +36,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const isInitialMount = useRef(true); // İlk yüklemede yenileme yapmamak için
 
   const getThemeFromCookie = (): Theme | null => {
     if (typeof document === "undefined") return null;
@@ -138,22 +137,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   };
 
   const setTheme = (newTheme: Theme) => {
-    // İlk yüklemede yenileme yapma (sadece kullanıcı manuel olarak tema değiştirdiğinde)
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      setThemeState(newTheme);
-      applyTheme(newTheme);
-      return;
-    }
-
-    // Tema değiştiğinde sayfayı yenile (logo'nun güncellenmesi için)
+    // Tema değiştiğinde sayfayı yenilemeye gerek yok, React state'leri otomatik güncelleyecek.
     setThemeState(newTheme);
     applyTheme(newTheme);
-
-    // Kısa bir delay ile sayfayı yenile (tema değişikliğinin uygulanması için)
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
   };
 
   // Listen for system theme changes

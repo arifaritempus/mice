@@ -1105,30 +1105,6 @@ export default function QuotesPage() {
                 {beklemedeCount}
               </span>
             </button>
-
-            <button
-              onClick={() => setFilter("KONFİRME")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "KONFİRME" ? "bg-teal-500/20 border-teal-500/50 text-teal-600 dark:text-teal-300 shadow-[0_0_10px_rgba(20,184,166,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
-            >
-              <span className="text-[10px] font-medium uppercase tracking-wider">
-                Konfirme
-              </span>
-              <span className="font-bold text-xs bg-black/20 px-1.5 py-0.5 rounded-md">
-                {konfirmeCount}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setFilter("İPTAL")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all duration-200 ${filter === "İPTAL" ? "bg-red-500/20 border-red-500/50 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.15)]" : "bg-transparent border-transparent hover:bg-v3-border text-v3-text"}`}
-            >
-              <span className="text-[10px] font-medium uppercase tracking-wider">
-                İptal
-              </span>
-              <span className="font-bold text-xs bg-black/20 px-1.5 py-0.5 rounded-md">
-                {iptalCount}
-              </span>
-            </button>
           </div>
 
           {/* Opsiyon Filters */}

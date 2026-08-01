@@ -18,6 +18,7 @@ import {
   projectPurchaseItemsService,
   projectUsersService,
 } from "@/lib/supabaseService";
+import { supabase } from "@/lib/supabaseClient";
 import QuoteServiceEditor from "@/components/QuoteServiceEditor";
 import { usePermissions, Module } from "@/lib/permissions";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
@@ -1025,6 +1026,9 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         serviceItems.length > 0 ? serviceItems[0].currency : "EUR";
       const firstHotel = activeHotels[0];
 
+      const { data: authData } = await supabase.auth.getUser();
+      const currentUser = authData?.user;
+
       const createdQuote = await quotesService.create({
         quote_number: formData.reference,
         client_name: formData.company_name,
@@ -1046,6 +1050,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         notes: formData.notes,
         total_amount: totalAmount,
         currency: currency,
+        created_by: currentUser?.id || null,
       } as any);
 
       for (const item of serviceItems) {

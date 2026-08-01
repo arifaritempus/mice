@@ -167,16 +167,20 @@ export default function TopNavigation() {
       if (!user) return;
 
       const fetchNotifications = async () => {
-        const { data, error } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(20);
-
-        if (!error && data) {
-          setNotifications(data);
-          setUnreadCount(data.filter((n) => !n.is_read).length);
+        try {
+          const res = await fetch("/api/user-notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id })
+          });
+          if (res.ok) {
+            const json = await res.json();
+            const data = json.notifications || [];
+            setNotifications(data);
+            setUnreadCount(data.filter((n: any) => !n.is_read).length);
+          }
+        } catch (err) {
+          console.error("fetchNotifications Error:", err);
         }
       };
 
@@ -247,15 +251,18 @@ export default function TopNavigation() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     
-    const { error } = await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("user_id", user.id)
-      .eq("is_read", false);
-      
-    if (!error) {
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
+    try {
+      const res = await fetch("/api/user-notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        setUnreadCount(0);
+      }
+    } catch (err) {
+      console.error("handleMarkAllAsRead Error:", err);
     }
   };
 

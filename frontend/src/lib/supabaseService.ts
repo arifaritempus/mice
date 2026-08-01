@@ -136,6 +136,8 @@ export const quotesService = {
       } else {
         query = query.eq('status', params.filter);
       }
+    } else {
+      query = query.neq('status', 'KONFİRME').neq('status', 'İPTAL');
     }
     if (params.quoteDateStart) query = query.gte('created_at', params.quoteDateStart);
     if (params.quoteDateEnd) query = query.lte('created_at', `${params.quoteDateEnd}T23:59:59`);
