@@ -287,7 +287,7 @@ router.get('/transfers', async (req, res) => {
         cost_amount,
         currency,
         created_at,
-        updated_at,
+        updated_at
       `, { count: 'exact' })
       .order('date', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false, nullsFirst: false })
@@ -817,7 +817,7 @@ router.get('/guides', async (req, res) => {
         amount,
         currency,
         exchange_rate,
-        created_at,
+        created_at
       `, { count: 'exact' })
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
@@ -1079,7 +1079,7 @@ router.get('/part-time', async (req, res) => {
         amount,
         currency,
         exchange_rate,
-        created_at,
+        created_at
       `, { count: 'exact' })
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
