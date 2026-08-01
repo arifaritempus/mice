@@ -288,7 +288,6 @@ router.get('/transfers', async (req, res) => {
         currency,
         created_at,
         updated_at,
-        suppliers(name)
       `, { count: 'exact' })
       .order('date', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false, nullsFirst: false })
@@ -792,7 +791,6 @@ router.get('/guides', async (req, res) => {
         cost_price,
         cost_currency,
         created_at,
-        suppliers(name),
         service_types(name),
         sejours!inner(
           id,
@@ -820,7 +818,6 @@ router.get('/guides', async (req, res) => {
         currency,
         exchange_rate,
         created_at,
-        suppliers(name)
       `, { count: 'exact' })
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
@@ -1056,7 +1053,6 @@ router.get('/part-time', async (req, res) => {
         cost_price,
         cost_currency,
         created_at,
-        suppliers(name),
         service_types(name),
         sejours!inner(
           id,
@@ -1084,7 +1080,6 @@ router.get('/part-time', async (req, res) => {
         currency,
         exchange_rate,
         created_at,
-        suppliers(name)
       `, { count: 'exact' })
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));

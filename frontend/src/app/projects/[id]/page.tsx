@@ -13185,7 +13185,7 @@ export default function ProjectDetailPage() {
             formula: `SUM(E${startDataRow}:E${endDataRow})`,
             result: items.reduce((acc, i) => acc + i.totalEur, 0),
           };
-          const catCur = items.length > 0 ? (items[0].currency || cur) : cur;
+          const catCur = cur;
           const catSym = catCur === "USD" ? "$" : catCur === "GBP" ? "£" : (catCur === "TRY" || catCur === "TL") ? "₺" : "€";
           subRow.getCell(5).numFmt = `"${catSym}"#,##0.00`;
           subRow.getCell(5).font = { bold: true };

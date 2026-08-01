@@ -984,7 +984,7 @@ export default function ProjectViewPublicPage() {
               result: catItems.reduce((s, i) => s + (i.total || 0), 0),
             } as any;
           }
-          const catCur = catItems.length > 0 ? (catItems[0].currency || (project as any)?.currency || "EUR") : ((project as any)?.currency || "EUR");
+          const catCur = ((project as any)?.currency || "EUR");
           const catSym = getCurrencySymbol(catCur).trim();
           araRow.getCell(5).numFmt = `"${catSym}" #,##0.00`;
           araRow.height = 22;
@@ -1017,7 +1017,7 @@ export default function ProjectViewPublicPage() {
             result: items.reduce((s, i) => s + (i.total || 0), 0),
           } as any;
         }
-        const firstItemCur = items.length > 0 ? (items[0].currency || (project as any)?.currency || "EUR") : ((project as any)?.currency || "EUR");
+        const firstItemCur = ((project as any)?.currency || "EUR");
         const projSymTotal = getCurrencySymbol(firstItemCur).trim();
         totalRow.getCell(5).numFmt = `"${projSymTotal}" #,##0.00`;
         totalRow.height = 30;
@@ -1580,7 +1580,7 @@ export default function ProjectViewPublicPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-sm font-black text-gray-900 text-right whitespace-nowrap border-t border-slate-200">
-                              {formatCurrency(catTotalEur, items[0]?.currency || (project as any)?.currency || 'EUR')}
+                              {formatCurrency(catTotalEur, (project as any)?.currency || 'EUR')}
                             </td>
                           </tr>
                         </tbody>
@@ -1616,7 +1616,7 @@ export default function ProjectViewPublicPage() {
                 </h3>
                 <div className="space-y-1">
                   <p className="text-3xl font-black text-slate-800">
-                    {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0), filteredItems[0]?.currency || (project as any)?.currency || 'EUR')}
+                    {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0), (project as any)?.currency || 'EUR')}
                   </p>
                 </div>
               </div>
