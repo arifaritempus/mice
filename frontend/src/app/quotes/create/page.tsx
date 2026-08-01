@@ -18,7 +18,7 @@ import {
   projectPurchaseItemsService,
   projectUsersService,
 } from "@/lib/supabaseService";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import QuoteServiceEditor from "@/components/QuoteServiceEditor";
 import { usePermissions, Module } from "@/lib/permissions";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
