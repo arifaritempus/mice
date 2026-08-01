@@ -1052,6 +1052,7 @@ export default function TicketOptionsPage() {
         route: "",
         passenger_count: 0,
         pp_cost: 0,
+        pp_cost_str: "",
         total_cost: 0,
         currency: "TRY",
         option_end_date: toCalendarYmd(new Date()),
