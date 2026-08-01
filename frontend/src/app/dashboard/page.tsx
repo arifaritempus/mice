@@ -2215,6 +2215,6 @@ export default function UltimateDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-\n    </div>
+    </div>
   );
 }
