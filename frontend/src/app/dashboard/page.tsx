@@ -367,13 +367,30 @@ export default function UltimateDashboard() {
   const [calendarFilter, setCalendarFilter] = useState("Tümü");
   const [fullscreenChart, setFullscreenChart] = useState<string | null>(null);
 
+  const getFullscreenTitle = (chartId: string | null) => {
+    switch (chartId) {
+      case 'funnel': return t('dashboard.funnelTitle') || "SATIS HUNISI";
+      case 'agency': return t('dashboard.agencyTop10') || "EN YÜKSEK 10 ACENTE";
+      case 'hotel': return t('dashboard.hotelRevenue') || "EN YÜKSEK 10 OTEL";
+      case 'projEff': return t('dashboard.projEff') || "PROJE EKİP VERİMLİLİĞİ";
+      case 'sejEff': return t('dashboard.sejEff') || "SEJOUR EKİP VERİMLİLİĞİ";
+      case 'supplier': return t('dashboard.supplierCost') || "TEDARİKÇİ MALİYETLERİ";
+      case 'airline': return t('dashboard.airlineDistribution') || "HAVAYOLU DAĞILIMI";
+      case 'vehicle': return t('dashboard.vehicleUsage') || "ARAÇ TİPİ KULLANIMI";
+      case 'transferSupplier': return t('dashboard.transferSuppliers') || "TRANSFER TEDARİKÇİ DAĞILIMI";
+      case 'conversion': return t('dashboard.conversionChart') || "TEKLİF & PROJE DÖNÜŞÜM GRAFİĞİ";
+      default: return t('dashboard.fullscreenView' as any) || "TAM EKRAN GÖRÜNÜM";
+    }
+  };
+
+
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   const [calendarViewDate, setCalendarViewDate] = useState<Date>(new Date());
   const [calendarViewMode, setCalendarViewMode] = useState<"month"|"year"|"decade"|"century">("month");
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedCalendarDate(null);
+      if (e.key === "Escape") { setSelectedCalendarDate(null); setFullscreenChart(null); }
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -1508,7 +1525,7 @@ export default function UltimateDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-6 relative z-10">
           {/* Top Hotels */}
           <div className="xl:col-span-4 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="cyan">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="cyan" onExpand={() => setFullscreenChart('hotel')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Hotel size={18} className="text-cyan-600 dark:text-cyan-400" /> {t('dashboard.hotelRevenue') || "Otel Bazlı Ciro Analizi"}
               </h2>
@@ -1518,7 +1535,7 @@ export default function UltimateDashboard() {
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={m.hotelData}
+                    data={m.hotelData.slice(0, 10)}
                     layout="vertical"
                     margin={{ top: 0, right: 30, left: 40, bottom: 0 }}
                   >
@@ -1555,7 +1572,7 @@ export default function UltimateDashboard() {
                       radius={[0, 4, 4, 0]}
                       barSize={16}
                     >
-                      {m.hotelData.map((entry: any, index: number) => (
+                      {m.hotelData.slice(0, 10).map((entry: any, index: number) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -1634,7 +1651,7 @@ export default function UltimateDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-6 relative z-10">
           {/* Airlines */}
           <div className="xl:col-span-4 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="amber">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="amber" onExpand={() => setFullscreenChart('airline')}>
               <h2 className="text-md font-black text-v3-text flex items-center gap-2">
                 <Plane size={16} className="text-amber-600 dark:text-amber-400" /> {t('dashboard.airlineDistribution') || "Havayolu Dağılımı"}
               </h2>
@@ -1668,7 +1685,7 @@ export default function UltimateDashboard() {
 
           {/* Vehicles */}
           <div className="xl:col-span-4 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="fuchsia" onExpand={() => setFullscreenChart('vehicle')}>
               <h2 className="text-md font-black text-v3-text flex items-center gap-2">
                 <Bus size={16} className="text-fuchsia-600 dark:text-fuchsia-400" /> {t('dashboard.vehicleUsage') || "Araç Tipi Kullanımı"}
               </h2>
@@ -1702,7 +1719,7 @@ export default function UltimateDashboard() {
 
           {/* Transfer Suppliers */}
           <div className="xl:col-span-4 flex flex-col">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose" onExpand={() => setFullscreenChart('transferSupplier')}>
               <h2 className="text-md font-black text-v3-text flex items-center gap-2">
                 <Building2 size={16} className="text-rose-600 dark:text-rose-400" /> {t('dashboard.transferSuppliers') || "Transfer Tedarikçi Dağılımı"}
               </h2>
@@ -1741,7 +1758,7 @@ export default function UltimateDashboard() {
           {/* Conversion Chart (Teklif -> Proje Dönüşüm) */}
           {/* Conversion Chart (Teklif -> Proje Dönüşüm) */}
           <div className="xl:col-span-8 flex flex-col mb-4">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="emerald" onExpand={() => setFullscreenChart('conversion')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Target size={18} className="text-emerald-600 dark:text-emerald-400" /> {t('dashboard.conversionChart') || "Teklif & Proje Dönüşüm Grafiği"}
               </h2>
@@ -1771,7 +1788,7 @@ export default function UltimateDashboard() {
 
           {/* Supplier Cost Analysis */}
           <div className="xl:col-span-4 flex flex-col mb-4">
-            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose">
+            <GlassCard className="p-5 flex-1 flex flex-col" glowColor="rose" onExpand={() => setFullscreenChart('supplier')}>
               <h2 className="text-lg font-black text-v3-text flex items-center gap-2">
                 <Building2 size={18} className="text-rose-600 dark:text-rose-400" /> {t('dashboard.supplierCost') || "Tedarikçi Gider Analizi"}
               </h2>
@@ -1781,13 +1798,13 @@ export default function UltimateDashboard() {
               <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={m.supplierCostData}
+                    data={m.supplierCostData.slice(0, 10)}
                     layout="vertical"
                     margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" horizontal={false} />
                     <XAxis type="number" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 }).format(value)} />
-                    <YAxis dataKey="name" type="category" width={80} stroke="var(--v3-muted)" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis dataKey="name" type="category" width={110} stroke="var(--v3-muted)" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val: string) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
                     <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
                     <Bar dataKey="Maliyet" name={t('dashboard.cost') || "Maliyet"} fill="#fb7185" radius={[0, 4, 4, 0]} barSize={12}>
                       {m.supplierCostData.map((entry: any, index: number) => (
@@ -1965,7 +1982,7 @@ export default function UltimateDashboard() {
                               return (
                                 <div 
                                   key={op.id} 
-                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-v3-text ${op.color} shadow-sm ${extraClasses}`}
+                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-white ${op.color} shadow-sm ${extraClasses}`}
                                   style={{ 
                                     top: `${op.rowIndex * 19}px`,
                                     width: `calc(${span * 100}% + ${(span - 1) * 8}px + ${(span - 1) * 2}px)`,
@@ -2075,7 +2092,7 @@ export default function UltimateDashboard() {
             className="fixed inset-0 z-[100] bg-white/90 dark:bg-v3-bg/95 backdrop-blur-md flex flex-col p-6 overflow-hidden"
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black text-v3-text uppercase tracking-widest">{t('dashboard.fullscreenView' as any) || "TAM EKRAN GÖRÜNÜM"}</h2>
+              <h2 className="text-2xl font-black text-v3-text uppercase tracking-widest">{getFullscreenTitle(fullscreenChart)}</h2>
               <button onClick={() => setFullscreenChart(null)} className="p-3 bg-white dark:bg-v3-surface rounded-full shadow-lg border border-slate-200 dark:border-v3-border hover:bg-slate-50 dark:hover:bg-v3-border transition-colors">
                 <X size={24} className="text-v3-text" />
               </button>
@@ -2135,6 +2152,68 @@ export default function UltimateDashboard() {
                     </ComposedChart>
                   </ResponsiveContainer>
                 )}
+                
+                {fullscreenChart === 'airline' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={m.airlineData} cx="50%" cy="50%" innerRadius={120} outerRadius={160} paddingAngle={2} dataKey="Adet" nameKey="name" label={(entry) => entry.name}>
+                        {m.airlineData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'vehicle' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={m.vehicleData} cx="50%" cy="50%" innerRadius={120} outerRadius={160} paddingAngle={2} dataKey="Adet" nameKey="name" label={(entry) => entry.name}>
+                        {m.vehicleData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[(index + 3) % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'transferSupplier' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={m.transferSupplierData} cx="50%" cy="50%" innerRadius={120} outerRadius={160} paddingAngle={2} dataKey="Adet" nameKey="name" label={(entry) => entry.name}>
+                        {m.transferSupplierData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[(index + 5) % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'conversion' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={m.conversionChartData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} cursor={{ fill: "#ffffff05" }} />
+                      <Legend />
+                      <Bar dataKey="Bekleyen Teklif" name={t('dashboard.pendingQuote') || "Bekleyen Teklif"} fill="#fbbf24" radius={[4, 4, 0, 0]} stackId="a" />
+                      <Bar dataKey="İptal Olan Teklif" name={t('dashboard.canceledQuote') || "İptal Olan Teklif"} fill="#f43f5e" radius={[4, 4, 0, 0]} stackId="a" />
+                      <Bar dataKey="Konfirme Teklif" name={t('dashboard.confirmedQuote') || "Konfirme Teklif"} fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" />
+                      <Bar dataKey="Tamamlanan Proje" name={t('dashboard.completedProject') || "Tamamlanan Proje"} fill="#10b981" radius={[4, 4, 0, 0]} stackId="b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+                {fullscreenChart === 'supplier' && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={m.supplierCostData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--v3-border)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={100} interval={0} tickFormatter={(val: string) => val.length > 25 ? val.substring(0, 25) + '...' : val} />
+                      <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                      <Tooltip content={<CustomTooltip t={t} language={language} />} />
+                      <Legend />
+                      <Bar dataKey="Maliyet" fill="#e11d48" radius={[4, 4, 0, 0]} name={t('dashboard.cost') || "Maliyet"} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+
                 {fullscreenChart === 'sejEff' && (
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={m.sejourEfficiencyData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>

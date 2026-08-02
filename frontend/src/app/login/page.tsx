@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authService, LoginCredentials } from "@/lib/auth";
-import { permissionService } from "@/lib/permissions";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { SettingsService } from "@/lib/supabaseService";
 
 export default function LoginPage() {
@@ -42,44 +42,37 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-  const [logo, setLogo] = useState<string>("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [themeSettings, setThemeSettings] = useState<any>({});
+  const { isDark } = useTheme();
 
   useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    if (rememberedEmail) {
+      setCredentials((prev) => ({ ...prev, email: rememberedEmail }));
+      setRememberMe(true);
+    }
+
     const loadLogo = async () => {
       try {
-        let generalSettings: any = {};
-        try {
-          const res = await fetch('/api/theme-settings');
-          if (res.ok) {
-            const data = await res.json();
-            generalSettings = data.general_settings || {};
-          }
-        } catch (fetchErr) {
-          console.error("Theme settings fetch error:", fetchErr);
+        const res = await fetch('/api/theme-settings');
+        if (res.ok) {
+          const data = await res.json();
+          setThemeSettings(data.general_settings || {});
         }
-        
-        const currentLogo =
-          generalSettings.darkMenuLogo ||
-          generalSettings.dark_menu_logo ||
-          generalSettings.darkIconLogo ||
-          generalSettings.dark_icon_logo ||
-          generalSettings.darkWordmarkLogo ||
-          generalSettings.dark_wordmark_logo ||
-          generalSettings.lightMenuLogo ||
-          generalSettings.light_menu_logo ||
-          generalSettings.lightIconLogo ||
-          generalSettings.light_icon_logo ||
-          generalSettings.lightWordmarkLogo ||
-          generalSettings.light_wordmark_logo;
-        if (currentLogo) {
-          setLogo(currentLogo);
-        }
-      } catch (err) {
-        console.error("Logo yükleme hatası:", err);
+      } catch (fetchErr) {
+        console.error("Theme settings fetch error:", fetchErr);
       }
     };
     loadLogo();
   }, []);
+
+  const themeLogo = isDark
+    ? (themeSettings.darkMenuLogo || themeSettings.dark_menu_logo || themeSettings.darkIconLogo || themeSettings.dark_icon_logo || themeSettings.darkWordmarkLogo || themeSettings.dark_wordmark_logo)
+    : (themeSettings.lightMenuLogo || themeSettings.light_menu_logo || themeSettings.lightIconLogo || themeSettings.light_icon_logo || themeSettings.lightWordmarkLogo || themeSettings.light_wordmark_logo);
+  const displayLogo = themeLogo ||
+    (themeSettings.lightMenuLogo || themeSettings.light_menu_logo || themeSettings.lightIconLogo || themeSettings.light_icon_logo || themeSettings.lightWordmarkLogo || themeSettings.light_wordmark_logo) ||
+    (themeSettings.darkMenuLogo || themeSettings.dark_menu_logo || themeSettings.darkIconLogo || themeSettings.dark_icon_logo || themeSettings.darkWordmarkLogo || themeSettings.dark_wordmark_logo);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -132,6 +125,12 @@ export default function LoginPage() {
         console.warn("Profil yükleme hatası:", profileError);
       }
 
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", credentials.email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
+
       window.location.href = "/";
     } catch (error: any) {
       let errorMessage = "Giriş yapılırken bir hata oluştu";
@@ -176,10 +175,10 @@ export default function LoginPage() {
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/20 to-transparent" />
 
           <div className="text-center mb-8 flex flex-col items-center">
-            {logo ? (
+            {displayLogo ? (
               <div className="mb-6 relative h-16 w-full flex justify-center">
                 <img
-                  src={logo}
+                  src={displayLogo}
                   alt="System Logo"
                   className="h-full object-contain"
                 />
@@ -283,6 +282,8 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 rounded bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-blue-600 dark:text-blue-400 focus:ring-blue-500 focus:ring-offset-v3-bg"
                 />
                 <label

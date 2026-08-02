@@ -458,7 +458,7 @@ export default function HomePage() {
       if (!isConfirmed) {
         const d = parseDateSafe(q.option_date);
         if (d && isInRange(d, range)) {
-          const daysLeft = differenceInDays(d, new Date());
+          const daysLeft = differenceInDays(startOfDay(d), startOfDay(new Date()));
           const isUrgent = daysLeft <= 1;
           const agencyName =
             q.marketing_clients?.name ||
@@ -489,7 +489,7 @@ export default function HomePage() {
       if ((o.status || "").toLowerCase() === "confirmed" || (o.status || "").toLowerCase() === "cancelled") return;
       const d = parseDateSafe(o.option_end_date);
       if (d && isInRange(d, range)) {
-        const daysLeft = differenceInDays(d, new Date());
+        const daysLeft = differenceInDays(startOfDay(d), startOfDay(new Date()));
         const isUrgent = daysLeft <= 1;
         const timeStr = o.option_end_time ? o.option_end_time.slice(0, 5) : "";
         const exactDate = format(d, "dd MMM", { locale: language === "en" ? enUS : tr });
@@ -521,7 +521,7 @@ export default function HomePage() {
           if ((inst.status || "").toLowerCase() !== "paid") {
             const d = parseDateSafe(inst.due_date || inst.date);
             if (d && isInRange(d, range)) {
-              const daysLeft = differenceInDays(d, new Date());
+              const daysLeft = differenceInDays(startOfDay(d), startOfDay(new Date()));
               const isUrgent = daysLeft <= 1;
               const ticket = data.flights?.find(
                 (f: any) => f.id === plan.ticket_id,
@@ -563,7 +563,7 @@ export default function HomePage() {
       if ((p.status || "").toLowerCase() !== "paid") {
         const d = parseDateSafe(p.date || p.due_date);
         if (d && isInRange(d, range)) {
-          const daysLeft = differenceInDays(d, new Date());
+          const daysLeft = differenceInDays(startOfDay(d), startOfDay(new Date()));
 
           // Try to find the project name for better context
           const proj = data.projects.find((pr) => pr.id === p.project_id);
