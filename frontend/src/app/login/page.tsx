@@ -7,6 +7,7 @@ import { authService, LoginCredentials } from "@/lib/auth";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { SettingsService } from "@/lib/supabaseService";
+import { permissionService } from "@/lib/permissions";
 
 export default function LoginPage() {
   if (typeof window !== "undefined") {
