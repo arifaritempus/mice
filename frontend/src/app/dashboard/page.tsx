@@ -369,16 +369,16 @@ export default function UltimateDashboard() {
 
   const getFullscreenTitle = (chartId: string | null) => {
     switch (chartId) {
-      case 'funnel': return t('dashboard.funnelTitle') || "SATIS HUNISI";
-      case 'agency': return t('dashboard.agencyTop10') || "EN YÜKSEK 10 ACENTE";
-      case 'hotel': return t('dashboard.hotelRevenue') || "EN YÜKSEK 10 OTEL";
-      case 'projEff': return t('dashboard.projEff') || "PROJE EKİP VERİMLİLİĞİ";
-      case 'sejEff': return t('dashboard.sejEff') || "SEJOUR EKİP VERİMLİLİĞİ";
-      case 'supplier': return t('dashboard.supplierCost') || "TEDARİKÇİ MALİYETLERİ";
-      case 'airline': return t('dashboard.airlineDistribution') || "HAVAYOLU DAĞILIMI";
-      case 'vehicle': return t('dashboard.vehicleUsage') || "ARAÇ TİPİ KULLANIMI";
-      case 'transferSupplier': return t('dashboard.transferSuppliers') || "TRANSFER TEDARİKÇİ DAĞILIMI";
-      case 'conversion': return t('dashboard.conversionChart') || "TEKLİF & PROJE DÖNÜŞÜM GRAFİĞİ";
+      case 'funnel': return t('dashboard.funnelTitle' as any) || "SATIS HUNISI";
+      case 'agency': return t('dashboard.agencyTop10' as any) || "EN YÜKSEK 10 ACENTE";
+      case 'hotel': return t('dashboard.hotelRevenue' as any) || "EN YÜKSEK 10 OTEL";
+      case 'projEff': return t('dashboard.projEff' as any) || "PROJE EKİP VERİMLİLİĞİ";
+      case 'sejEff': return t('dashboard.sejEff' as any) || "SEJOUR EKİP VERİMLİLİĞİ";
+      case 'supplier': return t('dashboard.supplierCost' as any) || "TEDARİKÇİ MALİYETLERİ";
+      case 'airline': return t('dashboard.airlineDistribution' as any) || "HAVAYOLU DAĞILIMI";
+      case 'vehicle': return t('dashboard.vehicleUsage' as any) || "ARAÇ TİPİ KULLANIMI";
+      case 'transferSupplier': return t('dashboard.transferSuppliers' as any) || "TRANSFER TEDARİKÇİ DAĞILIMI";
+      case 'conversion': return t('dashboard.conversionChart' as any) || "TEKLİF & PROJE DÖNÜŞÜM GRAFİĞİ";
       default: return t('dashboard.fullscreenView' as any) || "TAM EKRAN GÖRÜNÜM";
     }
   };
