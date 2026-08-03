@@ -1991,7 +1991,7 @@ export default function UltimateDashboard() {
                               return (
                                 <div 
                                   key={op.id} 
-                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-white ${op.color} shadow-sm ${extraClasses}`}
+                                  className={`absolute left-0 h-[16px] text-[9px] leading-[16px] px-1.5 truncate text-left text-white ${op.color} shadow-sm ${extraClasses}`}
                                   style={{ 
                                     top: `${op.rowIndex * 19}px`,
                                     width: `calc(${span * 100}% + ${(span - 1) * 8}px + ${(span - 1) * 2}px)`,
