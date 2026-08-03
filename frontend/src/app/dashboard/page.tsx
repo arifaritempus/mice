@@ -673,7 +673,7 @@ export default function UltimateDashboard() {
         Ciro: a.ciro,
         Maliyet: a.maliyet,
         "Kar/Zarar": a.ciro - a.maliyet,
-        Marj: a.ciro > 0 ? Math.round(((a.ciro - a.maliyet) / a.ciro) * 100) : 0,
+        Marj: a.maliyet > 0 ? Math.round(((a.ciro - a.maliyet) / a.maliyet) * 100) : (a.ciro > 0 ? 100 : 0),
       }))
       .sort((a, b) => b.Ciro - a.Ciro);
 
@@ -714,7 +714,7 @@ export default function UltimateDashboard() {
         Satış: htlMap[k].ciro, // Added for fallback in the BarChart
         Maliyet: htlMap[k].maliyet,
         "Kar/Zarar": htlMap[k].ciro - htlMap[k].maliyet,
-        Marj: htlMap[k].ciro > 0 ? Math.round(((htlMap[k].ciro - htlMap[k].maliyet) / htlMap[k].ciro) * 100) : 0,
+        Marj: htlMap[k].maliyet > 0 ? Math.round(((htlMap[k].ciro - htlMap[k].maliyet) / htlMap[k].maliyet) * 100) : (htlMap[k].ciro > 0 ? 100 : 0),
       }))
       .sort((a, b) => b.Ciro - a.Ciro);
 
@@ -757,17 +757,21 @@ export default function UltimateDashboard() {
       if (!dateStr) return;
       const date = new Date(dateStr);
       const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
+      const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
       
-      if (!projMonthlyMap[monthKey]) {
-        projMonthlyMap[monthKey] = { name: monthKey, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
+      if (!projMonthlyMap[sortKey]) {
+        projMonthlyMap[sortKey] = { sortKey, name: monthKey, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
       }
-      projMonthlyMap[monthKey].Ciro += c;
-      projMonthlyMap[monthKey].Maliyet += m;
-      projMonthlyMap[monthKey]["Kar/Zarar"] += (c - m);
+      projMonthlyMap[sortKey].Ciro += c;
+      projMonthlyMap[sortKey].Maliyet += m;
+      projMonthlyMap[sortKey]["Kar/Zarar"] += (c - m);
     });
     
-    const projectEfficiencyData = Object.values(projMonthlyMap).map((item: any) => {
-      item.Marj = item.Ciro > 0 ? Math.round((item["Kar/Zarar"] / item.Ciro) * 100) : 0;
+    const projectEfficiencyData = Object.values(projMonthlyMap)
+      .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey))
+      .map((item: any) => {
+      item.Satış = item.Ciro; // Fallback for charts
+      item.Marj = item.Maliyet > 0 ? Math.round((item["Kar/Zarar"] / item.Maliyet) * 100) : 0;
       return item;
     });
 
@@ -780,17 +784,21 @@ export default function UltimateDashboard() {
       if (!dateStr) return;
       const date = new Date(dateStr);
       const monthKey = date.toLocaleDateString(loc, { month: "short", year: "numeric" });
+      const sortKey = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
       
-      if (!sejMonthlyMap[monthKey]) {
-        sejMonthlyMap[monthKey] = { name: monthKey, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
+      if (!sejMonthlyMap[sortKey]) {
+        sejMonthlyMap[sortKey] = { sortKey, name: monthKey, Ciro: 0, Maliyet: 0, "Kar/Zarar": 0 };
       }
-      sejMonthlyMap[monthKey].Ciro += c;
-      sejMonthlyMap[monthKey].Maliyet += m;
-      sejMonthlyMap[monthKey]["Kar/Zarar"] += (c - m);
+      sejMonthlyMap[sortKey].Ciro += c;
+      sejMonthlyMap[sortKey].Maliyet += m;
+      sejMonthlyMap[sortKey]["Kar/Zarar"] += (c - m);
     });
     
-    const sejourEfficiencyData = Object.values(sejMonthlyMap).map((item: any) => {
-      item.Marj = item.Ciro > 0 ? Math.round((item["Kar/Zarar"] / item.Ciro) * 100) : 0;
+    const sejourEfficiencyData = Object.values(sejMonthlyMap)
+      .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey))
+      .map((item: any) => {
+      item.Satış = item.Ciro; // Fallback for charts
+      item.Marj = item.Maliyet > 0 ? Math.round((item["Kar/Zarar"] / item.Maliyet) * 100) : 0;
       return item;
     });
 
@@ -851,7 +859,7 @@ export default function UltimateDashboard() {
     const monthlyFinancialData = Object.values(monthlyFinMap)
       .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey))
       .map((item: any) => {
-         item.Marj = item.Ciro > 0 ? Math.round((item["Kar/Zarar"] / item.Ciro) * 100) : 0;
+         item.Marj = item.Maliyet > 0 ? Math.round((item["Kar/Zarar"] / item.Maliyet) * 100) : 0;
          return item;
       });
 
@@ -1304,7 +1312,7 @@ export default function UltimateDashboard() {
               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 pt-2">
                 {m.monthlyFinancialData.map((row: any, i: number) => (
                   <div key={i} className="min-w-[140px] shrink-0 bg-v3-border border border-v3-border rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden group hover:bg-v3-surface transition-all duration-300">
-                    <div className="absolute -right-4 -top-6 text-v3-text/[0.03] text-5xl font-black pointer-events-none group-hover:text-v3-text/[0.06] transition-colors duration-300">
+                    <div className="absolute -right-4 -top-6 text-v3-text opacity-5 text-5xl font-black pointer-events-none group-hover:opacity-10 transition-opacity duration-300">
                       {row.name.split(' ')[0]}
                     </div>
                     <h3 className="font-bold text-v3-text text-sm relative z-10">{row.name}</h3>
@@ -1361,7 +1369,7 @@ export default function UltimateDashboard() {
                       </div>
                       <div className="bg-slate-700 px-1.5 py-0.5 rounded-lg border border-slate-600">
                         <span className="text-white font-mono font-black text-xs">
-                          %{m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0) > 0 ? Math.round((m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) / m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0)) * 100) : 0}
+                          %{m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0) > 0 ? Math.round((m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row['Kar/Zarar'], 0) / m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Maliyet, 0)) * 100) : (m.monthlyFinancialData.reduce((acc: number, row: any) => acc + row.Ciro, 0) > 0 ? 100 : 0)}
                         </span>
                       </div>
                     </div>
@@ -1556,10 +1564,11 @@ export default function UltimateDashboard() {
                       type="category"
                       dataKey="name"
                       stroke="var(--v3-muted)"
-                      fontSize={10}
+                      fontSize={9}
                       tickLine={false}
                       axisLine={false}
-                      width={100}
+                      width={130}
+                      tickFormatter={(v) => v && v.length > 20 ? v.substring(0, 20) + "..." : v}
                     />
                     <Tooltip
                       content={<CustomTooltip t={t} language={language} />}
@@ -1865,7 +1874,8 @@ export default function UltimateDashboard() {
                   .dashboard-calendar .react-calendar__month-view__days__day {
                     color: var(--v3-text);
                     border: 1px solid var(--v3-border);
-                    height: 100px;
+                    min-height: 120px;
+                    height: auto;
                     display: flex;
                     flex-direction: column;
                     justify-content: flex-start;
@@ -1943,13 +1953,12 @@ export default function UltimateDashboard() {
                       );
                       
                       if (dayOps.length > 0) {
-                        const maxDisplayRows = 3;
-                        const visibleOps = dayOps.filter((op: any) => op.rowIndex < maxDisplayRows);
-                        const hiddenCount = dayOps.length - visibleOps.length;
+                        const maxRowIndexForDay = Math.max(...dayOps.map((op: any) => op.rowIndex), -1);
+                        const containerHeight = (maxRowIndexForDay + 1) * 19;
                         
                         return (
-                          <div className="relative w-full h-[65px] mt-1 overflow-visible">
-                            {visibleOps.map((op: any) => {
+                          <div className="relative w-full mt-1 overflow-visible" style={{ height: `${containerHeight}px` }}>
+                            {dayOps.map((op: any) => {
                               const currentDate = new Date(op.date);
                               const currentDayOfWeek = currentDate.getDay(); // 0 is Sunday, 1 is Monday ...
                               const isSegmentStart = op.isStart || currentDayOfWeek === 1;
@@ -1995,14 +2004,6 @@ export default function UltimateDashboard() {
                                 </div>
                               );
                             })}
-                            {hiddenCount > 0 && (
-                              <div 
-                                className="absolute left-0 right-0 h-[16px] text-[9px] leading-[16px] font-bold text-center text-v3-muted bg-v3-surface/50 rounded-sm shadow-sm"
-                                style={{ top: `${maxDisplayRows * 19}px` }}
-                              >
-                                +{hiddenCount} {t('dashboard.other') || "DİĞER"}
-                              </div>
-                            )}
                           </div>
                         );
                       }
