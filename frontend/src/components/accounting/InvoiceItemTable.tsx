@@ -249,14 +249,14 @@ export default function InvoiceItemTable({
                   ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                   : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300";
 
-              // Firma gösterimi: MICE faturalarında firma adı, SEJOUR faturalarında otel adı
-              const companyDisplay =
-                item.project?.company_name || item.company_name || "-";
-              const supplierDisplay =
-                item.project?.supplier_name ||
-                item.supplier_name ||
-                item.supplier?.name ||
-                "-";
+              // Firma gösterimi: MICE faturalarında firma adı, SEJOUR faturalarında boş (-)
+              const companyDisplay = isSejour 
+                ? "-" 
+                : (item.project?.company_name || item.company_name || "-");
+              
+              const supplierDisplay = isSejour
+                ? (item.supplier_name || item.supplier?.name || "-")
+                : (item.project?.supplier_name || item.supplier_name || item.supplier?.name || "-");
               const hotelDisplay =
                 item.project?.hotel_name || item.hotel_name || "-";
               const codeDisplay = isSejour

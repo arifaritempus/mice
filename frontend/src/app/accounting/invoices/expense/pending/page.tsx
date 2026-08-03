@@ -113,23 +113,24 @@ export default function ExpensePendingPage() {
   }, [items, globalTokens, globalInput]);
 
   const exportToExcel = () => {
-    const exportData = filteredItems.map((item) => ({
-      Kategori: item.category_name || "-",
-      Firma: item.project?.company_name || item.company_name || "-",
-      Tedarikçi:
-        item.project?.supplier_name ||
-        item.supplier_name ||
-        item.supplier?.name ||
-        "-",
-      Otel: item.project?.hotel_name || item.hotel_name || "-",
-      "Proje/Voucher":
+    const exportData = filteredItems.map((item) => {
+      const isSejour = item.project?.quote_type === "SEJOUR";
+      return {
+        Kategori: item.category_name || "-",
+        Firma: isSejour ? "-" : (item.project?.company_name || item.company_name || "-"),
+        Tedarikçi: isSejour 
+          ? (item.supplier_name || item.supplier?.name || "-")
+          : (item.project?.supplier_name || item.supplier_name || item.supplier?.name || "-"),
+        Otel: item.project?.hotel_name || item.hotel_name || "-",
+        "Proje/Voucher":
         item.project?.voucher_number || item.project?.title || "-",
       Açıklama: item.description || "-",
       "Toplam Fiyat": item.total_price || 0,
       Faturalanan: item.invoiced_amount || 0,
       Bakiye: item.balance || 0,
       "Para Birimi": item.currency || "TRY",
-    }));
+      };
+    });
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
