@@ -15,87 +15,162 @@ export interface RequestMailData {
 }
 
 export function getRequestMailHtml(data: RequestMailData): string {
-  
   return `<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TALEP</title>
+  <title>Müsaitlik ve Fiyat Teklifi Talebi</title>
   <style>
-    body { font-family: 'Avenir Next Medium', 'Avenir Next', Avenir, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 40px 0; }
-    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-    .header { background: #0f172a; padding: 30px; text-align: center; color: white; }
-    .header h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
-    .header p { margin: 8px 0 0 0; font-size: 14px; opacity: 0.9; }
-    .content { padding: 40px 30px; }
-    .greeting { font-size: 15px; color: #374151; margin-bottom: 25px; line-height: 1.6; }
-    .details-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
-    .row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding: 18px 0; }
-    .row:last-child { border-bottom: none; }
-    .label { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 15px; }
-    .value { font-size: 15px; font-weight: 700; color: #0f172a; text-align: right; line-height: 1.4; }
-    .events { margin-top: 25px; padding-top: 20px; border-top: 1px dashed #cbd5e1; }
-    .event-item { margin-bottom: 15px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; }
-    .event-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .event-badge { display: inline-block; background: #eff6ff; color: #1d4ed8; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-right: 8px; margin-bottom: 8px; border: 1px solid #bfdbfe; }
-    .event-note { display: block; font-size: 13px; color: #334155; margin-top: 6px; line-height: 1.5; padding-left: 10px; border-left: 3px solid #cbd5e1; white-space: pre-wrap; font-weight: 500; }
-    .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; font-size: 14px; color: #92400e; margin-bottom: 30px; line-height: 1.5; white-space: pre-wrap; }
-
-    .footer { text-align: center; padding: 25px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; background: #f8fafc; line-height: 1.5; }
+    body {
+      margin: 0;
+      padding: 30px 10px;
+      background-color: #f4f6f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #334155;
+    }
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
+    }
+    .body-content {
+      padding: 32px 30px;
+    }
+    .greeting {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+    .detail-list {
+      border-left: 3px solid #0284c7;
+      padding-left: 14px;
+      margin-bottom: 20px;
+    }
+    .detail-item {
+      margin-bottom: 8px;
+      font-size: 13.5px;
+    }
+    .detail-item:last-child {
+      margin-bottom: 0;
+    }
+    .detail-label {
+      color: #64748b;
+      font-weight: 600;
+      display: inline-block;
+      width: 130px;
+    }
+    .detail-value {
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .note-box {
+      background: #f8fafc;
+      border-left: 3px solid #f59e0b;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 20px;
+    }
+    .note-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #b45309;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .note-text {
+      font-size: 13px;
+      color: #451a03;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    .footer {
+      background: #fafafa;
+      border-top: 1px solid #f1f5f9;
+      padding: 18px 30px;
+      text-align: center;
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <div class="content">
+    <div class="body-content">
+      
+      <!-- Doğrudan Otel Hitabı -->
       <div class="greeting">
-        Sayın <strong>${data.hotel_name}</strong> Yetkilisi,<br><br>
+        Sayın <strong>\${data.hotel_name}</strong> Yetkilisi,<br><br>
+        Öncelikle tüm ekibe keyifli mesailer diliyoruz.<br>
         Aşağıda detayları belirtilen grubumuz için tesisinizin müsaitlik durumunu ve fiyat teklifinizi rica ederiz.
       </div>
-      
-      <div class="details-box">
-        <div class="row">
-          <span class="label">REFERANS</span>
-          <span class="value">#${data.reference}</span>
-        </div>
-        <div class="row">
-          <span class="label">FİRMA / SEKTÖR</span>
-          <span class="value">${data.company_name || "-"}</span>
-        </div>
-        <div class="row">
-          <span class="label">TARİH ARALIĞI</span>
-          <span class="value">${data.date_range}</span>
-        </div>
-        <div class="row">
-          <span class="label">GECELEME</span>
-          <span class="value">${data.nights} Gece</span>
-        </div>
-        <div class="row">
-          <span class="label">ODA / KİŞİ</span>
-          <span class="value">${data.room_pax}</span>
-        </div>
-        
-        ${data.events_html ? `
-        <div class="events">
-          <span class="label" style="display:block; margin-bottom: 12px;">İSTENEN ETKİNLİKLER</span>
-          ${data.events_html}
-        </div>
-        ` : ''}
-      </div>
-      
-      ${data.notes ? `
-      <div class="notes-box">
-        <strong>Özel Notlar:</strong> ${data.notes}
-      </div>
-      ` : ''}
 
+      <!-- Grup Detayları ve İlk Sırada Ref No -->
+      <div class="section-title">GRUP DETAYLARI</div>
+      <div class="detail-list">
+        <div class="detail-item">
+          <span class="detail-label">Talep Ref No:</span>
+          <span class="detail-value" style="color: #0284c7;">#\${data.reference}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Firma / Sektör:</span>
+          <span class="detail-value">\${data.company_name || "-"}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Tarih Aralığı:</span>
+          <span class="detail-value">\${data.date_range}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Geceleme:</span>
+          <span class="detail-value">\${data.nights} Gece</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Oda / Kişi:</span>
+          <span class="detail-value">\${data.room_pax}</span>
+        </div>
+      </div>
+
+      \${data.notes ? \`
+      <div class="note-box">
+        <div class="note-title">Özel Notlar</div>
+        <div class="note-text">\${data.notes}</div>
+      </div>
+      \` : ''}
+
+      \${data.events_html ? \`
+      <div class="section-title">ETKİNLİK VE PROGRAM TALEPLERİ</div>
+      <div style="margin-top: 8px;">
+        \${data.events_html}
+      </div>
+      \` : ''}
 
     </div>
+
     <div class="footer">
-      Bu e-posta <strong>${data.system_company_name || "Sistem"}</strong> üzerinden <a href="https://www.codeicon.co/" target="_blank" style="color: inherit; text-decoration: underline; font-weight: 600;">CODEICON</a> ile otomatik olarak gönderilmiştir.<br>
-      Acente İletişim: ${data.system_company_phone || "-"} | <a href="mailto:${data.system_company_email || data.reply_to_email}" style="color: inherit; text-decoration: none;">${data.system_company_email || data.reply_to_email}</a>
+      Bu e-posta <strong>\${data.system_company_name || "Sistem"}</strong> adına 
+      <a href="https://www.codeicon.co/" target="_blank" style="color: #0284c7; font-weight: 600; text-decoration: none;">CODEICON</a> 
+      altyapısı ile otomatik oluşturulmuştur.<br>
+      İletişim: \${data.system_company_phone || "-"} | 
+      <a href="mailto:\${data.system_company_email || data.reply_to_email}" style="color: #0284c7; text-decoration: none;">\${data.system_company_email || data.reply_to_email}</a>
     </div>
   </div>
+
 </body>
-</html>`;
+</html>\`;
 }
