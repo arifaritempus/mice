@@ -116,7 +116,7 @@ export function getRequestMailHtml(data: RequestMailData): string {
       
       <!-- Doğrudan Otel Hitabı -->
       <div class="greeting">
-        Sayın <strong>\${data.hotel_name}</strong> Yetkilisi,<br><br>
+        Sayın <strong>${data.hotel_name}</strong> Yetkilisi,<br><br>
         Öncelikle tüm ekibe keyifli mesailer diliyoruz.<br>
         Aşağıda detayları belirtilen grubumuz için tesisinizin müsaitlik durumunu ve fiyat teklifinizi rica ederiz.
       </div>
@@ -126,51 +126,51 @@ export function getRequestMailHtml(data: RequestMailData): string {
       <div class="detail-list">
         <div class="detail-item">
           <span class="detail-label">Talep Ref No:</span>
-          <span class="detail-value" style="color: #0284c7;">#\${data.reference}</span>
+          <span class="detail-value" style="color: #0284c7;">#${data.reference}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Firma / Sektör:</span>
-          <span class="detail-value">\${data.company_name || "-"}</span>
+          <span class="detail-value">${data.company_name || "-"}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Tarih Aralığı:</span>
-          <span class="detail-value">\${data.date_range}</span>
+          <span class="detail-value">${data.date_range}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Geceleme:</span>
-          <span class="detail-value">\${data.nights} Gece</span>
+          <span class="detail-value">${data.nights} Gece</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Oda / Kişi:</span>
-          <span class="detail-value">\${data.room_pax}</span>
+          <span class="detail-value">${data.room_pax}</span>
         </div>
       </div>
 
-      \${data.notes ? \`
+      ${data.notes ? `
       <div class="note-box">
         <div class="note-title">Özel Notlar</div>
-        <div class="note-text">\${data.notes}</div>
+        <div class="note-text">${data.notes}</div>
       </div>
-      \` : ''}
+      ` : ''}
 
-      \${data.events_html ? \`
+      ${data.events_html ? `
       <div class="section-title">ETKİNLİK VE PROGRAM TALEPLERİ</div>
       <div style="margin-top: 8px;">
-        \${data.events_html}
+        ${data.events_html}
       </div>
-      \` : ''}
+      ` : ''}
 
     </div>
 
     <div class="footer">
-      Bu e-posta <strong>\${data.system_company_name || "Sistem"}</strong> adına 
+      Bu e-posta <strong>${data.system_company_name || "Sistem"}</strong> adına 
       <a href="https://www.codeicon.co/" target="_blank" style="color: #0284c7; font-weight: 600; text-decoration: none;">CODEICON</a> 
       altyapısı ile otomatik oluşturulmuştur.<br>
-      İletişim: \${data.system_company_phone || "-"} | 
-      <a href="mailto:\${data.system_company_email || data.reply_to_email}" style="color: #0284c7; text-decoration: none;">\${data.system_company_email || data.reply_to_email}</a>
+      İletişim: ${data.system_company_phone || "-"} | 
+      <a href="mailto:${data.system_company_email || data.reply_to_email}" style="color: #0284c7; text-decoration: none;">${data.system_company_email || data.reply_to_email}</a>
     </div>
   </div>
 
 </body>
-</html>\`;
+</html>`;
 }
