@@ -71,6 +71,30 @@ export async function sendMail(options: MailOptions) {
       },
     });
 
+    // HTML wrapper to satisfy SpamAssassin HTML_MIME_NO_HTML_TAG
+    let finalHtml = options.html;
+    if (!finalHtml.toLowerCase().includes("<html")) {
+      finalHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 20px; background-color: #f8fafc;">
+  ${finalHtml}
+</body>
+</html>`;
+    }
+
+    // Simple plain text fallback to satisfy SpamAssassin MIME_HTML_ONLY
+    const plainText = options.html
+      .replace(/<br\s*[\/]?>/gi, "\n")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
     // 3. E-postayı gönder
     const info = await transporter.sendMail({
       from: `"${mail_from_name || "Sistem"}" <${mail_from_email}>`,
@@ -78,7 +102,11 @@ export async function sendMail(options: MailOptions) {
       cc: options.cc,
       replyTo: mail_reply_to || mail_from_email,
       subject: options.subject,
-      html: options.html,
+      text: plainText,
+      html: finalHtml,
+      headers: {
+        'List-Unsubscribe': `<mailto:${mail_from_email}?subject=Unsubscribe>`
+      }
     });
 
     return { success: true, messageId: info.messageId };
