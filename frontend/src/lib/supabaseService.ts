@@ -4764,6 +4764,7 @@ export const invoicesService = {
     });
     (sejourRoomsRes.data || []).forEach((r: any) => {
       if (r.hotel_id) contactIds.add(r.hotel_id);
+      if (r.supplier_id) contactIds.add(r.supplier_id);
     });
     (sejourFlightsRes.data || []).forEach((f: any) => {
       if (f.ticketing_provider) contactIds.add(f.ticketing_provider);
@@ -4896,6 +4897,7 @@ export const invoicesService = {
       const roomHotelName = r.hotel_id ? hotelsMap[r.hotel_id]?.name : null;
       const headerHotelName = proj?.hotel_id ? hotelsMap[proj.hotel_id]?.name : null;
       const hotelName = roomHotelName || headerHotelName;
+      const supplierName = r.supplier_id ? suppliersMap[r.supplier_id]?.name : null;
 
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
@@ -4908,7 +4910,9 @@ export const invoicesService = {
               company_name: hotelName || 'Otel Seçilmedi',
               hotel_name: hotelName || null
             }
-          : null
+          : null,
+        supplier_id: r.supplier_id || null,
+        supplier_name: supplierName || '-'
       });
     });
     (sejourFlightsRes.data || []).forEach((r: any) => {
