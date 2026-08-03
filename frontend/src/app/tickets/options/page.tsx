@@ -583,9 +583,7 @@ export default function TicketOptionsPage() {
       try {
         setLoading(true);
         const data = await ticketOptionsService.getAll();
-        // Tarih formatlarını düzenle (Supabase'den gelen formatı sayfa formatına çevir)
         const formattedData = data
-          .filter((option: any) => (option.status || "").toLowerCase() !== "confirmed" && (option.status || "").toLowerCase() !== "cancelled")
           .map((option: any) => ({
           ...option,
           departure_date: toCalendarYmd(option.departure_date),
@@ -1455,6 +1453,20 @@ export default function TicketOptionsPage() {
             >
               <span className="uppercase">{t('ticketsOptions.tabExpired') || "SÜRESİ DOLMUŞ"}</span>
               <span className="font-bold">{statusCardCounts.expired}</span>
+            </button>
+            <button
+              onClick={() => setStatusFilter("confirmed")}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "confirmed" ? "bg-green-500/20 border border-green-500/50 text-green-600 dark:text-green-400" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
+            >
+              <span className="uppercase">KONFİRME</span>
+              <span className="font-bold">{statusCardCounts.confirmed}</span>
+            </button>
+            <button
+              onClick={() => setStatusFilter("cancelled")}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${statusFilter === "cancelled" ? "bg-red-500/20 border border-red-500/50 text-red-600 dark:text-red-400" : "hover:bg-v3-border border border-transparent text-v3-text"}`}
+            >
+              <span className="uppercase">İPTAL</span>
+              <span className="font-bold">{statusCardCounts.cancelled}</span>
             </button>
           </div>
           <div className="flex items-center gap-2 border-l border-v3-border pl-4 text-v3-muted">
