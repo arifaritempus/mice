@@ -916,8 +916,8 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
                   <input
                     type="number"
                     min="0"
-                    value={nights}
-                    onChange={(e) => setNights(Number(e.target.value))}
+                    value={nights === 0 ? "" : nights}
+                    onChange={(e) => setNights(e.target.value === "" ? 0 : Number(e.target.value))}
                     className="w-full bg-v3-bg border border-v3-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 font-medium"
                   />
                 </div>

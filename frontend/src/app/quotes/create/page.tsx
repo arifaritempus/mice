@@ -603,6 +603,19 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       } catch {
         setUsers([]);
       }
+
+      // Automatically add current user to operation_managers
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          setFormData((prev) => ({
+            ...prev,
+            operation_managers: prev.operation_managers.length > 0 ? prev.operation_managers : [session.user.id]
+          }));
+        }
+      } catch (err) {
+        console.error("Oturum bilgisi alınırken hata:", err);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

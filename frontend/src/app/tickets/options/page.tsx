@@ -33,7 +33,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { DEFAULT_PAGE_SIZE, paginateItems } from "@/types/pagination";
 import { toast } from "react-hot-toast";
 import Modal from "@/components/Modal";
-import { Trash2, AlertCircle } from "lucide-react";
+import { Trash2, AlertCircle, FilterX } from "lucide-react";
 import { getLogosForExcel } from "@/utils/logoUtils";
 
 interface TicketOption {
@@ -265,6 +265,24 @@ export default function TicketOptionsPage() {
     setTokens: Dispatch<SetStateAction<string[]>>,
   ) => {
     setTokens((prev) => prev.filter((item) => item !== value));
+  };
+
+  const handleClearFilters = () => {
+    setStatusFilter("all");
+    setDateRange({ startDate: "", endDate: "" });
+    setFlightDateRange({ startDate: "", endDate: "" });
+    setVoucherTokens([]);
+    setVoucherInput("");
+    setCustomerTokens([]);
+    setCustomerInput("");
+    setSupplierTokens([]);
+    setSupplierInput("");
+    setAirlineTokens([]);
+    setAirlineInput("");
+    setRouteTokens([]);
+    setRouteInput("");
+    setPage(1);
+    setFilterKey((prev) => prev + 1);
   };
 
   const voucherTerms = useMemo(() => [...voucherTokens], [voucherTokens]);
@@ -1370,6 +1388,14 @@ export default function TicketOptionsPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="bg-v3-surface hover:bg-red-500/10 text-v3-muted hover:text-red-500 border border-v3-border hover:border-red-500/30 px-3 h-10 rounded-xl transition-all duration-300 flex items-center justify-center shadow-sm"
+                title="Filtreleri Temizle"
+              >
+                <FilterX className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={exportOptionsExcel}
