@@ -420,6 +420,7 @@ export default function SuppliersPage() {
   };
 
   const handleEditSupplier = (supplier: Supplier) => {
+    setBankAccounts(supplier.bank_accounts || []);
     setEditingSupplier(supplier);
     setShowEditModal(true);
 
