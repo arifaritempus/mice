@@ -5270,3 +5270,4 @@ export const projectOthersService = {
     if (error) throw error;
   }
 };
+export { supabase };

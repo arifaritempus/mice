@@ -8,6 +8,7 @@ import {
   projectsService,
   ticketPaymentPlansService,
   ticketOptionsService,
+  supabase,
 } from "@/lib/supabaseService";
 import {
   Download,
@@ -123,6 +124,9 @@ interface CashFlowItem {
   payment_type?: string;
   hotel?: string;
   exchange_rate?: number;
+  hotel_id?: string;
+  supplier_id?: string;
+  agency_id?: string;
 }
 
 interface CalendarPeriod {
@@ -189,6 +193,46 @@ export default function CashFlowPage() {
   // Modal state'leri
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CashFlowItem | null>(null);
+  const [selectedBankAccounts, setSelectedBankAccounts] = useState<any[]>([]);
+  const [loadingBankAccounts, setLoadingBankAccounts] = useState(false);
+
+  useEffect(() => {
+    if (!selectedItem || !isModalOpen) {
+      setSelectedBankAccounts([]);
+      return;
+    }
+
+    const fetchBankAccounts = async () => {
+      setLoadingBankAccounts(true);
+      try {
+        let table = "";
+        let id = "";
+        if (selectedItem.type === "payment") {
+          if (selectedItem.hotel_id) { table = "hotels"; id = selectedItem.hotel_id; }
+          else if (selectedItem.supplier_id) { table = "suppliers"; id = selectedItem.supplier_id; }
+        } else if (selectedItem.type === "collection") {
+          if (selectedItem.agency_id) { table = "agencies"; id = selectedItem.agency_id; }
+        }
+
+        if (table && id) {
+          const { data, error } = await supabase.from(table).select('bank_accounts').eq('id', id).single();
+          if (!error && data?.bank_accounts) {
+            setSelectedBankAccounts(Array.isArray(data.bank_accounts) ? data.bank_accounts : (typeof data.bank_accounts === 'string' ? JSON.parse(data.bank_accounts) : []));
+          } else {
+            setSelectedBankAccounts([]);
+          }
+        } else {
+          setSelectedBankAccounts([]);
+        }
+      } catch (e) {
+        console.error("Bank accounts fetch error:", e);
+      } finally {
+        setLoadingBankAccounts(false);
+      }
+    };
+    
+    fetchBankAccounts();
+  }, [selectedItem, isModalOpen]);
 
   const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<CalendarPeriod | null>(
@@ -414,6 +458,7 @@ export default function CashFlowPage() {
             project_start_date: project?.start_date || "",
             project_end_date: project?.end_date || "",
             agency_name: project?.agencies?.name || "",
+            agency_id: project?.agency_id || "",
             hotel_name: project?.hotels?.name || "",
             date: toCalendarYmd(plan.date),
             amount: Number(plan.amount || 0),
@@ -453,6 +498,8 @@ export default function CashFlowPage() {
             type: "payment",
             payment_type: plan.payment_type || "",
             hotel: hotelValue, // plan.hotel veya project.hotels.name
+            hotel_id: plan.hotel_id || project?.hotel_id || "",
+            supplier_id: plan.supplier_id || "",
           });
         });
       }
@@ -1549,6 +1596,33 @@ export default function CashFlowPage() {
                       "Bu işlem için ek bir açıklama girilmemiş."}
                   </p>
                 </div>
+
+                {/* BANKA HESAP BİLGİLERİ */}
+                {(loadingBankAccounts || selectedBankAccounts.length > 0) && (
+                  <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-3xl border border-gray-100 dark:border-v3-border mt-4">
+                    <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-3">
+                      BANKA HESAP BİLGİLERİ
+                    </p>
+                    {loadingBankAccounts ? (
+                      <div className="flex justify-center p-4">
+                        <LoadingSpinner />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {selectedBankAccounts.map((account: any, index: number) => (
+                          <div key={index} className="p-3 bg-white dark:bg-v3-surface rounded-xl border border-gray-100 dark:border-v3-border shadow-sm">
+                            <p className="text-xs font-black text-v3-text mb-1">{account.bankName || "Bilinmeyen Banka"}</p>
+                            <p className="text-[10px] text-v3-muted font-mono">{account.iban || "-"}</p>
+                            <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 dark:border-v3-border">
+                              <span className="text-[9px] font-bold text-v3-muted uppercase">{account.recipient || "-"}</span>
+                              <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded text-[9px] font-black">{account.currency || "TRY"}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-between items-center pt-4">
