@@ -24,6 +24,15 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  iban: string;
+  currency: string;
+  recipient: string;
+}
+
 interface Agency {
   id: string;
   name: string;
@@ -42,6 +51,7 @@ interface Agency {
   };
   is_active?: boolean;
   created_at: string;
+  bank_accounts?: BankAccount[];
   updated_at?: string;
 }
 
@@ -57,6 +67,7 @@ export default function AgenciesPage() {
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTokens, setSearchTokens] = useState<string[]>([]);
@@ -134,7 +145,8 @@ export default function AgenciesPage() {
         tax_number: a.tax_number || "",
         tax_office: a.tax_office || "",
         accounting_link_codes: a.accounting_link_codes || {},
-        is_active: a.is_active ?? true,
+        bank_accounts: bankAccounts,
+            is_active: a.is_active ?? true,
         created_at: a.created_at || new Date().toISOString(),
         updated_at: a.updated_at || undefined,
       }));
@@ -257,7 +269,8 @@ export default function AgenciesPage() {
             USD: usdCodeValue,
             GBP: gbpCodeValue,
           },
-          is_active: true,
+          bank_accounts: bankAccounts,
+            is_active: true,
           created_at: new Date().toISOString(),
         };
         const updatedAgencies = [...agencies, newAgency];
@@ -278,6 +291,7 @@ export default function AgenciesPage() {
               USD: usdCodeValue,
               GBP: gbpCodeValue,
             },
+            bank_accounts: bankAccounts,
             is_active: true,
           } as any);
           await loadAgencies();
@@ -315,6 +329,7 @@ export default function AgenciesPage() {
   };
 
   const handleEdit = (agency: Agency) => {
+    setBankAccounts(typeof agency !== "undefined" && agency.bank_accounts ? agency.bank_accounts : []);
     setEditingAgency(agency);
     setFormData({
       name: agency.name,

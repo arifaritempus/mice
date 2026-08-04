@@ -25,6 +25,15 @@ import {
   CreditCard,
 } from "lucide-react";
 
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  iban: string;
+  currency: string;
+  recipient: string;
+}
+
 interface Supplier {
   id: string;
   name: string;
@@ -56,6 +65,7 @@ interface Supplier {
   is_active: boolean;
   notes: string;
   created_at: string;
+  bank_accounts?: BankAccount[];
   updated_at: string;
 }
 
@@ -72,6 +82,7 @@ export default function SuppliersPage() {
   const [serviceTypes, setServiceTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [error, setError] = useState("");
@@ -114,7 +125,8 @@ export default function SuppliersPage() {
       commission_rate: 0,
       payment_terms: "",
     },
-    is_active: true,
+    bank_accounts: bankAccounts,
+            is_active: true,
     notes: "",
   });
 
@@ -187,7 +199,8 @@ export default function SuppliersPage() {
           accounting_link_codes: s.accounting_link_codes || {},
           bank_info: s.bank_info || {},
           contract_info: s.contract_info || {},
-          is_active: s.is_active ?? true,
+          bank_accounts: bankAccounts,
+            is_active: s.is_active ?? true,
           notes: s.notes || "",
           created_at: s.created_at,
           updated_at: s.updated_at,
@@ -493,6 +506,7 @@ export default function SuppliersPage() {
       await loadSuppliers();
       setSuccess("Tedarikçi başarıyla güncellendi");
       setShowEditModal(false);
+      setBankAccounts([]);
       setEditingSupplier(null);
     } catch (e: any) {
       console.error(e);
@@ -592,7 +606,8 @@ export default function SuppliersPage() {
           commission_rate: 0,
           payment_terms: "",
         },
-        is_active: true,
+        bank_accounts: bankAccounts,
+            is_active: true,
         notes: "",
       });
     } catch (e: any) {
@@ -1242,7 +1257,8 @@ export default function SuppliersPage() {
           onClose={() => {
             setShowCreateModal(false);
             setShowEditModal(false);
-            setEditingSupplier(null);
+            setBankAccounts([]);
+      setEditingSupplier(null);
           }}
           title={editingSupplier ? "Tedarikçi Düzenle" : "Yeni Tedarikçi Ekle"}
           maxWidth="max-w-5xl"
@@ -1566,7 +1582,8 @@ export default function SuppliersPage() {
                 onClick={() => {
                   setShowCreateModal(false);
                   setShowEditModal(false);
-                  setEditingSupplier(null);
+                  setBankAccounts([]);
+      setEditingSupplier(null);
                 }}
                 className="px-6 py-2.5 text-sm font-bold text-v3-text bg-v3-surface border border-v3-border rounded-xl hover:bg-v3-border transition-all"
               >

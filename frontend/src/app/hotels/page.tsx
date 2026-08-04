@@ -26,6 +26,15 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  iban: string;
+  currency: string;
+  recipient: string;
+}
+
 interface Hotel {
   id: string;
   name: string;
@@ -49,6 +58,7 @@ interface Hotel {
   };
   is_active?: boolean;
   created_at: string;
+  bank_accounts?: BankAccount[];
   updated_at?: string;
 }
 
@@ -64,6 +74,7 @@ export default function HotelsPage() {
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTokens, setSearchTokens] = useState<string[]>([]);
@@ -144,6 +155,7 @@ export default function HotelsPage() {
           tax_office: h.tax_office || "",
           accounting_link_codes: h.accounting_link_codes || {},
           is_active: h.is_active,
+          bank_accounts: h.bank_accounts || [],
           created_at: h.created_at,
           updated_at: h.updated_at,
         }));
@@ -237,6 +249,7 @@ export default function HotelsPage() {
               USD: usdCodeValue,
               GBP: gbpCodeValue,
             },
+            bank_accounts: bankAccounts,
             is_active: true,
           } as any);
           await loadHotels();
@@ -277,6 +290,7 @@ export default function HotelsPage() {
   };
 
   const handleEdit = (hotel: Hotel) => {
+    setBankAccounts(typeof hotel !== "undefined" && hotel.bank_accounts ? hotel.bank_accounts : []);
     setEditingHotel(hotel);
     setFormData({
       name: hotel.name,
@@ -540,6 +554,7 @@ export default function HotelsPage() {
   };
 
   const resetForm = () => {
+    setBankAccounts([]);
     setFormData({
       name: "",
       company_name: "",
@@ -1340,6 +1355,66 @@ export default function HotelsPage() {
                 />
               </div>
             </div>
+          </div>
+
+          
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between border-b border-v3-border pb-2">
+              <h4 className="text-sm font-bold text-v3-text flex items-center gap-2">
+                <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                Banka Hesap Bilgileri
+              </h4>
+              <button
+                type="button"
+                onClick={() => setBankAccounts([...bankAccounts, { id: Date.now().toString(), bankName: "", iban: "", currency: "TRY", recipient: "" }])}
+                className="text-[10px] bg-blue-500/20 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg font-bold uppercase hover:bg-blue-500/30 transition-all flex items-center gap-1"
+              >
+                <Plus size={12} /> Hesap Ekle
+              </button>
+            </div>
+            {bankAccounts.length === 0 ? (
+              <div className="text-center py-4 bg-v3-surface border border-dashed border-v3-border rounded-xl text-v3-muted text-xs">
+                Henüz banka hesabı eklenmemiş.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {bankAccounts.map((account, index) => (
+                  <div key={account.id} className="p-4 bg-v3-surface border border-v3-border rounded-xl flex flex-col gap-3 relative group">
+                    <button
+                      type="button"
+                      onClick={() => setBankAccounts(bankAccounts.filter(a => a.id !== account.id))}
+                      className="absolute top-2 right-2 p-1.5 text-red-400 hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      title="Sil"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">Banka Adı</label>
+                        <input type="text" value={account.bankName} onChange={(e) => { const newAccounts = [...bankAccounts]; newAccounts[index].bankName = e.target.value.toUpperCase(); setBankAccounts(newAccounts); }} className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 outline-none text-xs" placeholder="Örn: Garanti BBVA" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">Alıcı Adı / Ünvan</label>
+                        <input type="text" value={account.recipient} onChange={(e) => { const newAccounts = [...bankAccounts]; newAccounts[index].recipient = e.target.value.toUpperCase(); setBankAccounts(newAccounts); }} className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 outline-none text-xs" placeholder="Hesap Sahibi" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">IBAN</label>
+                        <input type="text" value={account.iban} onChange={(e) => { const newAccounts = [...bankAccounts]; newAccounts[index].iban = e.target.value.toUpperCase().replace(/\s/g, ""); setBankAccounts(newAccounts); }} className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 outline-none text-xs" placeholder="TR..." />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-v3-muted uppercase mb-1">Para Birimi</label>
+                        <select value={account.currency} onChange={(e) => { const newAccounts = [...bankAccounts]; newAccounts[index].currency = e.target.value; setBankAccounts(newAccounts); }} className="w-full px-3 py-2 bg-v3-surface border border-v3-border text-v3-text rounded-lg focus:border-blue-500/50 outline-none text-xs">
+                          <option value="TRY">TRY (₺)</option>
+                          <option value="USD">USD ($)</option>
+                          <option value="EUR">EUR (€)</option>
+                          <option value="GBP">GBP (£)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-v3-border">
