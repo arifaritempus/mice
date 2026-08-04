@@ -208,8 +208,8 @@ export default function CashFlowPage() {
         let table = "";
         let id = "";
         if (selectedItem.type === "payment") {
-          if (selectedItem.hotel_id) { table = "hotels"; id = selectedItem.hotel_id; }
-          else if (selectedItem.supplier_id) { table = "suppliers"; id = selectedItem.supplier_id; }
+          if (selectedItem.supplier_id) { table = "suppliers"; id = selectedItem.supplier_id; }
+          else if (selectedItem.hotel_id) { table = "hotels"; id = selectedItem.hotel_id; }
         } else if (selectedItem.type === "collection") {
           if (selectedItem.agency_id) { table = "agencies"; id = selectedItem.agency_id; }
         }
@@ -1598,7 +1598,7 @@ export default function CashFlowPage() {
                 </div>
 
                 {/* BANKA HESAP BİLGİLERİ */}
-                {(loadingBankAccounts || selectedBankAccounts.length > 0) && (
+                {selectedItem.type !== "payment" && selectedItem.type !== "collection" ? null : (
                   <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-3xl border border-gray-100 dark:border-v3-border mt-4">
                     <p className="text-[10px] font-black text-v3-muted uppercase tracking-widest mb-3">
                       BANKA HESAP BİLGİLERİ
@@ -1607,7 +1607,7 @@ export default function CashFlowPage() {
                       <div className="flex justify-center p-4">
                         <LoadingSpinner />
                       </div>
-                    ) : (
+                    ) : selectedBankAccounts.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {selectedBankAccounts.map((account: any, index: number) => (
                           <div key={index} className="p-3 bg-white dark:bg-v3-surface rounded-xl border border-gray-100 dark:border-v3-border shadow-sm">
@@ -1619,6 +1619,10 @@ export default function CashFlowPage() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center p-6 bg-white dark:bg-v3-surface rounded-xl border border-dashed border-gray-200 dark:border-v3-border">
+                        <p className="text-xs font-bold text-v3-muted">Bu kuruma ait kayıtlı banka hesabı bulunamadı.</p>
                       </div>
                     )}
                   </div>
