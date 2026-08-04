@@ -483,6 +483,7 @@ export default function SuppliersPage() {
 
     try {
       await suppliersService.update(editingSupplier.id, {
+        bank_accounts: bankAccounts,
         name: nameValue,
         title: titleValue,
         contact_person: contactPersonValue,
@@ -550,6 +551,7 @@ export default function SuppliersPage() {
 
     try {
       await suppliersService.create({
+        bank_accounts: bankAccounts,
         name: nameValue,
         title: titleValue,
         service_type: newSupplier.service_type,

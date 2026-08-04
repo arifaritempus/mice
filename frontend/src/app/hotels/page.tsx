@@ -200,6 +200,7 @@ export default function HotelsPage() {
         // Mevcut oteli güncelle
         try {
           await hotelsService.update(editingHotel.id, {
+            bank_accounts: bankAccounts,
             name: nameValue,
             company_name: companyNameValue,
             location: locationValue,
@@ -230,6 +231,7 @@ export default function HotelsPage() {
       } else {
         try {
           await hotelsService.create({
+            bank_accounts: bankAccounts,
             name: nameValue,
             company_name: companyNameValue,
             location: locationValue,
@@ -249,7 +251,6 @@ export default function HotelsPage() {
               USD: usdCodeValue,
               GBP: gbpCodeValue,
             },
-            bank_accounts: bankAccounts,
             is_active: true,
           } as any);
           await loadHotels();

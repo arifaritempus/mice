@@ -231,6 +231,7 @@ export default function AgenciesPage() {
         setAgencies(updatedAgencies);
         try {
           await agenciesService.update(editingAgency.id, {
+            bank_accounts: bankAccounts,
             name: nameValue,
             company_name: companyNameValue,
             contact_person: contactPersonValue,
@@ -277,6 +278,7 @@ export default function AgenciesPage() {
         setAgencies(updatedAgencies);
         try {
           await agenciesService.create({
+            bank_accounts: bankAccounts,
             name: nameValue,
             company_name: companyNameValue,
             contact_person: contactPersonValue,
@@ -291,7 +293,6 @@ export default function AgenciesPage() {
               USD: usdCodeValue,
               GBP: gbpCodeValue,
             },
-            bank_accounts: bankAccounts,
             is_active: true,
           } as any);
           await loadAgencies();
