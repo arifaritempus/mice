@@ -14781,7 +14781,7 @@ export default function ProjectDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4">
       
         {/* Card 1: Temel Bilgiler */}
-        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-blue-500/30 transition-all duration-300">
 
           
           <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
@@ -14829,7 +14829,7 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Card 2: Paydaşlar */}
-        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-purple-500/30 transition-all duration-300">
 
           
           <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
@@ -14980,7 +14980,7 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Card 3: İçerik Detayları */}
-        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 backdrop-blur-md border border-v3-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative group hover:border-emerald-500/30 transition-all duration-300">
 
           
           <div className="bg-v3-surface rounded-xl p-4 border border-v3-border hover:bg-v3-surface transition-colors">
