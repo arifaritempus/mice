@@ -210,6 +210,7 @@ export default function AgenciesPage() {
           agency.id === editingAgency.id
             ? {
                 ...agency,
+                bank_accounts: bankAccounts,
                 name: nameValue,
                 company_name: companyNameValue,
                 contact_person: contactPersonValue,
