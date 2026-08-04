@@ -145,7 +145,7 @@ export default function AgenciesPage() {
         tax_number: a.tax_number || "",
         tax_office: a.tax_office || "",
         accounting_link_codes: a.accounting_link_codes || {},
-        bank_accounts: bankAccounts,
+        bank_accounts: a.bank_accounts || [],
             is_active: a.is_active ?? true,
         created_at: a.created_at || new Date().toISOString(),
         updated_at: a.updated_at || undefined,
@@ -278,7 +278,6 @@ export default function AgenciesPage() {
         setAgencies(updatedAgencies);
         try {
           await agenciesService.create({
-            bank_accounts: bankAccounts,
             name: nameValue,
             company_name: companyNameValue,
             contact_person: contactPersonValue,

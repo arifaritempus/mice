@@ -125,7 +125,7 @@ export default function SuppliersPage() {
       commission_rate: 0,
       payment_terms: "",
     },
-    bank_accounts: bankAccounts,
+    bank_accounts: [],
             is_active: true,
     notes: "",
   });
@@ -199,7 +199,7 @@ export default function SuppliersPage() {
           accounting_link_codes: s.accounting_link_codes || {},
           bank_info: s.bank_info || {},
           contract_info: s.contract_info || {},
-          bank_accounts: bankAccounts,
+          bank_accounts: s.bank_accounts || [],
             is_active: s.is_active ?? true,
           notes: s.notes || "",
           created_at: s.created_at,
@@ -551,7 +551,6 @@ export default function SuppliersPage() {
 
     try {
       await suppliersService.create({
-        bank_accounts: bankAccounts,
         name: nameValue,
         title: titleValue,
         service_type: newSupplier.service_type,
