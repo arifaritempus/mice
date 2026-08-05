@@ -532,7 +532,8 @@ export default function UltimateDashboard() {
       inRange(r.cikis_tarihi || r.end_date || r.created_at, range),
     );
     const fSej = data.rpSejourRows.filter((r: any) =>
-      inRange(r.cikis_tarihi || r.checkOutDate || r.created_at, range),
+      inRange(r.cikis_tarihi || r.checkOutDate || r.created_at, range) &&
+      (r.durum || "").toUpperCase().includes("KONF")
     );
     const fCols = data.collectionPlans.filter((c: any) =>
       inRange(c.due_date || c.date, range),
@@ -1290,8 +1291,9 @@ export default function UltimateDashboard() {
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 relative">
         {/* ROW 1: KONSOLİDE FİNANS & CİRO DAĞILIMI */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6 relative z-10">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6 relative z-10">
           <KPICard title={t('dashboard.totalRevenue')} value={m.totalRev} isMoney icon={Landmark} color="emerald" language={language} />
+          <KPICard title={t('dashboard.totalCost')} value={m.totalCost} isMoney icon={TrendingDown} color="rose" language={language} />
           <KPICard title={t('dashboard.miceRevenue')} value={m.miceRev} isMoney icon={Briefcase} color="blue" language={language} />
           <KPICard title={t('dashboard.sejourRevenue')} value={m.sejRev} isMoney icon={Hotel} color="cyan" language={language} />
           <KPICard title={t('dashboard.flightRevenue')} value={m.flightRev} isMoney icon={Ticket} color="amber" language={language} />
