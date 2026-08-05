@@ -606,6 +606,53 @@ export default function HomePage() {
       }
     });
 
+    // Pending Project Payments
+    data.paymentPlans.forEach((p: any) => {
+      if ((p.status || "").toLowerCase() !== "paid") {
+        const d = parseDateSafe(p.date || p.due_date);
+        if (d && isInRange(d, range)) {
+          const daysLeft = differenceInDays(startOfDay(d), startOfDay(new Date()));
+
+          const proj = data.projects.find((pr) => pr.id === p.project_id);
+          const projName = proj ? localizeTitle(proj.title || proj.referans_no) || t('home.project') : t('home.project');
+          let agencyName = t('home.unspecified');
+          if (proj) {
+            if (proj.company_name && proj.agencies?.name) {
+              agencyName = `${proj.company_name} | ${proj.agencies.name}`;
+            } else {
+              agencyName = proj.company_name || proj.agencies?.name || proj.marketing_clients?.name || t('home.unspecified');
+            }
+          }
+
+          const formatStrDate = (dStr: string) => {
+            if (!dStr) return "";
+            const parts = dStr.split('-');
+            return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : dStr;
+          };
+
+          const datesInfo = proj
+            ? `C-In: ${formatStrDate(proj.start_date)} C-Out: ${formatStrDate(proj.end_date)}`
+            : "";
+
+          items.push({
+            id: `pp-${p.id}`,
+            date: d,
+            type: "payment",
+            title: `Ödeme Planı: ${p.supplier_name || p.supplier || p.otel_tedarikci || t('home.unspecified')}`,
+            subtitle: `${projName} | ${p.description || p.aciklama || ""} | ${datesInfo}`,
+            amount: (p.amount || p.tutar)
+              ? formatCurrency(p.amount || p.tutar, language, p.currency || "TRY")
+              : undefined,
+            isUrgent: daysLeft <= 1,
+            daysLeft,
+            icon: Wallet,
+            color: daysLeft <= 1 ? "rose" : "orange",
+            link: `/projects/${p.project_id}`,
+          });
+        }
+      }
+    });
+
     // Sort by urgent / date
     return items.sort((a, b) => {
       if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1;
