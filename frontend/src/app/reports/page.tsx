@@ -217,9 +217,11 @@ const formatCell = (value: unknown, columnKey?: string, t?: any) => {
     if (strVal === "1. OPSİYON" || strVal === "1. OPSIYON") return t('reports.opt1') || value;
     if (strVal === "2. OPSİYON" || strVal === "2. OPSIYON") return t('reports.opt2') || value;
     if (strVal === "SOR-SAT") return t('reports.optSorSat') || value;
-    if (strVal === "KONFİRME" || strVal === "KONFIRME") return t('reports.statusConfirmed') || value;
-    if (strVal === "BEKLEMEDE") return t('reports.statusPending') || value;
-    if (strVal === "İPTAL" || strVal === "IPTAL") return t('reports.statusCancelled') || value;
+    if (strVal === "KONFİRME" || strVal === "KONFIRME" || strVal === "CONFIRMED") return t('reports.statusConfirmed') || "Konfirme";
+    if (strVal === "BEKLEMEDE" || strVal === "PENDING") return t('reports.statusPending') || "Beklemede";
+    if (strVal === "İPTAL" || strVal === "IPTAL" || strVal === "CANCELLED") return t('reports.statusCancelled') || "İptal";
+    if (strVal === "ACTIVE" || strVal === "AKTİF" || strVal === "AKTIF") return "Aktif";
+    if (strVal === "COMPLETED" || strVal === "TAMAMLANDI") return "Tamamlandı";
   }
 
   if (columnKey === "kar_marj_yuzde") {
@@ -251,10 +253,16 @@ const parseSearchTerms = (value: string) =>
     .map((part) => part.trim())
     .filter(Boolean);
 
+const normalizeForSearch = (str: string) => {
+  return String(str || "")
+    .replace(/İ/g, "i")
+    .replace(/I/g, "i")
+    .replace(/ı/g, "i")
+    .toLowerCase();
+};
+
 const applyClientSearchTerms = (rows: DataRow[], value: string, t?: any) => {
-  const terms = parseSearchTerms(value).map((term) =>
-    term.toLocaleLowerCase("tr-TR"),
-  );
+  const terms = parseSearchTerms(value).map((term) => normalizeForSearch(term));
   if (!terms.length) return rows;
   return rows.filter((row) => {
     const haystack = Object.entries(row)
@@ -264,8 +272,8 @@ const applyClientSearchTerms = (rows: DataRow[], value: string, t?: any) => {
         }
         return formatCell(v, k, t);
       })
-      .join(" ")
-      .toLocaleLowerCase("tr-TR");
+      .map((s) => normalizeForSearch(String(s)))
+      .join(" ");
     return terms.every((term) => haystack.includes(term));
   });
 };
