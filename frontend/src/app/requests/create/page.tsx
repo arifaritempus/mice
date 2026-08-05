@@ -305,7 +305,7 @@ export default function CreateRequestPage() {
       const hotelInserts = selectedHotels.map(hId => ({
         request_id: reqData.id,
         hotel_id: hId,
-        status: "BEKLEMEDE"
+        status: sendMail ? "MAİL GÖNDERİLDİ" : "BEKLEMEDE"
       }));
 
       const { error: hotelErr } = await supabase.from("mice_request_hotels").insert(hotelInserts);

@@ -264,7 +264,6 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
       try {
         const [agenciesRes, hotelsRes] = await Promise.all([
           supabase.from("agencies").select("id, name").eq("is_active", true).order("name"),
-          supabase.from("categories").select("id, name, parent_id").order("name"),
           supabase.from("hotels").select("id, name, concept").eq("is_active", true).order("name")
         ]);
         if (agenciesRes.data) setAgencies(agenciesRes.data as any);
@@ -416,10 +415,10 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
 
     setIsSubmitting(true);
     try {
-      // 1. Insert mice_requests
-      const { data: reqData, error: reqErr } = await supabase
+      // 1. Update mice_requests
+      const { error: reqErr } = await supabase
         .from("mice_requests")
-        .insert({
+        .update({
           request_date: requestDate || null,
           reference,
           company_name: companyName,
@@ -434,25 +433,34 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           gala: { requested: gala.requested, date: gala.date || null, notes: gala.notes },
           programs: programs.map(p => ({ ...p, date: p.date || null })),
           notes: notes,
-          status: sendMail ? "MAİL GÖNDERİLDİ" : "BEKLEMEDE"
+          status: sendMail ? "MAİL GÖNDERİLDİ" : requestStatus || "BEKLEMEDE"
         })
-        .select()
-        .single();
+        .eq("id", requestId);
 
       if (reqErr) throw reqErr;
 
-      // 2. Update mice_request_hotels (Delete all and re-insert)
-      await supabase.from("mice_request_hotels").delete().eq("request_id", requestId);
+      // 2. Update mice_request_hotels without losing history
+      const { data: existingHotels } = await supabase.from("mice_request_hotels").select("hotel_id").eq("request_id", requestId);
+      const existingIds = existingHotels?.map(h => h.hotel_id) || [];
       
-      if (selectedHotels.length > 0) {
-        const hotelInserts = selectedHotels.map(hId => ({
-          request_id: reqData.id,
+      const toAdd = selectedHotels.filter(hId => !existingIds.includes(hId));
+      const toRemove = existingIds.filter(hId => !selectedHotels.includes(hId));
+      
+      if (toRemove.length > 0) {
+        await supabase.from("mice_request_hotels").delete().eq("request_id", requestId).in("hotel_id", toRemove);
+      }
+      
+      if (toAdd.length > 0) {
+        const hotelInserts = toAdd.map(hId => ({
+          request_id: requestId,
           hotel_id: hId,
-          status: "BEKLEMEDE"
+          status: sendMail ? "MAİL GÖNDERİLDİ" : "BEKLEMEDE"
         }));
+        await supabase.from("mice_request_hotels").insert(hotelInserts);
+      }
 
-        const { error: hotelErr } = await supabase.from("mice_request_hotels").insert(hotelInserts);
-        if (hotelErr) throw hotelErr;
+      if (sendMail && selectedHotels.length > 0) {
+        await supabase.from("mice_request_hotels").update({ status: "MAİL GÖNDERİLDİ" }).eq("request_id", requestId).in("hotel_id", selectedHotels);
       }
 
       if (sendMail) {
@@ -529,7 +537,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
                 to: toAddress,
                 cc: hotel.agency_cc_mail ? [hotel.agency_cc_mail] : undefined,
                 requestData: {
-                  reference: reqData.reference,
+                  reference: reference,
                   company_name: companyName,
                   date_range: dateRangeStr,
                   nights: Number(nights),
