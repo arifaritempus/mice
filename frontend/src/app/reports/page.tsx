@@ -798,9 +798,13 @@ export default function ReportsPage() {
   };
 
   const applySearch = () => {
-    const nextSearch = searchInput.trim();
-    setAppliedSearchInput(nextSearch);
-    setCurrentPage(1);
+    const nextSearch = [...searchTokens, searchInput].map((s) => s.trim()).filter(Boolean).join(" ");
+    if (nextSearch !== appliedSearchInput) {
+      setAppliedSearchInput(nextSearch);
+      setCurrentPage(1);
+    } else {
+      fetchReport({ searchValue: nextSearch, pageOverride: 1 });
+    }
   };
 
   useEffect(() => {
@@ -1002,7 +1006,7 @@ export default function ReportsPage() {
 
           {/* Buttons */}
           <button
-            onClick={() => fetchReport()}
+            onClick={applySearch}
             className="h-10 shrink-0 bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 py-2 px-6 rounded-xl shadow-md text-[10px] font-black uppercase tracking-widest transition-all"
           >
             {t('reports.query') || "SORGULA"}
