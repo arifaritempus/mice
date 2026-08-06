@@ -957,13 +957,27 @@ export default function ReportsPage() {
               tokens={searchTokens}
               suggestions={[]}
               onAddToken={(t) => {
-                if (!searchTokens.includes(t)) {
-                  setSearchTokens([...searchTokens, t]);
+                const trimmed = t.trim();
+                if (!trimmed) return;
+                if (!searchTokens.includes(trimmed)) {
+                  const newTokens = [...searchTokens, trimmed];
+                  setSearchTokens(newTokens);
                   setSearchInput("");
+                  const nextSearch = newTokens.join(" ");
+                  if (nextSearch !== appliedSearchInput) {
+                    setAppliedSearchInput(nextSearch);
+                    setCurrentPage(1);
+                  }
                 }
               }}
               onRemoveToken={(t) => {
-                setSearchTokens(searchTokens.filter((st) => st !== t));
+                const newTokens = searchTokens.filter((st) => st !== t);
+                setSearchTokens(newTokens);
+                const nextSearch = [...newTokens, searchInput].map((s) => s.trim()).filter(Boolean).join(" ");
+                if (nextSearch !== appliedSearchInput) {
+                  setAppliedSearchInput(nextSearch);
+                  setCurrentPage(1);
+                }
               }}
             />
           </div>
