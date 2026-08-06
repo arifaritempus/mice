@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 
 export function useProjectState() {
@@ -16,6 +16,21 @@ export function useProjectState() {
     new Set(["satis", "alis", "kar-zarar"]),
   );
   const [project, setProject] = useState<any>(null);
+
+  const prevHotelsCountRef = useRef<number>(-1);
+
+  useEffect(() => {
+    const currentCount = project?.hotels_data?.length || 0;
+    if (currentCount === 1 && prevHotelsCountRef.current !== 1) {
+      setActiveHotelId((prev) => {
+        if (prev === "all" || !prev) {
+          return String(project.hotels_data[0].id);
+        }
+        return prev;
+      });
+    }
+    prevHotelsCountRef.current = currentCount;
+  }, [project?.hotels_data]);
 
   // Proje düzenleme state'leri
   const [isEditingProject, setIsEditingProject] = useState<boolean>(false);
