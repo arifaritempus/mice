@@ -2971,7 +2971,9 @@ export const projectTransfersService = {
         // Boş string'leri null'a çevir ve tarih formatını düzelt
         const cleanDate = accommodation.gelis_tarihi && accommodation.gelis_tarihi.trim() !== '' ?
           this.formatDateToSupabase(accommodation.gelis_tarihi) : null;
-        const cleanTime = accommodation.gelis_ucak_kalkis && accommodation.gelis_ucak_kalkis.trim() !== '' ? accommodation.gelis_ucak_kalkis : null;
+        const cleanTime = (accommodation.gelis_ucak_inis && accommodation.gelis_ucak_inis.trim() !== '') 
+          ? accommodation.gelis_ucak_inis 
+          : (accommodation.gelis_ucak_kalkis && accommodation.gelis_ucak_kalkis.trim() !== '' ? accommodation.gelis_ucak_kalkis : null);
         const cleanFlightCode = accommodation.gelis_ucus_kodu && accommodation.gelis_ucus_kodu.trim() !== '' ? accommodation.gelis_ucus_kodu : null;
 
         console.log('🔍 Giriş temizlenmiş değerler:', {
