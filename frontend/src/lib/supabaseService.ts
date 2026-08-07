@@ -5303,11 +5303,11 @@ export const agingService = {
       return acc;
     }, {});
 
-    // 1. Projeleri Getir (İptal olmayanlar)
+    // 1. Projeleri Getir (Sadece Aktif, Onaylandı veya Tamamlandı)
     const { data: projects, error: pErr } = await supabase
       .from('projects')
-      .select('id, agency_id, company_name, end_date')
-      .neq('status', 'cancelled');
+      .select('id, agency_id, company_name, end_date, status')
+      .in('status', ['active', 'approved', 'completed']);
       
     if (pErr) throw pErr;
     
@@ -5373,13 +5373,21 @@ export const agingService = {
       }
     });
     
-    // 2. Sejourları Getir (İptal olmayanlar)
-    const { data: sejours, error: sErr } = await supabase
+    // 2. Sejourları Getir (Konfirme, Tamamlandı veya Onaylandı olanlar)
+    // Beklemede (pending) ve İptal olanları kesinlikle hariç tutuyoruz
+    const { data: allSejours, error: sErr } = await supabase
       .from('sejours')
-      .select('id, agency_id, customer_name, check_out_date')
-      .neq('status', 'İPTAL');
+      .select('id, agency_id, customer_name, check_out_date, status');
       
     if (sErr) throw sErr;
+    
+    // JS filter to be safe against case variations
+    const sejours = (allSejours || []).filter(s => {
+      const st = (s.status || "").toLowerCase();
+      // Beklemede ve iptal olanları dışla, konfirme/tamamlandı olanları al
+      if (st.includes("bekle") || st.includes("iptal")) return false;
+      return st.includes("konfirme") || st.includes("tamam") || st.includes("onay") || st.includes("active");
+    });
     
     const sejourIds = (sejours || []).map((s: any) => s.id);
     
