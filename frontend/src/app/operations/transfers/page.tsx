@@ -1874,7 +1874,7 @@ export default function TransfersPage() {
                     </div>
                   </th>
                   <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border w-[200px] min-w-[200px] max-w-[200px]"
                     onClick={() => handleSort("notes")}
                   >
                     <div className="flex items-center gap-0.5">
@@ -2063,8 +2063,8 @@ export default function TransfersPage() {
                     <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.passenger_count}/{transfer.capacity}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text relative transition-colors duration-200 whitespace-nowrap">
-                      <div className="flex items-center justify-between gap-1">
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text relative transition-colors duration-200 whitespace-nowrap w-[200px] min-w-[200px] max-w-[200px]">
+                      <div className="flex items-center justify-between gap-1 w-full">
                         <div
                           className="truncate flex-1 min-w-0"
                           title={

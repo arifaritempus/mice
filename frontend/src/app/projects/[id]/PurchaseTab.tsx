@@ -1048,7 +1048,7 @@ export default function PurchaseTab({
                             setItemsPurchase((prev: any[]) =>
                               prev.map((p) =>
                                 p.id === it.id
-                                  ? { ...p, vendorId: null, supplier: null, hotel_id: null }
+                                  ? { ...p, vendorId: null, supplier: null }
                                   : p
                               )
                             );

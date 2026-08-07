@@ -9731,15 +9731,12 @@ export default function ProjectDetailPage() {
     (supplier: any, itemId: string) => {
       console.log("ALIŞ tedarikçi seçildi:", supplier, "itemId:", itemId);
       
-      const isHotel = supplier.type === "hotel";
-      
       const updatedForUI = itemsPurchase.map((item: any) =>
         item.id === itemId
           ? { 
               ...item, 
-              vendorId: isHotel ? null : supplier.id, 
-              hotel_id: isHotel ? supplier.id : null, 
-              supplier: isHotel ? null : supplier,
+              vendorId: supplier.id, 
+              supplier: supplier,
               isEditing: true 
             }
           : item,
@@ -9751,9 +9748,8 @@ export default function ProjectDetailPage() {
         item.id === itemId
           ? { 
               ...item, 
-              vendorId: isHotel ? null : supplier.id, 
-              hotel_id: isHotel ? supplier.id : null, 
-              supplier: isHotel ? null : supplier,
+              vendorId: supplier.id, 
+              supplier: supplier,
               isEditing: false 
             }
           : item,
