@@ -56,7 +56,8 @@ export enum Module {
   SEJOUR_SERVICES = 'sejour_services',
   TICKETS_OPTIONS = 'tickets_options',
   TICKETS_PAYMENTS = 'tickets_payments',
-  TICKETS_CALENDAR = 'tickets_calendar'
+  TICKETS_CALENDAR = 'tickets_calendar',
+  AGING = 'aging'
 }
 
 export enum Role {
@@ -153,7 +154,10 @@ const MODULE_ALIASES: Record<string, Module> = {
   tickets_payments: Module.TICKETS_PAYMENTS,
   'tickets-payments': Module.TICKETS_PAYMENTS,
   tickets_calendar: Module.TICKETS_CALENDAR,
-  'tickets-calendar': Module.TICKETS_CALENDAR
+  'tickets-calendar': Module.TICKETS_CALENDAR,
+  aging: Module.AGING,
+  'alacak-yaslandirma': Module.AGING,
+  yaslandirma: Module.AGING
 };
 
 const ACTION_ALIASES: Record<string, Permission> = {
@@ -412,7 +416,8 @@ export const permissionService = {
       [Module.SEJOUR_SERVICES]: 'Sejour Hizmet Listesi',
       [Module.TICKETS_OPTIONS]: 'Bilet Opsiyon Takip',
       [Module.TICKETS_PAYMENTS]: 'Bilet Ödeme Takip',
-      [Module.TICKETS_CALENDAR]: 'Bilet Takvim Takip'
+      [Module.TICKETS_CALENDAR]: 'Bilet Takvim Takip',
+      [Module.AGING]: 'Alacak Yaşlandırma'
     };
     return map[module];
   },

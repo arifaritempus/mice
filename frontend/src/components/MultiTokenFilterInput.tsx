@@ -50,7 +50,7 @@ export default function MultiTokenFilterInput({
         </label>
       )}
       <div
-        className="w-full h-10 px-3 text-xs border border-v3-border rounded-xl bg-black/5 dark:bg-black/20 flex items-center gap-1.5 overflow-x-auto focus-within:border-blue-500/50 focus-within:bg-black/5 dark:focus-within:bg-black/20 transition-all shadow-inner"
+        className="w-full h-10 px-3 text-xs border border-v3-border rounded-xl bg-black/5 dark:bg-black/20 flex items-center gap-1.5 overflow-x-auto focus-within:border-blue-500/50 focus-within:bg-black/5 dark:focus-within:bg-black/20 transition-all shadow-inner [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         title={tooltipText}
       >
         {tokens.map((token, index) => (

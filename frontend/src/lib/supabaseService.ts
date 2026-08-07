@@ -5290,4 +5290,162 @@ export const projectOthersService = {
     if (error) throw error;
   }
 };
+
+// ALACAK YAŞLANDIRMA (AGING) SERVICE
+export const agingService = {
+  async getAccountsReceivable(): Promise<any[]> {
+    const results: any[] = [];
+    
+    // Acenteleri alalım
+    const { data: agencies } = await supabase.from('agencies').select('id, name');
+    const agencyMap = (agencies || []).reduce((acc: any, a: any) => {
+      acc[a.id] = a.name;
+      return acc;
+    }, {});
+
+    // 1. Projeleri Getir (İptal olmayanlar)
+    const { data: projects, error: pErr } = await supabase
+      .from('projects')
+      .select('id, agency_id, company_name, end_date')
+      .neq('status', 'cancelled');
+      
+    if (pErr) throw pErr;
+    
+    const projectIds = (projects || []).map((p: any) => p.id);
+    
+    // Proje satış kalemlerini (faturalandırılan kalemler / satış) al
+    const { data: pSales } = await supabase
+      .from('project_sales_items')
+      .select('project_id, total_price, currency')
+      .in('project_id', projectIds);
+      
+    // Proje tahsilatlarını al
+    const { data: pCollections } = await supabase
+      .from('project_collections')
+      .select('project_id, amount, currency')
+      .in('project_id', projectIds);
+      
+    const pData: Record<string, Record<string, { sales: number, collections: number }>> = {};
+    
+    (projects || []).forEach((p: any) => {
+      pData[p.id] = {};
+    });
+    
+    (pSales || []).forEach((s: any) => {
+      if (!pData[s.project_id]) return;
+      const c = s.currency || 'TRY';
+      if (!pData[s.project_id][c]) pData[s.project_id][c] = { sales: 0, collections: 0 };
+      pData[s.project_id][c].sales += Number(s.total_price || 0);
+    });
+    
+    (pCollections || []).forEach((c: any) => {
+      if (!pData[c.project_id]) return;
+      const cur = c.currency || 'TRY';
+      if (!pData[c.project_id][cur]) pData[c.project_id][cur] = { sales: 0, collections: 0 };
+      pData[c.project_id][cur].collections += Number(c.amount || 0);
+    });
+    
+    (projects || []).forEach((p: any) => {
+      // Acente varsa acente adı, yoksa şirket adı
+      const entityName = p.agency_id && agencyMap[p.agency_id] 
+        ? agencyMap[p.agency_id] 
+        : (p.company_name || 'Bilinmiyor');
+      
+      const curs = pData[p.id];
+      if (curs) {
+        Object.keys(curs).forEach(currency => {
+          const { sales, collections } = curs[currency];
+          const balance = sales - collections;
+          if (sales > 0 || collections > 0) {
+            results.push({
+              id: p.id,
+              type: 'PROJECT',
+              entityId: p.agency_id || p.company_name || 'unknown',
+              entityName,
+              currency,
+              totalSales: sales,
+              totalCollections: collections,
+              balance,
+              cOutDate: p.end_date || null
+            });
+          }
+        });
+      }
+    });
+    
+    // 2. Sejourları Getir (İptal olmayanlar)
+    const { data: sejours, error: sErr } = await supabase
+      .from('sejours')
+      .select('id, agency_id, customer_name, check_out_date')
+      .neq('status', 'İPTAL');
+      
+    if (sErr) throw sErr;
+    
+    const sejourIds = (sejours || []).map((s: any) => s.id);
+    
+    // Sejour satışlarını toparla
+    const { data: sRooms } = await supabase.from('sejour_rooms').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
+    const { data: sFlights } = await supabase.from('sejour_flights').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
+    const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
+    const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
+    
+    const { data: sCollections } = await supabase.from('sejour_collections').select('sejour_id, amount, currency').in('sejour_id', sejourIds);
+    
+    const sData: Record<string, Record<string, { sales: number, collections: number }>> = {};
+    (sejours || []).forEach((s: any) => {
+       sData[s.id] = {};
+    });
+    
+    const addSales = (arr: any[]) => {
+      (arr || []).forEach(item => {
+        if (!sData[item.sejour_id]) return;
+        const c = item.currency || 'TRY';
+        if (!sData[item.sejour_id][c]) sData[item.sejour_id][c] = { sales: 0, collections: 0 };
+        sData[item.sejour_id][c].sales += Number(item.total_price || item.price || 0);
+      });
+    };
+    
+    addSales(sRooms);
+    addSales(sFlights);
+    addSales(sTransfers);
+    addSales(sExtras);
+    
+    (sCollections || []).forEach((c: any) => {
+      if (!sData[c.sejour_id]) return;
+      const cur = c.currency || 'TRY';
+      if (!sData[c.sejour_id][cur]) sData[c.sejour_id][cur] = { sales: 0, collections: 0 };
+      sData[c.sejour_id][cur].collections += Number(c.amount || 0);
+    });
+    
+    (sejours || []).forEach((s: any) => {
+      const entityName = s.agency_id && agencyMap[s.agency_id] 
+        ? agencyMap[s.agency_id] 
+        : (s.customer_name || 'Bilinmiyor');
+      
+      const curs = sData[s.id];
+      if (curs) {
+        Object.keys(curs).forEach(currency => {
+          const { sales, collections } = curs[currency];
+          const balance = sales - collections;
+          if (sales > 0 || collections > 0) {
+            results.push({
+              id: s.id,
+              type: 'SEJOUR',
+              entityId: s.agency_id || s.customer_name || 'unknown',
+              entityName,
+              currency,
+              totalSales: sales,
+              totalCollections: collections,
+              balance,
+              cOutDate: s.check_out_date || null
+            });
+          }
+        });
+      }
+    });
+    
+    return results;
+  }
+};
+
 export { supabase };

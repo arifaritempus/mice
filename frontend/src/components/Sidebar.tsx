@@ -223,6 +223,13 @@ export default function Sidebar() {
           module: Module.CASH_FLOW,
         },
         {
+          id: "aging",
+          label: "Alacak Yaşlandırma",
+          icon: "🕰️",
+          href: "/accounting/aging",
+          module: Module.ACCOUNTING,
+        },
+        {
           id: "income-invoices",
           label: t('menu.incomeInvoices') || "Gelir Faturaları",
           icon: "📄",

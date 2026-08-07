@@ -79,6 +79,7 @@ const MODULE_META: Record<string, ModuleMeta> = {
   tickets_options: { id: "tickets_options", name: "Bilet Opsiyon Takip", icon: "📋" },
   tickets_payments: { id: "tickets_payments", name: "Bilet Ödeme Takip", icon: "💳" },
   tickets_calendar: { id: "tickets_calendar", name: "Bilet Takvim Takip", icon: "📅" },
+  aging: { id: "aging", name: "Alacak Yaşlandırma", icon: "⏳" },
 };
 
 const MODULE_ORDER = [
@@ -103,6 +104,7 @@ const MODULE_ORDER = [
   "invoices_income",
   "invoices_expense",
   "exchange_rates",
+  "aging",
   "marketing",
   "reports",
   "hotels",
@@ -143,6 +145,9 @@ const MODULE_ALIASES: Record<string, string> = {
   cashflow: "cash_flow",
   exchange_rates: "exchange_rates",
   "exchange-rates": "exchange_rates",
+  aging: "aging",
+  "alacak-yaslandirma": "aging",
+  yaslandirma: "aging",
 };
 
 const normalizeModuleId = (moduleId: string) => {

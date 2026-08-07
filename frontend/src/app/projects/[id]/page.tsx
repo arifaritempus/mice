@@ -2294,6 +2294,18 @@ export default function ProjectDetailPage() {
         if (next.repeat && next.repeat > 1)
           finalDescription += ` [R:${next.repeat}]`;
 
+        let isVendorHotel = false;
+        if (next.supplier && next.supplier.type === "hotel") {
+          isVendorHotel = true;
+        } else if (next.vendorId) {
+          const hotelExists =
+            project?.hotels_data?.some((h: any) => h.hotel_id === next.vendorId) ||
+            hotels?.some((h: any) => h.id === next.vendorId);
+          if (hotelExists) {
+            isVendorHotel = true;
+          }
+        }
+
         const dataToSave: any = {
           project_id: projectId,
           category: next.main_category,
@@ -2308,7 +2320,7 @@ export default function ProjectDetailPage() {
           hotel_id: masterHotelId,
           sefer: next.repeat,
           total_try: next.total_try,
-          supplier_id: next.vendorId || null,
+          supplier_id: isVendorHotel ? null : (next.vendorId || null),
         };
 
         try {
@@ -9731,40 +9743,26 @@ export default function ProjectDetailPage() {
     (supplier: any, itemId: string) => {
       console.log("ALIŞ tedarikçi seçildi:", supplier, "itemId:", itemId);
       
-      const updatedForUI = itemsPurchase.map((item: any) =>
-        item.id === itemId
-          ? { 
-              ...item, 
-              vendorId: supplier.id, 
-              supplier: supplier,
-              isEditing: true 
-            }
-          : item,
-      );
-      setItemsPurchase(updatedForUI); // Sadece UI için güncelle (edit modu açık kalsın)
-
-      // Veritabanına kaydetmek için isEditing: false yapılmış kopyasını gönderiyoruz
-      const updatedForDB = itemsPurchase.map((item: any) =>
-        item.id === itemId
-          ? { 
-              ...item, 
-              vendorId: supplier.id, 
-              supplier: supplier,
-              isEditing: false 
-            }
-          : item,
-      );
-      
-      const selectedItem = updatedForDB.find((it) => it.id === itemId);
-      if (selectedItem) {
-        saveItems("purchase", [selectedItem]);
-      }
+      setItemsPurchase((prev) => {
+        const itemToSave = prev.find((i) => i.id === itemId);
+        if (itemToSave) {
+          const updated = {
+            ...itemToSave,
+            vendorId: supplier.id,
+            supplier: supplier,
+            isEditing: false,
+          };
+          setTimeout(() => saveItems("purchase", [updated]), 0);
+          return prev.map((item: any) => (item.id === itemId ? updated : item));
+        }
+        return prev;
+      });
 
       setPurchaseSupplierSearch("");
       setShowPurchaseSupplierDropdown(false);
       setSelectedPurchaseSupplierIndex(-1);
     },
-    [itemsPurchase, saveItems],
+    [saveItems],
   );
 
   // ALIŞ tabı tedarikçi klavye navigasyonu
@@ -9788,6 +9786,7 @@ export default function ProjectDetailPage() {
         case "Enter":
           e.preventDefault();
           if (
+            showPurchaseSupplierDropdown &&
             selectedPurchaseSupplierIndex >= 0 &&
             selectedPurchaseSupplierIndex < filteredPurchaseSuppliers.length
           ) {
@@ -9795,6 +9794,17 @@ export default function ProjectDetailPage() {
               filteredPurchaseSuppliers[selectedPurchaseSupplierIndex],
               itemId,
             );
+            setShowPurchaseSupplierDropdown(false);
+          } else if (!showPurchaseSupplierDropdown) {
+            setItemsPurchase((prev) => {
+              const itemToSave = prev.find(i => i.id === itemId);
+              if (itemToSave) {
+                const updated = { ...itemToSave, isEditing: false };
+                setTimeout(() => saveItems("purchase", [updated]), 0);
+                return prev.map(i => i.id === itemId ? updated : i);
+              }
+              return prev;
+            });
           }
           break;
         case "Escape":
@@ -9808,6 +9818,7 @@ export default function ProjectDetailPage() {
       selectedPurchaseSupplierIndex,
       filteredPurchaseSuppliers,
       handlePurchaseSupplierSelect,
+      saveItems,
     ],
   );
 
@@ -14577,8 +14588,18 @@ export default function ProjectDetailPage() {
             {/* NEW: Sticky Main Tabs - Full Width Minimal */}
       <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-v3-border bg-black/5 dark:bg-white/5 backdrop-blur-md">
         <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
-          {/* Left placeholder to balance the flex layout */}
-          <div className="w-[100px]"></div>
+          {/* Left Back Button */}
+          <div className="w-[120px]">
+            <Link
+              href="/projects"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-v3-muted dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-v3-text dark:hover:text-v3-text transition-all duration-200 shadow-sm"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              GERİ DÖN
+            </Link>
+          </div>
           
           {/* Center Tabs */}
           <div className="flex bg-transparent p-1 rounded-xl border border-v3-border w-full max-w-[350px]">

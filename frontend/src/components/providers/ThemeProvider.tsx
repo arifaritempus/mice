@@ -159,6 +159,65 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   }, [theme]);
 
+  // System-Wide Uppercase Input Enforcement
+  useEffect(() => {
+    const handleInput = (e: Event) => {
+      const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+      if (!target || !target.tagName) return;
+
+      const isTextArea = target.tagName === "TEXTAREA";
+      const isInput = target.tagName === "INPUT";
+      const allowedInputTypes = ["text", "search", "url", "tel", ""];
+
+      if (
+        isTextArea ||
+        (isInput && allowedInputTypes.includes((target as HTMLInputElement).type?.toLowerCase() || ""))
+      ) {
+        if (target.classList.contains("no-uppercase")) return;
+        
+        // Email ve password gibi tipler zaten allowedInputTypes'ta yok, ancak ekstra koruma
+        if ((target as HTMLInputElement).type === "email" || (target as HTMLInputElement).type === "password") return;
+
+        const val = target.value;
+        const upper = val.toLocaleUpperCase("tr-TR");
+
+        if (val !== upper) {
+          let start = null;
+          let end = null;
+          try {
+            start = target.selectionStart;
+            end = target.selectionEnd;
+          } catch (err) {}
+
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype,
+            "value"
+          )?.set;
+          const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLTextAreaElement.prototype,
+            "value"
+          )?.set;
+
+          const setter = isInput ? nativeInputValueSetter : nativeTextAreaValueSetter;
+
+          if (setter) {
+            setter.call(target, upper);
+            target.dispatchEvent(new Event("input", { bubbles: true }));
+
+            try {
+              if (start !== null && end !== null) {
+                target.setSelectionRange(start, end);
+              }
+            } catch (err) {}
+          }
+        }
+      }
+    };
+
+    document.addEventListener("input", handleInput, { capture: true });
+    return () => document.removeEventListener("input", handleInput, { capture: true });
+  }, []);
+
   // İlk render'da da context'in mevcut olması için Provider'ı her zaman kur
   // (mounted olana kadar varsayılan değerlerle devam edilir)
 

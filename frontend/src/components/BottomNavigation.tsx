@@ -76,6 +76,7 @@ export default function BottomNavigation() {
     { id: "tickets-payments", label: "Bilet Ödemeleri", href: "/tickets/payments", icon: CreditCard, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
     { id: "tickets-calendar", label: "Bilet Takvim", href: "/tickets/calendar", icon: CalendarDays, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-500/10" },
     { id: "cash-flow", label: "Nakit Akış", href: "/accounting/cash-flow", icon: ArrowRightLeft, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-500/10" },
+    { id: "aging", label: "Yaşlandırma", href: "/accounting/aging", icon: ArrowRightLeft, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-500/10" },
     { id: "income-pending", label: "Bekleyen Gelir Faturaları", href: "/accounting/invoices/income/pending", icon: Receipt, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-500/10" },
     { id: "income-completed", label: "Tamamlanan Gelir Faturaları", href: "/accounting/invoices/income/completed", icon: FileCheck, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
     { id: "expense-pending", label: "Bekleyen Gider Faturaları", href: "/accounting/invoices/expense/pending", icon: Receipt, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-500/10" },

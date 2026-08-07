@@ -173,6 +173,11 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
           icon: <Wallet size={16} />,
         },
         {
+          label: "Alacak Yaşlandırma",
+          href: "/accounting/aging",
+          icon: <Wallet size={16} />,
+        },
+        {
           label: "Bekleyen Gelir Faturaları",
           href: "/accounting/invoices/income/pending",
           icon: <Receipt size={16} />,

@@ -61,6 +61,7 @@ const SYSTEM_PAGES = [
   { title: "Bilet Ödemeleri", href: "/tickets/payments", keywords: "bilet ödeme finans" },
   { title: "Bilet Takvim", href: "/tickets/calendar", keywords: "bilet takvim uçuş" },
   { title: "Nakit Akış", href: "/accounting/cash-flow", keywords: "finans muhasebe nakit akış" },
+  { title: "Alacak Yaşlandırma", href: "/accounting/aging", keywords: "finans muhasebe yaşlandırma alacak" },
   { title: "Bekleyen Gelir Faturaları", href: "/accounting/invoices/income/pending", keywords: "finans fatura gelir bekleyen" },
   { title: "Tamamlanan Gelir Faturaları", href: "/accounting/invoices/income/completed", keywords: "finans fatura gelir tamamlanan" },
   { title: "Bekleyen Gider Faturaları", href: "/accounting/invoices/expense/pending", keywords: "finans fatura gider bekleyen" },
