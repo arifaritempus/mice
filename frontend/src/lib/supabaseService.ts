@@ -784,7 +784,25 @@ export const projectPurchaseItemsService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    if (!data || data.length === 0) return [];
+    
+    const itemIds = data.map((d: any) => d.id);
+    const { data: invoiceItems } = await supabase
+      .from('invoice_items')
+      .select('item_id, amount')
+      .eq('item_type', 'purchase')
+      .in('item_id', itemIds);
+      
+    const invoicedMap = (invoiceItems || []).reduce((acc: any, ii: any) => {
+      acc[ii.item_id] = (acc[ii.item_id] || 0) + Number(ii.amount);
+      return acc;
+    }, {});
+    
+    return data.map((d: any) => ({
+      ...d,
+      invoiced_amount: invoicedMap[d.id] || 0
+    }));
   },
 
   async create(item: any): Promise<any> {
@@ -4745,7 +4763,7 @@ export const invoicesService = {
 
     // Fetch metadata
     const [projectsRes, sejoursRes, categoriesRes] = await Promise.all([
-      projectIds.length ? supabase.from('projects').select('id, title, company_name, description, quote_type, hotel_id, agency_id, start_date, end_date, status').in('id', projectIds).eq('status', 'completed') : Promise.resolve({ data: [] }),
+      projectIds.length ? supabase.from('projects').select('id, title, company_name, description, quote_type, hotel_id, agency_id, start_date, end_date, status').in('id', projectIds).neq('status', 'cancelled') : Promise.resolve({ data: [] }),
       sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).eq('status', 'KONFIRME') : Promise.resolve({ data: [] }),
       supabase.from('categories').select('*')
     ]);

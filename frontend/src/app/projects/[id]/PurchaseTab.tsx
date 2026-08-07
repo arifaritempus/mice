@@ -5,6 +5,7 @@ import { usePermissions, Module, Permission } from "@/lib/permissions";
 import FieldsetGuard from "@/components/permissions/FieldsetGuard";
 import PermissionBoundary from "@/components/permissions/PermissionBoundary";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import toast from "react-hot-toast";
 
 interface PurchaseTabProps {
   itemsPurchase: any[];
@@ -668,15 +669,20 @@ export default function PurchaseTab({
               }
 
               const it = row.item;
+              const isInvoiced = (it.invoiced_amount || 0) > 0;
               return (
                 <div
                   key={it.id}
                   onDoubleClick={() => {
                     if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
+                      if (isInvoiced) {
+                        toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz.");
+                        return;
+                      }
                       editRow("purchase", it.id);
                     }
                   }}
-                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"}`}
+                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"} ${isInvoiced ? "" : "cursor-pointer"}`}
                 >
                   {it.isEditing ? (
                     <>
@@ -1228,7 +1234,7 @@ export default function PurchaseTab({
                           </button>
 ) }</>
                         )}
-                        {permDelete(Module.PROJECTS) && !isLocked && (
+                        {permDelete(Module.PROJECTS) && !isLocked && !isInvoiced && (
                           <>{ permDelete(Module.PROJECTS) && (
 <button
                             onClick={() => removeItem("purchase", it.id)}
@@ -1250,6 +1256,13 @@ export default function PurchaseTab({
                             </svg>
                           </button>
 ) }</>
+                        )}
+                        {isInvoiced && (
+                          <div className="p-1 text-orange-500" title="Faturalandırılmış Kalem - Silinemez veya Düzenlenemez">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
                         )}
                       </div>
                     </>
