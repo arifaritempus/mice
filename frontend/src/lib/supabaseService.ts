@@ -4526,7 +4526,7 @@ export const invoicesService = {
     // Fetch projects and sejours
     const [projectsRes, sejoursRes, categoriesRes] = await Promise.all([
       projectIds.length ? supabase.from('projects').select('id, title, company_name, description, quote_type, agency_id, hotel_id, start_date, end_date, status').in('id', projectIds).eq('status', 'completed') : Promise.resolve({ data: [] }),
-      sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).in('status', ['KONFIRME', 'KONFİRME', 'TAMAMLANDI', 'ONAYLANDI']) : Promise.resolve({ data: [] }),
+      sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).not('status', 'in', '("IPTAL","İPTAL","CANCELLED")') : Promise.resolve({ data: [] }),
       supabase.from('categories').select('*')
     ]);
 
@@ -4764,7 +4764,7 @@ export const invoicesService = {
     // Fetch metadata
     const [projectsRes, sejoursRes, categoriesRes] = await Promise.all([
       projectIds.length ? supabase.from('projects').select('id, title, company_name, description, quote_type, hotel_id, agency_id, start_date, end_date, status').in('id', projectIds).neq('status', 'cancelled') : Promise.resolve({ data: [] }),
-      sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).in('status', ['KONFIRME', 'KONFİRME', 'TAMAMLANDI', 'ONAYLANDI']) : Promise.resolve({ data: [] }),
+      sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).not('status', 'in', '("IPTAL","İPTAL","CANCELLED")') : Promise.resolve({ data: [] }),
       supabase.from('categories').select('*')
     ]);
 
