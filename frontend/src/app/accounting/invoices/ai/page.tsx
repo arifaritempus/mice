@@ -527,7 +527,11 @@ export default function AIInvoicesPage() {
                           )}
                           {inv.file_url && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); setPreviewImage(inv.file_url); }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                const ext = inv.file_url.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg';
+                                setPreviewImage(`/api/invoices/preview/${inv.id}${ext}`); 
+                              }}
                               className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
                               title="Görüntüle"
                             >
