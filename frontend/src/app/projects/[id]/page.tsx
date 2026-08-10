@@ -13001,8 +13001,8 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } =
         await getLogosForExcel(true);
       const allSales = itemsSales;
-      const cur = project.currency || "EUR";
-      const sym = cur === "USD" ? "$" : cur === "GBP" ? "£" : (cur === "TRY" || cur === "TL") ? "₺" : "€";
+      const cur = project.currency || "TL";
+      const sym = cur === "USD" ? "$" : cur === "GBP" ? "£" : (cur === "TRY" || cur === "TL") ? "₺" : cur === "EUR" ? "€" : cur;
 
       const createStyledSheet = (
         sheetName: string,
@@ -13060,6 +13060,13 @@ export default function ProjectDetailPage() {
 
         // 2. Bilgi Paneli (Beige #D3CBBE)
         const beigeColor = "FFD3CBBE";
+        const formatDateForExcel = (d: string | null | undefined) => {
+          if (!d || d === "-") return "-";
+          return d.replace(/-/g, '.');
+        };
+        const statusMap: any = { active: 'Aktif', completed: 'Tamamlandı', cancelled: 'İptal', draft: 'Taslak' };
+        const translatedStatus = statusMap[project.status?.toLowerCase() || ''] || project.status || "-";
+
         const headerInfo = [
           ["REFERANS", project.reference || "-", "ODA | PAX", meta?.pax || "-"],
           [
@@ -13070,11 +13077,11 @@ export default function ProjectDetailPage() {
           ],
           [
             "C/IN - C/OUT",
-            `${meta?.checkin || project.start_date || "-"} - ${meta?.checkout || project.end_date || "-"}`,
+            `${formatDateForExcel(meta?.checkin || project.start_date)} - ${formatDateForExcel(meta?.checkout || project.end_date)}`,
             "OPSİYON",
             meta?.option || "-",
           ],
-          ["OTEL", meta?.hotelName || "-", "DURUM", project.status || "-"],
+          ["OTEL", meta?.hotelName || "-", "DURUM", translatedStatus],
           [
             "TEKLİF TÜRÜ",
             project.quote_type || "BİRİM",
@@ -13216,7 +13223,7 @@ export default function ProjectDetailPage() {
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
             const itemCur = it.currency || cur;
-            const itemSym = itemCur === "USD" ? "$" : itemCur === "GBP" ? "£" : (itemCur === "TRY" || itemCur === "TL") ? "₺" : "€";
+            const itemSym = itemCur === "USD" ? "$" : itemCur === "GBP" ? "£" : (itemCur === "TRY" || itemCur === "TL") ? "₺" : itemCur === "EUR" ? "€" : itemCur;
             row.getCell(4).numFmt = `"${itemSym}"#,##0.00`;
 
             for (let c = 1; c <= 7; c++) {
@@ -13256,8 +13263,8 @@ export default function ProjectDetailPage() {
             formula: `SUM(E${startDataRow}:E${endDataRow})`,
             result: items.reduce((acc, i) => acc + i.totalEur, 0),
           };
-          const catCur = cur;
-          const catSym = catCur === "USD" ? "$" : catCur === "GBP" ? "£" : (catCur === "TRY" || catCur === "TL") ? "₺" : "€";
+          const catCur = items.length > 0 ? (items[0].currency || cur) : cur;
+          const catSym = catCur === "USD" ? "$" : catCur === "GBP" ? "£" : (catCur === "TRY" || catCur === "TL") ? "₺" : catCur === "EUR" ? "€" : catCur;
           subRow.getCell(5).numFmt = `"${catSym}"#,##0.00`;
           subRow.getCell(5).font = { bold: true };
 
@@ -13286,8 +13293,8 @@ export default function ProjectDetailPage() {
           .filter((it) => it.hotel_id === hotelId)
           .map((it) => ({
             desc: it.category_name || "KONAKLAMA",
-            qty: it.rooms || 1,
-            repeat: it.nights || 1,
+            qty: it.rooms !== undefined && it.rooms !== null ? it.rooms : 1,
+            repeat: it.nights !== undefined && it.nights !== null ? it.nights : 1,
             price: it.pp_price || 0,
             totalEur: it.total_price || 0,
             fx: it.fx || 1,
@@ -13305,8 +13312,8 @@ export default function ProjectDetailPage() {
           if (!grouped[key]) grouped[key] = [];
           grouped[key].push({
             desc: getCategoryName(it.sub_category) || it.description || "-",
-            qty: it.qty || 1,
-            repeat: it.repeat || 1,
+            qty: it.qty !== undefined && it.qty !== null ? it.qty : 1,
+            repeat: it.repeat !== undefined && it.repeat !== null ? it.repeat : 1,
             price: it.unit_price || 0,
             totalEur: it.total || 0,
             fx: it.fx || 1,
@@ -13352,7 +13359,7 @@ export default function ProjectDetailPage() {
         }
 
         const gCur = allSales.length > 0 ? (allSales[0].currency || cur) : cur;
-        const gSym = gCur === "USD" ? "$" : gCur === "GBP" ? "£" : (gCur === "TRY" || gCur === "TL") ? "₺" : "€";
+        const gSym = gCur === "USD" ? "$" : gCur === "GBP" ? "£" : (gCur === "TRY" || gCur === "TL") ? "₺" : gCur === "EUR" ? "€" : gCur;
         gRow.getCell(5).numFmt = `"${gSym}"#,##0.00`;
         gRow.getCell(5).font = {
           bold: true,
