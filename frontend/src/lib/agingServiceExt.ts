@@ -20,20 +20,27 @@ export const agingServiceExt = {
     const { data: agencies } = await supabase.from('agencies').select('id, name').ilike('name', entityName);
     const agencyId = agencies && agencies.length > 0 ? agencies[0].id : null;
     
-    // 2. Fetch Projects
-    let pQuery = supabase
-      .from('projects')
-      .select('id, agency_id, company_name, end_date, created_at, reference, name')
-      .in('status', ['active', 'approved', 'completed']);
-      
+    let projects: any[] = [];
+    
     if (agencyId) {
-      pQuery = pQuery.or(`agency_id.eq.${agencyId},company_name.ilike.%${entityName}%`);
-    } else {
-      pQuery = pQuery.ilike('company_name', `%${entityName}%`);
+      const { data: pData1, error: pErr1 } = await supabase
+        .from('projects')
+        .select('id, agency_id, company_name, end_date, created_at, reference, name')
+        .in('status', ['active', 'approved', 'completed'])
+        .eq('agency_id', agencyId);
+      if (pErr1) console.error("Error fetching projects by agency_id:", pErr1);
+      if (pData1) projects.push(...pData1);
     }
     
-    const { data: projects, error: pErr } = await pQuery;
-    if (pErr) console.error("Error fetching projects for statement:", pErr);
+    const { data: pData2, error: pErr2 } = await supabase
+      .from('projects')
+      .select('id, agency_id, company_name, end_date, created_at, reference, name')
+      .in('status', ['active', 'approved', 'completed'])
+      .eq('company_name', entityName);
+    if (pErr2) console.error("Error fetching projects by company_name:", pErr2);
+    if (pData2) projects.push(...pData2);
+    
+    projects = Array.from(new Map(projects.map(p => [p.id, p])).values());
     
     const projectIds = (projects || []).map((p: any) => p.id);
     
@@ -92,19 +99,25 @@ export const agingServiceExt = {
       });
     }
     
-    // 3. Fetch Sejours
-    let sQuery = supabase
-      .from('sejours')
-      .select('id, agency_id, customer_name, check_out_date, created_at, voucher_number, status');
-      
+    let allSejours: any[] = [];
+    
     if (agencyId) {
-      sQuery = sQuery.or(`agency_id.eq.${agencyId},customer_name.ilike.%${entityName}%`);
-    } else {
-      sQuery = sQuery.ilike('customer_name', `%${entityName}%`);
+      const { data: sData1, error: sErr1 } = await supabase
+        .from('sejours')
+        .select('id, agency_id, customer_name, check_out_date, created_at, voucher_number, status')
+        .eq('agency_id', agencyId);
+      if (sErr1) console.error("Error fetching sejours by agency_id:", sErr1);
+      if (sData1) allSejours.push(...sData1);
     }
     
-    const { data: allSejours, error: sErr } = await sQuery;
-    if (sErr) console.error("Error fetching sejours for statement:", sErr);
+    const { data: sData2, error: sErr2 } = await supabase
+      .from('sejours')
+      .select('id, agency_id, customer_name, check_out_date, created_at, voucher_number, status')
+      .eq('customer_name', entityName);
+    if (sErr2) console.error("Error fetching sejours by customer_name:", sErr2);
+    if (sData2) allSejours.push(...sData2);
+    
+    allSejours = Array.from(new Map(allSejours.map(s => [s.id, s])).values());
     
     const sejours = (allSejours || []).filter(s => {
       const st = (s.status || "").toLowerCase();
@@ -115,17 +128,17 @@ export const agingServiceExt = {
     const sejourIds = (sejours || []).map((s: any) => s.id);
     
     if (sejourIds.length > 0) {
-      const { data: sRooms } = await supabase.from('sejour_rooms').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
-      const { data: sFlights } = await supabase.from('sejour_flights').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
-      const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
-      const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
+      const { data: sRooms } = await supabase.from('sejour_rooms').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+      const { data: sFlights } = await supabase.from('sejour_flights').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+      const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+      const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
       
       const sSalesMap: Record<string, Record<string, number>> = {};
       const addSales = (arr: any[]) => {
         (arr || []).forEach(item => {
           const c = item.currency || 'TRY';
           if (!sSalesMap[item.sejour_id]) sSalesMap[item.sejour_id] = {};
-          sSalesMap[item.sejour_id][c] = (sSalesMap[item.sejour_id][c] || 0) + Number(item.total_price || item.price || 0);
+          sSalesMap[item.sejour_id][c] = (sSalesMap[item.sejour_id][c] || 0) + Number(item.total_price || 0);
         });
       };
       

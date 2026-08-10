@@ -5392,10 +5392,10 @@ export const agingService = {
     const sejourIds = (sejours || []).map((s: any) => s.id);
     
     // Sejour satışlarını toparla
-    const { data: sRooms } = await supabase.from('sejour_rooms').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
-    const { data: sFlights } = await supabase.from('sejour_flights').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
-    const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
-    const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, total_price, price, currency').in('sejour_id', sejourIds);
+    const { data: sRooms } = await supabase.from('sejour_rooms').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+    const { data: sFlights } = await supabase.from('sejour_flights').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+    const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+    const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
     
     const { data: sCollections } = await supabase.from('sejour_collections').select('sejour_id, amount, currency').in('sejour_id', sejourIds);
     
@@ -5409,7 +5409,7 @@ export const agingService = {
         if (!sData[item.sejour_id]) return;
         const c = item.currency || 'TRY';
         if (!sData[item.sejour_id][c]) sData[item.sejour_id][c] = { sales: 0, collections: 0 };
-        sData[item.sejour_id][c].sales += Number(item.total_price || item.price || 0);
+        sData[item.sejour_id][c].sales += Number(item.total_price || 0);
       });
     };
     
