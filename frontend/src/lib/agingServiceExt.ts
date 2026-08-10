@@ -49,7 +49,7 @@ export const agingServiceExt = {
       const { data: pSales } = await supabase.from('project_sales_items').select('project_id, total_price, currency').in('project_id', projectIds);
       const pSalesMap: Record<string, Record<string, number>> = {};
       (pSales || []).forEach((s: any) => {
-        const c = s.currency || 'TRY';
+        const c = (s.currency === 'TL' ? 'TRY' : s.currency) || 'TRY';
         if (!pSalesMap[s.project_id]) pSalesMap[s.project_id] = {};
         pSalesMap[s.project_id][c] = (pSalesMap[s.project_id][c] || 0) + Number(s.total_price || 0);
       });
@@ -84,6 +84,7 @@ export const agingServiceExt = {
         if (c.amount > 0) {
           const p = projects?.find((proj: any) => proj.id === c.project_id);
           const refName = p ? (p.title || 'Proje') : 'Proje';
+          const currency = (c.currency === 'TL' ? 'TRY' : c.currency) || 'TRY';
           items.push({
             id: `p_coll_${c.id}`,
             date: c.collection_date || c.created_at,
@@ -92,7 +93,7 @@ export const agingServiceExt = {
             referenceId: c.project_id,
             description: `[MICE] ${refName} Tahsilat${c.payment_method ? ` (${c.payment_method})` : ''}`,
             amount: Number(c.amount),
-            currency: c.currency || 'TRY',
+            currency: currency,
             createdAt: c.created_at
           });
         }
@@ -136,7 +137,7 @@ export const agingServiceExt = {
       const sSalesMap: Record<string, Record<string, number>> = {};
       const addSales = (arr: any[]) => {
         (arr || []).forEach(item => {
-          const c = item.currency || 'TRY';
+          const c = (item.currency === 'TL' ? 'TRY' : item.currency) || 'TRY';
           if (!sSalesMap[item.sejour_id]) sSalesMap[item.sejour_id] = {};
           sSalesMap[item.sejour_id][c] = (sSalesMap[item.sejour_id][c] || 0) + Number(item.total_price || item.price || 0);
         });
@@ -175,6 +176,7 @@ export const agingServiceExt = {
         if (c.amount > 0) {
           const s = sejours?.find((sej: any) => sej.id === c.sejour_id);
           const refName = s ? (s.voucher_number || s.customer_name || 'Rezervasyon') : 'Rezervasyon';
+          const currency = (c.currency === 'TL' ? 'TRY' : c.currency) || 'TRY';
           items.push({
             id: `s_coll_${c.id}`,
             date: c.collection_date || c.created_at,
