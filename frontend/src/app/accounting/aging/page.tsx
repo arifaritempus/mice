@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from "react";
 import { agingService } from "@/lib/supabaseService";
 import { usePermissions, Module } from "@/lib/permissions";
 import { formatCurrency } from "@/utils/formatters";
-import { CalendarClock, Download } from "lucide-react";
+import { CalendarClock, Download, FileText } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import Link from "next/link";
 import * as XLSX from "xlsx";
 import MultiTokenFilterInput from "@/components/MultiTokenFilterInput";
 import { DateRangeFieldAccounting } from "@/components/accounting/DateRangeFieldAccounting";
@@ -288,12 +289,15 @@ export default function AgingPage() {
                     <th className="px-3 py-2 text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider text-right whitespace-nowrap bg-red-500/5">61-90 Gün</th>
                     <th className="px-3 py-2 text-xs font-black uppercase text-red-600 tracking-wider text-right whitespace-nowrap bg-red-500/10">90+ Gün</th>
                     <th className="px-4 py-2 text-xs font-black uppercase text-v3-text tracking-wider text-right whitespace-nowrap bg-green-500/5">Kalan Bakiye</th>
+                    <th className="px-3 py-2 text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider text-center whitespace-nowrap">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-v3-border text-[13px]">
                   {filteredAndGroupedData.map((row, i) => (
                     <tr key={i} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
-                      <td className="px-4 py-2 whitespace-nowrap font-bold text-v3-text">{row.entityName}</td>
+                      <td className="px-4 py-2 whitespace-nowrap font-bold text-v3-text max-w-[200px] truncate" title={row.entityName}>
+                        {row.entityName}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap text-right font-medium text-slate-700 dark:text-slate-300">{row.currency}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-right font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(row.totalSales, row.currency)}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-right font-semibold text-green-700 dark:text-green-400">{formatCurrency(row.totalCollections, row.currency)}</td>
@@ -306,6 +310,15 @@ export default function AgingPage() {
                       
                       <td className="px-4 py-2 whitespace-nowrap text-right font-black text-v3-text bg-green-500/5">
                         {formatCurrency(row.totalBalance, row.currency)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-center">
+                        <Link
+                          href={`/accounting/statement?entity=${encodeURIComponent(row.entityName)}&currency=${row.currency}`}
+                          className="inline-flex items-center justify-center p-1.5 text-blue-500 hover:text-white bg-blue-500/10 hover:bg-blue-500 rounded-lg transition-colors"
+                          title="Ekstre (Hesap Dökümü)"
+                        >
+                          <FileText size={16} />
+                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -358,6 +371,7 @@ export default function AgingPage() {
                       <td className="px-4 py-2 text-right bg-green-500/10 text-green-600">
                         {Object.entries(summaryByCurrency).map(([c, v]) => <div key={c}>{formatCurrency(v, c)}</div>)}
                       </td>
+                      <td className="px-3 py-2 bg-black/10 dark:bg-white/10"></td>
                     </tr>
                   )}
                 </tbody>
