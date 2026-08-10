@@ -5,19 +5,20 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     // ID kısmından (varsa) .pdf veya .jpg uzantısını temizle
-    const id = params.id.replace(/\.(pdf|jpg|jpeg|png|webp)$/i, '');
+    const cleanId = id.replace(/\.(pdf|jpg|jpeg|png|webp)$/i, '');
     
-    if (!id) {
+    if (!cleanId) {
       return new NextResponse("Missing ID", { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('uploaded_invoices')
       .select('file_url')
-      .eq('id', id)
+      .eq('id', cleanId)
       .single();
 
     if (error || !data?.file_url) {
