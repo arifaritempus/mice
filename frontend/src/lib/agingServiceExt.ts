@@ -55,7 +55,8 @@ export const agingServiceExt = {
       });
       
       // Project Collections
-      const { data: pCollections } = await supabase.from('project_collections').select('id, project_id, amount, currency, collection_date, created_at, notes, payment_method').in('project_id', projectIds);
+      const { data: pCollections, error: pCollErr } = await supabase.from('project_collections').select('id, project_id, amount, currency, date, created_at, description, collection_type').in('project_id', projectIds);
+      if (pCollErr) console.error("Error fetching project collections:", pCollErr);
       
       (projects || []).forEach((p: any) => {
         // Add Sales Items
@@ -70,7 +71,7 @@ export const agingServiceExt = {
                 type: 'SALE',
                 module: 'PROJECT',
                 referenceId: p.id,
-                description: `[MICE] ${p.title || 'Proje'}`,
+                description: `[MICE] ${p.title || 'Proje'} - Satış Tutarı`,
                 amount: amount,
                 currency: currency,
                 createdAt: p.created_at
@@ -85,13 +86,18 @@ export const agingServiceExt = {
           const p = projects?.find((proj: any) => proj.id === c.project_id);
           const refName = p ? (p.title || 'Proje') : 'Proje';
           const currency = (c.currency === 'TL' ? 'TRY' : c.currency) || 'TRY';
+          
+          let paymentDetail = "";
+          if (c.collection_type) paymentDetail += ` (${c.collection_type})`;
+          if (c.description) paymentDetail += ` - ${c.description}`;
+          
           items.push({
             id: `p_coll_${c.id}`,
-            date: c.collection_date || c.created_at,
+            date: c.date || c.created_at,
             type: 'PAYMENT',
             module: 'PROJECT',
             referenceId: c.project_id,
-            description: `[MICE] ${refName} Tahsilat${c.payment_method ? ` (${c.payment_method})` : ''}`,
+            description: `[MICE] ${refName} Tahsilat${paymentDetail}`,
             amount: Number(c.amount),
             currency: currency,
             createdAt: c.created_at
@@ -148,7 +154,8 @@ export const agingServiceExt = {
       addSales(sTransfers);
       addSales(sExtras);
       
-      const { data: sCollections } = await supabase.from('sejour_collections').select('id, sejour_id, amount, currency, collection_date, created_at, notes, payment_method').in('sejour_id', sejourIds);
+      const { data: sCollections, error: sCollErr } = await supabase.from('sejour_collections').select('id, sejour_id, amount, currency, collection_date, created_at, description, payment_method').in('sejour_id', sejourIds);
+      if (sCollErr) console.error("Error fetching sejour collections:", sCollErr);
       
       (sejours || []).forEach((s: any) => {
         const sales = sSalesMap[s.id];
@@ -162,7 +169,7 @@ export const agingServiceExt = {
                 type: 'SALE',
                 module: 'SEJOUR',
                 referenceId: s.id,
-                description: `[SEJOUR] ${s.voucher_number || s.customer_name || 'Rezervasyon'}`,
+                description: `[SEJOUR] ${s.voucher_number || s.customer_name || 'Rezervasyon'} - Satış Tutarı`,
                 amount: amount,
                 currency: currency,
                 createdAt: s.created_at
@@ -177,15 +184,20 @@ export const agingServiceExt = {
           const s = sejours?.find((sej: any) => sej.id === c.sejour_id);
           const refName = s ? (s.voucher_number || s.customer_name || 'Rezervasyon') : 'Rezervasyon';
           const currency = (c.currency === 'TL' ? 'TRY' : c.currency) || 'TRY';
+          
+          let paymentDetail = "";
+          if (c.payment_method) paymentDetail += ` (${c.payment_method})`;
+          if (c.description) paymentDetail += ` - ${c.description}`;
+          
           items.push({
             id: `s_coll_${c.id}`,
             date: c.collection_date || c.created_at,
             type: 'PAYMENT',
             module: 'SEJOUR',
             referenceId: c.sejour_id,
-            description: `[SEJOUR] ${refName} Tahsilat${c.payment_method ? ` (${c.payment_method})` : ''}`,
+            description: `[SEJOUR] ${refName} Tahsilat${paymentDetail}`,
             amount: Number(c.amount),
-            currency: c.currency || 'TRY',
+            currency: currency,
             createdAt: c.created_at
           });
         }
