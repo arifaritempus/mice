@@ -322,12 +322,15 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
       <div className="relative w-full max-w-[1400px] bg-v3-surface dark:bg-v3-surface-dark border border-v3-border dark:border-v3-border-dark rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[95vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header & Context */}
-        <div className="p-5 border-b border-v3-border dark:border-v3-border-dark bg-v3-surface/80 backdrop-blur-md z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
-              <Camera className="w-5 h-5 text-blue-600" /> Yapay Zeka Fatura Okuma
-            </h2>
-            <p className="text-xs text-v3-text-muted mt-1">Faturaları yükleyin, görselden doğrulayın ve kaydedin.</p>
+        <div className="p-5 border-b border-v3-border dark:border-v3-border-dark bg-v3-surface/80 backdrop-blur-md z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
+          <div className="flex justify-between items-start w-full md:w-auto pr-8 md:pr-0">
+            <div>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
+                <Camera className="w-5 h-5 text-blue-600" /> Yapay Zeka Fatura Okuma
+              </h2>
+              <p className="text-xs text-v3-text-muted mt-1">Faturaları yükleyin, görselden doğrulayın ve kaydedin.</p>
+            </div>
+            <button onClick={onClose} className="md:hidden absolute top-4 right-4 p-2 hover:bg-v3-bg dark:hover:bg-v3-bg-dark rounded-xl text-v3-text-muted"><X className="w-5 h-5" /></button>
           </div>
 
           <div className="flex items-center gap-3 flex-1 md:max-w-xl">
@@ -346,15 +349,15 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
             {entityType !== "GENERAL" && (
               <div className="flex-1 relative">
                 <div 
-                  onClick={() => { if (!isLoadingEntities) setDropdownOpen(!dropdownOpen); }}
-                  className={`w-full bg-v3-bg dark:bg-v3-bg-dark border border-v3-border dark:border-v3-border-dark rounded-lg p-2 cursor-pointer flex items-center justify-between ${isLoadingEntities ? 'opacity-50' : 'hover:border-blue-400'}`}
+                  onClick={() => { if (!isLoadingEntities && !lockEntitySelection) setDropdownOpen(!dropdownOpen); }}
+                  className={`w-full bg-v3-bg dark:bg-v3-bg-dark border border-v3-border dark:border-v3-border-dark rounded-lg p-2 flex items-center justify-between ${isLoadingEntities || lockEntitySelection ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-blue-400'}`}
                 >
                   <span className="truncate text-v3-text text-xs font-medium pr-2">
                     {entityId ? dbEntities.find(e => e.id === entityId)?.name || "Seçildi" : `İlgili ${entityType} Seçiniz...`}
                   </span>
-                  {isLoadingEntities ? <Loader2 className="w-3 h-3 animate-spin text-v3-text-muted" /> : <span className="text-[10px]">▼</span>}
+                  {isLoadingEntities ? <Loader2 className="w-3 h-3 animate-spin text-v3-text-muted" /> : !lockEntitySelection && <span className="text-[10px]">▼</span>}
                 </div>
-                {dropdownOpen && (
+                {dropdownOpen && !lockEntitySelection && (
                   <div className="absolute top-full right-0 w-[400px] max-w-[90vw] mt-2 bg-v3-surface dark:bg-v3-surface-dark border border-v3-border dark:border-v3-border-dark rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
                     <div className="p-2 border-b border-v3-border dark:border-v3-border-dark bg-v3-bg/50">
                       <input 
@@ -381,7 +384,7 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
             )}
           </div>
 
-          <button onClick={onClose} className="p-2 hover:bg-v3-bg dark:hover:bg-v3-bg-dark rounded-xl text-v3-text-muted"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="hidden md:block p-2 hover:bg-v3-bg dark:hover:bg-v3-bg-dark rounded-xl text-v3-text-muted"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Upload & Horizontal File List Strip */}
@@ -433,9 +436,22 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
                 </button>
                 <img 
                   src={selectedFile.previewUrl} 
-                  className={`max-w-none transition-all duration-300 ${isZoomed ? 'w-auto' : 'w-full h-full object-contain'}`} 
+                  className={`max-w-none transition-all duration-300 ${isZoomed ? 'w-auto' : 'w-full h-full object-contain'} ${selectedFile.status === 'analyzing' || selectedFile.status === 'uploading' ? 'opacity-30 blur-sm' : ''}`} 
                   alt="Invoice Document"
                 />
+                
+                {(selectedFile.status === "uploading" || selectedFile.status === "analyzing") && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/10 backdrop-blur-[2px]">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center animate-in zoom-in-95">
+                      <div className="relative w-16 h-16 mb-4">
+                        <div className="absolute inset-0 border-4 border-blue-100 dark:border-blue-900 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">Yapay Zeka Okuyor...</h3>
+                      <p className="text-xs text-gray-500 mt-2 text-center max-w-[200px]">Bu işlem birkaç saniye sürebilir, lütfen bekleyin.</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Data Form (Right) */}
@@ -569,7 +585,7 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
                             <label className="text-[10px] font-bold text-gray-500 uppercase truncate block">KDV(%)</label>
                             <input 
                               type="number" 
-                              value={item.taxRate === 0 ? "0" : (item.taxRate || "")}
+                              value={item.taxRate === 0 ? "" : (item.taxRate || "")}
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value) || 0;
                                 const newItems = [...selectedFile.extractedData.items];
