@@ -21,6 +21,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   defaultEntity?: { type: EntityType; id?: string };
+  lockEntitySelection?: boolean;
 }
 
 const compressImage = (file: File, maxWidth = 1600, quality = 0.8): Promise<File> => {
@@ -61,7 +62,7 @@ const compressImage = (file: File, maxWidth = 1600, quality = 0.8): Promise<File
   });
 };
 
-export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: Props) {
+export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, lockEntitySelection }: Props) {
   const [entityType, setEntityType] = useState<EntityType>(defaultEntity?.type || "MICE");
   const [entityId, setEntityId] = useState<string>(defaultEntity?.id || "");
   const [sejours, setSejours] = useState<any[]>([]);
