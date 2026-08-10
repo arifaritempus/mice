@@ -30,6 +30,7 @@ import {
   Loader2,
   Moon,
   Sun,
+  Camera
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,6 +44,7 @@ import "moment/locale/tr";
 import { supabase } from "@/lib/supabase";
 import { usePermissions, Module } from "@/lib/permissions";
 import { SettingsService } from "@/lib/supabaseService";
+import InvoiceUploadModal from "./ocr/InvoiceUploadModal";
 
 const SYSTEM_PAGES = [
   { title: "Dashboard", href: "/dashboard", keywords: "ana menü anasayfa" },
@@ -61,6 +63,7 @@ const SYSTEM_PAGES = [
   { title: "Bilet Ödemeleri", href: "/tickets/payments", keywords: "bilet ödeme finans" },
   { title: "Bilet Takvim", href: "/tickets/calendar", keywords: "bilet takvim uçuş" },
   { title: "Nakit Akış", href: "/accounting/cash-flow", keywords: "finans muhasebe nakit akış" },
+  { title: "Yapay Zeka Faturaları", href: "/accounting/invoices/ai", keywords: "finans fatura yapay zeka ai ocr okuma" },
   { title: "Alacak Yaşlandırma", href: "/accounting/aging", keywords: "finans muhasebe yaşlandırma alacak" },
   { title: "Bekleyen Gelir Faturaları", href: "/accounting/invoices/income/pending", keywords: "finans fatura gelir bekleyen" },
   { title: "Tamamlanan Gelir Faturaları", href: "/accounting/invoices/income/completed", keywords: "finans fatura gelir tamamlanan" },
@@ -87,6 +90,7 @@ export default function TopNavigation() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isInvoiceUploadOpen, setIsInvoiceUploadOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { t, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
@@ -155,6 +159,11 @@ export default function TopNavigation() {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    const handleOpenInvoiceModal = () => setIsInvoiceUploadOpen(true);
+    window.addEventListener('open-invoice-modal', handleOpenInvoiceModal);
+    return () => window.removeEventListener('open-invoice-modal', handleOpenInvoiceModal);
+  }, []);
 
 
   useEffect(() => {
@@ -618,6 +627,15 @@ export default function TopNavigation() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4 ml-8">
+            {/* Hızlı Fatura Yükle Button */}
+            <button
+              onClick={() => setIsInvoiceUploadOpen(true)}
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-lg shadow-blue-500/20 transition-all hover:scale-105 group"
+            >
+              <Camera className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span className="text-xs font-bold">Hızlı Fatura</span>
+            </button>
+            
             {/* Expandable Search */}
             <div className="relative" ref={searchContainerRef}>
               <motion.div
@@ -964,6 +982,11 @@ export default function TopNavigation() {
         isOpen={isNotificationModalOpen}
         onClose={() => setIsNotificationModalOpen(false)}
         notification={selectedNotification}
+      />
+
+      <InvoiceUploadModal 
+        isOpen={isInvoiceUploadOpen}
+        onClose={() => setIsInvoiceUploadOpen(false)}
       />
     </>
   );

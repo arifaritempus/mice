@@ -24,6 +24,7 @@ import {
   Landmark,
   Search,
   ShieldCheck,
+  Camera,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -176,6 +177,11 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
           label: "Alacak Yaşlandırma",
           href: "/accounting/aging",
           icon: <Wallet size={16} />,
+        },
+        {
+          label: "Yapay Zeka Faturaları",
+          href: "/accounting/invoices/ai",
+          icon: <Camera size={16} />,
         },
         {
           label: "Bekleyen Gelir Faturaları",

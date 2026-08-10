@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import {
   SejourService,
@@ -10,6 +11,7 @@ import {
   SupplierService,
   ServiceTypeService,
   SettingsService,
+  categoriesService,
 } from "@/lib/supabaseService";
 import { usePermissions, Module } from "@/lib/permissions";
 import { getLogosForExcel } from "@/utils/logoUtils";
@@ -17,6 +19,9 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { toast } from "react-hot-toast";
+import EditAIInvoiceModal from "@/components/ocr/EditAIInvoiceModal";
+import Modal from "@/components/Modal";
+import { CheckCircle2, Edit2, Trash2, Eye, X } from "lucide-react";
 
 // Basit arama ve klavye destekli ComboBox - Modernize Edildi
 function ComboBox({
@@ -253,9 +258,16 @@ interface Collection {
 
 export default function EditSejourPage() {
   // --- V6 INJECTED STATES ---
+  const [activeMainTab, setActiveMainTab] = useState<'info' | 'details' | 'invoices'>('info');
   const [activeTabV6, setActiveTabV6] = useState("sales");
   const [isEditingInfoV6, setIsEditingInfoV6] = useState(false);
-  const [expandedSectionV6, setExpandedSectionV6] = useState<string | null>(null);
+  const [expandedSectionsV6, setExpandedSectionsV6] = useState<string[]>(["rooms", "flights", "transfers", "extraServices"]);
+
+  const toggleSection = (section: string) => {
+    setExpandedSectionsV6(prev => 
+      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+    );
+  };
   const [roomPriceInputV6, setRoomPriceInputV6] = useState<Record<string, string>>({});
   const [roomCostInputV6, setRoomCostInputV6] = useState<Record<string, string>>({});
   const [servicePriceInputV6, setServicePriceInputV6] = useState<Record<string, string>>({});
@@ -338,6 +350,12 @@ export default function EditSejourPage() {
   const [hotels, setHotels] = useState<any[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [supplierServiceTypes, setSupplierServiceTypes] = useState<any[]>([]);
+  const [sejourInvoices, setSejourInvoices] = useState<any[]>([]);
+  const [editModalInvoice, setEditModalInvoice] = useState<any | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
 
   const [roomTypes] = useState([
     "Standart Oda",
@@ -378,6 +396,10 @@ export default function EditSejourPage() {
         // Load service types
         const serviceTypesData = await ServiceTypeService.getServiceTypes();
         setSupplierServiceTypes(serviceTypesData);
+
+        // Load categories
+        const allCategories = await categoriesService.getAll();
+        setCategories(allCategories);
       } catch (error) {
         console.error("Error loading data:", error);
       }
@@ -463,6 +485,66 @@ export default function EditSejourPage() {
     }
   };
 
+  const loadSejourInvoices = async () => {
+    if (!sejourId || typeof sejourId !== "string") return;
+    try {
+      const response = await fetch(`/api/invoices/list?entityId=${sejourId}`, { cache: 'no-store' });
+      const data = await response.json();
+      if (response.ok && data.invoices) {
+        setSejourInvoices(data.invoices);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleApproveInvoice = async (invoice: any) => {
+    try {
+      setUpdatingId(invoice.id);
+      const res = await fetch('/api/invoices/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: invoice.id })
+      });
+      if (!res.ok) throw new Error('Failed to approve');
+      
+      toast.success('Fatura onaylandı.');
+      loadSejourInvoices();
+    } catch (err) {
+      console.error("Fatura onaylanırken hata:", err);
+      toast.error("Fatura onaylanırken hata oluştu.");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const confirmDeleteInvoice = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      setUpdatingId(deleteConfirmId);
+      const res = await fetch("/api/invoices/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId: deleteConfirmId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      toast.success("Fatura başarıyla silindi.");
+      loadSejourInvoices();
+    } catch (err) {
+      console.error("Fatura silinirken hata:", err);
+      toast.error("Fatura silinirken hata oluştu.");
+    } finally {
+      setUpdatingId(null);
+      setDeleteConfirmId(null);
+    }
+  };
+
+  const handleDeleteClick = (invoiceId: string) => {
+    setDeleteConfirmId(invoiceId);
+  };
+
   // Load existing sejour data
   useEffect(() => {
     const loadSejourData = async () => {
@@ -486,7 +568,7 @@ export default function EditSejourPage() {
 
             if (sejour.rooms) {
               setRooms(sejour.rooms.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
-              // if (sejour.rooms.length > 0) setShowAccommodation(true);
+              if (sejour.rooms.length > 0) setShowAccommodation(true);
             }
             if (sejour.flights) {
               setFlights(sejour.flights.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
@@ -500,7 +582,7 @@ export default function EditSejourPage() {
               setExtraServices(sejour.extraServices.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
               if (sejour.extraServices.length > 0) setShowExtraServices(true);
             }
-            if (sejour.collections) {
+              if (sejour.collections) {
               // Mevcut tahsilatlarda currency yoksa ekle
               const collectionsWithCurrency = sejour.collections.map(
                 (collection: any) => ({
@@ -510,7 +592,21 @@ export default function EditSejourPage() {
               );
               setCollections(collectionsWithCurrency);
             }
+
+            // Datalar yüklendiğinde içi dolu olan sekmeleri otomatik olarak aç
+            const sectionsToExpand: string[] = [];
+            if (sejour.rooms && sejour.rooms.length > 0) sectionsToExpand.push("rooms");
+            if (sejour.flights && sejour.flights.length > 0) sectionsToExpand.push("flights");
+            if (sejour.transfers && sejour.transfers.length > 0) sectionsToExpand.push("transfers");
+            if (sejour.extraServices && sejour.extraServices.length > 0) sectionsToExpand.push("extraServices");
+            
+            if (sectionsToExpand.length > 0) {
+              setExpandedSectionsV6(sectionsToExpand);
+            }
           }
+          
+          // Faturaları yükle
+          await loadSejourInvoices();
         } catch (error) {
           console.error("Error loading sejour data:", error);
         }
@@ -521,9 +617,9 @@ export default function EditSejourPage() {
   }, [sejourId]);
 
   // Section visibility states
-  const [showAccommodation, setShowAccommodation] = useState(false);
-  const [showFlight, setShowFlight] = useState(false);
-  const [showTransfer, setShowTransfer] = useState(false);
+  const [showAccommodation, setShowAccommodation] = useState(true);
+  const [showFlight, setShowFlight] = useState(true);
+  const [showTransfer, setShowTransfer] = useState(true);
   const [showExtraServices, setShowExtraServices] = useState(true);
 
   const handleInputChange = (
@@ -1275,17 +1371,83 @@ export default function EditSejourPage() {
 
                 <form onSubmit={handleSubmit} className="relative pb-32">
           
-          {/* Main Navigation Tabs */}
-          <div className="relative mb-6">
-            <div className="flex p-1.5 space-x-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm max-w-lg mx-auto">
-              <button type="button" onClick={() => setActiveTabV6('sales')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTabV6 === 'sales' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>SATIŞ BİLGİLERİ</button>
-              <button type="button" onClick={() => setActiveTabV6('purchase')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTabV6 === 'purchase' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>ALIŞ (MALİYET)</button>
-              <button type="button" onClick={() => setActiveTabV6('collection')} className={`flex items-center justify-center flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${activeTabV6 === 'collection' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>TAHSİLAT</button>
+            {/* NEW: Sticky Main Tabs - Full Width Minimal */}
+            <div className="sticky top-0 z-40 pb-2 pt-2 mb-6 border-b border-v3-border bg-black/5 dark:bg-white/5 backdrop-blur-md">
+              <div className="max-w-[1920px] mx-auto px-4 flex justify-between items-center w-full">
+                {/* Left Back Button */}
+                <div className="w-[120px]">
+                  <Link
+                    href="/sejour"
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-v3-muted dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-v3-text dark:hover:text-v3-text transition-all duration-200 shadow-sm"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    GERİ DÖN
+                  </Link>
+                </div>
+                
+                {/* Center Tabs */}
+                <div className="flex bg-transparent p-1 rounded-xl border border-v3-border w-full max-w-[500px]">
+                   <button 
+                     type="button"
+                     onClick={() => setActiveMainTab('info')} 
+                     className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'info' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
+                   >
+                     SEJOUR BİLGİLERİ
+                   </button>
+                   <button 
+                     type="button"
+                     onClick={() => setActiveMainTab('details')} 
+                     className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'details' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
+                   >
+                     SEJOUR DETAYLARI
+                   </button>
+                   <button 
+                     type="button"
+                     onClick={() => setActiveMainTab('invoices')} 
+                     className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeMainTab === 'invoices' ? 'bg-emerald-600/90 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
+                   >
+                     FATURALAR
+                   </button>
+                </div>
+                
+                {/* Right Action Button Placeholder */}
+                <div className="w-[120px] flex justify-end"></div>
+              </div>
             </div>
-          </div>
 
-          {/* SATIŞ BİLGİLERİ TABI */}
-          {activeTabV6 === 'sales' && (
+          {/* INNER DETAY TABS */}
+          {activeMainTab === 'details' && (
+            <div className="flex justify-center mb-6">
+              <div className="flex bg-transparent p-1 rounded-xl border border-v3-border w-full max-w-[600px]">
+                 <button 
+                   type="button"
+                   onClick={() => setActiveTabV6('sales')} 
+                   className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTabV6 === 'sales' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
+                 >
+                   SATIŞ HİZMETLERİ
+                 </button>
+                 <button 
+                   type="button"
+                   onClick={() => setActiveTabV6('purchase')} 
+                   className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTabV6 === 'purchase' ? 'bg-indigo-600/90 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
+                 >
+                   ALIŞ (MALİYET)
+                 </button>
+                 <button 
+                   type="button"
+                   onClick={() => setActiveTabV6('collection')} 
+                   className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTabV6 === 'collection' ? 'bg-emerald-600/90 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
+                 >
+                   TAHSİLAT
+                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* SEJOUR BİLGİLERİ TABI */}
+          {activeMainTab === 'info' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               
               {/* SEJOUR BİLGİLERİ (HEADER) */}
@@ -1394,7 +1556,12 @@ export default function EditSejourPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
 
+          {/* SATIŞ HİZMETLERİ BÖLÜMÜ */}
+          {activeMainTab === 'details' && activeTabV6 === 'sales' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* HİZMETLER BÖLÜMÜ BAŞLIĞI */}
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -1402,17 +1569,17 @@ export default function EditSejourPage() {
                   <p className="text-xs text-gray-500">Sejour için eklenen hizmetlerin satış bedellerini ve detaylarını aşağıda yönetebilirsiniz.</p>
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => { setShowAccommodation(true); setExpandedSectionV6("rooms"); }} className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">+ Konaklama</button>
-                  <button type="button" onClick={() => { setShowFlight(true); setExpandedSectionV6("flights"); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">+ Uçuş</button>
-                  <button type="button" onClick={() => { setShowTransfer(true); setExpandedSectionV6("transfers"); }} className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">+ Transfer</button>
-                  <button type="button" onClick={() => { setShowExtraServices(true); setExpandedSectionV6("extras"); }} className="px-3 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">+ Ekstra</button>
+                  <button type="button" onClick={() => { setShowAccommodation(true); if (!expandedSectionsV6.includes("rooms")) toggleSection("rooms"); }} className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">+ Konaklama</button>
+                  <button type="button" onClick={() => { setShowFlight(true); if (!expandedSectionsV6.includes("flights")) toggleSection("flights"); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">+ Uçuş</button>
+                  <button type="button" onClick={() => { setShowTransfer(true); if (!expandedSectionsV6.includes("transfers")) toggleSection("transfers"); }} className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">+ Transfer</button>
+                  <button type="button" onClick={() => { setShowExtraServices(true); if (!expandedSectionsV6.includes("extraServices")) toggleSection("extraServices"); }} className="px-3 py-1.5 text-xs font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">+ Ekstra</button>
                 </div>
               </div>
 
               {/* KONAKLAMA ACCORDION ROW */}
               {showAccommodation && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "rooms" ? "border border-blue-200 dark:border-blue-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'rooms' ? 'bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'rooms' ? null : 'rooms')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('rooms') ? "border border-blue-200 dark:border-blue-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('rooms') ? 'bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('rooms')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600">
                       <span className="text-lg">🏨</span>
                     </div>
@@ -1421,7 +1588,7 @@ export default function EditSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{rooms.reduce((acc, r) => acc + (r.adultCount||0) + (r.childCount||0) + (r.infantCount||0), 0)} kişi • {rooms.length} oda</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'rooms' && (
+                      {!expandedSectionsV6.includes('rooms') && (
                         rooms.length > 0 ? rooms.map((r, i) => (
                           <div key={r.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1451,8 +1618,8 @@ export default function EditSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'rooms' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'rooms' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('rooms') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('rooms') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1466,7 +1633,7 @@ export default function EditSejourPage() {
                   </div>
                   
                   {/* KONAKLAMA İÇERİĞİ (AÇIK DURUM) */}
-                  {expandedSectionV6 === "rooms" && (
+                  {expandedSectionsV6.includes('rooms') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4">
                         <button type="button" onClick={addRoom} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1546,8 +1713,8 @@ export default function EditSejourPage() {
 
               {/* UÇUŞ ACCORDION ROW */}
               {showFlight && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "flights" ? "border border-emerald-200 dark:border-emerald-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'flights' ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'flights' ? null : 'flights')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('flights') ? "border border-emerald-200 dark:border-emerald-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('flights') ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('flights')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600">
                       <span className="text-lg">✈️</span>
                     </div>
@@ -1556,7 +1723,7 @@ export default function EditSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{flights.length} uçuş eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'flights' && (
+                      {!expandedSectionsV6.includes('flights') && (
                         flights.length > 0 ? flights.map((f, i) => (
                           <div key={f.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1586,8 +1753,8 @@ export default function EditSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'flights' ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'flights' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('flights') ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('flights') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1600,7 +1767,7 @@ export default function EditSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "flights" && (
+                  {expandedSectionsV6.includes('flights') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4 gap-2">
                         <button type="button" onClick={() => addFlight("departure")} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1674,8 +1841,8 @@ export default function EditSejourPage() {
 
               {/* TRANSFER ACCORDION ROW */}
               {showTransfer && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "transfers" ? "border border-purple-200 dark:border-purple-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'transfers' ? 'bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'transfers' ? null : 'transfers')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('transfers') ? "border border-purple-200 dark:border-purple-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('transfers') ? 'bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('transfers')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-purple-50 dark:bg-purple-900/20 text-purple-600">
                       <span className="text-lg">🚗</span>
                     </div>
@@ -1684,7 +1851,7 @@ export default function EditSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{transfers.length} transfer eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'transfers' && (
+                      {!expandedSectionsV6.includes('transfers') && (
                         transfers.length > 0 ? transfers.map((t, i) => (
                           <div key={t.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1714,8 +1881,8 @@ export default function EditSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'transfers' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'transfers' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('transfers') ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('transfers') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1728,7 +1895,7 @@ export default function EditSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "transfers" && (
+                  {expandedSectionsV6.includes('transfers') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4 gap-2">
                         <button type="button" onClick={() => addTransfer("arrival")} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1795,9 +1962,9 @@ export default function EditSejourPage() {
 
               {/* EKSTRA HİZMETLER ACCORDION ROW */}
               {showExtraServices && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "extras" ? "border border-orange-200 dark:border-orange-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'extras' ? 'bg-orange-50/30 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'extras' ? null : 'extras')}>
-                    <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-orange-50 dark:bg-orange-900/20 text-orange-600">
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('extraServices') ? "border border-amber-200 dark:border-amber-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('extraServices') ? 'bg-amber-50/30 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('extraServices')}>
+                    <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-amber-50 dark:bg-amber-900/20 text-amber-600">
                       <span className="text-lg">✨</span>
                     </div>
                     <div className="w-48 shrink-0">
@@ -1805,7 +1972,7 @@ export default function EditSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{extraServices.length} hizmet eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'extras' && (
+                      {!expandedSectionsV6.includes('extraServices') && (
                         extraServices.length > 0 ? extraServices.map((e, i) => (
                           <div key={e.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1835,8 +2002,8 @@ export default function EditSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'extras' ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'extras' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('extraServices') ? 'bg-amber-100 text-amber-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('extraServices') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(ev) => ev.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1849,7 +2016,7 @@ export default function EditSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "extras" && (
+                  {expandedSectionsV6.includes('extraServices') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4">
                         <button type="button" onClick={addExtraService} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1902,7 +2069,7 @@ export default function EditSejourPage() {
           )}
 
           {/* ALIŞ (MALİYET) BİLGİLERİ TABI */}
-          {activeTabV6 === 'purchase' && (
+          {activeMainTab === 'details' && activeTabV6 === 'purchase' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -2070,7 +2237,7 @@ export default function EditSejourPage() {
           )}
 
           {/* TAHSİLAT TABI */}
-          {activeTabV6 === 'collection' && (
+          {activeMainTab === 'details' && activeTabV6 === 'collection' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -2124,6 +2291,150 @@ export default function EditSejourPage() {
                 <div className="bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
                   <span className="text-3xl block mb-2">💳</span>
                   <p className="text-sm font-semibold text-gray-500">Henüz tahsilat eklenmemiş</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* FATURALAR TABI */}
+          {activeMainTab === 'invoices' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Faturalar</h2>
+                  <p className="text-xs text-gray-500">Bu rezervasyona ait tüm yapay zeka faturaları</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-100">
+                    Toplam: {sejourInvoices.length}
+                  </div>
+                </div>
+              </div>
+
+              {sejourInvoices.length > 0 ? (
+                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700 w-16">Görsel</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700">Tedarikçi</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700">Fatura No</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700">Tarih</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700">Kategori</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700 text-right">Tutar</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700 text-center">Durum</th>
+                        <th className="px-4 py-3 font-semibold text-xs border-b border-gray-200 dark:border-gray-700 text-center w-24">İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {sejourInvoices.map((inv: any) => (
+                        <tr 
+                          key={inv.id} 
+                          className="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                          onDoubleClick={() => window.open(inv.file_url, '_blank')}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {inv.file_url ? (
+                                <div 
+                                  className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 relative group-hover:ring-2 ring-blue-500/50 transition-all cursor-pointer shadow-sm"
+                                  onClick={(e) => { e.stopPropagation(); window.open(inv.file_url, '_blank'); }}
+                                >
+                                  <img src={inv.file_url} alt="Fatura" className="w-full h-full object-cover" />
+                                </div>
+                              ) : (
+                                <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 text-[9px] font-bold text-gray-400">
+                                  Yok
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 max-w-[200px] truncate" title={inv.extracted_data?.supplier || "Bilinmeyen Tedarikçi"}>
+                            {inv.extracted_data?.supplier || "Bilinmeyen Tedarikçi"}
+                          </td>
+                          <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-mono text-xs font-medium">
+                            {inv.extracted_data?.invoiceNo || "-"}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500 dark:text-gray-400 font-medium">
+                            {inv.extracted_data?.date ? new Date(inv.extracted_data.date).toLocaleDateString('tr-TR') : "-"}
+                          </td>
+                          <td className="px-4 py-3">
+                            {(inv.category || inv.extracted_data?.category) ? (
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 truncate max-w-[120px]" title={categories.find((c: any) => c.id === (inv.category || inv.extracted_data?.category))?.name || inv.category || inv.extracted_data?.category}>
+                                  {categories.find((c: any) => c.id === (inv.category || inv.extracted_data?.category))?.name || inv.category || inv.extracted_data?.category}
+                                </span>
+                                {inv.sub_category && (
+                                  <span className="text-[9px] text-gray-500 dark:text-gray-400 truncate max-w-[120px]" title={categories.find((c: any) => c.id === inv.sub_category)?.name || inv.sub_category}>
+                                    {categories.find((c: any) => c.id === inv.sub_category)?.name || inv.sub_category}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[10px] font-medium text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="font-black text-gray-900 dark:text-white">
+                              {Number(inv.extracted_data?.total || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className="text-xs font-semibold text-gray-500 ml-1">{inv.extracted_data?.currency || "TRY"}</span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`inline-flex items-center justify-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                              inv.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
+                              inv.status === 'PROCESSING' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400' :
+                              inv.status === 'CANCELLED' ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400' :
+                              'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                            }`}>
+                              {inv.status === 'APPROVED' ? 'ONAYLI' :
+                               inv.status === 'PROCESSING' ? 'İŞLENİYOR' :
+                               inv.status === 'CANCELLED' ? 'İPTAL' :
+                               'BEKLİYOR'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {inv.status?.toUpperCase() !== 'APPROVED' && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleApproveInvoice(inv); }}
+                                  disabled={updatingId === inv.id}
+                                  className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg disabled:opacity-50 transition-colors"
+                                  title="Onayla"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setEditModalInvoice(inv); }}
+                                disabled={updatingId === inv.id}
+                                className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg disabled:opacity-50 transition-colors"
+                                title="Düzenle"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteClick(inv.id); }}
+                                disabled={updatingId === inv.id}
+                                className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg disabled:opacity-50 transition-colors"
+                                title="Sil"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
+                  <span className="text-3xl block mb-2">📄</span>
+                  <p className="text-sm font-semibold text-gray-500">Bu rezervasyona ait yapay zeka faturası bulunmuyor</p>
                 </div>
               )}
             </div>
@@ -2501,6 +2812,59 @@ export default function EditSejourPage() {
           </div>
         </div>
       </div>
+
+      {editModalInvoice && (
+        <EditAIInvoiceModal
+          invoice={editModalInvoice}
+          onClose={() => setEditModalInvoice(null)}
+          onSuccess={() => {
+            setEditModalInvoice(null);
+            loadSejourInvoices();
+          }}
+          categories={categories}
+          lockEntitySelection={true}
+        />
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setDeleteConfirmId(null)} />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl relative w-full max-w-sm mx-4 transform transition-all">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-6 h-6 text-red-600 dark:text-red-500" />
+            </div>
+            
+            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">
+              Faturayı Sil
+            </h3>
+            
+            <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-6">
+              Bu faturayı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={updatingId === deleteConfirmId}
+                className="flex-1 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded-xl transition-colors disabled:opacity-50"
+              >
+                İptal
+              </button>
+              <button
+                onClick={confirmDeleteInvoice}
+                disabled={updatingId === deleteConfirmId}
+                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center"
+              >
+                {updatingId === deleteConfirmId ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  'Sil'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

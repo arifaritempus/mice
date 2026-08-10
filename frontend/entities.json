@@ -1,0 +1,288 @@
+[
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "173",
+          "endIndex": "177"
+        }
+      ],
+      "content": "0048"
+    },
+    "type": "invoice_id",
+    "mentionText": "0048",
+    "mentionId": "",
+    "confidence": 0.5026780962944031,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.7786069512367249,
+                "y": 0.13625000417232513
+              },
+              {
+                "x": 0.8640132546424866,
+                "y": 0.13625000417232513
+              },
+              {
+                "x": 0.8640132546424866,
+                "y": 0.1599999964237213
+              },
+              {
+                "x": 0.7786069512367249,
+                "y": 0.1599999964237213
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "0",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "93",
+          "endIndex": "107"
+        }
+      ],
+      "content": "0548 869 09 09"
+    },
+    "type": "supplier_phone",
+    "mentionText": "0548 869 09 09",
+    "mentionId": "",
+    "confidence": 0.4590301811695099,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.1492537260055542,
+                "y": 0.10125000029802322
+              },
+              {
+                "x": 0.2620232105255127,
+                "y": 0.10125000029802322
+              },
+              {
+                "x": 0.2620232105255127,
+                "y": 0.11687500029802322
+              },
+              {
+                "x": 0.1492537260055542,
+                "y": 0.11687500029802322
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "1",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": null,
+    "type": "invoice_type",
+    "mentionText": "",
+    "mentionId": "",
+    "confidence": 0.4206547737121582,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": null,
+          "confidence": 0.41063567996025085
+        }
+      ]
+    },
+    "id": "2",
+    "normalizedValue": {
+      "text": "other"
+    },
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "282",
+          "endIndex": "292"
+        }
+      ],
+      "content": "119.660.00"
+    },
+    "type": "total_amount",
+    "mentionText": "119.660.00",
+    "mentionId": "",
+    "confidence": 0.37472087144851685,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.7023217082023621,
+                "y": 0.3293749988079071
+              },
+              {
+                "x": 0.8872305154800415,
+                "y": 0.3293749988079071
+              },
+              {
+                "x": 0.8872305154800415,
+                "y": 0.36000001430511475
+              },
+              {
+                "x": 0.7023217082023621,
+                "y": 0.36000001430511475
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "3",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "6",
+          "endIndex": "35"
+        }
+      ],
+      "content": "ENGİN İŞLETMELERİ ŞİRKETİ LTD"
+    },
+    "type": "supplier_name",
+    "mentionText": "ENGİN İŞLETMELERİ ŞİRKETİ LTD",
+    "mentionId": "",
+    "confidence": 0.018879462033510208,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.20563846826553345,
+                "y": 0.03687499836087227
+              },
+              {
+                "x": 0.5704809427261353,
+                "y": 0.03687499836087227
+              },
+              {
+                "x": 0.5704809427261353,
+                "y": 0.08937499672174454
+              },
+              {
+                "x": 0.20563846826553345,
+                "y": 0.08937499672174454
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "4",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "114",
+          "endIndex": "131"
+        }
+      ],
+      "content": "Sicil No:MS 27997"
+    },
+    "type": "supplier_address",
+    "mentionText": "Sicil No:MS 27997",
+    "mentionId": "",
+    "confidence": 0.00005903456622036174,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.16003316640853882,
+                "y": 0.11937499791383743
+              },
+              {
+                "x": 0.29933664202690125,
+                "y": 0.11937499791383743
+              },
+              {
+                "x": 0.29933664202690125,
+                "y": 0.13625000417232513
+              },
+              {
+                "x": 0.16003316640853882,
+                "y": 0.13625000417232513
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "5",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  }
+]

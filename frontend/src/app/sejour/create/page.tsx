@@ -266,7 +266,13 @@ export default function CreateSejourPage() {
   // --- V6 INJECTED STATES ---
   const [activeTabV6, setActiveTabV6] = useState("sales");
   const [isEditingInfoV6, setIsEditingInfoV6] = useState(true);
-  const [expandedSectionV6, setExpandedSectionV6] = useState<string | null>(null);
+  const [expandedSectionsV6, setExpandedSectionsV6] = useState<string[]>(["rooms", "flights", "transfers", "extraServices"]);
+
+  const toggleSection = (section: string) => {
+    setExpandedSectionsV6(prev => 
+      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+    );
+  };
   const [roomPriceInputV6, setRoomPriceInputV6] = useState<Record<string, string>>({});
   const [roomCostInputV6, setRoomCostInputV6] = useState<Record<string, string>>({});
   const [servicePriceInputV6, setServicePriceInputV6] = useState<Record<string, string>>({});
@@ -1268,17 +1274,17 @@ export default function CreateSejourPage() {
                   <p className="text-xs text-gray-500">Sejour için eklenen hizmetlerin satış bedellerini ve detaylarını aşağıda yönetebilirsiniz.</p>
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => { setShowAccommodation(true); setExpandedSectionV6("rooms"); }} className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">+ Konaklama</button>
-                  <button type="button" onClick={() => { setShowFlight(true); setExpandedSectionV6("flights"); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">+ Uçuş</button>
-                  <button type="button" onClick={() => { setShowTransfer(true); setExpandedSectionV6("transfers"); }} className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">+ Transfer</button>
-                  <button type="button" onClick={() => { setShowExtraServices(true); setExpandedSectionV6("extras"); }} className="px-3 py-1.5 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">+ Ekstra</button>
+                  <button type="button" onClick={() => { setShowAccommodation(true); if (!expandedSectionsV6.includes("rooms")) toggleSection("rooms"); }} className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">+ Konaklama</button>
+                  <button type="button" onClick={() => { setShowFlight(true); if (!expandedSectionsV6.includes("flights")) toggleSection("flights"); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">+ Uçuş</button>
+                  <button type="button" onClick={() => { setShowTransfer(true); if (!expandedSectionsV6.includes("transfers")) toggleSection("transfers"); }} className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">+ Transfer</button>
+                  <button type="button" onClick={() => { setShowExtraServices(true); if (!expandedSectionsV6.includes("extraServices")) toggleSection("extraServices"); }} className="px-3 py-1.5 text-xs font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">+ Ekstra</button>
                 </div>
               </div>
 
               {/* KONAKLAMA ACCORDION ROW */}
               {showAccommodation && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "rooms" ? "border border-blue-200 dark:border-blue-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'rooms' ? 'bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'rooms' ? null : 'rooms')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('rooms') ? "border border-blue-200 dark:border-blue-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('rooms') ? 'bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('rooms')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600">
                       <span className="text-lg">🏨</span>
                     </div>
@@ -1287,7 +1293,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{rooms.reduce((acc, r) => acc + (r.adultCount||0) + (r.childCount||0) + (r.infantCount||0), 0)} kişi • {rooms.length} oda</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'rooms' && (
+                      {!expandedSectionsV6.includes('rooms') && (
                         rooms.length > 0 ? rooms.map((r, i) => (
                           <div key={r.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1317,8 +1323,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'rooms' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'rooms' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('rooms') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('rooms') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1332,7 +1338,7 @@ export default function CreateSejourPage() {
                   </div>
                   
                   {/* KONAKLAMA İÇERİĞİ (AÇIK DURUM) */}
-                  {expandedSectionV6 === "rooms" && (
+                  {expandedSectionsV6.includes('rooms') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4">
                         <button type="button" onClick={addRoom} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1412,8 +1418,8 @@ export default function CreateSejourPage() {
 
               {/* UÇUŞ ACCORDION ROW */}
               {showFlight && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "flights" ? "border border-emerald-200 dark:border-emerald-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'flights' ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'flights' ? null : 'flights')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('flights') ? "border border-emerald-200 dark:border-emerald-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('flights') ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('flights')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600">
                       <span className="text-lg">✈️</span>
                     </div>
@@ -1422,7 +1428,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{flights.length} uçuş eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'flights' && (
+                      {!expandedSectionsV6.includes('flights') && (
                         flights.length > 0 ? flights.map((f, i) => (
                           <div key={f.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1452,8 +1458,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'flights' ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'flights' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('flights') ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('flights') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1466,7 +1472,7 @@ export default function CreateSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "flights" && (
+                  {expandedSectionsV6.includes('flights') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4 gap-2">
                         <button type="button" onClick={() => addFlight("departure")} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1540,8 +1546,8 @@ export default function CreateSejourPage() {
 
               {/* TRANSFER ACCORDION ROW */}
               {showTransfer && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "transfers" ? "border border-purple-200 dark:border-purple-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'transfers' ? 'bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'transfers' ? null : 'transfers')}>
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('transfers') ? "border border-purple-200 dark:border-purple-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('transfers') ? 'bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('transfers')}>
                     <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-purple-50 dark:bg-purple-900/20 text-purple-600">
                       <span className="text-lg">🚗</span>
                     </div>
@@ -1550,7 +1556,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{transfers.length} transfer eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'transfers' && (
+                      {!expandedSectionsV6.includes('transfers') && (
                         transfers.length > 0 ? transfers.map((t, i) => (
                           <div key={t.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1580,8 +1586,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'transfers' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'transfers' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('transfers') ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('transfers') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(e) => e.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1594,7 +1600,7 @@ export default function CreateSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "transfers" && (
+                  {expandedSectionsV6.includes('transfers') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4 gap-2">
                         <button type="button" onClick={() => addTransfer("arrival")} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">
@@ -1661,9 +1667,9 @@ export default function CreateSejourPage() {
 
               {/* EKSTRA HİZMETLER ACCORDION ROW */}
               {showExtraServices && (
-                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionV6 === "extras" ? "border border-orange-200 dark:border-orange-800" : "border border-gray-200 dark:border-gray-800"}`}>
-                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionV6 === 'extras' ? 'bg-orange-50/30 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => setExpandedSectionV6(expandedSectionV6 === 'extras' ? null : 'extras')}>
-                    <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-orange-50 dark:bg-orange-900/20 text-orange-600">
+                <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm mb-4 transition-all duration-300 ${expandedSectionsV6.includes('extraServices') ? "border border-amber-200 dark:border-amber-800" : "border border-gray-200 dark:border-gray-800"}`}>
+                  <div className={`flex items-center p-4 cursor-pointer transition-colors ${expandedSectionsV6.includes('extraServices') ? 'bg-amber-50/30 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`} onClick={() => toggleSection('extraServices')}>
+                    <div className="w-10 h-10 flex items-center justify-center rounded-xl mr-4 bg-amber-50 dark:bg-amber-900/20 text-amber-600">
                       <span className="text-lg">✨</span>
                     </div>
                     <div className="w-48 shrink-0">
@@ -1671,7 +1677,7 @@ export default function CreateSejourPage() {
                       <p className="text-[10px] font-medium text-gray-500 mt-0.5">{extraServices.length} hizmet eklendi</p>
                     </div>
                     <div className="flex-1 flex flex-col gap-1">
-                      {expandedSectionV6 !== 'extras' && (
+                      {!expandedSectionsV6.includes('extraServices') && (
                         extraServices.length > 0 ? extraServices.map((e, i) => (
                           <div key={e.id} className="grid grid-cols-5 gap-4 items-center px-2 py-1">
                             <div className="col-span-2">
@@ -1701,8 +1707,8 @@ export default function CreateSejourPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 ml-4 shrink-0">
-                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionV6 === 'extras' ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100'}`}>
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionV6 === 'extras' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+                      <div className={`p-1.5 rounded-md transition-colors ${expandedSectionsV6.includes('extraServices') ? 'bg-amber-100 text-amber-600' : 'hover:bg-gray-100'}`}>
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${expandedSectionsV6.includes('extraServices') ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       <div className="relative group/menu">
                         <button type="button" onClick={(ev) => ev.stopPropagation()} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -1715,7 +1721,7 @@ export default function CreateSejourPage() {
                     </div>
                   </div>
 
-                  {expandedSectionV6 === "extras" && (
+                  {expandedSectionsV6.includes('extraServices') && (
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 p-4">
                       <div className="flex justify-end mb-4">
                         <button type="button" onClick={addExtraService} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm transition-all flex items-center gap-1">

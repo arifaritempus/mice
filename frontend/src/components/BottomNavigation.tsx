@@ -33,7 +33,8 @@ import {
   Layers,
   Shield,
   User,
-  List
+  List,
+  Camera
 } from "lucide-react";
 import { usePermissions, getModuleFromHref } from "@/lib/permissions";
 import { supabase } from "@/lib/supabase";
@@ -76,7 +77,8 @@ export default function BottomNavigation() {
     { id: "tickets-payments", label: "Bilet Ödemeleri", href: "/tickets/payments", icon: CreditCard, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
     { id: "tickets-calendar", label: "Bilet Takvim", href: "/tickets/calendar", icon: CalendarDays, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-500/10" },
     { id: "cash-flow", label: "Nakit Akış", href: "/accounting/cash-flow", icon: ArrowRightLeft, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-500/10" },
-    { id: "aging", label: "Yaşlandırma", href: "/accounting/aging", icon: ArrowRightLeft, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-500/10" },
+    { id: "ai-invoices", label: "Yapay Zeka Faturaları", href: "/accounting/invoices/ai", icon: Camera, color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-500/10" },
+    { id: "aging", label: "Alacak Yaşlandırma", href: "/accounting/aging", icon: FileText, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-500/10" },
     { id: "income-pending", label: "Bekleyen Gelir Faturaları", href: "/accounting/invoices/income/pending", icon: Receipt, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-500/10" },
     { id: "income-completed", label: "Tamamlanan Gelir Faturaları", href: "/accounting/invoices/income/completed", icon: FileCheck, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
     { id: "expense-pending", label: "Bekleyen Gider Faturaları", href: "/accounting/invoices/expense/pending", icon: Receipt, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-500/10" },
@@ -173,6 +175,30 @@ export default function BottomNavigation() {
 
             {/* Grid Content */}
             <div className="flex-1 overflow-y-auto px-6 pb-6">
+              
+              {/* Hızlı Fatura (Full Width) */}
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  // Dispatch a custom event to open the invoice modal
+                  window.dispatchEvent(new CustomEvent('open-invoice-modal'));
+                }}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[20px] p-5 flex items-center justify-between shadow-lg shadow-blue-500/20 active:scale-95 transition-transform mb-4"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm">
+                    <Camera size={24} strokeWidth={2.5} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-white font-bold text-lg">Hızlı Fatura</h3>
+                    <p className="text-blue-100 text-xs">Yapay Zeka ile Fatura Yükle</p>
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-sm">
+                  <span className="text-xl leading-none">+</span>
+                </div>
+              </button>
+
               <div className="grid grid-cols-2 gap-4">
                 {allModules.map((mod) => {
                   if (!isHrefVisible(mod.href)) return null;

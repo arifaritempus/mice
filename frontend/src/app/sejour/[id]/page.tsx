@@ -277,6 +277,8 @@ export default function SejourDetailPage() {
     company_address: "",
     company_website: "www.firma.com",
   });
+  
+  const [sejourInvoices, setSejourInvoices] = useState<any[]>([]);
 
   const loadSejourData = useCallback(async () => {
     try {
@@ -297,6 +299,16 @@ export default function SejourDetailPage() {
       if (supList) setSuppliers(supList);
       if (sejourData) {
         setSejour(sejourData as SejourData);
+        
+        try {
+          const response = await fetch(`/api/invoices/list?entityId=${params.id as string}`);
+          const data = await response.json();
+          if (response.ok && data.invoices) {
+            setSejourInvoices(data.invoices.filter((inv: any) => ['APPROVED', 'PENDING', 'PROCESSING'].includes(inv.status)));
+          }
+        } catch (err) {
+          console.error("Faturalar yüklenirken hata:", err);
+        }
       } else {
         setError("Sejour bulunamadı");
       }
@@ -971,9 +983,102 @@ export default function SejourDetailPage() {
       )}
 
       {sejour.notes && (
-        <div className="bg-v3-surface rounded-lg shadow p-4">
+        <div className="bg-v3-surface rounded-lg shadow p-4 mb-4">
           <h2 className="text-base font-semibold mb-2">Notlar</h2>
           <p className="text-sm">{sejour.notes}</p>
+        </div>
+      )}
+
+      {sejourInvoices.length > 0 && (
+        <div className="bg-v3-surface rounded-lg shadow p-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-base font-semibold text-v3-text">Faturalar</h2>
+              <p className="text-xs text-v3-text-muted">Bu rezervasyona ait tüm yapay zeka faturaları</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded">
+                Toplam: {sejourInvoices.length}
+              </div>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto rounded-lg border border-v3-border bg-v3-surface">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-v3-bg text-v3-text-muted">
+                <tr>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border w-16">Görsel</th>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border">Tedarikçi</th>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border">Fatura No</th>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border">Tarih</th>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border">Kategori</th>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border text-right">Tutar</th>
+                  <th className="px-3 py-2.5 font-semibold text-xs border-b border-v3-border text-center">Durum</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-v3-border">
+                {sejourInvoices.map((inv: any) => (
+                  <tr 
+                    key={inv.id} 
+                    className="group hover:bg-v3-bg transition-colors cursor-pointer"
+                    onDoubleClick={() => window.open(inv.file_url, '_blank')}
+                  >
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        {inv.file_url ? (
+                          <div 
+                            className="w-8 h-8 rounded border border-v3-border overflow-hidden flex-shrink-0 relative group-hover:ring-2 ring-blue-500/50 transition-all cursor-pointer"
+                            onClick={(e) => { e.stopPropagation(); window.open(inv.file_url, '_blank'); }}
+                          >
+                            <img src={inv.file_url} alt="Fatura" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded border border-v3-border bg-gray-50 flex items-center justify-center flex-shrink-0 text-[8px] font-bold text-gray-400">
+                            Yok
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 font-medium text-v3-text max-w-[200px] truncate" title={inv.extracted_data?.supplier || "Bilinmeyen Tedarikçi"}>
+                      {inv.extracted_data?.supplier || "Bilinmeyen Tedarikçi"}
+                    </td>
+                    <td className="px-3 py-2.5 text-v3-text font-mono text-xs">
+                      {inv.extracted_data?.invoiceNo || "-"}
+                    </td>
+                    <td className="px-3 py-2.5 text-v3-text-muted">
+                      {inv.extracted_data?.date ? new Date(inv.extracted_data.date).toLocaleDateString('tr-TR') : "-"}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {inv.category ? (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-medium text-v3-text truncate max-w-[120px]">{inv.category}</span>
+                          <span className="text-[9px] text-v3-text-muted truncate max-w-[120px]">{inv.sub_category || "-"}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-v3-text-muted">-</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-black text-v3-text">
+                      {Number(inv.extracted_data?.total || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} <span className="text-xs text-v3-text-muted">{inv.extracted_data?.currency || "TRY"}</span>
+                    </td>
+                    <td className="px-3 py-2.5 text-center">
+                      <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                        inv.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                        inv.status === 'PROCESSING' ? 'bg-blue-100 text-blue-700' :
+                        inv.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {inv.status === 'APPROVED' ? 'ONAYLI' :
+                         inv.status === 'PROCESSING' ? 'İŞLENİYOR' :
+                         inv.status === 'CANCELLED' ? 'İPTAL' :
+                         'BEKLİYOR'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

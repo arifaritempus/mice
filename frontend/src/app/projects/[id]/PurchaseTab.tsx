@@ -669,7 +669,7 @@ export default function PurchaseTab({
               }
 
               const it = row.item;
-              const isInvoiced = (it.invoiced_amount || 0) >= (it.total || 0) - 0.01;
+              const isInvoiced = (it.invoiced_amount || 0) > 0 && (it.invoiced_amount || 0) >= (it.total || 0) - 0.01;
               return (
                 <div
                   key={it.id}
