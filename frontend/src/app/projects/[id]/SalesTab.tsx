@@ -778,7 +778,7 @@ export default function SalesTab({
                       >
                         <option>EUR</option>
                         <option>USD</option>
-                        <option>TL</option>
+                        <option>TRY</option>
                       </select>
                       <input
                         value={it.vat ?? 0}

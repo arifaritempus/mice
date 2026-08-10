@@ -5333,14 +5333,14 @@ export const agingService = {
     
     (pSales || []).forEach((s: any) => {
       if (!pData[s.project_id]) return;
-      const c = s.currency || 'TRY';
+      const c = (s.currency === 'TL' ? 'TRY' : s.currency) || 'TRY';
       if (!pData[s.project_id][c]) pData[s.project_id][c] = { sales: 0, collections: 0 };
       pData[s.project_id][c].sales += Number(s.total_price || 0);
     });
     
     (pCollections || []).forEach((c: any) => {
       if (!pData[c.project_id]) return;
-      const cur = c.currency || 'TRY';
+      const cur = (c.currency === 'TL' ? 'TRY' : c.currency) || 'TRY';
       if (!pData[c.project_id][cur]) pData[c.project_id][cur] = { sales: 0, collections: 0 };
       pData[c.project_id][cur].collections += Number(c.amount || 0);
     });

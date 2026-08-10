@@ -626,8 +626,8 @@ export default function UcakBiletiTab({
                     const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
                     const toplamMaliyet = kisiSayisi * ppMaliyet;
                     const kur = tempFlightItem?.kur || 1;
-                    const doviz = tempFlightItem?.doviz || "TL";
-                    const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                    const doviz = tempFlightItem?.doviz || "TRY";
+                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       kisiSayisi,
@@ -642,8 +642,8 @@ export default function UcakBiletiTab({
                     const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                     const toplamMaliyet = kisiSayisi * ppMaliyet;
                     const kur = tempFlightItem?.kur || 1;
-                    const doviz = tempFlightItem?.doviz || "TL";
-                    const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                    const doviz = tempFlightItem?.doviz || "TRY";
+                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       ppMaliyet,
@@ -658,8 +658,8 @@ export default function UcakBiletiTab({
                     const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                     const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
                     const kur = tempFlightItem?.kur || 1;
-                    const doviz = tempFlightItem?.doviz || "TL";
-                    const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                    const doviz = tempFlightItem?.doviz || "TRY";
+                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       toplamMaliyet,
@@ -675,7 +675,7 @@ export default function UcakBiletiTab({
                     const doviz = e.target.value;
                     const kur = tempFlightItem?.kur || 1;
                     const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                    const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       doviz,
@@ -684,7 +684,7 @@ export default function UcakBiletiTab({
                   }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
-                            <option value="TL">TL</option>
+                            <option value="TRY">TRY</option>
                           </select>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
@@ -693,8 +693,8 @@ export default function UcakBiletiTab({
                   }} type="number" step="0.0001" value={tempFlightItem?.kur || 1} onChange={e => {
                     const kur = Number(e.target.value);
                     const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                    const doviz = tempFlightItem?.doviz || "TL";
-                    const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                    const doviz = tempFlightItem?.doviz || "TRY";
+                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       kur,
@@ -708,8 +708,8 @@ export default function UcakBiletiTab({
                   }} type="number" step="0.01" value={tempFlightItem?.toplamTl || 0} onChange={e => {
                     const toplamTl = Number(e.target.value);
                     const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                    const doviz = tempFlightItem?.doviz || "TL";
-                    const kur = doviz === "TL" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
+                    const doviz = tempFlightItem?.doviz || "TRY";
+                    const kur = doviz === "TRY" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       toplamTl,
@@ -723,8 +723,8 @@ export default function UcakBiletiTab({
                     const ppSatis = tempFlightItem?.ppSatis || 0;
                     const toplamSatis = satisPax * ppSatis;
                     const satisKur = tempFlightItem?.satisKur || 1;
-                    const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                    const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                    const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                    const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       satisPax,
@@ -739,8 +739,8 @@ export default function UcakBiletiTab({
                     const satisPax = tempFlightItem?.satisPax || 0;
                     const toplamSatis = satisPax * ppSatis;
                     const satisKur = tempFlightItem?.satisKur || 1;
-                    const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                    const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                    const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                    const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       ppSatis,
@@ -754,9 +754,9 @@ export default function UcakBiletiTab({
                     const toplamSatis = Number(e.target.value);
                     const satisPax = tempFlightItem?.satisPax || 1;
                     const ppSatis = satisPax > 0 ? toplamSatis / satisPax : 0;
-                    const satisKur = tempFlightItem?.satisDoviz === "TL" ? 1 : tempFlightItem?.satisKur || 1;
-                    const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                    const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                    const satisKur = tempFlightItem?.satisDoviz === "TRY" ? 1 : tempFlightItem?.satisKur || 1;
+                    const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                    const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       toplamSatis,
@@ -766,11 +766,11 @@ export default function UcakBiletiTab({
                   }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
-                          <select value={tempFlightItem?.satisDoviz || "TL"} onChange={e => {
+                          <select value={tempFlightItem?.satisDoviz || "TRY"} onChange={e => {
                     const satisDoviz = e.target.value;
                     const toplamSatis = tempFlightItem?.toplamSatis || 0;
-                    const satisKur = satisDoviz === "TL" ? 1 : tempFlightItem?.satisKur || 1;
-                    const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                    const satisKur = satisDoviz === "TRY" ? 1 : tempFlightItem?.satisKur || 1;
+                    const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       satisDoviz,
@@ -778,7 +778,7 @@ export default function UcakBiletiTab({
                       toplamSatisTl
                     });
                   }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                            <option value="TL">TL</option>
+                            <option value="TRY">TRY</option>
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>
                             <option value="GBP">GBP</option>
@@ -788,20 +788,20 @@ export default function UcakBiletiTab({
                           <input type="number" step="0.0001" value={tempFlightItem?.satisKur || 1} onChange={e => {
                     const satisKur = Number(e.target.value);
                     const toplamSatis = tempFlightItem?.toplamSatis || 0;
-                    const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                    const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                    const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                    const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                     setTempFlightItem({
                       ...tempFlightItem!,
                       satisKur,
                       toplamSatisTl
                     });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={tempFlightItem?.satisDoviz === "TL"} />
+                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={tempFlightItem?.satisDoviz === "TRY"} />
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" step="0.01" value={tempFlightItem?.toplamSatisTl || 0} onChange={e => {
                     const toplamSatisTl = Number(e.target.value);
                     const mevcutToplamSatis = tempFlightItem?.toplamSatis || 0;
-                    const isTL = tempFlightItem?.satisDoviz === "TL";
+                    const isTL = tempFlightItem?.satisDoviz === "TRY";
                     const satisKur = isTL ? 1 : mevcutToplamSatis > 0 ? toplamSatisTl / mevcutToplamSatis : 1;
                     const yeniToplamSatis = isTL ? toplamSatisTl : mevcutToplamSatis;
                     const ppSatis = tempFlightItem?.satisPax && tempFlightItem.satisPax > 0 ? yeniToplamSatis / tempFlightItem.satisPax : 0;
@@ -910,7 +910,7 @@ export default function UcakBiletiTab({
                           {formatNumberForDisplay(ticket.toplamSatis || 0)}
                         </td>
                         <td className="px-2 py-2 text-v3-text text-center font-bold whitespace-nowrap">
-                          {ticket.satisDoviz || "TL"}
+                          {ticket.satisDoviz || "TRY"}
                         </td>
                         <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
                           {formatNumberForDisplay(ticket.satisKur || 1)}
@@ -1048,8 +1048,8 @@ export default function UcakBiletiTab({
                   const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
                   const toplamMaliyet = kisiSayisi * ppMaliyet;
                   const kur = tempFlightItem?.kur || 1;
-                  const doviz = tempFlightItem?.doviz || "TL";
-                  const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                  const doviz = tempFlightItem?.doviz || "TRY";
+                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     kisiSayisi,
@@ -1064,8 +1064,8 @@ export default function UcakBiletiTab({
                   const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                   const toplamMaliyet = kisiSayisi * ppMaliyet;
                   const kur = tempFlightItem?.kur || 1;
-                  const doviz = tempFlightItem?.doviz || "TL";
-                  const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                  const doviz = tempFlightItem?.doviz || "TRY";
+                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     ppMaliyet,
@@ -1080,8 +1080,8 @@ export default function UcakBiletiTab({
                   const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
                   const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
                   const kur = tempFlightItem?.kur || 1;
-                  const doviz = tempFlightItem?.doviz || "TL";
-                  const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                  const doviz = tempFlightItem?.doviz || "TRY";
+                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     toplamMaliyet,
@@ -1097,7 +1097,7 @@ export default function UcakBiletiTab({
                   const doviz = e.target.value;
                   const kur = tempFlightItem?.kur || 1;
                   const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                  const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     doviz,
@@ -1106,7 +1106,7 @@ export default function UcakBiletiTab({
                 }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
                         <option value="EUR">EUR</option>
                         <option value="USD">USD</option>
-                        <option value="TL">TL</option>
+                        <option value="TRY">TRY</option>
                       </select>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -1115,8 +1115,8 @@ export default function UcakBiletiTab({
                 }} type="number" step="0.0001" value={tempFlightItem?.kur || 1} onChange={e => {
                   const kur = Number(e.target.value);
                   const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                  const doviz = tempFlightItem?.doviz || "TL";
-                  const toplamTl = doviz === "TL" ? toplamMaliyet : toplamMaliyet * kur;
+                  const doviz = tempFlightItem?.doviz || "TRY";
+                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     kur,
@@ -1130,8 +1130,8 @@ export default function UcakBiletiTab({
                 }} type="number" step="0.01" value={tempFlightItem?.toplamTl || 0} onChange={e => {
                   const toplamTl = Number(e.target.value);
                   const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                  const doviz = tempFlightItem?.doviz || "TL";
-                  const kur = doviz === "TL" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
+                  const doviz = tempFlightItem?.doviz || "TRY";
+                  const kur = doviz === "TRY" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     toplamTl,
@@ -1145,8 +1145,8 @@ export default function UcakBiletiTab({
                   const ppSatis = tempFlightItem?.ppSatis || 0;
                   const toplamSatis = satisPax * ppSatis;
                   const satisKur = tempFlightItem?.satisKur || 1;
-                  const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                  const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                  const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                  const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     satisPax,
@@ -1161,8 +1161,8 @@ export default function UcakBiletiTab({
                   const satisPax = tempFlightItem?.satisPax || 0;
                   const toplamSatis = satisPax * ppSatis;
                   const satisKur = tempFlightItem?.satisKur || 1;
-                  const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                  const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                  const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                  const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     ppSatis,
@@ -1176,9 +1176,9 @@ export default function UcakBiletiTab({
                   const toplamSatis = Number(e.target.value);
                   const satisPax = tempFlightItem?.satisPax || 1;
                   const ppSatis = satisPax > 0 ? toplamSatis / satisPax : 0;
-                  const satisKur = tempFlightItem?.satisDoviz === "TL" ? 1 : tempFlightItem?.satisKur || 1;
-                  const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                  const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                  const satisKur = tempFlightItem?.satisDoviz === "TRY" ? 1 : tempFlightItem?.satisKur || 1;
+                  const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                  const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     toplamSatis,
@@ -1188,11 +1188,11 @@ export default function UcakBiletiTab({
                 }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
-                      <select value={tempFlightItem?.satisDoviz || "TL"} onChange={e => {
+                      <select value={tempFlightItem?.satisDoviz || "TRY"} onChange={e => {
                   const satisDoviz = e.target.value;
                   const toplamSatis = tempFlightItem?.toplamSatis || 0;
-                  const satisKur = satisDoviz === "TL" ? 1 : tempFlightItem?.satisKur || 1;
-                  const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                  const satisKur = satisDoviz === "TRY" ? 1 : tempFlightItem?.satisKur || 1;
+                  const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     satisDoviz,
@@ -1200,7 +1200,7 @@ export default function UcakBiletiTab({
                     toplamSatisTl
                   });
                 }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="TL">TL</option>
+                        <option value="TRY">TRY</option>
                         <option value="USD">USD</option>
                         <option value="EUR">EUR</option>
                         <option value="GBP">GBP</option>
@@ -1210,20 +1210,20 @@ export default function UcakBiletiTab({
                       <input type="number" step="0.0001" value={tempFlightItem?.satisKur || 1} onChange={e => {
                   const satisKur = Number(e.target.value);
                   const toplamSatis = tempFlightItem?.toplamSatis || 0;
-                  const satisDoviz = tempFlightItem?.satisDoviz || "TL";
-                  const toplamSatisTl = satisDoviz === "TL" ? toplamSatis : toplamSatis * satisKur;
+                  const satisDoviz = tempFlightItem?.satisDoviz || "TRY";
+                  const toplamSatisTl = satisDoviz === "TRY" ? toplamSatis : toplamSatis * satisKur;
                   setTempFlightItem({
                     ...tempFlightItem!,
                     satisKur,
                     toplamSatisTl
                   });
-                }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={tempFlightItem?.satisDoviz === "TL"} />
+                }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={tempFlightItem?.satisDoviz === "TRY"} />
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input type="number" step="0.01" value={tempFlightItem?.toplamSatisTl || 0} onChange={e => {
                   const toplamSatisTl = Number(e.target.value);
                   const mevcutToplamSatis = tempFlightItem?.toplamSatis || 0;
-                  const isTL = tempFlightItem?.satisDoviz === "TL";
+                  const isTL = tempFlightItem?.satisDoviz === "TRY";
                   const satisKur = isTL ? 1 : mevcutToplamSatis > 0 ? toplamSatisTl / mevcutToplamSatis : 1;
                   const yeniToplamSatis = isTL ? toplamSatisTl : mevcutToplamSatis;
                   const ppSatis = tempFlightItem?.satisPax && tempFlightItem.satisPax > 0 ? yeniToplamSatis / tempFlightItem.satisPax : 0;
@@ -1278,10 +1278,10 @@ export default function UcakBiletiTab({
             Uçak Bileti Maliyet & Satış Özeti
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from(new Set(flightTickets.flatMap(t => [t.doviz || "EUR", t.satisDoviz || "TL", t.satisDoviz === "TRY" ? "TL" : (t.satisDoviz || "TL")].map(d => d === "TRY" ? "TL" : d)))).map(doviz => {
-            const isTL = (d: string) => d === "TL" || d === "TRY";
+            {Array.from(new Set(flightTickets.flatMap(t => [t.doviz || "EUR", t.satisDoviz || "TRY", t.satisDoviz === "TRY" ? "TRY" : (t.satisDoviz || "TRY")].map(d => d === "TRY" ? "TRY" : d)))).map(doviz => {
+            const isTL = (d: string) => d === "TRY" || d === "TRY";
             const mToplam = flightTickets.filter(t => isTL(doviz) ? isTL(t.doviz || "EUR") : (t.doviz || "EUR") === doviz).reduce((s, t) => s + (t.toplamMaliyet || 0), 0);
-            const sToplam = flightTickets.filter(t => isTL(doviz) ? isTL(t.satisDoviz || "TL") : (t.satisDoviz || "TL") === doviz).reduce((s, t) => s + (t.toplamSatis || 0), 0);
+            const sToplam = flightTickets.filter(t => isTL(doviz) ? isTL(t.satisDoviz || "TRY") : (t.satisDoviz || "TRY") === doviz).reduce((s, t) => s + (t.toplamSatis || 0), 0);
             if (mToplam === 0 && sToplam === 0) return null;
             return <div key={doviz} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-v3-border shadow-sm p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-2">

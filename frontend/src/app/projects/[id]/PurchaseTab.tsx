@@ -867,7 +867,7 @@ export default function PurchaseTab({
                         >
                           <option>EUR</option>
                           <option>USD</option>
-                          <option>TL</option>
+                          <option>TRY</option>
                         </select>
                       </div>
                       <div className="w-16">

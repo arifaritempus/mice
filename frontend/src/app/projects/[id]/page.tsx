@@ -675,13 +675,13 @@ export default function ProjectDetailPage() {
       kisiSayisi: ticket.kisi_sayisi || ticket.kisiSayisi || 1,
       ppMaliyet: ticket.pp_maliyet || ticket.ppMaliyet || 0,
       toplamMaliyet: ticket.toplam_maliyet || ticket.toplamMaliyet || 0,
-      doviz: (ticket.doviz || "EUR") === "TRY" ? "TL" : (ticket.doviz || "EUR"),
+      doviz: (ticket.doviz || "EUR") === "TRY" ? "TRY" : (ticket.doviz || "EUR"),
       kur: ticket.kur || 1.0,
       toplamTl: ticket.toplam_tl || ticket.toplamTl || 0,
       satisPax: ticket.satis_pax || ticket.satisPax || 0,
       ppSatis: ticket.pp_satis || ticket.ppSatis || 0,
       toplamSatis: ticket.toplam_satis || ticket.toplamSatis || 0,
-      satisDoviz: (ticket.satis_doviz || ticket.satisDoviz) === "TRY" ? "TL" : (ticket.satis_doviz || ticket.satisDoviz || "TL"),
+      satisDoviz: (ticket.satis_doviz || ticket.satisDoviz) === "TRY" ? "TRY" : (ticket.satis_doviz || ticket.satisDoviz || "TRY"),
       satisKur: ticket.satis_kur || ticket.satisKur || 1.0,
       toplamSatisTl: ticket.toplam_satis_tl || ticket.toplamSatisTl || 0,
       misafirler: ticket.misafirler || "",
@@ -4435,7 +4435,7 @@ export default function ProjectDetailPage() {
       satisPax: 0,
       ppSatis: 0,
       toplamSatis: 0,
-      satisDoviz: "TL",
+      satisDoviz: "TRY",
       satisKur: 1.0,
       toplamSatisTl: 0,
       misafirler: "",
@@ -4505,13 +4505,13 @@ export default function ProjectDetailPage() {
           kisi_sayisi: String(tempFlightItem.kisiSayisi) === "" || tempFlightItem.kisiSayisi === null ? 0 : Number(tempFlightItem.kisiSayisi),
           pp_maliyet: String(tempFlightItem.ppMaliyet) === "" || tempFlightItem.ppMaliyet === null ? 0 : Number(tempFlightItem.ppMaliyet),
           toplam_maliyet: String(tempFlightItem.toplamMaliyet) === "" || tempFlightItem.toplamMaliyet === null ? 0 : Number(tempFlightItem.toplamMaliyet),
-          doviz: tempFlightItem.doviz || "TL",
+          doviz: tempFlightItem.doviz || "TRY",
           kur: String(tempFlightItem.kur) === "" || tempFlightItem.kur === null ? 1.0 : Number(tempFlightItem.kur),
           toplam_tl: String(tempFlightItem.toplamTl) === "" || tempFlightItem.toplamTl === null || tempFlightItem.toplamTl === undefined ? 0 : Number(tempFlightItem.toplamTl),
           satis_pax: String(tempFlightItem.satisPax) === "" || tempFlightItem.satisPax == null ? 0 : Number(tempFlightItem.satisPax),
           pp_satis: String(tempFlightItem.ppSatis) === "" || tempFlightItem.ppSatis == null ? 0 : Number(tempFlightItem.ppSatis),
           toplam_satis: String(tempFlightItem.toplamSatis) === "" || tempFlightItem.toplamSatis == null ? 0 : Number(tempFlightItem.toplamSatis),
-          satis_doviz: tempFlightItem.satisDoviz === "TRY" ? "TL" : (tempFlightItem.satisDoviz || "TL"),
+          satis_doviz: tempFlightItem.satisDoviz === "TRY" ? "TRY" : (tempFlightItem.satisDoviz || "TRY"),
           satis_kur: String(tempFlightItem.satisKur) === "" || tempFlightItem.satisKur == null ? 1.0 : Number(tempFlightItem.satisKur),
           toplam_satis_tl: String(tempFlightItem.toplamSatisTl) === "" || tempFlightItem.toplamSatisTl == null ? 0 : Number(tempFlightItem.toplamSatisTl),
           misafirler: tempFlightItem.misafirler || null,
@@ -13001,8 +13001,8 @@ export default function ProjectDetailPage() {
       const { iconLogoBase64, wordmarkLogoBase64 } =
         await getLogosForExcel(true);
       const allSales = itemsSales;
-      const cur = project.currency || "TL";
-      const sym = cur === "USD" ? "$" : cur === "GBP" ? "£" : (cur === "TRY" || cur === "TL") ? "₺" : cur === "EUR" ? "€" : cur;
+      const cur = project.currency || "TRY";
+      const sym = cur === "USD" ? "$" : cur === "GBP" ? "£" : (cur === "TRY" || cur === "TRY") ? "₺" : cur === "EUR" ? "€" : cur;
 
       const createStyledSheet = (
         sheetName: string,
@@ -13223,7 +13223,7 @@ export default function ProjectDetailPage() {
             row.getCell(3).value = it.repeat;
             row.getCell(4).value = it.price;
             const itemCur = it.currency || cur;
-            const itemSym = itemCur === "USD" ? "$" : itemCur === "GBP" ? "£" : (itemCur === "TRY" || itemCur === "TL") ? "₺" : itemCur === "EUR" ? "€" : itemCur;
+            const itemSym = itemCur === "USD" ? "$" : itemCur === "GBP" ? "£" : (itemCur === "TRY" || itemCur === "TRY") ? "₺" : itemCur === "EUR" ? "€" : itemCur;
             row.getCell(4).numFmt = `"${itemSym}"#,##0.00`;
 
             for (let c = 1; c <= 7; c++) {
@@ -13264,7 +13264,7 @@ export default function ProjectDetailPage() {
             result: items.reduce((acc, i) => acc + i.totalEur, 0),
           };
           const catCur = items.length > 0 ? (items[0].currency || cur) : cur;
-          const catSym = catCur === "USD" ? "$" : catCur === "GBP" ? "£" : (catCur === "TRY" || catCur === "TL") ? "₺" : catCur === "EUR" ? "€" : catCur;
+          const catSym = catCur === "USD" ? "$" : catCur === "GBP" ? "£" : (catCur === "TRY" || catCur === "TRY") ? "₺" : catCur === "EUR" ? "€" : catCur;
           subRow.getCell(5).numFmt = `"${catSym}"#,##0.00`;
           subRow.getCell(5).font = { bold: true };
 
@@ -13359,7 +13359,7 @@ export default function ProjectDetailPage() {
         }
 
         const gCur = allSales.length > 0 ? (allSales[0].currency || cur) : cur;
-        const gSym = gCur === "USD" ? "$" : gCur === "GBP" ? "£" : (gCur === "TRY" || gCur === "TL") ? "₺" : gCur === "EUR" ? "€" : gCur;
+        const gSym = gCur === "USD" ? "$" : gCur === "GBP" ? "£" : (gCur === "TRY" || gCur === "TRY") ? "₺" : gCur === "EUR" ? "€" : gCur;
         gRow.getCell(5).numFmt = `"${gSym}"#,##0.00`;
         gRow.getCell(5).font = {
           bold: true,
@@ -22469,7 +22469,7 @@ export default function ProjectDetailPage() {
                           .join(" + ")}
                       </div>
                       <div className="col-span-2 text-right font-bold">
-                        {formatNumber(salesTotals.totalTRY)} TL
+                        {formatNumber(salesTotals.totalTRY)} TRY
                       </div>
                       <div className="col-span-1"></div>
                     </div>
@@ -24689,7 +24689,7 @@ export default function ProjectDetailPage() {
                           .join(" + ")}
                       </div>
                       <div className="col-span-2 text-right font-bold">
-                        {formatNumber(purchaseTotals.totalTRY)} TL
+                        {formatNumber(purchaseTotals.totalTRY)} TRY
                       </div>
                       <div className="col-span-1"></div>
                     </div>
