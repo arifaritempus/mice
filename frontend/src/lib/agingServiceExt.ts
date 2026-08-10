@@ -25,7 +25,7 @@ export const agingServiceExt = {
     if (agencyId) {
       const { data: pData1, error: pErr1 } = await supabase
         .from('projects')
-        .select('id, agency_id, company_name, end_date, created_at, reference, name')
+        .select('id, agency_id, company_name, end_date, created_at, title')
         .in('status', ['active', 'approved', 'completed'])
         .eq('agency_id', agencyId);
       if (pErr1) console.error("Error fetching projects by agency_id:", pErr1);
@@ -34,7 +34,7 @@ export const agingServiceExt = {
     
     const { data: pData2, error: pErr2 } = await supabase
       .from('projects')
-      .select('id, agency_id, company_name, end_date, created_at, reference, name')
+      .select('id, agency_id, company_name, end_date, created_at, title')
       .in('status', ['active', 'approved', 'completed'])
       .eq('company_name', entityName);
     if (pErr2) console.error("Error fetching projects by company_name:", pErr2);
@@ -70,7 +70,7 @@ export const agingServiceExt = {
                 type: 'SALE',
                 module: 'PROJECT',
                 referenceId: p.id,
-                description: `[MICE] ${p.reference || p.name || 'Proje'}`,
+                description: `[MICE] ${p.title || 'Proje'}`,
                 amount: amount,
                 currency: currency,
                 createdAt: p.created_at
@@ -83,7 +83,7 @@ export const agingServiceExt = {
       (pCollections || []).forEach((c: any) => {
         if (c.amount > 0) {
           const p = projects?.find((proj: any) => proj.id === c.project_id);
-          const refName = p ? (p.reference || p.name || 'Proje') : 'Proje';
+          const refName = p ? (p.title || 'Proje') : 'Proje';
           items.push({
             id: `p_coll_${c.id}`,
             date: c.collection_date || c.created_at,
@@ -130,15 +130,15 @@ export const agingServiceExt = {
     if (sejourIds.length > 0) {
       const { data: sRooms } = await supabase.from('sejour_rooms').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
       const { data: sFlights } = await supabase.from('sejour_flights').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
-      const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
-      const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, total_price, currency').in('sejour_id', sejourIds);
+      const { data: sTransfers } = await supabase.from('sejour_transfers').select('sejour_id, price, currency').in('sejour_id', sejourIds);
+      const { data: sExtras } = await supabase.from('sejour_extra_services').select('sejour_id, price, currency').in('sejour_id', sejourIds);
       
       const sSalesMap: Record<string, Record<string, number>> = {};
       const addSales = (arr: any[]) => {
         (arr || []).forEach(item => {
           const c = item.currency || 'TRY';
           if (!sSalesMap[item.sejour_id]) sSalesMap[item.sejour_id] = {};
-          sSalesMap[item.sejour_id][c] = (sSalesMap[item.sejour_id][c] || 0) + Number(item.total_price || 0);
+          sSalesMap[item.sejour_id][c] = (sSalesMap[item.sejour_id][c] || 0) + Number(item.total_price || item.price || 0);
         });
       };
       
