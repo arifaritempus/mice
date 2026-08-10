@@ -184,7 +184,14 @@ export async function POST(req: NextRequest) {
              if (type === "invoice_id") mockExtractedData.invoiceNo = text;
              if (type === "invoice_date") mockExtractedData.date = text;
              if (type === "supplier_name" || type === "receiver_name") mockExtractedData.supplier = text;
-             if (type === "currency") mockExtractedData.currency = text;
+             if (type === "currency") {
+               const c = text.toUpperCase().trim();
+               if (c.includes("TL") || c.includes("TRY") || c.includes("₺")) mockExtractedData.currency = "TRY";
+               else if (c.includes("USD") || c.includes("$")) mockExtractedData.currency = "USD";
+               else if (c.includes("EUR") || c.includes("€") || c.includes("EURO")) mockExtractedData.currency = "EUR";
+               else if (c.includes("GBP") || c.includes("£")) mockExtractedData.currency = "GBP";
+               else mockExtractedData.currency = "TRY";
+             }
              if (type === "net_amount") subtotal = parseAmount(text);
              if (type === "total_tax_amount") tax = parseAmount(text);
              if (type === "total_amount") total = parseAmount(text);
@@ -272,27 +279,8 @@ export async function POST(req: NextRequest) {
       await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
-    // 3. Save to uploaded_invoices table as PENDING
-    const { data: invoiceData, error: dbError } = await supabase
-      .from('uploaded_invoices')
-      .insert({
-        entity_type: entityType,
-        entity_id: entityId || null,
-        file_url: publicUrl,
-        status: 'PROCESSING', // Modal'da review yapılıyor, save basılınca APPROVED olacak.
-        extracted_data: mockExtractedData
-      })
-      .select()
-      .single();
-
-    if (dbError) {
-      console.error("DB error:", dbError);
-      return NextResponse.json({ error: "Failed to save record" }, { status: 500 });
-    }
-
     return NextResponse.json({ 
       success: true, 
-      invoiceId: invoiceData.id,
       fileUrl: publicUrl,
       extractedData: mockExtractedData 
     });

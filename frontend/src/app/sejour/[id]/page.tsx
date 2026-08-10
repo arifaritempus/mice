@@ -1021,16 +1021,16 @@ export default function SejourDetailPage() {
                   <tr 
                     key={inv.id} 
                     className="group hover:bg-v3-bg transition-colors cursor-pointer"
-                    onDoubleClick={() => window.open(inv.file_url, '_blank')}
+                    onDoubleClick={() => window.open(`/api/invoices/preview/${inv.id}${inv.file_url?.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`, '_blank')}
                   >
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-2">
                         {inv.file_url ? (
                           <div 
                             className="w-8 h-8 rounded border border-v3-border overflow-hidden flex-shrink-0 relative group-hover:ring-2 ring-blue-500/50 transition-all cursor-pointer"
-                            onClick={(e) => { e.stopPropagation(); window.open(inv.file_url, '_blank'); }}
+                            onClick={(e) => { e.stopPropagation(); window.open(`/api/invoices/preview/${inv.id}${inv.file_url?.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`, '_blank'); }}
                           >
-                            <img src={inv.file_url} alt="Fatura" className="w-full h-full object-cover" />
+                            <img src={`/api/invoices/preview/${inv.id}${inv.file_url?.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`} alt="Fatura" className="w-full h-full object-cover" />
                           </div>
                         ) : (
                           <div className="w-8 h-8 rounded border border-v3-border bg-gray-50 flex items-center justify-center flex-shrink-0 text-[8px] font-bold text-gray-400">

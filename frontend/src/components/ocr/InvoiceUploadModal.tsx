@@ -13,6 +13,7 @@ interface UploadedFile {
   localId: string; // local temporary id
   file: File;
   previewUrl: string;
+  uploadedUrl?: string;
   status: "pending" | "uploading" | "analyzing" | "review" | "approved" | "error";
   extractedData?: any;
 }
@@ -154,7 +155,17 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
           }
         }
         const allCategories = await categoriesService.getAll();
-        setCategories(allCategories.filter((c: any) => !c.parent_id)); // Only main categories
+        const mainCategories = allCategories.filter((c: any) => !c.parent_id); // Only main categories
+        mainCategories.sort((a: any, b: any) => {
+          const aOrder = a.sort_order ?? 9999;
+          const bOrder = b.sort_order ?? 9999;
+          if (aOrder !== bOrder) return aOrder - bOrder;
+          
+          const aKey = (a.code || a.name || "").toString().trim();
+          const bKey = (b.code || b.name || "").toString().trim();
+          return aKey.localeCompare(bKey, "tr", { numeric: true, sensitivity: "base" });
+        });
+        setCategories(mainCategories);
 
       } catch (err) {
         console.error("Entity/Category fetch error:", err);
@@ -258,8 +269,9 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
         const data = await response.json();
 
         setFiles(prev => prev.map(f => f.localId === localId ? { 
-          ...f, 
-          id: data.invoiceId,
+          ...f,
+          id: "temp_" + localId,
+          uploadedUrl: data.fileUrl,
           status: "review",
           extractedData: data.extractedData
         } : f));
@@ -272,7 +284,10 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
   };
 
   const handleApprove = async (file: UploadedFile) => {
-    if (!file.id) return; 
+    if (!file.uploadedUrl) {
+      toast.error("Dosya yüklenememiş. Lütfen tekrar deneyin.");
+      return; 
+    }
 
     const ext = file.extractedData;
     if (!ext || !ext.category || !ext.invoiceNo || !ext.date || !ext.supplier) {
@@ -295,7 +310,9 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          invoiceId: file.id,
+          entityType,
+          entityId,
+          fileUrl: file.uploadedUrl,
           extractedData: file.extractedData
         })
       });
@@ -336,9 +353,9 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
 
           <div className="flex items-center gap-3 flex-1 md:max-w-xl">
             <div className="flex bg-v3-bg dark:bg-v3-bg-dark rounded-lg p-1 border border-v3-border dark:border-v3-border-dark">
-              {(["MICE", "SEJOUR", "GENERAL"] as EntityType[]).map(type => (
+              {(["MICE", "SEJOUR", "GENERAL"] as EntityType[]).map((type, idx) => (
                 <button
-                  key={type}
+                  key={`${type}-${idx}`}
                   onClick={() => setEntityType(type)}
                   className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${entityType === type ? "bg-white dark:bg-gray-800 text-blue-600 shadow-sm" : "text-v3-text-muted hover:text-v3-text"}`}
                 >
@@ -370,8 +387,8 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
                       {filteredEntities.length === 0 ? (
                         <div className="p-3 text-center text-xs text-v3-text-muted">Sonuç bulunamadı</div>
                       ) : (
-                        filteredEntities.map(entity => (
-                          <button key={entity.id} onClick={() => { setEntityId(entity.id); setDropdownOpen(false); setSearchTerm(""); }}
+                        filteredEntities.map((entity, idx) => (
+                          <button key={`${entity.id}-${idx}`} onClick={() => { setEntityId(entity.id); setDropdownOpen(false); setSearchTerm(""); }}
                             className={`w-full text-left p-2.5 text-xs rounded-lg transition-colors ${entity.id === entityId ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 font-medium' : 'hover:bg-v3-bg dark:hover:bg-v3-bg-dark text-v3-text'}`}
                           >
                             {entity.name}
@@ -409,7 +426,7 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
 
           {files.map((file, idx) => (
             <div 
-              key={file.localId} onClick={() => setSelectedFileId(file.localId)}
+              key={`file-${file.localId}-${idx}`} onClick={() => setSelectedFileId(file.localId)}
               className={`relative min-w-[70px] w-[70px] h-20 rounded-xl border-2 cursor-pointer overflow-hidden transition-all ${selectedFileId === file.localId ? 'border-blue-500 shadow-md ring-2 ring-blue-500/20' : 'border-v3-border hover:border-blue-300 opacity-70 hover:opacity-100'}`}
             >
               <img src={file.previewUrl} className="w-full h-full object-cover" />
@@ -427,17 +444,17 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
         </div>
 
         {/* Main Content Area (Split) */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-v3-surface dark:bg-v3-surface-dark">
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 overflow-y-auto md:overflow-hidden bg-v3-surface dark:bg-v3-surface-dark">
           {selectedFile ? (
             <>
               {/* Image Viewer (Left) */}
-              <div className="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-v3-border dark:border-v3-border-dark bg-gray-100 dark:bg-gray-900 lg:overflow-auto relative flex items-center justify-center p-4 min-h-[250px] shrink-0">
+              <div className="w-full min-w-0 border-b md:border-b-0 md:border-r border-v3-border dark:border-v3-border-dark bg-gray-100 dark:bg-gray-900 md:overflow-auto relative flex items-center justify-center p-4 min-h-[250px]">
                 <button onClick={() => setIsZoomed(!isZoomed)} className="absolute top-4 right-4 bg-white/80 dark:bg-black/50 backdrop-blur p-2 rounded-lg shadow-md z-10 hover:bg-white transition-colors">
                   <ZoomIn className="w-5 h-5 text-gray-700 dark:text-gray-200" />
                 </button>
                 <img 
                   src={selectedFile.previewUrl} 
-                  className={`max-w-none transition-all duration-300 ${isZoomed ? 'w-auto' : 'w-full h-full object-contain'} ${selectedFile.status === 'analyzing' || selectedFile.status === 'uploading' ? 'opacity-30 blur-sm' : ''}`} 
+                  className={`transition-all duration-300 ${isZoomed ? 'w-auto max-w-none' : 'w-full h-full object-contain max-w-full'} ${selectedFile.status === 'analyzing' || selectedFile.status === 'uploading' ? 'opacity-30 blur-sm' : ''}`} 
                   alt="Invoice Document"
                 />
                 
@@ -456,7 +473,7 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
               </div>
 
               {/* Data Form (Right) */}
-              <div className="w-full lg:w-1/2 flex flex-col lg:h-full bg-v3-surface dark:bg-v3-surface-dark lg:overflow-y-auto">
+              <div className="w-full min-w-0 min-h-0 flex flex-col md:h-full bg-v3-surface dark:bg-v3-surface-dark md:overflow-y-auto">
                 <div className="p-6 lg:p-8 space-y-6 max-w-2xl mx-auto w-full">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-bold text-v3-text">Fatura Detayları</h3>
@@ -515,8 +532,8 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
                       className="w-full bg-v3-bg dark:bg-v3-bg-dark border border-v3-border dark:border-v3-border-dark rounded-xl px-4 py-3 text-sm font-bold text-v3-text outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
                     >
                       <option value="">Kategori Seçin</option>
-                      {categories.map((c: any) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                      {categories.map((c: any, idx: number) => (
+                        <option key={`cat-${c.id}-${idx}`} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
@@ -544,7 +561,7 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity, loc
 
                     <div className="space-y-3">
                       {(selectedFile.extractedData?.items || []).map((item: any, index: number) => (
-                        <div key={item.id || index} className="grid grid-cols-12 gap-3 items-end bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div key={`item-${item.id || ''}-${index}`} className="grid grid-cols-12 gap-3 items-end bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
                           <div className="col-span-12 lg:col-span-5 space-y-1">
                             <label className="text-[10px] font-bold text-gray-500 uppercase truncate block">Açıklama</label>
                             <input 

@@ -89,10 +89,13 @@ export default function AIInvoicesPage() {
       const allCategories = await categoriesService.getAll();
       const mainCategories = allCategories.filter((c: any) => !c.parent_id);
       mainCategories.sort((a: any, b: any) => {
-        const aOrder = a.sort_order ?? 999;
-        const bOrder = b.sort_order ?? 999;
+        const aOrder = a.sort_order ?? 9999;
+        const bOrder = b.sort_order ?? 9999;
         if (aOrder !== bOrder) return aOrder - bOrder;
-        return (a.name || "").localeCompare(b.name || "", "tr", { numeric: true, sensitivity: "base" });
+        
+        const aKey = (a.code || a.name || "").toString().trim();
+        const bKey = (b.code || b.name || "").toString().trim();
+        return aKey.localeCompare(bKey, "tr", { numeric: true, sensitivity: "base" });
       });
       setCategories(mainCategories); // Sadece ana kategoriler
     } catch (err) {

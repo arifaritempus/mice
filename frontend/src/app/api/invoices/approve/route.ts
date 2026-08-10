@@ -3,9 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
   try {
-    const { invoiceId, extractedData } = await req.json();
+    const { entityType, entityId, fileUrl, extractedData } = await req.json();
 
-    if (!invoiceId || !extractedData) {
+    if (!entityType || !fileUrl || !extractedData) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -20,15 +20,16 @@ export async function POST(req: NextRequest) {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    // Update the invoice status to APPROVED and update the extracted data with user's final corrections
+    // Insert the invoice directly as APPROVED since we skip PENDING phase
     const { data, error } = await supabase
       .from('uploaded_invoices')
-      .update({
+      .insert({
+        entity_type: entityType,
+        entity_id: entityId || null,
+        file_url: fileUrl,
         status: 'APPROVED',
-        extracted_data: extractedData,
-        updated_at: new Date().toISOString()
+        extracted_data: extractedData
       })
-      .eq('id', invoiceId)
       .select()
       .single();
 
