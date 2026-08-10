@@ -423,11 +423,11 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
         </div>
 
         {/* Main Content Area (Split) */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-v3-surface dark:bg-v3-surface-dark">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-v3-surface dark:bg-v3-surface-dark">
           {selectedFile ? (
             <>
               {/* Image Viewer (Left) */}
-              <div className="w-full lg:w-1/2 border-r border-v3-border dark:border-v3-border-dark bg-gray-100 dark:bg-gray-900 overflow-auto relative flex items-center justify-center p-4">
+              <div className="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-v3-border dark:border-v3-border-dark bg-gray-100 dark:bg-gray-900 lg:overflow-auto relative flex items-center justify-center p-4 min-h-[250px] shrink-0">
                 <button onClick={() => setIsZoomed(!isZoomed)} className="absolute top-4 right-4 bg-white/80 dark:bg-black/50 backdrop-blur p-2 rounded-lg shadow-md z-10 hover:bg-white transition-colors">
                   <ZoomIn className="w-5 h-5 text-gray-700 dark:text-gray-200" />
                 </button>
@@ -439,7 +439,7 @@ export default function InvoiceUploadModal({ isOpen, onClose, defaultEntity }: P
               </div>
 
               {/* Data Form (Right) */}
-              <div className="w-full lg:w-1/2 flex flex-col h-full bg-v3-surface dark:bg-v3-surface-dark overflow-y-auto">
+              <div className="w-full lg:w-1/2 flex flex-col lg:h-full bg-v3-surface dark:bg-v3-surface-dark lg:overflow-y-auto">
                 <div className="p-6 lg:p-8 space-y-6 max-w-2xl mx-auto w-full">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-bold text-v3-text">Fatura Detayları</h3>
