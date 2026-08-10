@@ -39,6 +39,7 @@ import { usePermissions, Module } from "@/lib/permissions";
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/pagination";
 import Modal from "@/components/Modal";
 import { toast } from "react-hot-toast";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   Trash2,
@@ -120,7 +121,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [importing, setImporting] = useState(false);
-  const [searchTerm] = useState("");
+
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [dateRange, setDateRange] = useState({
@@ -137,6 +138,8 @@ export default function ProjectsPage() {
   const [draftOrgDateEnd, setDraftOrgDateEnd] = useState("");
   const [globalTokens, setGlobalTokens] = useState<string[]>([]);
   const [globalInput, setGlobalInput] = useState("");
+  const searchTerm = globalTokens.join(" ");
+  
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
@@ -171,6 +174,8 @@ export default function ProjectsPage() {
         searchTerm,
         dateStart: appliedOrgDateStart,
         dateEnd: appliedOrgDateEnd,
+        quoteDateStart: dateStart,
+        quoteDateEnd: dateEnd,
         sortField,
         sortDirection,
       });
@@ -480,6 +485,9 @@ export default function ProjectsPage() {
     filter,
     appliedOrgDateStart,
     appliedOrgDateEnd,
+    dateStart,
+    dateEnd,
+    searchTerm,
     sortField,
     sortDirection,
   ]);
@@ -491,6 +499,8 @@ export default function ProjectsPage() {
     filter,
     appliedOrgDateStart,
     appliedOrgDateEnd,
+    dateStart,
+    dateEnd,
     sortField,
     sortDirection,
   ]);
@@ -662,46 +672,11 @@ export default function ProjectsPage() {
       ),
     [projects],
   );
-  const visibleProjects = projects.filter((project) => {
-    const agencyName = getAgencyName(project.agency_id);
-    const reference = project.reference || "";
-    const company = project.company_name || "";
-    const status = getStatusText(project.status);
-    const quoteDate = (project.created_at || "").slice(0, 10);
-    const organizationStartDate = (project.start_date || "").slice(0, 10);
-    const organizationEndDate = (project.end_date || "").slice(0, 10);
+  const visibleProjects = projects;
 
-    if (dateStart && quoteDate && quoteDate < dateStart) return false;
-    if (dateEnd && quoteDate && quoteDate > dateEnd) return false;
-    if (
-      appliedOrgDateStart &&
-      organizationStartDate &&
-      organizationStartDate < appliedOrgDateStart
-    )
-      return false;
-    if (
-      appliedOrgDateEnd &&
-      organizationEndDate &&
-      organizationEndDate > appliedOrgDateEnd
-    )
-      return false;
-
-    const searchTerms = [...globalTokens, globalInput.trim()].filter(Boolean);
-    if (searchTerms.length > 0) {
-      const match = searchTerms.every((token) => {
-        const t = token.toLowerCase();
-        return (
-          (project.reference || "").toLowerCase().includes(t) ||
-          company.toLowerCase().includes(t) ||
-          agencyName.toLowerCase().includes(t) ||
-          status.toLowerCase().includes(t) ||
-          (project.quote_type || "").toLowerCase().includes(t)
-        );
-      });
-      if (!match) return false;
-    }
-    return true;
-  });
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;

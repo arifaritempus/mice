@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { invoicesService } from "@/lib/supabaseService";
+import { useDebounce } from "@/hooks/useDebounce";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import InvoiceModal from "@/components/accounting/InvoiceModal";
 import CompletedInvoicePreview from "@/components/accounting/CompletedInvoicePreview";
@@ -61,12 +62,14 @@ export default function ExpenseCompletedPage() {
     }
   };
 
+  
+
   useEffect(() => {
     setPage(1);
   }, [dateRange.start, dateRange.end, globalTokens]);
 
   const filteredInvoices = useMemo(() => {
-    const searchTerms = [...globalTokens, globalInput.trim()]
+    const searchTerms = [...globalTokens]
       .filter(Boolean)
       .map((t) => t.toLowerCase());
     if (!searchTerms.length) {
@@ -112,7 +115,7 @@ export default function ExpenseCompletedPage() {
 
       return searchTerms.every((term) => combinedHaystack.includes(term));
     });
-  }, [allInvoices, globalTokens, globalInput]);
+  }, [allInvoices, globalTokens]);
 
   const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / pageSize));
   const displayInvoices = useMemo(() => {

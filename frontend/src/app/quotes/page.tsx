@@ -38,6 +38,7 @@ import {
 import { usePermissions, Module } from "@/lib/permissions";
 import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
 import { toast } from "react-hot-toast";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Trash2, AlertTriangle, CheckCircle, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 // import { loadTeklifler } from '../../../../src/supabaseClient';
@@ -130,10 +131,11 @@ export default function QuotesPage() {
   const [filter, setFilter] = useState("all");
   const [exporting, setExporting] = useState(false);
   const [transferring, setTransferring] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+
   const [globalTokens, setGlobalTokens] = useState<string[]>([]);
   const [globalInput, setGlobalInput] = useState("");
-  const [appliedGlobalTokens, setAppliedGlobalTokens] = useState<string[]>([]);
+  const searchTerm = globalTokens.join(" ");
+  
   const [sortField, setSortField] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -381,6 +383,7 @@ export default function QuotesPage() {
     optionFilter,
     sortField,
     sortDirection,
+    searchTerm,
     appliedQuoteDateStart,
     appliedQuoteDateEnd,
     appliedCheckInDate,
@@ -397,9 +400,20 @@ export default function QuotesPage() {
   }, []);
 
   useEffect(() => {
-    setAppliedGlobalTokens(globalTokens);
     setPage(1);
-  }, [globalTokens]);
+  }, [
+    searchTerm,
+    filter,
+    optionFilter,
+    appliedQuoteDateStart,
+    appliedQuoteDateEnd,
+    appliedCheckInDate,
+    appliedCheckOutDate,
+    appliedOptionStart,
+    appliedOptionEnd,
+    sortField,
+    sortDirection,
+  ]);
 
   const handleApplyQuoteDates = (start?: string, end?: string) => {
     setAppliedQuoteDateStart(start !== undefined ? start : quoteDateStart);
@@ -427,10 +441,8 @@ export default function QuotesPage() {
     setOptionStart("");
     setOptionFilter("all");
     setFilter("all");
-    setSearchTerm("");
     setGlobalTokens([]);
     setGlobalInput("");
-    setAppliedGlobalTokens([]);
     setAppliedQuoteDateStart("");
     setAppliedQuoteDateEnd("");
     setAppliedCheckInDate("");
@@ -900,28 +912,7 @@ export default function QuotesPage() {
 
   const totalOffersLabel = totalCount;
 
-  const visibleQuotes = quotes.filter((quote) => {
-    const agencyName = getAgencyName(quote.agency_id);
-
-    const searchTerms = [...appliedGlobalTokens, globalInput.trim()].filter(
-      Boolean,
-    );
-    if (searchTerms.length > 0) {
-      const match = searchTerms.every((token) => {
-        const t = token.toLowerCase();
-        return (
-          (quote.reference || "").toLowerCase().includes(t) ||
-          (quote.company_name || "").toLowerCase().includes(t) ||
-          (agencyName || "").toLowerCase().includes(t) ||
-          (quote.status || "").toLowerCase().includes(t) ||
-          (quote.quote_type || "").toLowerCase().includes(t)
-        );
-      });
-      if (!match) return false;
-    }
-
-    return true;
-  });
+  const visibleQuotes = quotes;
 
   // Toplam teklif sayısı (filtrelenmiş)
   const totalFilteredCount = totalCount;

@@ -8,6 +8,7 @@ import {
   type SetStateAction,
 } from "react";
 import { invoicesService } from "@/lib/supabaseService";
+import { useDebounce } from "@/hooks/useDebounce";
 import InvoiceItemTable from "@/components/accounting/InvoiceItemTable";
 import InvoiceModal from "@/components/accounting/InvoiceModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -53,10 +54,10 @@ export default function IncomePendingPage() {
         pageSize,
         startDate: dateRange.start || undefined,
         endDate: dateRange.end || undefined,
+        fetchAllInRange: true,
       });
       setItems(response.data);
-      setTotal(response.total);
-      setTotalPages(response.totalPages);
+      setTotal(response.data.length);
     } catch (err) {
       console.error("Pending items load error:", err);
     } finally {
@@ -64,12 +65,14 @@ export default function IncomePendingPage() {
     }
   };
 
+  
+
   useEffect(() => {
     setPage(1);
-  }, [dateRange.start, dateRange.end]);
+  }, [dateRange.start, dateRange.end, globalTokens]);
 
   const filteredItems = useMemo(() => {
-    const searchTerms = [...globalTokens, globalInput.trim()]
+    const searchTerms = [...globalTokens]
       .filter(Boolean)
       .map((t) => t.toLowerCase());
     if (!searchTerms.length) return items;
@@ -112,7 +115,14 @@ export default function IncomePendingPage() {
 
       return searchTerms.every((term) => searchStr.includes(term));
     });
-  }, [items, globalTokens, globalInput]);
+  }, [items, globalTokens]);
+
+  const totalPagesComputed = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  
+  const displayItems = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, page, pageSize]);
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -265,7 +275,7 @@ export default function IncomePendingPage() {
         ) : (
           <div className="bg-v3-surface backdrop-blur-md rounded-2xl border border-v3-border flex-1 min-h-0 flex flex-col w-full relative mt-4 overflow-hidden">
             <InvoiceItemTable
-              items={filteredItems}
+              items={displayItems}
               type="income"
               onSelectItems={setSelectedItems}
               selectedItems={selectedItems}
@@ -274,8 +284,8 @@ export default function IncomePendingPage() {
             <PaginationControls
               page={page}
               pageSize={pageSize}
-              total={total}
-              totalPages={totalPages}
+              total={filteredItems.length}
+              totalPages={totalPagesComputed}
               preferenceKey="income_pending_page_size"
               compactRight
               onPageChange={setPage}

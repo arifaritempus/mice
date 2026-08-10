@@ -11,6 +11,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { Edit, Copy, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function RequestsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [requests, setRequests] = useState<any[]>([]);
 
@@ -102,6 +104,9 @@ export default function RequestsPage() {
     }
   };
 
+  const searchTerm = globalTokens.join(" ");
+  
+    
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -119,15 +124,39 @@ export default function RequestsPage() {
       if (reqDateEnd) query = query.lte("request_date", reqDateEnd);
       if (eventDateStart) query = query.gte("date_details->>check_in", eventDateStart);
       if (eventDateEnd) query = query.lte("date_details->>check_out", eventDateEnd);
-      if (globalInput) {
-        query = query.or(`reference.ilike.%${globalInput}%,company_name.ilike.%${globalInput}%`);
+      
+      if (searchTerm) {
+        const s = searchTerm.toLowerCase().replace(/[%_]/g, '\\$&');
+        
+        const { data: matchedAgencies } = await supabase.from('agencies').select('id').ilike('name', `%${s}%`);
+        const matchedAgencyIds = matchedAgencies?.map(a => a.id) || [];
+        
+        const { data: matchedHotels } = await supabase.from('hotels').select('id').ilike('name', `%${s}%`);
+        const matchedHotelIds = matchedHotels?.map(h => h.id) || [];
+        
+        let orStr = `reference.ilike.%${s}%,company_name.ilike.%${s}%`;
+        if (matchedAgencyIds.length > 0) orStr += `,agency_id.in.(${matchedAgencyIds.join(',')})`;
+        
+        if (matchedHotelIds.length > 0) {
+          const { data: reqHotelMatches } = await supabase.from('mice_request_hotels').select('request_id').in('hotel_id', matchedHotelIds);
+          const reqIds = reqHotelMatches?.map(r => r.request_id) || [];
+          if (reqIds.length > 0) orStr += `,id.in.(${reqIds.join(',')})`;
+        }
+        
+        query = query.or(orStr);
       }
+
+      // Pagination setup
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      query = query.range(from, to);
 
       const { data, error, count } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
       setRequests(data || []);
       setTotalCount(count || 0);
+      setTotalPages(Math.ceil((count || 0) / pageSize) || 1);
     } catch (err: any) {
       console.error(err);
       toast.error("Talepler yüklenemedi!");
@@ -136,9 +165,14 @@ export default function RequestsPage() {
     }
   };
 
+  // Reset page to 1 on filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize, reqDateStart, reqDateEnd, eventDateStart, eventDateEnd, searchTerm]);
+
   useEffect(() => {
     fetchRequests();
-  }, [page, pageSize, reqDateStart, reqDateEnd, eventDateStart, eventDateEnd, globalInput]);
+  }, [page, pageSize, reqDateStart, reqDateEnd, eventDateStart, eventDateEnd, searchTerm]);
 
 
   if (permissionsLoading) {

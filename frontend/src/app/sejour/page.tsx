@@ -12,6 +12,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDebounce } from "@/hooks/useDebounce";
 import PaginationControls from "@/components/PaginationControls";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -241,7 +242,8 @@ export default function SejourPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [globalTokens, setGlobalTokens] = useState<string[]>([]);
   const [globalInput, setGlobalInput] = useState("");
-
+  const searchTerm = globalTokens.join(" ");
+  
   const [sejourData, setSejourData] = useState<SejourData | null>(null);
   const [sortField, setSortField] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -337,7 +339,7 @@ export default function SejourPage() {
       const response = await SejourService.getSejoursPage({
         page,
         pageSize,
-        searchTerm: "",
+        searchTerm,
         statusFilter,
         startDate: appliedDateStart,
         endDate: appliedDateEnd,
@@ -382,6 +384,7 @@ export default function SejourPage() {
     statusFilter,
     appliedDateStart,
     appliedDateEnd,
+    searchTerm,
     sortField,
     sortDirection,
   ]);
@@ -392,6 +395,7 @@ export default function SejourPage() {
     statusFilter,
     appliedDateStart,
     appliedDateEnd,
+    searchTerm,
     sortField,
     sortDirection,
   ]);
@@ -536,43 +540,7 @@ export default function SejourPage() {
     );
   }
 
-  const filteredSejours = sejours.filter((sejour) => {
-    const guests = (sejour.rooms || [])
-      .map((room) => room.guestInfo || "")
-      .join(" ");
-
-    const searchString = `
-      ${sejour.voucherNumber || ""}
-      ${sejour.customerName || ""}
-      ${sejour.agencyName || ""}
-      ${guests}
-      ${sejour.status || ""}
-    `.toLowerCase();
-
-    const searchTerms = [...globalTokens, globalInput.trim()].filter(Boolean);
-    if (!includesByTokens(searchString, searchTerms)) return false;
-
-    if (statusFilter !== "all") {
-      if (
-        statusFilter === "konfirme" &&
-        !(sejour.status || "").toLowerCase().includes("konfirme")
-      )
-        return false;
-      if (
-        statusFilter === "bekleyen" &&
-        !(sejour.status || "").toLowerCase().includes("bekleyen") &&
-        !(sejour.status || "").toLowerCase().includes("bekle")
-      )
-        return false;
-      if (
-        statusFilter === "iptal" &&
-        !(sejour.status || "").toLowerCase().includes("iptal")
-      )
-        return false;
-    }
-
-    return true;
-  });
+  const filteredSejours = sejours;
 
   // Sıralama fonksiyonu
   const handleSort = (field: string) => {

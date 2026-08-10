@@ -145,10 +145,19 @@ export const quotesService = {
     if (params.optionEnd) query = query.lte('option_date', params.optionEnd);
     if (params.optionFilter && params.optionFilter !== 'all') query = query.eq('option', params.optionFilter);
     if (params.searchTerm?.trim()) {
-      const s = params.searchTerm.trim().replace(/[%_]/g, '\\$&');
-      query = query.or(
-        `reference.ilike.%${s}%,company_name.ilike.%${s}%,status.ilike.%${s}%,quote_type.ilike.%${s}%,option.ilike.%${s}%,room_pax.ilike.%${s}%,notes.ilike.%${s}%`
-      );
+      const s = params.searchTerm.trim().replace(/[%_(),"]/g, ' ');
+      
+      const { data: matchedAgencies } = await supabase.from('agencies').select('id').ilike('name', `%${s}%`);
+      const matchedAgencyIds = matchedAgencies?.map(a => a.id) || [];
+      const { data: matchedHotels } = await supabase.from('hotels').select('id').ilike('name', `%${s}%`);
+      const matchedHotelIds = matchedHotels?.map(h => h.id) || [];
+      
+      let orStr = `reference.ilike.%${s}%,company_name.ilike.%${s}%,status.ilike.%${s}%,quote_type.ilike.%${s}%,option.ilike.%${s}%,notes.ilike.%${s}%`;
+      
+      if (matchedAgencyIds.length > 0) orStr += `,agency_id.in.(${matchedAgencyIds.join(',')})`;
+      if (matchedHotelIds.length > 0) orStr += `,hotel_id.in.(${matchedHotelIds.join(',')})`;
+      
+      query = query.or(orStr);
     }
 
     const sortableFieldMap: Record<string, string> = {
@@ -491,6 +500,8 @@ export const projectsService = {
     searchTerm?: string;
     dateStart?: string;
     dateEnd?: string;
+    quoteDateStart?: string;
+    quoteDateEnd?: string;
     sortField?: string;
     sortDirection?: 'asc' | 'desc';
   }): Promise<{ data: Project[]; total: number; totalPages: number; page: number; pageSize: number }> {
@@ -538,11 +549,22 @@ export const projectsService = {
     }
     if (params.dateStart) query = query.gte('start_date', params.dateStart);
     if (params.dateEnd) query = query.lte('end_date', params.dateEnd);
+    if (params.quoteDateStart) query = query.gte('created_at', params.quoteDateStart);
+    if (params.quoteDateEnd) query = query.lte('created_at', `${params.quoteDateEnd}T23:59:59`);
     if (params.searchTerm?.trim()) {
-      const s = params.searchTerm.trim().replace(/[%_]/g, '\\$&');
-      query = query.or(
-        `title.ilike.%${s}%,description.ilike.%${s}%,status.ilike.%${s}%,reference.ilike.%${s}%,company_name.ilike.%${s}%,quote_type.ilike.%${s}%,room_pax.ilike.%${s}%`
-      );
+      const s = params.searchTerm.trim().replace(/[%_(),"]/g, ' ');
+      
+      const { data: matchedAgencies } = await supabase.from('agencies').select('id').ilike('name', `%${s}%`);
+      const matchedAgencyIds = matchedAgencies?.map(a => a.id) || [];
+      const { data: matchedHotels } = await supabase.from('hotels').select('id').ilike('name', `%${s}%`);
+      const matchedHotelIds = matchedHotels?.map(h => h.id) || [];
+      
+      let orStr = `title.ilike.%${s}%,description.ilike.%${s}%,status.ilike.%${s}%,reference.ilike.%${s}%,company_name.ilike.%${s}%,quote_type.ilike.%${s}%`;
+      
+      if (matchedAgencyIds.length > 0) orStr += `,agency_id.in.(${matchedAgencyIds.join(',')})`;
+      if (matchedHotelIds.length > 0) orStr += `,hotel_id.in.(${matchedHotelIds.join(',')})`;
+      
+      query = query.or(orStr);
     }
 
     const sortableFieldMap: Record<string, string> = {
@@ -1489,7 +1511,12 @@ export class SejourService {
     if (params.startDate) query = query.gte('check_in_date', params.startDate);
     if (params.endDate) query = query.lte('check_in_date', params.endDate);
     if (params.searchTerm?.trim()) {
-      const s = params.searchTerm.trim().replace(/[%_]/g, '\$&');
+      const s = params.searchTerm.trim().replace(/[%_(),"]/g, ' ');
+      
+      const { data: matchedAgencies } = await supabase.from('agencies').select('id').ilike('name', `%${s}%`);
+      const matchedAgencyIds = matchedAgencies?.map(a => a.id) || [];
+      const { data: matchedHotels } = await supabase.from('hotels').select('id').ilike('name', `%${s}%`);
+      const matchedHotelIds = matchedHotels?.map(h => h.id) || [];
       
       // Misafir isimlerinde arama yapabilmek için önce odaları bulalım
       const { data: roomMatches } = await supabase
@@ -1499,12 +1526,13 @@ export class SejourService {
         
       const matchedSejourIds = roomMatches?.map(r => r.sejour_id) || [];
       
-      if (matchedSejourIds.length > 0) {
-        // Hem ana tablodaki alanlarda hem de eşleşen oda ID'lerinde ara
-        query = query.or(`voucher_number.ilike.%${s}%,customer_name.ilike.%${s}%,status.ilike.%${s}%,id.in.(${matchedSejourIds.join(',')})`);
-      } else {
-        query = query.or(`voucher_number.ilike.%${s}%,customer_name.ilike.%${s}%,status.ilike.%${s}%`);
-      }
+      let orStr = `voucher_number.ilike.%${s}%,customer_name.ilike.%${s}%,status.ilike.%${s}%`;
+      
+      if (matchedAgencyIds.length > 0) orStr += `,agency_id.in.(${matchedAgencyIds.join(',')})`;
+      if (matchedHotelIds.length > 0) orStr += `,hotel_id.in.(${matchedHotelIds.join(',')})`;
+      if (matchedSejourIds.length > 0) orStr += `,id.in.(${matchedSejourIds.join(',')})`;
+      
+      query = query.or(orStr);
     }
     if (params.statusFilter && params.statusFilter !== 'all') {
       const status = params.statusFilter.toLowerCase();
@@ -4711,9 +4739,11 @@ export const invoicesService = {
     pageSize?: number;
     startDate?: string;
     endDate?: string;
+    fetchAllInRange?: boolean;
   }): Promise<{ data: any[]; total: number; page: number; pageSize: number; totalPages: number }> {
     const page = Math.max(1, Number(params.page || 1));
     const pageSize = Math.max(1, Number(params.pageSize || 25));
+    const fetchAll = params.fetchAllInRange === true;
     const all = await this.getPendingSalesItems();
     const filtered = all.filter((item: any) => {
       if (!params.startDate && !params.endDate) return true;
@@ -4731,8 +4761,13 @@ export const invoicesService = {
       return true;
     });
     const total = filtered.length;
-    const start = (page - 1) * pageSize;
-    const data = filtered.slice(start, start + pageSize);
+    let data;
+    if (fetchAll) {
+      data = filtered;
+    } else {
+      const start = (page - 1) * pageSize;
+      data = filtered.slice(start, start + pageSize);
+    }
     return { data, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
   },
 
@@ -5009,9 +5044,11 @@ export const invoicesService = {
     pageSize?: number;
     startDate?: string;
     endDate?: string;
+    fetchAllInRange?: boolean;
   }): Promise<{ data: any[]; total: number; page: number; pageSize: number; totalPages: number }> {
     const page = Math.max(1, Number(params.page || 1));
     const pageSize = Math.max(1, Number(params.pageSize || 25));
+    const fetchAll = params.fetchAllInRange === true;
     const all = await this.getPendingPurchaseItems();
     const filtered = all.filter((item: any) => {
       if (!params.startDate && !params.endDate) return true;
@@ -5029,8 +5066,13 @@ export const invoicesService = {
       return true;
     });
     const total = filtered.length;
-    const start = (page - 1) * pageSize;
-    const data = filtered.slice(start, start + pageSize);
+    let data;
+    if (fetchAll) {
+      data = filtered;
+    } else {
+      const start = (page - 1) * pageSize;
+      data = filtered.slice(start, start + pageSize);
+    }
     return { data, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
   }
 };

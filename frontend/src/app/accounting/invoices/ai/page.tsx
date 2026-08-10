@@ -275,7 +275,7 @@ export default function AIInvoicesPage() {
     }
     
     // Global Tokens Filter
-    const searchTerms = [...appliedGlobalTokens, globalInput.trim()].filter(Boolean);
+    const searchTerms = [...appliedGlobalTokens].filter(Boolean);
     if (searchTerms.length > 0) {
       const termMatch = searchTerms.every(token => {
         const q = token.toLowerCase();
