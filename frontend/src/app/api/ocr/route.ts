@@ -57,7 +57,13 @@ export async function POST(req: NextRequest) {
         await fs.access(rootKeyPath);
         resolvedKeyPath = rootKeyPath;
       } catch {
-        console.warn("Google credentials JSON not found, falling back to mock data...");
+        const explicitPath = "/Users/arifari/Desktop/TT_Sistem_AG kopyası/google-credentials.json";
+        try {
+          await fs.access(explicitPath);
+          resolvedKeyPath = explicitPath;
+        } catch {
+          console.warn("Google credentials JSON not found, falling back to mock data...");
+        }
       }
     }
 
@@ -72,12 +78,24 @@ export async function POST(req: NextRequest) {
     };
     mockExtractedData.total = mockExtractedData.subtotal * (1 + (mockExtractedData.tax / 100));
 
-    if (resolvedKeyPath) {
+    const hasEnvCredentials = process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY;
+
+    if (resolvedKeyPath || hasEnvCredentials) {
       try {
-        const client = new DocumentProcessorServiceClient({
+        const clientOptions: any = {
           apiEndpoint: 'eu-documentai.googleapis.com',
-          keyFilename: resolvedKeyPath,
-        });
+        };
+
+        if (hasEnvCredentials) {
+          clientOptions.credentials = {
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+          };
+        } else {
+          clientOptions.keyFilename = resolvedKeyPath;
+        }
+
+        const client = new DocumentProcessorServiceClient(clientOptions);
 
         // Screenshot'tan alınan bilgiler
         const projectId = "51249713962";
@@ -148,6 +166,9 @@ export async function POST(req: NextRequest) {
                  if (parts.length > 2) {
                    const decimal = parts.pop();
                    s = parts.join("") + "." + decimal;
+                 } else if (parts.length === 2 && parts[1].length === 2) {
+                   // 119660.00 durumu
+                   s = parts[0] + "." + parts[1];
                  } else if (parts.length === 2 && parts[1].length === 3) {
                    // 119.660 durumu (ondalık yok, binlik ayracı nokta)
                    s = parts[0] + parts[1];
@@ -232,7 +253,9 @@ export async function POST(req: NextRequest) {
                }
            ];
 
-        }
+         } else {
+           mockExtractedData.supplier = "HATA: OCR Sonuç Döndüremedi (entities yok)";
+         }
 
       } catch (ocrError: any) {
         console.error("Google Document AI Hatası:", ocrError);
@@ -244,6 +267,7 @@ export async function POST(req: NextRequest) {
         mockExtractedData.date = "";
       }
     } else {
+      mockExtractedData.supplier = "HATA: Google Credentials Bulunamadı!";
       // Eğer credential yoksa 1.5 sn bekle (Mock loading)
       await new Promise(resolve => setTimeout(resolve, 1500));
     }
