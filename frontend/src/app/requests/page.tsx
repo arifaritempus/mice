@@ -8,7 +8,7 @@ import { usePermissions, Module } from "@/lib/permissions";
 import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ConfirmModal from "@/components/ConfirmModal";
-import { Edit, Copy, Trash2 } from "lucide-react";
+import { Edit, Copy, Trash2, MessageCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -98,9 +98,115 @@ export default function RequestsPage() {
       fetchRequests();
     } catch (err: any) {
       console.error(err);
-      toast.error("Kopyalama başarısız!");
+      toast.error("Kopyalama işlemi başarısız: " + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWhatsAppShare = async (req: any) => {
+    const toastId = toast.loading("WhatsApp mesajı hazırlanıyor...");
+    try {
+      const { data: fullHotels, error: fetchErr } = await supabase
+        .from("mice_request_hotels")
+        .select("*, hotels(name)")
+        .eq("request_id", req.id);
+        
+      if (fetchErr) throw fetchErr;
+
+      const { data: categories } = await supabase.from("categories").select("id, name");
+
+      const formatDateWithDay = (dateString: string) => {
+        if (!dateString) return "-";
+        const d = new Date(dateString);
+        const days = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cts"];
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}.${month}.${year}, ${days[d.getDay()]}`;
+      };
+
+      let dateStr = "-";
+      if (req.date_type === "EXACT") {
+        const start = req.date_details?.check_in ? formatDateWithDay(req.date_details.check_in) : "-";
+        const end = req.date_details?.check_out ? formatDateWithDay(req.date_details.check_out) : "-";
+        dateStr = `${start} - ${end} (${req.nights || 0} Gece)`;
+      } else {
+        dateStr = req.date_details?.text || "-";
+      }
+
+      let roomStr = "-";
+      if (req.room_details?.type === "TOTAL") {
+        roomStr = `${req.room_details?.room || 0} Oda / ${req.room_details?.pax || 0} Pax`;
+      } else {
+        const sng = req.room_details?.sng || 0;
+        const dbl = req.room_details?.dbl || 0;
+        const trp = req.room_details?.trp || 0;
+        const total = sng + dbl + trp;
+        roomStr = `${total} Oda (SNG: ${sng}, DBL: ${dbl}, TRP: ${trp})`;
+      }
+
+      let hotelStr = "Belirtilmedi";
+      if (fullHotels && fullHotels.length > 0) {
+        hotelStr = fullHotels.map((h: any) => {
+          let text = `- *${h.hotels?.name || "Bilinmiyor"}*`;
+          
+          if (h.status === "FİYAT GİRDİ" || h.status === "ONAYLANDI" || h.status === "SÖZLEŞME" || (h.response_details && h.response_details.prices)) {
+             
+             if (h.response_details?.c_in && h.response_details?.c_out) {
+               text += `\n   ${formatDateWithDay(h.response_details.c_in)} - ${formatDateWithDay(h.response_details.c_out)}`;
+             }
+             
+             if (h.response_details?.prices && Array.isArray(h.response_details.prices) && h.response_details.prices.length > 0) {
+               h.response_details.prices.forEach((p: any) => {
+                 const catName = categories?.find((c: any) => c.id === (p.category_id || p.sub_category))?.name || "Bilinmeyen Kategori";
+                 const price = p.price || p.unit_price || 0;
+                 text += `\n   ${catName}: ${price} ${p.currency || "EUR"}`;
+               });
+             }
+             
+             if (h.response_details?.option_date) {
+               text += `\n   Opsiyon: ${formatDateWithDay(h.response_details.option_date)} (${h.response_details?.option_type || "Opsiyon"})`;
+             }
+             
+          } else {
+             text += `\n   Durum: ${h.status || "Beklemede"}`;
+          }
+          return text;
+        }).join("\n\n");
+      }
+
+      const cocktail = req.cocktail?.requested ? "İsteniyor" : "İstenmiyor";
+      const gala = req.gala?.requested ? "İsteniyor" : "İstenmiyor";
+      const meeting = req.meeting?.requested ? "İsteniyor" : "İstenmiyor";
+      const barNight = req.bar_night?.requested ? "İsteniyor" : "İstenmiyor";
+
+      const message = `*FİYATLANDIRMA TALEBİ / OTEL YANITLARI*
+
+*Referans:* ${req.reference || "-"}
+*Firma / Acente:* ${req.company_name || "-"} / ${req.agencies?.name || "-"}
+*Tarih:* ${dateStr}
+*Oda Sayısı:* ${roomStr}
+
+*OTEL BİLGİLERİ VE YANITLAR:*
+${hotelStr}
+
+*Ekstra İhtiyaçlar:*
+Kokteyl: ${cocktail}
+Gala: ${gala}
+Toplantı: ${meeting}
+Bar Gecesi: ${barNight}
+
+*Notlar:* 
+${req.notes || "-"}`;
+
+      toast.dismiss(toastId);
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, "_blank");
+    } catch (error) {
+      console.error(error);
+      toast.dismiss(toastId);
+      toast.error("WhatsApp mesajı hazırlanırken hata oluştu.");
     }
   };
 
@@ -396,6 +502,9 @@ export default function RequestsPage() {
                              <Copy className="w-4 h-4" />
                            </button>
                          )}
+                         <button onClick={(e) => { e.stopPropagation(); handleWhatsAppShare(req); }} className="p-1.5 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors" title="WhatsApp'ta Paylaş">
+                           <MessageCircle className="w-4 h-4" />
+                         </button>
                          {canDelete(Module.REQUESTS) && req.status !== "TEKLİFE AKTARILDI" && (
                            <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, id: req.id, title: req.reference || req.company_name }); }} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Sil">
                              <Trash2 className="w-4 h-4" />
