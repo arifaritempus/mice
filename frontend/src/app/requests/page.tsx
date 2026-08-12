@@ -176,11 +176,6 @@ export default function RequestsPage() {
         }).join("\n\n");
       }
 
-      const cocktail = req.cocktail?.requested ? "İsteniyor" : "İstenmiyor";
-      const gala = req.gala?.requested ? "İsteniyor" : "İstenmiyor";
-      const meeting = req.meeting?.requested ? "İsteniyor" : "İstenmiyor";
-      const barNight = req.bar_night?.requested ? "İsteniyor" : "İstenmiyor";
-
       const message = `*FİYATLANDIRMA TALEBİ / OTEL YANITLARI*
 
 *Referans:* ${req.reference || "-"}
@@ -189,16 +184,7 @@ export default function RequestsPage() {
 *Oda Sayısı:* ${roomStr}
 
 *OTEL BİLGİLERİ VE YANITLAR:*
-${hotelStr}
-
-*Ekstra İhtiyaçlar:*
-Kokteyl: ${cocktail}
-Gala: ${gala}
-Toplantı: ${meeting}
-Bar Gecesi: ${barNight}
-
-*Notlar:* 
-${req.notes || "-"}`;
+${hotelStr}`;
 
       toast.dismiss(toastId);
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;

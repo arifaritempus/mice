@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { toast } from "react-hot-toast";
+import { Copy, ClipboardPaste } from "lucide-react";
 import ResponsiveDateField from "@/components/ResponsiveDateField";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import DateRangeField from "@/components/DateRangeField";
@@ -211,6 +212,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
   const [notes, setNotes] = useState("");
 
   const [hotelResponses, setHotelResponses] = useState<any[]>([]);
+  const [copiedResponse, setCopiedResponse] = useState<any>(null);
   
   // Hotel Response Modal State
   const [responseModalOpen, setResponseModalOpen] = useState(false);
@@ -1176,23 +1178,24 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-v3-bg border-b border-v3-border">
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">Otel Adı</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider text-center">Durum</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">Opsiyon Durumu</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">Opsiyon Tarihi</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">DBL Oda (PP)</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">SNG Oda</th>
-                  <th className="px-4 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider text-right">İşlemler</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider max-w-[150px]">Otel Adı</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider text-center">Durum</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">Tarih Aralığı</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">Ops. Durumu</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">Ops. Tarihi</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">DBL (PP)</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider">SNG</th>
+                  <th className="px-3 py-3 text-[10px] font-bold text-v3-muted uppercase tracking-wider text-right">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
                 {hotelResponses.length === 0 ? (
-                  <tr><td colSpan={5} className="p-8 text-center text-v3-muted text-xs">Henüz otele gönderilmedi veya yanıt bekleniyor...</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-v3-muted text-xs">Henüz otele gönderilmedi veya yanıt bekleniyor...</td></tr>
                 ) : (
                   hotelResponses.map((hr, idx) => (
                     <tr key={idx} className="border-b border-v3-border last:border-b-0 hover:bg-v3-bg transition-colors">
-                      <td className="px-4 py-3 text-xs font-semibold text-v3-text">{hr.hotels?.name || "Bilinmiyor"}</td>
-                      <td className="px-4 py-3 text-xs text-center">
+                      <td className="px-3 py-3 text-xs font-semibold text-v3-text max-w-[150px] truncate" title={hr.hotels?.name || "Bilinmiyor"}>{hr.hotels?.name || "Bilinmiyor"}</td>
+                      <td className="px-3 py-3 text-xs text-center">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                           hr.status === "MAİL GÖNDERİLDİ" ? "bg-blue-100 text-blue-700" :
                           hr.status === "FİYAT GİRDİ" ? "bg-emerald-100 text-emerald-700" :
@@ -1202,21 +1205,61 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
                           {hr.status || "BEKLEMEDE"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-v3-text font-medium">{hr.response_details?.option_type || "-"}</td>
-                      <td className="px-4 py-3 text-xs text-v3-text">{hr.option_date ? new Date(hr.option_date).toLocaleDateString('tr-TR') : "-"}</td>
-                      <td className="px-4 py-3 text-xs text-v3-text font-medium">
+                      <td className="px-3 py-3 text-[11px] text-v3-text font-medium whitespace-nowrap">
+                        {(() => {
+                           const cin = hr.response_details?.c_in;
+                           const cout = hr.response_details?.c_out;
+                           if (!cin || !cout) return "-";
+                           try {
+                             return `${new Date(cin).toLocaleDateString('tr-TR')} - ${new Date(cout).toLocaleDateString('tr-TR')}`;
+                           } catch(e) { return "-"; }
+                        })()}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-v3-text font-medium">{hr.response_details?.option_type || "-"}</td>
+                      <td className="px-3 py-3 text-xs text-v3-text whitespace-nowrap">{hr.option_date ? new Date(hr.option_date).toLocaleDateString('tr-TR') : "-"}</td>
+                      <td className="px-3 py-3 text-xs text-v3-text font-medium whitespace-nowrap">
                         {(() => {
                            const dbl = hr.response_details?.prices?.find((p: any) => (p.category_id || p.sub_category) === categories.find((c: any) => c.name.includes("DOUBLE") || c.name.includes("DBL"))?.id);
-                           return dbl ? (dbl.price || dbl.unit_price) + " " + dbl.currency : "-";
+                           return dbl ? (dbl.price || dbl.unit_price) + " " + (dbl.currency || "EUR") : "-";
                         })()}
                       </td>
-                      <td className="px-4 py-3 text-xs text-v3-text font-medium">
+                      <td className="px-3 py-3 text-xs text-v3-text font-medium whitespace-nowrap">
                         {(() => {
                            const sng = hr.response_details?.prices?.find((p: any) => (p.category_id || p.sub_category) === categories.find((c: any) => c.name.includes("SINGLE") || c.name.includes("SNG"))?.id);
-                           return sng ? (sng.price || sng.unit_price) + " " + sng.currency : "-";
+                           return sng ? (sng.price || sng.unit_price) + " " + (sng.currency || "EUR") : "-";
                         })()}
                       </td>
-                      <td className="px-4 py-3 text-xs text-right space-x-2 whitespace-nowrap">
+                      <td className="px-3 py-3 text-xs text-right space-x-2 whitespace-nowrap">
+                        {copiedResponse && (
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedHotelForResponse(hr);
+                            setResponseStatus("FİYAT GİRDİ");
+                            
+                            setRespCIn(copiedResponse.c_in || checkIn);
+                            setRespCOut(copiedResponse.c_out || checkOut);
+                            setRespOptionType(copiedResponse.option_type || "1. Opsiyon");
+                            setRespOptionDate(copiedResponse.option_date || "");
+                            
+                            const newLines = (copiedResponse.prices || []).map((l: any) => ({
+                               ...l,
+                               id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
+                            }));
+                            setResponseLines(newLines);
+                            
+                            setResponseModalOpen(true);
+                            toast.success(`${hr.hotels?.name || "Otel"} için kopyalanan yanıt yapıştırıldı!`);
+                          }} className="text-[10px] font-bold px-2 py-1.5 rounded-lg bg-green-50 border border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-800 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 transition-colors" title="Kopyalananı Yapıştır">
+                            <ClipboardPaste className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button onClick={(e) => {
+                          e.stopPropagation();
+                          setCopiedResponse(hr.response_details || {});
+                          toast.success(`${hr.hotels?.name || "Otel"} yanıtı kopyalandı!`);
+                        }} className="text-[10px] font-bold px-2 py-1.5 rounded-lg bg-v3-bg border border-v3-border hover:bg-gray-100 dark:hover:bg-gray-800 text-v3-text transition-colors" title="Yanıtı Kopyala">
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
                         <button onClick={() => {
                           setSelectedHotelForResponse(hr);
                           setResponseStatus(hr.status === "BEKLEMEDE" || hr.status === "MAİL GÖNDERİLDİ" ? "FİYAT GİRDİ" : hr.status);
@@ -1309,7 +1352,9 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
                       isEditing: true
                     }]);
                   }}
-                  onEdit={(item) => {}}
+                  onEdit={(item) => {
+                    setResponseLines(responseLines.map((l) => l.id === item.id ? { ...l, isEditing: true } : l));
+                  }}
                   onDelete={(id) => {
                     setResponseLines(responseLines.filter(l => l.id !== id));
                   }}

@@ -4,16 +4,16 @@
     "textAnchor": {
       "textSegments": [
         {
-          "startIndex": "173",
-          "endIndex": "177"
+          "startIndex": "527",
+          "endIndex": "533"
         }
       ],
-      "content": "0048"
+      "content": "B36074"
     },
     "type": "invoice_id",
-    "mentionText": "0048",
+    "mentionText": "B36074",
     "mentionId": "",
-    "confidence": 0.5026780962944031,
+    "confidence": 0.9645446538925171,
     "pageAnchor": {
       "pageRefs": [
         {
@@ -24,20 +24,20 @@
             "vertices": [],
             "normalizedVertices": [
               {
-                "x": 0.7786069512367249,
-                "y": 0.13625000417232513
+                "x": 0.6788537502288818,
+                "y": 0.19041278958320618
               },
               {
-                "x": 0.8640132546424866,
-                "y": 0.13625000417232513
+                "x": 0.7450593113899231,
+                "y": 0.19041278958320618
               },
               {
-                "x": 0.8640132546424866,
-                "y": 0.1599999964237213
+                "x": 0.7450593113899231,
+                "y": 0.1997336894273758
               },
               {
-                "x": 0.7786069512367249,
-                "y": 0.1599999964237213
+                "x": 0.6788537502288818,
+                "y": 0.1997336894273758
               }
             ]
           },
@@ -56,16 +56,16 @@
     "textAnchor": {
       "textSegments": [
         {
-          "startIndex": "93",
-          "endIndex": "107"
+          "startIndex": "149",
+          "endIndex": "168"
         }
       ],
-      "content": "0548 869 09 09"
+      "content": "www.cyprusroyal.com"
     },
-    "type": "supplier_phone",
-    "mentionText": "0548 869 09 09",
+    "type": "supplier_website",
+    "mentionText": "www.cyprusroyal.com",
     "mentionId": "",
-    "confidence": 0.4590301811695099,
+    "confidence": 0.9009031653404236,
     "pageAnchor": {
       "pageRefs": [
         {
@@ -76,20 +76,20 @@
             "vertices": [],
             "normalizedVertices": [
               {
-                "x": 0.1492537260055542,
-                "y": 0.10125000029802322
+                "x": 0.5019763112068176,
+                "y": 0.11584553867578506
               },
               {
-                "x": 0.2620232105255127,
-                "y": 0.10125000029802322
+                "x": 0.6758893132209778,
+                "y": 0.11584553867578506
               },
               {
-                "x": 0.2620232105255127,
-                "y": 0.11687500029802322
+                "x": 0.6758893132209778,
+                "y": 0.12716378271579742
               },
               {
-                "x": 0.1492537260055542,
-                "y": 0.11687500029802322
+                "x": 0.5019763112068176,
+                "y": 0.12716378271579742
               }
             ]
           },
@@ -105,45 +105,19 @@
   },
   {
     "properties": [],
-    "textAnchor": null,
-    "type": "invoice_type",
-    "mentionText": "",
-    "mentionId": "",
-    "confidence": 0.4206547737121582,
-    "pageAnchor": {
-      "pageRefs": [
-        {
-          "page": "0",
-          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
-          "layoutId": "",
-          "boundingPoly": null,
-          "confidence": 0.41063567996025085
-        }
-      ]
-    },
-    "id": "2",
-    "normalizedValue": {
-      "text": "other"
-    },
-    "provenance": null,
-    "redacted": false,
-    "method": "METHOD_UNSPECIFIED"
-  },
-  {
-    "properties": [],
     "textAnchor": {
       "textSegments": [
         {
-          "startIndex": "282",
-          "endIndex": "292"
+          "startIndex": "131",
+          "endIndex": "148"
         }
       ],
-      "content": "119.660.00"
+      "content": "+90 548 818 02 78"
     },
-    "type": "total_amount",
-    "mentionText": "119.660.00",
+    "type": "supplier_phone",
+    "mentionText": "+90 548 818 02 78",
     "mentionId": "",
-    "confidence": 0.37472087144851685,
+    "confidence": 0.8056567311286926,
     "pageAnchor": {
       "pageRefs": [
         {
@@ -154,20 +128,20 @@
             "vertices": [],
             "normalizedVertices": [
               {
-                "x": 0.7023217082023621,
-                "y": 0.3293749988079071
+                "x": 0.5247035622596741,
+                "y": 0.10252995789051056
               },
               {
-                "x": 0.8872305154800415,
-                "y": 0.3293749988079071
+                "x": 0.6808300614356995,
+                "y": 0.10252995789051056
               },
               {
-                "x": 0.8872305154800415,
-                "y": 0.36000001430511475
+                "x": 0.6808300614356995,
+                "y": 0.11118508875370026
               },
               {
-                "x": 0.7023217082023621,
-                "y": 0.36000001430511475
+                "x": 0.5247035622596741,
+                "y": 0.11118508875370026
               }
             ]
           },
@@ -175,7 +149,7 @@
         }
       ]
     },
-    "id": "3",
+    "id": "2",
     "normalizedValue": null,
     "provenance": null,
     "redacted": false,
@@ -186,16 +160,16 @@
     "textAnchor": {
       "textSegments": [
         {
-          "startIndex": "6",
-          "endIndex": "35"
+          "startIndex": "879",
+          "endIndex": "882"
         }
       ],
-      "content": "ENGİN İŞLETMELERİ ŞİRKETİ LTD"
+      "content": "USD"
     },
-    "type": "supplier_name",
-    "mentionText": "ENGİN İŞLETMELERİ ŞİRKETİ LTD",
+    "type": "currency",
+    "mentionText": "USD",
     "mentionId": "",
-    "confidence": 0.018879462033510208,
+    "confidence": 0.697588324546814,
     "pageAnchor": {
       "pageRefs": [
         {
@@ -206,20 +180,74 @@
             "vertices": [],
             "normalizedVertices": [
               {
-                "x": 0.20563846826553345,
-                "y": 0.03687499836087227
+                "x": 0.5859683752059937,
+                "y": 0.6597869396209717
               },
               {
-                "x": 0.5704809427261353,
-                "y": 0.03687499836087227
+                "x": 0.6086956262588501,
+                "y": 0.6597869396209717
               },
               {
-                "x": 0.5704809427261353,
-                "y": 0.08937499672174454
+                "x": 0.6086956262588501,
+                "y": 0.6651132106781006
               },
               {
-                "x": 0.20563846826553345,
-                "y": 0.08937499672174454
+                "x": 0.5859683752059937,
+                "y": 0.6651132106781006
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "3",
+    "normalizedValue": {
+      "text": "USD"
+    },
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "0",
+          "endIndex": "24"
+        }
+      ],
+      "content": "Chase\nGroup\nof Companies"
+    },
+    "type": "supplier_name",
+    "mentionText": "Chase\nGroup\nof Companies",
+    "mentionId": "",
+    "confidence": 0.4904398024082184,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.23023715615272522,
+                "y": 0.05259653925895691
+              },
+              {
+                "x": 0.395256906747818,
+                "y": 0.05259653925895691
+              },
+              {
+                "x": 0.395256906747818,
+                "y": 0.11850865185260773
+              },
+              {
+                "x": 0.23023715615272522,
+                "y": 0.11850865185260773
               }
             ]
           },
@@ -238,16 +266,16 @@
     "textAnchor": {
       "textSegments": [
         {
-          "startIndex": "114",
-          "endIndex": "131"
+          "startIndex": "929",
+          "endIndex": "961"
         }
       ],
-      "content": "Sicil No:MS 27997"
+      "content": "TR32 0006 4000 0016 8040 1131 69"
     },
-    "type": "supplier_address",
-    "mentionText": "Sicil No:MS 27997",
+    "type": "supplier_iban",
+    "mentionText": "TR32 0006 4000 0016 8040 1131 69",
     "mentionId": "",
-    "confidence": 0.00005903456622036174,
+    "confidence": 0.47372692823410034,
     "pageAnchor": {
       "pageRefs": [
         {
@@ -258,20 +286,20 @@
             "vertices": [],
             "normalizedVertices": [
               {
-                "x": 0.16003316640853882,
-                "y": 0.11937499791383743
+                "x": 0.6373517513275146,
+                "y": 0.6524633765220642
               },
               {
-                "x": 0.29933664202690125,
-                "y": 0.11937499791383743
+                "x": 0.8171936869621277,
+                "y": 0.6524633765220642
               },
               {
-                "x": 0.29933664202690125,
-                "y": 0.13625000417232513
+                "x": 0.8171936869621277,
+                "y": 0.6577895879745483
               },
               {
-                "x": 0.16003316640853882,
-                "y": 0.13625000417232513
+                "x": 0.6373517513275146,
+                "y": 0.6577895879745483
               }
             ]
           },
@@ -280,6 +308,357 @@
       ]
     },
     "id": "5",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": null,
+    "type": "invoice_type",
+    "mentionText": "",
+    "mentionId": "",
+    "confidence": 0.434410035610199,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": null,
+          "confidence": 0.43965303897857666
+        }
+      ]
+    },
+    "id": "6",
+    "normalizedValue": {
+      "text": "credit_note"
+    },
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "412",
+          "endIndex": "436"
+        }
+      ],
+      "content": "CHASE CYPRUS TRAVEL LTD."
+    },
+    "type": "receiver_name",
+    "mentionText": "CHASE CYPRUS TRAVEL LTD.",
+    "mentionId": "",
+    "confidence": 0.37140387296676636,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.4426877498626709,
+                "y": 0.2043941468000412
+              },
+              {
+                "x": 0.6669960618019104,
+                "y": 0.2043941468000412
+              },
+              {
+                "x": 0.6669960618019104,
+                "y": 0.21371504664421082
+              },
+              {
+                "x": 0.4426877498626709,
+                "y": 0.21371504664421082
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "7",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "437",
+          "endIndex": "496"
+        }
+      ],
+      "content": "MŞ 16660\nDr. Burhan Nalbantoğlu Cad.\nRoyal Plaza NO 44A-14B"
+    },
+    "type": "receiver_address",
+    "mentionText": "MŞ 16660\nDr. Burhan Nalbantoğlu Cad.\nRoyal Plaza NO 44A-14B",
+    "mentionId": "",
+    "confidence": 0.3497404456138611,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.4634387493133545,
+                "y": 0.21571238338947296
+              },
+              {
+                "x": 0.6472331881523132,
+                "y": 0.21571238338947296
+              },
+              {
+                "x": 0.6472331881523132,
+                "y": 0.24434088170528412
+              },
+              {
+                "x": 0.4634387493133545,
+                "y": 0.24434088170528412
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "8",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "546",
+          "endIndex": "556"
+        }
+      ],
+      "content": "31.07.2026"
+    },
+    "type": "due_date",
+    "mentionText": "31.07.2026",
+    "mentionId": "",
+    "confidence": 0.3031523823738098,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.7519763112068176,
+                "y": 0.2556591331958771
+              },
+              {
+                "x": 0.8221343755722046,
+                "y": 0.2556591331958771
+              },
+              {
+                "x": 0.8221343755722046,
+                "y": 0.2649800181388855
+              },
+              {
+                "x": 0.7519763112068176,
+                "y": 0.2649800181388855
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "9",
+    "normalizedValue": {
+      "text": "2026-07-31",
+      "dateValue": {
+        "year": 2026,
+        "month": 7,
+        "day": 31
+      },
+      "structuredValue": "dateValue"
+    },
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "50",
+          "endIndex": "98"
+        }
+      ],
+      "content": "M.Ş:16660\nDr Burhan Nalbantoglu Cad. Royal Plaza"
+    },
+    "type": "supplier_address",
+    "mentionText": "M.Ş:16660\nDr Burhan Nalbantoglu Cad. Royal Plaza",
+    "mentionId": "",
+    "confidence": 0.11139140278100967,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.5019763112068176,
+                "y": 0.059254325926303864
+              },
+              {
+                "x": 0.8428853750228882,
+                "y": 0.059254325926303864
+              },
+              {
+                "x": 0.8428853750228882,
+                "y": 0.08588548749685287
+              },
+              {
+                "x": 0.5019763112068176,
+                "y": 0.08588548749685287
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "10",
+    "normalizedValue": null,
+    "provenance": null,
+    "redacted": false,
+    "method": "METHOD_UNSPECIFIED"
+  },
+  {
+    "properties": [
+      {
+        "properties": [],
+        "textAnchor": {
+          "textSegments": [
+            {
+              "startIndex": "557",
+              "endIndex": "567"
+            }
+          ],
+          "content": "155.743,75"
+        },
+        "type": "line_item/amount",
+        "mentionText": "155.743,75",
+        "mentionId": "",
+        "confidence": 0.8033786416053772,
+        "pageAnchor": {
+          "pageRefs": [
+            {
+              "page": "0",
+              "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+              "layoutId": "",
+              "boundingPoly": {
+                "vertices": [],
+                "normalizedVertices": [
+                  {
+                    "x": 0.8023715615272522,
+                    "y": 0.3135818839073181
+                  },
+                  {
+                    "x": 0.8547430634498596,
+                    "y": 0.3135818839073181
+                  },
+                  {
+                    "x": 0.8547430634498596,
+                    "y": 0.31890812516212463
+                  },
+                  {
+                    "x": 0.8023715615272522,
+                    "y": 0.31890812516212463
+                  }
+                ]
+              },
+              "confidence": 0
+            }
+          ]
+        },
+        "id": "12",
+        "normalizedValue": {
+          "text": "155743.75",
+          "floatValue": 155743.75,
+          "structuredValue": "floatValue"
+        },
+        "provenance": null,
+        "redacted": false,
+        "method": "METHOD_UNSPECIFIED"
+      }
+    ],
+    "textAnchor": {
+      "textSegments": [
+        {
+          "startIndex": "557",
+          "endIndex": "567"
+        }
+      ],
+      "content": ""
+    },
+    "type": "line_item",
+    "mentionText": "155.743,75",
+    "mentionId": "",
+    "confidence": 1,
+    "pageAnchor": {
+      "pageRefs": [
+        {
+          "page": "0",
+          "layoutType": "LAYOUT_TYPE_UNSPECIFIED",
+          "layoutId": "",
+          "boundingPoly": {
+            "vertices": [],
+            "normalizedVertices": [
+              {
+                "x": 0.8023715615272522,
+                "y": 0.3135818839073181
+              },
+              {
+                "x": 0.8547430634498596,
+                "y": 0.3135818839073181
+              },
+              {
+                "x": 0.8547430634498596,
+                "y": 0.31890812516212463
+              },
+              {
+                "x": 0.8023715615272522,
+                "y": 0.31890812516212463
+              }
+            ]
+          },
+          "confidence": 0
+        }
+      ]
+    },
+    "id": "11",
     "normalizedValue": null,
     "provenance": null,
     "redacted": false,

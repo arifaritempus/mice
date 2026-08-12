@@ -1312,6 +1312,12 @@ export default function QuoteServiceEditor({
                               e.target.value,
                             )
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              // Opsiyonel olarak edit modunu kapatabiliriz, ancak şimdilik sadece kaymayı engelliyoruz
+                            }
+                          }}
                           className="flex-1 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text ml-2"
                           placeholder="Açıklama"
                         />
