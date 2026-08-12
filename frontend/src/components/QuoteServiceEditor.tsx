@@ -1318,7 +1318,7 @@ export default function QuoteServiceEditor({
                               // Opsiyonel olarak edit modunu kapatabiliriz, ancak şimdilik sadece kaymayı engelliyoruz
                             }
                           }}
-                          className="flex-1 px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text ml-2"
+                          className="flex-1 min-w-[150px] px-2 py-1 text-xs border border-v3-border rounded bg-white dark:bg-gray-800 text-gray-900 text-v3-text ml-2"
                           placeholder="Açıklama"
                         />
                         {!isViewMode && (
@@ -1444,7 +1444,7 @@ export default function QuoteServiceEditor({
                           })()}
                         </div>
 
-                        <div className="flex-1 min-w-0 text-xs text-gray-900 text-v3-text">
+                        <div className="flex-1 min-w-[150px] truncate text-xs text-gray-900 text-v3-text" title={it.description || ""}>
                           {it.description || "-"}
                         </div>
 
