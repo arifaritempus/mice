@@ -751,7 +751,24 @@ export const projectSalesItemsService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    if (!data || data.length === 0) return [];
+    
+    const itemIds = data.map((d: any) => d.id);
+    const { data: invoiceItems } = await supabase
+      .from('invoice_items')
+      .select('item_id, amount')
+      .eq('item_type', 'sales')
+      .in('item_id', itemIds);
+      
+    const invoicedMap = (invoiceItems || []).reduce((acc: any, ii: any) => {
+      acc[ii.item_id] = (acc[ii.item_id] || 0) + Number(ii.amount);
+      return acc;
+    }, {});
+    
+    return data.map((d: any) => ({
+      ...d,
+      invoiced_amount: invoicedMap[d.id] || 0
+    }));
   },
 
   async create(item: any): Promise<any> {

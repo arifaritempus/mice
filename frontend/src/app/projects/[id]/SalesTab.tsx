@@ -607,15 +607,20 @@ export default function SalesTab({
 
               // Normal item
               const it = row.item;
+              const isInvoiced = (it.invoiced_amount || 0) > 0 && (it.invoiced_amount || 0) >= (it.total || 0) - 0.01;
               return (
                 <div
                   key={it.id ? `${it.id}-${idx}` : `item-${idx}`}
                   onDoubleClick={() => {
                     if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
+                      if (isInvoiced) {
+                        toast.error(t('projects.invoicedItemWarning') || 'Faturalandırılmış kalemler düzenlenemez');
+                        return;
+                      }
                       editRow("sales", it.id);
                     }
                   }}
-                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"}`}
+                  className={`rounded-md p-2 flex flex-nowrap items-center gap-2 group ${it.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"} ${isInvoiced ? "" : "cursor-pointer"}`}
                 >
                   {it.isEditing ? (
                     // Düzenleme modu
@@ -1048,7 +1053,7 @@ export default function SalesTab({
                           </button>
 ) }</>
                         )}
-                        {permDelete(Module.PROJECTS) && !isLocked && (
+                        {permDelete(Module.PROJECTS) && !isLocked && !isInvoiced && (
                           <>{ permDelete(Module.PROJECTS) && (
 <button
                             onClick={() => removeItem("sales", it.id)}
@@ -1070,6 +1075,13 @@ export default function SalesTab({
                             </svg>
                           </button>
 ) }</>
+                        )}
+                        {isInvoiced && (
+                          <div className="p-1 text-orange-500" title="Faturalandırılmış Kalem - Silinemez veya Düzenlenemez">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
                         )}
                       </div>
                     </>
