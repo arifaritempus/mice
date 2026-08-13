@@ -615,7 +615,7 @@ export default function SalesTab({
                   onDoubleClick={() => {
                     if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
                       if (isInvoiced) {
-                        toast.error(t('projects.invoicedItemWarning') || 'Faturalandırılmış kalemler düzenlenemez');
+                        toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz.");
                         return;
                       }
                       editRow("sales", it.id);
