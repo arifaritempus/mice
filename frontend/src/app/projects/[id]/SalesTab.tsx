@@ -5,6 +5,7 @@ import { usePermissions, Module, Permission } from "@/lib/permissions";
 import FieldsetGuard from "@/components/permissions/FieldsetGuard";
 import PermissionBoundary from "@/components/permissions/PermissionBoundary";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { toast } from "react-hot-toast";
 
 interface SalesTabProps {
   itemsSales: any[];
