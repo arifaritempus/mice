@@ -672,7 +672,7 @@ export default function PurchaseTab({
               const isInvoiced = (it.invoiced_amount || 0) > 0 && (it.invoiced_amount || 0) >= (it.total || 0) - 0.01;
               return (
                 <div
-                  key={it.id}
+                  key={it.id ? `${it.id}-${idx}` : `item-${idx}`}
                   onDoubleClick={() => {
                     if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
                       if (isInvoiced) {

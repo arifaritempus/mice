@@ -609,7 +609,7 @@ export default function SalesTab({
               const it = row.item;
               return (
                 <div
-                  key={it.id}
+                  key={it.id ? `${it.id}-${idx}` : `item-${idx}`}
                   onDoubleClick={() => {
                     if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
                       editRow("sales", it.id);
