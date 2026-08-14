@@ -3134,12 +3134,54 @@ export default function ProjectDetailPage() {
         );
         const updatedItem = { ...tempAccommodationItem, ...dateColumns };
 
+        // 1. Optimistic UI update (Anında arayüze yansıt, yavaşlatmadan)
         const updatedItems = [...accommodationItems];
         updatedItems[realIndex] = updatedItem;
         setAccommodationItems(updatedItems);
 
-        // Supabase'e kaydet
-        await saveAccommodationItems(updatedItems);
+        // 2. Arka planda sadece tek satırı kaydet (Tüm listeyi sunucuya gönderip bekletmek yerine)
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(updatedItem.id));
+        const payload = {
+          project_id: projectId,
+          hotel_id: updatedItem.hotel_id || (activeHotelId !== "all" && activeHotelId !== "general" ? activeHotelId : null),
+          room_number: updatedItem.oda_no || "",
+          room_number_2: updatedItem.oda_no_2 || "",
+          room_type: updatedItem.oda_tipi || "",
+          bed_type: updatedItem.yatak_tipi || "",
+          first_name: updatedItem.isim || "",
+          last_name: updatedItem.soyisim || "",
+          check_in_date: formatDateToSupabase(updatedItem.gelis_tarihi || updatedItem.giris_tarihi) || null,
+          check_out_date: formatDateToSupabase(updatedItem.cikis_tarihi) || null,
+          flight_arrival: updatedItem.ucus_gelis || "",
+          flight_departure: updatedItem.ucus_gidis || "",
+          nights: Number(updatedItem.geceleme || updatedItem.gece_sayisi || 1),
+          package: updatedItem.paket || "",
+          hotel: updatedItem.otel || "",
+          flight: updatedItem.ucus || updatedItem.ucak || "",
+          total: Number(updatedItem.toplam || 0) || 0,
+          currency: updatedItem.doviz || "EUR",
+          room_note: updatedItem.oda_notu || "",
+          arrival_flight_code: updatedItem.gelis_ucus_kodu || "",
+          arrival_flight_departure: updatedItem.gelis_ucak_kalkis || "",
+          arrival_flight_arrival: updatedItem.gelis_ucak_inis || "",
+          return_flight_code: updatedItem.donus_ucus_kodu || "",
+          return_flight_departure: updatedItem.donus_ucak_kalkis || "",
+          return_flight_arrival: updatedItem.donus_ucak_inis || "",
+        };
+
+        // Promise zinciriyle arkaplanda çalışmasını sağla, async bekleme (UI kitlenmez)
+        if (isUUID) {
+          projectAccommodationItemsService.update(updatedItem.id, payload)
+            .then(() => toast.success("Satır kaydedildi", { id: 'acc-save' }))
+            .catch(console.error);
+        } else {
+          projectAccommodationItemsService.create(payload as any)
+            .then((created) => {
+               setAccommodationItems((prev: any[]) => prev.map(it => it.id === updatedItem.id ? { ...it, id: created.id } : it));
+               toast.success("Yeni satır eklendi", { id: 'acc-save' });
+            })
+            .catch(console.error);
+        }
       }
 
       setEditingAccommodationIndex(null);
@@ -3150,7 +3192,9 @@ export default function ProjectDetailPage() {
     tempAccommodationItem,
     accommodationItems,
     calculateDateColumns,
-    saveAccommodationItems,
+    projectId,
+    activeHotelId,
+    formatDateToSupabase,
   ]);
 
   const handleAccommodationCancel = useCallback(() => {
@@ -4672,10 +4716,10 @@ export default function ProjectDetailPage() {
               currency: item.currency,
               isGroup: item.is_group,
               groupTransfers: item.group_transfers
-                ? JSON.parse(item.group_transfers)
+                ? (typeof item.group_transfers === "string" ? JSON.parse(item.group_transfers) : item.group_transfers)
                 : null,
               originalTransfers: item.group_transfers
-                ? JSON.parse(item.group_transfers)
+                ? (typeof item.group_transfers === "string" ? JSON.parse(item.group_transfers) : item.group_transfers)
                 : null,
               isEditing: false,
               isNew: false,
@@ -4725,10 +4769,10 @@ export default function ProjectDetailPage() {
                 currency: item.currency,
                 isGroup: item.is_group,
                 groupTransfers: item.group_transfers
-                  ? JSON.parse(item.group_transfers)
+                  ? (typeof item.group_transfers === "string" ? JSON.parse(item.group_transfers) : item.group_transfers)
                   : null,
                 originalTransfers: item.group_transfers
-                  ? JSON.parse(item.group_transfers)
+                  ? (typeof item.group_transfers === "string" ? JSON.parse(item.group_transfers) : item.group_transfers)
                   : null,
                 isEditing: false,
                 isNew: false,
@@ -12916,8 +12960,8 @@ export default function ProjectDetailPage() {
               costAmount: item.cost_amount,
               currency: item.currency,
               isGroup: item.is_group,
-              groupTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
-              originalTransfers: item.group_transfers ? JSON.parse(item.group_transfers) : null,
+              groupTransfers: item.group_transfers ? (typeof item.group_transfers === "string" ? JSON.parse(item.group_transfers) : item.group_transfers) : null,
+              originalTransfers: item.group_transfers ? (typeof item.group_transfers === "string" ? JSON.parse(item.group_transfers) : item.group_transfers) : null,
               isEditing: false,
               isNew: false,
             }));
