@@ -206,6 +206,7 @@ interface Transfer {
   status: "pending" | "confirmed" | "completed" | "cancelled";
   notes: string;
   hotel_name?: string;
+  hotels_data?: any[];
   created_at: string;
   updated_at: string;
 }
@@ -1182,7 +1183,9 @@ export default function TransfersPage() {
                   : "",
           company_name: transfer.company_name || "",
           customer_name: transfer.customer_name || "",
-          hotel_name: transfer.hotel_name || "",
+          hotel_name: transfer.hotels_data && transfer.hotels_data.length > 0 
+            ? transfer.hotels_data.map((h: any) => h.hotel_name || h.hotels?.name || '').join(", ") 
+            : (transfer.hotel_name || ""),
           supplier_name: transfer.supplier_name,
           transfer_type:
             transfer.transfer_type === "airport_hotel"
@@ -2031,13 +2034,41 @@ export default function TransfersPage() {
                         {transfer.customer_name || "-"}
                       </span>
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      <span
-                        className="block truncate"
-                        title={transfer.hotel_name || ""}
-                      >
-                        {transfer.hotel_name || "-"}
-                      </span>
+                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200">
+                      {(() => {
+                        let tooltipNames: string[] = [];
+                        let firstHotelName = transfer.hotel_name || "Bilinmeyen Otel";
+
+                        if (transfer.hotels_data && transfer.hotels_data.length > 0) {
+                          firstHotelName = transfer.hotels_data[0].hotel_name || "Bilinmeyen Otel";
+                          tooltipNames = transfer.hotels_data.map((h: any) => {
+                            const name = h.hotel_name || "Bilinmeyen Otel";
+                            const inDate = h.check_in_date ? formatDate(h.check_in_date) : "";
+                            const outDate = h.check_out_date ? formatDate(h.check_out_date) : "";
+                            let text = name;
+                            if (inDate && outDate) text = `${name} (${inDate} - ${outDate})`;
+                            return text.replace(/ /g, "\u00A0").replace(/-/g, "\u2011");
+                          });
+                        } else if (transfer.hotel_name) {
+                          tooltipNames = [transfer.hotel_name.replace(/ /g, "\u00A0").replace(/-/g, "\u2011")];
+                        }
+
+                        if (tooltipNames.length === 0) return <span>-</span>;
+
+                        const additionalCount = tooltipNames.length - 1;
+                        const allHotelsText = tooltipNames.join("\n");
+
+                        return (
+                          <div className="flex items-center gap-1 group" title={allHotelsText}>
+                            <span className="truncate block max-w-[120px] cursor-help">{firstHotelName}</span>
+                            {additionalCount > 0 && (
+                              <span className="text-[9px] bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold px-1.5 py-0.5 rounded cursor-help whitespace-nowrap flex-shrink-0">
+                                +{additionalCount}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       <span

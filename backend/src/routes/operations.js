@@ -45,32 +45,56 @@ const buildTransferRow = ({ source, transfer, sejour, project }) => {
           ? 'hotel_airport'
           : 'hotel_hotel';
 
-    return {
-      id: `sejour:${transfer.id}`,
-      reference: String(sejour?.voucher_number || readableRef(sejour?.id, 'SEJ') || ''),
-      project_type: 'sejour',
-      project_reference: String(sejour?.id || ''),
-      customer_name: sejour?.agencies?.name || '',
-      company_name: sejour?.customer_name || '',
-      check_in_date: sejour?.check_in_date || '',
-      check_out_date: sejour?.check_out_date || '',
-      supplier_id: transfer?.supplier_id || '',
-      supplier_name: transfer?.suppliers?.name || 'Tedarikçi',
-      transfer_date: transfer?.date || '',
-      transfer_time: transfer?.time || '',
-      transfer_type: transferType,
-      service_type: transfer?.transfer_type || '',
-      departure_point: transferType === 'airport_hotel' ? 'Havalimanı' : 'Otel',
-      arrival_point: transferType === 'hotel_airport' ? 'Havalimanı' : 'Otel',
-      vehicle_type: transfer?.vehicle_type || '',
-      capacity: 0,
-      passenger_count: 0,
-      unit_price: Number(transfer?.price || 0),
-      currency: transfer?.currency || 'EUR',
-      total_amount: Number(transfer?.price || 0),
-      status: mapSejourStatusToOperation(sejour?.status),
-      notes: '',
-      hotel_name: sejour?.hotels?.name || '',
+      let hotels_data = [];
+      if (sejour?.sejour_rooms && Array.isArray(sejour.sejour_rooms)) {
+        const hMap = {};
+        sejour.sejour_rooms.forEach(r => {
+          if (r.hotel_id) {
+             hMap[r.hotel_id] = {
+               hotel_id: r.hotel_id,
+               hotel_name: r.hotels?.name || '',
+               check_in_date: r.check_in_date || sejour.check_in_date || '',
+               check_out_date: r.check_out_date || sejour.check_out_date || ''
+             };
+          }
+        });
+        hotels_data = Object.values(hMap);
+      }
+      if (hotels_data.length === 0 && sejour?.hotels?.name) {
+        hotels_data = [{
+          hotel_name: sejour.hotels.name,
+          check_in_date: sejour.check_in_date,
+          check_out_date: sejour.check_out_date
+        }];
+      }
+
+      return {
+        id: `sejour:${transfer.id}`,
+        reference: String(sejour?.voucher_number || readableRef(sejour?.id, 'SEJ') || ''),
+        project_type: 'sejour',
+        project_reference: String(sejour?.id || ''),
+        customer_name: sejour?.agencies?.name || '',
+        company_name: sejour?.customer_name || '',
+        check_in_date: sejour?.check_in_date || '',
+        check_out_date: sejour?.check_out_date || '',
+        supplier_id: transfer?.supplier_id || '',
+        supplier_name: transfer?.suppliers?.name || 'Tedarikçi',
+        transfer_date: transfer?.date || '',
+        transfer_time: transfer?.time || '',
+        transfer_type: transferType,
+        service_type: transfer?.transfer_type || '',
+        departure_point: transferType === 'airport_hotel' ? 'Havalimanı' : 'Otel',
+        arrival_point: transferType === 'hotel_airport' ? 'Havalimanı' : 'Otel',
+        vehicle_type: transfer?.vehicle_type || '',
+        capacity: 0,
+        passenger_count: 0,
+        unit_price: Number(transfer?.price || 0),
+        currency: transfer?.currency || 'EUR',
+        total_amount: Number(transfer?.price || 0),
+        status: mapSejourStatusToOperation(sejour?.status),
+        notes: '',
+        hotel_name: sejour?.hotels?.name || '',
+        hotels_data: hotels_data,
       flight_info: {
         departure_airport: '',
         arrival_airport: '',
@@ -260,7 +284,13 @@ router.get('/transfers', async (req, res) => {
           status,
           created_at,
           agencies(name),
-          hotels(name)
+          hotels(name),
+          sejour_rooms(
+            hotel_id,
+            check_in_date,
+            check_out_date,
+            hotels(name)
+          )
         )
       `, { count: 'exact' })
       .eq('sejours.status', 'KONFIRME')
