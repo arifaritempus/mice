@@ -352,7 +352,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
         c_out: respCOut,
         option_type: respOptionType,
         option_date: respOptionDate,
-        prices: responseLines.filter((l: any) => (l.category_id && l.price) || (l.sub_category && l.unit_price))
+        prices: responseLines.filter((l: any) => l.main_category || l.category_id || l.sub_category)
       };
       
       const totalAmount = responseLines.reduce((acc: number, curr: any) => acc + (Number(curr.price) || Number(curr.total) || 0), 0);

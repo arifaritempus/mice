@@ -35,7 +35,7 @@ export async function DELETE(
     // Teklifi bul ve durumunu kontrol et
     const { data: quoteToVerify, error: quoteError } = await adminClient
       .from('quotes')
-      .select('status')
+      .select('status, reference')
       .eq('id', id)
       .single();
 
@@ -55,6 +55,24 @@ export async function DELETE(
       .from('projects')
       .select('id')
       .eq('quote_id', id);
+
+    // Eğer bu teklif bir talebe bağlıysa (reference aynıysa), başka teklifi kalmamışsa talebi serbest bırak
+    if (quoteToVerify?.reference) {
+      const { data: otherQuotes } = await adminClient
+        .from('quotes')
+        .select('id')
+        .eq('reference', quoteToVerify.reference)
+        .neq('id', id);
+
+      if (!otherQuotes || otherQuotes.length === 0) {
+        // Bu referansa sahip başka teklif yok, talebin kilidini aç
+        await adminClient
+          .from('mice_requests')
+          .update({ status: 'CEVAPLANDI' }) // Veya duruma göre BEKLEMEDE olabilir, CEVAPLANDI mantıklı
+          .eq('reference', quoteToVerify.reference)
+          .eq('status', 'TEKLİFE AKTARILDI');
+      }
+    }
 
     // Silme işlemine başla (RLS atlanarak tam yetkili silme)
     const [quoteItemsDelete, quoteLinksDelete] = await Promise.all([
