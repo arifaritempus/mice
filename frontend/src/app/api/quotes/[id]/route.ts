@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+export const dynamic = 'force-dynamic';
+
 // Server-side Supabase admin client
 function getAdminClient() {
   const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -58,19 +60,24 @@ export async function DELETE(
 
     // Eğer bu teklif bir talebe bağlıysa (reference aynıysa), başka teklifi kalmamışsa talebi serbest bırak
     if (quoteToVerify?.reference) {
+      const refToUse = quoteToVerify.reference.trim();
       const { data: otherQuotes } = await adminClient
         .from('quotes')
         .select('id')
-        .eq('reference', quoteToVerify.reference)
+        .eq('reference', refToUse)
         .neq('id', id);
 
       if (!otherQuotes || otherQuotes.length === 0) {
         // Bu referansa sahip başka teklif yok, talebin kilidini aç
-        await adminClient
+        const { error: unlockError } = await adminClient
           .from('mice_requests')
           .update({ status: 'CEVAPLANDI' }) // Veya duruma göre BEKLEMEDE olabilir, CEVAPLANDI mantıklı
-          .eq('reference', quoteToVerify.reference)
+          .eq('reference', refToUse)
           .eq('status', 'TEKLİFE AKTARILDI');
+          
+        if (unlockError) {
+          console.error("Talebin kilidini açarken hata oluştu:", unlockError);
+        }
       }
     }
 
