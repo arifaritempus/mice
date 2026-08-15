@@ -351,6 +351,8 @@ export default function EditSejourPage() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [supplierServiceTypes, setSupplierServiceTypes] = useState<any[]>([]);
   const [sejourInvoices, setSejourInvoices] = useState<any[]>([]);
+  const [invoicedSalesItemIds, setInvoicedSalesItemIds] = useState<Set<string>>(new Set());
+  const [invoicedPurchaseItemIds, setInvoicedPurchaseItemIds] = useState<Set<string>>(new Set());
   const [editModalInvoice, setEditModalInvoice] = useState<any | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -492,6 +494,23 @@ export default function EditSejourPage() {
       const data = await response.json();
       if (response.ok && data.invoices) {
         setSejourInvoices(data.invoices);
+        
+        const salesIds = new Set<string>();
+        const purchaseIds = new Set<string>();
+        
+        data.invoices.forEach((inv: any) => {
+          if (inv.invoice_items && Array.isArray(inv.invoice_items)) {
+            inv.invoice_items.forEach((item: any) => {
+              if (item.item_id) {
+                if (item.item_type === 'sales') salesIds.add(item.item_id);
+                if (item.item_type === 'purchase') purchaseIds.add(item.item_id);
+              }
+            });
+          }
+        });
+        
+        setInvoicedSalesItemIds(salesIds);
+        setInvoicedPurchaseItemIds(purchaseIds);
       }
     } catch (err) {
       console.error(err);
@@ -1643,9 +1662,11 @@ export default function EditSejourPage() {
                       <div className="space-y-4">
                         {rooms.map((room, index) => (
                           <div key={room.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
-                            <button type="button" onClick={() => removeRoom(room.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Odayı Sil">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
+                            {(!invoicedSalesItemIds.has(room.id) && !invoicedPurchaseItemIds.has(room.id)) && (
+                              <button type="button" onClick={() => removeRoom(room.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Odayı Sil">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                              </button>
+                            )}
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[1.5] lg:[&>*:nth-child(7)]:flex-[1.2]">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">OTEL</label>
@@ -1696,8 +1717,8 @@ export default function EditSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={roomPriceInputV6[room.id] !== undefined ? roomPriceInputV6[room.id] : room.price ? room.price.toString().replace(".", ",") : ""} onChange={(e) => setRoomPriceInputV6((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateRoom(room.id, "price", parsed); setRoomPriceInputV6((prev) => ({ ...prev, [room.id]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-blue-600 outline-none focus:border-blue-500 bg-blue-50/30" />
-                                  <select value={room.currency || "TRY"} onChange={(e) => updateRoom(room.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                                  <input type="text" placeholder="0,00" disabled={invoicedSalesItemIds.has(room.id)} value={roomPriceInputV6[room.id] !== undefined ? roomPriceInputV6[room.id] : room.price ? room.price.toString().replace(".", ",") : ""} onChange={(e) => setRoomPriceInputV6((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateRoom(room.id, "price", parsed); setRoomPriceInputV6((prev) => ({ ...prev, [room.id]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-blue-600 outline-none focus:border-blue-500 bg-blue-50/30 disabled:opacity-50" />
+                                  <select value={room.currency || "TRY"} disabled={invoicedSalesItemIds.has(room.id)} onChange={(e) => updateRoom(room.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
                                 </div>
@@ -1780,9 +1801,11 @@ export default function EditSejourPage() {
                       <div className="space-y-4">
                         {flights.map((flight, index) => (
                           <div key={flight.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
-                            <button type="button" onClick={() => removeFlight(flight.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Uçuşu Sil">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
+                            {(!invoicedSalesItemIds.has(flight.id) && !invoicedPurchaseItemIds.has(flight.id)) && (
+                              <button type="button" onClick={() => removeFlight(flight.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Uçuşu Sil">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                              </button>
+                            )}
                             <span className="absolute top-2 left-4 text-[9px] font-bold text-gray-400">{flight.type === 'departure' ? 'GİDİŞ' : 'DÖNÜŞ'} UÇUŞU {index + 1}</span>
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.2] mt-4">
                               <div>
@@ -1824,8 +1847,8 @@ export default function EditSejourPage() {
 <div>
                                 <label className="block text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={servicePriceInputV6[`flight_${flight.id}`] !== undefined ? servicePriceInputV6[`flight_${flight.id}`] : flight.price ? flight.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateFlight(flight.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-emerald-600 outline-none focus:border-emerald-500 bg-emerald-50/30" />
-                                  <select value={flight.currency || "TRY"} onChange={(e) => updateFlight(flight.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                                  <input type="text" placeholder="0,00" disabled={invoicedSalesItemIds.has(flight.id)} value={servicePriceInputV6[`flight_${flight.id}`] !== undefined ? servicePriceInputV6[`flight_${flight.id}`] : flight.price ? flight.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateFlight(flight.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-emerald-600 outline-none focus:border-emerald-500 bg-emerald-50/30 disabled:opacity-50" />
+                                  <select value={flight.currency || "TRY"} disabled={invoicedSalesItemIds.has(flight.id)} onChange={(e) => updateFlight(flight.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
                                 </div>
@@ -1911,9 +1934,11 @@ export default function EditSejourPage() {
                       <div className="space-y-4">
                         {transfers.map((transfer, index) => (
                           <div key={transfer.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
-                            <button type="button" onClick={() => removeTransfer(transfer.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Transferi Sil">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
+                            {(!invoicedSalesItemIds.has(transfer.id) && !invoicedPurchaseItemIds.has(transfer.id)) && (
+                              <button type="button" onClick={() => removeTransfer(transfer.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Transferi Sil">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                              </button>
+                            )}
                             <span className="absolute top-2 left-4 text-[9px] font-bold text-gray-400">{transfer.direction === 'arrival' ? 'GELİŞ' : transfer.direction === 'return' ? 'DÖNÜŞ' : 'ARA'} TRANSFER {index + 1}</span>
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.2] mt-4">
                               <div>
@@ -1945,8 +1970,8 @@ export default function EditSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-purple-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={servicePriceInputV6[`transfer_${transfer.id}`] !== undefined ? servicePriceInputV6[`transfer_${transfer.id}`] : transfer.price ? transfer.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-purple-600 outline-none focus:border-purple-500 bg-purple-50/30" />
-                                  <select value={transfer.currency || "TRY"} onChange={(e) => updateTransfer(transfer.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                                  <input type="text" placeholder="0,00" disabled={invoicedSalesItemIds.has(transfer.id)} value={servicePriceInputV6[`transfer_${transfer.id}`] !== undefined ? servicePriceInputV6[`transfer_${transfer.id}`] : transfer.price ? transfer.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-purple-600 outline-none focus:border-purple-500 bg-purple-50/30 disabled:opacity-50" />
+                                  <select value={transfer.currency || "TRY"} disabled={invoicedSalesItemIds.has(transfer.id)} onChange={(e) => updateTransfer(transfer.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
                                 </div>
@@ -2026,9 +2051,11 @@ export default function EditSejourPage() {
                       <div className="space-y-4">
                         {extraServices.map((service, index) => (
                           <div key={service.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
-                            <button type="button" onClick={() => removeExtraService(service.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Hizmeti Sil">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
+                            {(!invoicedSalesItemIds.has(service.id) && !invoicedPurchaseItemIds.has(service.id)) && (
+                              <button type="button" onClick={() => removeExtraService(service.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Hizmeti Sil">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                              </button>
+                            )}
                             <span className="absolute top-2 left-4 text-[9px] font-bold text-gray-400">EKSTRA HİZMET {index + 1}</span>
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.2] mt-4">
                               <div>
@@ -2051,8 +2078,8 @@ export default function EditSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-orange-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="0,00" value={servicePriceInputV6[`extra_${service.id}`] !== undefined ? servicePriceInputV6[`extra_${service.id}`] : service.price ? service.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateExtraService(service.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-orange-600 outline-none focus:border-orange-500 bg-orange-50/30" />
-                                  <select value={service.currency || "TRY"} onChange={(e) => updateExtraService(service.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                                  <input type="text" placeholder="0,00" disabled={invoicedSalesItemIds.has(service.id)} value={servicePriceInputV6[`extra_${service.id}`] !== undefined ? servicePriceInputV6[`extra_${service.id}`] : service.price ? service.price.toString().replace(".", ",") : ""} onChange={(e) => setServicePriceInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateExtraService(service.id, "price", parsed); setServicePriceInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-orange-600 outline-none focus:border-orange-500 bg-orange-50/30 disabled:opacity-50" />
+                                  <select value={service.currency || "TRY"} disabled={invoicedSalesItemIds.has(service.id)} onChange={(e) => updateExtraService(service.id, "currency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                     <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                                   </select>
                                 </div>
@@ -2094,17 +2121,17 @@ export default function EditSejourPage() {
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={room.supplierId || ""} onChange={(val) => updateRoom(room.id, "supplierId", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
-                                                        <div>
-                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
-                                <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
-                                  {room.price ? room.price.toLocaleString("tr-TR") : "0"} {room.currency || "TRY"}
-                                </div>
-                              </div>
-<div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
+                            <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
+                              {room.price ? room.price.toLocaleString("tr-TR") : "0"} {room.currency || "TRY"}
+                            </div>
+                          </div>
+                          <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={roomCostInputV6?.[room.id] !== undefined ? roomCostInputV6[room.id] : room.costPrice ? room.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setRoomCostInputV6((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateRoom(room.id, "costPrice", parsed); setRoomCostInputV6((prev) => ({ ...prev, [room.id]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
-                              <select value={room.costCurrency || "TRY"} onChange={(e) => updateRoom(room.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                              <input type="text" placeholder="0,00" disabled={invoicedPurchaseItemIds.has(room.id)} value={roomCostInputV6?.[room.id] !== undefined ? roomCostInputV6[room.id] : room.costPrice ? room.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setRoomCostInputV6((prev) => ({ ...prev, [room.id]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateRoom(room.id, "costPrice", parsed); setRoomCostInputV6((prev) => ({ ...prev, [room.id]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500 disabled:opacity-50" />
+                              <select value={room.costCurrency || "TRY"} disabled={invoicedPurchaseItemIds.has(room.id)} onChange={(e) => updateRoom(room.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
                             </div>
@@ -2133,18 +2160,17 @@ export default function EditSejourPage() {
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ (TICKETING)</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={flight.ticketingProvider || ""} onChange={(val) => updateFlight(flight.id, "ticketingProvider", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
-                          
-                                                        <div>
-                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
-                                <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
-                                  {flight.price ? flight.price.toLocaleString("tr-TR") : "0"} {flight.currency || "TRY"}
-                                </div>
-                              </div>
-<div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
+                            <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
+                              {flight.price ? flight.price.toLocaleString("tr-TR") : "0"} {flight.currency || "TRY"}
+                            </div>
+                          </div>
+                          <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={serviceCostInputV6?.[`flight_${flight.id}`] !== undefined ? serviceCostInputV6[`flight_${flight.id}`] : flight.costPrice ? flight.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateFlight(flight.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
-                              <select value={flight.costCurrency || "TRY"} onChange={(e) => updateFlight(flight.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                              <input type="text" placeholder="0,00" disabled={invoicedPurchaseItemIds.has(flight.id)} value={serviceCostInputV6?.[`flight_${flight.id}`] !== undefined ? serviceCostInputV6[`flight_${flight.id}`] : flight.costPrice ? flight.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateFlight(flight.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`flight_${flight.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500 disabled:opacity-50" />
+                              <select value={flight.costCurrency || "TRY"} disabled={invoicedPurchaseItemIds.has(flight.id)} onChange={(e) => updateFlight(flight.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
                             </div>
@@ -2172,17 +2198,17 @@ export default function EditSejourPage() {
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={transfer.provider || ""} onChange={(val) => updateTransfer(transfer.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
-                                                        <div>
-                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
-                                <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
-                                  {transfer.price ? transfer.price.toLocaleString("tr-TR") : "0"} {transfer.currency || "TRY"}
-                                </div>
-                              </div>
-<div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
+                            <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
+                              {transfer.price ? transfer.price.toLocaleString("tr-TR") : "0"} {transfer.currency || "TRY"}
+                            </div>
+                          </div>
+                          <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={serviceCostInputV6?.[`transfer_${transfer.id}`] !== undefined ? serviceCostInputV6[`transfer_${transfer.id}`] : transfer.costPrice ? transfer.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
-                              <select value={transfer.costCurrency || "TRY"} onChange={(e) => updateTransfer(transfer.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                              <input type="text" placeholder="0,00" disabled={invoicedPurchaseItemIds.has(transfer.id)} value={serviceCostInputV6?.[`transfer_${transfer.id}`] !== undefined ? serviceCostInputV6[`transfer_${transfer.id}`] : transfer.costPrice ? transfer.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateTransfer(transfer.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`transfer_${transfer.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500 disabled:opacity-50" />
+                              <select value={transfer.costCurrency || "TRY"} disabled={invoicedPurchaseItemIds.has(transfer.id)} onChange={(e) => updateTransfer(transfer.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
                             </div>
@@ -2211,17 +2237,17 @@ export default function EditSejourPage() {
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={service.provider || ""} onChange={(val) => updateExtraService(service.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
-                                                        <div>
-                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
-                                <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
-                                  {service.price ? service.price.toLocaleString("tr-TR") : "0"} {service.currency || "TRY"}
-                                </div>
-                              </div>
-<div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
+                            <div className="h-[36px] flex items-center px-3 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold text-gray-600">
+                              {service.price ? service.price.toLocaleString("tr-TR") : "0"} {service.currency || "TRY"}
+                            </div>
+                          </div>
+                          <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
-                              <input type="text" placeholder="0,00" value={serviceCostInputV6?.[`extra_${service.id}`] !== undefined ? serviceCostInputV6[`extra_${service.id}`] : service.costPrice ? service.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateExtraService(service.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500" />
-                              <select value={service.costCurrency || "TRY"} onChange={(e) => updateExtraService(service.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                              <input type="text" placeholder="0,00" disabled={invoicedPurchaseItemIds.has(service.id)} value={serviceCostInputV6?.[`extra_${service.id}`] !== undefined ? serviceCostInputV6[`extra_${service.id}`] : service.costPrice ? service.costPrice.toString().replace(".", ",") : ""} onChange={(e) => setServiceCostInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: e.target.value }))} onBlur={(e) => { const parsed = parseAmountV6(e.target.value); if (parsed !== null) { updateExtraService(service.id, "costPrice", parsed); setServiceCostInputV6((prev) => ({ ...prev, [`extra_${service.id}`]: formatAmountV6(parsed) })); } }} className="flex-1 h-[36px] px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold text-gray-700 outline-none focus:border-gray-500 disabled:opacity-50" />
+                              <select value={service.costCurrency || "TRY"} disabled={invoicedPurchaseItemIds.has(service.id)} onChange={(e) => updateExtraService(service.id, "costCurrency", e.target.value)} className="w-[60px] h-[36px] px-1 bg-white border border-gray-200 rounded-md text-[11px] font-bold outline-none disabled:opacity-50">
                                 <option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option>
                               </select>
                             </div>
@@ -2490,18 +2516,10 @@ export default function EditSejourPage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 flex-1 relative z-10">
-                {sejourInvoices.length > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50 rounded-lg mr-2 text-xs font-medium">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    Faturalandırılmış Sejour Düzenlenemez
-                  </div>
-                )}
                 <button type="button" onClick={() => router.push("/sejour")} className="px-6 py-2.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
                   İptal
                 </button>
-                <button type="submit" disabled={loading || sejourInvoices.length > 0} className="px-8 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center">
+                <button type="submit" disabled={loading} className="px-8 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center">
                   {loading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>

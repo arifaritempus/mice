@@ -68,6 +68,14 @@ const buildTransferRow = ({ source, transfer, sejour, project }) => {
         }];
       }
 
+      let guestNames = [];
+      if (sejour?.sejour_rooms && Array.isArray(sejour.sejour_rooms)) {
+        const guests = sejour.sejour_rooms.map(r => r.guest_info).filter(Boolean);
+        if (guests.length > 0) {
+          guestNames = guests;
+        }
+      }
+
       return {
         id: `sejour:${transfer.id}`,
         reference: String(sejour?.voucher_number || readableRef(sejour?.id, 'SEJ') || ''),
@@ -92,7 +100,7 @@ const buildTransferRow = ({ source, transfer, sejour, project }) => {
         currency: transfer?.currency || 'EUR',
         total_amount: Number(transfer?.price || 0),
         status: mapSejourStatusToOperation(sejour?.status),
-        notes: '',
+        notes: guestNames.join(', '),
         hotel_name: sejour?.hotels?.name || '',
         hotels_data: hotels_data,
       flight_info: {
@@ -289,6 +297,7 @@ router.get('/transfers', async (req, res) => {
             hotel_id,
             check_in_date,
             check_out_date,
+            guest_info,
             hotels(name)
           )
         )
