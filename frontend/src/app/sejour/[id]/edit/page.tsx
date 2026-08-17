@@ -188,6 +188,7 @@ interface Room {
   costPrice?: number;
   costCurrency?: string;
   hotelName?: string;
+  vat?: number; // Added for VAT
 }
 
 interface FlightInfo {
