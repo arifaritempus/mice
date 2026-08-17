@@ -323,6 +323,7 @@ export default function EditSejourPage() {
     totalAmount: 0,
     currency: "TRY",
     status: "BEKLEMEDE",
+    isInternational: false,
     notes: "",
   });
 
@@ -583,6 +584,7 @@ export default function EditSejourPage() {
               totalAmount: sejour.totalAmount || 0,
               currency: sejour.currency || "TRY",
               status: sejour.status || "BEKLEMEDE",
+              isInternational: false,
               notes: sejour.notes || "",
             });
 
