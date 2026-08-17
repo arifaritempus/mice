@@ -1758,7 +1758,7 @@ export default function TransfersPage() {
         >
           <div className="flex-1 overflow-auto custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead className="bg-v3-surface backdrop-blur-xl border-b border-v3-border sticky top-0 z-20">
+              <thead className="bg-slate-50 dark:bg-slate-900 border-b border-v3-border sticky top-0 z-20">
                 <tr>
                   <th
                     className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
