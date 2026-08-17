@@ -10,6 +10,7 @@ import {
   SupplierService,
   ServiceTypeService,
   SettingsService,
+  categoriesService,
 } from "@/lib/supabaseService";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -71,7 +72,7 @@ function ComboBox({
         <input
           ref={setInputRef}
           className="w-full px-2 py-1 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
-          placeholder={placeholder}
+          placeholder={open ? (selected?.name || placeholder) : placeholder}
           value={open ? query : selected ? getName(selected) : ""}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -183,6 +184,9 @@ interface Room {
   price: number;
   costPrice?: number;
   costCurrency?: string;
+  vat?: number;
+  categoryId?: string;
+  subCategoryId?: string;
 }
 
 interface FlightInfo {
@@ -215,6 +219,9 @@ interface FlightInfo {
   price: number;
   costPrice?: number;
   costCurrency?: string;
+  vat?: number;
+  categoryId?: string;
+  subCategoryId?: string;
 }
 
 interface TransferInfo {
@@ -234,6 +241,9 @@ interface TransferInfo {
   time?: string;
   costPrice?: number;
   costCurrency?: string;
+  vat?: number;
+  categoryId?: string;
+  subCategoryId?: string;
 }
 
 interface ExtraService {
@@ -251,6 +261,9 @@ interface ExtraService {
   description?: string;
   costPrice?: number;
   costCurrency?: string;
+  vat?: number;
+  categoryId?: string;
+  subCategoryId?: string;
 }
 
 interface Collection {
@@ -325,6 +338,7 @@ export default function CreateSejourPage() {
     currency: "TRY",
     status: "BEKLEMEDE",
     notes: "",
+    isInternational: false,
   });
 
   // Rooms
@@ -356,6 +370,7 @@ export default function CreateSejourPage() {
   const [hotels, setHotels] = useState<any[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [supplierServiceTypes, setSupplierServiceTypes] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   const [roomTypes] = useState([
     "Standart Oda",
@@ -395,6 +410,8 @@ export default function CreateSejourPage() {
 
         // Load service types
         const serviceTypesData = await ServiceTypeService.getServiceTypes();
+        const categoriesData = await categoriesService.getAll();
+        setCategories(categoriesData);
         setSupplierServiceTypes(serviceTypesData);
       } catch (error) {
         console.error("Error loading data:", error);
@@ -482,11 +499,20 @@ export default function CreateSejourPage() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    
     setSalesData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: val,
     }));
+
+    if (name === "isInternational" && val === true) {
+      setRooms(prev => prev.map(r => ({ ...r, vat: 0 })));
+      setFlights(prev => prev.map(r => ({ ...r, vat: 0 })));
+      setTransfers(prev => prev.map(r => ({ ...r, vat: 0 })));
+      setExtraServices(prev => prev.map(r => ({ ...r, vat: 0 })));
+    }
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -502,6 +528,8 @@ export default function CreateSejourPage() {
     const newRoom: Room = {
       id: Date.now().toString(),
       roomNumber: `Oda ${rooms.length + 1}`,
+      checkIn: salesData.checkInDate,
+      checkOut: salesData.checkOutDate,
       hotelId: "",
       accommodationType: "",
       roomType: "",
@@ -515,6 +543,9 @@ export default function CreateSejourPage() {
       price: 0,
       currency: "TRY",
       costCurrency: "TRY",
+      vat: 0,
+      categoryId: "",
+      subCategoryId: "",
     };
     setRooms([...rooms, newRoom]);
   };
@@ -541,6 +572,9 @@ export default function CreateSejourPage() {
       totalPrice: 0,
       currency: "TRY",
       costCurrency: "TRY",
+      vat: 0,
+      categoryId: "",
+      subCategoryId: "",
       flightDate:
         type === "departure" ? salesData.checkInDate : salesData.checkOutDate,
       airline: "",
@@ -582,6 +616,9 @@ export default function CreateSejourPage() {
       price: 0,
       currency: "TRY",
       costCurrency: "TRY",
+      vat: 0,
+      categoryId: "",
+      subCategoryId: "",
       date:
         direction === "arrival"
           ? salesData.checkInDate
@@ -639,6 +676,9 @@ export default function CreateSejourPage() {
       price: 0,
       currency: "TRY",
       costCurrency: "TRY",
+      vat: 0,
+      categoryId: "",
+      subCategoryId: "",
       // UI fields - form'da kullanılan alanlar
       serviceType: "",
       provider: "",
@@ -1006,7 +1046,7 @@ export default function CreateSejourPage() {
               }
             }}
             onBlur={() => setTimeout(() => setOpen(false), 120)}
-            placeholder={placeholder}
+            placeholder={open ? (selected?.name || placeholder) : placeholder}
             className="w-full px-2 py-1.5 bg-transparent text-xs text-v3-text placeholder-gray-400 outline-none"
           />
           <div className="pr-6 pointer-events-none text-v3-muted">
@@ -1037,7 +1077,7 @@ export default function CreateSejourPage() {
                 onMouseEnter={() => setHighlight(idx)}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(opt.id)}
-                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`}
+                className={`w-full text-left px-2 py-1 text-xs font-bold transition-colors duration-200 ${idx === highlight ? "bg-blue-500 text-white" : "text-v3-text hover:bg-gray-100 dark:hover:bg-gray-700/50"}`} tabIndex={-1}
               >
                 {opt.name}
               </button>
@@ -1217,7 +1257,7 @@ export default function CreateSejourPage() {
                   </div>
                 ) : (
                   <div className="p-5 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800">
-                    <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[1.5]">
+                    <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[0.5] lg:[&>*:nth-child(8)]:flex-[2]">
                       <div>
                         <label className="block text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Voucher No *</label>
                         <input type="text" name="voucherNumber" value={salesData.voucherNumber} onChange={handleInputChange} className="w-full h-[36px] px-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-[11px] font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" required autoFocus />
@@ -1258,6 +1298,16 @@ export default function CreateSejourPage() {
                           <option value="İPTAL">❌ İPTAL</option>
                         </select>
                       </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Yurtdışı Mı?</label>
+                        <div className="h-[36px] flex items-center">
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="isInternational" checked={salesData.isInternational} onChange={handleInputChange} className="sr-only peer" />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">İç Notlar</label>
                         <input type="text" name="notes" placeholder="Eklemek istediğiniz notlar..." value={salesData.notes} onChange={handleInputChange} className="w-full h-[36px] px-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-[11px] font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" />
@@ -1351,7 +1401,7 @@ export default function CreateSejourPage() {
                             <button type="button" onClick={() => removeRoom(room.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Odayı Sil">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
-                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[1.5] lg:[&>*:nth-child(7)]:flex-[1.2]">
+                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[1.5] lg:[&>*:nth-child(7)]:flex-[0.6] lg:[&>*:nth-child(8)]:flex-[1.2]">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">OTEL</label>
                                 <SearchableSelect options={hotels.map((h) => ({ id: h.id, name: h.name }))} value={room.hotelId || ""} onChange={(val) => updateRoom(room.id, "hotelId", val)} placeholder="Otel Seçiniz..." />
@@ -1397,6 +1447,11 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">MİSAFİR</label>
                                 <input type="text" placeholder="İsim Soyisim" value={room.guestInfo || ""} onChange={(e) => updateRoom(room.id, "guestInfo", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                                <input type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1489,7 +1544,7 @@ export default function CreateSejourPage() {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                             <span className="absolute top-2 left-4 text-[9px] font-bold text-gray-400">{flight.type === 'departure' ? 'GİDİŞ' : 'DÖNÜŞ'} UÇUŞU {index + 1}</span>
-                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.2] mt-4">
+                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[0.5] lg:[&>*:nth-child(9)]:flex-[1.2] mt-4">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
                                 <input type="date" value={flight.flightDate || ""} onChange={(e) => updateFlight(flight.id, "flightDate", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
@@ -1525,6 +1580,11 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">BİLET TARİHİ</label>
                                 <input type="date" value={flight.ticketingDate || ""} onChange={(e) => updateFlight(flight.id, "ticketingDate", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                                <input type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
                               </div>
 <div>
                                 <label className="block text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1620,7 +1680,7 @@ export default function CreateSejourPage() {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                             <span className="absolute top-2 left-4 text-[9px] font-bold text-gray-400">{transfer.direction === 'arrival' ? 'GELİŞ' : transfer.direction === 'return' ? 'DÖNÜŞ' : 'ARA'} TRANSFER {index + 1}</span>
-                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.2] mt-4">
+                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[0.5] lg:[&>*:nth-child(6)]:flex-[1.2] mt-4">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH & SAAT</label>
                                 <div className="flex items-center gap-1">
@@ -1646,6 +1706,11 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">GÜZERGAH NOTU</label>
                                 <input type="text" value={transfer.routeDescription || ""} onChange={(e) => updateTransfer(transfer.id, "routeDescription", e.target.value)} placeholder="Örn: Otel - Havalimanı" className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                                <input type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-purple-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1735,7 +1800,7 @@ export default function CreateSejourPage() {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                             <span className="absolute top-2 left-4 text-[9px] font-bold text-gray-400">EKSTRA HİZMET {index + 1}</span>
-                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.2] mt-4">
+                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2.5] lg:[&>*:nth-child(4)]:flex-[0.5] lg:[&>*:nth-child(5)]:flex-[1.2] mt-4">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
                                 <input type="date" value={service.date || ""} onChange={(e) => updateExtraService(service.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-orange-500" />
@@ -1752,6 +1817,11 @@ export default function CreateSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">AÇIKLAMA</label>
                                 <input type="text" placeholder="Örn: Rehberlik" value={service.description || ""} onChange={(e) => updateExtraService(service.id, "description", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-orange-500" />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                                <input type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-orange-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1794,7 +1864,7 @@ export default function CreateSejourPage() {
                     {rooms.map((room, index) => (
                       <div key={room.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">ODA {index + 1} - {room.hotelId ? hotels.find(h => h.id === room.hotelId)?.name : "Otel Yok"}</span>
-                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5]">
+                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={room.supplierId || ""} onChange={(val) => updateRoom(room.id, "supplierId", val)} placeholder="Tedarikçi Seçiniz..." />
@@ -1805,6 +1875,10 @@ export default function CreateSejourPage() {
                                   {room.price ? room.price.toLocaleString("tr-TR") : "0"} {room.currency || "TRY"}
                                 </div>
                               </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                            <input type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                          </div>
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
@@ -1833,7 +1907,7 @@ export default function CreateSejourPage() {
                     {flights.map((flight, index) => (
                       <div key={flight.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">{flight.type === 'departure' ? 'GİDİŞ' : 'DÖNÜŞ'} UÇUŞU {index + 1} - {flight.departureAirport} ➝ {flight.arrivalAirport}</span>
-                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5]">
+                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ (TICKETING)</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={flight.ticketingProvider || ""} onChange={(val) => updateFlight(flight.id, "ticketingProvider", val)} placeholder="Tedarikçi Seçiniz..." />
@@ -1845,6 +1919,10 @@ export default function CreateSejourPage() {
                                   {flight.price ? flight.price.toLocaleString("tr-TR") : "0"} {flight.currency || "TRY"}
                                 </div>
                               </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                            <input type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                          </div>
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
@@ -1872,7 +1950,7 @@ export default function CreateSejourPage() {
                     {transfers.map((transfer, index) => (
                       <div key={transfer.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">{transfer.direction === 'arrival' ? 'GELİŞ' : transfer.direction === 'return' ? 'DÖNÜŞ' : 'ARA'} TRANSFER {index + 1}</span>
-                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5]">
+                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={transfer.provider || ""} onChange={(val) => updateTransfer(transfer.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
@@ -1883,6 +1961,10 @@ export default function CreateSejourPage() {
                                   {transfer.price ? transfer.price.toLocaleString("tr-TR") : "0"} {transfer.currency || "TRY"}
                                 </div>
                               </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                            <input type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                          </div>
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
@@ -1911,7 +1993,7 @@ export default function CreateSejourPage() {
                     {extraServices.map((service, index) => (
                       <div key={service.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">EKSTRA HİZMET {index + 1}</span>
-                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5]">
+                        <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
                             <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={service.provider || ""} onChange={(val) => updateExtraService(service.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
@@ -1922,6 +2004,10 @@ export default function CreateSejourPage() {
                                   {service.price ? service.price.toLocaleString("tr-TR") : "0"} {service.currency || "TRY"}
                                 </div>
                               </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
+                            <input type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                          </div>
 <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
                             <div className="flex items-center gap-1">
@@ -2002,7 +2088,7 @@ export default function CreateSejourPage() {
           )}
 
           {/* TOTALS FOOTER */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-3 z-40 transition-all duration-300">
+          <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-3 z-40 transition-all duration-300">
             <div className="max-w-[1800px] mx-auto flex items-center justify-between relative">
               <div className="flex-1"></div>
               <div className="flex items-center justify-center gap-6 overflow-x-auto pb-1 absolute left-1/2 -translate-x-1/2 w-max max-w-[70vw]">

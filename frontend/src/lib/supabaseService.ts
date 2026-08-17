@@ -1607,6 +1607,7 @@ export class SejourService {
         totalNights: room.total_nights || room.totalNights || 1,
         totalPrice: room.total_price || room.totalPrice || 0,
         currency: room.currency || 'TRY',
+        vat: room.vat,
         costPrice: room.cost_price || room.costPrice || 0,
         costCurrency: room.cost_currency || room.costCurrency || room.currency || 'TRY'
       })),
@@ -1710,6 +1711,7 @@ export class SejourService {
         totalNights: room.total_nights || room.totalNights || 1,
         totalPrice: room.total_price || room.totalPrice || 0,
         currency: room.currency || 'TRY',
+        vat: room.vat,
         // Maliyet bilgileri
         costPrice: room.cost_price || room.costPrice || 0,
         costCurrency: room.cost_currency || room.costCurrency || room.currency || 'TRY'
@@ -1726,6 +1728,7 @@ export class SejourService {
         arrivalTime: flight.arrival_time || '',
         price: flight.total_price || flight.price || 0,
         currency: flight.currency || 'TRY',
+          vat: flight.vat,
         // Maliyet bilgileri
         costPrice: flight.cost_price || flight.costPrice || 0,
         costCurrency: flight.cost_currency || flight.costCurrency || flight.currency || 'TRY',
@@ -1758,6 +1761,7 @@ export class SejourService {
         routeDescription: transfer.route_description || transfer.routeDescription || '',
         price: transfer.price || 0,
         currency: transfer.currency || 'TRY',
+          vat: transfer.vat,
         // Maliyet bilgileri
         costPrice: transfer.cost_price || transfer.costPrice || 0,
         costCurrency: transfer.cost_currency || transfer.costCurrency || transfer.currency || 'TRY'
@@ -1776,6 +1780,7 @@ export class SejourService {
         date: service.date || null,
         price: service.price || 0,
         currency: service.currency || 'TRY',
+          vat: service.vat,
         // Maliyet bilgileri
         costPrice: service.cost_price || service.costPrice || 0,
         costCurrency: service.cost_currency || service.costCurrency || service.currency || 'TRY'
@@ -1856,6 +1861,7 @@ export class SejourService {
         totalNights: room.total_nights || room.totalNights || 1,
         totalPrice: room.total_price || room.totalPrice || 0,
         currency: room.currency || 'TRY',
+        vat: room.vat,
         // Maliyet bilgileri
         costPrice:
           room.cost_price !== undefined && room.cost_price !== null
@@ -1880,6 +1886,7 @@ export class SejourService {
           totalPrice: flight.total_price || flight.totalPrice || flight.price || 0,
           price: flight.total_price || flight.totalPrice || flight.price || 0,
           currency: flight.currency || 'TRY',
+          vat: flight.vat,
           ticketingProvider: flight.ticketing_provider || '',
           ticketingDate: flight.ticketing_date || '',
           pnr: flight.pnr || '',
@@ -1930,6 +1937,7 @@ export class SejourService {
           routeDescription: transfer.route_description || transfer.routeDescription || '',
           price: transfer.price || 0,
           currency: transfer.currency || 'TRY',
+          vat: transfer.vat,
           // Maliyet bilgileri
           costPrice:
             transfer.cost_price !== undefined && transfer.cost_price !== null
@@ -1954,6 +1962,7 @@ export class SejourService {
         date: service.date || null,
         price: service.price || 0,
         currency: service.currency || 'TRY',
+          vat: service.vat,
         // Maliyet bilgileri
         costPrice:
           service.cost_price !== undefined && service.cost_price !== null
@@ -1985,6 +1994,7 @@ export class SejourService {
         check_in_date: sejourData.checkInDate,
         check_out_date: sejourData.checkOutDate,
         status: sejourData.status || 'BEKLEMEDE',
+        is_international: sejourData.isInternational || false,
         notes: sejourData.notes,
         total_amount: sejourData.totalAmount || 0,
         currency: sejourData.currency || 'TRY',
@@ -2319,6 +2329,7 @@ export class SejourService {
         hotel_name: sejourData.hotelName,
         hotel_address: sejourData.hotelAddress,
         status: sejourData.status || 'confirmed',
+        is_international: sejourData.isInternational || false,
         notes: sejourData.notes,
         total_amount: sejourData.totalAmount,
         currency: sejourData.currency,
@@ -2359,7 +2370,11 @@ export class SejourService {
             price_per_night: pricePerNight,
             total_nights: totalNights,
             total_price: totalPrice,
-            currency: room.currency || 'TRY'
+            currency: room.currency || 'TRY',
+        vat: room.vat,
+            category: room.categoryId || null,
+            sub_category: room.subCategoryId || null,
+            vat: typeof room.vat === 'number' ? room.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2429,7 +2444,11 @@ export class SejourService {
             price_per_person: flight.pricePerPerson || 0,
             total_passengers: flight.totalPassengers || 1,
             total_price: flight.price !== undefined ? flight.price : (flight.totalPrice || 0),
-            currency: flight.currency || 'TRY'
+            currency: flight.currency || 'TRY',
+          vat: flight.vat,
+            category: flight.categoryId || null,
+            sub_category: flight.subCategoryId || null,
+            vat: typeof flight.vat === 'number' ? flight.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2487,7 +2506,11 @@ export class SejourService {
             vehicle_type: transfer.vehicle || transfer.vehicleType || null,
             route_description: transfer.routeDescription || null,
             price: transfer.price !== undefined ? transfer.price : 0,
-            currency: transfer.currency || 'TRY'
+            currency: transfer.currency || 'TRY',
+          vat: transfer.vat,
+            category: transfer.categoryId || null,
+            sub_category: transfer.subCategoryId || null,
+            vat: typeof transfer.vat === 'number' ? transfer.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2556,7 +2579,11 @@ export class SejourService {
             service_description: service.description || service.serviceDescription || null,
           date: service.date || null,
             price: service.price !== undefined ? service.price : 0,
-            currency: service.currency || 'TRY'
+            currency: service.currency || 'TRY',
+          vat: service.vat,
+            category: service.categoryId || null,
+            sub_category: service.subCategoryId || null,
+            vat: typeof service.vat === 'number' ? service.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -4691,54 +4718,66 @@ export const invoicesService = {
       const price = Number(r.total_price || r.price || 0);
       if (price <= 0) return;
       const proj = sejoursMap[r.sejour_id] || null;
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
-        category_name: 'Konaklama / Otel',
+        category_name: cat.name || 'Konaklama / Otel',
         description: r.accommodation_type || r.room_type || '',
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: 8,
-        project: proj
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 8),
+        project: proj,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
     (sejourFlightsRes.data || []).forEach(r => {
       const price = Number(r.total_price || r.price || 0);
       if (price <= 0) return;
       const proj = sejoursMap[r.sejour_id] || null;
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
-        category_name: 'Uçak Bileti',
+        category_name: cat.name || 'Uçak Bileti',
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → ') + (r.pnr ? ' | PNR: ' + r.pnr : ''),
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: 0,
-        project: proj
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 0),
+        project: proj,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
     (sejourTransfersRes.data || []).forEach(r => {
       const price = Number(r.price || 0);
       if (price <= 0) return;
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
-        category_name: 'Transfer',
+        category_name: cat.name || 'Transfer',
         description: r.direction || '',
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: 20,
-        project: sejoursMap[r.sejour_id] || null
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 20),
+        project: sejoursMap[r.sejour_id] || null,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
     (sejourExtraRes.data || []).forEach(r => {
       const price = Number(r.price || 0);
       if (price <= 0) return;
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
-        category_name: 'Ekstra Servis',
+        category_name: cat.name || 'Ekstra Servis',
         description: r.service_description || r.description || '',
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: 20,
-        project: sejoursMap[r.sejour_id] || null
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 20),
+        project: sejoursMap[r.sejour_id] || null,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
 
@@ -4971,11 +5010,13 @@ export const invoicesService = {
       const hotelName = roomHotelName || headerHotelName;
       const supplierName = r.supplier_id ? suppliersMap[r.supplier_id]?.name : null;
 
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
-        category_name: 'Konaklama / Otel Maliyeti',
+        category_name: cat.name || 'Konaklama / Otel Maliyeti',
         description: r.accommodation_type || r.room_type || '',
-        total_price: price, currency: r.cost_currency || 'TRY', vat_rate: 8,
+        total_price: price, currency: r.cost_currency || 'TRY',
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 8),
         project: proj
           ? {
               ...proj,
@@ -4984,7 +5025,9 @@ export const invoicesService = {
             }
           : null,
         supplier_id: r.supplier_id || null,
-        supplier_name: supplierName || '-'
+        supplier_name: supplierName || '-',
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
     (sejourFlightsRes.data || []).forEach((r: any) => {
@@ -4998,11 +5041,13 @@ export const invoicesService = {
         (r.airline_id ? agenciesMap[r.airline_id]?.name : null) ||
         (r.airline ? String(r.airline).trim() : null);
 
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
-        category_name: 'Uçak Bileti Maliyeti',
+        category_name: cat.name || 'Uçak Bileti Maliyeti',
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → '),
-        total_price: price, currency: r.cost_currency || 'TRY', vat_rate: 0,
+        total_price: price, currency: r.cost_currency || 'TRY',
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 0),
         project: proj
           ? {
               ...proj,
@@ -5011,7 +5056,9 @@ export const invoicesService = {
             }
           : null,
         supplier_name: vendorName || 'Havayolu/Tedarikçi Seçilmedi',
-        supplier_id: ticketSupplierId || null
+        supplier_id: ticketSupplierId || null,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
     (sejourTransfersRes.data || []).forEach((r: any) => {
@@ -5021,13 +5068,17 @@ export const invoicesService = {
       const supplierName = r.supplier_id ? suppliersMap[r.supplier_id]?.name : null;
       const proj = sejoursMap[r.sejour_id] || null;
 
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
-        id: r.id, sejour_id: r.sejour_id, category_name: 'Transfer Maliyeti',
+        id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Transfer Maliyeti',
         description: r.direction || '',
-        total_price: price, currency: r.cost_currency || 'TRY', vat_rate: 20,
+        total_price: price, currency: r.cost_currency || 'TRY',
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Transfer Tedarikçisi Seçilmedi' } : null,
         supplier_name: supplierName || 'Transfer Tedarikçisi Seçilmedi',
-        supplier_id: r.supplier_id || null
+        supplier_id: r.supplier_id || null,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
     (sejourExtraRes.data || []).forEach((r: any) => {
@@ -5037,13 +5088,17 @@ export const invoicesService = {
       const supplierName = r.supplier_id ? suppliersMap[r.supplier_id]?.name : null;
       const proj = sejoursMap[r.sejour_id] || null;
 
+      const cat = categoriesMap[r.category] || {};
       sejourItems.push({
-        id: r.id, sejour_id: r.sejour_id, category_name: 'Ekstra Servis Maliyeti',
+        id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Ekstra Servis Maliyeti',
         description: r.service_description || r.description || '',
-        total_price: price, currency: r.cost_currency || 'TRY', vat_rate: 20,
+        total_price: price, currency: r.cost_currency || 'TRY',
+        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Tedarikçi Seçilmedi' } : null,
         supplier_name: supplierName || 'Tedarikçi Seçilmedi',
-        supplier_id: r.supplier_id || null
+        supplier_id: r.supplier_id || null,
+        category_id: r.category || null,
+        sub_category_id: r.sub_category || null
       });
     });
 
