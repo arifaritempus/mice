@@ -211,6 +211,7 @@ interface FlightInfo {
   // Alış maliyeti için yeni alanlar
   costPrice?: number;
   costCurrency?: string;
+  vat?: number; // Added for VAT
 }
 
 interface TransferInfo {
@@ -228,6 +229,7 @@ interface TransferInfo {
   // Alış maliyeti için yeni alanlar
   costPrice?: number;
   costCurrency?: string;
+  vat?: number; // Added for VAT
 }
 
 interface ExtraService {
@@ -244,6 +246,7 @@ interface ExtraService {
   // Alış maliyeti için alanlar (sadece alış tab'ında kullanılır)
   costPrice?: number;
   costCurrency?: string;
+  vat?: number; // Added for VAT
 }
 
 interface Collection {
