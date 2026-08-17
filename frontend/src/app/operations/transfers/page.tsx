@@ -1294,19 +1294,19 @@ export default function TransfersPage() {
           const items = supplierGroups[supplier][dirKey];
           if (items.length === 0) return;
           
-          const headerRow = sheet.addRow([`${dateFormatted} - Belirtilmemiş\n${typeTitles[dirKey]}`]);
+          const headerRow = sheet.addRow([`${dateFormatted} - ${supplier}\n${typeTitles[dirKey]}`]);
           headerRow.height = 40;
           sheet.mergeCells(`A${currentRow}:P${currentRow}`);
           headerRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
           headerRow.getCell(1).font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 12 };
-          headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } };
+          headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
           currentRow++;
 
           const colRow = sheet.addRow(headers);
           colRow.height = 25;
           colRow.eachCell((cell) => {
              cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 10 };
-             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } };
+             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
              cell.alignment = { horizontal: 'center', vertical: 'middle' };
              cell.border = {
                top: { style: 'thin', color: { argb: 'FF4B5563' } },
