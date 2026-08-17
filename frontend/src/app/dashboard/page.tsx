@@ -1052,6 +1052,9 @@ export default function UltimateDashboard() {
     });
 
     data.sejours.forEach((s: any) => {
+      const status = (s.status || "").toUpperCase();
+      if (status === "İPTAL" || status === "CANCELLED") return;
+      
       const hotel = s.hotelName || s.hotel_name || s.rooms?.[0]?.hotelName || s.hotels?.name || getHotelName(s.hotel_id, "-");
       const acente = s.agencyName || s.agencies?.name || s.agency_name || "-";
       const sd = s.checkInDate || s.check_in_date || s.created_at;

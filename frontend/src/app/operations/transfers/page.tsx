@@ -13,6 +13,8 @@ import {
 import Link from "next/link";
 import DatePicker from "react-datepicker";
 import { createPortal } from "react-dom";
+import { Menu, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 import {
   format as formatDateFns,
   parse as parseDateFns,
@@ -1234,6 +1236,149 @@ export default function TransfersPage() {
     }
   };
 
+
+  // Tedarikçi Excel Export Fonksiyonu
+  const exportTransfersToSupplierExcel = async () => {
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const workbook = new ExcelJS.Workbook();
+      
+      const supplierGroups = {};
+      filteredTransfers.forEach((t: any) => {
+        const sup = t.provider_name || "Belirtilmemiş Tedarikçi";
+        if (!supplierGroups[sup]) supplierGroups[sup] = { arrival: [], inter: [], return: [] };
+        
+        let type = t.transfer_type || t.direction || 'inter';
+        if (type === 'arrival' || type === 'Giriş Transferi') type = 'arrival';
+        else if (type === 'return' || type === 'Çıkış Transferi') type = 'return';
+        else type = 'inter';
+        
+        supplierGroups[sup][type].push(t);
+      });
+      
+      const typeTitles = {
+        arrival: 'GİRİŞ TRANSFERLERİ',
+        inter: 'ARA TRANSFERLER',
+        return: 'ÇIKIŞ TRANSFERLERİ'
+      };
+
+      for (const supplier of Object.keys(supplierGroups).sort()) {
+        const sheetName = supplier.substring(0, 31).replace(/[\\/?*\[\]]/g, '');
+        const sheet = workbook.addWorksheet(sheetName);
+        
+        sheet.pageSetup = {
+          orientation: "landscape",
+          fitToPage: true,
+          fitToWidth: 1,
+          fitToHeight: 0,
+          horizontalCentered: true,
+          paperSize: 9,
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.1, footer: 0.1 },
+        };
+
+        const dateFormatted = dateRange.startDate ? formatDate(dateRange.startDate) : formatDate(new Date().toISOString());
+
+        // Header definitions
+        const headers = [
+          "Referans", "Tarih", "Transfer Saati", "Uçuş Kodu", "TÜR", "C-IN / C-OUT", "FİRMA ADI",
+          "Otel", "TEDARİKÇİ", "Transfer Güzergahı", "Transfer Tipi", "Araç Tipi",
+          "Yolcu", "Misafir Adı", "Maliyet", "Döviz"
+        ];
+        
+        const colWidths = [18, 12, 14, 14, 10, 24, 20, 25, 20, 25, 14, 12, 8, 30, 15, 8];
+        sheet.columns = colWidths.map(w => ({ width: w }));
+
+        let currentRow = 1;
+
+        ["arrival", "inter", "return"].forEach((dirKey) => {
+          const items = supplierGroups[supplier][dirKey];
+          if (items.length === 0) return;
+          
+          const headerRow = sheet.addRow([`${dateFormatted} - Belirtilmemiş\n${typeTitles[dirKey]}`]);
+          headerRow.height = 40;
+          sheet.mergeCells(`A${currentRow}:P${currentRow}`);
+          headerRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+          headerRow.getCell(1).font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 12 };
+          headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } };
+          currentRow++;
+
+          const colRow = sheet.addRow(headers);
+          colRow.height = 25;
+          colRow.eachCell((cell) => {
+             cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 10 };
+             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } };
+             cell.alignment = { horizontal: 'center', vertical: 'middle' };
+             cell.border = {
+               top: { style: 'thin', color: { argb: 'FF4B5563' } },
+               left: { style: 'thin', color: { argb: 'FF4B5563' } },
+               bottom: { style: 'thin', color: { argb: 'FF4B5563' } },
+               right: { style: 'thin', color: { argb: 'FF4B5563' } }
+             };
+          });
+          currentRow++;
+
+          items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          
+          items.forEach((t: any) => {
+            const trDate = parseISO(t.date);
+            const dateStr = isValidDate(trDate) ? formatDateFns(trDate, "dd.MM.yyyy") : t.date;
+            const ref = t.sejour_voucher || t.project_code || "-";
+            const flightCode = t.flight_code || "";
+            const timeStr = t.time?.substring(0, 5) || "";
+            const tur = t.source === 'Sejour' ? 'Sejour' : 'MICE';
+            const cin = t.check_in_date ? formatDateFns(parseISO(t.check_in_date), "dd.MM.yyyy") : "-";
+            const cout = t.check_out_date ? formatDateFns(parseISO(t.check_out_date), "dd.MM.yyyy") : "-";
+            const cInOut = `${cin} / ${cout}`;
+            const comp = t.customer_name || t.company_name || "-";
+            const htl = t.hotel_name || t.hotel_name_custom || "-";
+            const ted = t.provider_name || "-";
+            const route = t.route_description || "-";
+            const tType = t.vehicle_is_private ? "Özel" : "Grup";
+            const vType = t.vehicle_type_name || "-";
+            const pax = t.pax || 0;
+            const notes = t.notes || t.guest_names || "";
+            const cost = t.cost_price || 0;
+            const curr = t.cost_currency || "TRY";
+
+            const row = sheet.addRow([
+              ref, dateStr, timeStr, flightCode, tur, cInOut, comp, htl, ted, route, tType, vType, pax, notes, cost, curr
+            ]);
+            
+            row.eachCell((cell, colNumber) => {
+              cell.alignment = { vertical: 'middle', horizontal: colNumber >= 15 ? 'right' : colNumber === 13 ? 'center' : 'left' };
+              cell.border = {
+                 top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+                 left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+                 bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+                 right: { style: 'thin', color: { argb: 'FFD1D5DB' } }
+              };
+              if (colNumber === 15 || colNumber === 16) {
+                  if(colNumber === 15) cell.numFmt = '#,##0.00';
+              }
+            });
+            currentRow++;
+          });
+        });
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `tedarik_transferler_${new Date().toISOString().split("T")[0]}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      setSuccess("Tedarikçi Excel dosyası olarak indirildi!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error("Excel export hatası:", error);
+      setError("Excel dosyası oluşturulurken bir hata oluştu!");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
   // Filtreleri temizleme fonksiyonu - Transfers sayfası için
   const clearTransfersFilters = () => {
     setFilter("all");
@@ -1511,27 +1656,51 @@ export default function TransfersPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 border-l border-v3-border pl-3">
-              <button
-                type="button"
-                onClick={exportTransfersToExcel}
-                className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
-                title={t('transfers.exportExcel') || "Excel İndir"}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <Menu as="div" className="relative inline-block text-left">
+                <Menu.Button className="bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] px-4 h-10 rounded-xl transition-all duration-300 text-[11px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-50">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {t('transfers.exportExcel') || "Excel İndir"}
+                  <svg className="-mr-1 ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </Menu.Button>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                {t('transfers.exportExcel') || "Excel İndir"}
-              </button>
+                  <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                    <div className="px-1 py-1 ">
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={exportTransfersToExcel}
+                            className={`${active ? 'bg-green-500 text-white' : 'text-gray-900 dark:text-gray-100'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                          >
+                            Genel Excel
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={exportTransfersToSupplierExcel}
+                            className={`${active ? 'bg-green-500 text-white' : 'text-gray-900 dark:text-gray-100'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                          >
+                            Tedarikçi Excel
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </div>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
             </div>
           </div>
         </div>
