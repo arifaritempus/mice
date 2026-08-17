@@ -2374,7 +2374,6 @@ export class SejourService {
         vat: room.vat,
             category: room.categoryId || null,
             sub_category: room.subCategoryId || null,
-            vat: typeof room.vat === 'number' ? room.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2448,7 +2447,6 @@ export class SejourService {
           vat: flight.vat,
             category: flight.categoryId || null,
             sub_category: flight.subCategoryId || null,
-            vat: typeof flight.vat === 'number' ? flight.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2510,7 +2508,6 @@ export class SejourService {
           vat: transfer.vat,
             category: transfer.categoryId || null,
             sub_category: transfer.subCategoryId || null,
-            vat: typeof transfer.vat === 'number' ? transfer.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
@@ -2583,7 +2580,6 @@ export class SejourService {
           vat: service.vat,
             category: service.categoryId || null,
             sub_category: service.subCategoryId || null,
-            vat: typeof service.vat === 'number' ? service.vat : null
           };
 
           // Maliyet bilgileri (kolonlar varsa ekle - değer varsa veya 0 ise de ekle)
