@@ -142,9 +142,15 @@ export default function HomePage() {
 
       const sejoursRaw =
         sejoursRes.status === "fulfilled" ? sejoursRes.value : [];
-      const sejours = Array.isArray(sejoursRaw)
+      let sejours = Array.isArray(sejoursRaw)
         ? sejoursRaw
         : (sejoursRaw as any).data || [];
+        
+      // Filter out cancelled sejours from the home dashboard
+      sejours = sejours.filter((s: any) => {
+        const st = (s.status || "").toUpperCase();
+        return !st.includes("İPTAL") && !st.includes("IPTAL") && !st.includes("CANCEL");
+      });
 
       const sejourFlights = sejours.flatMap((s: any) => {
         if (Array.isArray(s.sejour_flights)) {
