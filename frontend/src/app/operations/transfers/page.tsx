@@ -1245,12 +1245,12 @@ export default function TransfersPage() {
       
       const supplierGroups = {};
       filteredTransfers.forEach((t: any) => {
-        const sup = t.provider_name || "Belirtilmemiş Tedarikçi";
+        const sup = t.supplier_name || "Belirtilmemiş Tedarikçi";
         if (!supplierGroups[sup]) supplierGroups[sup] = { arrival: [], inter: [], return: [] };
         
-        let type = t.transfer_type || t.direction || 'inter';
-        if (type === 'arrival' || type === 'Giriş Transferi') type = 'arrival';
-        else if (type === 'return' || type === 'Çıkış Transferi') type = 'return';
+        let type = t.direction || t.transfer_type || 'inter';
+        if (type === 'arrival' || type === 'Giriş Transferi' || type === 'airport_hotel') type = 'arrival';
+        else if (type === 'return' || type === 'Çıkış Transferi' || type === 'hotel_airport') type = 'return';
         else type = 'inter';
         
         supplierGroups[sup][type].push(t);
@@ -1317,28 +1317,44 @@ export default function TransfersPage() {
           });
           currentRow++;
 
-          items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          items.sort((a, b) => {
+            const dateA = a.transfer_date ? new Date(a.transfer_date).getTime() : 0;
+            const dateB = b.transfer_date ? new Date(b.transfer_date).getTime() : 0;
+            return dateA - dateB;
+          });
           
           items.forEach((t: any) => {
-            const trDate = parseISO(t.date);
-            const dateStr = isValidDate(trDate) ? formatDateFns(trDate, "dd.MM.yyyy") : t.date;
-            const ref = t.sejour_voucher || t.project_code || "-";
-            const flightCode = t.flight_code || "";
-            const timeStr = t.time?.substring(0, 5) || "";
-            const tur = t.source === 'Sejour' ? 'Sejour' : 'MICE';
+            const dateStr = t.transfer_date ? formatDateFns(parseISO(t.transfer_date), "dd.MM.yyyy") : "-";
+            const ref = t.reference || "-";
+            const flightCode = t.flight_info?.flight_number || t.flight_code || "";
+            const timeStr = t.transfer_time?.substring(0, 5) || "";
+            const tur = t.project_type === "mice" ? "MICE" : "Sejour";
+            
             const cin = t.check_in_date ? formatDateFns(parseISO(t.check_in_date), "dd.MM.yyyy") : "-";
             const cout = t.check_out_date ? formatDateFns(parseISO(t.check_out_date), "dd.MM.yyyy") : "-";
-            const cInOut = `${cin} / ${cout}`;
-            const comp = t.customer_name || t.company_name || "-";
-            const htl = t.hotel_name || t.hotel_name_custom || "-";
-            const ted = t.provider_name || "-";
-            const route = t.route_description || "-";
-            const tType = t.vehicle_is_private ? "Özel" : "Grup";
-            const vType = t.vehicle_type_name || "-";
-            const pax = t.pax || 0;
-            const notes = t.notes || t.guest_names || "";
-            const cost = t.cost_price || 0;
-            const curr = t.cost_currency || "TRY";
+            const cInOut = (cin === "-" && cout === "-") ? "-" : `${cin} / ${cout}`;
+            
+            const comp = t.company_name || t.customer_name || "-";
+            const htl = t.hotels_data && t.hotels_data.length > 0 
+                ? t.hotels_data.map((h: any) => h.hotel_name || h.hotels?.name || '').join(", ") 
+                : (t.hotel_name || "-");
+            const ted = t.supplier_name || "-";
+            
+            let route = t.transfer_type === "airport_hotel" ? "Havaalanı → Otel" 
+                : t.transfer_type === "hotel_airport" ? "Otel → Havaalanı" 
+                : t.transfer_type === "hotel_hotel" ? "Otel → Otel" 
+                : t.transfer_type === "airport_airport" ? "Havaalanı → Havaalanı" 
+                : t.route_description || "-";
+                
+            let tType = t.service_type === "private" ? "Özel" 
+                : t.service_type === "economic" ? "Ekonomik" 
+                : (t.vehicle_is_private ? "Özel" : "Grup");
+                
+            const vType = t.vehicle_type || t.vehicle_type_name || "-";
+            const pax = t.passenger_count || t.pax || 0;
+            const notes = t.notes ? t.notes.replace("Misafirler: ", "") : t.guest_names || "";
+            const cost = Number(t.total_amount || t.cost_price || 0);
+            const curr = t.currency || t.cost_currency || "TRY";
 
             const row = sheet.addRow([
               ref, dateStr, timeStr, flightCode, tur, cInOut, comp, htl, ted, route, tType, vType, pax, notes, cost, curr
