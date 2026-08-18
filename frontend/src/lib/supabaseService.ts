@@ -4104,13 +4104,8 @@ export const invoicesService = {
 
     // Fetch final metadata for collected IDs
     const [
-      agenciesRes, hotelsRes, suppliersRes,
-      projectsRes, sejoursRes,
-      categoriesRes
+      projectsRes, sejoursRes, categoriesRes
     ] = await Promise.all([
-      contactIds.length ? supabase.from('agencies').select('id, name').in('id', contactIds) : Promise.resolve({ data: [] }),
-      contactIds.length ? supabase.from('hotels').select('id, name').in('id', contactIds) : Promise.resolve({ data: [] }),
-      contactIds.length ? supabase.from('suppliers').select('id, name').in('id', contactIds) : Promise.resolve({ data: [] }),
       pIdArray.length 
         ? supabase.from('projects').select('id, title, company_name, description, quote_type, agency_id, hotel_id, start_date, end_date').in('id', pIdArray)
         : Promise.resolve({ data: [] }),
@@ -4118,6 +4113,22 @@ export const invoicesService = {
         ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date').in('id', sIdArray)
         : Promise.resolve({ data: [] }),
       supabase.from('categories').select('*')
+    ]);
+
+    // Update contactIds with project and sejour contacts
+    const allContactIds = Array.from(new Set([
+      ...contactIds,
+      ...(projectsRes.data || []).map((p: any) => p.agency_id).filter(Boolean),
+      ...(projectsRes.data || []).map((p: any) => p.hotel_id).filter(Boolean),
+      ...(sejoursRes.data || []).map((s: any) => s.agency_id).filter(Boolean),
+      ...(sejoursRes.data || []).map((s: any) => s.hotel_id).filter(Boolean)
+    ]));
+
+    // Fetch contacts
+    const [agenciesRes, hotelsRes, suppliersRes] = await Promise.all([
+      allContactIds.length ? supabase.from('agencies').select('id, name').in('id', allContactIds) : Promise.resolve({ data: [] }),
+      allContactIds.length ? supabase.from('hotels').select('id, name').in('id', allContactIds) : Promise.resolve({ data: [] }),
+      allContactIds.length ? supabase.from('suppliers').select('id, name').in('id', allContactIds) : Promise.resolve({ data: [] })
     ]);
 
     // Build lookup maps
@@ -4416,27 +4427,64 @@ export const invoicesService = {
         salesRes, purchaseRes, categoriesRes,
         sRooms, sFlights, sTransfers, sExtras
       ] = await Promise.all([
-        supabase.from('project_sales_items').select('id, category, sub_category, description').in('id', itemIds),
-        supabase.from('project_purchase_items').select('id, category, sub_category, description').in('id', itemIds),
+        supabase.from('project_sales_items').select('id, category, sub_category, description, project_id').in('id', itemIds),
+        supabase.from('project_purchase_items').select('id, category, sub_category, description, project_id').in('id', itemIds),
         supabase.from('categories').select('id, name, sort_order'),
-        supabase.from('sejour_rooms').select('id').in('id', itemIds),
-        supabase.from('sejour_flights').select('id').in('id', itemIds),
-        supabase.from('sejour_transfers').select('id').in('id', itemIds),
-        supabase.from('sejour_extra_services').select('id').in('id', itemIds)
+        supabase.from('sejour_rooms').select('id, sejour_id').in('id', itemIds),
+        supabase.from('sejour_flights').select('id, sejour_id').in('id', itemIds),
+        supabase.from('sejour_transfers').select('id, sejour_id').in('id', itemIds),
+        supabase.from('sejour_extra_services').select('id, sejour_id').in('id', itemIds)
       ]);
+
+      const projectIds = new Set<string>();
+      const sejourIds = new Set<string>();
+      (salesRes.data || []).forEach((r: any) => r.project_id && projectIds.add(r.project_id));
+      (purchaseRes.data || []).forEach((r: any) => r.project_id && projectIds.add(r.project_id));
+      (sRooms.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
+      (sFlights.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
+      (sTransfers.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
+      (sExtras.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
+
+      const [projectsRes, sejoursRes] = await Promise.all([
+        projectIds.size ? supabase.from('projects').select('id, quote_type, company_name, agency_id').in('id', Array.from(projectIds)) : Promise.resolve({ data: [] }),
+        sejourIds.size ? supabase.from('sejours').select('id, customer_name, agency_id').in('id', Array.from(sejourIds)) : Promise.resolve({ data: [] })
+      ]);
+
+      const agencyIds = new Set<string>();
+      (projectsRes.data || []).forEach((p: any) => p.agency_id && agencyIds.add(p.agency_id));
+      (sejoursRes.data || []).forEach((s: any) => s.agency_id && agencyIds.add(s.agency_id));
+      const agenciesRes = agencyIds.size ? await supabase.from('agencies').select('id, name').in('id', Array.from(agencyIds)) : { data: [] };
+      const agencyMap: Record<string, string> = {};
+      (agenciesRes.data || []).forEach((a: any) => { agencyMap[a.id] = a.name; });
+
+      const projectsMap: Record<string, any> = {};
+      (projectsRes.data || []).forEach((p: any) => {
+        projectsMap[p.id] = {
+          ...p,
+          company_name: p.quote_type === 'MICE' ? (p.company_name || '') : (p.agency_id ? agencyMap[p.agency_id] : p.company_name || '')
+        };
+      });
+
+      const sejoursMap: Record<string, any> = {};
+      (sejoursRes.data || []).forEach((s: any) => {
+        sejoursMap[s.id] = {
+           quote_type: 'SEJOUR',
+           company_name: (s.agency_id ? agencyMap[s.agency_id] : s.customer_name) || 'Bilinmiyor'
+        };
+      });
 
       // Kategori map
       const categoriesMap: Record<string, any> = {};
       (categoriesRes.data || []).forEach((c: any) => { categoriesMap[c.id] = c; });
 
       // Kaynak kalem → kategori map
-      const sourceMap: Record<string, { category: string; sub_category: string; description: string, isStatic?: boolean, staticCat?: string, staticSub?: string }> = {};
-      (salesRes.data || []).forEach((s: any) => { sourceMap[s.id] = { category: s.category, sub_category: s.sub_category, description: s.description }; });
-      (purchaseRes.data || []).forEach((p: any) => { sourceMap[p.id] = { category: p.category, sub_category: p.sub_category, description: p.description }; });
-      (sRooms.data || []).forEach((r: any) => { sourceMap[r.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'KONAKLAMA' }; });
-      (sFlights.data || []).forEach((f: any) => { sourceMap[f.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'UÇAK BİLETİ' }; });
-      (sTransfers.data || []).forEach((t: any) => { sourceMap[t.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'TRANSFER' }; });
-      (sExtras.data || []).forEach((e: any) => { sourceMap[e.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'EKSTRA SERVİS' }; });
+      const sourceMap: Record<string, { category: string; sub_category: string; description: string, isStatic?: boolean, staticCat?: string, staticSub?: string, project_id?: string, sejour_id?: string }> = {};
+      (salesRes.data || []).forEach((s: any) => { sourceMap[s.id] = { category: s.category, sub_category: s.sub_category, description: s.description, project_id: s.project_id }; });
+      (purchaseRes.data || []).forEach((p: any) => { sourceMap[p.id] = { category: p.category, sub_category: p.sub_category, description: p.description, project_id: p.project_id }; });
+      (sRooms.data || []).forEach((r: any) => { sourceMap[r.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'KONAKLAMA', sejour_id: r.sejour_id }; });
+      (sFlights.data || []).forEach((f: any) => { sourceMap[f.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'UÇAK BİLETİ', sejour_id: f.sejour_id }; });
+      (sTransfers.data || []).forEach((t: any) => { sourceMap[t.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'TRANSFER', sejour_id: t.sejour_id }; });
+      (sExtras.data || []).forEach((e: any) => { sourceMap[e.id] = { category: '', sub_category: '', description: '', isStatic: true, staticCat: 'SEJOUR', staticSub: 'EKSTRA SERVİS', sejour_id: e.sejour_id }; });
 
       enrichedItems = invoiceItems.map((ii: any) => {
         const source = sourceMap[ii.item_id];
@@ -4469,12 +4517,15 @@ export const invoicesService = {
            subCategoryName = ii.description;
         }
 
+        const projectObj = source?.project_id ? projectsMap[source.project_id] : (source?.sejour_id ? sejoursMap[source.sejour_id] : null);
+
         return {
           ...ii,
           category_name: categoryName,
           category_sort_order: catSort,
           sub_category_name: subCategoryName,
-          sub_category_sort_order: subCatSort
+          sub_category_sort_order: subCatSort,
+          project: projectObj
         };
       });
     }
