@@ -2200,7 +2200,7 @@ export default function ProjectDetailPage() {
           .filter(
             (it) =>
               it.id &&
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
                 String(it.id),
               ),
           )
@@ -2215,7 +2215,7 @@ export default function ProjectDetailPage() {
         // Yeni kalemleri ekle veya güncelle
         for (const item of items) {
           const isUUID =
-            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
               String(item.id),
             );
           const payload = {
@@ -3140,7 +3140,7 @@ export default function ProjectDetailPage() {
         setAccommodationItems(updatedItems);
 
         // 2. Arka planda sadece tek satırı kaydet (Tüm listeyi sunucuya gönderip bekletmek yerine)
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(updatedItem.id));
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(updatedItem.id));
         const payload = {
           project_id: projectId,
           hotel_id: updatedItem.hotel_id || (activeHotelId !== "all" && activeHotelId !== "general" ? activeHotelId : null),
@@ -3251,7 +3251,7 @@ export default function ProjectDetailPage() {
             // DB'den sil (gerçek UUID kontrolü ile)
             if (
               item.id &&
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
                 String(item.id),
               )
             ) {
