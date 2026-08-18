@@ -4700,7 +4700,7 @@ export const invoicesService = {
         sub_category_name: subCategoryName,
         description: cleanDescription(item.description),
         // Kategori tanımında KDV varsa onu kullan, yoksa kalemdeki KDV'yi kullan
-        vat_rate: (item.vat !== null && item.vat !== undefined) ? item.vat : (subCat.revenue_vat_rate ?? cat.revenue_vat_rate ?? 0),
+        vat_rate: item.vat ? item.vat : (subCat.revenue_vat_rate ?? cat.revenue_vat_rate ?? 0),
         project: proj,
         invoiced_amount: invoicedAmount,
         balance: balance
@@ -4721,7 +4721,7 @@ export const invoicesService = {
         description: r.accommodation_type || r.room_type || '',
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 8),
+        vat_rate: r.vat ? r.vat : (cat.revenue_vat_rate ?? 8),
         project: proj,
         category_id: r.category || null,
         sub_category_id: r.sub_category || null
@@ -4738,7 +4738,7 @@ export const invoicesService = {
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → ') + (r.pnr ? ' | PNR: ' + r.pnr : ''),
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 0),
+        vat_rate: r.vat ? r.vat : (cat.revenue_vat_rate ?? 0),
         project: proj,
         category_id: r.category || null,
         sub_category_id: r.sub_category || null
@@ -4754,7 +4754,7 @@ export const invoicesService = {
         description: r.direction || '',
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 20),
+        vat_rate: r.vat ? r.vat : (cat.revenue_vat_rate ?? 20),
         project: sejoursMap[r.sejour_id] || null,
         category_id: r.category || null,
         sub_category_id: r.sub_category || null
@@ -4770,7 +4770,7 @@ export const invoicesService = {
         description: r.service_description || r.description || '',
         total_price: price,
         currency: r.currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.revenue_vat_rate ?? 20),
+        vat_rate: r.vat ? r.vat : (cat.revenue_vat_rate ?? 20),
         project: sejoursMap[r.sejour_id] || null,
         category_id: r.category || null,
         sub_category_id: r.sub_category || null
@@ -4982,7 +4982,7 @@ export const invoicesService = {
         sub_category_name: subCategoryName,
         description: cleanDescription(item.description),
         // Kategori tanımında KDV varsa onu kullan, yoksa kalemdeki KDV'yi kullan
-        vat_rate: (item.vat !== null && item.vat !== undefined) ? item.vat : (subCat.expense_vat_rate ?? cat.expense_vat_rate ?? 0),
+        vat_rate: item.vat ? item.vat : (subCat.expense_vat_rate ?? cat.expense_vat_rate ?? 0),
         supplier_id: outSupplierId,
         hotel_id: outHotelId,
         project: proj, // Do not override company_name to keep the actual customer name
@@ -5012,7 +5012,7 @@ export const invoicesService = {
         category_name: cat.name || 'Konaklama / Otel Maliyeti',
         description: r.accommodation_type || r.room_type || '',
         total_price: price, currency: r.cost_currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 8),
+        vat_rate: r.vat ? r.vat : (cat.expense_vat_rate ?? 8),
         project: proj
           ? {
               ...proj,
@@ -5043,7 +5043,7 @@ export const invoicesService = {
         category_name: cat.name || 'Uçak Bileti Maliyeti',
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → '),
         total_price: price, currency: r.cost_currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 0),
+        vat_rate: r.vat ? r.vat : (cat.expense_vat_rate ?? 0),
         project: proj
           ? {
               ...proj,
@@ -5069,7 +5069,7 @@ export const invoicesService = {
         id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Transfer Maliyeti',
         description: r.direction || '',
         total_price: price, currency: r.cost_currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 20),
+        vat_rate: r.vat ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Transfer Tedarikçisi Seçilmedi' } : null,
         supplier_name: supplierName || 'Transfer Tedarikçisi Seçilmedi',
         supplier_id: r.supplier_id || null,
@@ -5089,7 +5089,7 @@ export const invoicesService = {
         id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Ekstra Servis Maliyeti',
         description: r.service_description || r.description || '',
         total_price: price, currency: r.cost_currency || 'TRY',
-        vat_rate: (r.vat !== null && r.vat !== undefined) ? r.vat : (cat.expense_vat_rate ?? 20),
+        vat_rate: r.vat ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Tedarikçi Seçilmedi' } : null,
         supplier_name: supplierName || 'Tedarikçi Seçilmedi',
         supplier_id: r.supplier_id || null,
