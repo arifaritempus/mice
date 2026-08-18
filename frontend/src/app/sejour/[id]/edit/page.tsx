@@ -1727,7 +1727,7 @@ export default function EditSejourPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(room.id)} />
+                                <input disabled={salesData.isInternational || invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)} type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1861,7 +1861,7 @@ export default function EditSejourPage() {
                               </div>
 <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(flight.id)} />
+                                <input disabled={salesData.isInternational || invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)} type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1988,7 +1988,7 @@ export default function EditSejourPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(transfer.id)} />
+                                <input disabled={salesData.isInternational || invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)} type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-purple-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -2100,7 +2100,7 @@ export default function EditSejourPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input disabled={invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)}  type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(service.id)} />
+                                <input disabled={salesData.isInternational || invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)} type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-orange-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
