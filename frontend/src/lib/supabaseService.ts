@@ -4087,16 +4087,21 @@ export const invoicesService = {
     const projectIds = new Set<string>();
     const sejourIds = new Set<string>();
     
+    // We must track which item_id maps to which project_id / sejour_id
+    // because invoiceMetadata is built per invoice item
+    const itemToSejourMap: Record<string, string> = {};
+    
     (salesItemsRes.data || []).forEach((si: any) => si.project_id && projectIds.add(si.project_id));
     (purchaseItemsRes.data || []).forEach((pi: any) => pi.project_id && projectIds.add(pi.project_id));
-    (sRooms.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
-    (sFlights.data || []).forEach((f: any) => f.sejour_id && sejourIds.add(f.sejour_id));
-    (sTransfers.data || []).forEach((t: any) => t.sejour_id && sejourIds.add(t.sejour_id));
-    (sExtras.data || []).forEach((e: any) => e.sejour_id && sejourIds.add(e.sejour_id));
+    
+    (sRooms.data || []).forEach((r: any) => { if(r.sejour_id) { sejourIds.add(r.sejour_id); itemToSejourMap[r.id] = r.sejour_id; } });
+    (sFlights.data || []).forEach((f: any) => { if(f.sejour_id) { sejourIds.add(f.sejour_id); itemToSejourMap[f.id] = f.sejour_id; } });
+    (sTransfers.data || []).forEach((t: any) => { if(t.sejour_id) { sejourIds.add(t.sejour_id); itemToSejourMap[t.id] = t.sejour_id; } });
+    (sExtras.data || []).forEach((e: any) => { if(e.sejour_id) { sejourIds.add(e.sejour_id); itemToSejourMap[e.id] = e.sejour_id; } });
 
-    // For sejours, item_id might be the sejour_id itself
+    // For manual sejours, item_id might be the sejour_id itself
     itemIds.forEach((id: string) => {
-      if (!projectIds.has(id)) sejourIds.add(id);
+      if (!projectIds.has(id) && !itemToSejourMap[id]) sejourIds.add(id);
     });
 
     const pIdArray = Array.from(projectIds);
@@ -4218,7 +4223,8 @@ export const invoicesService = {
       if (invoiceMetadata[ii.invoice_id]) return;
       const projectId = itemToProjectMap[ii.item_id];
       const project = projectsMap[projectId];
-      const sejour = sejoursMap[ii.item_id] || sejoursMap[projectId];
+      const resolvedSejourId = itemToSejourMap[ii.item_id] || ii.item_id;
+      const sejour = sejoursMap[resolvedSejourId] || sejoursMap[projectId];
       if (project) {
         const isSejour = project.quote_type === 'SEJOUR';
         invoiceMetadata[ii.invoice_id] = {
@@ -4445,6 +4451,12 @@ export const invoicesService = {
       (sTransfers.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
       (sExtras.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
 
+      itemIds.forEach((id: string) => {
+        if (!projectIds.has(id) && !sourceMap[id]) {
+          sejourIds.add(id);
+        }
+      });
+
       const [projectsRes, sejoursRes] = await Promise.all([
         projectIds.size ? supabase.from('projects').select('id, quote_type, company_name, agency_id').in('id', Array.from(projectIds)) : Promise.resolve({ data: [] }),
         sejourIds.size ? supabase.from('sejours').select('id, customer_name, agency_id').in('id', Array.from(sejourIds)) : Promise.resolve({ data: [] })
@@ -4517,7 +4529,7 @@ export const invoicesService = {
            subCategoryName = ii.description;
         }
 
-        const projectObj = source?.project_id ? projectsMap[source.project_id] : (source?.sejour_id ? sejoursMap[source.sejour_id] : null);
+        const projectObj = source?.project_id ? projectsMap[source.project_id] : (source?.sejour_id ? sejoursMap[source.sejour_id] : (sejoursMap[ii.item_id] || projectsMap[ii.item_id] || null));
 
         return {
           ...ii,
