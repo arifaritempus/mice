@@ -1134,12 +1134,14 @@ export default function EditSejourPage() {
     onChange,
     placeholder,
     className = "",
+    disabled = false
   }: {
     options: { id: string; name: string }[];
     value: string;
     onChange: (id: string) => void;
     placeholder: string;
     className?: string;
+    disabled?: boolean;
   }) => {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
@@ -1679,11 +1681,11 @@ export default function EditSejourPage() {
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[1.5] lg:[&>*:nth-child(7)]:flex-[0.6] lg:[&>*:nth-child(8)]:flex-[1.2]">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">OTEL</label>
-                                <SearchableSelect options={hotels.map((h) => ({ id: h.id, name: h.name }))} value={room.hotelId || ""} onChange={(val) => updateRoom(room.id, "hotelId", val)} placeholder="Otel Seçiniz..." />
+                                <SearchableSelect disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  options={hotels.map((h) => ({ id: h.id, name: h.name }))} value={room.hotelId || ""} onChange={(val) => updateRoom(room.id, "hotelId", val)} placeholder="Otel Seçiniz..." />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">ODA TİPİ</label>
-                                <select value={room.roomType || ""} onChange={(e) => updateRoom(room.id, "roomType", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-blue-500 outline-none">
+                                <select disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  value={room.roomType || ""} onChange={(e) => updateRoom(room.id, "roomType", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-blue-500 outline-none">
                                   <option value="">Seçin</option>
                                   {roomTypes.map((type) => (
                                     <option key={type} value={type}>{type}</option>
@@ -1692,7 +1694,7 @@ export default function EditSejourPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KONAK. TİPİ</label>
-                                <select value={room.accommodationType || ""} onChange={(e) => updateRoom(room.id, "accommodationType", e.target.value)} className="w-full h-[36px] px-2 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-blue-500 outline-none">
+                                <select disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  value={room.accommodationType || ""} onChange={(e) => updateRoom(room.id, "accommodationType", e.target.value)} className="w-full h-[36px] px-2 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-blue-500 outline-none">
                                   <option value="">Seçin</option>
                                   <option value="SNG">SNG</option>
                                   <option value="DBL">DBL</option>
@@ -1704,28 +1706,28 @@ export default function EditSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">PAX (Y|Ç|B)</label>
                                 <div className="flex gap-0 items-center border border-gray-200 rounded-md overflow-hidden h-[36px]">
-                                  <input type="number" min="1" value={room.adultCount || 1} onChange={(e) => updateRoom(room.id, "adultCount", parseInt(e.target.value) || 1)} className="w-1/3 h-full text-center text-[11px] font-semibold outline-none focus:bg-blue-50" title="Yetişkin" />
+                                  <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="number" min="1" value={room.adultCount || 1} onChange={(e) => updateRoom(room.id, "adultCount", parseInt(e.target.value) || 1)} className="w-1/3 h-full text-center text-[11px] font-semibold outline-none focus:bg-blue-50" title="Yetişkin" />
                                   <div className="w-px h-4 bg-gray-200"></div>
-                                  <input type="number" min="0" value={room.childCount || 0} onChange={(e) => updateRoom(room.id, "childCount", parseInt(e.target.value) || 0)} className="w-1/3 h-full text-center text-[11px] font-semibold outline-none focus:bg-blue-50" title="Çocuk" />
+                                  <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="number" min="0" value={room.childCount || 0} onChange={(e) => updateRoom(room.id, "childCount", parseInt(e.target.value) || 0)} className="w-1/3 h-full text-center text-[11px] font-semibold outline-none focus:bg-blue-50" title="Çocuk" />
                                   <div className="w-px h-4 bg-gray-200"></div>
-                                  <input type="number" min="0" value={room.infantCount || 0} onChange={(e) => updateRoom(room.id, "infantCount", parseInt(e.target.value) || 0)} className="w-1/3 h-full text-center text-[11px] font-semibold outline-none focus:bg-blue-50" title="Bebek" />
+                                  <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="number" min="0" value={room.infantCount || 0} onChange={(e) => updateRoom(room.id, "infantCount", parseInt(e.target.value) || 0)} className="w-1/3 h-full text-center text-[11px] font-semibold outline-none focus:bg-blue-50" title="Bebek" />
                                 </div>
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">C-IN & C-OUT</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="date" value={room.checkIn || ""} onChange={(e) => updateRoom(room.id, "checkIn", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
+                                  <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="date" value={room.checkIn || ""} onChange={(e) => updateRoom(room.id, "checkIn", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                                   <span className="text-gray-400">-</span>
-                                  <input type="date" value={room.checkOut || ""} onChange={(e) => updateRoom(room.id, "checkOut", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
+                                  <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="date" value={room.checkOut || ""} onChange={(e) => updateRoom(room.id, "checkOut", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                                 </div>
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">MİSAFİR</label>
-                                <input type="text" placeholder="İsim Soyisim" value={room.guestInfo || ""} onChange={(e) => updateRoom(room.id, "guestInfo", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
+                                <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="text" placeholder="İsim Soyisim" value={room.guestInfo || ""} onChange={(e) => updateRoom(room.id, "guestInfo", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                                <input disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(room.id)} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1823,43 +1825,43 @@ export default function EditSejourPage() {
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1.5] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.2] lg:[&>*:nth-child(6)]:flex-[1] lg:[&>*:nth-child(7)]:flex-[1] lg:[&>*:nth-child(8)]:flex-[1.2] mt-4">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
-                                <input type="date" value={flight.flightDate || ""} onChange={(e) => updateFlight(flight.id, "flightDate", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="date" value={flight.flightDate || ""} onChange={(e) => updateFlight(flight.id, "flightDate", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">HAVAYOLU</label>
-                                <input type="text" placeholder="THY" value={flight.airline || ""} onChange={(e) => updateFlight(flight.id, "airline", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="text" placeholder="THY" value={flight.airline || ""} onChange={(e) => updateFlight(flight.id, "airline", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KALKIŞ / VARIŞ (HVL)</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="text" placeholder="IST" value={flight.departureAirport || ""} onChange={(e) => updateFlight(flight.id, "departureAirport", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                  <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="text" placeholder="IST" value={flight.departureAirport || ""} onChange={(e) => updateFlight(flight.id, "departureAirport", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                                   <span className="text-gray-400">-</span>
-                                  <input type="text" placeholder="JFK" value={flight.arrivalAirport || ""} onChange={(e) => updateFlight(flight.id, "arrivalAirport", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                  <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="text" placeholder="JFK" value={flight.arrivalAirport || ""} onChange={(e) => updateFlight(flight.id, "arrivalAirport", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                                 </div>
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">UÇUŞ NO</label>
-                                <input type="text" placeholder="TK100" value={flight.flightNo || ""} onChange={(e) => updateFlight(flight.id, "flightNo", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="text" placeholder="TK100" value={flight.flightNo || ""} onChange={(e) => updateFlight(flight.id, "flightNo", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KALKIŞ / VARIŞ SAAT</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="time" value={flight.departureTime || ""} onChange={(e) => updateFlight(flight.id, "departureTime", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                  <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="time" value={flight.departureTime || ""} onChange={(e) => updateFlight(flight.id, "departureTime", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                                   <span className="text-gray-400">-</span>
-                                  <input type="time" value={flight.arrivalTime || ""} onChange={(e) => updateFlight(flight.id, "arrivalTime", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                  <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="time" value={flight.arrivalTime || ""} onChange={(e) => updateFlight(flight.id, "arrivalTime", e.target.value)} className="w-full h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                                 </div>
                               </div>
                                                             <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">PNR</label>
-                                <input type="text" placeholder="PNR" value={flight.pnr || ""} onChange={(e) => updateFlight(flight.id, "pnr", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="text" placeholder="PNR" value={flight.pnr || ""} onChange={(e) => updateFlight(flight.id, "pnr", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">BİLET TARİHİ</label>
-                                <input type="date" value={flight.ticketingDate || ""} onChange={(e) => updateFlight(flight.id, "ticketingDate", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
+                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="date" value={flight.ticketingDate || ""} onChange={(e) => updateFlight(flight.id, "ticketingDate", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-emerald-500" />
                               </div>
 <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                                <input disabled={invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)}  type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(flight.id)} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -1961,19 +1963,19 @@ export default function EditSejourPage() {
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH & SAAT</label>
                                 <div className="flex items-center gap-1">
-                                  <input type="date" value={transfer.date || ""} onChange={(e) => updateTransfer(transfer.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
-                                  <input type="time" value={transfer.time || ""} onChange={(e) => updateTransfer(transfer.id, "time", e.target.value)} className="w-20 h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
+                                  <input disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  type="date" value={transfer.date || ""} onChange={(e) => updateTransfer(transfer.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
+                                  <input disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  type="time" value={transfer.time || ""} onChange={(e) => updateTransfer(transfer.id, "time", e.target.value)} className="w-20 h-[36px] px-1 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
                                 </div>
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TİP</label>
-                                <select value={transfer.type || ""} onChange={(e) => updateTransfer(transfer.id, "type", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-purple-500 outline-none">
+                                <select disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  value={transfer.type || ""} onChange={(e) => updateTransfer(transfer.id, "type", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-purple-500 outline-none">
                                   <option value="private">Özel</option><option value="economic">Ekonomik</option>
                                 </select>
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">ARAÇ</label>
-                                <select value={transfer.vehicle || ""} onChange={(e) => updateTransfer(transfer.id, "vehicle", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-purple-500 outline-none">
+                                <select disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  value={transfer.vehicle || ""} onChange={(e) => updateTransfer(transfer.id, "vehicle", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-purple-500 outline-none">
                                   <option value="">Seçin</option>
                                   {vehicleTypes.map((t) => (
                                     <option key={t} value={t}>{t}</option>
@@ -1982,11 +1984,11 @@ export default function EditSejourPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">GÜZERGAH NOTU</label>
-                                <input type="text" value={transfer.routeDescription || ""} onChange={(e) => updateTransfer(transfer.id, "routeDescription", e.target.value)} placeholder="Örn: Otel - Havalimanı" className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
+                                <input disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  type="text" value={transfer.routeDescription || ""} onChange={(e) => updateTransfer(transfer.id, "routeDescription", e.target.value)} placeholder="Örn: Otel - Havalimanı" className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-purple-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                                <input disabled={invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)}  type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(transfer.id)} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-purple-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -2081,11 +2083,11 @@ export default function EditSejourPage() {
                             <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1] lg:[&>*:nth-child(2)]:flex-[1.5] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.2] mt-4">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
-                                <input type="date" value={service.date || ""} onChange={(e) => updateExtraService(service.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-orange-500" />
+                                <input disabled={invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)}  type="date" value={service.date || ""} onChange={(e) => updateExtraService(service.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-orange-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">HİZMET TİPİ</label>
-                                <select value={service.serviceType || ""} onChange={(e) => updateExtraService(service.id, "serviceType", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-orange-500 outline-none">
+                                <select disabled={invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)}  value={service.serviceType || ""} onChange={(e) => updateExtraService(service.id, "serviceType", e.target.value)} className="w-full h-[36px] px-3 bg-white border border-gray-200 rounded-md text-[11px] font-medium focus:border-orange-500 outline-none">
                                   <option value="">Seçin</option>
                                   {supplierServiceTypes.map((type) => (
                                     <option key={type.id} value={type.id}>{type.name}</option>
@@ -2094,11 +2096,11 @@ export default function EditSejourPage() {
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">AÇIKLAMA</label>
-                                <input type="text" placeholder="Örn: Rehberlik" value={service.description || ""} onChange={(e) => updateExtraService(service.id, "description", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-orange-500" />
+                                <input disabled={invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)}  type="text" placeholder="Örn: Rehberlik" value={service.description || ""} onChange={(e) => updateExtraService(service.id, "description", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-orange-500" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                                <input type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                                <input disabled={invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)}  type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedSalesItemIds.has(service.id)} />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-semibold text-orange-600 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
