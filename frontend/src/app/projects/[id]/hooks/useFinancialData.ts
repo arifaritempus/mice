@@ -11,6 +11,7 @@ interface FinancialDataProps {
   collections: any[];
   paymentPlans: any[];
   payments: any[];
+  project?: any;
 }
 
 export function useFinancialData({
@@ -24,7 +25,23 @@ export function useFinancialData({
   collections,
   paymentPlans,
   payments,
+  project,
 }: FinancialDataProps) {
+
+  const getExchangeRate = (currency) => {
+    if (currency === 'EUR') return Number(project?.eur_rate) || 1;
+    if (currency === 'USD') return Number(project?.usd_rate) || 1;
+    if (currency === 'GBP') return Number(project?.gbp_rate) || 1;
+    return 1;
+  };
+
+  const getTRY = (item, amountField = 'total') => {
+    if (Number(item.total_try || item.totalTRY) > 0) return Number(item.total_try || item.totalTRY);
+    const cur = item.currency || item.doviz || 'TRY';
+    const amount = Number(item[amountField]) || 0;
+    if (cur === 'TRY' || cur === 'TL') return amount;
+    return amount * getExchangeRate(cur);
+  };
   // Kategori isimlerini Map ile cache'le
   const categoryNameMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -64,7 +81,7 @@ export function useFinancialData({
   // Satış genel toplamları
   const salesTotals = useMemo(() => {
     const totalTRY = itemsSales.reduce(
-      (sum: number, it: any) => sum + (Number(it.total_try) || 0),
+      (sum: number, it: any) => sum + (getTRY(it, "total")),
       0,
     );
     const totalByCurrency: Record<string, number> = {};
@@ -74,12 +91,12 @@ export function useFinancialData({
         (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
     });
     return { totalTRY, totalByCurrency };
-  }, [itemsSales]);
+  }, [itemsSales, project]);
 
   // Alış genel toplamları
   const purchaseTotals = useMemo(() => {
     const totalTRY = itemsPurchase.reduce(
-      (sum: number, it: any) => sum + (Number(it.total_try) || 0),
+      (sum: number, it: any) => sum + (getTRY(it, "total")),
       0,
     );
     const totalByCurrency: Record<string, number> = {};
@@ -89,7 +106,7 @@ export function useFinancialData({
         (totalByCurrency[cur] || 0) + (Number(it.total) || 0);
     });
     return { totalTRY, totalByCurrency };
-  }, [itemsPurchase]);
+  }, [itemsPurchase, project]);
 
   // Kar/Zarar hesapları
   const profitLossData = useMemo(() => {
@@ -141,7 +158,7 @@ export function useFinancialData({
       const row = ensure(rowsByKey, key, mainId, subId);
       const cur = it.currency || "EUR";
       const total = Number(it.total) || 0;
-      const totalTRY = Number(it.total_try) || 0;
+      const totalTRY = getTRY(it, "total");
       row.salesByCurrency[cur] = (row.salesByCurrency[cur] || 0) + total;
       row.salesTRY += totalTRY;
     });
@@ -153,7 +170,7 @@ export function useFinancialData({
       const row = ensure(rowsByKey, key, mainId, subId);
       const cur = it.currency || "EUR";
       const total = Number(it.total) || 0;
-      const totalTRY = Number(it.total_try) || 0;
+      const totalTRY = getTRY(it, "total");
       row.purchaseByCurrency[cur] = (row.purchaseByCurrency[cur] || 0) + total;
       row.purchaseTRY += totalTRY;
     });
@@ -284,7 +301,7 @@ export function useFinancialData({
       totalMarginPercent,
       groupedProfitLossData,
     };
-  }, [itemsSales, itemsPurchase, categories, categoryNameMap]);
+  }, [itemsSales, itemsPurchase, categories, categoryNameMap, project]);
 
   // Tahsilat hesapları
   const collectionSummary = useMemo(() => {
@@ -292,7 +309,7 @@ export function useFinancialData({
     const collectedTRY = collections.reduce(
       (sum: number, c: any) =>
         sum +
-        (c.totalTRY || (Number(c.amount) || 0) * Number(c.exchangeRate || 1)),
+        getTRY(c, "amount"),
       0,
     );
     const balanceTRY = planTRY - collectedTRY;
@@ -332,11 +349,11 @@ export function useFinancialData({
   // Ödeme hesapları
   const paymentSummary = useMemo(() => {
     const planTRY = paymentPlans.reduce(
-      (sum: number, p: any) => sum + (p.totalTRY || p.amount || 0),
+      (sum: number, p: any) => sum + getTRY(p, "amount"),
       0,
     );
     const paidTRY = payments.reduce(
-      (sum: number, p: any) => sum + (p.totalTRY || p.amount || 0),
+      (sum: number, p: any) => sum + getTRY(p, "amount"),
       0,
     );
     const balanceTRY = planTRY - paidTRY;

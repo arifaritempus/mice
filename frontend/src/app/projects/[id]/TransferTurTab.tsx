@@ -464,6 +464,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                     Seç
                   </div>
                 </th>
+                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text min-w-[200px]">MİSAFİR / FİRMA</th>
                 <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Transfer Tipi
                 </th>
@@ -484,9 +485,6 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                 </th>
                 <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Yolcu Sayısı
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Transfer Tipi
                 </th>
                 <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   Araç Tipi
@@ -550,6 +548,19 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               }}>
                     <td className="px-2.5 py-2.5">
                       {!transfer.vehicleAssigned && !transfer.isGroup && <input type="checkbox" checked={selectedTransfers.includes(transfer.id)} onChange={e => handleTransferSelect(transfer.id, e.target.checked)} className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 focus:ring-blue-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />}
+                    </td>
+                    <td className="px-2.5 py-2.5 w-48 max-w-[12rem] overflow-hidden text-v3-text">
+                      {transfer.isEditing ? <input type="text" value={(transfer as any).passengersInput ?? (Array.isArray(transfer.passengers) ? transfer.passengers.join(", ") : transfer.passengers)} onChange={e => updateTransfer(transfer.id, "passengersInput", e.target.value)} onKeyDown={e => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const raw = (transfer as any).passengersInput ?? "";
+                      const parsed = raw.split(",").map((p: any) => p.trim()).filter((p: any) => p);
+                      updateTransfer(transfer.id, "passengers", parsed);
+                      saveTransfer(transfer.id);
+                    }
+                  }} className="w-full h-8 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text focus:outline-none focus:ring-1 focus:ring-blue-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <div className="text-xs truncate w-48" title={Array.isArray(transfer.passengers) ? transfer.passengers.join("\n") : transfer.passengers}>
+                          {Array.isArray(transfer.passengers) ? transfer.passengers.join(", ") : transfer.passengers || "-"}
+                        </div>}
                     </td>
                     <td className="px-2.5 py-2.5">
                       {transfer.typeLabel === "Ara Transfer" ? <span className={`px-2 py-1 rounded-md text-xs font-medium inline-block bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700`}>
@@ -751,22 +762,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                         <option value="GBP">GBP</option>
                       </select>
                     </td>
-                    <td className="px-2.5 py-2.5 w-48 max-w-[12rem] overflow-hidden text-v3-text">
-                      {transfer.isEditing ? <input type="text" value={(transfer as any).passengersInput ?? transfer.passengers.join(", ")} onChange={e => updateTransfer(transfer.id, "passengersInput", e.target.value)} onKeyDown={e => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      const raw = (transfer as any).passengersInput ?? "";
-                      const parsed = raw.split(",").map((p: any) => p.trim()).filter((p: any) => p);
-                      updateTransfer(transfer.id, "passengers", parsed);
-                      saveTransfer(transfer.id);
-                    } else if (e.key === "Escape") {
-                      e.preventDefault();
-                      cancelTransferEdit(transfer.id);
-                    }
-                  }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 truncate whitespace-nowrap overflow-hidden" placeholder="Ad Soyad, Ad Soyad" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <div className="truncate whitespace-nowrap" title={transfer.passengers.join(", ")}>
-                          {transfer.passengers.join(", ")}
-                        </div>}
-                    </td>
+                    
                     <td className="px-2.5 py-2.5">
                       <div className="flex gap-1">
                         {transfer.isEditing ? <>

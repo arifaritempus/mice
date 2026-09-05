@@ -1249,6 +1249,7 @@ export default function ProjectsPage() {
                         project.quote_type.toLowerCase() === "konaklamasız" ? (t('projects.quoteWithoutAccommodation') || "Konaklamasız") :
                         project.quote_type.toLowerCase() === "birim" || project.quote_type.toLowerCase() === "bi̇ri̇m" ? (t('projects.quoteUnit') || "BİRİM") :
                         project.quote_type.toLowerCase() === "paket" ? (t('projects.quotePackage') || "PAKET") :
+                        project.quote_type.toLowerCase() === "kongre" ? (t('projects.quoteCongress') || "KONGRE") :
                         project.quote_type
                       ) : "-"}
                     </td>

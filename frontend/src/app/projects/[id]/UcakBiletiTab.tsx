@@ -374,6 +374,9 @@ export default function UcakBiletiTab({
           <table className="min-w-full text-left text-xs border-collapse">
             <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
+                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[200px] whitespace-nowrap">
+                  MİSAFİR / FİRMA
+                </th>
                 <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[9rem] w-36 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("biletlemeTarihi")}>
                   <div className="flex items-center">
                     BİLETLEME
@@ -519,9 +522,7 @@ export default function UcakBiletiTab({
               }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
                   <div className="leading-tight">Toplam<br />Satış TL</div>
                 </th>
-                <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[200px] whitespace-nowrap">
-                  MİSAFİRLER
-                </th>
+                
                 <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[5rem] w-20 whitespace-nowrap">
                   DURUM
                 </th>
@@ -541,6 +542,12 @@ export default function UcakBiletiTab({
               }
             }}>
                     {editingFlightIndex === index ? <>
+                        <td className="px-2 py-2 min-w-[200px]">
+                          <input type="text" value={tempFlightItem?.misafirler || ""} onChange={e => setTempFlightItem({
+                    ...tempFlightItem!,
+                    misafirler: e.target.value
+                  })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
                         <td className="px-2 py-2">
                           <input type="date" value={tempFlightItem?.biletlemeTarihi || ""} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
@@ -814,12 +821,7 @@ export default function UcakBiletiTab({
                     });
                   }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
-                        <td className="px-2 py-2 min-w-[200px]">
-                          <input type="text" value={tempFlightItem?.misafirler || ""} onChange={e => setTempFlightItem({
-                    ...tempFlightItem!,
-                    misafirler: e.target.value
-                  })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                        </td>
+                        
                         <td className="px-2 py-2">
                           <select value={tempFlightItem?.durum || "aktif"} onChange={e => setTempFlightItem({
                     ...tempFlightItem!,
@@ -846,6 +848,27 @@ export default function UcakBiletiTab({
                           </div>
                         </td>
                       </> : <>
+                        <td className="px-2 py-2 min-w-[120px]">
+                          <div className="flex items-center gap-1">
+                            <div className="flex-1 min-w-0 max-w-full">
+                              {expandedMisafirler[ticket.id] ? <div className="text-xs text-v3-text whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
+                                  {ticket.misafirler || "-"}
+                                </div> : <div className="text-xs text-v3-text truncate">
+                                  {ticket.misafirler || "-"}
+                                </div>}
+                            </div>
+                            {ticket.misafirler && <button onClick={() => setExpandedMisafirler(prev => ({
+                      ...prev,
+                      [ticket.id]: !prev[ticket.id]
+                    }))} className="flex-shrink-0 p-0.5 text-v3-muted hover:text-gray-700 dark:hover:text-v3-muted transition-colors" title={expandedMisafirler[ticket.id] ? "Kapat" : "Genişlet"}>
+                                {expandedMisafirler[ticket.id] ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>}
+                              </button>}
+                          </div>
+                        </td>
                         <td className="px-2 py-2 text-v3-text">
                           {formatDateForDisplay(ticket.biletlemeTarihi)}
                         </td>
@@ -918,27 +941,7 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
                           {formatNumberForDisplay(ticket.toplamSatisTl || 0)}
                         </td>
-                        <td className="px-2 py-2 min-w-[120px]">
-                          <div className="flex items-center gap-1">
-                            <div className="flex-1 min-w-0 max-w-full">
-                              {expandedMisafirler[ticket.id] ? <div className="text-xs text-v3-text whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
-                                  {ticket.misafirler || "-"}
-                                </div> : <div className="text-xs text-v3-text truncate">
-                                  {ticket.misafirler || "-"}
-                                </div>}
-                            </div>
-                            {ticket.misafirler && <button onClick={() => setExpandedMisafirler(prev => ({
-                      ...prev,
-                      [ticket.id]: !prev[ticket.id]
-                    }))} className="flex-shrink-0 p-0.5 text-v3-muted hover:text-gray-700 dark:hover:text-v3-muted transition-colors" title={expandedMisafirler[ticket.id] ? "Kapat" : "Genişlet"}>
-                                {expandedMisafirler[ticket.id] ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                  </svg> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                  </svg>}
-                              </button>}
-                          </div>
-                        </td>
+                        
                         <td className="px-2 py-2 text-v3-text text-center">
                           <span className={`px-2 py-1 text-xs rounded ${ticket.durum === "aktif" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : ticket.durum === "iptal" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : ticket.durum === "iade" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
                             {ticket.durum === "aktif" ? "Aktif" : ticket.durum === "iptal" ? "İptal" : ticket.durum === "iade" ? "İade" : "Değiştirildi"}
@@ -962,6 +965,12 @@ export default function UcakBiletiTab({
                   </tr>)}
               {/* Yeni Bilet Ekleme Satırı */}
               {editingFlightIndex === flightTickets.length && tempFlightItem && isNewFlightItem && <tr key="new-flight-ticket" className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-v3-border last:border-0">
+                    <td className="px-2 py-2 min-w-[200px]">
+                      <input type="text" value={tempFlightItem?.misafirler || ""} onChange={e => setTempFlightItem({
+                  ...tempFlightItem!,
+                  misafirler: e.target.value
+                })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                    </td>
                     <td className="px-2 py-2">
                       <input type="date" value={tempFlightItem?.biletlemeTarihi || ""} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,
@@ -1236,12 +1245,7 @@ export default function UcakBiletiTab({
                   });
                 }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
-                    <td className="px-2 py-2 min-w-[200px]">
-                      <input type="text" value={tempFlightItem?.misafirler || ""} onChange={e => setTempFlightItem({
-                  ...tempFlightItem!,
-                  misafirler: e.target.value
-                })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
+                    
                     <td className="px-2 py-2">
                       <select value={tempFlightItem?.durum || "aktif"} onChange={e => setTempFlightItem({
                   ...tempFlightItem!,

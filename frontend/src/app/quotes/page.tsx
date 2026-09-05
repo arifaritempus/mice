@@ -475,6 +475,16 @@ export default function QuotesPage() {
     if (!quoteToDelete) return;
     try {
       setLoading(true);
+      
+      // Proje kontrolü (Cascade delete'i önlemek için)
+      const { data: projects } = await supabase.from("projects").select("id").eq("quote_id", quoteToDelete);
+      if (projects && projects.length > 0) {
+          toast.error("Bu teklife bağlı yaşayan bir PROJE var! Teklifi silerseniz proje de silinir. Lütfen önce projeyi silin veya bağlantıyı koparın.");
+          setLoading(false);
+          setShowDeleteConfirm(false);
+          return;
+      }
+      
       await quotesService.delete(quoteToDelete);
       toast.success("Teklif başarıyla silindi!");
       loadQuotes();
@@ -703,6 +713,11 @@ export default function QuotesPage() {
       agency_id: q.agency_id || null,
       hotel_id: hotelId || null,
       quote_type: q.quote_type,
+      budget_currency: q.budget_currency || 'EUR',
+      forecast_revenue: Number(q.forecast_revenue || 0),
+      forecast_cost: Number(q.forecast_cost || 0),
+      management_fee_percentage: Number(q.management_fee_percentage || 0),
+      association_share_percentage: Number(q.association_share_percentage || 0),
       room_count: firstH?.room_count || q.room_count || 0,
       pax_count: firstH?.pax_count || q.pax_count || 0,
       room_pax: `${firstH?.room_count || 0} | ${firstH?.pax_count || 0}`,
@@ -1629,6 +1644,9 @@ export default function QuotesPage() {
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
                       {(() => {
+                        if (quote.quote_type === 'KONGRE') {
+                          return formatNumber((quote as any).forecast_revenue || 0);
+                        }
                         let displayAmount = quote.total_amount || 0;
                         if (quote.hotels_data && Array.isArray(quote.hotels_data) && quote.hotels_data.length > 0 && quote.items && Array.isArray(quote.items)) {
                           const firstHotelId = quote.hotels_data[0].hotel_id;
@@ -1643,7 +1661,7 @@ export default function QuotesPage() {
                       })()}
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs font-medium text-v3-text">
-                      {getCurrencyDisplay(quote.items?.[0]?.currency || "EUR")}
+                      {getCurrencyDisplay(quote.quote_type === 'KONGRE' ? ((quote as any).budget_currency || "EUR") : (quote.items?.[0]?.currency || "EUR"))}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <span

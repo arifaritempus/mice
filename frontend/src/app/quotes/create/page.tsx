@@ -23,6 +23,7 @@ import QuoteServiceEditor from "@/components/QuoteServiceEditor";
 import { usePermissions, Module } from "@/lib/permissions";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import CongressMasterBudget from "./CongressMasterBudget";
 
 // ─── NotificationModal ────────────────────────────────────────────────────────
 interface NotificationModalProps {
@@ -993,7 +994,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
     e.preventDefault();
     console.log("handleSubmit çağrıldı - teklif kaydediliyor");
 
-    if (serviceItems.length === 0) {
+    if (formData.quote_type !== "KONGRE" && serviceItems.length === 0) {
       setShowAddServiceRow(true);
       return;
     }
@@ -1036,8 +1037,8 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         uuidRegex.test(id),
       );
       const currency =
-        serviceItems.length > 0 ? serviceItems[0].currency : "EUR";
-      const firstHotel = activeHotels[0];
+        serviceItems.length > 0 ? serviceItems[0].currency : (formData.budget_currency || "EUR");
+      const firstHotel = activeHotels[0] || {};
 
       const { data: authData } = await supabase.auth.getUser();
       const currentUser = authData?.user;
@@ -1064,6 +1065,11 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         total_amount: totalAmount,
         currency: currency,
         created_by: currentUser?.id || null,
+        budget_currency: formData.budget_currency || 'EUR',
+        forecast_revenue: Number(formData.forecast_revenue || 0),
+        forecast_cost: Number(formData.forecast_cost || 0),
+        management_fee_percentage: Number(formData.management_fee_percentage || 0),
+        association_share_percentage: Number(formData.association_share_percentage || 0),
       } as any);
 
       for (const item of serviceItems) {
@@ -1446,6 +1452,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                     >
                       <option value="BİRİM">BİRİM</option>
                       <option value="PAKET">PAKET</option>
+                      <option value="KONGRE">KONGRE</option>
                     </select>
                   </div>
                 </div>
@@ -1471,7 +1478,12 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
         </div>
 
         {/* ─── DETAYLAR TAB ─── */}
-          <div className={activeMainTab === 'details' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
+        <div className={activeMainTab === 'details' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
+          {formData.quote_type === "KONGRE" && (
+            <div className="mb-8">
+              <CongressMasterBudget formData={formData} setFormData={setFormData} />
+            </div>
+          )}
               {/* Çoklu Otel Seçimi Başlangıcı */}
               <div className="w-full space-y-4 bg-v3-surface p-4 rounded-xl border border-v3-border mb-6">
                 <div className="flex justify-between items-center mb-2">
@@ -1828,7 +1840,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
               </div>
           </div>
 
-          {/* Submit Button */}
+        {/* Submit Button */}
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">

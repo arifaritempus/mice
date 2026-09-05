@@ -20,6 +20,7 @@ import { usePermissions, Module } from "@/lib/permissions";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
+import CongressMasterBudget from "./CongressMasterBudget";
 
 // ─── NotificationModal ────────────────────────────────────────────────────────
 interface NotificationModalProps {
@@ -409,6 +410,11 @@ export default function QuoteEditPage() {
           notes: (q as any).notes || "",
           room_count: Number((q as any).room_count) || 0,
           pax_count: Number((q as any).pax_count) || 0,
+          budget_currency: (q as any).budget_currency || "EUR",
+          forecast_revenue: Number((q as any).forecast_revenue) || 0,
+          forecast_cost: Number((q as any).forecast_cost) || 0,
+          management_fee_percentage: Number((q as any).management_fee_percentage) || 0,
+          association_share_percentage: Number((q as any).association_share_percentage) || 0,
         });
 
         const hData = (q as any).hotels_data;
@@ -875,7 +881,7 @@ export default function QuoteEditPage() {
         (sum, item) => sum + (item.total || 0),
         0,
       );
-      const firstHotel = activeHotels[0];
+      const firstHotel = activeHotels[0] || {};
 
       await quotesService.update(quoteId, {
         reference: formData.reference,
@@ -901,6 +907,11 @@ export default function QuoteEditPage() {
         ),
         notes: formData.notes,
         total_amount: totalAmount,
+        budget_currency: formData.budget_currency || 'EUR',
+        forecast_revenue: Number(formData.forecast_revenue || 0),
+        forecast_cost: Number(formData.forecast_cost || 0),
+        management_fee_percentage: Number(formData.management_fee_percentage || 0),
+        association_share_percentage: Number(formData.association_share_percentage || 0),
       } as any);
 
       await quoteItemsService.deleteByQuoteId(quoteId);
@@ -1388,6 +1399,7 @@ export default function QuoteEditPage() {
                     >
                       <option value="BİRİM">BİRİM</option>
                       <option value="PAKET">PAKET</option>
+                      <option value="KONGRE">KONGRE</option>
                     </select>
                   </div>
                 </div>
@@ -1416,6 +1428,11 @@ export default function QuoteEditPage() {
 
           {/* ─── DETAYLAR TAB ─── */}
           <div className={activeMainTab === 'details' ? 'block animate-in fade-in slide-in-from-bottom-4 duration-300' : 'hidden'}>
+            {formData.quote_type === "KONGRE" && (
+              <div className="mb-8">
+                <CongressMasterBudget formData={formData} setFormData={setFormData} disabled={isFormDisabled} />
+              </div>
+            )}
               {/* ─── Çoklu Otel Seçimi ─── */}
               <div className="md:col-span-6 space-y-4 bg-v3-surface p-4 rounded-xl border border-v3-border mb-6">
                 <div className="flex justify-between items-center mb-2">

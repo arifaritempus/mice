@@ -6,6 +6,11 @@ import { createPortal } from "react-dom";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ContractTemplate from './ContractTemplate';
+import CongressParticipantsTab from "./CongressParticipantsTab";
+import CongressFinanceTab from "./CongressFinanceTab";
+import CongressRoomingTab from "./CongressRoomingTab";
+import CongressSponsorsTab from "./CongressSponsorsTab";
+import CongressLogisticsTab from "./CongressLogisticsTab";
 import {
   TrendingUp,
   TrendingDown,
@@ -90,15 +95,14 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
-  { key: "satis", label: "Satış" },
-  { key: "alis", label: "Alış" },
-  { key: "konaklama", label: "Konaklama" },
-  { key: "ucak-bileti", label: "Uçak Bileti" },
-  { key: "transfer-tur", label: "Transfer & Tur" },
-  { key: "diger", label: "Diğer" },
-  { key: "tahsilat", label: "Tahsilat" },
-  { key: "odeme", label: "Ödeme" },
-  { key: "kar-zarar", label: "Kar/Zarar" },
+  { key: "konaklama", label: "KONAKLAMA" },
+  { key: "ucak-bileti", label: "UÇAK BİLETİ" },
+  { key: "transfer-tur", label: "TRANSFER & TUR" },
+  { key: "diger", label: "DİĞER" },
+  { key: "alis", label: "ALIŞ" },
+  { key: "tahsilat", label: "TAHSİLAT" },
+  { key: "odeme", label: "ÖDEME" },
+  { key: "kar-zarar", label: "KAR/ZARAR" },
 ];
 
 // Sabit başlık listesi - Excel'den başlık okumuyoruz
@@ -6252,14 +6256,16 @@ export default function ProjectDetailPage() {
 
   // Satış kalemlerini kategorilere göre grupla (cache'lenmiş)
   const groupedSalesItems = useMemo(() => {
-    const grouped = filteredSalesItems.reduce((acc: any, item: any) => {
-      const mainCat = getCategoryName(item.main_category) || "Diğer";
-      if (!acc[mainCat]) {
-        acc[mainCat] = [];
-      }
-      acc[mainCat].push(item);
-      return acc;
-    }, {});
+    const grouped = filteredSalesItems
+      .filter((item: any) => !item.participant_id)
+      .reduce((acc: any, item: any) => {
+        const mainCat = getCategoryName(item.main_category) || "Diğer";
+        if (!acc[mainCat]) {
+          acc[mainCat] = [];
+        }
+        acc[mainCat].push(item);
+        return acc;
+      }, {});
 
     const result: any[] = [];
     Object.entries(grouped).forEach(
@@ -6368,6 +6374,7 @@ export default function ProjectDetailPage() {
     collections,
     paymentPlans,
     payments,
+    project,
   });
 
   const formatByCurrencySummary = (byCur: Record<string, number>) => {
@@ -14807,6 +14814,11 @@ export default function ProjectDetailPage() {
                   </>
                 ) : (
                   <>
+                                        {activeTab === 'kongre-sponsorlar' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('action-add-sponsor'))} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Manuel Satış Ekle</button>
+                      </>
+                    )}
                     {activeTab === 'satis' && (
                       <>
                         <button onClick={() => setShowCategoryModalSales(true)} className="w-full text-left bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors text-xs font-bold flex items-center gap-2">Yeni Satış Kalemi</button>
@@ -15287,6 +15299,7 @@ export default function ProjectDetailPage() {
         </div>      </div>
 
       {/* Financial Summary Cards removed for privacy - visible in dashboard only if needed */}
+        
 
               </div>
       )}
@@ -15538,8 +15551,24 @@ export default function ProjectDetailPage() {
 
       {/* Tabs - Premium Style */}
       <div className="mb-4">
-        <div className="flex md:justify-center w-full bg-v3-surface backdrop-blur-md p-1.5 rounded-xl border border-v3-border space-x-2 overflow-x-auto shadow-xl no-scrollbar">
-          {TABS.map((t) => (
+        <div className="flex md:justify-center w-full bg-v3-surface backdrop-blur-md p-1.5 rounded-xl border border-v3-border space-x-2 overflow-x-auto shadow-xl no-scrollbar overscroll-x-contain">
+          {(project?.quote_type === 'KONGRE' || project?.quote_type === 'kongre' 
+            ? [
+                { key: "kongre-katilimcilar", label: "KATILIMCILAR" },
+                { key: "kongre-odalama", label: "BLOKAJ" },
+                { key: "kongre-sponsorlar", label: "SPONSORLAR" },
+                { key: "konaklama", label: "KONAKLAMA" },
+                { key: "ucak-bileti", label: "UÇAK BİLETİ" },
+                { key: "transfer-tur", label: "TRANSFER & TUR" },
+                { key: "diger", label: "DİĞER" },
+                { key: "kongre-finans", label: "PROFORMA" },
+                { key: "alis", label: "ALIŞ" },
+                { key: "tahsilat", label: "TAHSİLAT" },
+                { key: "odeme", label: "ÖDEME" },
+                { key: "kar-zarar", label: "KAR/ZARAR" }
+              ] 
+            : TABS
+          ).map((t) => (
             <button
               key={t.key}
               onClick={() => handleTabChange(t.key)}
@@ -15563,9 +15592,24 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <>
+              {activeTab === "kongre-katilimcilar" && (
+                <CongressParticipantsTab projectId={projectId} project={project} reloadProject={loadProjectData} />
+              )}
+              {activeTab === "kongre-finans" && (
+                <CongressFinanceTab projectId={projectId} project={project} />
+              )}
+              {activeTab === "kongre-odalama" && (
+                <CongressRoomingTab projectId={projectId} project={project} />
+              )}
+              {activeTab === "kongre-sponsorlar" && (
+                <CongressSponsorsTab projectId={projectId} project={project} />
+              )}
+              {activeTab === "kongre-lojistik" && (
+                <CongressLogisticsTab projectId={projectId} project={project} />
+              )}
               {activeTab === "satis" && (
                 <SalesTab
-                  itemsSales={filteredSalesItems}
+                  itemsSales={filteredSalesItems.filter((item: any) => !item.participant_id)}
                   setItemsSales={setItemsSales}
                   showAddRowSales={showAddRowSales}
                   setShowAddRowSales={setShowAddRowSales}

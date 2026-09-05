@@ -54,6 +54,18 @@ export default function RequestsPage() {
   const handleDelete = async () => {
     if (!deleteModal.id) return;
     try {
+      // Önce bu talebe bağlı proje var mı kontrol et! (Zincirleme silinmeyi önlemek için)
+      const { data: quotes } = await supabase.from("quotes").select("id").eq("request_id", deleteModal.id);
+      if (quotes && quotes.length > 0) {
+        const quoteIds = quotes.map(q => q.id);
+        const { data: projects } = await supabase.from("projects").select("id").in("quote_id", quoteIds);
+        if (projects && projects.length > 0) {
+           toast.error("Bu talebe bağlı yaşayan bir proje var! Talebi silemezsiniz.");
+           setDeleteModal({ isOpen: false, id: "", title: "" });
+           return;
+        }
+      }
+
       const { error } = await supabase.from("mice_requests").delete().eq("id", deleteModal.id);
       if (error) throw error;
       toast.success("Talep başarıyla silindi!");
