@@ -2195,7 +2195,7 @@ export default function ProjectDetailPage() {
   const saveAccommodationItems = useCallback(
     async (items: any[]) => {
       try {
-        setLoading(true);
+        // setLoading(true); // Kaldırıldı, böylece arayüz bloklanmaz ve optimistik güncellemeler anında görünür
         // Gelen items listesini kullanarak DB'deki öğeleri senkronize et
         const existingItems =
           await projectAccommodationItemsService.getByProjectId(projectId);
@@ -2219,28 +2219,18 @@ export default function ProjectDetailPage() {
 
         // Yeni kalemleri ekle veya güncelle
         const baseTime = Date.now();
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          const isUUID =
-            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-              String(item.id),
-            );
+        const promises = items.map((item, i) => {
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id));
           const payload = {
             project_id: projectId,
-            hotel_id:
-              item.hotel_id ||
-              (activeHotelId !== "all" && activeHotelId !== "general"
-                ? activeHotelId
-                : null),
+            hotel_id: item.hotel_id || (activeHotelId !== "all" && activeHotelId !== "general" ? activeHotelId : null),
             room_number: item.oda_no || "",
             room_number_2: item.oda_no_2 || "",
             room_type: item.oda_tipi || "",
             bed_type: item.yatak_tipi || "",
             first_name: item.isim || "",
             last_name: item.soyisim || "",
-            check_in_date: formatDateToSupabase(
-              item.gelis_tarihi || item.giris_tarihi,
-            ) || null,
+            check_in_date: formatDateToSupabase(item.gelis_tarihi || item.giris_tarihi) || null,
             check_out_date: formatDateToSupabase(item.cikis_tarihi) || null,
             flight_arrival: item.ucus_gelis || "",
             flight_departure: item.ucus_gidis || "",
@@ -2261,11 +2251,12 @@ export default function ProjectDetailPage() {
           };
 
           if (isUUID) {
-            await projectAccommodationItemsService.update(item.id, payload);
+            return projectAccommodationItemsService.update(item.id, payload);
           } else {
-            await projectAccommodationItemsService.create(payload as any);
+            return projectAccommodationItemsService.create(payload as any);
           }
-        }
+        });
+        await Promise.all(promises);
 
         // CRITICAL: DB ile yerel state'i senkronize et (ID'leri UUID yap)
         await refetchAccommodation();
@@ -2274,7 +2265,7 @@ export default function ProjectDetailPage() {
         console.error("Konaklama kaydetme hatası:", error);
         toast.error("Kaydetme sırasında bir hata oluştu.");
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     },
     [projectId, activeHotelId, refetchAccommodation, formatDateToSupabase],
