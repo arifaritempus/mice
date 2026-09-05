@@ -735,9 +735,9 @@ export default function TransfersPage() {
           const date =
             tr?.date || sejour.check_in_date || sejour.checkInDate || "";
           const time = tr?.time || "";
-          const unitPrice = Number(tr?.price ?? tr?.costPrice ?? 0);
+          const unitPrice = Number(tr?.cost_price ?? tr?.costPrice ?? tr?.cost_amount ?? 0);
           const currency =
-            tr?.currency || tr?.costCurrency || sejour.currency || "EUR";
+            tr?.cost_currency || tr?.costCurrency || tr?.currency || sejour.currency || "EUR";
           const vehicle = tr?.vehicle || tr?.vehicle_type || "";
           const passengerCount = passengerNames.length || 0;
 
