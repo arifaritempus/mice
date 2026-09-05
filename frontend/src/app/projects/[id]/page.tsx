@@ -95,11 +95,12 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
+  { key: "satis", label: "SATIŞ" },
+  { key: "alis", label: "ALIŞ" },
   { key: "konaklama", label: "KONAKLAMA" },
   { key: "ucak-bileti", label: "UÇAK BİLETİ" },
   { key: "transfer-tur", label: "TRANSFER & TUR" },
   { key: "diger", label: "DİĞER" },
-  { key: "alis", label: "ALIŞ" },
   { key: "tahsilat", label: "TAHSİLAT" },
   { key: "odeme", label: "ÖDEME" },
   { key: "kar-zarar", label: "KAR/ZARAR" },
@@ -15557,12 +15558,13 @@ export default function ProjectDetailPage() {
                 { key: "kongre-katilimcilar", label: "KATILIMCILAR" },
                 { key: "kongre-odalama", label: "BLOKAJ" },
                 { key: "kongre-sponsorlar", label: "SPONSORLAR" },
+                { key: "satis", label: "SATIŞ" },
+                { key: "alis", label: "ALIŞ" },
                 { key: "konaklama", label: "KONAKLAMA" },
                 { key: "ucak-bileti", label: "UÇAK BİLETİ" },
                 { key: "transfer-tur", label: "TRANSFER & TUR" },
                 { key: "diger", label: "DİĞER" },
                 { key: "kongre-finans", label: "PROFORMA" },
-                { key: "alis", label: "ALIŞ" },
                 { key: "tahsilat", label: "TAHSİLAT" },
                 { key: "odeme", label: "ÖDEME" },
                 { key: "kar-zarar", label: "KAR/ZARAR" }
