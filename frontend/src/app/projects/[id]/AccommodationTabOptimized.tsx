@@ -182,6 +182,31 @@ const AccommodationTabOptimized = memo(({
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const [searchTags, setSearchTags] = useState<string[]>([]);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  const HEADER_KEY_MAP: Record<string, string> = {
+    "ODA #": "oda_no",
+    "ODA TİPİ": "oda_tipi",
+    "YATAK TİPİ": "yatak_tipi",
+    "İSİM": "isim",
+    "SOYİSİM": "soyisim",
+    "ODA NO": "oda_no_2",
+    "ODA NOTU": "oda_notu",
+    "GİRİŞ TARİHİ": "gelis_tarihi",
+    "GELİŞ UÇUŞ KODU": "gelis_ucus_kodu",
+    "GELİŞ UÇAK KALKIŞ": "gelis_ucak_kalkis",
+    "GELİŞ UÇAK İNİŞ": "gelis_ucak_inis",
+    "ÇIKIŞ TARİHİ": "cikis_tarihi",
+    "DÖNÜŞ UÇUŞ KODU": "donus_ucus_kodu",
+    "DÖNÜŞ UÇAK KALKIŞ": "donus_ucak_kalkis",
+    "DÖNÜŞ UÇAK İNİŞ": "donus_ucak_inis",
+    "GECELEME": "geceleme",
+    "PAKET": "paket",
+    "OTEL": "otel",
+    "UÇAK": "ucak",
+    "TOPLAM": "toplam",
+    "DÖVİZ": "doviz"
+  };
   const [searchInput, setSearchInput] = useState("");
 
   const allowDrop = (e: React.DragEvent) => { e.preventDefault(); };
@@ -312,6 +337,27 @@ const toggleColumnVisibility = useCallback((column: string) => {
     const searchLower = accommodationSearch.toLowerCase();
     return hotelFilteredItems.filter(item => Object.values(item).some(value => value && value.toString().toLowerCase().includes(searchLower)));
   }, [hotelFilteredItems, accommodationSearch]);
+  const sortedItems = useMemo(() => {
+    if (!sortConfig) return filteredItems;
+    
+    return [...filteredItems].sort((a, b) => {
+      const valA = a[sortConfig.key] || "";
+      const valB = b[sortConfig.key] || "";
+      
+      // Numerik değerleri doğru sıralamak için kontrol
+      const numA = Number(valA);
+      const numB = Number(valB);
+      
+      if (!isNaN(numA) && !isNaN(numB) && valA !== "" && valB !== "") {
+        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
+      }
+      
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [filteredItems, sortConfig]);
+
   return <div className="space-y-4">
         {/* Üst Kontroller - Responsive */}
         <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
@@ -342,21 +388,43 @@ const toggleColumnVisibility = useCallback((column: string) => {
                 const isHidable = HIDABLE_COLUMNS.includes(header);
                 if (isHidden) return null;
                 const isNameColumn = header === "İSİM" || header === "SOYİSİM";
-                return <th key={index} className={`${getColumnWidth(header)} px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ${header === "İŞLEMLER" ? "sticky left-0 bg-gray-50 dark:bg-gray-700 z-10" : ""}`}>
-                            <div className={`flex flex-col ${isNameColumn ? "items-start text-left" : "items-center text-center"}`}>
-                              <span className="leading-tight font-semibold">
-                                {header.split(" ")[0]}
-                              </span>
-                              {header.includes(" ") && <span className="leading-tight text-xs opacity-75">
-                                  {header.split(" ").slice(1).join(" ")}
-                                </span>}
-                            </div>
-                          </th>;
+                return (
+                  <th 
+                    key={index} 
+                    onClick={() => {
+                      const key = HEADER_KEY_MAP[header];
+                      if (key) {
+                        let direction: 'asc' | 'desc' = 'asc';
+                        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+                          direction = 'desc';
+                        }
+                        setSortConfig({ key, direction });
+                      }
+                    }}
+                    className={`${getColumnWidth(header)} px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ${header === "İŞLEMLER" ? "sticky left-0 bg-gray-50 dark:bg-gray-700 z-10" : ""} ${HEADER_KEY_MAP[header] ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" : ""}`}
+                  >
+                    <div className={`flex flex-col ${isNameColumn ? "items-start text-left" : "items-center text-center"}`}>
+                      <div className="flex items-center gap-1">
+                        <span className="leading-tight font-semibold">
+                          {header.split(" ")[0]}
+                        </span>
+                        {sortConfig && sortConfig.key === HEADER_KEY_MAP[header] && (
+                          <span className="text-blue-500 text-[10px]">
+                            {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                          </span>
+                        )}
+                      </div>
+                      {header.includes(" ") && <span className="leading-tight text-xs opacity-75">
+                        {header.split(" ").slice(1).join(" ")}
+                      </span>}
+                    </div>
+                  </th>
+                );
               })}
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
-                  {filteredItems.map((item, index) => {
+                  {sortedItems.map((item, index) => {
               const originalIndex = accommodationItems.findIndex((x: any) => x.id === item.id);
               return <tr 
                 key={item.id || index} 
