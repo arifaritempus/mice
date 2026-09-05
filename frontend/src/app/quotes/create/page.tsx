@@ -345,6 +345,11 @@ OTELE GİRİŞ GÜNÜ KONAKLAMA ÖĞLE YEMEĞİ İLE BAŞLAR, OTELDEN ÇIKIŞ G�
 OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ EKSTRA OLARAK ÜCRETLENDİRİLİR.`,
     room_count: 0,
     pax_count: 0,
+    budget_currency: "EUR",
+    forecast_revenue: 0,
+    forecast_cost: 0,
+    management_fee_percentage: 0,
+    association_share_percentage: 0,
   });
 
   const [notification, setNotification] = useState<{
@@ -1038,7 +1043,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       );
       const currency =
         serviceItems.length > 0 ? serviceItems[0].currency : (formData.budget_currency || "EUR");
-      const firstHotel = activeHotels[0] || {};
+      const firstHotel: any = activeHotels[0] || {};
 
       const { data: authData } = await supabase.auth.getUser();
       const currentUser = authData?.user;

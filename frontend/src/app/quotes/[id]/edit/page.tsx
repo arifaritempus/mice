@@ -319,6 +319,11 @@ export default function QuoteEditPage() {
     notes: "",
     room_count: 0,
     pax_count: 0,
+    budget_currency: "EUR",
+    forecast_revenue: 0,
+    forecast_cost: 0,
+    management_fee_percentage: 0,
+    association_share_percentage: 0,
   });
 
   const [activeHotelId, setActiveHotelId] = useState<string | null>(null);
@@ -881,7 +886,7 @@ export default function QuoteEditPage() {
         (sum, item) => sum + (item.total || 0),
         0,
       );
-      const firstHotel = activeHotels[0] || {};
+      const firstHotel: any = activeHotels[0] || {};
 
       await quotesService.update(quoteId, {
         reference: formData.reference,
