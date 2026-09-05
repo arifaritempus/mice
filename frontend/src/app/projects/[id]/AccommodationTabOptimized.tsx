@@ -247,18 +247,7 @@ const AccommodationTabOptimized = memo(({
     const toggleCollapse = () => setIsCollapsed(prev => !prev);
     window.addEventListener('action-toggle-collapse-accommodation', toggleCollapse);
     
-  const allowDrop = (e: React.DragEvent) => { e.preventDefault(); };
-  const handleDragStart = (e: React.DragEvent, id: string) => { 
-      e.dataTransfer.setData("row_id", id);
-      // Let's add some visual feedback later if needed
-  };
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-      e.preventDefault();
-      const sourceId = e.dataTransfer.getData("row_id");
-      if (sourceId && sourceId !== targetId && handleAccommodationReorder) {
-          handleAccommodationReorder(sourceId, targetId);
-      }
-  };
+
 return () => {
       window.removeEventListener('action-toggle-collapse-accommodation', toggleCollapse);
     };
