@@ -184,6 +184,18 @@ const AccommodationTabOptimized = memo(({
   const [searchTags, setSearchTags] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState("");
 
+  const allowDrop = (e: React.DragEvent) => { e.preventDefault(); };
+  const handleDragStart = (e: React.DragEvent, id: string) => { 
+      e.dataTransfer.setData("row_id", id);
+  };
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+      e.preventDefault();
+      const sourceId = e.dataTransfer.getData("row_id");
+      if (sourceId && sourceId !== targetId && handleAccommodationReorder) {
+          handleAccommodationReorder(sourceId, targetId);
+      }
+  };
+
   useEffect(() => {
     if (editingAccommodationIndex !== null && tempAccommodationItem) {
       const parseDate = (dateStr: string) => {
