@@ -23,6 +23,7 @@ interface AccommodationTabProps {
   handleAccommodationDelete: (id: string) => void;
   handleAccommodationAdd: (id: string) => void;
   handleAccommodationCopy: (id: string) => void;
+  handleAccommodationReorder?: (sourceId: string, targetId: string) => void;
   formatDateAccommodation: (dateValue: any) => string;
   calculateDateColumns: (item: any, allItems?: any[]) => any;
 }
@@ -170,6 +171,7 @@ const AccommodationTabOptimized = memo(({
   handleAccommodationDelete,
   handleAccommodationAdd,
   handleAccommodationCopy,
+  handleAccommodationReorder,
   formatDateAccommodation,
   calculateDateColumns
 }: AccommodationTabProps) => {
@@ -244,7 +246,20 @@ const AccommodationTabOptimized = memo(({
     useEffect(() => {
     const toggleCollapse = () => setIsCollapsed(prev => !prev);
     window.addEventListener('action-toggle-collapse-accommodation', toggleCollapse);
-    return () => {
+    
+  const allowDrop = (e: React.DragEvent) => { e.preventDefault(); };
+  const handleDragStart = (e: React.DragEvent, id: string) => { 
+      e.dataTransfer.setData("row_id", id);
+      // Let's add some visual feedback later if needed
+  };
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+      e.preventDefault();
+      const sourceId = e.dataTransfer.getData("row_id");
+      if (sourceId && sourceId !== targetId && handleAccommodationReorder) {
+          handleAccommodationReorder(sourceId, targetId);
+      }
+  };
+return () => {
       window.removeEventListener('action-toggle-collapse-accommodation', toggleCollapse);
     };
   }, []);
@@ -344,6 +359,10 @@ const toggleColumnVisibility = useCallback((column: string) => {
               const originalIndex = accommodationItems.findIndex((x: any) => x.id === item.id);
               return <tr 
                 key={item.id || index} 
+                draggable={!compIsLocked && permEdit && editingAccommodationIndex === null}
+                onDragStart={(e) => handleDragStart(e, item.id || item.hotel_id)}
+                onDragOver={allowDrop}
+                onDrop={(e) => handleDrop(e, item.id || item.hotel_id)}
                 className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${permEdit && (!compIsLocked || isSuperAdmin) ? 'cursor-pointer' : ''}`}
                 onDoubleClick={() => {
                   if (permEdit && (!compIsLocked || isSuperAdmin)) {

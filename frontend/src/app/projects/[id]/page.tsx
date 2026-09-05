@@ -2218,7 +2218,9 @@ export default function ProjectDetailPage() {
         }
 
         // Yeni kalemleri ekle veya güncelle
-        for (const item of items) {
+        const baseTime = Date.now();
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
           const isUUID =
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
               String(item.id),
@@ -2255,6 +2257,7 @@ export default function ProjectDetailPage() {
             return_flight_code: item.donus_ucus_kodu || "",
             return_flight_departure: item.donus_ucak_kalkis || "",
             return_flight_arrival: item.donus_ucak_inis || "",
+            created_at: new Date(baseTime + (i * 1000)).toISOString(),
           };
 
           if (isUUID) {
@@ -3174,17 +3177,15 @@ export default function ProjectDetailPage() {
           return_flight_arrival: updatedItem.donus_ucak_inis || "",
         };
 
-        // Promise zinciriyle arkaplanda çalışmasını sağla, async bekleme (UI kitlenmez)
-        if (isUUID) {
+        // Eğer yeni satırsa ve araya eklenmişse sıralamanın bozulmaması için tüm listeyi kaydet
+        if (isNewAccommodationItem || !isUUID) {
+           saveAccommodationItems(updatedItems).then(() => {
+              toast.success("Yeni satır eklendi ve sıralama korundu", { id: 'acc-save' });
+           }).catch(console.error);
+        } else {
+          // Promise zinciriyle arkaplanda çalışmasını sağla, async bekleme (UI kitlenmez)
           projectAccommodationItemsService.update(updatedItem.id, payload)
             .then(() => toast.success("Satır kaydedildi", { id: 'acc-save' }))
-            .catch(console.error);
-        } else {
-          projectAccommodationItemsService.create(payload as any)
-            .then((created) => {
-               setAccommodationItems((prev: any[]) => prev.map(it => it.id === updatedItem.id ? { ...it, id: created.id } : it));
-               toast.success("Yeni satır eklendi", { id: 'acc-save' });
-            })
             .catch(console.error);
         }
       }
@@ -3289,6 +3290,19 @@ export default function ProjectDetailPage() {
       setConfirmModal,
     ],
   );
+
+  const handleAccommodationReorder = useCallback(async (sourceId: string, targetId: string) => {
+    const sourceIndex = accommodationItems.findIndex(it => (it.id || it.hotel_id) === sourceId);
+    const targetIndex = accommodationItems.findIndex(it => (it.id || it.hotel_id) === targetId);
+    if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) return;
+
+    const newItems = [...accommodationItems];
+    const [draggedItem] = newItems.splice(sourceIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+    
+    setAccommodationItems(newItems);
+    await saveAccommodationItems(newItems);
+  }, [accommodationItems, saveAccommodationItems]);
 
   const handleAccommodationAdd = useCallback(
     async (id: string) => {
@@ -15746,6 +15760,7 @@ export default function ProjectDetailPage() {
                   handleAccommodationDelete={handleAccommodationDelete}
                   handleAccommodationAdd={handleAccommodationAdd}
                   handleAccommodationCopy={handleAccommodationCopy}
+                  handleAccommodationReorder={handleAccommodationReorder}
                   formatDateAccommodation={formatDateAccommodation}
                   calculateDateColumns={calculateDateColumns}
                   isLocked={project?.locked && !isSuperAdmin}

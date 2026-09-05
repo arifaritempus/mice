@@ -1,0 +1,11 @@
+
+> tempus-system-frontend@2.0.0 dev
+> next dev -p 6002 -p 6003
+
+   ▲ Next.js 15.0.7
+   - Local:        http://localhost:6003
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1097ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
