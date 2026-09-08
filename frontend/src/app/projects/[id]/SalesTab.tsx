@@ -117,6 +117,22 @@ export default function SalesTab({
   hotelsData = [],
   hotels = [],
 }: SalesTabProps) {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.dataTransfer.setData("text/plain", id);
+  };
+
+  const allowDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (sourceId && sourceId !== targetId && onReorder) {
+      onReorder(sourceId, targetId);
+    }
+  };
+
   const { canCreate: permCreate, canEdit: permEdit, canDelete: permDelete } = usePermissions();
   const { t } = useLanguage();
   const categoryModalRefSales = useRef<HTMLDivElement>(null);
