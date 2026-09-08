@@ -1665,6 +1665,7 @@ export default function ProjectDetailPage() {
             .replace(/\s?\[T:.*?\]/g, "")
             .replace(/\s?\[S:.*?\]/g, "")
             .replace(/\s?\[R:.*?\]/g, "")
+          .replace(/\s?\[O:.*?\]/g, "")
             .replace(/\s?\[O:.*?\]/g, "")
             .trim();
           return {
@@ -2333,6 +2334,7 @@ export default function ProjectDetailPage() {
           .replace(/\s?\[T:.*?\]/g, "")
           .replace(/\s?\[S:.*?\]/g, "")
           .replace(/\s?\[R:.*?\]/g, "")
+          .replace(/\s?\[O:.*?\]/g, "")
           .trim();
 
         if (side === "purchase" && next.vendorId)
@@ -2340,6 +2342,8 @@ export default function ProjectDetailPage() {
         if (tabId && isUUID(tabId)) finalDescription += ` [T:${tabId}]`;
         if (next.repeat && next.repeat > 1)
           finalDescription += ` [R:${next.repeat}]`;
+        if (next.source_order !== undefined && next.source_order !== null)
+          finalDescription += ` [O:${next.source_order}]`;
 
         let isVendorHotel = false;
         if (next.supplier && next.supplier.type === "hotel") {
@@ -3294,6 +3298,37 @@ export default function ProjectDetailPage() {
     setAccommodationItems(newItems);
     await saveAccommodationItems(newItems);
   }, [accommodationItems, saveAccommodationItems]);
+
+  const handleSalesReorder = useCallback(async (sourceId: string, targetId: string) => {
+    const sourceIndex = itemsSales.findIndex(it => it.id === sourceId);
+    const targetIndex = itemsSales.findIndex(it => it.id === targetId);
+    if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) return;
+
+    const newItems = [...itemsSales];
+    const [draggedItem] = newItems.splice(sourceIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+    
+    // Assign source_order explicitly to reflect the new array order
+    const updatedItems = newItems.map((item, idx) => ({ ...item, source_order: idx }));
+    setItemsSales(updatedItems);
+    await saveItems("sales", updatedItems);
+  }, [itemsSales, saveItems]);
+
+  const handlePurchaseReorder = useCallback(async (sourceId: string, targetId: string) => {
+    const sourceIndex = itemsPurchase.findIndex(it => it.id === sourceId);
+    const targetIndex = itemsPurchase.findIndex(it => it.id === targetId);
+    if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) return;
+
+    const newItems = [...itemsPurchase];
+    const [draggedItem] = newItems.splice(sourceIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+    
+    // Assign source_order explicitly to reflect the new array order
+    const updatedItems = newItems.map((item, idx) => ({ ...item, source_order: idx }));
+    setItemsPurchase(updatedItems);
+    await saveItems("purchase", updatedItems);
+  }, [itemsPurchase, saveItems]);
+
 
   const handleAccommodationAdd = useCallback(
     async (id: string) => {
@@ -15616,6 +15651,7 @@ export default function ProjectDetailPage() {
               )}
               {activeTab === "satis" && (
                 <SalesTab
+                  onReorder={handleSalesReorder}
                   itemsSales={filteredSalesItems.filter((item: any) => !item.participant_id)}
                   setItemsSales={setItemsSales}
                   showAddRowSales={showAddRowSales}
@@ -15665,6 +15701,7 @@ export default function ProjectDetailPage() {
               )}
               {activeTab === "alis" && (
                 <PurchaseTab
+                  onReorder={handlePurchaseReorder}
                   itemsPurchase={filteredPurchaseItems}
                   setItemsPurchase={setItemsPurchase}
                   showAddRowPurchase={showAddRowPurchase}

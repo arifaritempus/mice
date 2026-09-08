@@ -93,6 +93,7 @@ interface PurchaseTabProps {
 }
 
 export default function PurchaseTab({
+  onReorder,
   itemsPurchase,
   setItemsPurchase,
   showAddRowPurchase,
@@ -673,6 +674,10 @@ export default function PurchaseTab({
               return (
                 <div
                   key={it.id ? `${it.id}-${idx}` : `item-${idx}`}
+                  draggable={!isLocked && permEdit(Module.PROJECTS)}
+                  onDragStart={(e) => handleDragStart(e, it.id)}
+                  onDragOver={allowDrop}
+                  onDrop={(e) => handleDrop(e, it.id)}
                   onDoubleClick={() => {
                     if (permEdit(Module.PROJECTS) && !isLocked && !it.isEditing) {
                       if (isInvoiced) {

@@ -1441,7 +1441,7 @@ export default function SuppliersPage() {
                         ref={
                           editingSupplier ? editEmailInputRef : newEmailInputRef
                         }
-                        type="email"
+                        type="email" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.toLowerCase(); }}
                         defaultValue={editingSupplier?.email || ""}
                         className="w-full px-2.5 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all text-sm"
                       />

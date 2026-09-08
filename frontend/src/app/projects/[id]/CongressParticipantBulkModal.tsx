@@ -285,7 +285,7 @@ export default function CongressParticipantBulkModal({ isOpen, onClose, projectI
               first_name: row[1], 
               last_name: row[2], 
               tc_passport: row[6], 
-              email: row[5], 
+              email: row[5] ? row[5].toString().toLowerCase() : "", 
               phone: row[4], 
               registration_type: row[3] || "Delege", // Use Kayıt Tipi for Registration Type
               notes: row[7], 
@@ -387,7 +387,7 @@ export default function CongressParticipantBulkModal({ isOpen, onClose, projectI
               first_name: fName,
               last_name: lName,
               tc_passport: row["tc/pasaport"] || row["tc"] || row["tc kimlik"] || row["pasaport"] || row["tc_passport"] || row["tckn"] || "",
-              email: row["e-posta"] || row["email"] || row["mail"] || row["e-mail"] || "",
+              email: (row["e-posta"] || row["email"] || row["mail"] || row["e-mail"] || "").toString().toLowerCase(),
               phone: row["telefon"] || row["phone"] || row["tel"] || row["cep telefonu"] || row["cep tel"] || "",
               registration_type: row["kayıt tipi (sistem)"] || row["kayıt tipi"] || "Delege",
               notes: row["özel notlar"] || row["notlar"] || row["not"] || row["notes"] || row["açıklama"] || "",

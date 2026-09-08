@@ -1224,7 +1224,7 @@ export default function AgenciesPage() {
                         ref={
                           editingAgency ? editEmailInputRef : newEmailInputRef
                         }
-                        type="email"
+                        type="email" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.toLowerCase(); }}
                         defaultValue={editingAgency?.email || ""}
                         className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
                         placeholder="acente@eposta.com"

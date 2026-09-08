@@ -928,7 +928,7 @@ export default function UsersPage() {
               type="email"
               value={newUser.email}
               onChange={(e) =>
-                setNewUser((prev) => ({ ...prev, email: e.target.value }))
+                setNewUser((prev) => ({ ...prev, email: e.target.value.toLowerCase() }))
               }
               required
               className="w-full px-4 py-3 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"
@@ -1074,7 +1074,7 @@ export default function UsersPage() {
                 type="email"
                 value={editUser.email || ""}
                 onChange={(e) =>
-                  setEditUser((prev) => ({ ...prev, email: e.target.value }))
+                  setEditUser((prev) => ({ ...prev, email: e.target.value.toLowerCase() }))
                 }
                 required
                 className="w-full px-4 py-3 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm"

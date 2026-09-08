@@ -384,6 +384,7 @@ router.get('/transfers', async (req, res) => {
         row.supplier_name,
         row.departure_point,
         row.arrival_point,
+        row.route,
         row.transfer_type,
         row.service_type,
         row.vehicle_type,
@@ -391,11 +392,16 @@ router.get('/transfers', async (req, res) => {
         row.transfer_time,
         row.currency,
         row.notes,
+        ...(Array.isArray(row.passengers) ? row.passengers : [row.passengers]),
         row.hotel_name,
         row.flight_info?.flight_number,
         row.flight_info?.airline,
         row.flight_info?.departure_airport,
-        row.flight_info?.arrival_airport
+        row.flight_info?.arrival_airport,
+        row.total_amount,
+        row.price,
+        row.cost_amount,
+        row.cost_price
       ]
         .map((v) => String(v || '').toLowerCase())
         .join(' ');
