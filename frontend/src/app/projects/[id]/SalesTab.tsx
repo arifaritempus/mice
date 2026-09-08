@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { toast } from "react-hot-toast";
 
 interface SalesTabProps {
+  onReorder?: (sourceId: string, targetId: string) => void;
   itemsSales: any[];
   setItemsSales: (items: any[] | ((prev: any[]) => any[])) => void;
   showAddRowSales: boolean;

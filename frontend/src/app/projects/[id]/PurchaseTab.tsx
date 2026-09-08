@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import toast from "react-hot-toast";
 
 interface PurchaseTabProps {
+  onReorder?: (sourceId: string, targetId: string) => void;
   itemsPurchase: any[];
   setItemsPurchase: (items: any[] | ((prev: any[]) => any[])) => void;
   showAddRowPurchase: boolean;
