@@ -280,15 +280,7 @@ const AccommodationTabOptimized = memo(({
     setAccommodationSearch(newTags.join(" "));
   };
 
-    useEffect(() => {
-    const toggleCollapse = () => setIsCollapsed(prev => !prev);
-    window.addEventListener('action-toggle-collapse-accommodation', toggleCollapse);
-    
-
-return () => {
-      window.removeEventListener('action-toggle-collapse-accommodation', toggleCollapse);
-    };
-  }, []);
+// Moved to below toggleCollapse definition
 const toggleColumnVisibility = useCallback((column: string) => {
     setHiddenColumns(prev => {
       const newSet = new Set(prev);
@@ -314,6 +306,13 @@ const toggleColumnVisibility = useCallback((column: string) => {
       return newCollapsed;
     });
   }, []);
+
+  useEffect(() => {
+    window.addEventListener('action-toggle-collapse-accommodation', toggleCollapse);
+    return () => {
+      window.removeEventListener('action-toggle-collapse-accommodation', toggleCollapse);
+    };
+  }, [toggleCollapse]);
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
