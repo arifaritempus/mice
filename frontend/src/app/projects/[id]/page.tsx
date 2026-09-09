@@ -834,6 +834,10 @@ export default function ProjectDetailPage() {
 
   // Transferleri sıralama: önce Giriş, sonra Ara, en sonda Çıkış (tarih+saat'e göre)
   const sortTransfers = (items: any[]) => {
+    // If any item has _manualOrder, we assume a manual order is applied globally for this session
+    if (items.some(t => t._manualOrder !== undefined)) {
+      return [...items].sort((a, b) => (a._manualOrder || 0) - (b._manualOrder || 0));
+    }
     const keyOf = (t: any) =>
       t.sortKey || `${t.date || "9999-12-31"} ${t.time || "23:59"}`;
     const arrivals = items.filter(

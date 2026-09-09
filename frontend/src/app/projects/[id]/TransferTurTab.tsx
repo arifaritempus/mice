@@ -377,6 +377,31 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     message: "",
     onConfirm: () => {}
   });
+
+  const [showBulkSelectModal, setShowBulkSelectModal] = useState(false);
+  const [bulkSelectCount, setBulkSelectCount] = useState<number | "">("");
+
+  const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>, id: string) => {
+    e.dataTransfer.setData("text/plain", id);
+  };
+  const allowDrop = (e: React.DragEvent<HTMLTableRowElement>) => {
+    e.preventDefault();
+  };
+  const handleDrop = (e: React.DragEvent<HTMLTableRowElement>, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (sourceId && sourceId !== targetId) {
+      const sourceIndex = transfers.findIndex(it => it.id === sourceId);
+      const targetIndex = transfers.findIndex(it => it.id === targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return;
+      const newTransfers = [...transfers];
+      const [draggedItem] = newTransfers.splice(sourceIndex, 1);
+      newTransfers.splice(targetIndex, 0, draggedItem);
+      newTransfers.forEach((t, i) => t._manualOrder = i);
+      setTransfers(newTransfers);
+    }
+  };
+
   const openConfirm = (title: string, message: string, onConfirm: () => void) => {
     setConfirmModal({
       open: true,
@@ -423,7 +448,64 @@ export default function TransferTurTab(props: TransferTurTabProps) {
       setSelectedTransfers(prev => prev.filter(id => id !== transferId));
     }
   };
+
+  const eligibleForBulkSelect = useMemo(() => {
+    return filteredTransfers.filter(t => !t.vehicleAssigned && !t.isGroup);
+  }, [filteredTransfers]);
+
+  const handleBulkSelectSubmit = () => {
+    const count = Number(bulkSelectCount);
+    if (!isNaN(count) && count > 0) {
+      const idsToSelect = eligibleForBulkSelect.slice(0, count).map(t => t.id);
+      const newSelections = [...new Set([...selectedTransfers, ...idsToSelect])];
+      setSelectedTransfers(newSelections);
+    }
+    setShowBulkSelectModal(false);
+  };
+
   return <div className="space-y-3">
+      {/* Toplu Seçim Modalı */}
+      {showBulkSelectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-xl w-80">
+            <h3 className="text-sm font-semibold mb-2 text-v3-text">Toplu Seçim</h3>
+            <p className="text-xs text-v3-muted mb-4">
+              Listede seçilebilir {eligibleForBulkSelect.length} adet transfer var. Kaç adet seçmek istiyorsunuz?
+            </p>
+            <input
+              type="number"
+              min="1"
+              max={eligibleForBulkSelect.length}
+              value={bulkSelectCount}
+              onChange={(e) => setBulkSelectCount(e.target.value === "" ? "" : Number(e.target.value))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleBulkSelectSubmit();
+                if (e.key === "Escape") setShowBulkSelectModal(false);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-v3-text mb-4"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2 text-xs">
+              <button onClick={() => setShowBulkSelectModal(false)} className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded">
+                İptal
+              </button>
+              <button onClick={() => {
+                setBulkSelectCount(eligibleForBulkSelect.length);
+                const idsToSelect = eligibleForBulkSelect.map(t => t.id);
+                const newSelections = [...new Set([...selectedTransfers, ...idsToSelect])];
+                setSelectedTransfers(newSelections);
+                setShowBulkSelectModal(false);
+              }} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded border border-blue-200 dark:border-blue-800">
+                Tümünü Seç
+              </button>
+              <button onClick={handleBulkSelectSubmit} className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Seç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full mb-4"><div className="flex-1 flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-300 dark:border-slate-700/50 rounded-lg min-h-[40px] focus-within:ring-1 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all shadow-sm w-full">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
           {searchTags.map((tag, idx) => <span key={`${tag}-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-800 dark:text-blue-300 text-xs font-medium">
@@ -449,16 +531,19 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               <tr>
                 <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   <div className="flex items-center gap-1">
-                    <input type="checkbox" checked={filteredTransfers.length > 0 && filteredTransfers.every(t => selectedTransfers.includes(t.id))} onChange={() => {
-                    const filteredIds = filteredTransfers.map(t => t.id);
-                    const allFilteredSelected = filteredIds.every(id => selectedTransfers.includes(id));
-                    if (allFilteredSelected) {
-                      // Filtrelenmiş olanları seçimden çıkar
-                      setSelectedTransfers(selectedTransfers.filter(id => !filteredIds.includes(id)));
+                    <input type="checkbox" checked={eligibleForBulkSelect.length > 0 && eligibleForBulkSelect.every(t => selectedTransfers.includes(t.id))} onChange={(e) => {
+                    const eligibleIds = eligibleForBulkSelect.map(t => t.id);
+                    const allEligibleSelected = eligibleIds.length > 0 && eligibleIds.every(id => selectedTransfers.includes(id));
+                    
+                    if (allEligibleSelected) {
+                      // Tüm uygunları seçimden çıkar
+                      setSelectedTransfers(selectedTransfers.filter(id => !eligibleIds.includes(id)));
                     } else {
-                      // Filtrelenmiş olanları seçime ekle (mevcut seçimleri koru)
-                      const newSelections = [...new Set([...selectedTransfers, ...filteredIds])];
-                      setSelectedTransfers(newSelections);
+                      // Modal açıp sayıyı sor (Eğer uygun kayıt varsa)
+                      if (eligibleIds.length > 0) {
+                        setBulkSelectCount(eligibleIds.length);
+                        setShowBulkSelectModal(true);
+                      }
                     }
                   }} className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 focus:ring-blue-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     Seç
@@ -545,7 +630,11 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               {filteredTransfers.flatMap(transfer => {
               const elements: any[] = [<tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={e => handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0 ${transfer.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20" : ""}`} onDoubleClick={() => {
                 if (!transfer.isEditing) handleTransferEdit(transfer.id);
-              }}>
+              }}
+              draggable={!isLocked && permEdit && !transfer.isEditing}
+              onDragStart={(e) => handleDragStart(e, transfer.id)}
+              onDragOver={allowDrop}
+              onDrop={(e) => handleDrop(e, transfer.id)}>
                     <td className="px-2.5 py-2.5">
                       {!transfer.vehicleAssigned && !transfer.isGroup && <input type="checkbox" checked={selectedTransfers.includes(transfer.id)} onChange={e => handleTransferSelect(transfer.id, e.target.checked)} className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 focus:ring-blue-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} />}
                     </td>
