@@ -1138,7 +1138,7 @@ export default function HotelsPage() {
                   </label>
                   <input
                     ref={nameInputRef}
-                    type="email"
+                    type="text"
                     defaultValue=""
                     required
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
@@ -1151,7 +1151,7 @@ export default function HotelsPage() {
                   </label>
                   <input
                     ref={companyNameInputRef}
-                    type="email"
+                    type="text"
                     defaultValue=""
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="Şirket Ünvanı"

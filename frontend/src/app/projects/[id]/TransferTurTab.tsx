@@ -463,6 +463,74 @@ export default function TransferTurTab(props: TransferTurTabProps) {
     setShowBulkSelectModal(false);
   };
 
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedTransfers = useMemo(() => {
+    let result = [...filteredTransfers];
+    if (sortField) {
+      result.sort((a, b) => {
+        let aVal = a[sortField];
+        let bVal = b[sortField];
+        
+        if (sortField === 'passengers') {
+          aVal = Array.isArray(a.passengers) ? a.passengers.join(", ") : a.passengers;
+          bVal = Array.isArray(b.passengers) ? b.passengers.join(", ") : b.passengers;
+        } else if (sortField === 'passengerCount') {
+          aVal = Number(a.passengerCount) || 0;
+          bVal = Number(b.passengerCount) || 0;
+        } else if (sortField === 'costAmount') {
+          aVal = Number(a.costAmount) || 0;
+          bVal = Number(b.costAmount) || 0;
+        } else if (sortField === 'hotel_id') {
+          const getHotelName = (id: string) => {
+            if (!id) return "Genel";
+            const tabHotel = (props as any)?.project?.hotels_data?.find((h: any) => h.id === id);
+            if (tabHotel) {
+              if (tabHotel.hotel_name) return tabHotel.hotel_name;
+              const masterHotel = props.hotels?.find((h: any) => h.id === tabHotel.hotel_id);
+              if (masterHotel) return masterHotel.name;
+            }
+            const masterHotel = props.hotels?.find((h: any) => h.id === id);
+            return masterHotel?.name || "Otel";
+          };
+          aVal = getHotelName(a.hotel_id);
+          bVal = getHotelName(b.hotel_id);
+        }
+        
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [filteredTransfers, sortField, sortDirection, props]);
+
+  const renderSortableHeader = (label: string, field: string, className: string = "") => (
+    <th className={`px-2.5 py-2.5 text-left font-semibold text-v3-text cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors select-none ${className}`} onClick={() => handleSort(field)}>
+      <div className="flex items-center gap-1">
+        {label}
+        {sortField === field && (
+          <span className="text-[10px] opacity-70">
+            {sortDirection === "asc" ? "▲" : "▼"}
+          </span>
+        )}
+      </div>
+    </th>
+  );
+
   return <div className="space-y-3">
       {/* Toplu Seçim Modalı */}
       {showBulkSelectModal && (
@@ -549,43 +617,18 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                     Seç
                   </div>
                 </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text min-w-[200px]">MİSAFİR / FİRMA</th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Transfer Tipi
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Otel
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Tarih
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Saat
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Uçuş Kodu
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Güzergah
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Yolcu Sayısı
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Araç Tipi
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Tedarikçi
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Maliyet Tutarı
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Döviz
-                </th>
-                <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
-                  Misafirler
-                </th>
+                {renderSortableHeader("MİSAFİR / FİRMA", "passengers", "min-w-[200px]")}
+                {renderSortableHeader("Transfer Tipi", "typeLabel")}
+                {renderSortableHeader("Otel", "hotel_id")}
+                {renderSortableHeader("Tarih", "date")}
+                {renderSortableHeader("Saat", "time")}
+                {renderSortableHeader("Uçuş Kodu", "flightCode")}
+                {renderSortableHeader("Güzergah", "route")}
+                {renderSortableHeader("Yolcu Sayısı", "passengerCount")}
+                {renderSortableHeader("Araç Tipi", "vehicleType")}
+                {renderSortableHeader("Tedarikçi", "supplierName")}
+                {renderSortableHeader("Maliyet Tutarı", "costAmount")}
+                {renderSortableHeader("Döviz", "currency")}
                 <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   <div className="flex items-center justify-between relative">
                     <span>İşlemler</span>
@@ -627,7 +670,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
               </tr>
             </thead>
             <tbody>
-              {filteredTransfers.flatMap(transfer => {
+              {sortedTransfers.flatMap(transfer => {
               const elements: any[] = [<tr key={transfer.id} id={`transfer-row-${transfer.id}`} tabIndex={transfer.isEditing ? 0 : -1} onKeyDown={e => handleTransferRowKeyDown(e, transfer.id)} className={`hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-v3-border last:border-0 ${transfer.isEditing ? "bg-blue-500/10 dark:bg-blue-900/20" : ""}`} onDoubleClick={() => {
                 if (!transfer.isEditing) handleTransferEdit(transfer.id);
               }}
