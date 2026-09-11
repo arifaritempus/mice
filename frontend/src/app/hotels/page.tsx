@@ -185,8 +185,8 @@ export default function HotelsPage() {
     const contactPersonValue = contactPersonInputRef.current?.value || "";
     const phoneValue = phoneInputRef.current?.value || "";
     const emailValue = "";
-    const ccMailValue = ccMailInputRef.current?.value || "";
-    const agencyCcMailValue = agencyCcMailInputRef.current?.value || "";
+    const ccMailValue = (ccMailInputRef.current?.value || "").toLowerCase();
+    const agencyCcMailValue = (agencyCcMailInputRef.current?.value || "").toLowerCase();
     const addressValue = addressInputRef.current?.value || "";
     const taxNumberValue = taxNumberInputRef.current?.value || "";
     const taxOfficeValue = taxOfficeInputRef.current?.value || "";
@@ -1249,6 +1249,9 @@ export default function HotelsPage() {
                     ref={ccMailInputRef}
                     type="text"
                     defaultValue=""
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="cc@eposta.com, cc2@eposta.com"
                   />
@@ -1261,6 +1264,9 @@ export default function HotelsPage() {
                     ref={agencyCcMailInputRef}
                     type="text"
                     defaultValue=""
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
                     placeholder="acente-cc@eposta.com, acente-cc2@eposta.com"
                   />
