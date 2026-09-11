@@ -1246,7 +1246,7 @@ export default function HotelsPage() {
                     <Mail size={12} /> Otel Mail
                   </label>
                   <input
-                    ref={ccMailInputRef} onInput={(e) => { e.currentTarget.value = e.currentTarget.value.toLowerCase(); }}
+                    ref={ccMailInputRef}
                     type="text"
                     defaultValue=""
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
@@ -1258,7 +1258,7 @@ export default function HotelsPage() {
                     <Mail size={12} /> CC Mail
                   </label>
                   <input
-                    ref={agencyCcMailInputRef} onInput={(e) => { e.currentTarget.value = e.currentTarget.value.toLowerCase(); }}
+                    ref={agencyCcMailInputRef}
                     type="text"
                     defaultValue=""
                     className="w-full px-4 py-2.5 bg-v3-surface border border-v3-border text-v3-text rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm placeholder-slate-400"
