@@ -1247,7 +1247,8 @@ export default function HotelsPage() {
                   </label>
                   <input
                     ref={ccMailInputRef}
-                    type="text"
+                    type="email"
+                    multiple
                     defaultValue=""
                     autoCapitalize="none"
                     autoCorrect="off"
@@ -1262,7 +1263,8 @@ export default function HotelsPage() {
                   </label>
                   <input
                     ref={agencyCcMailInputRef}
-                    type="text"
+                    type="email"
+                    multiple
                     defaultValue=""
                     autoCapitalize="none"
                     autoCorrect="off"
