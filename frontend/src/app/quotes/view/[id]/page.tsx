@@ -682,14 +682,13 @@ export default function QuoteViewPublicPage() {
         totalRow.getCell(5).numFmt = numFmt;
         totalRow.height = 30;
 
-        sheet.columns = [
-          { width: 45 },
-          { width: 12 },
-          { width: 12 },
-          { width: 15 },
-          { width: 20 },
-          { width: 45 },
-        ];
+        sheet.getColumn(1).width = 45;
+        sheet.getColumn(2).width = 12;
+        sheet.getColumn(3).width = 12;
+        sheet.getColumn(4).width = 15;
+        sheet.getColumn(5).width = 20;
+        sheet.getColumn(6).width = 45;
+
         sheet.views = [{ state: "normal", showGridLines: false }];
       };
 
@@ -709,13 +708,9 @@ export default function QuoteViewPublicPage() {
 
       const buffer = await workbook.xlsx.writeBuffer();
       const filename = `TEKLIF_${(quote.reference || "RAPOR").replace(/[^a-z0-9]/gi, "_")}.xlsx`;
-      const uint8 = new Uint8Array(buffer);
-      let binary = "";
-      for (let i = 0; i < uint8.length; i++) {
-        binary += String.fromCharCode(uint8[i]);
-      }
-      const base64 = window.btoa(binary);
-      const url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
+      
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.style.display = "none";
@@ -728,6 +723,7 @@ export default function QuoteViewPublicPage() {
         if (document.body.contains(a)) {
           document.body.removeChild(a);
         }
+        URL.revokeObjectURL(url);
       }, 5000);
     } catch (err) {
       console.error(err);

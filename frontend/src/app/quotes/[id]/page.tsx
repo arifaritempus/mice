@@ -754,14 +754,13 @@ export default function QuoteViewPage() {
         totalRow.height = 30;
 
         // Restore missing formatting: column widths and grid lines
-        sheet.columns = [
-          { width: 45 },
-          { width: 12 },
-          { width: 12 },
-          { width: 15 },
-          { width: 18 },
-          { width: 45 },
-        ];
+        sheet.getColumn(1).width = 45;
+        sheet.getColumn(2).width = 12;
+        sheet.getColumn(3).width = 12;
+        sheet.getColumn(4).width = 15;
+        sheet.getColumn(5).width = 18;
+        sheet.getColumn(6).width = 45;
+        
         sheet.views = [{ state: "normal", showGridLines: false }];
       };
 
