@@ -185,8 +185,18 @@ export default function HotelsPage() {
     const contactPersonValue = contactPersonInputRef.current?.value || "";
     const phoneValue = phoneInputRef.current?.value || "";
     const emailValue = "";
-    const ccMailValue = (ccMailInputRef.current?.value || "").toLowerCase();
-    const agencyCcMailValue = (agencyCcMailInputRef.current?.value || "").toLowerCase();
+    const formatEmails = (val: string) => {
+      if (!val) return "";
+      return val
+        .toLowerCase()
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => e.length > 0)
+        .join(', ');
+    };
+
+    const ccMailValue = formatEmails(ccMailInputRef.current?.value || "");
+    const agencyCcMailValue = formatEmails(agencyCcMailInputRef.current?.value || "");
     const addressValue = addressInputRef.current?.value || "";
     const taxNumberValue = taxNumberInputRef.current?.value || "";
     const taxOfficeValue = taxOfficeInputRef.current?.value || "";
