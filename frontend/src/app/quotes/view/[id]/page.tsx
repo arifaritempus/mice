@@ -554,9 +554,9 @@ export default function QuoteViewPublicPage() {
 
         sortedCatIds.forEach((catId, i) => {
           const catItems = grouped[catId];
-          const subCategoriesByMain = categories.filter(
-            (c) => c.parent_id === catId,
-          );
+          const subCategoriesByMain = categories
+            .filter((c) => c.parent_id === catId)
+            .sort(compareByCategoryId);
 
           const sortedCatItems = [...catItems].sort((a: any, b: any) => {
             const aSubOrder = a.sub_category
@@ -577,7 +577,7 @@ export default function QuoteViewPublicPage() {
             ) {
               return aSubOrder - bSubOrder;
             }
-            return a.id.localeCompare(b.id);
+            return (a.id || "").localeCompare(b.id || "");
           });
 
           const mainCatName =

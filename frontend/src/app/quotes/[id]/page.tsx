@@ -145,6 +145,46 @@ const getChanges = (before: any, after: any) => {
   return changes;
 };
 
+const isUuid = (value?: string) =>
+  !!value &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+
+const getCategorySortKey = (category: any) => {
+  if (!category) return "";
+  const code = (category.code || "").toString().trim();
+  if (code) return code;
+  const id = (category.id || "").toString().trim();
+  if (id && !isUuid(id)) return id;
+  return (category.name || "").toString().trim();
+};
+
+const getCategorySortWeight = (category: any) => {
+  const key = getCategorySortKey(category);
+  const nums = key.match(/\d+/g);
+  if (!nums) return Number.MAX_SAFE_INTEGER;
+  const weight = Number(nums.join(""));
+  return Number.isFinite(weight) ? weight : Number.MAX_SAFE_INTEGER;
+};
+
+const compareByCategoryId = (a: any, b: any) => {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  const aOrder = a.sort_order ?? 9999;
+  const bOrder = b.sort_order ?? 9999;
+  if (aOrder !== bOrder) return aOrder - bOrder;
+
+  const wa = getCategorySortWeight(a);
+  const wb = getCategorySortWeight(b);
+  if (wa !== wb) return wa - wb;
+  return getCategorySortKey(a).localeCompare(getCategorySortKey(b), "tr", {
+    numeric: true,
+    sensitivity: "base",
+  });
+};
+
 // Formatter to cleanly display values
 const resolveUuidsInString = (
   str: string,
@@ -639,17 +679,62 @@ export default function QuoteViewPage() {
           };
         rowIndex++;
 
-        // Group items
+        // Group items by category ID
         const grouped: Record<string, ServiceItem[]> = {};
         items.forEach((item) => {
-          const key = getCategoryName(item.main_category || "") || "Diğer";
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(item);
+          const catId = item.main_category || "other";
+          if (!grouped[catId]) grouped[catId] = [];
+          grouped[catId].push(item);
+        });
+
+        const sortedCatIds = Object.keys(grouped).sort((a, b) => {
+          if (a === "other") return 1;
+          if (b === "other") return -1;
+          const catA = categories.find((c) => c.id === a || c.name === a) || {
+            id: a,
+            name: a,
+          };
+          const catB = categories.find((c) => c.id === b || c.name === b) || {
+            id: b,
+            name: b,
+          };
+          return compareByCategoryId(catA, catB);
         });
 
         const subtotalRowsE: number[] = [];
-        Object.entries(grouped).forEach(([mainCat, catItems], i) => {
-          const catRow = sheet.addRow([`${i + 1}. ${mainCat}`]);
+
+        sortedCatIds.forEach((catId, i) => {
+          const catItems = grouped[catId];
+          const subCategoriesByMain = categories
+            .filter((c) => c.parent_id === catId)
+            .sort(compareByCategoryId);
+
+          const sortedCatItems = [...catItems].sort((a: any, b: any) => {
+            const aSubOrder = a.sub_category
+              ? (subCategoriesByMain.findIndex(
+                  (c) => c.id === a.sub_category,
+                ) ?? 999)
+              : 999;
+            const bSubOrder = b.sub_category
+              ? (subCategoriesByMain.findIndex(
+                  (c) => c.id === b.sub_category,
+                ) ?? 999)
+              : 999;
+
+            if (
+              aSubOrder !== bSubOrder &&
+              aSubOrder !== -1 &&
+              bSubOrder !== -1
+            ) {
+              return aSubOrder - bSubOrder;
+            }
+            return (a.id || "").localeCompare(b.id || "");
+          });
+
+          const mainCatName =
+            categories.find((c) => c.id === catId)?.name || "Diğer Hizmetler";
+
+          const catRow = sheet.addRow([`${i + 1}. ${mainCatName}`]);
           catRow.font = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
           for (let c = 1; c <= 6; c++)
             catRow.getCell(c).fill = {
@@ -680,7 +765,7 @@ export default function QuoteViewPage() {
           rowIndex++;
 
           let firstItemRow: number | null = null;
-          catItems.forEach((item) => {
+          sortedCatItems.forEach((item) => {
             const sRow = sheet.addRow([
               getCategoryName(item.sub_category || ""),
               item.unit_quantity,
