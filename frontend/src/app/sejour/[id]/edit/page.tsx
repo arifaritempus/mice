@@ -1672,7 +1672,7 @@ export default function EditSejourPage() {
                       </div>
                       <div className="space-y-4">
                         {rooms.map((room, index) => (
-                          <div key={room.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
+                          <div key={room.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
                             {(!invoicedSalesItemIds.has(room.id) && !invoicedPurchaseItemIds.has(room.id)) && (
                               <button type="button" onClick={() => removeRoom(room.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Odayı Sil">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1815,7 +1815,7 @@ export default function EditSejourPage() {
                       </div>
                       <div className="space-y-4">
                         {flights.map((flight, index) => (
-                          <div key={flight.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
+                          <div key={flight.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
                             {(!invoicedSalesItemIds.has(flight.id) && !invoicedPurchaseItemIds.has(flight.id)) && (
                               <button type="button" onClick={() => removeFlight(flight.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Uçuşu Sil">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1952,7 +1952,7 @@ export default function EditSejourPage() {
                       </div>
                       <div className="space-y-4">
                         {transfers.map((transfer, index) => (
-                          <div key={transfer.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
+                          <div key={transfer.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
                             {(!invoicedSalesItemIds.has(transfer.id) && !invoicedPurchaseItemIds.has(transfer.id)) && (
                               <button type="button" onClick={() => removeTransfer(transfer.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Transferi Sil">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -2073,7 +2073,7 @@ export default function EditSejourPage() {
                       </div>
                       <div className="space-y-4">
                         {extraServices.map((service, index) => (
-                          <div key={service.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
+                          <div key={service.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 relative">
                             {(!invoicedSalesItemIds.has(service.id) && !invoicedPurchaseItemIds.has(service.id)) && (
                               <button type="button" onClick={() => removeExtraService(service.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Hizmeti Sil">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -2141,12 +2141,12 @@ export default function EditSejourPage() {
                   </div>
                   <div className="space-y-4">
                     {rooms.map((room, index) => (
-                      <div key={room.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
+                      <div key={room.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">ODA {index + 1} - {room.hotelId ? hotels.find(h => h.id === room.hotelId)?.name : "Otel Yok"}</span>
                         <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
-                            <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={room.supplierId || ""} onChange={(val) => updateRoom(room.id, "supplierId", val)} placeholder="Tedarikçi Seçiniz..." />
+                            <SearchableSelect disabled={invoicedPurchaseItemIds.has(room.id) || invoicedSalesItemIds.has(room.id)} options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={room.supplierId || ""} onChange={(val) => updateRoom(room.id, "supplierId", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -2156,7 +2156,7 @@ export default function EditSejourPage() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                            <input type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                            <input type="number" min="0" max="100" value={room.vat !== undefined ? room.vat : ""} onChange={(e) => updateRoom(room.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedPurchaseItemIds.has(room.id) || invoicedSalesItemIds.has(room.id)} />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
@@ -2184,12 +2184,12 @@ export default function EditSejourPage() {
                   </div>
                   <div className="space-y-4">
                     {flights.map((flight, index) => (
-                      <div key={flight.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
+                      <div key={flight.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(flight.id) || invoicedPurchaseItemIds.has(flight.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">{flight.type === 'departure' ? 'GİDİŞ' : 'DÖNÜŞ'} UÇUŞU {index + 1} - {flight.departureAirport} ➝ {flight.arrivalAirport}</span>
                         <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ (TICKETING)</label>
-                            <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={flight.ticketingProvider || ""} onChange={(val) => updateFlight(flight.id, "ticketingProvider", val)} placeholder="Tedarikçi Seçiniz..." />
+                            <SearchableSelect disabled={invoicedPurchaseItemIds.has(flight.id) || invoicedSalesItemIds.has(flight.id)} options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={flight.ticketingProvider || ""} onChange={(val) => updateFlight(flight.id, "ticketingProvider", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -2199,7 +2199,7 @@ export default function EditSejourPage() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                            <input type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                            <input type="number" min="0" max="100" value={flight.vat !== undefined ? flight.vat : ""} onChange={(e) => updateFlight(flight.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedPurchaseItemIds.has(flight.id) || invoicedSalesItemIds.has(flight.id)} />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
@@ -2226,12 +2226,12 @@ export default function EditSejourPage() {
                   </div>
                   <div className="space-y-4">
                     {transfers.map((transfer, index) => (
-                      <div key={transfer.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
+                      <div key={transfer.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(transfer.id) || invoicedPurchaseItemIds.has(transfer.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">{transfer.direction === 'arrival' ? 'GELİŞ' : transfer.direction === 'return' ? 'DÖNÜŞ' : 'ARA'} TRANSFER {index + 1}</span>
                         <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
-                            <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={transfer.provider || ""} onChange={(val) => updateTransfer(transfer.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
+                            <SearchableSelect disabled={invoicedPurchaseItemIds.has(transfer.id) || invoicedSalesItemIds.has(transfer.id)} options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={transfer.provider || ""} onChange={(val) => updateTransfer(transfer.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -2241,7 +2241,7 @@ export default function EditSejourPage() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                            <input type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                            <input type="number" min="0" max="100" value={transfer.vat !== undefined ? transfer.vat : ""} onChange={(e) => updateTransfer(transfer.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedPurchaseItemIds.has(transfer.id) || invoicedSalesItemIds.has(transfer.id)} />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
@@ -2269,12 +2269,12 @@ export default function EditSejourPage() {
                   </div>
                   <div className="space-y-4">
                     {extraServices.map((service, index) => (
-                      <div key={service.id} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
+                      <div key={service.id} onClickCapture={(e) => { if (invoicedSalesItemIds.has(service.id) || invoicedPurchaseItemIds.has(service.id)) { toast.error("Bu kaleme ait fatura girilmiş. Değişiklik yapmak için önce faturayı silmelisiniz."); e.stopPropagation(); e.preventDefault(); } }} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
                         <span className="block text-[9px] font-bold text-gray-400 mb-2">EKSTRA HİZMET {index + 1}</span>
                         <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[0.5] lg:[&>*:nth-child(4)]:flex-[1.5]">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
-                            <SearchableSelect options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={service.provider || ""} onChange={(val) => updateExtraService(service.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
+                            <SearchableSelect disabled={invoicedPurchaseItemIds.has(service.id) || invoicedSalesItemIds.has(service.id)} options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} value={service.provider || ""} onChange={(val) => updateExtraService(service.id, "provider", val)} placeholder="Tedarikçi Seçiniz..." />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SATIŞ TUTARI</label>
@@ -2284,7 +2284,7 @@ export default function EditSejourPage() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KDV %</label>
-                            <input type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational} />
+                            <input type="number" min="0" max="100" value={service.vat !== undefined ? service.vat : ""} onChange={(e) => updateExtraService(service.id, "vat", e.target.value === "" ? undefined : parseFloat(e.target.value))} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none focus:border-blue-500" disabled={salesData.isInternational || invoicedPurchaseItemIds.has(service.id) || invoicedSalesItemIds.has(service.id)} />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">ALIŞ (MALİYET) TUTARI</label>
