@@ -11,7 +11,7 @@ import {
   SupplierService,
   ServiceTypeService,
   SettingsService,
-  categoriesService,
+  categoriesService, supabase,
 } from "@/lib/supabaseService";
 import { usePermissions, Module } from "@/lib/permissions";
 import { getLogosForExcel } from "@/utils/logoUtils";
