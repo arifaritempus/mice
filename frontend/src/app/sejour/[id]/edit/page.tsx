@@ -495,14 +495,45 @@ export default function EditSejourPage() {
   const loadSejourInvoices = async () => {
     if (!sejourId || typeof sejourId !== "string") return;
     try {
+      // 1. Fetch AI Invoices (uploaded_invoices) for Faturalar tab
       const response = await fetch(`/api/invoices/list?entityId=${sejourId}`, { cache: 'no-store' });
       const data = await response.json();
       if (response.ok && data.invoices) {
         setSejourInvoices(data.invoices);
-        
-        const salesIds = new Set<string>();
-        const purchaseIds = new Set<string>();
-        
+      }
+
+      // 2. Fetch completed invoices from invoice_items to lock rows
+      const [rRes, fRes, tRes, eRes] = await Promise.all([
+        supabase.from('sejour_rooms').select('id').eq('sejour_id', sejourId),
+        supabase.from('sejour_flights').select('id').eq('sejour_id', sejourId),
+        supabase.from('sejour_transfers').select('id').eq('sejour_id', sejourId),
+        supabase.from('sejour_extra_services').select('id').eq('sejour_id', sejourId)
+      ]);
+      
+      const allItemIds = [
+        ...(rRes.data || []),
+        ...(fRes.data || []),
+        ...(tRes.data || []),
+        ...(eRes.data || [])
+      ].map(i => i.id);
+
+      const salesIds = new Set<string>();
+      const purchaseIds = new Set<string>();
+
+      if (allItemIds.length > 0) {
+        const { data: invItems } = await supabase
+          .from('invoice_items')
+          .select('item_id, item_type')
+          .in('item_id', allItemIds);
+          
+        (invItems || []).forEach(item => {
+          if (item.item_type === 'sales') salesIds.add(item.item_id);
+          if (item.item_type === 'purchase') purchaseIds.add(item.item_id);
+        });
+      }
+
+      // Also check AI invoices just in case
+      if (data && data.invoices) {
         data.invoices.forEach((inv: any) => {
           if (inv.invoice_items && Array.isArray(inv.invoice_items)) {
             inv.invoice_items.forEach((item: any) => {
@@ -513,10 +544,11 @@ export default function EditSejourPage() {
             });
           }
         });
-        
-        setInvoicedSalesItemIds(salesIds);
-        setInvoicedPurchaseItemIds(purchaseIds);
       }
+
+      setInvoicedSalesItemIds(salesIds);
+      setInvoicedPurchaseItemIds(purchaseIds);
+
     } catch (err) {
       console.error(err);
     }
