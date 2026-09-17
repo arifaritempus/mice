@@ -473,7 +473,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
           const hotel = hotels.find((h: any) => h.id === hId);
           if (!hotel) continue;
           
-          const toAddress = hotel.cc_mail;
+          const toAddress = hotel.cc_mail || hotel.email;
           if (!toAddress) {
             console.warn("Otelin 'Otel Mail' (cc_mail) adresi yok:", hotel.name);
             continue;
