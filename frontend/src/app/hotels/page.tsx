@@ -1261,6 +1261,7 @@ export default function HotelsPage() {
                     ref={ccMailInputRef}
                     type="text"
                     defaultValue=""
+                    onChange={(e) => { e.target.value = e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase(); }}
                     style={{ textTransform: 'none' }}
                     autoCapitalize="none"
                     autoCorrect="off"
@@ -1277,6 +1278,7 @@ export default function HotelsPage() {
                     ref={agencyCcMailInputRef}
                     type="text"
                     defaultValue=""
+                    onChange={(e) => { e.target.value = e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase(); }}
                     style={{ textTransform: 'none' }}
                     autoCapitalize="none"
                     autoCorrect="off"
