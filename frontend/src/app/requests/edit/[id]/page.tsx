@@ -266,7 +266,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
       try {
         const [agenciesRes, hotelsRes] = await Promise.all([
           supabase.from("agencies").select("id, name").eq("is_active", true).order("name"),
-          supabase.from("hotels").select("id, name, concept").eq("is_active", true).order("name")
+          supabase.from("hotels").select("id, name, concept, email, cc_mail, agency_cc_mail").eq("is_active", true).order("name")
         ]);
         if (agenciesRes.data) setAgencies(agenciesRes.data as any);
         if (hotelsRes.data) setHotels(hotelsRes.data as any);
