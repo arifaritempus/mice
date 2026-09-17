@@ -276,7 +276,7 @@ export default function SettingsPage() {
                       onChange={(e) =>
                         setSettings({
                           ...settings,
-                          companyEmail: e.target.value.toLowerCase(),
+                          companyEmail: e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase(),
                         })
                       }
                       className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
@@ -914,7 +914,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({
                         ...settings,
-                        mailFromEmail: e.target.value.toLowerCase(),
+                        mailFromEmail: e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase(),
                       })
                     }
                     className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
@@ -928,7 +928,7 @@ export default function SettingsPage() {
                     type="email"
                     value={settings.mailReplyTo}
                     onChange={(e) =>
-                      setSettings({ ...settings, mailReplyTo: e.target.value.toLowerCase() })
+                      setSettings({ ...settings, mailReplyTo: e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase() })
                     }
                     className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
@@ -941,7 +941,7 @@ export default function SettingsPage() {
                     type="email"
                     value={settings.mailNotificationEmail}
                     onChange={(e) =>
-                      setSettings({ ...settings, mailNotificationEmail: e.target.value.toLowerCase() })
+                      setSettings({ ...settings, mailNotificationEmail: e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase() })
                     }
                     className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />

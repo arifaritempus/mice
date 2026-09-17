@@ -188,6 +188,8 @@ export default function HotelsPage() {
     const formatEmails = (val: string) => {
       if (!val) return "";
       return val
+        .replace(/İ/g, "i")
+        .replace(/I/g, "i")
         .toLowerCase()
         .split(',')
         .map(e => e.trim())
