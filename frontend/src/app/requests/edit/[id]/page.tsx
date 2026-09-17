@@ -532,7 +532,7 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
             : flexibleDateText || "?";
 
           try {
-            await fetch("/api/send-request-mail", {
+            const res = await fetch("/api/send-request-mail", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -552,9 +552,14 @@ export default function EditRequestPage({ params }: { params: Promise<{ id: stri
                 }
               })
             });
+            const resData = await res.json();
+            if (!res.ok || !resData.success) {
+              throw new Error(resData.message || "Mail sunucusu reddetti (Geçersiz mail adresi olabilir)");
+            }
             successCount++;
-          } catch (e) {
+          } catch (e: any) {
             console.error("Mail gönderilemedi:", hotel.name, e);
+            toast.error(hotel.name + " oteline mail gönderilemedi: " + (e.message || "Bilinmeyen hata"));
           }
         }
         
