@@ -270,35 +270,8 @@ export default function ProjectViewPublicPage() {
           "2. projectSalesItemsService bitti. Kayıt sayısı:",
           salesItems?.length || 0,
         );
-        const deduplicateItems = (items: any[]) => {
-          if (!Array.isArray(items)) return [];
-          // Sort by creation date descending to keep the most recent entries
-          const sorted = [...items].sort(
-            (a, b) =>
-              new Date(b.created_at || b.updated_at || 0).getTime() -
-              new Date(a.created_at || a.updated_at || 0).getTime(),
-          );
 
-          const seen = new Set();
-          return sorted.filter((it) => {
-            const cat = (it.category || it.main_category || "")
-              .trim()
-              .toLowerCase();
-            const name = (it.description || "").trim().toLowerCase();
-            const qty = Number(it.unit_quantity || 0);
-            const price = Math.round(Number(it.unit_price || 0) * 100) / 100;
-            const hId = it.hotel_id || "";
-
-            // Group by content that defines the service (excluding repeat count to catch updates)
-            const contentKey = `${cat}|${name}|${qty}|${price}|${hId}`;
-
-            if (seen.has(contentKey)) return false;
-            seen.add(contentKey);
-            return true;
-          });
-        };
-
-        const uniqueSales = deduplicateItems(salesItems || []);
+        const uniqueSales = salesItems || [];
         const hData = (p as any)?.hotels_data || [];
 
         const parseDescriptionTags = (desc: string) => {
@@ -381,25 +354,25 @@ export default function ProjectViewPublicPage() {
       }
 
       try {
-        const list = await agenciesService.getAll();
-        setAgencies((list || []) as any);
-      } catch {
-        setAgencies([]);
-      }
-
-      try {
-        const list = await hotelsService.getAll();
-        setHotels((list || []) as any);
-      } catch {
-        setHotels([]);
-      }
-
-      try {
-        const cats = await categoriesService.getAll();
-        setCategories((cats || []) as any);
+        const res = await fetch('/api/public/dictionaries');
+        if (res.ok) {
+          const dicts = await res.json();
+          setAgencies(dicts.agencies || []);
+          setHotels(dicts.hotels || []);
+          setCategories(dicts.categories || []);
+        } else {
+          // Fallback if API fails
+          const [agList, htList, catList] = await Promise.all([
+            agenciesService.getAll().catch(() => []),
+            hotelsService.getAll().catch(() => []),
+            categoriesService.getAll().catch(() => []),
+          ]);
+          setAgencies((agList as any) || []);
+          setHotels((htList as any) || []);
+          setCategories((catList as any) || []);
+        }
       } catch (err) {
-        console.error("Kategori yükleme hatası:", err);
-        setCategories([]);
+        console.error("Failed to load dictionaries", err);
       }
     } catch (error: any) {
       console.error("Veri yükleme hatası detaylı:", {

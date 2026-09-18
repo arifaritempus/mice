@@ -312,14 +312,27 @@ export default function QuoteViewPublicPage() {
         });
         setServiceItems(fixedItems);
       }
-      const [agList, htList, catList] = await Promise.all([
-        agenciesService.getAll(),
-        hotelsService.getAll(),
-        categoriesService.getAll(),
-      ]);
-      setAgencies((agList as any) || []);
-      setHotels((htList as any) || []);
-      setCategories((catList as any) || []);
+      try {
+        const res = await fetch('/api/public/dictionaries');
+        if (res.ok) {
+          const dicts = await res.json();
+          setAgencies(dicts.agencies || []);
+          setHotels(dicts.hotels || []);
+          setCategories(dicts.categories || []);
+        } else {
+          // Fallback if API fails (for authenticated users testing it)
+          const [agList, htList, catList] = await Promise.all([
+            agenciesService.getAll(),
+            hotelsService.getAll(),
+            categoriesService.getAll(),
+          ]);
+          setAgencies((agList as any) || []);
+          setHotels((htList as any) || []);
+          setCategories((catList as any) || []);
+        }
+      } catch (err) {
+        console.error("Failed to load dictionaries", err);
+      }
     } catch (err) {
       console.error(err);
       setError("Veri yükleme hatası!");
