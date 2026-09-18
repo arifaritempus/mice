@@ -25,7 +25,7 @@ export default function ExpensePendingPage() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [dateRange, setDateRange] = useState({
-    start: "",
+    start: new Date().toISOString().split("T")[0],
     end: "",
   });
 
@@ -234,7 +234,7 @@ export default function ExpensePendingPage() {
                 globalInput.trim().length > 0) && (
                 <button
                   onClick={() => {
-                    setDateRange({ start: "", end: "" });
+                    setDateRange({ start: new Date().toISOString().split("T")[0], end: "" });
                     setGlobalTokens([]);
                     setGlobalInput("");
                   }}
