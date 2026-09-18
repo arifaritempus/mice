@@ -758,11 +758,11 @@ export default function SejourPage() {
 
     // Columns
     sheet.columns = [
-      { header: "VOUCHER NO", key: "voucherNumber", width: 16 },
-      { header: "MÜŞTERİ", key: "customerName", width: 20 },
-      { header: "ACENTE", key: "agencyName", width: 18 },
-      { header: "GİRİŞ TARİHİ", key: "checkInDate", width: 14 },
-      { header: "ÇIKIŞ TARİHİ", key: "checkOutDate", width: 14 },
+      { header: "VOUCHER NO", key: "voucher_number", width: 16 },
+      { header: "MÜŞTERİ", key: "customer_name", width: 20 },
+      { header: "ACENTE", key: "agency_id", width: 18 },
+      { header: "GİRİŞ TARİHİ", key: "check_in_date", width: 14 },
+      { header: "ÇIKIŞ TARİHİ", key: "check_out_date", width: 14 },
       { header: "TOPLAM TRY", key: "totalTRY", width: 12 },
       { header: "TOPLAM EUR", key: "totalEUR", width: 12 },
       { header: "TOPLAM USD", key: "totalUSD", width: 12 },
@@ -1154,11 +1154,11 @@ export default function SejourPage() {
                 <tr>
                   <th
                     className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("voucherNumber")}
+                    onClick={() => handleSort("voucher_number")}
                   >
                     <div className="flex items-center gap-1">
                       Voucher No
-                      {sortField === "voucherNumber" && (
+                      {sortField === "voucher_number" && (
                         <svg
                           className={`w-3 h-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
                           fill="none"
@@ -1177,11 +1177,11 @@ export default function SejourPage() {
                   </th>
                   <th
                     className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("customerName")}
+                    onClick={() => handleSort("customer_name")}
                   >
                     <div className="flex items-center gap-1">
                       Müşteri
-                      {sortField === "customerName" && (
+                      {sortField === "customer_name" && (
                         <svg
                           className={`w-3 h-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
                           fill="none"
@@ -1200,11 +1200,11 @@ export default function SejourPage() {
                   </th>
                   <th
                     className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("agencyName")}
+                    onClick={() => handleSort("agency_id")}
                   >
                     <div className="flex items-center gap-1">
                       Acente
-                      {sortField === "agencyName" && (
+                      {sortField === "agency_id" && (
                         <svg
                           className={`w-3 h-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
                           fill="none"
@@ -1226,11 +1226,11 @@ export default function SejourPage() {
                   </th>
                   <th
                     className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("checkInDate")}
+                    onClick={() => handleSort("check_in_date")}
                   >
                     <div className="flex items-center gap-1">
                       Giriş
-                      {sortField === "checkInDate" && (
+                      {sortField === "check_in_date" && (
                         <svg
                           className={`w-3 h-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
                           fill="none"
@@ -1249,11 +1249,11 @@ export default function SejourPage() {
                   </th>
                   <th
                     className="px-3 py-2 text-left text-xs font-medium text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface/10 transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("checkOutDate")}
+                    onClick={() => handleSort("check_out_date")}
                   >
                     <div className="flex items-center gap-1">
                       Çıkış
-                      {sortField === "checkOutDate" && (
+                      {sortField === "check_out_date" && (
                         <svg
                           className={`w-3 h-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
                           fill="none"

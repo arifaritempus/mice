@@ -1558,7 +1558,7 @@ export class SejourService {
       else if (status === 'iptal') query = query.ilike('status', '%iptal%');
     }
 
-    const sortField = ['voucher_number', 'customer_name', 'status', 'check_in_date', 'check_out_date', 'created_at'].includes(params.sortField || '')
+    const sortField = ['voucher_number', 'customer_name', 'status', 'check_in_date', 'check_out_date', 'created_at', 'agency_id'].includes(params.sortField || '')
       ? (params.sortField as string)
       : 'created_at';
     const ascending = params.sortDirection === 'asc';
