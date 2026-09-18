@@ -362,7 +362,7 @@ export default function ProjectDetailPage() {
       if (!q || !Array.isArray(q.items) || q.items.length === 0) return;
       const mapped = q.items.map((it: any) => {
         const qtyOnly = Number(it.unit_quantity || 0);
-        const repeatOnly = Number(it.sefer || 1);
+        const repeatOnly = Number((it.sefer !== undefined && it.sefer !== null && it.sefer !== "" ? Number(it.sefer) : 1));
         const unitPrice = Number(it.unit_price || 0);
         const currency = it.currency || "EUR";
         const vat = 0;
@@ -405,7 +405,7 @@ export default function ProjectDetailPage() {
       if (!q || !Array.isArray(q.items) || q.items.length === 0) return;
       const mapped = q.items.map((it: any) => {
         const qtyOnly = Number(it.unit_quantity || 0);
-        const repeatOnly = Number(it.sefer || 1);
+        const repeatOnly = Number((it.sefer !== undefined && it.sefer !== null && it.sefer !== "" ? Number(it.sefer) : 1));
         const currency = it.currency || "EUR";
         const vat = 0;
         const desc =

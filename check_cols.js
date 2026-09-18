@@ -1,8 +1,14 @@
+const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
-const content = fs.readFileSync('/Users/arifari/Desktop/TT_Sistem_AG kopyası/frontend/src/app/projects/[id]/page.tsx', 'utf8');
+const env = fs.readFileSync('.env.local', 'utf8');
+const SUPABASE_URL = env.match(/NEXT_PUBLIC_SUPABASE_URL=(.*)/)[1].trim();
+const SUPABASE_KEY = env.match(/NEXT_PUBLIC_SUPABASE_ANON_KEY=(.*)/)[1].trim();
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const regex = /sheet\.mergeCells\("A1:([A-Z])1"\)/g;
-let match;
-while ((match = regex.exec(content)) !== null) {
-  console.log(`Line ${content.substring(0, match.index).split('\n').length}: Merges up to ${match[1]}`);
+async function check() {
+  const { data, error } = await supabase.from('uploaded_invoices').select('*').limit(1);
+  if (error) console.error(error);
+  if (data && data.length) console.log(Object.keys(data[0]));
+  else console.log('no data in uploaded_invoices');
 }
+check();

@@ -164,8 +164,8 @@ export const generateProjectFullReport = async ({
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push({
         desc: getCategoryName(it.sub_category) || it.description || "-",
-        qty: it.qty || it.unit_quantity || 1,
-        repeat: it.repeat || it.sefer || 1,
+        qty: it.qty || (it.unit_quantity !== undefined && it.unit_quantity !== null && it.unit_quantity !== "" ? Number(it.unit_quantity) : 1),
+        repeat: it.repeat || (it.sefer !== undefined && it.sefer !== null && it.sefer !== "" ? Number(it.sefer) : 1),
         price: it.unit_price || 0,
         totalEur: (it.total || 0),
         fx: it.fx || 1,

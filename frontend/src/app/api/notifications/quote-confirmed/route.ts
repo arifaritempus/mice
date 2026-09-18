@@ -192,7 +192,7 @@ export async function POST(req: Request) {
                     <td style="padding: 10px 16px; color: #1e293b; font-weight: 500;">
                       ${finalName}
                     </td>
-                    <td style="padding: 10px 16px; text-align: right; color: #334155;">${item.unit_quantity} x ${item.sefer || 1}</td>
+                    <td style="padding: 10px 16px; text-align: right; color: #334155;">${item.unit_quantity} x ${(item.sefer !== undefined && item.sefer !== null && item.sefer !== "" ? Number(item.sefer) : 1)}</td>
                     <td style="padding: 10px 16px; text-align: right; color: #334155; white-space: nowrap;">${curSym}${fmtMoney(item.unit_price)}</td>
                     <td style="padding: 10px 16px; text-align: right; color: #0f172a; font-weight: 600; white-space: nowrap;">${curSym}${fmtMoney(item.total_price || item.total)}</td>
                   </tr>

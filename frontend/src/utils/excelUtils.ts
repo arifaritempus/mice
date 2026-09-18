@@ -449,17 +449,17 @@ export class ExcelUtils {
           main: item.main_category || '',
           sub: item.sub_category || '',
           desc: item.description || item.detail_description || '',
-          qty: item.unit_quantity || item.sefer || 1,
+          qty: item.unit_quantity || (item.sefer !== undefined && item.sefer !== null && item.sefer !== "" ? Number(item.sefer) : 1),
           price: fmtNumber(item.unit_price || 0),
           cur: item.currency || 'EUR',
-          total: fmtNumber(item.total || item.total_price || (item.unit_quantity || 1) * (item.unit_price || 0))
+          total: fmtNumber(item.total || item.total_price || ((item.unit_quantity !== undefined && item.unit_quantity !== null && item.unit_quantity !== "" ? Number(item.unit_quantity) : 1)) * (item.unit_price || 0))
         });
       }
 
       sheet.getColumn('total').alignment = { horizontal: 'right' } as any;
 
       // Toplam satırı
-      const sum = (quoteItems || []).reduce((s: number, it: any) => s + (it.total || it.total_price || (it.unit_quantity || 1) * (it.unit_price || 0)), 0);
+      const sum = (quoteItems || []).reduce((s: number, it: any) => s + (it.total || it.total_price || ((it.unit_quantity !== undefined && it.unit_quantity !== null && it.unit_quantity !== "" ? Number(it.unit_quantity) : 1)) * (it.unit_price || 0)), 0);
       const totalRow = sheet.addRow(['', '', 'TOPLAM', '', '', '', fmtNumber(sum)]);
       totalRow.getCell(3).font = { bold: true };
       totalRow.getCell(7).font = { bold: true };

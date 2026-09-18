@@ -1,8 +1,18 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({path: 'frontend/.env.local'});
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const fs = require('fs');
+const env = fs.readFileSync('frontend/.env.local', 'utf8');
+const urlMatch = env.match(/NEXT_PUBLIC_SUPABASE_URL=(.*)/);
+const keyMatch = env.match(/SUPABASE_SERVICE_ROLE_KEY=(.*)/); // Use service role to query pg_policies
+const supabase = createClient(urlMatch[1].trim(), keyMatch[1].trim());
+
 async function run() {
-  const { data } = await supabase.from('settings').select('*');
-  console.log(JSON.stringify(data, null, 2));
+  const { data, error } = await supabase.rpc('get_policies');
+  if (error) {
+    // try direct query if rpc doesn't exist
+    const { data: q, error: e } = await supabase.from('pg_policies').select('*').limit(5);
+    console.log("pg_policies query:", q, e);
+  } else {
+    console.log("Policies:", data);
+  }
 }
 run();

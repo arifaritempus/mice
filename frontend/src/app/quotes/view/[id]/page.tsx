@@ -293,7 +293,7 @@ export default function QuoteViewPublicPage() {
             item.repeat !== ""
           )
             inferredRepeat = Number(item.repeat);
-          const qty = Number(item.unit_quantity || 1);
+          const qty = item.unit_quantity !== undefined && item.unit_quantity !== null && item.unit_quantity !== "" ? Number(item.unit_quantity) : 1;
           const uPrice = Number(item.unit_price || 0);
           const tPrice = Number(item.total_price || item.total || 0);
           if (qty > 0 && uPrice > 0 && tPrice > 0) {

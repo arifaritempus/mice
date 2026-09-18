@@ -326,7 +326,7 @@ export default function ProjectViewPublicPage() {
             it.repeat !== ""
           )
             inferredRepeat = Number(it.repeat);
-          const qty = Number(it.unit_quantity || 1);
+          const qty = it.unit_quantity !== undefined && it.unit_quantity !== null && it.unit_quantity !== "" ? Number(it.unit_quantity) : 1;
           const uPrice = Number(it.unit_price || 0);
           const tPrice = Number(it.total_price || it.total || 0);
           if (qty > 0 && uPrice > 0 && tPrice > 0) {
