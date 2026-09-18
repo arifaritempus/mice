@@ -25,7 +25,7 @@ export default function ExpensePendingPage() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [dateRange, setDateRange] = useState({
-    start: new Date().toISOString().split("T")[0],
+    start: "",
     end: "",
   });
 
