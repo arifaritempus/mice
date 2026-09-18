@@ -4413,20 +4413,23 @@ export const invoicesService = {
     if (error) throw error;
 
     // Contact adını çöz
-    const { data: contacts } = await Promise.all([
-      supabase.from('agencies').select('id, name').eq('id', data.contact_id).maybeSingle(),
-      supabase.from('hotels').select('id, name').eq('id', data.contact_id).maybeSingle(),
-      supabase.from('suppliers').select('id, name').eq('id', data.contact_id).maybeSingle()
-    ]).then(res => ({
-      data: res.find(r => r.data)?.data
-    }));
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    let contacts = null;
+    if (data.contact_id && isUUID(data.contact_id)) {
+      const res = await Promise.all([
+        supabase.from('agencies').select('id, name').eq('id', data.contact_id).maybeSingle(),
+        supabase.from('hotels').select('id, name').eq('id', data.contact_id).maybeSingle(),
+        supabase.from('suppliers').select('id, name').eq('id', data.contact_id).maybeSingle()
+      ]);
+      contacts = res.find(r => r.data)?.data;
+    }
 
     // Fatura kalemlerindeki item_id'ler üzerinden kaynak kalemleri ve kategori adlarını çöz
     const invoiceItems = data.invoice_items || [];
     let enrichedItems = invoiceItems;
 
     if (invoiceItems.length > 0) {
-      const itemIds = invoiceItems.map((ii: any) => ii.item_id).filter(Boolean);
+      const itemIds = invoiceItems.map((ii: any) => ii.item_id).filter(Boolean).filter(isUUID);
 
       // Kaynak satış ve alış kalemlerini paralel çek
       const [
