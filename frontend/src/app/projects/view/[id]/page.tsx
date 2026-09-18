@@ -1068,7 +1068,7 @@ export default function ProjectViewPublicPage() {
     return <div className="p-8 text-center text-red-500">{error}</div>;
 
   if (showPasswordForm) {
-    const loginLogo =
+    // const loginLogo =
       appSettings?.darkMenuLogo ||
       appSettings?.lightMenuLogo ||
       appSettings?.darkIconLogo ||
@@ -1084,12 +1084,19 @@ export default function ProjectViewPublicPage() {
         <div className="relative w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            {loginLogo && (
-              <img
-                src={loginLogo}
-                alt="Logo"
-                className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700"
-              />
+            {appSettings && (
+              <>
+                <img
+                  src={appSettings?.lightMenuLogo || appSettings?.lightIconLogo || "/LOGO_NAVY.png"}
+                  alt="Logo"
+                  className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700 dark:hidden"
+                />
+                <img
+                  src={appSettings?.darkMenuLogo || appSettings?.darkIconLogo || "/LOGO_OFFWHITE.png"}
+                  alt="Logo"
+                  className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700 hidden dark:block"
+                />
+              </>
             )}
           </div>
 
@@ -1160,18 +1167,24 @@ export default function ProjectViewPublicPage() {
       >
         {/* Banner - Dark Theme */}
         <div
-          className="p-6 flex flex-wrap justify-between items-center gap-4 transition-colors duration-500"
-          style={{ backgroundColor: "#232f38" }}
+          className="p-6 flex flex-wrap justify-between items-center gap-4 transition-colors duration-500 bg-white dark:bg-[#232f38] border-b border-gray-200 dark:border-white/10"
         >
           <div className="flex items-center gap-3">
-            {(appSettings?.darkIconLogo || appSettings?.lightIconLogo) && (
-              <img
-                src={appSettings?.darkIconLogo || appSettings?.lightIconLogo}
-                alt="Logo"
-                className="h-10 w-auto"
-              />
+            {appSettings && (
+              <>
+                <img
+                  src={appSettings?.lightMenuLogo || appSettings?.lightIconLogo || "/LOGO_NAVY.png"}
+                  alt="Logo"
+                  className="h-10 w-auto dark:hidden"
+                />
+                <img
+                  src={appSettings?.darkMenuLogo || appSettings?.darkIconLogo || "/LOGO_OFFWHITE.png"}
+                  alt="Logo"
+                  className="h-10 w-auto hidden dark:block"
+                />
+              </>
             )}
-            <span className="text-white text-lg font-bold tracking-tight">
+            <span className="text-gray-900 dark:text-white text-lg font-bold tracking-tight">
               {appSettings?.companyName ||
                 process.env.NEXT_PUBLIC_AGENCY_NAME ||
                 "COOP EVENT"}

@@ -432,8 +432,8 @@ export default function QuoteViewPublicPage() {
                 extension: guessExt(iconLogoBase64) as any,
               }),
               {
-                tl: { col: 0.15, row: 0.15 },
-                ext: { width: iconWidth, height: iconHeight },
+                tl: { col: 0.05, row: 0.1 },
+                ext: { width: 85, height: 85 },
               },
             );
           } catch (e) {
@@ -448,8 +448,8 @@ export default function QuoteViewPublicPage() {
                 extension: guessExt(wordmarkLogoBase64) as any,
               }),
               {
-                tl: { col: 5.9, row: 0.23 },
-                ext: { width: wordmarkWidth, height: wordmarkHeight },
+                tl: { nativeCol: 5, nativeColOff: 2300000, nativeRow: 0, nativeRowOff: 90000 } as any,
+                ext: { width: 85, height: 85 },
               },
             );
           } catch (e) {
@@ -919,7 +919,7 @@ export default function QuoteViewPublicPage() {
     return <div className="p-8 text-center text-red-500">{error}</div>;
 
   if (showPasswordForm) {
-    const loginLogo =
+    // const loginLogo =
       appSettings?.darkMenuLogo ||
       appSettings?.lightMenuLogo ||
       appSettings?.darkIconLogo ||
@@ -935,12 +935,19 @@ export default function QuoteViewPublicPage() {
         <div className="relative w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            {loginLogo && (
-              <img
-                src={loginLogo}
-                alt="Logo"
-                className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700"
-              />
+            {appSettings && (
+              <>
+                <img
+                  src={appSettings?.lightMenuLogo || appSettings?.lightIconLogo || "/LOGO_NAVY.png"}
+                  alt="Logo"
+                  className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700 dark:hidden"
+                />
+                <img
+                  src={appSettings?.darkMenuLogo || appSettings?.darkIconLogo || "/LOGO_OFFWHITE.png"}
+                  alt="Logo"
+                  className="h-24 w-auto object-contain drop-shadow-2xl transition-all duration-700 hidden dark:block"
+                />
+              </>
             )}
           </div>
 
@@ -1006,18 +1013,24 @@ export default function QuoteViewPublicPage() {
       >
         {/* Banner - Dark Theme */}
         <div
-          className="p-6 flex flex-wrap justify-between items-center gap-4 transition-colors duration-500"
-          style={{ backgroundColor: "#232f38" }}
+          className="p-6 flex flex-wrap justify-between items-center gap-4 transition-colors duration-500 bg-white dark:bg-[#232f38] border-b border-gray-200 dark:border-white/10"
         >
           <div className="flex items-center gap-3">
-            {(appSettings?.darkIconLogo || appSettings?.lightIconLogo) && (
-              <img
-                src={appSettings?.darkIconLogo || appSettings?.lightIconLogo}
-                alt="Logo"
-                className="h-10 w-auto"
-              />
+            {appSettings && (
+              <>
+                <img
+                  src={appSettings?.lightMenuLogo || appSettings?.lightIconLogo || "/LOGO_NAVY.png"}
+                  alt="Logo"
+                  className="h-10 w-auto dark:hidden"
+                />
+                <img
+                  src={appSettings?.darkMenuLogo || appSettings?.darkIconLogo || "/LOGO_OFFWHITE.png"}
+                  alt="Logo"
+                  className="h-10 w-auto hidden dark:block"
+                />
+              </>
             )}
-            <span className="text-white text-lg font-bold tracking-tight">
+            <span className="text-gray-900 dark:text-white text-lg font-bold tracking-tight">
               {appSettings?.companyName ||
                 process.env.NEXT_PUBLIC_AGENCY_NAME ||
                 "COOP EVENT"}
