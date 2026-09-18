@@ -4454,11 +4454,7 @@ export const invoicesService = {
       (sTransfers.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
       (sExtras.data || []).forEach((r: any) => r.sejour_id && sejourIds.add(r.sejour_id));
 
-      itemIds.forEach((id: string) => {
-        if (!projectIds.has(id) && !sourceMap[id]) {
-          sejourIds.add(id);
-        }
-      });
+
 
       const [projectsRes, sejoursRes] = await Promise.all([
         projectIds.size ? supabase.from('projects').select('id, quote_type, company_name, agency_id').in('id', Array.from(projectIds)) : Promise.resolve({ data: [] }),
