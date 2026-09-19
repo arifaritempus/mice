@@ -1220,7 +1220,7 @@ export default function ProjectViewPublicPage() {
           </div>
         </div>
 
-        <div className="p-6 md:p-10">
+        <div className="p-6 md:p-10 text-slate-800">
           {/* Main Info Grid - Exact Style from Quote Link */}
           <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10 p-8 rounded-2xl border transition-colors duration-500"

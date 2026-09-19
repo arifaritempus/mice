@@ -846,15 +846,7 @@ export default function QuoteViewPublicPage() {
     e.preventDefault();
     if (!token || !quote) return;
 
-    const hasPendingHotels = tempHotelsData.some(
-      (h: any) => !h.hotel_status || h.hotel_status === "BEKLEMEDE",
-    );
-    if (hasPendingHotels) {
-      toast.error(
-        "Lütfen tüm oteller için KONFİRME veya İPTAL durumunu seçiniz.",
-      );
-      return;
-    }
+    
 
     try {
       setApproving(true);
@@ -1067,7 +1059,7 @@ export default function QuoteViewPublicPage() {
         </div>
 
         {/* Content */}
-        <div className="p-6 md:p-10">
+        <div className="p-6 md:p-10 text-slate-800">
           <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10 p-8 rounded-2xl border transition-colors duration-500"
             style={{
@@ -1620,16 +1612,31 @@ export default function QuoteViewPublicPage() {
                     {!showApprovalForm && (
                       <button
                         onClick={() => {
-                          const hasPendingHotels = tempHotelsData.some(
-                            (h: any) =>
-                              !h.hotel_status || h.hotel_status === "BEKLEMEDE",
-                          );
-                          if (hasPendingHotels) {
+                          let newData = [...tempHotelsData];
+                          
+                          // Eğer hiç konfirme yoksa ve tek otel varsa otomatik konfirme yap
+                          if (newData.length === 1 && newData[0].hotel_status !== "KONFİRME") {
+                            newData[0].hotel_status = "KONFİRME";
+                            newData[0].is_confirmed = true;
+                          }
+
+                          const confirmedCount = newData.filter((h: any) => h.hotel_status === "KONFİRME").length;
+                          if (confirmedCount === 0) {
                             toast.error(
-                              "Lütfen teklifi onaylamadan önce tüm oteller için KONFİRME veya İPTAL durumunu seçiniz.",
+                              "Lütfen teklifi onaylamadan önce hangi oteli/otelleri seçtiğinizi (KONFİRME) belirtiniz.",
                             );
                             return;
                           }
+                          
+                          // Auto-cancel remaining hotels
+                          newData = newData.map((h) => ({
+                            ...h,
+                            hotel_status: h.hotel_status === "KONFİRME" ? "KONFİRME" : "İPTAL",
+                            is_confirmed: h.hotel_status === "KONFİRME"
+                          }));
+                          
+                          setTempHotelsData(newData);
+                          setTempStatus("KONFİRME");
                           setShowApprovalForm(true);
                         }}
                         className="bg-white text-blue-600 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-blue-900/20"
