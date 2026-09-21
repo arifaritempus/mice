@@ -13899,105 +13899,19 @@ export default function ProjectDetailPage() {
         },
       } as any;
 
-      // Üst Bant (A1:AB1) - zemin rengi ve logolar (28 sütun)
-      const topBandRow = sheet.addRow([]);
-      topBandRow.height = 70;
-      sheet.mergeCells("A1:AB1"); // 28 sütun
+      // Import şablonuyla aynı olması için basit başlık
+      const titleRow = sheet.addRow([`KONAKLAMA LİSTESİ - ${project?.name || ""}`]);
+      titleRow.height = 30;
+      titleRow.getCell(1).font = { bold: true, size: 14 };
+      titleRow.getCell(1).alignment = { horizontal: "center", vertical: "middle" };
+      sheet.mergeCells("A1:AB1");
 
-      for (let c = 1; c <= 28; c++) {
-        sheet.getRow(1).getCell(c).fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FF232F38" },
-        };
-      }
+      let rowIndex = 1; // 1. satır eklendi
 
-      const { iconLogoBase64, wordmarkLogoBase64 } =
-        await getLogosForExcel(true);
-      const inchToPx = (inch: number) => Math.round(inch * 96);
-      const guessExt = (dataUrl: string): "png" | "jpeg" =>
-        (dataUrl || "").includes("image/png") ? "png" : "jpeg";
-
-      if (iconLogoBase64) {
-        const iconId = workbook.addImage({
-          base64: iconLogoBase64,
-          extension: guessExt(iconLogoBase64),
-        });
-        sheet.addImage(iconId, {
-          tl: { col: 0.05, row: 0.1 },
-          ext: { width: 85, height: 85 },
-        });
-      }
-
-      if (wordmarkLogoBase64) {
-        const wordmarkId = workbook.addImage({
-          base64: wordmarkLogoBase64,
-          extension: guessExt(wordmarkLogoBase64),
-        });
-        sheet.addImage(wordmarkId, {
-          tl: { nativeCol: 7, nativeColOff: 1800000, nativeRow: 0, nativeRowOff: 90000 } as any,
-          ext: { width: 85, height: 85 },
-        });
-      }
-
-      const headerData = [
-        { left: "PROJE ADI", right: "TARİH" },
-        { left: "REFERANS", right: "DURUM" },
-      ];
-
-      let rowIndex = 2;
-      headerData.forEach((item, index) => {
-        const leftValue =
-          index === 0 ? project?.name || "" : project?.reference || "";
-        const rightValue =
-          index === 0 ? new Date().toLocaleDateString("tr-TR") : "Aktif";
-
-        const rowValues: any[] = new Array(28); // 28 sütun
-        rowValues[0] = item.left;
-        rowValues[1] = leftValue;
-        rowValues[26] = item.right; // 27. sütun
-        rowValues[27] = rightValue; // 28. sütun
-
-        const headerRow = sheet.addRow(rowValues);
-        headerRow.height = 24;
-
-        headerRow.getCell(1).font = {
-          bold: true,
-          size: 12,
-          color: { argb: "FF000000" },
-        };
-        headerRow.getCell(1).alignment = {
-          horizontal: "left",
-          vertical: "middle",
-        };
-        headerRow.getCell(2).font = { size: 12, color: { argb: "FF000000" } };
-        headerRow.getCell(2).alignment = {
-          horizontal: "left",
-          vertical: "middle",
-        };
-        headerRow.getCell(27).font = {
-          bold: true,
-          size: 12,
-          color: { argb: "FF000000" },
-        };
-        headerRow.getCell(27).alignment = {
-          horizontal: "left",
-          vertical: "middle",
-        };
-        headerRow.getCell(28).font = { size: 12, color: { argb: "FF000000" } };
-        headerRow.getCell(28).alignment = {
-          horizontal: "left",
-          vertical: "middle",
-        };
-
-        rowIndex++;
-      });
-
-      sheet.addRow([]);
-      rowIndex++;
-
-      // Tablo başlıkları
+      // Tablo başlıkları (İmport için zorunlu olan FIXED_HEADERS 2. satırda olmalı)
       const tableHeaderRow = sheet.addRow(FIXED_HEADERS);
+      rowIndex = 2; // 2. satır
+      
       tableHeaderRow.height = 30;
       tableHeaderRow.font = {
         bold: true,

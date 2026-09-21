@@ -223,6 +223,11 @@ const AccommodationTabOptimized = memo(({
 
   useEffect(() => {
     if (editingAccommodationIndex !== null && tempAccommodationItem) {
+      let newGeceleme = tempAccommodationItem.geceleme;
+      let newToplam = tempAccommodationItem.toplam;
+      let hasChanges = false;
+
+      // 1. Geceleme Hesaplama
       const parseDate = (dateStr: string) => {
         if (!dateStr) return null;
         if (dateStr.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
@@ -238,18 +243,51 @@ const AccommodationTabOptimized = memo(({
 
       if (checkIn && checkOut && checkOut > checkIn) {
         const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        // Sadece eğer geceleme değişmesi gerekiyorsa state'i güncelle (Sonsuz döngüyü engellemek için)
+        // Math.round ile hatalı 24.000000001 saat farkından kaynaklı yanlış hesaplamayı düzelt
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
         if (String(tempAccommodationItem.geceleme) !== String(diffDays)) {
-          setTempAccommodationItem(prev => ({
-            ...prev,
-            geceleme: String(diffDays)
-          }));
+          newGeceleme = String(diffDays);
+          hasChanges = true;
         }
       }
+
+      // 2. Toplam Hesaplama
+      const parseNum = (val: any) => {
+        if (!val) return 0;
+        const num = parseFloat(String(val).replace(",", "."));
+        return isNaN(num) ? 0 : num;
+      };
+      
+      const paketVal = parseNum(tempAccommodationItem.paket);
+      const otelVal = parseNum(tempAccommodationItem.otel);
+      const ucakVal = parseNum(tempAccommodationItem.ucak);
+      
+      // Sadece en az biri doluysa otomatik topla
+      if (tempAccommodationItem.paket || tempAccommodationItem.otel || tempAccommodationItem.ucak) {
+        const computedToplam = paketVal + otelVal + ucakVal;
+        const strToplam = computedToplam > 0 ? String(computedToplam) : "";
+        if (String(tempAccommodationItem.toplam) !== strToplam) {
+          newToplam = strToplam;
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        setTempAccommodationItem(prev => ({
+          ...prev,
+          geceleme: newGeceleme,
+          toplam: newToplam
+        }));
+      }
     }
-  }, [tempAccommodationItem?.gelis_tarihi, tempAccommodationItem?.cikis_tarihi, editingAccommodationIndex]);
+  }, [
+    tempAccommodationItem?.gelis_tarihi, 
+    tempAccommodationItem?.cikis_tarihi,
+    tempAccommodationItem?.paket,
+    tempAccommodationItem?.otel,
+    tempAccommodationItem?.ucak,
+    editingAccommodationIndex
+  ]);
 
   // Click outside handler for editing
   useEffect(() => {
@@ -559,9 +597,9 @@ const toggleColumnVisibility = useCallback((column: string) => {
                           {editingAccommodationIndex === originalIndex ? <input type="text" value={tempAccommodationItem.oda_notu || ""} onChange={e => setTempAccommodationItem({
                     ...tempAccommodationItem,
                     oda_notu: e.target.value
-                  })} onKeyDown={handleKeyDown} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} /> : <span className="text-gray-900 dark:text-gray-100 text-xs">
+                  })} onKeyDown={handleKeyDown} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center" disabled={!permEdit || (compIsLocked && !isSuperAdmin)} /> : <div className="text-gray-900 dark:text-gray-100 text-xs truncate max-w-[7rem] mx-auto cursor-help" title={item.oda_notu || ""}>
                               {item.oda_notu || ""}
-                            </span>}
+                            </div>}
                         </td>
 
                         <td className="w-28 px-1 py-1 text-center">
