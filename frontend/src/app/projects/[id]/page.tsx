@@ -14306,13 +14306,15 @@ export default function ProjectDetailPage() {
         const day = parseInt(parts[0]);
         const month = parseInt(parts[1]) - 1; // JavaScript months are 0-based
         const year = parseInt(parts[2]);
-        return new Date(year, month, day);
+        return new Date(year, month, day, 12, 0, 0); // Saat 12:00 yaparak Excel timezone kaymalarini engelle
       }
     }
 
     // ISO format veya diğer formatları dene
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? null : date;
+    if (isNaN(date.getTime())) return null;
+    date.setHours(12, 0, 0, 0); // Saat 12:00 yaparak timezone kaymasını engelle
+    return date;
   };
 
   const getDateRange = (startDate: Date, endDate: Date): string[] => {
