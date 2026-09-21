@@ -489,8 +489,26 @@ export default function UltimateDashboard() {
         projectUsersService.getAll().catch(() => []),
       ]);
 
+      // vw_rp_proje_satis_maliyet içindeki muhtemel cross-join (kartezyen çarpım) 
+      // hatasını (milyonluk hatalı ciro görünümü) çözmek için satış ve maliyetleri doğrudan satırlardan hesapla
+      const fixedRpProj = Array.isArray(rpProj) ? rpProj.map(p => {
+        const pSales = sales.data?.filter((s: any) => s.project_id === p.project_id) || [];
+        const pPurch = purch.data?.filter((s: any) => s.project_id === p.project_id) || [];
+        
+        const realSatis = pSales.reduce((sum, item) => sum + (Number(item.total_try) || 0), 0);
+        const realMaliyet = pPurch.reduce((sum, item) => sum + (Number(item.total_try) || 0), 0);
+        
+        // Eğer satış datası bulabildiysek bizim hesapladığımızı kullan
+        // Çünkü cross join varsa view'daki satis_tl aşırı yüksek olur
+        return {
+          ...p,
+          satis_tl: realSatis > 0 || pSales.length > 0 ? realSatis : p.satis_tl,
+          maliyet_tl: realMaliyet > 0 || pPurch.length > 0 ? realMaliyet : p.maliyet_tl
+        };
+      }) : [];
+
       setData({
-        rpProjectRows: rpProj,
+        rpProjectRows: fixedRpProj,
         rpSejourRows: rpSej,
         collectionPlans: Array.isArray(cols) ? cols : [],
         paymentPlans: Array.isArray(pays) ? pays : [],
