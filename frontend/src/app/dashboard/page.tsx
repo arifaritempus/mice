@@ -565,7 +565,10 @@ export default function UltimateDashboard() {
 
     // KPI: Revenues
     const projectIdsInRange = fProj.map((p: any) => p.project_id);
-    const miceRev = data.salesItems.filter((s: any) => projectIdsInRange.includes(s.project_id)).reduce((acc: number, s: any) => acc + (Number(s.total_try) || (Number(s.total_price) * Number(s.fx)) || 0), 0);
+    const miceRev = fProj.reduce(
+      (acc: number, p: any) => acc + (Number(p.satis_tl) || 0),
+      0,
+    );
     const miceCost = fProj.reduce(
       (acc: number, p: any) => acc + (Number(p.maliyet_tl) || 0),
       0,
