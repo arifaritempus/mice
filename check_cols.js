@@ -1,8 +1,9 @@
-const fs = require('fs');
-const f = 'frontend/src/app/quotes/view/[id]/page.tsx';
-const lines = fs.readFileSync(f, 'utf8').split('\n');
-lines.forEach((line, i) => {
-  if (line.includes('{ width: 45 }') || line.includes('sheet.getColumn')) {
-    console.log(`Line ${i+1}:`, line);
-  }
-});
+require('dotenv').config({ path: 'frontend/.env.local' });
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+async function check() {
+  const { data, error } = await supabase.from('project_sales_items').select('*').limit(1);
+  if (data && data.length > 0) console.log(Object.keys(data[0]));
+}
+check();

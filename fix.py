@@ -1,29 +1,14 @@
-with open('frontend/src/app/quotes/create/page.tsx', 'r') as f:
-    content = f.read()
-
 import re
 
-# Find the start of the details tab
-pattern_start = "        {activeMainTab === 'details' && ("
-start_idx = content.find(pattern_start)
+with open('frontend/src/app/dashboard/page.tsx', 'r') as f:
+    content = f.read()
 
-# The form ends with:
-#           {/* Submit Button */}
-#           <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">
-# ...
-#             </button>
-#           </div>
-#         </form>
+pattern = r"addOp\(sd, ed, t\('home\.project'\) \|\| \"Proje\", `\$\{t\('home\.project'\) \|\| \"Proje\"}: \$\{code\} \| C-IN: \$\{cIn\} \| C-OUT: \$\{cOut\} \| \$\{t\('home\.company'\) \|\| \"Firma\"\}: \$\{firma\} \| \$\{t\('home\.agency'\) \|\| \"Acente\"\}: \$\{acente\}`\, \"bg-blue-500\"\);"
+replacement = r"const hotel = getHotelName(p.hotel_id, \"-\");\n      addOp(sd, ed, t('home.project') || \"Proje\", `${t('home.project') || \"Proje\"}: ${code} | C-IN: ${cIn} | C-OUT: ${cOut} | ${t('home.company') || \"Firma\"}: ${firma} | ${t('home.agency') || \"Acente\"}: ${acente} | Otel: ${hotel}`, \"bg-blue-500\");"
 
-pattern_end = """          {/* Submit Button */}
-          <div className="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg border-t border-gray-100 dark:border-gray-800">"""
+new_content = re.sub(pattern, replacement, content)
 
-end_idx = content.find(pattern_end)
+with open('frontend/src/app/dashboard/page.tsx', 'w') as f:
+    f.write(new_content)
 
-if start_idx != -1 and end_idx != -1:
-    new_content = content[:end_idx] + "          </div>\n        )}\n" + content[end_idx:]
-    with open('frontend/src/app/quotes/create/page.tsx', 'w') as f:
-        f.write(new_content)
-    print("Fixed.")
-else:
-    print("Not found.")
+print("Replaced:", new_content != content)

@@ -693,13 +693,23 @@ export default function UltimateDashboard() {
     const projPurchInRange = data.purchaseItems.filter((p: any) => projectIdsInRange.includes(p.project_id));
     
     projSalesInRange.forEach((si: any) => {
-      const h = getHotelName(si.hotel_id, t('dashboard.unknownHotelProject') || "Bilinmeyen Otel (Proje)");
+      let hId = si.hotel_id;
+      if (!hId) {
+        const proj = data.projects.find((p: any) => p.id === si.project_id);
+        if (proj && proj.hotel_id) hId = proj.hotel_id;
+      }
+      const h = getHotelName(hId, t('dashboard.unknownHotelProject') || "Bilinmeyen Otel (Proje)");
       if (!htlMap[h]) htlMap[h] = { ciro: 0, maliyet: 0 };
       htlMap[h].ciro += (Number(si.total_try) || (Number(si.total_price) * Number(si.fx)) || 0);
     });
     
     projPurchInRange.forEach((pi: any) => {
-      const h = getHotelName(pi.hotel_id, t('dashboard.unknownHotelProject') || "Bilinmeyen Otel (Proje)");
+      let hId = pi.hotel_id;
+      if (!hId) {
+        const proj = data.projects.find((p: any) => p.id === pi.project_id);
+        if (proj && proj.hotel_id) hId = proj.hotel_id;
+      }
+      const h = getHotelName(hId, t('dashboard.unknownHotelProject') || "Bilinmeyen Otel (Proje)");
       if (!htlMap[h]) htlMap[h] = { ciro: 0, maliyet: 0 };
       htlMap[h].maliyet += (Number(pi.total_try) || (Number(pi.total_price) * Number(pi.fx)) || 0);
     });
