@@ -117,12 +117,24 @@ export default function IncomePendingPage() {
     });
   }, [items, globalTokens]);
 
-  const totalPagesComputed = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const groupedItemsList = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    filteredItems.forEach((item) => {
+      const projectId = item.project?.id || item.sejour_id || "no-project";
+      const groupId = `${projectId}`;
+      if (!groups[groupId]) groups[groupId] = [];
+      groups[groupId].push(item);
+    });
+    return Object.values(groups);
+  }, [filteredItems]);
+
+  const totalPagesComputed = Math.max(1, Math.ceil(groupedItemsList.length / pageSize));
   
   const displayItems = useMemo(() => {
     const start = (page - 1) * pageSize;
-    return filteredItems.slice(start, start + pageSize);
-  }, [filteredItems, page, pageSize]);
+    const pageGroups = groupedItemsList.slice(start, start + pageSize);
+    return pageGroups.flat();
+  }, [groupedItemsList, page, pageSize]);
 
   if (permissionsLoading) {
     return <LoadingSpinner message="Yükleniyor..." />;
@@ -284,7 +296,7 @@ export default function IncomePendingPage() {
             <PaginationControls
               page={page}
               pageSize={pageSize}
-              total={filteredItems.length}
+              total={groupedItemsList.length}
               totalPages={totalPagesComputed}
               preferenceKey="income_pending_page_size"
               compactRight
