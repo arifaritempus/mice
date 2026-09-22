@@ -4747,6 +4747,8 @@ export const invoicesService = {
 
     // 1. MICE Satışları
     const miceItems = (items || []).map(item => {
+      const invoicedAmount = invoicedMap[item.id] || 0;
+      const balance = Number(item.total_price || 0) - invoicedAmount;
       const cat = categoriesMap[item.category] || {};
       const subCat = categoriesMap[item.sub_category] || {};
       const proj = projectsMap[item.project_id] || null;
@@ -4755,19 +4757,14 @@ export const invoicesService = {
       const categoryName = cat.name || (isUUID(item.category) ? 'Bilinmiyor' : item.category);
       const subCategoryName = subCat.name || (isUUID(item.sub_category) ? null : item.sub_category);
       
-      const vatRate = item.vat != null ? item.vat : (subCat.revenue_vat_rate ?? cat.revenue_vat_rate ?? 0);
-      const grossTotal = Number(item.total_price || 0) * (1 + (vatRate / 100));
-      const invoicedAmount = invoicedMap[item.id] || 0;
-      const balance = grossTotal - invoicedAmount;
-      
       return {
         ...item,
         category_name: categoryName,
         sub_category_name: subCategoryName,
         description: cleanDescription(item.description),
-        vat_rate: vatRate,
+        // Kategori tanımında KDV varsa onu kullan, yoksa kalemdeki KDV'yi kullan
+        vat_rate: item.vat != null ? item.vat : (subCat.revenue_vat_rate ?? cat.revenue_vat_rate ?? 0),
         project: proj,
-        total_price: grossTotal,
         invoiced_amount: invoicedAmount,
         balance: balance
       };
@@ -4844,10 +4841,9 @@ export const invoicesService = {
     });
 
     const formattedSejourItems = sejourItems.map(item => {
-      const grossTotal = Number(item.total_price || 0) * (1 + (item.vat_rate / 100));
       const invoicedAmount = invoicedMap[item.id] || 0;
-      const balance = grossTotal - invoicedAmount;
-      return { ...item, total_price: grossTotal, invoiced_amount: invoicedAmount, balance };
+      const balance = Number(item.total_price || 0) - invoicedAmount;
+      return { ...item, invoiced_amount: invoicedAmount, balance };
     });
 
     return [...miceItems, ...formattedSejourItems].filter(item => item.balance > 0.01 && item.project !== null);
@@ -5166,10 +5162,9 @@ export const invoicesService = {
     });
 
     const formattedSejourItems = sejourItems.map((item: any) => {
-      const grossTotal = Number(item.total_price || 0) * (1 + (item.vat_rate / 100));
       const invoicedAmount = invoicedMap[item.id] || 0;
-      const balance = grossTotal - invoicedAmount;
-      return { ...item, total_price: grossTotal, invoiced_amount: invoicedAmount, balance };
+      const balance = Number(item.total_price || 0) - invoicedAmount;
+      return { ...item, invoiced_amount: invoicedAmount, balance };
     });
 
     return [...miceItems, ...formattedSejourItems].filter((item: any) => item.balance > 0.01 && item.project !== null);
