@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   agenciesService,
   hotelsService,
@@ -98,6 +98,7 @@ export default function InvoiceModal({
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [searchAccount, setSearchAccount] = useState("");
 
   // Local items state to allow row deletion
@@ -179,7 +180,73 @@ export default function InvoiceModal({
         setInvoiceDate(new Date().toISOString().split("T")[0]);
         setSelectedAccountId("");
         setSelectedAccountType("");
-        setNotes("");
+        
+        const generateAutoNotes = async () => {
+          let autoNotes = "";
+          if (selectedItems.length > 0) {
+            const firstProj = selectedItems[0].project;
+            if (firstProj) {
+              const formatDate = (dateStr) => {
+                if (!dateStr) return "";
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return "";
+                return d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
+              };
+              const cIn = formatDate(firstProj.date_start || firstProj.check_in_date);
+              const cOut = formatDate(firstProj.date_end || firstProj.check_out_date);
+              const dateStr = (cIn || cOut) ? `${cIn} - ${cOut}` : "";
+              const projNo = firstProj.voucher_number || firstProj.title || firstProj.description || firstProj.reference || "";
+
+              if (firstProj.quote_type === "SEJOUR") {
+                let roomsText = "";
+                let passengersText = "";
+                let allHotels = firstProj.hotel_name || "";
+                try {
+                  const { supabase } = await import("@/lib/supabase");
+                  const { data: roomsData } = await supabase.from('sejour_rooms').select('guest_info, adult_count, child_count, infant_count, accommodation_type, hotels(name)').eq('sejour_id', firstProj.id);
+                  if (roomsData && roomsData.length > 0) {
+                    const totalAdults = roomsData.reduce((acc, r) => acc + (Number(r.adult_count) || 0), 0);
+                    const totalChildren = roomsData.reduce((acc, r) => acc + (Number(r.child_count) || 0), 0);
+                    const totalInfants = roomsData.reduce((acc, r) => acc + (Number(r.infant_count) || 0), 0);
+                    
+                    const roomTypeCounts = {};
+                    roomsData.forEach(r => {
+                       let type = String(r.accommodation_type || "ODA").toUpperCase();
+                       if (type === "SINGLE" || type === "SNG.") type = "SNG";
+                       if (type === "DOUBLE" || type === "DBL.") type = "DBL";
+                       if (type === "TRIPLE" || type === "TRP.") type = "TRP";
+                       roomTypeCounts[type] = (roomTypeCounts[type] || 0) + 1;
+                    });
+                    
+                    const roomStr = Object.entries(roomTypeCounts).map(([t, c]) => `${c} ${t}`).join(" , ");
+                    roomsText = `${roomStr} | ${totalAdults}+${totalChildren}+${totalInfants} KİŞİ`;
+                    
+                    const guests = roomsData.map(r => r.guest_info).filter(Boolean);
+                    passengersText = guests.join(" , ");
+
+                    const hotelSet = new Set();
+                    if (firstProj.hotel_name) hotelSet.add(firstProj.hotel_name);
+                    roomsData.forEach(r => {
+                      if (r.hotels && r.hotels.name) hotelSet.add(r.hotels.name);
+                    });
+                    if (hotelSet.size > 0) {
+                      allHotels = Array.from(hotelSet).join(" & ");
+                    }
+                  }
+                } catch(e) { console.error("Sejour notes error:", e); }
+
+                autoNotes = [projNo, dateStr, "PAKET TUR", roomsText, allHotels, passengersText].filter(Boolean).join(" | ");
+              } else {
+                const firma = firstProj.company_name || firstProj.customer_name || "";
+                const acente = firstProj.agency_name || "";
+                const otel = firstProj.hotel_name || "";
+                autoNotes = [projNo, dateStr, firma, acente, otel].filter(Boolean).join(" | ");
+              }
+            }
+          }
+          setNotes(autoNotes);
+        };
+        generateAutoNotes();
 
         setCurrentItems([...selectedItems]);
         selectedItems.forEach((item) => {
@@ -267,7 +334,7 @@ export default function InvoiceModal({
   const calculateTotals = () => {
     let matrahTRY = 0;
     let kdvTRY = 0;
-    const totalsByCurrency: Record<string, { matrah: number; kdv: number; total: number }> = {};
+    const totalsByCurrency: Record<string, { matrah: number; kdv: number; total: number, kdvBreakdown: Record<number, { matrah: number; kdv: number }> }> = {};
     
     currentItems.forEach((item) => {
       const grossAmount = itemAmounts[item.id] || 0;
@@ -282,11 +349,17 @@ export default function InvoiceModal({
       kdvTRY += rowKdvOriginal * er;
 
       if (!totalsByCurrency[currency]) {
-        totalsByCurrency[currency] = { matrah: 0, kdv: 0, total: 0 };
+        totalsByCurrency[currency] = { matrah: 0, kdv: 0, total: 0, kdvBreakdown: {} };
       }
       totalsByCurrency[currency].matrah += rowMatrahOriginal;
       totalsByCurrency[currency].kdv += rowKdvOriginal;
       totalsByCurrency[currency].total += grossAmount;
+
+      if (!totalsByCurrency[currency].kdvBreakdown[vatRate]) {
+        totalsByCurrency[currency].kdvBreakdown[vatRate] = { matrah: 0, kdv: 0 };
+      }
+      totalsByCurrency[currency].kdvBreakdown[vatRate].matrah += rowMatrahOriginal;
+      totalsByCurrency[currency].kdvBreakdown[vatRate].kdv += rowKdvOriginal;
     });
 
     const genelToplamTRY = matrahTRY + kdvTRY;
@@ -299,6 +372,52 @@ export default function InvoiceModal({
     () => sortInvoiceModalItems(currentItems, categories),
     [currentItems, categories],
   );
+
+  const groupedLineItemsArray = useMemo(() => {
+    const groupMap = new Map<string, { name: string, items: any[]; totalAmount: number; currency: string }>();
+    sortedLineItems.forEach((item) => {
+      let mainName = "DİĞER";
+      const catId = item.category || (item.project_sales_items ? item.project_sales_items.category : null) || item.category_name;
+      const catMatch = categories.find(c => c.id === catId || c.code === catId || c.name === catId);
+      if (catMatch) {
+         if (catMatch.parent_id) {
+            const parentMatch = categories.find(c => c.id === catMatch.parent_id);
+            mainName = parentMatch ? parentMatch.name : catMatch.name;
+         } else {
+            mainName = catMatch.name;
+         }
+      } else if (item.category_name) {
+         mainName = item.category_name.split(' | ')[0];
+      }
+      const key = mainName.toUpperCase();
+      if (!groupMap.has(key)) {
+        groupMap.set(key, { name: mainName, items: [], totalAmount: 0, currency: itemCurrencies[item.id] || "TRY" });
+      }
+      const g = groupMap.get(key)!;
+      g.items.push(item);
+      g.totalAmount += (itemAmounts[item.id] || 0);
+    });
+    const arr = Array.from(groupMap.values());
+    const isSejour = selectedItems.length > 0 && selectedItems[0]?.project?.quote_type === 'SEJOUR';
+    
+    if (isSejour) {
+      const sejourOrder = ["KONAKLAMA", "OTEL", "UÇAK", "UCAK", "BİLET", "BILET", "TRANSFER", "EKSTRA"];
+      const getRank = (name) => {
+         const upper = name.toUpperCase();
+         for(let i=0; i<sejourOrder.length; i++) {
+            if (upper.includes(sejourOrder[i])) return i;
+         }
+         return 99;
+      };
+      arr.sort((a, b) => getRank(a.name) - getRank(b.name));
+    }
+    
+    return arr;
+  }, [sortedLineItems, itemAmounts, itemCurrencies, categories, selectedItems]);
+
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -505,7 +624,25 @@ export default function InvoiceModal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
-                  {sortedLineItems.map((item) => {
+                  {groupedLineItemsArray.map((groupData) => (
+                    <React.Fragment key={groupData.name}>
+                      <tr className="bg-gray-100/50 dark:bg-gray-800/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => toggleGroup(groupData.name)}>
+                        <td colSpan={6} className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-gray-900 dark:text-v3-text uppercase">{groupData.name}</span>
+                              <span className="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">{groupData.items.length} Kalem</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="font-bold text-blue-600 dark:text-blue-400">
+                                {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(groupData.totalAmount)} <span className="text-xs">{groupData.currency}</span>
+                              </span>
+                              <svg className={`w-4 h-4 text-gray-500 transition-transform ${expandedGroups[groupData.name] ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedGroups[groupData.name] && groupData.items.map((item) => {
                     const isSejour = item.project?.quote_type === "SEJOUR";
                     const isMice = !!item.project && !isSejour;
                     const projectTypeBadge = isSejour
@@ -649,6 +786,8 @@ export default function InvoiceModal({
                       </tr>
                     );
                   })}
+                    </React.Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -678,6 +817,12 @@ export default function InvoiceModal({
                         {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(vals.matrah)} <span className="text-xs font-semibold">{curr}</span>
                       </span>
                     </div>
+                    {vals.kdvBreakdown && Object.entries(vals.kdvBreakdown).sort((a,b) => Number(a[0])-Number(b[0])).map(([rate, breakdown]) => (
+                      <div key={rate} className="flex justify-between items-center text-[11px] font-medium text-gray-500 pl-2 border-l-2 border-gray-200 dark:border-gray-700 ml-1">
+                        <span>%{rate} KDV (Matrah: {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(breakdown.matrah)})</span>
+                        <span>{new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(breakdown.kdv)} <span className="text-[10px]">{curr}</span></span>
+                      </div>
+                    ))}
                     <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400">
                       <span>KDV Toplamı</span>
                       <span className="text-gray-900 dark:text-v3-text">

@@ -1023,10 +1023,10 @@ export default function UltimateDashboard() {
       const cIn = new Date(sd).toLocaleDateString(loc);
       const cOut = new Date(ed).toLocaleDateString(loc);
       
-      addOp(sd, ed, t('home.project') || "Proje", `${t('home.project') || "Proje"}: ${code} | C-IN: ${cIn} | C-OUT: ${cOut} | ${t('home.company') || "Firma"}: ${firma} | ${t('home.agency') || "Acente"}: ${acente}`, "bg-blue-500");
+      const hotel = getHotelName(p.hotel_id, "-");
+      addOp(sd, ed, t('home.project') || "Proje", `${t('home.project') || "Proje"}: ${code} | C-IN: ${cIn} | C-OUT: ${cOut} | ${t('home.company') || "Firma"}: ${firma} | ${t('home.agency') || "Acente"}: ${acente} | Otel: ${hotel}`, "bg-blue-500");
       // Ekip
       if (p.team_members || p.manager_id) {
-        const hotel = getHotelName(p.hotel_id, "-");
         let sorumluList: string[] = [];
         
         // 1. Projeye atanmış tüm kullanıcıları project_users'dan çek

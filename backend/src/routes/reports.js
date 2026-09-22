@@ -392,6 +392,7 @@ const paginateRows = (rows, page, pageSize) => {
 
 const mapOtelDetayProjeMaliyetRow = (r, hasMainCategory) => ({
   proje_referans: r.proje_referans || r.referans_no || r.proje_referansi || '-',
+  organizasyon_cikis_tarihi: (pickFirstDate(r.organizasyon_tarihi, r.organizasyon_tarih, r.baslangic_tarihi, r.baslangic_tarih, r.proje_baslangic_tarihi, r.giris_tarihi, r.tarih, r.created_at) && pickFirstDate(r.cikis_tarihi, r.cikis_tarih, r.bitis_tarihi, r.bitis_tarih, r.proje_bitis_tarihi, r.checkout_tarihi)) ? `${pickFirstDate(r.organizasyon_tarihi, r.organizasyon_tarih, r.baslangic_tarihi, r.baslangic_tarih, r.proje_baslangic_tarihi, r.giris_tarihi, r.tarih, r.created_at)} - ${pickFirstDate(r.cikis_tarihi, r.cikis_tarih, r.bitis_tarihi, r.bitis_tarih, r.proje_bitis_tarihi, r.checkout_tarihi)}` : (pickFirstDate(r.organizasyon_tarihi, r.organizasyon_tarih, r.baslangic_tarihi, r.baslangic_tarih, r.proje_baslangic_tarihi, r.giris_tarihi, r.tarih, r.created_at) || pickFirstDate(r.cikis_tarihi, r.cikis_tarih, r.bitis_tarihi, r.bitis_tarih, r.proje_bitis_tarihi, r.checkout_tarihi) || '-'),
   organizasyon_tarihi: pickFirstDate(
     r.organizasyon_tarihi,
     r.organizasyon_tarih,
@@ -445,6 +446,7 @@ const fetchOtelDetayProjeMaliyetRows = async () => {
 const mapProjeSatisMaliyetFromViewRow = (r) => ({
   project_id: firstNonEmpty(r.project_id, r.id) || null,
   referans_no: firstNonEmpty(r.referans_no, r.referans, r.proje_referans, r.reference) || '-',
+  organizasyon_cikis_tarihi: (pickFirstDate(r.organizasyon_tarihi, r.organizasyon_tarih, r.baslangic_tarihi, r.baslangic_tarih, r.proje_baslangic_tarihi, r.giris_tarihi, r.tarih, r.created_at) && pickFirstDate(r.cikis_tarihi, r.cikis_tarih, r.bitis_tarihi, r.bitis_tarih, r.proje_bitis_tarihi, r.checkout_tarihi)) ? `${pickFirstDate(r.organizasyon_tarihi, r.organizasyon_tarih, r.baslangic_tarihi, r.baslangic_tarih, r.proje_baslangic_tarihi, r.giris_tarihi, r.tarih, r.created_at)} - ${pickFirstDate(r.cikis_tarihi, r.cikis_tarih, r.bitis_tarihi, r.bitis_tarih, r.proje_bitis_tarihi, r.checkout_tarihi)}` : (pickFirstDate(r.organizasyon_tarihi, r.organizasyon_tarih, r.baslangic_tarihi, r.baslangic_tarih, r.proje_baslangic_tarihi, r.giris_tarihi, r.tarih, r.created_at) || pickFirstDate(r.cikis_tarihi, r.cikis_tarih, r.bitis_tarihi, r.bitis_tarih, r.proje_bitis_tarihi, r.checkout_tarihi) || '-'),
   organizasyon_tarihi: pickFirstDate(
     r.organizasyon_tarihi,
     r.organizasyon_tarih,
@@ -520,7 +522,7 @@ router.get('/data', async (req, res) => {
         return {
           teklif_no: firstNonEmpty(r.teklif_no, r.quote_number, r.quote_no) || '-',
           cin_tarihi: pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi),
-          cout_tarihi: pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi),
+        cin_cout_tarihi: (pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi) && pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi)) ? `${pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi)} - ${pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi)}` : (pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi) || pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi) || '-'),
           firma_adi: firstNonEmpty(r.firma_adi, r.firma, r.company_name) || '-',
           acente: firstNonEmpty(r.acente, r.agency_name) || '-',
           otel: firstNonEmpty(r.otel, r.otel_adi, r.hotel_name) || '-',
@@ -575,38 +577,28 @@ router.get('/data', async (req, res) => {
               if (rh.response_details?.notes) yanit.push(rh.response_details.notes);
               if (p.description) yanit.push(p.description);
 
-              flatRows.push({
-                talep_no: req.reference || '-',
-                talep_tarihi: req.request_date || null,
-                esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
-                cin_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_in || null) : null,
-                cout_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_out || null) : null,
-                gece_sayisi: toNum(req.nights),
-                firma_adi: req.company_name || '-',
-                acente: req.agencies?.name || '-',
-                otel: rh.hotels?.name || '-',
-                talep_durumu: rh.status || '-',
-                alt_kategori: catMap[p.sub_category] || p.sub_category || '-',
-                fiyat: toNum(p.unit_price || p.total),
-                para_birimi: p.currency || rh.currency || '-'
-              });
+              const c_in = (rh.response_details && rh.response_details.c_in) || (req.date_type === 'EXACT' && req.date_details ? req.date_details.check_in : null);
+              const c_out = (rh.response_details && rh.response_details.c_out) || (req.date_type === 'EXACT' && req.date_details ? req.date_details.check_out : null);
+              const fiyat = toNum(p.unit_price || p.total);
+              
+              if (fiyat > 0) {
+                  flatRows.push({
+                    talep_no: req.reference || '-',
+                    talep_tarihi: req.request_date || null,
+                    esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
+                    cin_tarihi: c_in,
+                    cin_cout_tarihi: c_in && c_out ? `${c_in} - ${c_out}` : (c_in || c_out || '-'),
+                    gece_sayisi: (c_in && c_out) ? Math.round((new Date(c_out) - new Date(c_in)) / (1000 * 60 * 60 * 24)) : toNum(req.nights),
+                    firma_adi: req.company_name || '-',
+                    acente: req.agencies?.name || '-',
+                    otel: rh.hotels?.name || '-',
+                    talep_durumu: rh.status || '-',
+                    alt_kategori: catMap[p.sub_category] || p.sub_category || '-',
+                    fiyat: fiyat,
+                    para_birimi: p.currency || rh.currency || '-'
+                  });
+              }
             }
-          } else {
-            flatRows.push({
-              talep_no: req.reference || '-',
-              talep_tarihi: req.request_date || null,
-              esnek_tarih: req.date_type === 'FLEXIBLE' && req.date_details ? (req.date_details.text || '-') : '-',
-              cin_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_in || null) : null,
-              cout_tarihi: req.date_type === 'EXACT' && req.date_details ? (req.date_details.check_out || null) : null,
-              gece_sayisi: toNum(req.nights),
-              firma_adi: req.company_name || '-',
-              acente: req.agencies?.name || '-',
-              otel: rh.hotels?.name || '-',
-              talep_durumu: rh.status || '-',
-              alt_kategori: '-',
-              fiyat: toNum(rh.price),
-              para_birimi: rh.currency || '-'
-            });
           }
         }
       }
@@ -616,8 +608,8 @@ router.get('/data', async (req, res) => {
       if (error) throw error;
       rows = (data || []).map((r) => ({
         teklif_no: r.teklif_no || '-',
-        cin_tarihi: pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi) || null,
-        cout_tarihi: pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi) || null,
+        cin_tarihi: pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi),
+        cin_cout_tarihi: (pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi) && pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi)) ? `${pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi)} - ${pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi)}` : (pickFirstDate(r.cin_tarihi, r.check_in_date, r.giris_tarihi) || pickFirstDate(r.cout_tarihi, r.check_out_date, r.cikis_tarihi) || '-'),
         firma_adi: firstNonEmpty(r.firma_adi, r.firma) || '-',
         acente: firstNonEmpty(r.acente, r.agency_name) || '-',
         otel: firstNonEmpty(r.otel, r.otel_adi, r.hotel_name) || '-',

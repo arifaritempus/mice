@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SettingsService, categoriesService } from "@/lib/supabaseService";
 
 interface InvoicePreviewProps {
   isOpen: boolean;
@@ -17,6 +18,9 @@ export default function InvoicePreview({
   items,
 }: InvoicePreviewProps) {
   const [contactInfo, setContactInfo] = useState<any>(null);
+  const [settings, setSettings] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
 
   // ESC key to close
   useEffect(() => {
@@ -27,31 +31,46 @@ export default function InvoicePreview({
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
-  // Load full contact information from system
+  // Load full contact information & Settings
   useEffect(() => {
-    if (!isOpen || !invoice?.contact_id) return;
+    if (!isOpen) return;
 
-    const loadContactInfo = async () => {
+    const loadData = async () => {
       try {
-        const tables = ["agencies", "hotels", "suppliers"];
-        for (const table of tables) {
-          const { data, error } = await supabase
-            .from(table)
-            .select("*")
-            .eq("id", invoice.contact_id)
-            .maybeSingle();
+        setLoading(true);
+        // Load Settings
+        const sysSettings = await SettingsService.getSettings();
+        setSettings(sysSettings || {});
+        
+        try {
+          const cats = await categoriesService.getAll();
+          setCategories(cats || []);
+        } catch(e) {}
 
-          if (data && !error) {
-            setContactInfo({ ...data, _source: table });
-            break;
+        // Load Contact Info
+        if (invoice?.contact_id) {
+          const tables = ["agencies", "hotels", "suppliers"];
+          for (const table of tables) {
+            const { data, error } = await supabase
+              .from(table)
+              .select("*")
+              .eq("id", invoice.contact_id)
+              .maybeSingle();
+
+            if (data && !error) {
+              setContactInfo({ ...data, _source: table });
+              break;
+            }
           }
         }
       } catch (err) {
-        console.error("Contact info load error:", err);
+        console.error("Data load error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadContactInfo();
+    loadData();
   }, [isOpen, invoice?.contact_id]);
 
   if (!isOpen) return null;
@@ -102,6 +121,7 @@ export default function InvoicePreview({
   );
   const genelToplam = Number(araToplamMatrah || 0) + Number(toplamKdv || 0);
 
+  const genelToplamTRY = (items || []).reduce((sum, item) => sum + (Number(item.amount || 0) * Number(item.exchange_rate || item.fx || 1)), 0);
   const mainCurrency = items?.[0]?.currency || invoice?.currency || "TRY";
 
   // Number to text (TR)
@@ -177,6 +197,89 @@ export default function InvoicePreview({
   const contactTaxNo = contactInfo?.tax_number || contactInfo?.vkn || "";
   const contactTaxOffice = contactInfo?.tax_office || "";
 
+  // Company Settings
+  const gs = settings.general_settings || {};
+  const logoSettings = settings.logo_settings || {};
+  const isExpense = invoice?.type === "expense";
+  let logoUrl = null;
+  if (!isExpense) {
+    const possibleLogos = [
+      gs.lightWordmarkLogo, gs.light_wordmark_logo,
+      gs.darkWordmarkLogo, gs.dark_wordmark_logo,
+      gs.darkMenuLogo, gs.dark_menu_logo,
+      gs.lightIconLogo, gs.light_icon_logo,
+      gs.darkIconLogo, gs.dark_icon_logo,
+      logoSettings.dark_wordmark_logo, logoSettings.dark_icon_logo
+    ];
+    for (const l of possibleLogos) {
+      if (l && typeof l === "string" && l.trim().length > 5) {
+        logoUrl = l;
+        break;
+      }
+    }
+  }
+  const companyName = gs.company_name || settings.company_name || settings.title || "TEMPUS TRAVEL";
+  const companyAddress = gs.company_address;
+  const companyTaxOffice = gs.company_tax_office || gs.tax_office;
+  const companyTaxId = gs.company_tax_id || gs.tax_number || gs.vkn;
+  const companyPhone = gs.company_phone;
+  const companyEmail = gs.company_email;
+  const companyWebsite = gs.company_website;
+
+  
+  const issuerName = isExpense ? contactName : companyName;
+  const issuerAddress = isExpense ? contactAddress : companyAddress;
+  const issuerTaxOffice = isExpense ? contactTaxOffice : companyTaxOffice;
+  const issuerTaxId = isExpense ? contactTaxNo : companyTaxId;
+  const issuerPhone = isExpense ? "" : companyPhone;
+  const issuerEmail = isExpense ? "" : companyEmail;
+  const issuerWebsite = isExpense ? "" : companyWebsite;
+
+  const recipientName = isExpense ? companyName : contactName;
+  const recipientAddress = isExpense ? companyAddress : contactAddress;
+  const recipientTaxOffice = isExpense ? companyTaxOffice : contactTaxOffice;
+  const recipientTaxId = isExpense ? companyTaxId : contactTaxNo;
+  const recipientLabel = isExpense ? "ALICI BİLGİLERİ" : "MÜŞTERİ BİLGİLERİ";
+
+  const getMainCategoryName = (item: any) => {
+      let mainName = "DİĞER";
+      const catId = item.category || item.category_id || item?.project_sales_items?.category || item.category_name;
+      const catMatch = categories.find((c: any) => c.id === catId || c.code === catId || c.name === catId);
+      if (catMatch) {
+         if (catMatch.parent_id) {
+            const parentMatch = categories.find((c: any) => c.id === catMatch.parent_id);
+            mainName = parentMatch ? parentMatch.name : catMatch.name;
+         } else {
+            mainName = catMatch.name;
+         }
+      } else if (item.category_name) {
+         mainName = item.category_name.split(' | ')[0];
+      }
+      return mainName.toUpperCase();
+  };
+
+  const aggregatedItems = (() => {
+     const groups = new Map();
+     (items || []).forEach(item => {
+        const catName = getMainCategoryName(item);
+        const vat = Number(item.vat_rate || 0);
+        const curr = item.currency || mainCurrency;
+        const key = `${catName}_${vat}_${curr}`;
+
+        if (!groups.has(key)) {
+           groups.set(key, {
+              categoryName: catName,
+              vatRate: vat,
+              currency: curr,
+              amount: 0
+           });
+        }
+        const g = groups.get(key);
+        g.amount += Number(item.amount || item.balance || 0);
+     });
+     return Array.from(groups.values()).sort((a,b) => a.categoryName.localeCompare(b.categoryName));
+  })();
+
   return (
     <div className="fixed inset-0 z-[60] bg-v3-surface backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
       <div
@@ -214,359 +317,289 @@ export default function InvoicePreview({
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col px-[14mm] py-[12mm]">
-          {/* ═══════════════ MATBU HEADER (Tempus'a ait) ═══════════════ */}
-          <div className="flex justify-between items-start w-full">
-            {/* Logo */}
-            <div className="flex items-center">
-              <img
-                src="/LOGO_NAVY.png"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  // Fallback SVG logo
-                  const fallback = e.currentTarget
-                    .nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = "block";
-                }}
-                className="w-[160px] h-auto object-contain"
-                alt="Tempus Travel Logo"
-              />
-              <svg
-                viewBox="0 0 100 100"
-                className="w-[70px] h-auto hidden"
-                style={{ display: "none" }}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            Yükleniyor...
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col px-[14mm] py-[12mm]">
+            {/* ═══════════════ HEADER ═══════════════ */}
+            <div className="flex justify-between items-start w-full border-b-[2px] border-slate-900 pb-6">
+              {/* Logo */}
+              <div className="flex items-center w-1/2">
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    className="w-auto max-h-[80px] max-w-[200px] object-contain"
+                    alt="Company Logo"
+                  />
+                )}
+              </div>
+
+              {/* Company Info */}
+              <div
+                className="w-1/2 text-right uppercase"
+                style={{ color: "#0f172a" }}
               >
-                <g
-                  stroke="black"
-                  strokeWidth="4"
-                  fill="none"
-                  strokeLinejoin="round"
-                >
-                  <path d="M 20 40 L 80 40" />
-                  <path d="M 20 60 L 80 60" />
-                  <path d="M 45 25 L 45 75 M 55 25 L 55 75" />
-                  <path d="M 30 40 L 30 25 L 70 25 L 70 60" />
-                  <path d="M 45 75 L 30 75 L 30 60" />
-                </g>
-              </svg>
-            </div>
-
-            {/* TEMPUS TRAVEL */}
-            <div className="text-right">
-              <div className="text-[28px] tracking-[0.2em] font-normal leading-none uppercase text-slate-900">
-                TEMPUS
-              </div>
-              <div className="text-[10px] tracking-[0.3em] font-medium mt-1.5 uppercase text-slate-900">
-                TRAVEL
-              </div>
-            </div>
-          </div>
-
-          {/* Stamps Box Center - Matbu */}
-          <div className="flex justify-center items-center gap-3 mt-4 mb-2">
-            {/* Circular Stamp */}
-            <div className="w-[50px] h-[50px] rounded-full border-[1px] border-black flex flex-col items-center justify-center p-0.5 text-[5px] font-bold text-center leading-tight uppercase relative scale-[0.8] origin-center -ml-8">
-              <div className="absolute inset-1 rounded-full border-[0.5px] border-black border-dotted"></div>
-              <span>GELİR VE VERGİ</span>
-              <span className="my-0.5">DAİRESİ</span>
-              <span>KKTC</span>
-              <span className="mt-0.5">BELGE ONAYI</span>
-            </div>
-            {/* Dashed Pul Vergisi Box */}
-            <div className="border-[1.5px] border-black border-dashed px-1.5 py-1 text-[6.5px] font-bold text-center flex flex-col leading-tight -ml-2">
-              <span>K.K.T.C.</span>
-              <span>Pul vergisi</span>
-              <span>ödenmiştir.</span>
-            </div>
-          </div>
-
-          {/* Company Info & Fatura Title - Matbu */}
-          <div className="flex justify-between items-start relative mt-4">
-            <div className="text-[13px] font-black tracking-widest uppercase mt-4 text-slate-900">
-              FATURA | INVOICE
-            </div>
-            <div className="text-right text-[8px] leading-[1.65] font-bold uppercase tracking-wider text-slate-900">
-              <p>TEMPUS TURIZM LIMITED</p>
-              <p>DR. BURHAN NALBANTOĞLU CAD.</p>
-              <p>No: 18/1 ORTAKÖY, LEFKOŞA / KKTC</p>
-              <p>VERGİ SİCİL NO: MŞ 25733</p>
-              <p>MUHASEBE@FIRMA.COM</p>
-              <p>WWW.FIRMA.COM</p>
-            </div>
-
-            {/* Signature Placeholder - Matbu */}
-            <div
-              className="absolute top-8 left-[45%] -translate-x-1/2 opacity-70 flex flex-col items-center text-black"
-              style={{ transform: "translate(-50%, 0) rotate(-4deg)" }}
-            >
-              <div className="text-[20px] font-serif italic mb-0.5">Tempus</div>
-              <div className="text-[8px] font-bold leading-tight text-center uppercase border-t-[0.5px] border-black pt-1 px-4">
-                Tempus Turizm Limited
-                <br />
-                <span className="text-[6px] font-normal leading-tight block">
-                  MŞ: 25733
-                  <br />
-                  Dr. Burhan Nalbantoğlu Cad. No:18/1
-                  <br />
-                  Ortaköy - Lefkoşa
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* ═══════════════ SİSTEMDEN GELEN BİLGİLER ═══════════════ */}
-
-          {/* Customer Info Box - Sistemden */}
-          <div className="mt-[18mm] text-[10px] w-full text-slate-900">
-            <div className="flex justify-between items-start">
-              {/* Left customer block - Sistemden */}
-              <div className="space-y-4">
-                <div className="flex">
-                  <span className="w-36 uppercase font-bold text-slate-900">
-                    MÜŞTERİ ADI:
-                  </span>
-                  <span className="font-extrabold uppercase text-[11px]">
-                    {contactName}
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="w-36 uppercase font-bold text-slate-900">
-                    ADRES:
-                  </span>
-                  <span className="font-bold uppercase text-[10px] leading-snug w-[250px] whitespace-pre-wrap">
-                    {contactAddress || invoice?.notes || ""}
-                  </span>
-                </div>
-                <div className="flex pt-4">
-                  <span className="w-36 uppercase font-bold text-slate-900">
-                    {contactTaxOffice ? contactTaxOffice : "VERGİ DAİRESİ"}
-                  </span>
-                  <span className="font-bold uppercase tracking-wider">
-                    {contactTaxNo || ""}
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Invoice Info Block - Sistemden */}
-              <div className="flex flex-col items-end gap-5">
-                <div className="flex items-center gap-6">
-                  <span className="uppercase font-bold text-slate-900 text-[10px]">
-                    FATURA NO:
-                  </span>
-                  <span className="text-xl font-normal leading-none tracking-wider">
-                    {invoice?.invoice_no || "0000"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-6">
-                  <span className="uppercase font-bold text-slate-900 text-[10px]">
-                    TARİH:
-                  </span>
-                  <span className="font-black text-[10px]">
-                    {invoice?.date ? formatDate(invoice.date) : ""}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Table Header & Rows - Sistemden */}
-          <div className="mt-8">
-            <div className="flex justify-between border-b-[1.5px] border-slate-900 pb-2 mb-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-900">
-              <div className="w-[65%] text-left">AÇIKLAMA / KATEGORİ</div>
-              <div className="w-[10%] text-right">KDV %</div>
-              <div className="w-[10%] text-right">DÖVİZ</div>
-              <div className="w-[15%] text-right">TOPLAM</div>
-            </div>
-            <div className="min-h-[100mm] space-y-2 text-slate-900">
-              {items.map((item, idx) => (
                 <div
-                  key={idx}
-                  className="flex justify-between text-[9.5px] uppercase font-bold items-start py-0.5"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    color: "#64748b",
+                    letterSpacing: "0.1em",
+                    marginBottom: "6px",
+                  }}
                 >
-                  <div className="w-[65%] pr-4 leading-relaxed tracking-wide">
-                    {item.description || "-"}
-                    {item.category_name && (
-                      <span className="text-[8px] text-gray-500 ml-2 font-medium">
-                        ({item.category_name})
-                      </span>
-                    )}
-                  </div>
-                  <div className="w-[10%] text-right">
-                    %{Number(item.vat_rate || 0).toFixed(0)}
-                  </div>
-                  <div className="w-[10%] text-right text-[8px]">
-                    {item.currency || mainCurrency}
-                  </div>
-                  <div className="w-[15%] text-right whitespace-nowrap tracking-wider font-extrabold">
-                    {formatCurrency(item.amount)} {item.currency || "TL"}
-                  </div>
+                  DÜZENLEYEN
                 </div>
-              ))}
+                {issuerName && (
+                  <div
+                    style={{
+                      fontSize: "15px",
+                      fontWeight: 900,
+                      color: "#000",
+                      letterSpacing: "0.05em",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    {issuerName}
+                  </div>
+                )}
+                {issuerAddress && (
+                  <div
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      lineHeight: 1.6,
+                      color: "#1e293b",
+                    }}
+                  >
+                    {issuerAddress}
+                  </div>
+                )}
+                {(issuerTaxOffice || issuerTaxId) && (
+                  <div
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      lineHeight: 1.6,
+                      color: "#1e293b",
+                    }}
+                  >
+                    {issuerTaxOffice && <span>V.D: {issuerTaxOffice} </span>}
+                    {issuerTaxId && <span>V.NO: {issuerTaxId}</span>}
+                  </div>
+                )}
+                {issuerPhone && (
+                  <div
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      lineHeight: 1.6,
+                      color: "#1e293b",
+                    }}
+                  >
+                    TEL: {issuerPhone}
+                  </div>
+                )}
+                {issuerEmail && (
+                  <div
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      lineHeight: 1.6,
+                      color: "#1e293b",
+                    }}
+                  >
+                    {issuerEmail}
+                  </div>
+                )}
+                {issuerWebsite && (
+                  <div
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      lineHeight: 1.6,
+                      color: "#1e293b",
+                    }}
+                  >
+                    {issuerWebsite}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Totals Box - Sistemden */}
-          <div className="grid grid-cols-12 gap-8 text-[10px] text-slate-900">
-            {/* Left - VAT Lines */}
-            <div className="col-span-7 flex flex-col justify-end pb-8 pl-[10%]">
-              <div className="w-full">
+            {/* ═══════════════ INVOICE TITLE & DETAILS ═══════════════ */}
+            <div className="flex justify-between items-end mt-8 mb-6">
+              <div className="text-[20px] font-black tracking-widest uppercase text-slate-900">
+                PROFORMA FATURA
+              </div>
+              <div className="flex gap-10 text-[10px]">
+                <div className="flex flex-col items-end gap-1">
+                  <span className="uppercase font-bold text-v3-muted">
+                    FATURA NO
+                  </span>
+                  <span className="text-sm font-black tracking-wider text-slate-900">
+                    {invoice?.invoice_no || "-"}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="uppercase font-bold text-v3-muted">
+                    TARİH
+                  </span>
+                  <span className="text-sm font-black text-slate-900">
+                    {invoice?.date ? formatDate(invoice.date) : "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ═══════════════ CUSTOMER INFO ═══════════════ */}
+            <div
+              className="p-4 rounded-md border border-slate-200 mb-8 text-[11px]"
+              style={{ backgroundColor: "#f8fafc", color: "#0f172a" }}
+            >
+              <div className="font-bold text-v3-muted uppercase tracking-wider mb-2 text-[10px]">
+                {recipientLabel}
+              </div>
+              <div className="flex justify-between items-start">
+                <div className="w-[60%] space-y-1">
+                  <div className="font-black uppercase text-[12px]">
+                    {recipientName}
+                  </div>
+                  {recipientAddress && (
+                    <div className="font-medium uppercase whitespace-pre-wrap">
+                      {recipientAddress}
+                    </div>
+                  )}
+
+                </div>
+                <div className="w-[35%] space-y-1 text-right">
+                  {(recipientTaxOffice || recipientTaxId) && (
+                    <div className="font-bold uppercase">
+                      {recipientTaxOffice && (
+                        <span className="mr-2">VD: {recipientTaxOffice}</span>
+                      )}
+                      {recipientTaxId && <span>V.NO: {recipientTaxId}</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ═══════════════ ITEMS TABLE ═══════════════ */}
+            <div className="mt-4 flex-1">
+              <div className="flex justify-between border-b-[2px] border-slate-900 pb-2 mb-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-900">
+                <div className="w-[50%] text-left pl-2">AÇIKLAMA / HİZMET DETAYI</div>
+                <div className="w-[20%] text-right pr-4">KATEGORİ</div>
+                <div className="w-[10%] text-right">KDV %</div>
+                <div className="w-[10%] text-right">BİRİM</div>
+                <div className="w-[10%] text-right pr-2">TUTAR</div>
+              </div>
+
+              <div className="space-y-2 text-slate-900 min-h-[120mm]">
+                {aggregatedItems.map((group, idx) => (
+                  <div key={idx} className="flex justify-between text-[10px] uppercase font-bold items-start py-1.5 px-2 hover:bg-slate-50 transition-colors">
+                    <div className="w-[50%] leading-relaxed tracking-wide text-slate-700 font-medium">
+                      {(() => {
+                        const proj = items?.[0]?.project;
+                        const projNo = proj?.voucher_number || proj?.reference || proj?.code || proj?.title || "";
+                        let text = invoice?.notes || "-";
+                        if (projNo && text !== "-" && !text.includes(projNo)) {
+                            text = `${projNo} | ${text}`;
+                        } else if (projNo && text === "-") {
+                            text = projNo;
+                        }
+                        return text;
+                      })()}
+                    </div>
+                    <div className="w-[20%] text-right pr-4 font-black text-slate-900 text-[11px]">
+                      {group.categoryName}
+                    </div>
+                    <div className="w-[10%] text-right text-slate-600">
+                      %{group.vatRate.toFixed(0)}
+                    </div>
+                    <div className="w-[10%] text-right text-[8.5px] text-slate-600 font-semibold mt-0.5">
+                      {group.currency}
+                    </div>
+                    <div className="w-[10%] text-right whitespace-nowrap tracking-wider font-extrabold">
+                      {formatCurrency(group.amount)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ═══════════════ TOTALS & VAT BREAKDOWN ═══════════════ */}
+            <div className="mt-4 flex justify-between items-start border-t-[2px] border-slate-900 pt-4 text-slate-900">
+              {/* VAT Breakdown */}
+              <div className="w-[50%] text-[9.5px]">
+                <div className="font-bold text-v3-muted uppercase tracking-wider mb-2">
+                  KDV DETAYI
+                </div>
                 {Object.entries(vatBreakdown).map(
                   ([rate, vals]: [any, any]) => (
-                    <div
-                      key={rate}
-                      className="flex justify-between font-black mb-1.5 uppercase"
-                    >
-                      <span className="w-24">
-                        %{Number(rate).toFixed(1)} MATRAH
+                    <div key={rate} className="flex font-black mb-1.5 uppercase">
+                      <span className="w-20 text-slate-600">
+                        %{Number(rate).toFixed(0)} KDV:
                       </span>
                       <span className="w-24 text-right tracking-wider">
                         {formatCurrency(vals.matrah)}
                       </span>
-                      <span className="w-12 text-right ml-4">KDV</span>
+                      <span className="mx-2 text-v3-muted">+</span>
                       <span className="w-24 text-right tracking-wider">
                         {formatCurrency(vals.kdv)}
                       </span>
                     </div>
                   ),
                 )}
-
-                {/* Empty Mathrah placeholders */}
-                <div className="flex justify-between font-extrabold mt-3 uppercase text-black">
-                  <span className="w-24">MATRAH</span>
-                  <span className="w-24 flex-1"></span>
-                  <span className="w-12 text-right ml-4">KDV</span>
-                  <span className="w-24 flex-1"></span>
-                </div>
-                <div className="flex justify-between font-extrabold mt-1 uppercase text-black">
-                  <span className="w-24">MATRAH</span>
-                  <span className="w-24 flex-1"></span>
-                  <span className="w-12 text-right ml-4">KDV</span>
-                  <span className="w-24 text-right tracking-wider">
-                    {formatCurrency(toplamKdv as number)} {mainCurrency}
-                  </span>
-                </div>
+                {mainCurrency !== "TRY" && (
+                  <div className="mt-3 pt-2 border-t border-slate-200 inline-flex flex-col gap-1">
+                    <span className="font-bold text-slate-500 uppercase text-[9px]">GENEL TOPLAM TL KARŞILIĞI</span>
+                    <span className="font-black tracking-wider text-slate-800 text-[11px]">
+                      {formatCurrency(genelToplamTRY)} TRY
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Right - Totals Block */}
-            <div className="col-span-5 border-t border-black -ml-4 pl-4 pt-1">
-              <div className="border-b-[1px] border-black py-[11px]">
-                <div className="flex justify-between font-extrabold text-[10.5px]">
-                  <span className="uppercase tracking-[0.15em] text-black">
-                    ARA TOPLAM
-                  </span>
+              {/* Final Totals */}
+              <div className="w-[45%] flex flex-col gap-2 border border-slate-200 rounded-lg p-4 bg-slate-50">
+                <div className="flex justify-between font-bold text-[11px] uppercase">
+                  <span className="text-slate-600">ARA TOPLAM</span>
                   <span className="tracking-wider">
                     {formatCurrency(araToplamMatrah as number)} {mainCurrency}
                   </span>
                 </div>
-              </div>
-              <div className="border-b-[1px] border-black py-[11px] mb-[15px]">
-                <div className="flex justify-between font-extrabold text-[10.5px]">
-                  <span className="uppercase tracking-[0.15em] text-black">
-                    KDV
-                  </span>
+                <div className="flex justify-between font-bold text-[11px] uppercase">
+                  <span className="text-slate-600">KDV TOPLAMI</span>
                   <span className="tracking-wider">
                     {formatCurrency(toplamKdv as number)} {mainCurrency}
                   </span>
                 </div>
-              </div>
-              <div className="py-[10px]">
-                <div className="flex justify-between font-extrabold text-[11px]">
-                  <span className="uppercase tracking-[0.15em] text-black">
-                    GENEL TOPLAM
-                  </span>
-                  <span className="tracking-wider text-[11.5px]">
+                <div className="flex justify-between font-black text-[14px] border-t border-slate-300 pt-2 mt-1 uppercase text-blue-900">
+                  <span>GENEL TOPLAM</span>
+                  <span className="tracking-wider">
                     {formatCurrency(genelToplam as number)} {mainCurrency}
                   </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Spell check / Number to Text */}
-          <div className="mt-4 font-black text-[10.5px] tracking-wide text-slate-900 pb-4 border-b border-gray-100">
-            Yalnız{" "}
-            <span className="ml-1 tracking-wider">
-              {numberToTextTR(genelToplam as number)} {mainCurrency}
-            </span>
-          </div>
-
-          {/* Footer - Banks and Matbaa Details - Matbu */}
-          <div className="mt-8 pb-2 w-full grid grid-cols-2 gap-12 text-[7.5px] font-extrabold uppercase leading-[1.65] text-slate-900 tracking-wide">
-            <div className="space-y-0.5">
-              <div className="mb-2 font-black text-[8px] border-b border-gray-200 pb-0.5 inline-block">
-                GARANTİ BANK
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">TL</span>
-                <span className="w-[70%]">
-                  TR82 0006 2000 4930 0006 2935 35
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">EURO</span>
-                <span className="w-[70%]">
-                  TR96 0006 2000 4930 0009 0644 76
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">GBP</span>
-                <span className="w-[70%]">
-                  TR69 0006 2000 4930 0009 0644 77
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">USD</span>
-                <span className="w-[70%]">
-                  TR42 0006 2000 4930 0009 0644 78
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">SWIFT CODE</span>
-                <span className="w-[70%] font-black">TGBATRISXXX</span>
-              </div>
+            {/* Spell check */}
+            <div className="mt-4 font-black text-[9.5px] tracking-wide text-slate-600 uppercase text-right">
+              YALNIZ:{" "}
+              <span className="ml-1 tracking-wider text-slate-900">
+                {numberToTextTR(genelToplam as number)} {mainCurrency}
+              </span>
             </div>
 
-            <div className="space-y-0.5 ml-8">
-              <div className="mb-2 font-black text-[8px] border-b border-gray-200 pb-0.5 inline-block">
-                IS BANK
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">TL</span>
-                <span className="w-[70%]">
-                  TR97 0006 4000 0016 8040 2013 36
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">EURO</span>
-                <span className="w-[70%]">
-                  TR26 0006 4000 0026 8040 2776 87
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">GBP</span>
-                <span className="w-[70%]">
-                  TR85 0006 4000 0026 8040 2776 92
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">USD</span>
-                <span className="w-[70%]">
-                  TR16 0006 4000 0026 8040 2776 73
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-[30%] opacity-80">SWIFT CODE</span>
-                <span className="w-[70%] font-black">ISBKTRISXXX</span>
-              </div>
+            {/* Footer Placeholder for Proforma Note */}
+            <div className="mt-8 text-center text-[9px] font-bold text-v3-muted uppercase tracking-widest border-t border-slate-200 pt-4 pb-2">
+              BU BİR BİLGİLENDİRME (PROFORMA) FATURASIDIR. MALİ DEĞERİ YOKTUR.
             </div>
           </div>
-
-          <div className="mt-auto pt-2 text-[6.5px] font-black uppercase tracking-widest text-slate-900 flex items-center gap-1.5 opacity-80 pb-2">
-            <span className="text-[8px]">||</span>
-            <span>BASKI: OKMAN PRINTING LTD. MŞ: 2012 TEL: 225 4247</span>
-          </div>
-        </div>
+        )}
       </div>
 
       <style jsx global>{`

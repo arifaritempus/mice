@@ -4457,8 +4457,8 @@ export const invoicesService = {
 
 
       const [projectsRes, sejoursRes] = await Promise.all([
-        projectIds.size ? supabase.from('projects').select('id, quote_type, company_name, agency_id').in('id', Array.from(projectIds)) : Promise.resolve({ data: [] }),
-        sejourIds.size ? supabase.from('sejours').select('id, customer_name, agency_id').in('id', Array.from(sejourIds)) : Promise.resolve({ data: [] })
+        projectIds.size ? supabase.from('projects').select('id, quote_type, company_name, agency_id, title, reference').in('id', Array.from(projectIds)) : Promise.resolve({ data: [] }),
+        sejourIds.size ? supabase.from('sejours').select('id, customer_name, agency_id, voucher_number, title').in('id', Array.from(sejourIds)) : Promise.resolve({ data: [] })
       ]);
 
       const agencyIds = new Set<string>();
@@ -4479,6 +4479,7 @@ export const invoicesService = {
       const sejoursMap: Record<string, any> = {};
       (sejoursRes.data || []).forEach((s: any) => {
         sejoursMap[s.id] = {
+           ...s,
            quote_type: 'SEJOUR',
            company_name: (s.agency_id ? agencyMap[s.agency_id] : s.customer_name) || 'Bilinmiyor'
         };

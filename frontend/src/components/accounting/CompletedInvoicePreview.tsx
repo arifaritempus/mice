@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { SettingsService } from "@/lib/supabaseService";
+import { SettingsService, categoriesService } from "@/lib/supabaseService";
 
 interface CompletedInvoicePreviewProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export default function CompletedInvoicePreview({
   const [contactInfo, setContactInfo] = useState<any>(null);
   const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
 
   // ESC key to close
   useEffect(() => {
@@ -40,6 +41,11 @@ export default function CompletedInvoicePreview({
         // Load Settings
         const sysSettings = await SettingsService.getSettings();
         setSettings(sysSettings || {});
+        
+        try {
+          const cats = await categoriesService.getAll();
+          setCategories(cats || []);
+        } catch(e) {}
 
         // Load Contact Info
         if (invoice?.contact_id) {
@@ -115,6 +121,7 @@ export default function CompletedInvoicePreview({
   );
   const genelToplam = Number(araToplamMatrah || 0) + Number(toplamKdv || 0);
 
+  const genelToplamTRY = (items || []).reduce((sum, item) => sum + (Number(item.amount || 0) * Number(item.exchange_rate || item.fx || 1)), 0);
   const mainCurrency = items?.[0]?.currency || invoice?.currency || "TRY";
 
   // Number to text (TR)
@@ -193,13 +200,25 @@ export default function CompletedInvoicePreview({
   // Company Settings
   const gs = settings.general_settings || {};
   const logoSettings = settings.logo_settings || {};
-  const logoUrl =
-    gs.dark_wordmark_logo ||
-    gs.dark_icon_logo ||
-    logoSettings.dark_wordmark_logo ||
-    logoSettings.dark_icon_logo ||
-    "/LOGO_NAVY.png";
-  const companyName = gs.company_name;
+  const isExpense = invoice?.type === "expense";
+  let logoUrl = null;
+  if (!isExpense) {
+    const possibleLogos = [
+      gs.lightWordmarkLogo, gs.light_wordmark_logo,
+      gs.darkWordmarkLogo, gs.dark_wordmark_logo,
+      gs.darkMenuLogo, gs.dark_menu_logo,
+      gs.lightIconLogo, gs.light_icon_logo,
+      gs.darkIconLogo, gs.dark_icon_logo,
+      logoSettings.dark_wordmark_logo, logoSettings.dark_icon_logo
+    ];
+    for (const l of possibleLogos) {
+      if (l && typeof l === "string" && l.trim().length > 5) {
+        logoUrl = l;
+        break;
+      }
+    }
+  }
+  const companyName = gs.company_name || settings.company_name || settings.title || "TEMPUS TRAVEL";
   const companyAddress = gs.company_address;
   const companyTaxOffice = gs.company_tax_office || gs.tax_office;
   const companyTaxId = gs.company_tax_id || gs.tax_number || gs.vkn;
@@ -207,8 +226,7 @@ export default function CompletedInvoicePreview({
   const companyEmail = gs.company_email;
   const companyWebsite = gs.company_website;
 
-  const isExpense = invoice?.type === "expense";
-
+  
   const issuerName = isExpense ? contactName : companyName;
   const issuerAddress = isExpense ? contactAddress : companyAddress;
   const issuerTaxOffice = isExpense ? contactTaxOffice : companyTaxOffice;
@@ -223,25 +241,44 @@ export default function CompletedInvoicePreview({
   const recipientTaxId = isExpense ? companyTaxId : contactTaxNo;
   const recipientLabel = isExpense ? "ALICI BİLGİLERİ" : "MÜŞTERİ BİLGİLERİ";
 
-  // Sorting Items by Main Category -> Sub Category
-  const sortedItems = [...(items || [])].sort((a, b) => {
-    const catOrderA = a.category_sort_order ?? 9999;
-    const catOrderB = b.category_sort_order ?? 9999;
+  const getMainCategoryName = (item: any) => {
+      let mainName = "DİĞER";
+      const catId = item.category || item.category_id || item?.project_sales_items?.category || item.category_name;
+      const catMatch = categories.find((c: any) => c.id === catId || c.code === catId || c.name === catId);
+      if (catMatch) {
+         if (catMatch.parent_id) {
+            const parentMatch = categories.find((c: any) => c.id === catMatch.parent_id);
+            mainName = parentMatch ? parentMatch.name : catMatch.name;
+         } else {
+            mainName = catMatch.name;
+         }
+      } else if (item.category_name) {
+         mainName = item.category_name.split(' | ')[0];
+      }
+      return mainName.toUpperCase();
+  };
 
-    if (catOrderA !== catOrderB) return catOrderA - catOrderB;
+  const aggregatedItems = (() => {
+     const groups = new Map();
+     (items || []).forEach(item => {
+        const catName = getMainCategoryName(item);
+        const vat = Number(item.vat_rate || 0);
+        const curr = item.currency || mainCurrency;
+        const key = `${catName}_${vat}_${curr}`;
 
-    const catA = a.category_name || "Diğer";
-    const catB = b.category_name || "Diğer";
-    if (catA !== catB) return catA.localeCompare(catB);
-
-    const subOrderA = a.sub_category_sort_order ?? 9999;
-    const subOrderB = b.sub_category_sort_order ?? 9999;
-    if (subOrderA !== subOrderB) return subOrderA - subOrderB;
-
-    const subA = a.sub_category_name || "";
-    const subB = b.sub_category_name || "";
-    return subA.localeCompare(subB);
-  });
+        if (!groups.has(key)) {
+           groups.set(key, {
+              categoryName: catName,
+              vatRate: vat,
+              currency: curr,
+              amount: 0
+           });
+        }
+        const g = groups.get(key);
+        g.amount += Number(item.amount || item.balance || 0);
+     });
+     return Array.from(groups.values()).sort((a,b) => a.categoryName.localeCompare(b.categoryName));
+  })();
 
   return (
     <div className="fixed inset-0 z-[60] bg-v3-surface backdrop-blur-sm overflow-y-auto py-8 sm:py-12 flex justify-center items-start">
@@ -290,14 +327,13 @@ export default function CompletedInvoicePreview({
             <div className="flex justify-between items-start w-full border-b-[2px] border-slate-900 pb-6">
               {/* Logo */}
               <div className="flex items-center w-1/2">
-                <img
-                  src={logoUrl}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                  className="w-auto h-[60px] object-contain"
-                  alt="Company Logo"
-                />
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    className="w-auto max-h-[80px] max-w-[200px] object-contain"
+                    alt="Company Logo"
+                  />
+                )}
               </div>
 
               {/* Company Info */}
@@ -436,11 +472,7 @@ export default function CompletedInvoicePreview({
                       {recipientAddress}
                     </div>
                   )}
-                  {invoice?.notes && (
-                    <div className="font-medium uppercase whitespace-pre-wrap mt-1">
-                      {invoice.notes}
-                    </div>
-                  )}
+
                 </div>
                 <div className="w-[35%] space-y-1 text-right">
                   {(recipientTaxOffice || recipientTaxId) && (
@@ -458,55 +490,48 @@ export default function CompletedInvoicePreview({
             {/* ═══════════════ ITEMS TABLE ═══════════════ */}
             <div className="mt-4 flex-1">
               <div className="flex justify-between border-b-[2px] border-slate-900 pb-2 mb-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-900">
-                <div className="w-[65%] text-left pl-2">
-                  AÇIKLAMA / HİZMET DETAYI
-                </div>
+                <div className="w-[50%] text-left pl-2">AÇIKLAMA / HİZMET DETAYI</div>
+                <div className="w-[20%] text-right pr-4">KATEGORİ</div>
                 <div className="w-[10%] text-right">KDV %</div>
                 <div className="w-[10%] text-right">BİRİM</div>
-                <div className="w-[15%] text-right pr-2">TUTAR</div>
+                <div className="w-[10%] text-right pr-2">TUTAR</div>
               </div>
 
-              <div className="space-y-1 text-slate-900 min-h-[120mm]">
-                {(() => {
-                  let currentCategory = "";
-                  return sortedItems.map((item, idx) => {
-                    const categoryGroup = item.category_name || "Diğer";
-                    const showCategoryHeader =
-                      categoryGroup !== currentCategory;
-                    if (showCategoryHeader) {
-                      currentCategory = categoryGroup;
-                    }
-
-                    return (
-                      <div key={idx} className="flex flex-col">
-                        {showCategoryHeader && (
-                          <div className="bg-slate-100/50 py-1 px-2 mt-2 mb-1 text-[9px] font-black text-slate-700 uppercase tracking-widest rounded">
-                            {categoryGroup}
-                          </div>
-                        )}
-                        <div className="flex justify-between text-[10px] uppercase font-bold items-start py-1.5 px-2 hover:bg-slate-50 transition-colors">
-                          <div className="w-[65%] leading-snug tracking-wide">
-                            {item.sub_category_name || "-"}
-                          </div>
-                          <div className="w-[10%] text-right text-slate-600">
-                            %{Number(item.vat_rate || 0).toFixed(0)}
-                          </div>
-                          <div className="w-[10%] text-right text-[8.5px] text-slate-600 font-semibold mt-0.5">
-                            {item.currency || mainCurrency}
-                          </div>
-                          <div className="w-[15%] text-right whitespace-nowrap tracking-wider font-extrabold">
-                            {formatCurrency(item.amount)}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
+              <div className="space-y-2 text-slate-900 min-h-[120mm]">
+                {aggregatedItems.map((group, idx) => (
+                  <div key={idx} className="flex justify-between text-[10px] uppercase font-bold items-start py-1.5 px-2 hover:bg-slate-50 transition-colors">
+                    <div className="w-[50%] leading-relaxed tracking-wide text-slate-700 font-medium">
+                      {(() => {
+                        const proj = items?.[0]?.project;
+                        const projNo = proj?.voucher_number || proj?.reference || proj?.code || proj?.title || "";
+                        let text = invoice?.notes || "-";
+                        if (projNo && text !== "-" && !text.includes(projNo)) {
+                            text = `${projNo} | ${text}`;
+                        } else if (projNo && text === "-") {
+                            text = projNo;
+                        }
+                        return text;
+                      })()}
+                    </div>
+                    <div className="w-[20%] text-right pr-4 font-black text-slate-900 text-[11px]">
+                      {group.categoryName}
+                    </div>
+                    <div className="w-[10%] text-right text-slate-600">
+                      %{group.vatRate.toFixed(0)}
+                    </div>
+                    <div className="w-[10%] text-right text-[8.5px] text-slate-600 font-semibold mt-0.5">
+                      {group.currency}
+                    </div>
+                    <div className="w-[10%] text-right whitespace-nowrap tracking-wider font-extrabold">
+                      {formatCurrency(group.amount)}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* ═══════════════ TOTALS & VAT BREAKDOWN ═══════════════ */}
-            <div className="mt-6 flex justify-between items-end border-t-[2px] border-slate-900 pt-4 text-slate-900">
+            <div className="mt-4 flex justify-between items-start border-t-[2px] border-slate-900 pt-4 text-slate-900">
               {/* VAT Breakdown */}
               <div className="w-[50%] text-[9.5px]">
                 <div className="font-bold text-v3-muted uppercase tracking-wider mb-2">
@@ -514,7 +539,7 @@ export default function CompletedInvoicePreview({
                 </div>
                 {Object.entries(vatBreakdown).map(
                   ([rate, vals]: [any, any]) => (
-                    <div key={rate} className="flex font-black mb-1 uppercase">
+                    <div key={rate} className="flex font-black mb-1.5 uppercase">
                       <span className="w-20 text-slate-600">
                         %{Number(rate).toFixed(0)} KDV:
                       </span>
@@ -527,6 +552,14 @@ export default function CompletedInvoicePreview({
                       </span>
                     </div>
                   ),
+                )}
+                {mainCurrency !== "TRY" && (
+                  <div className="mt-3 pt-2 border-t border-slate-200 inline-flex flex-col gap-1">
+                    <span className="font-bold text-slate-500 uppercase text-[9px]">GENEL TOPLAM TL KARŞILIĞI</span>
+                    <span className="font-black tracking-wider text-slate-800 text-[11px]">
+                      {formatCurrency(genelToplamTRY)} TRY
+                    </span>
+                  </div>
                 )}
               </div>
 
