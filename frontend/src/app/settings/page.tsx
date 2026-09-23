@@ -1097,7 +1097,7 @@ export default function SettingsPage() {
                               [color.key]: e.target.value,
                             })
                           }
-                          className="flex-1 min-w-0 bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none uppercase font-mono"
+                          className="flex-1 min-w-0 bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none font-mono"
                         />
                       </div>
                     </div>
@@ -1203,7 +1203,7 @@ export default function SettingsPage() {
                                 [c.key]: e.target.value,
                               })
                             }
-                            className="w-full bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none uppercase font-mono"
+                            className="w-full bg-v3-border border border-v3-border rounded-lg px-2 py-1.5 text-xs text-v3-text focus:border-blue-500/50 outline-none font-mono"
                           />
                         </div>
                       </div>
@@ -1266,7 +1266,7 @@ export default function SettingsPage() {
                                 [c.key]: e.target.value,
                               })
                             }
-                            className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:border-blue-500/50 outline-none uppercase font-mono"
+                            className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 focus:border-blue-500/50 outline-none font-mono"
                           />
                         </div>
                       </div>
