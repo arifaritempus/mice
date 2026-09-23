@@ -226,18 +226,21 @@ export async function POST(req: NextRequest) {
              }
              
              if (type === "net_amount") {
-               subtotal = floatVal !== undefined ? floatVal : parseAmount(text);
+               const val = floatVal !== undefined ? floatVal : parseAmount(text);
+               if (val > subtotal) subtotal = val;
              }
              if (type === "total_tax_amount") {
-               tax = floatVal !== undefined ? floatVal : parseAmount(text);
+               const val = floatVal !== undefined ? floatVal : parseAmount(text);
+               if (val > tax) tax = val;
              }
-             if (type === "total_amount") {
-               total = floatVal !== undefined ? floatVal : parseAmount(text);
-             } else if (type === "line_item/amount" && total === 0) {
+             if (type === "total_amount" || type === "line_item/amount") {
                const val = floatVal !== undefined ? floatVal : parseAmount(text);
                if (val > total) total = val;
              }
            }
+
+           if (subtotal > total && tax > 0) total = subtotal + tax;
+           else if (subtotal > total) total = subtotal;
 
            if (subtotal > 0) mockExtractedData.subtotal = subtotal;
            if (total > 0) mockExtractedData.total = total;
