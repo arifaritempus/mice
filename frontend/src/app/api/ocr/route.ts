@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
           try { parsed = JSON.parse(parsed); } catch {}
        }
        if (parsed?.invoiceStorageFolder) {
-          storageFolder = parsed.invoiceStorageFolder.replace(/^\/+|\/+$/g, ''); // Başındaki/sonundaki slash'leri temizle
+          storageFolder = String(parsed.invoiceStorageFolder).replace(/^\/+|\/+$/g, ''); // Başındaki/sonundaki slash'leri temizle
        }
     }
 
@@ -198,21 +198,45 @@ export async function POST(req: NextRequest) {
            for (const entity of document.entities) {
              const type = entity.type;
              const text = entity.mentionText || "";
+             const normText = entity.normalizedValue?.text || text;
+             const floatVal = entity.normalizedValue?.floatValue;
              
-             if (type === "invoice_id") mockExtractedData.invoiceNo = text;
-             if (type === "invoice_date") mockExtractedData.date = text;
-             if (type === "supplier_name" || type === "receiver_name") mockExtractedData.supplier = text;
+             if (type === "invoice_id") {
+               mockExtractedData.invoiceNo = normText;
+             }
+             if (type === "invoice_date") {
+               mockExtractedData.date = normText;
+             } else if (type === "due_date" && !mockExtractedData.date) {
+               mockExtractedData.date = normText;
+             }
+             
+             if (type === "supplier_name") {
+               mockExtractedData.supplier = text;
+             } else if (type === "receiver_name" && !mockExtractedData.supplier) {
+               mockExtractedData.supplier = text;
+             }
+             
              if (type === "currency") {
-               const c = text.toUpperCase().trim();
+               const c = normText.toUpperCase().trim();
                if (c.includes("TL") || c.includes("TRY") || c.includes("₺")) mockExtractedData.currency = "TRY";
                else if (c.includes("USD") || c.includes("$")) mockExtractedData.currency = "USD";
                else if (c.includes("EUR") || c.includes("€") || c.includes("EURO")) mockExtractedData.currency = "EUR";
                else if (c.includes("GBP") || c.includes("£")) mockExtractedData.currency = "GBP";
                else mockExtractedData.currency = "TRY";
              }
-             if (type === "net_amount") subtotal = parseAmount(text);
-             if (type === "total_tax_amount") tax = parseAmount(text);
-             if (type === "total_amount") total = parseAmount(text);
+             
+             if (type === "net_amount") {
+               subtotal = floatVal !== undefined ? floatVal : parseAmount(text);
+             }
+             if (type === "total_tax_amount") {
+               tax = floatVal !== undefined ? floatVal : parseAmount(text);
+             }
+             if (type === "total_amount") {
+               total = floatVal !== undefined ? floatVal : parseAmount(text);
+             } else if (type === "line_item/amount" && total === 0) {
+               const val = floatVal !== undefined ? floatVal : parseAmount(text);
+               if (val > total) total = val;
+             }
            }
 
            if (subtotal > 0) mockExtractedData.subtotal = subtotal;
