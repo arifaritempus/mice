@@ -24,6 +24,7 @@ export default function SettingsPage() {
     timezone: "Europe/Istanbul",
     dateFormat: "DD.MM.YYYY",
     language: "tr",
+    invoiceStorageFolder: "ocr_uploads",
 
     // Mail Ayarları
     smtpServer: "smtp.mailgun.org",
@@ -335,7 +336,7 @@ export default function SettingsPage() {
                   </svg>
                   Sistem Ayarları
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
                   <div>
                     <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
                       Varsayılan Para Birimi
@@ -382,6 +383,23 @@ export default function SettingsPage() {
                         UTC
                       </option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">
+                      Fatura Yükleme Klasörü
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="orn: firma_adi/faturalar"
+                      className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
+                      value={(settings as any).invoiceStorageFolder || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          invoiceStorageFolder: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-semibold text-v3-muted uppercase tracking-wider mb-1.5">

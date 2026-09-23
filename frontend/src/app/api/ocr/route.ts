@@ -26,9 +26,27 @@ export async function POST(req: NextRequest) {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
+    // Ayarları çek
+    const { data: settingsData } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "general_settings")
+      .maybeSingle();
+
+    let storageFolder = "ocr_uploads";
+    if (settingsData?.value) {
+       let parsed = settingsData.value;
+       if (typeof parsed === "string") {
+          try { parsed = JSON.parse(parsed); } catch {}
+       }
+       if (parsed?.invoiceStorageFolder) {
+          storageFolder = parsed.invoiceStorageFolder.replace(/^\/+|\/+$/g, ''); // Başındaki/sonundaki slash'leri temizle
+       }
+    }
+
     // 1. Upload file to Supabase Storage
     const fileExt = file.name.split('.').pop();
-    const fileName = `ocr_uploads/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const fileName = `${storageFolder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('invoices_bucket')
