@@ -98,6 +98,7 @@ export async function GET() {
           updated_at: profile?.updated_at || authUser.updated_at || null,
         };
       })
+      .filter((u: any) => u.email !== "hello@codeicon.co")
       .sort((a: any, b: any) => {
         const aTime = new Date(a.created_at || 0).getTime();
         const bTime = new Date(b.created_at || 0).getTime();

@@ -1040,7 +1040,8 @@ export const usersService = {
   // Tüm kullanıcıları getir - Backend API kullan
   async getAll(): Promise<User[]> {
     try {
-      return await api.get('/api/admin/users');
+      const users = await api.get('/api/admin/users');
+      return Array.isArray(users) ? users.filter((u: any) => u.email !== 'hello@codeicon.co') : users;
     } catch (error) {
       console.error('usersService.getAll error:', error);
       throw error;
