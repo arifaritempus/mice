@@ -840,8 +840,9 @@ export default function CashFlowPage() {
 
   // Tüm dönem toplamları
   const allPeriodTotals = useMemo(() => {
-    return calculateTotalsByCurrency(filteredItems);
-  }, [filteredItems]);
+    const visibleItems = calendarData.flatMap(period => period.items);
+    return calculateTotalsByCurrency(visibleItems);
+  }, [calendarData]);
 
   // Para formatı
   const formatCurrency = (amount: number, currency: string) => {
