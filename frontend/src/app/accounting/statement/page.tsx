@@ -236,7 +236,7 @@ function StatementContent() {
             <p className="text-xs font-medium">Bu kriterlere uygun işlem bulunamadı.</p>
           </div>
         ) : (
-          <div className="bg-v3-surface border border-v3-border rounded-xl overflow-hidden shadow-sm print-border-none print-shadow-none print-bg-white">
+          <div className="bg-v3-surface border border-v3-border rounded-xl overflow-hidden shadow-sm print-border-none print-shadow-none print-bg-white print-overflow-visible">
             <table className="w-full text-left border-collapse print-text-black">
               <thead>
                 <tr className="border-b border-v3-border bg-black/5 dark:bg-white/5 print-bg-gray-100">
@@ -294,23 +294,55 @@ function StatementContent() {
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page { size: landscape; margin: 10mm; }
+          
+          /* Override all parent constraints that prevent multi-page printing */
+          html, body, .h-screen, .h-full, .overflow-hidden, .overflow-auto, .flex-1, main, #__next {
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+          }
+
+          /* Hide everything by default */
           body * {
             visibility: hidden;
           }
-          .print-m-0, .print-m-0 * { visibility: visible !important; }
+
+          /* Make our print component absolute to overlay sidebars, and make it fully visible */
           .print-m-0 {
             margin: 0 !important;
             padding: 0 !important;
-            position: absolute;
+            position: absolute !important;
             left: 0;
             top: 0;
-            width: 100%;
+            width: 100% !important;
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
           }
+          
+          /* Ensure all children of print-m-0 are visible */
+          .print-m-0, .print-m-0 * {
+            visibility: visible !important;
+          }
+
+          /* Allow the table wrappers to expand across pages */
+          .print-overflow-visible {
+            overflow: visible !important;
+            height: auto !important;
+            flex: none !important;
+            display: block !important;
+          }
+
+          table { page-break-inside: auto; width: 100%; border-collapse: collapse; }
+          tr { page-break-inside: avoid; page-break-after: auto; }
+          thead { display: table-header-group; }
+          tfoot { display: table-footer-group; }
+          
           .print-px-8 { padding-left: 2rem !important; padding-right: 2rem !important; }
           .print-block { display: block !important; visibility: visible !important; }
           .print-flex { display: flex !important; visibility: visible !important; }
-          .print-block * { visibility: visible !important; }
-          .print-hidden, .print-hidden *, .print-m-0 .print-hidden, .print-m-0 .print-hidden * { display: none !important; visibility: hidden !important; }
+          .print-hidden, .print-hidden *, .print-m-0 .print-hidden, .print-m-0 .print-hidden * { display: none !important; visibility: hidden !important; opacity: 0 !important; }
           .print-bg-white { background-color: white !important; }
           .print-bg-transparent { background-color: transparent !important; }
           .print-bg-gray-100 { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
@@ -322,8 +354,6 @@ function StatementContent() {
           .print-border-t-black { border-top-color: black !important; }
           .print-border-t-4 { border-top-width: 4px !important; }
           .print-hover-none:hover { background-color: transparent !important; }
-          table { width: 100%; border-collapse: collapse; }
-          /* removed th, td visibility hack since print-m-0 covers it */
         }
       `}} />
     </div>
