@@ -144,8 +144,8 @@ export default function ProjectsPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortField, setSortField] = useState<string>("created_at");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [sortField, setSortField] = useState<string>("start_date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [agencies, setAgencies] = useState<any[]>([]);
   const [hotels, setHotels] = useState<any[]>([]);
   const [projectUsersMap, setProjectUsersMap] = useState<
@@ -553,6 +553,7 @@ export default function ProjectsPage() {
           av = a.priority || "";
           bv = b.priority || "";
           break;
+        case "start_date":
         case "date":
           av = new Date(a.start_date || "").getTime();
           bv = new Date(b.start_date || "").getTime();
