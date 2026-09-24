@@ -31,7 +31,7 @@ export async function GET() {
         </div>
       `,
       notes: "Bu bir önizleme mailidir. Gala gecesi için deniz manzaralı salon talep edilmektedir.",
-      reply_to_email: generalSettings?.mailReplyTo || generalSettings?.mailFromEmail || "info@test.com",
+      reply_to_email: generalSettings?.mailReplyTo || generalSettings?.mail_reply_to || generalSettings?.mailFromEmail || generalSettings?.mail_from_email || "info@test.com",
       cc_addresses: "agency@test.com",
       system_company_name: generalSettings?.companyName || generalSettings?.company_name || "MICE SİSTEMİ",
       system_company_phone: generalSettings?.companyPhone || generalSettings?.company_phone || "+90 555 123 4567",
