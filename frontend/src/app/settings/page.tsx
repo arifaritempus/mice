@@ -838,9 +838,10 @@ export default function SettingsPage() {
                   </label>
                   <input
                     type="text"
+                    style={{ textTransform: "none" }}
                     value={settings.smtpServer}
                     onChange={(e) =>
-                      setSettings({ ...settings, smtpServer: e.target.value })
+                      setSettings({ ...settings, smtpServer: e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase() })
                     }
                     className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
@@ -863,10 +864,11 @@ export default function SettingsPage() {
                     SMTP Kullanıcı Adı
                   </label>
                   <input
-                    type="text"
+                    type="email"
+                    style={{ textTransform: "none" }}
                     value={settings.smtpUser}
                     onChange={(e) =>
-                      setSettings({ ...settings, smtpUser: e.target.value })
+                      setSettings({ ...settings, smtpUser: e.target.value.replace(/İ/g, "i").replace(/I/g, "i").toLowerCase() })
                     }
                     className="w-full bg-v3-border border border-v3-border rounded-xl px-3 py-2.5 text-xs text-v3-text focus:border-blue-500/50 outline-none transition-all"
                   />
