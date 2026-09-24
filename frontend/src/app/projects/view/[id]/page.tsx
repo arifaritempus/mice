@@ -402,6 +402,7 @@ export default function ProjectViewPublicPage() {
     }
   };
 
+
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!linkData) {

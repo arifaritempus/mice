@@ -176,67 +176,38 @@ export default function QuoteViewPublicPage() {
   useEffect(() => {
     loadAppSettings();
     const loadLinkData = async () => {
-      if (!token) {
-        setError("Geçersiz link. Token bulunamadı.");
-        setLoading(false);
-        return;
-      }
-      try {
-        const link = await publicLinksService.getByToken(token);
-        if (!link || link.link_type !== "quote" || link.quote_id !== quoteId) {
-          setError("Geçersiz link.");
-          setLoading(false);
-          return;
-        }
-        setLinkData(link);
-        if (link.expiry_date && new Date(link.expiry_date) < new Date()) {
-          setError("Link süresi dolmuş.");
-          setLoading(false);
-          return;
-        }
-        if (!link.is_active) {
-          setError("Link pasif.");
-          setLoading(false);
-          return;
-        }
-        if (!showPasswordForm) loadQuote();
-        else setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Hata!");
-        setLoading(false);
-      }
-    };
-    loadLinkData();
-  }, [token, quoteId, showPasswordForm]);
-
-  const loadAppSettings = async () => {
-    try {
-      const res = await fetch('/api/theme-settings');
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.general_settings) {
-          setAppSettings(data.general_settings);
-        }
-      }
-    } catch (error) {
-      console.error("Settings load error:", error);
+    if (!token) {
+      setError("Geçersiz link. Token bulunamadı.");
+      setLoading(false);
+      return;
     }
-  };
-
-  const loadQuote = async () => {
+    
     try {
-      const q = await quotesService.getById(quoteId);
-      if (q) {
+      const res = await fetch(`/api/public/link-data?token=${token}`);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Hata!");
+      }
+      
+      const data = await res.json();
+      setLinkData(data.link);
+      
+      if (!showPasswordForm) {
+        if (data.type !== "quote" || data.link.quote_id !== quoteId) {
+          setError("Geçersiz link eşleşmesi.");
+          setLoading(false);
+          return;
+        }
+
+        const q = data.quote;
         setQuote(q as any);
         setTempStatus(q.status);
         setTempHotelsData((q as any).hotels_data || []);
+        
         const hData = (q as any).hotels_data || [];
         // Default to first hotel tab
         if (hData.length > 0) setActiveViewHotelId(hData[0].id);
         else setActiveViewHotelId("general");
-
-        const items = await quoteItemsService.getByQuoteId(q.id);
 
         const parseDescriptionTags = (desc: string) => {
           if (!desc)
@@ -262,7 +233,7 @@ export default function QuoteViewPublicPage() {
           };
         };
 
-        const fixedItems = (items || []).map((item: any) => {
+        const fixedItems = (data.items || []).map((item: any) => {
           let uiHotelId = item.hotel_id;
           const { cleanDesc, tabTag, repeatTag } = parseDescriptionTags(
             item.description || "",
@@ -308,36 +279,39 @@ export default function QuoteViewPublicPage() {
             hotel_id: uiHotelId || "general",
             description: cleanDesc,
             sefer: inferredRepeat,
-          } as ServiceItem;
+          };
         });
         setServiceItems(fixedItems);
-      }
-      try {
-        const res = await fetch('/api/public/dictionaries');
-        if (res.ok) {
-          const dicts = await res.json();
-          setAgencies(dicts.agencies || []);
-          setHotels(dicts.hotels || []);
-          setCategories(dicts.categories || []);
-        } else {
-          // Fallback if API fails (for authenticated users testing it)
-          const [agList, htList, catList] = await Promise.all([
-            agenciesService.getAll(),
-            hotelsService.getAll(),
-            categoriesService.getAll(),
-          ]);
-          setAgencies((agList as any) || []);
-          setHotels((htList as any) || []);
-          setCategories((catList as any) || []);
+        
+        if (data.dictionaries) {
+          setAgencies(data.dictionaries.agencies || []);
+          setHotels(data.dictionaries.hotels || []);
+          setCategories(data.dictionaries.categories || []);
         }
-      } catch (err) {
-        console.error("Failed to load dictionaries", err);
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
-    } catch (err) {
+        } catch (err: any) {
       console.error(err);
-      setError("Veri yükleme hatası!");
-    } finally {
+      setError(err.message || "Hata!");
       setLoading(false);
+    }
+  };
+  loadLinkData();
+  }, [token, quoteId, showPasswordForm]);
+
+  const loadAppSettings = async () => {
+    try {
+      const res = await fetch('/api/theme-settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.general_settings) {
+          setAppSettings(data.general_settings);
+        }
+      }
+    } catch (error) {
+      console.error("Settings load error:", error);
     }
   };
 
@@ -968,7 +942,7 @@ export default function QuoteViewPublicPage() {
       toast.success(
         "Teklif başarıyla onaylandı. İlginiz için teşekkür ederiz.",
       );
-    } catch (err: any) {
+        } catch (err: any) {
       console.error("Approval error:", err);
       toast.error(err.message || "Onay işlemi sırasında bir hata oluştu.");
     } finally {
