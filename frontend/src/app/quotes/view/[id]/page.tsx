@@ -564,6 +564,7 @@ export default function QuoteViewPublicPage() {
         });
 
         const subtotalRowsE: number[] = [];
+      const subtotalRowsByCurrency: Record<string, number[]> = {};
 
         sortedCatIds.forEach((catId, i) => {
           const catItems = grouped[catId];
@@ -654,51 +655,124 @@ export default function QuoteViewPublicPage() {
           });
 
           const lastItemRow = rowIndex - 1;
-          const araRow = sheet.addRow(["ARA TOPLAM", "", "", "", 0, ""]);
-          araRow.font = { bold: true, size: 12 };
-          for (let c = 1; c <= 6; c++)
-            araRow.getCell(c).fill = {
-              type: "pattern",
-              pattern: "solid",
-              fgColor: { argb: "FFD0D0D0" },
-            };
-          if (firstItemRow) {
-            araRow.getCell(5).value = {
-              formula: `SUM(E${firstItemRow}:E${lastItemRow})`,
-              result: catItems.reduce((s, i) => s + (i.total || 0), 0),
-            } as any;
+          const catCurrencies = Array.from(new Set(sortedCatItems.map(i => i.currency || currencyCode)));
+          
+          if (catCurrencies.length <= 1) {
+            const cCode = catCurrencies[0] || currencyCode;
+            const cSym = curMap[cCode] || cCode + " ";
+            const cFmt = `"${cSym}" #,##0.00`;
+            
+            const araRow = sheet.addRow(["ARA TOPLAM", "", "", "", 0, ""]);
+            araRow.font = { bold: true, size: 12 };
+            for (let c = 1; c <= 6; c++)
+              araRow.getCell(c).fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD0D0D0" },
+              };
+            if (firstItemRow) {
+              araRow.getCell(5).value = {
+                formula: `SUM(E${firstItemRow}:E${lastItemRow})`,
+                result: sortedCatItems.reduce((s, i) => s + (i.total || 0), 0),
+              } as any;
+            }
+            araRow.getCell(5).numFmt = cFmt;
+            araRow.height = 22;
+            subtotalRowsE.push(araRow.number);
+            if (!subtotalRowsByCurrency[cCode]) subtotalRowsByCurrency[cCode] = [];
+            subtotalRowsByCurrency[cCode].push(araRow.number);
+          } else {
+            catCurrencies.forEach(cCode => {
+              const cSym = curMap[cCode] || cCode + " ";
+              const cFmt = `"${cSym}" #,##0.00`;
+              const cItems = sortedCatItems.filter(i => (i.currency || currencyCode) === cCode);
+              
+              // We can't use SUM formula easily for mixed column, so we just write the result
+              const sumResult = cItems.reduce((s, i) => s + (i.total || 0), 0);
+              const araRow = sheet.addRow([`ARA TOPLAM (${cCode})`, "", "", "", sumResult, ""]);
+              araRow.font = { bold: true, size: 12 };
+              for (let c = 1; c <= 6; c++)
+                araRow.getCell(c).fill = {
+                  type: "pattern",
+                  pattern: "solid",
+                  fgColor: { argb: "FFD0D0D0" },
+                };
+              araRow.getCell(5).numFmt = cFmt;
+              araRow.height = 22;
+              
+              if (!subtotalRowsByCurrency[cCode]) subtotalRowsByCurrency[cCode] = [];
+              subtotalRowsByCurrency[cCode].push(araRow.number);
+            });
           }
-          araRow.getCell(5).numFmt = numFmt;
-          araRow.height = 22;
-          subtotalRowsE.push(araRow.number);
           rowIndex++;
           sheet.addRow([]);
           rowIndex++;
         });
 
-        const totalRow = sheet.addRow([
-          "SATIŞ GENEL TOPLAMLAR",
-          "",
-          "",
-          "",
-          0,
-          "",
-        ]);
-        totalRow.font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
-        for (let c = 1; c <= 6; c++)
-          totalRow.getCell(c).fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FF333333" },
-          };
-        if (subtotalRowsE.length > 0) {
-          totalRow.getCell(5).value = {
-            formula: `SUM(${subtotalRowsE.map((r) => `E${r}`).join(",")})`,
-            result: items.reduce((s, i) => s + (i.total || 0), 0),
-          } as any;
+        const allCurrencies = Array.from(new Set(items.map(i => i.currency || currencyCode)));
+        
+        if (allCurrencies.length <= 1) {
+          const cCode = allCurrencies[0] || currencyCode;
+          const cSym = curMap[cCode] || cCode + " ";
+          const cFmt = `"${cSym}" #,##0.00`;
+          
+          const totalRow = sheet.addRow([
+            "SATIŞ GENEL TOPLAMLAR",
+            "",
+            "",
+            "",
+            0,
+            "",
+          ]);
+          totalRow.font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
+          for (let c = 1; c <= 6; c++)
+            totalRow.getCell(c).fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FF333333" },
+            };
+          if (subtotalRowsE.length > 0) {
+            totalRow.getCell(5).value = {
+              formula: `SUM(${subtotalRowsE.map((r) => `E${r}`).join(",")})`,
+              result: items.reduce((s, i) => s + (i.total || 0), 0),
+            } as any;
+          }
+          totalRow.getCell(5).numFmt = cFmt;
+          totalRow.height = 30;
+        } else {
+          allCurrencies.forEach(cCode => {
+            const cSym = curMap[cCode] || cCode + " ";
+            const cFmt = `"${cSym}" #,##0.00`;
+            
+            const totalRow = sheet.addRow([
+              `SATIŞ GENEL TOPLAMLAR (${cCode})`,
+              "",
+              "",
+              "",
+              0,
+              "",
+            ]);
+            totalRow.font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
+            for (let c = 1; c <= 6; c++)
+              totalRow.getCell(c).fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FF333333" },
+              };
+            
+            const rowsForCurrency = subtotalRowsByCurrency[cCode] || [];
+            if (rowsForCurrency.length > 0) {
+              totalRow.getCell(5).value = {
+                formula: `SUM(${rowsForCurrency.map((r) => `E${r}`).join(",")})`,
+                result: items.filter(i => (i.currency || currencyCode) === cCode).reduce((s, i) => s + (i.total || 0), 0),
+              } as any;
+            } else {
+              totalRow.getCell(5).value = items.filter(i => (i.currency || currencyCode) === cCode).reduce((s, i) => s + (i.total || 0), 0);
+            }
+            totalRow.getCell(5).numFmt = cFmt;
+            totalRow.height = 30;
+          });
         }
-        totalRow.getCell(5).numFmt = numFmt;
-        totalRow.height = 30;
 
         sheet.getColumn(1).width = 45;
         sheet.getColumn(2).width = 12;
@@ -1425,11 +1499,11 @@ export default function QuoteViewPublicPage() {
                         const catName =
                           categories.find((c) => c.id === catId)?.name ||
                           "Diğer Hizmetler";
-                        const catSubtotal = sortedCatItems.reduce(
-                          (sum, item) => sum + item.total,
-                          0,
-                        );
-                        const currency = sortedCatItems[0]?.currency || "EUR";
+                        const catTotalsByCurrency = sortedCatItems.reduce((acc, item) => {
+                          const c = item.currency || quote?.currency || (quote as any)?.main_currency || "EUR";
+                          acc[c] = (acc[c] || 0) + (item.total || 0);
+                          return acc;
+                        }, {} as Record<string, number>);
 
                         return (
                           <Fragment key={catId}>
@@ -1490,7 +1564,9 @@ export default function QuoteViewPublicPage() {
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-sm font-black text-gray-900 text-right whitespace-nowrap border-t border-slate-200">
-                                {formatCurrency(catSubtotal, currency)}
+                                {Object.entries(catTotalsByCurrency).map(([c, total]) => (
+                                  <div key={c}>{formatCurrency(total, c)}</div>
+                                ))}
                               </td>
                             </tr>
                           </Fragment>
@@ -1528,7 +1604,16 @@ export default function QuoteViewPublicPage() {
                   TOPLAM GENEL TUTAR
                 </h3>
                 <p className="text-3xl font-black text-slate-800">
-                  {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0))}
+                  
+                    {Object.entries(
+                      filteredItems.reduce((acc, item) => {
+                        const c = item.currency || quote?.currency || (quote as any)?.main_currency || "EUR";
+                        acc[c] = (acc[c] || 0) + (item.total || 0);
+                        return acc;
+                      }, {} as Record<string, number>)
+                    ).map(([c, total]) => (
+                      <div key={c}>{formatCurrency(total, c)}</div>
+                    ))}
                 </p>
               </div>
             </div>
