@@ -1,4 +1,4 @@
-import Link from "next/link";
+
 import { ArrowRight, Code2, Sparkles, Zap } from "lucide-react";
 
 export default function Home() {
