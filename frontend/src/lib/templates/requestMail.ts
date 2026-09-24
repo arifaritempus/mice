@@ -163,11 +163,7 @@ export function getRequestMailHtml(data: RequestMailData): string {
     </div>
 
     <div class="footer">
-      Bu e-posta <strong>${data.system_company_name || "Sistem"}</strong> adına 
-      <a href="https://www.codeicon.co/" target="_blank" style="color: #0284c7; font-weight: 600; text-decoration: none;">CODEICON</a> 
-      altyapısı ile otomatik oluşturulmuştur.<br>
-      İletişim: ${data.system_company_phone || "-"} | 
-      <a href="mailto:${data.system_company_email || data.reply_to_email}" style="color: #0284c7; text-decoration: none;">${data.system_company_email || data.reply_to_email}</a>
+      Bu e-posta <a href="https://www.codeicon.co/" target="_blank" style="color: #0284c7; font-weight: 600; text-decoration: none;">CODEICON</a> altyapısı ile otomatik oluşturulmuştur.
     </div>
   </div>
 

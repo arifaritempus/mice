@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     // Fallback için genel ayarlardan reply to bilgisini al
     const settings = await SettingsService.getSettings();
     const generalSettings = settings?.general_settings;
-    const mail_reply_to = generalSettings?.mail_reply_to || generalSettings?.mailReplyTo || generalSettings?.mail_from_email || generalSettings?.mailFromEmail || "info@tempustravel.co";
+    const mail_reply_to = generalSettings?.mail_reply_to || generalSettings?.mailReplyTo || generalSettings?.mail_from_email || generalSettings?.mailFromEmail || "";
 
     // E-posta HTML içeriğini oluştur
     const htmlContent = getRequestMailHtml({

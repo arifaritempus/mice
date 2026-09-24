@@ -29,7 +29,7 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
     
     const companyName = settings?.companyName || settings?.company_name || 'TEMPUS TRAVEL';
     const companyAddress = settings?.companyAddress || settings?.company_address || 'Burhan Nalbantoğlu Caddesi, No 18/1, Ortaköy, Lefkoşa';
-    const companyEmail = settings?.companyEmail || settings?.company_email || 'muhasebe@tempustravel.co';
+    const companyEmail = settings?.companyEmail || settings?.company_email || '';
     const agencyName = agency?.companyName || agency?.company_name || agency?.name || 'MÜŞTERİ';
     const agencyContact = agency?.contactPerson || agency?.contact_person || agency?.authorized_person || agency?.name || 'Yetkili';
     const agencyAddress = agency?.address || '................';
