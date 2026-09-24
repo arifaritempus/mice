@@ -295,8 +295,8 @@ export default function CashFlowPage() {
       return;
     }
 
-    // Günlük görünümde currentDate'i kullan, diğerlerinde bugünü kullan
-    const referenceDate = viewMode === "daily" ? currentDate : new Date();
+    // Her zaman currentDate'i kullan ki takvimle data filtresi senkronize olsun
+    const referenceDate = currentDate;
     let start: Date;
     let end: Date = new Date(referenceDate);
 
