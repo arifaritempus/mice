@@ -838,7 +838,17 @@ const toggleColumnVisibility = useCallback((column: string) => {
       const groupedByRoomNumber: {
         [key: string]: any[];
       } = {};
-      hotelFilteredItems.forEach(item => {
+      
+      // Anlık düzenlemeyi analize yansıt
+      const realTimeItems = hotelFilteredItems.map(item => {
+        const origIdx = accommodationItems.findIndex(acc => acc.id === item.id);
+        if (editingAccommodationIndex !== null && editingAccommodationIndex === origIdx && tempAccommodationItem) {
+          return { ...item, ...tempAccommodationItem };
+        }
+        return item;
+      });
+
+      realTimeItems.forEach(item => {
         const roomNo = item.oda_no || "";
         if (roomNo) {
           if (!groupedByRoomNumber[roomNo]) {
@@ -897,6 +907,13 @@ const toggleColumnVisibility = useCallback((column: string) => {
 
       // Sıralamaya göre oda tiplerini düzenle
       const sortedRoomTypes = roomTypeOrder.filter(roomType => allRoomTypes.has(roomType));
+      
+      // Listede olmayan "FRENCH" gibi özel oda tiplerini de sona ekle
+      Array.from(allRoomTypes).forEach(roomType => {
+        if (!sortedRoomTypes.includes(roomType)) {
+          sortedRoomTypes.push(roomType);
+        }
+      });
       
       // Yeni Oda No Durum Özeti Hesaplaması
       const roomStatusCounts: Record<string, { total: number, taken: number, remaining: number }> = {};
