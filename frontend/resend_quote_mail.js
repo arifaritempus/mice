@@ -231,6 +231,9 @@ async function main() {
       user: smtp_username,
       pass: smtp_password,
     },
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 
   console.log("Sending mail to:", targetEmail);

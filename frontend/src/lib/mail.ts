@@ -69,6 +69,9 @@ export async function sendMail(options: MailOptions) {
         user: smtp_username,
         pass: smtp_password,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
 
     // HTML wrapper to satisfy SpamAssassin HTML_MIME_NO_HTML_TAG
