@@ -130,8 +130,8 @@ export default function QuoteViewPublicPage() {
     const curMap: Record<string, string> = { EUR: "€", USD: "$", TRY: "₺", TL: "₺", GBP: "£" };
     return curMap[currencyCode] || currencyCode + " ";
   };
-  const formatCurrency = (value: number) => {
-    const c = quote?.currency || (quote as any)?.main_currency || "EUR";
+  const formatCurrency = (value: number, currency?: string) => {
+    const c = currency || quote?.currency || (quote as any)?.main_currency || "EUR";
     return `${getCurrencySymbol(c)}${formatNumberTR(value)}`;
   };
 
@@ -613,7 +613,7 @@ export default function QuoteViewPublicPage() {
             "BİRİM/ADET",
             "SEFER/TEKRAR",
             "BİRİM/FİYAT",
-            `TOPLAM ${currencyCode}`,
+            "TOPLAM",
             "AÇIKLAMA",
           ]);
           hRow.font = { bold: true, size: 11 };
@@ -638,8 +638,13 @@ export default function QuoteViewPublicPage() {
             ]);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
-            sRow.getCell(4).numFmt = numFmt;
-            sRow.getCell(5).numFmt = numFmt;
+            
+            const itemCurrencyCode = item.currency || currencyCode;
+            const itemSym = curMap[itemCurrencyCode] || itemCurrencyCode + " ";
+            const itemNumFmt = `"${itemSym}" #,##0.00`;
+            
+            sRow.getCell(4).numFmt = itemNumFmt;
+            sRow.getCell(5).numFmt = itemNumFmt;
             sRow.getCell(5).value = {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
@@ -1472,7 +1477,7 @@ export default function QuoteViewPublicPage() {
                                       : item.currency}
                                 </td>
                                 <td className="py-4 px-4 text-sm font-black text-right text-slate-800 whitespace-nowrap">
-                                  {formatCurrency(item.total)}
+                                  {formatCurrency(item.total, item.currency)}
                                 </td>
                               </tr>
                             ))}
@@ -1485,7 +1490,7 @@ export default function QuoteViewPublicPage() {
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-sm font-black text-gray-900 text-right whitespace-nowrap border-t border-slate-200">
-                                {formatCurrency(catSubtotal)}
+                                {formatCurrency(catSubtotal, currency)}
                               </td>
                             </tr>
                           </Fragment>

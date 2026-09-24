@@ -776,8 +776,12 @@ export default function QuoteViewPage() {
             ]);
             if (!firstItemRow) firstItemRow = sRow.number;
             const r = sRow.number;
-            sRow.getCell(4).numFmt = numFmt;
-            sRow.getCell(5).numFmt = numFmt;
+            const itemCurrencyCode = item.currency || currencyCode;
+            const itemSym = curMap[itemCurrencyCode] || itemCurrencyCode + " ";
+            const itemNumFmt = `"${itemSym}" #,##0.00`;
+            
+            sRow.getCell(4).numFmt = itemNumFmt;
+            sRow.getCell(5).numFmt = itemNumFmt;
             sRow.getCell(5).value = {
               formula: `B${r}*C${r}*D${r}`,
               result: item.total ?? 0,
