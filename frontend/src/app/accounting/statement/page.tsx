@@ -22,6 +22,22 @@ function StatementContent() {
   
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
+  const [appSettings, setAppSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/theme-settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.general_settings) {
+            setAppSettings(data.general_settings);
+          }
+        }
+      } catch (err) {}
+    };
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     if (!entityName) return;
@@ -188,9 +204,17 @@ function StatementContent() {
       </div>
 
       {/* Print Header - Visible only on Print */}
-      <div className="hidden print-block px-8 py-6 border-b-2 border-black mb-4">
-        <div className="flex justify-between items-end">
-          <div>
+      <div className="hidden print-flex px-8 py-6 border-b-2 border-black mb-4 items-end justify-between">
+        <div>
+            <div className="flex items-center gap-4 mb-2">
+              {appSettings && (appSettings.lightMenuLogo || appSettings.lightIconLogo) && (
+                <img 
+                  src={appSettings.lightMenuLogo || appSettings.lightIconLogo} 
+                  alt="Logo" 
+                  className="max-h-12 object-contain"
+                />
+              )}
+            </div>
             <h1 className="text-2xl font-black text-black">CARİ HESAP EKSTRESİ</h1>
             <h2 className="text-lg font-bold text-gray-700 mt-1">{entityName}</h2>
           </div>
@@ -198,7 +222,6 @@ function StatementContent() {
             <p><strong>Tarih:</strong> {formatDate(new Date().toISOString())}</p>
             <p><strong>Para Birimi:</strong> {selectedCurrency === "all" ? "Tümü" : selectedCurrency}</p>
           </div>
-        </div>
       </div>
 
       {/* Table */}
@@ -238,7 +261,11 @@ function StatementContent() {
                         {row.type === 'SALE' ? 'SATIŞ' : 'TAHSİLAT'}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-v3-muted group-hover:text-v3-text transition-colors print-text-black">{row.description}</td>
+                    <td className="px-4 py-2 text-v3-muted group-hover:text-v3-text transition-colors print-text-black text-xs">
+                      {row.description && row.description.length > 70 
+                        ? row.description.substring(0, 70) + "..." 
+                        : row.description}
+                    </td>
                     <td className="px-4 py-2 text-right font-semibold text-orange-600 dark:text-orange-400 print-text-black">
                       {row.debit > 0 ? formatCurrency(row.debit, row.currency) : "-"}
                     </td>
@@ -266,9 +293,11 @@ function StatementContent() {
 
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
+          @page { size: landscape; margin: 10mm; }
           body * {
             visibility: hidden;
           }
+          .print-m-0, .print-m-0 * { visibility: visible !important; }
           .print-m-0 {
             margin: 0 !important;
             padding: 0 !important;
@@ -279,8 +308,9 @@ function StatementContent() {
           }
           .print-px-8 { padding-left: 2rem !important; padding-right: 2rem !important; }
           .print-block { display: block !important; visibility: visible !important; }
+          .print-flex { display: flex !important; visibility: visible !important; }
           .print-block * { visibility: visible !important; }
-          .print-hidden { display: none !important; }
+          .print-hidden, .print-hidden *, .print-m-0 .print-hidden, .print-m-0 .print-hidden * { display: none !important; visibility: hidden !important; }
           .print-bg-white { background-color: white !important; }
           .print-bg-transparent { background-color: transparent !important; }
           .print-bg-gray-100 { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
@@ -293,7 +323,7 @@ function StatementContent() {
           .print-border-t-4 { border-top-width: 4px !important; }
           .print-hover-none:hover { background-color: transparent !important; }
           table { width: 100%; border-collapse: collapse; }
-          th, td { visibility: visible; }
+          /* removed th, td visibility hack since print-m-0 covers it */
         }
       `}} />
     </div>
