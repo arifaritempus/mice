@@ -1524,6 +1524,8 @@ export class SejourService {
           *,
           service_types(*)),
         sejour_collections(*),
+        sejour_payments(*),
+        sejour_payments(*),
         sejour_payments(*)
       `, { count: 'exact' });
 
@@ -1666,7 +1668,8 @@ export class SejourService {
         sejour_extra_services(
           *,
           service_types(*)),
-        sejour_collections(*)
+        sejour_collections(*),
+        sejour_payments(*)
       `);
 
     if (error) throw error;
@@ -1816,7 +1819,8 @@ export class SejourService {
         sejour_extra_services(
           *,
           service_types(*)),
-        sejour_collections(*)
+        sejour_collections(*),
+        sejour_payments(*)
       `)
       .eq('id', sejourId)
       .single();
@@ -1980,6 +1984,21 @@ export class SejourService {
         description: collection.description || '',
         note: collection.note || collection.description || '',
         currency: collection.currency ?? 'TRY'
+      })),
+      payments: (data.sejour_payments || []).map((p: any) => ({
+        id: p.id,
+        sejourId: p.sejour_id,
+        supplierId: p.supplier_id,
+        supplierType: p.supplier_type,
+        supplierName: p.supplier_name,
+        paymentType: p.payment_method,
+        amount: p.amount,
+        currency: p.currency,
+        exchangeRate: p.exchange_rate,
+        totalTRY: p.total_try,
+        date: p.payment_date,
+        description: p.description,
+        note: p.note
       }))
     };
   }
