@@ -2477,41 +2477,35 @@ export default function EditSejourPage() {
               {payments.length > 0 ? (
                 <div className="space-y-3">
                   {payments.map((payment) => (
-                    <div key={payment.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm relative">
-                      <button type="button" onClick={() => removePayment(payment.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Ödemeyi Sil">
+                    <div key={payment.id} className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[2] lg:[&>*:nth-child(6)]:flex-[1.5] bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm relative">
+                      <button type="button" onClick={() => removePayment(payment.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors z-10" title="Ödemeyi Sil">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                       </button>
                       
-                      <div className="col-span-1 md:col-span-2">
+                      <div className="w-full">
                         <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
                         <input type="date" value={payment.date || ""} onChange={(e) => updatePayment(payment.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none" />
                       </div>
                       
-                      <div className="col-span-1 md:col-span-3">
+                      <div className="w-full">
                         <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
-                        <select 
+                        <SearchableSelect 
+                          options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} 
                           value={payment.supplierId || ""} 
-                          onChange={(e) => {
-                            const val = e.target.value;
+                          onChange={(val) => {
                             updatePayment(payment.id, "supplierId", val);
                             const supplier = suppliers.find(s => s.id === val) || hotels.find(h => h.id === val);
                             if (supplier) {
                               updatePayment(payment.id, "supplierName", supplier.name);
+                            } else {
+                              updatePayment(payment.id, "supplierName", "");
                             }
                           }} 
-                          className="w-full h-[36px] px-2 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none"
-                        >
-                          <option value="">Tedarikçi Seçin...</option>
-                          <optgroup label="Acenteler / Tedarikçiler">
-                            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                          </optgroup>
-                          <optgroup label="Oteller">
-                            {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                          </optgroup>
-                        </select>
+                          placeholder="Tedarikçi Seçiniz..." 
+                        />
                       </div>
 
-                      <div className="col-span-1 md:col-span-2">
+                      <div className="w-full">
                         <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">YÖNTEM</label>
                         <select value={payment.paymentType || "bank"} onChange={(e) => updatePayment(payment.id, "paymentType", e.target.value)} className="w-full h-[36px] px-2 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                           <option value="nakit">Nakit</option>
@@ -2521,16 +2515,16 @@ export default function EditSejourPage() {
                         </select>
                       </div>
                       
-                      <div className="col-span-1 md:col-span-3">
+                      <div className="w-full">
                         <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">AÇIKLAMA</label>
                         <input type="text" placeholder="Ödeme notu..." value={payment.description || ""} onChange={(e) => updatePayment(payment.id, "description", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none" />
                       </div>
                       
-                      <div className="col-span-1 md:col-span-2">
+                      <div className="w-full">
                         <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TUTAR VE BİRİM</label>
                         <div className="flex gap-1 h-[36px]">
                           <input type="number" value={payment.amount || 0} onChange={(e) => updatePayment(payment.id, "amount", parseFloat(e.target.value) || 0)} className="w-full px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold outline-none" />
-                          <select value={payment.currency || "TRY"} onChange={(e) => updatePayment(payment.id, "currency", e.target.value)} className="w-[50px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                          <select value={payment.currency || "TRY"} onChange={(e) => updatePayment(payment.id, "currency", e.target.value)} className="w-[60px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
                             <option value="TRY">TRY</option>
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>

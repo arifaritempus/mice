@@ -2136,6 +2136,89 @@ export default function CreateSejourPage() {
             </div>
           )}
 
+          {/* ÖDEME TABI */}
+          {activeTabV6 === 'payment' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Ödeme Bilgileri</h2>
+                  <p className="text-xs text-gray-500">Tedarikçi ödemelerini buradan ekleyebilir ve yönetebilirsiniz.</p>
+                </div>
+                <button type="button" onClick={addPayment} className="px-4 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg shadow-md hover:bg-orange-700 transition-colors flex items-center gap-2">
+                  <span className="text-lg leading-none">+</span> Ödeme Ekle
+                </button>
+              </div>
+
+              {payments.length > 0 ? (
+                <div className="space-y-3">
+                  {payments.map((payment) => (
+                    <div key={payment.id} className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[2] lg:[&>*:nth-child(4)]:flex-[1.5] lg:[&>*:nth-child(5)]:flex-[2] lg:[&>*:nth-child(6)]:flex-[1.5] bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm relative">
+                      <button type="button" onClick={() => removePayment(payment.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors z-10" title="Ödemeyi Sil">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                      
+                      <div className="w-full">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
+                        <input type="date" value={payment.date || ""} onChange={(e) => updatePayment(payment.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none" />
+                      </div>
+                      
+                      <div className="w-full">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
+                        <SearchableSelect 
+                          options={[...suppliers.map(s => ({id: s.id, name: s.name})), ...hotels.map(h => ({id: h.id, name: h.name}))].sort((a, b) => a.name.localeCompare(b.name))} 
+                          value={payment.supplierId || ""} 
+                          onChange={(val) => {
+                            updatePayment(payment.id, "supplierId", val);
+                            const supplier = suppliers.find(s => s.id === val) || hotels.find(h => h.id === val);
+                            if (supplier) {
+                              updatePayment(payment.id, "supplierName", supplier.name);
+                            } else {
+                              updatePayment(payment.id, "supplierName", "");
+                            }
+                          }} 
+                          placeholder="Tedarikçi Seçiniz..." 
+                        />
+                      </div>
+
+                      <div className="w-full">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">YÖNTEM</label>
+                        <select value={payment.paymentType || "bank"} onChange={(e) => updatePayment(payment.id, "paymentType", e.target.value)} className="w-full h-[36px] px-2 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                          <option value="nakit">Nakit</option>
+                          <option value="banka">Havale / EFT</option>
+                          <option value="pos">Kredi Kartı / Pos</option>
+                          <option value="cek">Çek / Senet</option>
+                        </select>
+                      </div>
+                      
+                      <div className="w-full">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">AÇIKLAMA</label>
+                        <input type="text" placeholder="Ödeme notu..." value={payment.description || ""} onChange={(e) => updatePayment(payment.id, "description", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none" />
+                      </div>
+                      
+                      <div className="w-full">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TUTAR VE BİRİM</label>
+                        <div className="flex gap-1 h-[36px]">
+                          <input type="number" value={payment.amount || 0} onChange={(e) => updatePayment(payment.id, "amount", parseFloat(e.target.value) || 0)} className="w-full px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold outline-none" />
+                          <select value={payment.currency || "TRY"} onChange={(e) => updatePayment(payment.id, "currency", e.target.value)} className="w-[60px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                            <option value="TRY">TRY</option>
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
+                  <span className="text-3xl block mb-2">💸</span>
+                  <p className="text-sm font-semibold text-gray-500">Henüz ödeme eklenmemiş</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TOTALS FOOTER */}
           <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] p-3 z-40 transition-all duration-300">
             <div className="max-w-[1800px] mx-auto flex items-center justify-between relative">
