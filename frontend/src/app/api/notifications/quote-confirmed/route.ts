@@ -160,7 +160,19 @@ export async function POST(req: Request) {
            });
          }
          
-         const hotelTotal = hotelItems.reduce((acc: number, item: any) => acc + Number(item.total_price || item.total || 0), 0);
+         
+         const totalsByCurrency: Record<string, number> = {};
+         hotelItems.forEach((item: any) => {
+           const itemCur = item.currency || item.budget_currency || currency || "EUR";
+           const val = Number(item.total_price || item.total || 0);
+           totalsByCurrency[itemCur] = (totalsByCurrency[itemCur] || 0) + val;
+         });
+         
+         const hotelTotalStr = Object.entries(totalsByCurrency)
+           .map(([cur, val]) => {
+             const sym = cur === "TRY" || cur === "TL" ? "₺" : cur === "USD" ? "$" : cur === "GBP" ? "£" : "€";
+             return `${sym}${fmtMoney(val)}`;
+           }).join(" + ") || "0,00";
          
          itemsTableHtml += `
           <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
@@ -186,6 +198,9 @@ export async function POST(req: Request) {
                   const resolvedMain = isUUID(mainCatStr) ? categoryMap.get(mainCatStr) : mainCatStr;
                   
                   const finalName = resolvedSub || resolvedMain || "Diğer";
+                  
+                  const itemCur = item.currency || item.budget_currency || currency || "EUR";
+                  const itemSym = itemCur === "TRY" || itemCur === "TL" ? "₺" : itemCur === "USD" ? "$" : itemCur === "GBP" ? "£" : "€";
 
                   return `
                   <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -193,8 +208,8 @@ export async function POST(req: Request) {
                       ${finalName}
                     </td>
                     <td style="padding: 10px 16px; text-align: right; color: #334155;">${item.unit_quantity} x ${(item.sefer !== undefined && item.sefer !== null && item.sefer !== "" ? Number(item.sefer) : 1)}</td>
-                    <td style="padding: 10px 16px; text-align: right; color: #334155; white-space: nowrap;">${curSym}${fmtMoney(item.unit_price)}</td>
-                    <td style="padding: 10px 16px; text-align: right; color: #0f172a; font-weight: 600; white-space: nowrap;">${curSym}${fmtMoney(item.total_price || item.total)}</td>
+                    <td style="padding: 10px 16px; text-align: right; color: #334155; white-space: nowrap;">${itemSym}${fmtMoney(item.unit_price)}</td>
+                    <td style="padding: 10px 16px; text-align: right; color: #0f172a; font-weight: 600; white-space: nowrap;">${itemSym}${fmtMoney(item.total_price || item.total)}</td>
                   </tr>
                   `;
                 }).join("") : `<tr><td colspan="4" style="padding: 10px 16px; text-align: center; color: #94a3b8;">Bu otele ait kalem bulunmuyor</td></tr>`}
@@ -203,14 +218,14 @@ export async function POST(req: Request) {
                 <tr style="background-color: #f8fafc;">
                   <td colspan="3" style="padding: 12px 16px; text-align: right; font-weight: 700; color: #0f172a; font-size: 13px;">TOPLAM:</td>
                   <td style="padding: 12px 16px; text-align: right; font-weight: 800; color: #0f172a; font-size: 14px; white-space: nowrap;">
-                    ${curSym}${fmtMoney(hotelTotal)}
+                    ${hotelTotalStr}
                   </td>
                 </tr>
               </tfoot>
             </table>
           </div>
          `;
-       });
+});
     } else {
        itemsTableHtml = `<p style="color:#64748b; font-size:13px; text-align: center; padding: 20px; background: #f8fafc; border-radius: 8px;">Konfirme edilen otel bulunamadı.</p>`;
     }
