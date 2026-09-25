@@ -260,6 +260,23 @@ interface Collection {
   method?: string;
 }
 
+export interface Payment {
+  id: string;
+  sejourId?: string;
+  supplierId?: string;
+  supplierType?: string;
+  supplierName?: string;
+  paymentType: string;
+  amount: number;
+  currency: string;
+  exchangeRate?: number;
+  totalTRY?: number;
+  date: string;
+  description: string;
+  note?: string;
+}
+
+
 export default function EditSejourPage() {
   // --- V6 INJECTED STATES ---
   const [activeMainTab, setActiveMainTab] = useState<'info' | 'details' | 'invoices'>('info');
