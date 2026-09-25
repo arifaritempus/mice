@@ -387,14 +387,20 @@ export default function SejourDetailPage() {
       const pageWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * pageWidth) / canvas.width;
-      pdf.addImage(
-        imgData,
-        "JPEG",
-        0,
-        0,
-        pageWidth,
-        Math.min(imgHeight, pageHeight),
-      );
+      
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "JPEG", 0, position, pageWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, pageWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
       pdf.save(`voucher-${sejour.voucherNumber}.pdf`);
     } catch (err) {
       console.error("PDF oluşturma hatası:", err);
