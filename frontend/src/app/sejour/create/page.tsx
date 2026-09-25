@@ -355,6 +355,7 @@ export default function CreateSejourPage() {
 
   // Collections
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [newCollection, setNewCollection] = useState({
     type: "",
     amount: "",
@@ -828,6 +829,36 @@ export default function CreateSejourPage() {
   };
 
   // Collections Management
+  
+  const addPayment = () => {
+    const newPayment: Payment = {
+      id: crypto.randomUUID(),
+      date: new Date().toISOString().split("T")[0],
+      paymentType: "banka",
+      description: "",
+      amount: 0,
+      currency: salesData.currency,
+      supplierId: "",
+      supplierType: "",
+      supplierName: ""
+    };
+    setPayments([...payments, newPayment]);
+  };
+
+  const updatePayment = (id: string, field: keyof Payment, value: any) => {
+    setPayments(
+      payments.map((p) =>
+        p.id === id ? { ...p, [field]: value } : p
+      )
+    );
+  };
+
+  const removePayment = (id: string) => {
+    if (confirm("Bu ödemeyi silmek istediğinize emin misiniz?")) {
+      setPayments(payments.filter((p) => p.id !== id));
+    }
+  };
+
   const addCollection = () => {
     const collection: Collection = {
       id: Date.now().toString(),
@@ -930,6 +961,7 @@ export default function CreateSejourPage() {
         costs: calculateTotalCost(),
         totals: calculateTotalAmount(),
         collections: collections,
+        payments: payments,
         profits: {
           EUR: getProfitForCurrency("EUR"),
           USD: getProfitForCurrency("USD"),

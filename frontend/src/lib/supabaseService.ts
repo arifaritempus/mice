@@ -1523,7 +1523,8 @@ export class SejourService {
         sejour_extra_services(
           *,
           service_types(*)),
-        sejour_collections(*)
+        sejour_collections(*),
+        sejour_payments(*)
       `, { count: 'exact' });
 
     if (params.startDate) query = query.gte('check_in_date', params.startDate);
@@ -2307,7 +2308,32 @@ export class SejourService {
       }
     }
 
+
+    if (sejourData.payments && sejourData.payments.length > 0) {
+      const paymentData = sejourData.payments.map((payment: any) => ({
+        sejour_id: sejour.id,
+        supplier_id: payment.supplierId || null,
+        supplier_name: payment.supplierName || null,
+        payment_date: payment.date || new Date().toISOString().split('T')[0],
+        amount: payment.amount || 0,
+        currency: payment.currency || 'TRY',
+        payment_method: payment.paymentType || 'banka',
+        description: payment.description || null,
+        note: payment.note || null
+      }));
+
+      const { error: paymentsError } = await supabase
+        .from('sejour_payments')
+        .insert(paymentData);
+
+      if (paymentsError) {
+        console.error('Payments create error:', paymentsError);
+        throw paymentsError;
+      }
+    }
+
     return sejour;
+
   }
 
   static async updateSejour(sejourId: string, sejourData: any) {
@@ -2646,7 +2672,37 @@ export class SejourService {
       }
     }
 
+
+    // 7. Ödemeleri (Payments) Güncelle
+    if (sejourData.payments) {
+      await supabase.from('sejour_payments').delete().eq('sejour_id', sejourId);
+
+      if (sejourData.payments.length > 0) {
+        const paymentData = sejourData.payments.map((payment: any) => ({
+          sejour_id: sejourId,
+          supplier_id: payment.supplierId || null,
+          supplier_name: payment.supplierName || null,
+          payment_date: payment.date || new Date().toISOString().split('T')[0],
+          amount: payment.amount || 0,
+          currency: payment.currency || 'TRY',
+          payment_method: payment.paymentType || 'banka',
+          description: payment.description || null,
+          note: payment.note || null
+        }));
+
+        const { error: paymentsError } = await supabase
+          .from('sejour_payments')
+          .insert(paymentData);
+
+        if (paymentsError) {
+          console.error('Payments update error:', paymentsError);
+          throw paymentsError;
+        }
+      }
+    }
+
     return { id: sejourId, ...sejourData };
+
   }
 
   static async deleteSejour(sejourId: string) {
@@ -5627,6 +5683,65 @@ export const agingService = {
     });
     
     return results;
+  }
+};
+
+
+// SEJOUR PAYMENTS
+export const sejourPaymentsService = {
+  async getBySejourId(sejourId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('sejour_payments')
+      .select('*')
+      .eq('sejour_id', sejourId)
+      .order('payment_date', { ascending: true });
+
+    if (error) {
+      if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        return [];
+      }
+      throw error;
+    }
+    return data || [];
+  },
+
+  async create(payment: Omit<any, 'id' | 'created_at' | 'updated_at'>): Promise<any> {
+    const { data, error } = await supabase
+      .from('sejour_payments')
+      .insert([payment])
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, payment: Partial<any>): Promise<any> {
+    const { data, error } = await supabase
+      .from('sejour_payments')
+      .update({ ...payment, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('sejour_payments')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  async deleteBySejourId(sejourId: string): Promise<void> {
+    const { error } = await supabase
+      .from('sejour_payments')
+      .delete()
+      .eq('sejour_id', sejourId);
+    if (error) throw error;
   }
 };
 

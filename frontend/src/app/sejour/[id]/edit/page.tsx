@@ -344,6 +344,7 @@ export default function EditSejourPage() {
 
   // Collections
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
 
   // Service Price Input State for TR formatting
   const [servicePriceInput, setServicePriceInput] = useState<
@@ -645,7 +646,14 @@ export default function EditSejourPage() {
               setExtraServices(sejour.extraServices.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
               if (sejour.extraServices.length > 0) setShowExtraServices(true);
             }
-              if (sejour.collections) {
+              if (sejour.payments) {
+              const paymentsWithCurrency = sejour.payments.map((p: any) => ({
+                ...p,
+                currency: p.currency || sejour.currency || "TRY"
+              }));
+              setPayments(paymentsWithCurrency);
+            }
+            if (sejour.collections) {
               // Mevcut tahsilatlarda currency yoksa ekle
               const collectionsWithCurrency = sejour.collections.map(
                 (collection: any) => ({
@@ -965,6 +973,36 @@ export default function EditSejourPage() {
   };
 
   // Collections Management
+  
+  const addPayment = () => {
+    const newPayment: Payment = {
+      id: crypto.randomUUID(),
+      date: new Date().toISOString().split("T")[0],
+      paymentType: "bank",
+      description: "",
+      amount: 0,
+      currency: salesData.currency,
+      supplierId: "",
+      supplierType: "",
+      supplierName: ""
+    };
+    setPayments([...payments, newPayment]);
+  };
+
+  const updatePayment = (id: string, field: keyof Payment, value: any) => {
+    setPayments(
+      payments.map((p) =>
+        p.id === id ? { ...p, [field]: value } : p
+      )
+    );
+  };
+
+  const removePayment = (id: string) => {
+    if (confirm("Bu ödemeyi silmek istediğinize emin misiniz?")) {
+      setPayments(payments.filter((p) => p.id !== id));
+    }
+  };
+
   const addCollection = () => {
     const newCollection: Collection = {
       id: Date.now().toString(),
@@ -1078,6 +1116,7 @@ export default function EditSejourPage() {
         status: salesData.status,
         notes: salesData.notes,
         collections: collections,
+        payments: payments,
         updated_at: new Date().toISOString(),
       };
 
@@ -1506,10 +1545,11 @@ export default function EditSejourPage() {
                  <button 
                    type="button"
                    onClick={() => setActiveTabV6('collection')} 
-                   className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTabV6 === 'collection' ? 'bg-emerald-600/90 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}
-                 >
-                   TAHSİLAT
-                 </button>
+                   className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTabV6 === 'collection' ? 'bg-emerald-600/90 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}>
+                    TAHSİLAT
+                  </button>
+                  <button 
+                   type="button" onClick={() => setActiveTabV6('payment')} className={`flex-1 text-center py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTabV6 === 'payment' ? 'bg-orange-600/90 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-gray-600 dark:text-gray-400 hover:text-v3-text hover:bg-v3-border'}`}>ÖDEME</button>
               </div>
             </div>
           )}
@@ -2398,6 +2438,96 @@ export default function EditSejourPage() {
                 <div className="bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
                   <span className="text-3xl block mb-2">💳</span>
                   <p className="text-sm font-semibold text-gray-500">Henüz tahsilat eklenmemiş</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          
+          {/* ÖDEME TABI */}
+          {activeMainTab === 'details' && activeTabV6 === 'payment' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Ödeme Bilgileri</h2>
+                  <p className="text-xs text-gray-500">Tedarikçi ödemelerini buradan ekleyebilir ve yönetebilirsiniz.</p>
+                </div>
+                <button type="button" onClick={addPayment} className="px-4 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg shadow-md hover:bg-orange-700 transition-colors flex items-center gap-2">
+                  <span className="text-lg leading-none">+</span> Ödeme Ekle
+                </button>
+              </div>
+
+              {payments.length > 0 ? (
+                <div className="space-y-3">
+                  {payments.map((payment) => (
+                    <div key={payment.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm relative">
+                      <button type="button" onClick={() => removePayment(payment.id)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors" title="Ödemeyi Sil">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                      
+                      <div className="col-span-1 md:col-span-2">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TARİH</label>
+                        <input type="date" value={payment.date || ""} onChange={(e) => updatePayment(payment.id, "date", e.target.value)} className="w-full h-[36px] px-2 border border-gray-200 rounded-md text-[11px] font-medium outline-none" />
+                      </div>
+                      
+                      <div className="col-span-1 md:col-span-3">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TEDARİKÇİ</label>
+                        <select 
+                          value={payment.supplierId || ""} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            updatePayment(payment.id, "supplierId", val);
+                            const supplier = suppliers.find(s => s.id === val) || hotels.find(h => h.id === val);
+                            if (supplier) {
+                              updatePayment(payment.id, "supplierName", supplier.name);
+                            }
+                          }} 
+                          className="w-full h-[36px] px-2 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none"
+                        >
+                          <option value="">Tedarikçi Seçin...</option>
+                          <optgroup label="Acenteler / Tedarikçiler">
+                            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </optgroup>
+                          <optgroup label="Oteller">
+                            {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                          </optgroup>
+                        </select>
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">YÖNTEM</label>
+                        <select value={payment.paymentType || "bank"} onChange={(e) => updatePayment(payment.id, "paymentType", e.target.value)} className="w-full h-[36px] px-2 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                          <option value="nakit">Nakit</option>
+                          <option value="banka">Havale / EFT</option>
+                          <option value="pos">Kredi Kartı / Pos</option>
+                          <option value="cek">Çek / Senet</option>
+                        </select>
+                      </div>
+                      
+                      <div className="col-span-1 md:col-span-3">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">AÇIKLAMA</label>
+                        <input type="text" placeholder="Ödeme notu..." value={payment.description || ""} onChange={(e) => updatePayment(payment.id, "description", e.target.value)} className="w-full h-[36px] px-3 border border-gray-200 rounded-md text-[11px] font-medium outline-none" />
+                      </div>
+                      
+                      <div className="col-span-1 md:col-span-2">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TUTAR VE BİRİM</label>
+                        <div className="flex gap-1 h-[36px]">
+                          <input type="number" value={payment.amount || 0} onChange={(e) => updatePayment(payment.id, "amount", parseFloat(e.target.value) || 0)} className="w-full px-2 text-right border border-gray-200 rounded-md text-[11px] font-bold outline-none" />
+                          <select value={payment.currency || "TRY"} onChange={(e) => updatePayment(payment.id, "currency", e.target.value)} className="w-[50px] px-1 bg-gray-50 border border-gray-200 rounded-md text-[11px] font-bold outline-none">
+                            <option value="TRY">TRY</option>
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
+                  <span className="text-3xl block mb-2">💸</span>
+                  <p className="text-sm font-semibold text-gray-500">Henüz ödeme eklenmemiş</p>
                 </div>
               )}
             </div>
