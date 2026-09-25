@@ -192,7 +192,7 @@ const ContractTemplate = forwardRef<HTMLDivElement, ContractTemplateProps>(
           <tbody>
             {paymentPlans && paymentPlans.length > 0 ? paymentPlans.map((plan: any, idx: number) => {
                const planDate = plan.date || plan.collection_date || plan.paymentDate || '-';
-               const planAmount = plan.amount ? `${plan.amount} ${budgetCurrency}` : '-';
+               const planAmount = plan.amount ? `${plan.amount} ${plan.currency || budgetCurrency}` : '-';
                const methodStr = plan.collectionType || plan.collection_type || plan.payment_method || plan.method || 'Banka Transferi';
                
                return (
