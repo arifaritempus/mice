@@ -335,13 +335,7 @@ export const quotesService = {
         })
       : (quoteItems || []);
 
-    const seen = new Set<string>();
-    const relevantItems = relevantItemsRaw.filter(it => {
-      const key = `${it.main_category}|${it.sub_category}|${it.description}|${it.hotel_id}|${it.unit_price}|${it.unit_quantity}|${it.sefer}|${it.vat}|${it.fx}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const relevantItems = relevantItemsRaw;
 
     const withTabTag = (desc: string, tabId: string | null) => {
       const cleanDesc = String(desc || '').replace(/\s*\[T:[^\]]+\]\s*/g, ' ').trim();
