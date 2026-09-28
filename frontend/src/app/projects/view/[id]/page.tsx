@@ -180,12 +180,14 @@ export default function ProjectViewPublicPage() {
       }
 
       try {
-        const link = await publicLinksService.getByToken(token);
-        if (!link) {
-          setError("Link bulunamadı veya geçersiz.");
-          setLoading(false);
-          return;
+        const res = await fetch(`/api/public/link-data?token=${token}`);
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Link yüklenirken hata oluştu.");
         }
+
+        const payload = await res.json();
+        const link = payload.link;
 
         if (link.link_type !== "project" || link.project_id !== projectId) {
           setError("Link bu proje için geçerli değil.");
@@ -198,24 +200,15 @@ export default function ProjectViewPublicPage() {
           setIsApproved(true);
         }
 
-        if (link.expiry_date) {
-          const expiryDate = new Date(link.expiry_date);
-          const now = new Date();
-          if (now > expiryDate) {
-            setError("Link süresi dolmuş.");
-            setLoading(false);
-            return;
-          }
-        }
-
-        if (!link.is_active) {
-          setError("Link pasif durumda.");
-          setLoading(false);
-          return;
-        }
-
         if (!showPasswordForm) {
-          loadProjectData();
+          setProject(payload.project);
+          setItemsSales(payload.items || []);
+          if (payload.dictionaries) {
+            setAgencies(payload.dictionaries.agencies || []);
+            setHotels(payload.dictionaries.hotels || []);
+            setCategories(payload.dictionaries.categories || []);
+          }
+          setLoading(false);
         } else {
           setLoading(false);
         }
@@ -244,163 +237,26 @@ export default function ProjectViewPublicPage() {
   };
 
   const loadProjectData = async () => {
-    console.log("--- loadProjectData başlatıldı ---");
-    console.log("Project ID:", projectId);
+    setLoading(true);
     try {
-      console.log("1. projectsService.getById çağrılıyor...");
-      const p = await projectsService.getById(projectId);
-      console.log("1. projectsService.getById bitti. Veri:", p ? "Var" : "Yok");
-
-      if (p) {
-        setProject(p as any);
-        const hData = (p as any).hotels_data || [];
-        setActiveViewHotelId("all");
-      } else {
-        console.warn("Proje bulunamadı, p is null");
-        setError("Proje bulunamadı.");
-        setLoading(false);
-        return;
+      const res = await fetch(`/api/public/link-data?token=${token}`);
+      if (!res.ok) throw new Error("Veri yüklenemedi.");
+      const payload = await res.json();
+      setProject(payload.project);
+      setItemsSales(payload.items || []);
+      if (payload.dictionaries) {
+        setAgencies(payload.dictionaries.agencies || []);
+        setHotels(payload.dictionaries.hotels || []);
+        setCategories(payload.dictionaries.categories || []);
       }
-
-      try {
-        console.log("2. projectSalesItemsService.getByProjectId çağrılıyor...");
-        const salesItems =
-          await projectSalesItemsService.getByProjectId(projectId);
-        console.log(
-          "2. projectSalesItemsService bitti. Kayıt sayısı:",
-          salesItems?.length || 0,
-        );
-
-        const uniqueSales = salesItems || [];
-        const hData = (p as any)?.hotels_data || [];
-
-        const parseDescriptionTags = (desc: string) => {
-          if (!desc)
-            return {
-              cleanDesc: "",
-              tabTag: null,
-              supplierTag: null,
-              repeatTag: null,
-            };
-          const tabMatch = desc.match(/ \[T:(.*?)\]/);
-          const supplierMatch = desc.match(/ \[S:(.*?)\]/);
-          const repeatMatch = desc.match(/ \[R:(.*?)\]/);
-          let cleanDesc = desc
-            .replace(/ \[T:.*?\]/g, "")
-            .replace(/ \[S:.*?\]/g, "")
-            .replace(/ \[R:.*?\]/g, "")
-            .trim();
-          return {
-            cleanDesc,
-            tabTag: tabMatch ? tabMatch[1] : null,
-            supplierTag: supplierMatch ? supplierMatch[1] : null,
-            repeatTag: repeatMatch ? repeatMatch[1] : null,
-          };
-        };
-
-        const mappedSales = uniqueSales.map((it) => {
-          let uiHotelId = it.hotel_id;
-          const { cleanDesc, tabTag, repeatTag } = parseDescriptionTags(
-            it.description || "",
-          );
-
-          if (tabTag) {
-            uiHotelId = tabTag;
-          } else if (it.hotel_id && hData.length > 0) {
-            const matched = hData.find((h: any) => h.hotel_id === it.hotel_id);
-            if (matched) uiHotelId = matched.id;
-          }
-
-          let inferredRepeat = 1;
-          if (repeatTag !== null && repeatTag !== undefined && repeatTag !== "")
-            inferredRepeat = Number(repeatTag);
-          else if (
-            it.sefer !== undefined &&
-            it.sefer !== null &&
-            it.sefer !== ""
-          )
-            inferredRepeat = Number(it.sefer);
-          else if (
-            it.repeat !== undefined &&
-            it.repeat !== null &&
-            it.repeat !== ""
-          )
-            inferredRepeat = Number(it.repeat);
-          const qty = it.unit_quantity !== undefined && it.unit_quantity !== null && it.unit_quantity !== "" ? Number(it.unit_quantity) : 1;
-          const uPrice = Number(it.unit_price || 0);
-          const tPrice = Number(it.total_price || it.total || 0);
-          if (qty > 0 && uPrice > 0 && tPrice > 0) {
-            const expectedTotal = qty * uPrice * inferredRepeat;
-            if (Math.abs(expectedTotal - tPrice) > 1) {
-              const calc = Math.round(tPrice / (qty * uPrice));
-              if (calc > 0) inferredRepeat = calc;
-            }
-          }
-          return {
-            ...it,
-            hotel_id: uiHotelId,
-            main_category: it.category,
-            qty: it.unit_quantity,
-            repeat: inferredRepeat,
-            total: it.total_price,
-            total_try: (it.total_price || 0) * (it.fx || 1),
-            description: cleanDesc,
-          };
-        });
-        setItemsSales(mappedSales);
-      } catch (err) {
-        console.error("Satış kalemleri yüklenirken hata:", err);
-        setItemsSales([]);
-      }
-
-      try {
-        const res = await fetch('/api/public/dictionaries');
-        if (res.ok) {
-          const dicts = await res.json();
-          setAgencies(dicts.agencies || []);
-          setHotels(dicts.hotels || []);
-          setCategories(dicts.categories || []);
-        } else {
-          // Fallback if API fails
-          const [agList, htList, catList] = await Promise.all([
-            agenciesService.getAll().catch(() => []),
-            hotelsService.getAll().catch(() => []),
-            categoriesService.getAll().catch(() => []),
-          ]);
-          setAgencies((agList as any) || []);
-          setHotels((htList as any) || []);
-          setCategories((catList as any) || []);
-        }
-      } catch (err) {
-        console.error("Failed to load dictionaries", err);
-      }
-    } catch (error: any) {
-      console.error("Veri yükleme hatası detaylı:", {
-        name: error?.name,
-        message: error?.message,
-        details: error?.details,
-        hint: error?.hint,
-        code: error?.code,
-        status: error?.status,
-        stack: error?.stack,
-        stringified: String(error),
-      });
-      // Object properties log for empty {} objects
-      try {
-        console.log(
-          "Hata objesi tüm özellikleri:",
-          Object.getOwnPropertyNames(error || {}),
-        );
-      } catch (e) {}
-
-      setError(
-        `Veri yüklenirken bir hata oluştu: ${error?.message || "Bilinmeyen hata (Detay konsolda)"}`,
-      );
+    } catch (err) {
+      console.error(err);
+      setError("Proje verileri yüklenemedi.");
     } finally {
-      console.log("--- loadProjectData bitti ---");
       setLoading(false);
     }
   };
+
 
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
