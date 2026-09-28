@@ -1518,10 +1518,8 @@ export class SejourService {
           *,
           service_types(*)),
         sejour_collections(*),
-        sejour_payments(*),
-        sejour_payments(*),
         sejour_payments(*)
-      `, { count: 'exact' });
+        `, { count: 'exact' });
 
     if (params.startDate) query = query.gte('check_in_date', params.startDate);
     if (params.endDate) query = query.lte('check_in_date', params.endDate);
