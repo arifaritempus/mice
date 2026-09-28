@@ -863,17 +863,23 @@ export default function CreateSejourPage() {
   };
 
   const updatePayment = (id: string, field: keyof Payment, value: any) => {
-    setPayments(
-      payments.map((p) =>
+    setPayments((prev) =>
+      prev.map((p) =>
         p.id === id ? { ...p, [field]: value } : p
       )
     );
   };
 
   const removePayment = (id: string) => {
-    if (confirm("Bu ödemeyi silmek istediğinize emin misiniz?")) {
-      setPayments(payments.filter((p) => p.id !== id));
-    }
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">Bu ödemeyi silmek istediğinize emin misiniz?</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">İptal</button>
+          <button onClick={() => { setPayments((prev) => prev.filter((p) => p.id !== id)); toast.dismiss(t.id); }} className="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-sm">Evet, Sil</button>
+        </div>
+      </div>
+    ), { duration: 5000, position: 'top-center' });
   };
 
   const addCollection = () => {
