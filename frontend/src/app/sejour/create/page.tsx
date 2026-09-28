@@ -18,6 +18,7 @@ import { getLogosForExcel } from "@/utils/logoUtils";
 import { usePermissions, Module } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { toast } from "react-hot-toast";
+import { Trash2 } from "lucide-react";
 
 // Basit arama ve klavye destekli ComboBox - Modernize Edildi
 function ComboBox({
