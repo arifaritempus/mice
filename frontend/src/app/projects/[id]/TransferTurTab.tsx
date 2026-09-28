@@ -625,6 +625,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                 {renderSortableHeader("Uçuş Kodu", "flightCode")}
                 {renderSortableHeader("Güzergah", "route")}
                 {renderSortableHeader("Yolcu Sayısı", "passengerCount")}
+                {renderSortableHeader("Transfer Türü", "transferType")}
                 {renderSortableHeader("Araç Tipi", "vehicleType")}
                 {renderSortableHeader("Tedarikçi", "supplierName")}
                 {renderSortableHeader("Maliyet Tutarı", "costAmount")}
@@ -1023,15 +1024,14 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                       <td className="px-2.5 py-2.5 text-v3-text text-center">
                         {formatIntegerForDisplay(transferTotals[doviz].kisiSayisi)}
                       </td>
-                      <td className="px-2.5 py-2.5 text-v3-text text-center">
+                      <td className="px-2.5 py-2.5" colSpan={3}></td>
+                      <td className="px-2.5 py-2.5 text-v3-text text-left">
                         {formatNumberForDisplay(transferTotals[doviz].toplamMaliyet)}
                       </td>
-                      <td className="px-2.5 py-2.5 text-v3-text text-center font-bold">
+                      <td className="px-2.5 py-2.5 text-v3-text text-left font-bold">
                         {doviz}
                       </td>
-                      <td className="px-2.5 py-2.5 text-v3-text" colSpan={2}>
-                        {/* Boş sütunlar */}
-                      </td>
+                      <td className="px-2.5 py-2.5 text-v3-text"></td>
                     </tr>)}
             </tbody>
           </table>
