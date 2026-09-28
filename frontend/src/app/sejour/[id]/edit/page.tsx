@@ -312,6 +312,20 @@ export default function EditSejourPage() {
   const params = useParams();
   const sejourId = params.id as string;
   const [activeTab, setActiveTab] = useState("sales");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string, type: 'flight' | 'transfer' | 'room' | 'service' | 'payment' | 'collection', title: string } | null>(null);
+
+  const confirmGenericDelete = () => {
+    if (!deleteTarget) return;
+    const { id, type } = deleteTarget;
+    if (type === 'flight') setFlights(prev => prev.filter(p => p.id !== id));
+    if (type === 'transfer') setTransfers(prev => prev.filter(p => p.id !== id));
+    if (type === 'room') setRooms(prev => prev.filter(p => p.id !== id));
+    if (type === 'service') setExtraServices(prev => prev.filter(p => p.id !== id));
+    if (type === 'payment') setPayments(prev => prev.filter(p => p.id !== id));
+    if (type === 'collection') setCollections(prev => prev.filter(p => p.id !== id));
+    setDeleteTarget(null);
+  };
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -783,9 +797,7 @@ export default function EditSejourPage() {
     );
   };
 
-  const removeFlight = (id: string) => {
-    setFlights(flights.filter((flight) => flight.id !== id));
-  };
+  const removeFlight = (id: string) => setDeleteTarget({ id, type: 'flight', title: 'Uçuş' });
 
   // Transfer Management
   const addTransfer = (direction: "arrival" | "return" | "intermediate") => {
@@ -822,9 +834,7 @@ export default function EditSejourPage() {
     );
   };
 
-  const removeTransfer = (id: string) => {
-    setTransfers(transfers.filter((transfer) => transfer.id !== id));
-  };
+  const removeTransfer = (id: string) => setDeleteTarget({ id, type: 'transfer', title: 'Transfer' });
 
   const updateRoom = (
     id: string,
@@ -838,9 +848,7 @@ export default function EditSejourPage() {
     );
   };
 
-  const removeRoom = (id: string) => {
-    setRooms(rooms.filter((room) => room.id !== id));
-  };
+  const removeRoom = (id: string) => setDeleteTarget({ id, type: 'room', title: 'Oda' });
 
   // Extra Service Management
   const addExtraService = () => {
@@ -869,9 +877,7 @@ export default function EditSejourPage() {
     );
   };
 
-  const removeExtraService = (id: string) => {
-    setExtraServices(extraServices.filter((service) => service.id !== id));
-  };
+  const removeExtraService = (id: string) => setDeleteTarget({ id, type: 'service', title: 'Ekstra Hizmet' });
 
   // TR format helper
   const formatAmount = (value: number) => {
@@ -1014,17 +1020,7 @@ export default function EditSejourPage() {
     );
   };
 
-  const removePayment = (id: string) => {
-    toast((t) => (
-      <div className="flex flex-col gap-3">
-        <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">Bu ödemeyi silmek istediğinize emin misiniz?</p>
-        <div className="flex justify-end gap-2">
-          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">İptal</button>
-          <button onClick={() => { setPayments((prev) => prev.filter((p) => p.id !== id)); toast.dismiss(t.id); }} className="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-sm">Evet, Sil</button>
-        </div>
-      </div>
-    ), { duration: 5000, position: 'top-center' });
-  };
+  const removePayment = (id: string) => setDeleteTarget({ id, type: 'payment', title: 'Ödeme' });
 
   const addCollection = () => {
     const newCollection: Collection = {
@@ -1050,9 +1046,7 @@ export default function EditSejourPage() {
     );
   };
 
-  const removeCollection = (id: string) => {
-    setCollections(collections.filter((collection) => collection.id !== id));
-  };
+  const removeCollection = (id: string) => setDeleteTarget({ id, type: 'collection', title: 'Tahsilat' });
 
   const calculateTotalCollections = () => {
     return collections.reduce((sum, collection) => sum + collection.amount, 0);
@@ -3080,6 +3074,37 @@ export default function EditSejourPage() {
         />
       )}
 
+      
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setDeleteTarget(null)} />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl relative w-full max-w-sm mx-4 transform transition-all">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-6 h-6 text-red-600 dark:text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">{deleteTarget.title} Sil</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+              Bu {deleteTarget.title.toLowerCase()} kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded-xl transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={confirmGenericDelete}
+                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors flex items-center justify-center"
+              >
+                Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    
       {deleteConfirmId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setDeleteConfirmId(null)} />
