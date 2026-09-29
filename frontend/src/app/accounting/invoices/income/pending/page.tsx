@@ -258,7 +258,8 @@ export default function IncomePendingPage() {
                 {Object.entries(
                   selectedItems.reduce(
                     (acc, item) => {
-                      const curr = item.currency || "TRY";
+                      let curr = item.currency || "TRY";
+                      if (curr === "TL") curr = "TRY";
                       acc[curr] = (acc[curr] || 0) + (item.balance || 0);
                       return acc;
                     },

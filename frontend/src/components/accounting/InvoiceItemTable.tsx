@@ -380,7 +380,7 @@ export default function InvoiceItemTable({
 
                   <td className="px-2.5 py-2.5 text-center">
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                      {item.currency || "TRY"}
+                      {item.currency === "TL" ? "TRY" : (item.currency || "TRY")}
                     </span>
                   </td>
                 </tr>
