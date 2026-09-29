@@ -17,30 +17,18 @@ import { toast } from "react-hot-toast";
 
 interface Agency {
   id: string;
-  category?: string;
-  unit_quantity?: number;
-  sefer?: number;
-  total_price?: number;
   name: string;
   company_name: string;
 }
 
 interface Hotel {
   id: string;
-  category?: string;
-  unit_quantity?: number;
-  sefer?: number;
-  total_price?: number;
   name: string;
   concept: string;
 }
 
 interface Category {
   id: string;
-  category?: string;
-  unit_quantity?: number;
-  sefer?: number;
-  total_price?: number;
   name: string;
   parent_id?: string;
   code?: string | number;
@@ -49,24 +37,12 @@ interface Category {
 
 interface Project {
   id: string;
-  category?: string;
-  unit_quantity?: number;
-  sefer?: number;
-  total_price?: number;
   reference: string;
   agency_id: string;
-  category?: string;
-  unit_quantity?: number;
-  sefer?: number;
-  total_price?: number;
   company_name: string;
   start_date: string;
   end_date: string;
   hotel_id: string;
-  category?: string;
-  unit_quantity?: number;
-  sefer?: number;
-  total_price?: number;
   quote_type: string;
   status: string;
   room_count: number;
