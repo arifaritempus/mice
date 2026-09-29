@@ -34,6 +34,7 @@ import {
   Camera
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -108,6 +109,9 @@ export default function TopNavigation() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const [generalSettings, setGeneralSettings] = useState<any>(null);
+  const [showOpModePassword, setShowOpModePassword] = useState(false);
+  const [opModePassword, setOpModePassword] = useState("");
+  const [isVerifyingOpMode, setIsVerifyingOpMode] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     name: string;
     email: string;
@@ -950,7 +954,12 @@ export default function TopNavigation() {
                        onClick={(e) => {
                          e.preventDefault();
                          e.stopPropagation();
-                         toggleMode(!isOperationMode);
+                         if (isOperationMode) {
+                           setShowOpModePassword(true);
+                           setOpModePassword("");
+                         } else {
+                           toggleMode(true);
+                         }
                        }}>
                     <span className="text-xs font-bold text-v3-text">{isOperationMode ? "Operasyon Modu" : "Ofis Modu"}</span>
                     <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isOperationMode ? "bg-blue-600" : "bg-gray-300"}`}>
@@ -985,6 +994,81 @@ export default function TopNavigation() {
           </div>
         </motion.nav>
       </div>
+
+      {showOpModePassword && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-v3-surface w-[400px] rounded-2xl shadow-2xl border border-v3-border p-6 flex flex-col items-center">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-v3-text mb-2 text-center">Ofis Moduna Geçiş</h3>
+            <p className="text-sm text-v3-muted text-center mb-6">Ofis moduna dönmek için lütfen şifrenizi girin.</p>
+            
+            <form className="w-full flex flex-col gap-4" onSubmit={async (e) => {
+              e.preventDefault();
+              setIsVerifyingOpMode(true);
+              try {
+                const { error } = await supabase.auth.signInWithPassword({
+                  email: userProfile?.email || "",
+                  password: opModePassword
+                });
+                if (error) {
+                  toast.error("Hatalı şifre!");
+                } else {
+                  toggleMode(false);
+                  setShowOpModePassword(false);
+                  toast.success("Ofis moduna geçildi.");
+                }
+              } catch (err) {
+                toast.error("Şifre doğrulanamadı.");
+              } finally {
+                setIsVerifyingOpMode(false);
+              }
+            }}>
+              <input 
+                type="text" 
+                autoComplete="off" 
+                autoCorrect="off" 
+                spellCheck="false" 
+                autoCapitalize="none"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                value={opModePassword}
+                onChange={(e) => setOpModePassword(e.target.value)}
+                placeholder="Şifreniz"
+                className="w-full px-4 py-3 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                style={{ WebkitTextSecurity: "disc" } as any}
+                autoFocus
+              />
+              
+              <div className="flex gap-3 w-full mt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowOpModePassword(false)}
+                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-v3-text rounded-xl font-semibold transition-colors"
+                  disabled={isVerifyingOpMode}
+                >
+                  İptal
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors flex justify-center items-center"
+                  disabled={isVerifyingOpMode || !opModePassword}
+                >
+                  {isVerifyingOpMode ? (
+                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : "Geçiş Yap"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <CommandCenter
         isOpen={isCommandCenterOpen}
