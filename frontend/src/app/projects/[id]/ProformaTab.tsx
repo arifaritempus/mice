@@ -248,7 +248,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                 <div className="flex flex-col gap-4">
                   {Object.entries(groupedItems).map(([categoryName, items], catIdx) => (
                     <div key={catIdx} className="avoid-page-break">
-                      <div className="bg-[#1e293b] text-white px-2 py-1.5 mb-0.5 rounded-t flex items-center">
+                      <div className="bg-[#1e293b] text-white px-3 pt-[5px] pb-[3px] mb-0.5 rounded-t block">
                         <h3 className="text-[10px] font-bold uppercase tracking-widest">{categoryName}</h3>
                       </div>
                       <table className="w-full text-[10px]">
@@ -354,7 +354,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                   <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">BANKA HESAP BİLGİLERİ</h3>
                   <div className="flex flex-col gap-1">
                     {settings.bankAccounts.map((acc: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-100 last:border-0">
+                      <div key={idx} className="flex justify-between items-center text-[10px] py-2 border-b border-gray-100 last:border-0">
                         <div className="flex items-center gap-4">
                           <span className="font-bold text-gray-900 whitespace-nowrap">{acc.bankName}</span>
                           <span className="text-gray-600 leading-normal">{acc.companyTitle}</span>
