@@ -882,6 +882,19 @@ export default function QuoteEditPage() {
         return;
       }
 
+
+      // Kategori seçili olmayan kalemleri engelle
+      const invalidItems = serviceItems.filter(item => !item.main_category || item.main_category === "" || !item.sub_category || item.sub_category === "" || item.sub_category === "-");
+      if (invalidItems.length > 0) {
+        setActiveMainTab('budget');
+        setNotification({
+          message: "Lütfen bütçe tablosunda Kategori seçilmemiş olan hizmet satırlarını doldurunuz veya siliniz.",
+          type: "error",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const totalAmount = serviceItems.reduce(
         (sum, item) => sum + (item.total || 0),
         0,

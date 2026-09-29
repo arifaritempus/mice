@@ -2327,6 +2327,17 @@ export default function ProjectDetailPage() {
         // Düzenleme devam ediyorsa DB'ye gitme, sadece isEditing false olduğunda kaydet
         if (next.isEditing) continue;
 
+        if (!next.main_category || next.main_category === "" || !next.sub_category || next.sub_category === "" || next.sub_category === "-") {
+          toast.error("Kaydetmeden önce Kategori (alt kategori) seçimi zorunludur!");
+          
+          if (side === "sales") {
+            setItemsSales((prev) => prev.map(p => p.id === next.id ? { ...p, isEditing: true } : p));
+          } else {
+            setItemsPurchase((prev) => prev.map(p => p.id === next.id ? { ...p, isEditing: true } : p));
+          }
+          continue; // DB'ye kaydetmeyi atla
+        }
+
         const tabId = next.hotel_id;
         const isUUID = (str: string) =>
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
