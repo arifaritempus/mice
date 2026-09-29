@@ -24725,7 +24725,8 @@ export default function ProjectDetailPage() {
                 </div>
               )}
               {activeTab === "proforma" && (
-                <ProformaTab 
+                <ProformaTab
+                  categories={categories}
                   project={project}
                   salesItems={itemsSales}
                   collections={collections}

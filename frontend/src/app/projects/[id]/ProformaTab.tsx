@@ -8,9 +8,10 @@ interface ProformaTabProps {
   project: any;
   salesItems: any[];
   collections: any[];
+  categories?: any[];
 }
 
-export default function ProformaTab({ project, salesItems, collections }: ProformaTabProps) {
+export default function ProformaTab({ project, salesItems, collections, categories = [] }: ProformaTabProps) {
   const { t } = useLanguage();
   const proformaRef = useRef<HTMLDivElement>(null);
   const [settings, setSettings] = useState<any>(null);
@@ -33,11 +34,11 @@ export default function ProformaTab({ project, salesItems, collections }: Profor
     setIsExporting(true);
     try {
       const opt = {
-        margin:       10,
+        margin:       0,
         filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        image:        { type: 'jpeg' as const, quality: 1.0 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
       };
       await html2pdf().from(proformaRef.current).set(opt as any).save();
     } catch (error) {
@@ -47,10 +48,17 @@ export default function ProformaTab({ project, salesItems, collections }: Profor
     }
   };
 
-  // Group calculations by currency
+  const getCategoryName = (idOrName: string) => {
+    if (!idOrName) return "";
+    const found = categories?.find(c => c.id === idOrName);
+    return found ? found.name : idOrName;
+  };
+
   const currencyTotals: Record<string, { matrah: number; kdv: number; genelToplam: number; tahsilat: number }> = {};
+  const groupedItems: Record<string, any[]> = {};
 
   salesItems.forEach(item => {
+    // Totals
     const cur = item.currency || 'EUR';
     if (!currencyTotals[cur]) {
       currencyTotals[cur] = { matrah: 0, kdv: 0, genelToplam: 0, tahsilat: 0 };
@@ -58,7 +66,6 @@ export default function ProformaTab({ project, salesItems, collections }: Profor
     const q = item.unit_quantity || 1;
     const s = item.sefer || 1;
     const up = item.unit_price || 0;
-    // item.total_price is usually computed, if not fallback
     const matrah = item.total_price !== undefined ? Number(item.total_price) : (up * q * s);
     const kdvRate = Number(item.vat || 0);
     const kdv = matrah * (kdvRate / 100);
@@ -67,6 +74,21 @@ export default function ProformaTab({ project, salesItems, collections }: Profor
     currencyTotals[cur].matrah += matrah;
     currencyTotals[cur].kdv += kdv;
     currencyTotals[cur].genelToplam += genelToplam;
+
+    // Grouping
+    const mainCatName = getCategoryName(item.main_category) || "DİĞER HİZMETLER";
+    if (!groupedItems[mainCatName]) {
+      groupedItems[mainCatName] = [];
+    }
+    groupedItems[mainCatName].push({
+       ...item,
+       mainCatName,
+       subCatName: getCategoryName(item.sub_category),
+       matrah,
+       kdvRate,
+       kdv,
+       genelToplam
+    });
   });
 
   collections.forEach(col => {
@@ -88,12 +110,12 @@ export default function ProformaTab({ project, salesItems, collections }: Profor
       <div className="flex items-center justify-between bg-white dark:bg-v3-surface border border-v3-border p-4 rounded-2xl shadow-sm">
         <div>
           <h2 className="text-lg font-black text-v3-text">Proforma Fatura</h2>
-          <p className="text-sm text-v3-muted">Bu sayfadan proforma faturanızı görüntüleyebilir ve PDF olarak indirebilirsiniz.</p>
+          <p className="text-sm text-v3-muted">Tasarımı yenilenmiş, kategorize edilmiş şık proforma görünümü.</p>
         </div>
         <button
           onClick={handleExportPDF}
           disabled={isExporting}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-[#1e293b] hover:bg-black text-white rounded-xl font-bold transition-all shadow-lg shadow-black/10 disabled:opacity-50"
         >
           {isExporting ? (
             <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -105,210 +127,234 @@ export default function ProformaTab({ project, salesItems, collections }: Profor
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           )}
-          PDF OLUŞTUR
+          PDF İNDİR
         </button>
       </div>
 
-      {/* PROFORMA KAGIDI (A4 formatı benzeri görünüm) */}
-      <div className="flex justify-center overflow-x-auto pb-8">
+      {/* PROFORMA KAGIDI */}
+      <div className="flex justify-center overflow-x-auto pb-8 bg-gray-100/50 rounded-xl p-4 md:p-8">
         <div 
           ref={proformaRef} 
-          className="bg-white text-gray-800 p-10 md:p-14 shadow-2xl shrink-0"
-          style={{ width: '210mm', minHeight: '297mm', position: 'relative' }}
+          className="bg-white text-gray-800 shadow-2xl shrink-0 mx-auto print-exact"
+          style={{ width: '210mm', minHeight: '297mm', position: 'relative', overflow: 'hidden' }}
         >
-          
-          {/* HEADER */}
-          <div className="flex justify-between items-start border-b-2 border-gray-200 pb-8 mb-8">
-            <div className="flex flex-col gap-3 max-w-[50%]">
-              {settings?.light_icon_logo || settings?.light_wordmark_logo ? (
-                <div className="flex items-center gap-3">
-                  {settings?.light_icon_logo && (
-                    <img src={settings.light_icon_logo} alt="Icon Logo" className="h-16 w-auto object-contain" />
-                  )}
-                  {settings?.light_wordmark_logo && (
-                    <img src={settings.light_wordmark_logo} alt="Wordmark Logo" className="h-12 w-auto object-contain" />
+          {/* Top Decorative Line */}
+          <div className="h-3 w-full bg-[#1e293b]"></div>
+
+          <div className="p-10 md:p-14">
+            
+            {/* HEADER */}
+            <div className="flex justify-between items-start mb-12">
+              <div className="flex flex-col gap-4 max-w-[55%]">
+                {settings?.light_icon_logo || settings?.light_wordmark_logo ? (
+                  <div className="flex items-center gap-4">
+                    {settings?.light_icon_logo && (
+                      <img src={settings.light_icon_logo} alt="Icon Logo" className="h-16 w-auto object-contain" />
+                    )}
+                    {settings?.light_wordmark_logo && (
+                      <img src={settings.light_wordmark_logo} alt="Wordmark Logo" className="h-10 w-auto object-contain" />
+                    )}
+                  </div>
+                ) : (
+                  <h1 className="text-3xl font-black text-[#1e293b] tracking-tight">
+                    {settings?.company_name || "ŞİRKET ADI"}
+                  </h1>
+                )}
+                
+                <div className="text-[13px] text-gray-500 flex flex-col gap-1 leading-relaxed mt-2">
+                  {settings?.company_address && <p>{settings.company_address}</p>}
+                  {settings?.company_phone && <p>T: {settings.company_phone}</p>}
+                  {settings?.company_email && <p>E: {settings.company_email}</p>}
+                  {settings?.company_tax_office && <p>{settings.company_tax_office} VD - {settings.company_tax_number}</p>}
+                </div>
+              </div>
+              
+              <div className="text-right flex flex-col gap-3">
+                <h1 className="text-4xl font-black text-[#1e293b] uppercase tracking-widest">PROFORMA</h1>
+                <div className="mt-2 text-[13px] bg-gray-50 p-4 rounded-xl border border-gray-100 inline-block text-left min-w-[200px]">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-semibold text-gray-400 uppercase tracking-wider text-[10px]">TARİH</span>
+                    <span className="font-medium text-gray-900">{new Date().toLocaleDateString('tr-TR')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-gray-400 uppercase tracking-wider text-[10px]">REFERANS</span>
+                    <span className="font-medium text-gray-900">{project?.reference || "Belirtilmemiş"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* BILL TO */}
+            <div className="mb-12 flex gap-8">
+              <div className="flex-1">
+                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">SAYIN / MÜŞTERİ</h3>
+                <div className="p-5 bg-[#f8fafc] rounded-xl border border-slate-100/60 shadow-sm h-full">
+                  <h2 className="text-lg font-bold text-[#1e293b] mb-1">{project?.company_name || project?.agency_name || "Müşteri Bilgisi Yok"}</h2>
+                  <div className="text-[13px] text-gray-500">
+                    {project?.agency_id && <p>Acente Kodu: {project.agency_id}</p>}
+                    {project?.start_date && <p className="mt-2">Proje Tarihi: <span className="font-medium text-gray-700">{new Date(project.start_date).toLocaleDateString('tr-TR')} - {new Date(project.end_date).toLocaleDateString('tr-TR')}</span></p>}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1">
+                {/* Boş alan veya proje detayları gelebilir */}
+              </div>
+            </div>
+
+            {/* ITEMS LIST (GROUPED) */}
+            <div className="mb-12">
+              {Object.keys(groupedItems).length === 0 ? (
+                <div className="py-10 text-center text-gray-400 italic bg-gray-50 rounded-xl border border-gray-100">Hizmet kalemi bulunmuyor.</div>
+              ) : (
+                <div className="w-full flex flex-col gap-6">
+                  {Object.entries(groupedItems).map(([categoryName, items], catIdx) => (
+                    <div key={catIdx} className="overflow-hidden rounded-xl border border-slate-200">
+                      <div className="bg-[#1e293b] px-4 py-2 text-white">
+                        <h3 className="text-xs font-bold uppercase tracking-widest">{categoryName}</h3>
+                      </div>
+                      <table className="w-full text-[13px]">
+                        <thead>
+                          <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 text-left text-[11px] uppercase tracking-wider">
+                            <th className="py-2.5 px-4 font-semibold w-[40%]">Açıklama</th>
+                            <th className="py-2.5 px-4 font-semibold text-center">Miktar</th>
+                            <th className="py-2.5 px-4 font-semibold text-right">B.Fiyat</th>
+                            <th className="py-2.5 px-4 font-semibold text-center">KDV</th>
+                            <th className="py-2.5 px-4 font-semibold text-right">Toplam</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 bg-white">
+                          {items.map((item, idx) => (
+                            <tr key={idx} className="group hover:bg-slate-50/50">
+                              <td className="py-3 px-4 text-slate-800">
+                                <div className="font-medium">{item.description || item.subCatName || item.mainCatName || "Hizmet"}</div>
+                                {item.subCatName && <div className="text-[11px] text-slate-400 mt-0.5">{item.subCatName}</div>}
+                              </td>
+                              <td className="py-3 px-4 text-center text-slate-600">
+                                {item.unit_quantity || 1} {item.sefer > 1 ? `x ${item.sefer}` : ''}
+                              </td>
+                              <td className="py-3 px-4 text-right text-slate-600 font-mono text-[12px]">{formatMoney(item.unit_price || 0, item.currency || 'EUR')}</td>
+                              <td className="py-3 px-4 text-center text-slate-600">%{item.kdvRate}</td>
+                              <td className="py-3 px-4 text-right font-semibold text-slate-800 font-mono text-[12px]">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* FINANCIAL SUMMARY ROW */}
+            <div className="flex justify-between items-start mb-12 gap-8">
+              
+              {/* PAYMENTS */}
+              <div className="flex-1">
+                {collections.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">TAHSİLAT DÖKÜMÜ</h3>
+                    <div className="bg-emerald-50/50 rounded-xl border border-emerald-100 overflow-hidden">
+                      <table className="w-full text-[12px]">
+                        <tbody className="divide-y divide-emerald-100">
+                          {collections.map((col, idx) => (
+                            <tr key={idx}>
+                              <td className="py-2 px-4 text-emerald-700/70">{new Date(col.payment_date || col.created_at).toLocaleDateString('tr-TR')}</td>
+                              <td className="py-2 px-4 text-emerald-800 font-medium">{col.description || "Tahsilat"}</td>
+                              <td className="py-2 px-4 text-right font-bold text-emerald-700">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* TOTALS */}
+              <div className="w-[320px] shrink-0">
+                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 text-right">FİNANSAL ÖZET</h3>
+                <div className="bg-[#1e293b] text-white rounded-xl overflow-hidden shadow-lg">
+                  {curCodes.length === 0 ? (
+                    <div className="p-5 text-center text-sm text-slate-400">Tutar yok.</div>
+                  ) : (
+                    curCodes.map(cur => {
+                      const balance = currencyTotals[cur].genelToplam - currencyTotals[cur].tahsilat;
+                      return (
+                        <div key={cur} className="border-b border-white/10 last:border-0 p-5">
+                          <div className="flex justify-between items-center py-1 text-[13px] text-slate-300">
+                            <span>Matrah</span>
+                            <span className="font-mono">{formatMoney(currencyTotals[cur].matrah, cur)}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-1 text-[13px] text-slate-300">
+                            <span>KDV</span>
+                            <span className="font-mono">{formatMoney(currencyTotals[cur].kdv, cur)}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 mt-2 text-[15px] font-bold text-white border-t border-white/10">
+                            <span>Genel Toplam</span>
+                            <span className="font-mono text-emerald-400">{formatMoney(currencyTotals[cur].genelToplam, cur)}</span>
+                          </div>
+                          
+                          {/* Kalan Bakiye - Yalnızca genel toplam ile bakiye farklıysa (tahsilat varsa) göster */}
+                          {currencyTotals[cur].tahsilat > 0 && (
+                            <div className="flex justify-between items-center py-2 mt-2 text-[13px] font-bold border-t border-dashed border-white/20">
+                              <span className="uppercase tracking-widest text-[10px] text-slate-400">KALAN BAKİYE</span>
+                              <span className={`font-mono text-[16px] ${balance <= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {formatMoney(balance, cur)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
-              ) : (
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-                  {settings?.company_name || "ŞİRKET ADI"}
-                </h1>
-              )}
-              
-              <div className="text-sm text-gray-500 flex flex-col gap-1 mt-2">
-                {settings?.company_address && <p>{settings.company_address}</p>}
-                {settings?.company_phone && <p>{settings.company_phone}</p>}
-                {settings?.company_email && <p>{settings.company_email}</p>}
-                {settings?.company_tax_office && <p>{settings.company_tax_office} VD - {settings.company_tax_number}</p>}
               </div>
             </div>
-            
-            <div className="text-right flex flex-col gap-2">
-              <h1 className="text-4xl font-black text-gray-300 uppercase tracking-widest">PROFORMA</h1>
-              <div className="mt-4 flex flex-col gap-1 text-sm">
-                <p><span className="font-semibold text-gray-500">Tarih:</span> <span className="font-medium text-gray-900">{new Date().toLocaleDateString('tr-TR')}</span></p>
-                <p><span className="font-semibold text-gray-500">Referans:</span> <span className="font-medium text-gray-900">{project?.reference || "Belirtilmemiş"}</span></p>
-              </div>
-            </div>
-          </div>
 
-          {/* KİME (BILL TO) */}
-          <div className="mb-10 p-6 bg-gray-50 rounded-xl border border-gray-100">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">SAYIN / MÜŞTERİ</h3>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{project?.company_name || project?.agency_name || "Müşteri Bilgisi Yok"}</h2>
-            <div className="text-sm text-gray-600 flex flex-col gap-1">
-              {project?.agency_id && <p>Acente Kodu: {project.agency_id}</p>}
-              {project?.start_date && <p>Proje Tarihi: {new Date(project.start_date).toLocaleDateString('tr-TR')} - {new Date(project.end_date).toLocaleDateString('tr-TR')}</p>}
-            </div>
-          </div>
-
-          {/* HİZMET DETAYLARI (ITEMS) */}
-          <div className="mb-10">
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2">Hizmet Detayları</h3>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-100 text-gray-600">
-                  <th className="py-3 px-4 text-left font-semibold rounded-tl-lg">Açıklama</th>
-                  <th className="py-3 px-4 text-center font-semibold">Miktar</th>
-                  <th className="py-3 px-4 text-right font-semibold">Birim Fiyat</th>
-                  <th className="py-3 px-4 text-center font-semibold">KDV</th>
-                  <th className="py-3 px-4 text-right font-semibold rounded-tr-lg">Toplam</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {salesItems.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-6 text-center text-gray-400 italic">Hizmet kalemi bulunmuyor.</td>
-                  </tr>
-                ) : (
-                  salesItems.map((item, idx) => {
-                    const q = item.unit_quantity || 1;
-                    const s = item.sefer || 1;
-                    const up = item.unit_price || 0;
-                    const matrah = item.total_price !== undefined ? Number(item.total_price) : (up * q * s);
-                    const kdvRate = Number(item.vat || 0);
-                    const kdv = matrah * (kdvRate / 100);
-                    const rowTotal = matrah + kdv;
-                    const cur = item.currency || 'EUR';
-                    return (
-                      <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="py-3 px-4 text-gray-800">
-                          <div className="font-medium">{item.description || item.sub_category || item.main_category || "Hizmet"}</div>
-                          {item.main_category && <div className="text-xs text-gray-400 mt-0.5">{item.main_category} &gt; {item.sub_category}</div>}
-                        </td>
-                        <td className="py-3 px-4 text-center text-gray-600">{q} {s > 1 ? `x ${s}` : ''}</td>
-                        <td className="py-3 px-4 text-right text-gray-600">{formatMoney(up, cur)}</td>
-                        <td className="py-3 px-4 text-center text-gray-600">%{kdvRate}</td>
-                        <td className="py-3 px-4 text-right font-medium text-gray-900">{formatMoney(rowTotal, cur)}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* TOPLAMLAR (TOTALS) */}
-          <div className="flex justify-end mb-12">
-            <div className="w-[350px] bg-gray-50 rounded-xl p-5 border border-gray-100">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Genel Toplamlar</h3>
-              {curCodes.length === 0 ? (
-                <p className="text-sm text-gray-400">Tutar yok.</p>
-              ) : (
-                curCodes.map(cur => (
-                  <div key={cur} className="mb-4 last:mb-0">
-                    <div className="flex justify-between items-center py-1.5 text-sm text-gray-600">
-                      <span>Ara Toplam (Matrah)</span>
-                      <span className="font-medium">{formatMoney(currencyTotals[cur].matrah, cur)}</span>
+            {/* BANKA HESAPLARI */}
+            {settings?.bankAccounts && settings.bankAccounts.length > 0 && (
+              <div className="mb-10 page-break-inside-avoid">
+                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">BANKA HESAP BİLGİLERİ</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {settings.bankAccounts.map((acc: any, idx: number) => (
+                    <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="font-bold text-[#1e293b] text-[13px]">{acc.bankName}</p>
+                        <span className="px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[10px] font-bold">{acc.currency}</span>
+                      </div>
+                      {acc.companyTitle && <p className="text-slate-500 text-[11px] mb-2">{acc.companyTitle}</p>}
+                      <div className="bg-white p-2 rounded border border-slate-100 font-mono text-[11px] text-slate-700 tracking-wider">
+                        {acc.iban}
+                      </div>
+                      {acc.swiftCode && <p className="text-slate-400 text-[10px] mt-2">SWIFT: {acc.swiftCode}</p>}
                     </div>
-                    <div className="flex justify-between items-center py-1.5 text-sm text-gray-600">
-                      <span>KDV Toplamı</span>
-                      <span className="font-medium">{formatMoney(currencyTotals[cur].kdv, cur)}</span>
-                    </div>
-                    <div className="flex justify-between items-center py-2.5 mt-2 text-base font-bold text-blue-900 border-t border-gray-200">
-                      <span>Genel Toplam</span>
-                      <span>{formatMoney(currencyTotals[cur].genelToplam, cur)}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* TAHSİLATLAR (PAYMENTS) */}
-          {collections.length > 0 && (
-            <div className="mb-12">
-              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2">Tahsilat Detayları</h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-gray-500 text-left">
-                    <th className="py-2 px-2 font-medium">Tarih</th>
-                    <th className="py-2 px-2 font-medium">Açıklama</th>
-                    <th className="py-2 px-2 font-medium text-right">Tutar</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {collections.map((col, idx) => (
-                    <tr key={idx}>
-                      <td className="py-2 px-2 text-gray-600">{new Date(col.payment_date || col.created_at).toLocaleDateString('tr-TR')}</td>
-                      <td className="py-2 px-2 text-gray-600">{col.description || "Tahsilat"}</td>
-                      <td className="py-2 px-2 text-right font-medium text-green-700">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
-                    </tr>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                </div>
+              </div>
+            )}
 
-          {/* BAKİYE (BALANCE) */}
-          <div className="flex justify-end mb-16">
-            <div className="w-[350px] bg-blue-50 rounded-xl p-5 border border-blue-100 shadow-sm">
-              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Kalan Bakiye</h3>
-              {curCodes.length === 0 ? (
-                <p className="text-sm text-gray-400">Bakiye yok.</p>
-              ) : (
-                curCodes.map(cur => {
-                  const balance = currencyTotals[cur].genelToplam - currencyTotals[cur].tahsilat;
-                  return (
-                    <div key={cur} className="flex justify-between items-center py-1.5 font-bold text-lg text-blue-900 border-b border-blue-100/50 last:border-0">
-                      <span>{cur}</span>
-                      <span className={balance <= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {formatMoney(balance, cur)}
-                      </span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* BANKA HESAPLARI (BANK ACCOUNTS) */}
-          {settings?.bankAccounts && settings.bankAccounts.length > 0 && (
-            <div className="mb-10 text-sm">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Banka Hesap Bilgileri</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {settings.bankAccounts.map((acc: any, idx: number) => (
-                  <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                    <p className="font-bold text-gray-800 mb-1">{acc.bankName} - {acc.currency}</p>
-                    {acc.companyTitle && <p className="text-gray-600 text-xs mb-1">{acc.companyTitle}</p>}
-                    <p className="text-gray-900 font-mono text-xs">{acc.iban}</p>
-                    {acc.swiftCode && <p className="text-gray-500 text-xs mt-1">SWIFT: {acc.swiftCode}</p>}
-                  </div>
-                ))}
+            {/* FOOTER */}
+            <div className="absolute bottom-0 left-0 right-0 h-[80mm] pointer-events-none flex items-end">
+              <div className="w-full border-t-2 border-slate-100 p-8 text-center bg-white">
+                <p className="font-black text-[#1e293b] text-sm tracking-wide mb-1">{settings?.company_name || "Şirket Adı"}</p>
+                <p className="text-slate-500 text-[11px] mb-1">{settings?.company_address}</p>
+                <p className="text-slate-400 text-[11px] font-mono">{[settings?.company_phone, settings?.company_email].filter(Boolean).join(" • ")}</p>
+                <p className="mt-4 text-[9px] text-slate-300 uppercase tracking-widest">BU BELGE PROFORMA NİTELİĞİNDEDİR, RESMİ FATURA YERİNE GEÇMEZ.</p>
               </div>
             </div>
-          )}
 
-          {/* FOOTER */}
-          <div className="absolute bottom-10 left-10 right-10 border-t border-gray-200 pt-6 text-center text-xs text-gray-400 flex flex-col gap-1">
-            <p className="font-bold text-gray-500">{settings?.company_name || "Şirket Adı"}</p>
-            <p>{settings?.company_address}</p>
-            <p>{[settings?.company_phone, settings?.company_email].filter(Boolean).join(" | ")}</p>
-            <p className="mt-2 text-[10px]">Bu belge proforma niteliğindedir, resmi fatura yerine geçmez.</p>
           </div>
-
         </div>
       </div>
+      
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          .print-exact {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}} />
     </div>
   );
 }
