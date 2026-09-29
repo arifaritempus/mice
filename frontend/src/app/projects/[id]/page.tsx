@@ -14724,6 +14724,16 @@ export default function ProjectDetailPage() {
                 
                 {activeMainTab === 'info' ? (
                   <>
+                    {activeTab === 'proforma' && (
+                      <>
+                        <button onClick={() => window.dispatchEvent(new Event('trigger-proforma-pdf'))} className="w-full text-left bg-slate-800 text-white px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors text-xs font-bold flex items-center gap-2 mb-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> Proforma PDF İndir
+                        </button>
+                        <button onClick={() => window.dispatchEvent(new Event('trigger-proforma-print'))} className="w-full text-left bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs font-bold flex items-center gap-2 mb-2 border border-gray-300 dark:border-gray-600">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg> Proforma Yazdır
+                        </button>
+                      </>
+                    )}
                     <select
                       value={isEditingProject ? projectFormData?.exchange_rate_strategy || project?.exchange_rate_strategy || "manuel" : project?.exchange_rate_strategy || "manuel"}
                       onChange={(e) => handleProjectFormChange("exchange_rate_strategy", e.target.value)}
