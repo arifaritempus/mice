@@ -1014,7 +1014,6 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
           message: "Lütfen bütçe tablosunda Kategori seçilmemiş olan hizmet satırlarını doldurunuz veya siliniz.",
           type: "error",
         });
-        setSubmitting(false);
         return;
       }
 
