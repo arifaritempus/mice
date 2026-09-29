@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import html2pdf from "html2pdf.js";
+import { toast } from "react-hot-toast";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface ProformaTabProps {
@@ -38,6 +39,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
   const handleExportPDF = async () => {
     if (!proformaRef.current) return;
     setIsExporting(true);
+    const toastId = toast.loading("Proforma PDF hazırlanıyor...");
     try {
       const opt = {
         margin:       [10, 5, 10, 5], 
@@ -48,12 +50,88 @@ export default function ProformaTab({ project, salesItems, collections, categori
         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
       };
       await html2pdf().from(proformaRef.current).set(opt as any).save();
+      toast.success("PDF başarıyla indirildi!", { id: toastId });
     } catch (error) {
       console.error("PDF oluşturma hatası:", error);
+      toast.error("PDF oluşturulurken hata meydana geldi.", { id: toastId });
     } finally {
       setIsExporting(false);
     }
   };
+
+  const handlePrint = async () => {
+    if (!proformaRef.current) return;
+    setIsExporting(true);
+    const toastId = toast.loading("Yazdırma belgesi hazırlanıyor...");
+    
+    // Açılır pencereyi hemen açarak popup blocker engeline takılmasını önle
+    let printWindow: Window | null = null;
+    try {
+      printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Proforma Yazdır - ${project?.name || 'Proje'}</title></head>
+            <body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui,sans-serif;background:#f8fafc;color:#334155;">
+              <div style="text-align:center;">
+                <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Proforma Hazırlanıyor...</div>
+                <div style="font-size:13px;color:#64748b;">Lütfen bekleyin, yazdırma görünümü yükleniyor.</div>
+              </div>
+            </body>
+          </html>
+        `);
+      }
+    } catch (e) {
+      console.warn("Popup penceresi açılamadı:", e);
+    }
+
+    try {
+      const opt = {
+        margin:       [10, 5, 10, 5], 
+        filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
+        image:        { type: 'jpeg' as const, quality: 1.0 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+      const worker = html2pdf().from(proformaRef.current).set(opt as any);
+      const blobUrl = await worker.outputPdf('bloburl');
+      
+      if (printWindow && !printWindow.closed) {
+        printWindow.location.href = blobUrl;
+      } else {
+        window.open(blobUrl, "_blank");
+      }
+      toast.success("Yazdırma belgesi açıldı.", { id: toastId });
+    } catch (error) {
+      console.error("Yazdırma hatası:", error);
+      toast.error("PDF oluşturulamadı, sistem yazdırma penceresi açılıyor...", { id: toastId });
+      if (printWindow && !printWindow.closed) {
+        printWindow.close();
+      }
+      window.print();
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  useEffect(() => {
+    const onPdf = () => {
+      handleExportPDF();
+    };
+    const onPrint = () => {
+      handlePrint();
+    };
+
+    window.addEventListener("trigger-proforma-pdf", onPdf);
+    window.addEventListener("trigger-proforma-print", onPrint);
+
+    return () => {
+      window.removeEventListener("trigger-proforma-pdf", onPdf);
+      window.removeEventListener("trigger-proforma-print", onPrint);
+    };
+  }, [project, salesItems, collections, settings]);
 
   const getCategoryName = (idOrName: string) => {
     if (!idOrName) return "";
