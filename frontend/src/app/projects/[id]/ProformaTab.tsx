@@ -9,9 +9,10 @@ interface ProformaTabProps {
   collections: any[];
   categories?: any[];
   agencies?: any[];
+  hotels?: any[];
 }
 
-export default function ProformaTab({ project, salesItems, collections, categories = [], agencies = [] }: ProformaTabProps) {
+export default function ProformaTab({ project, salesItems, collections, categories = [], agencies = [], hotels = [] }: ProformaTabProps) {
   const { t } = useLanguage();
   const proformaRef = useRef<HTMLDivElement>(null);
   const [settings, setSettings] = useState<any>(null);
@@ -159,7 +160,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
         <div 
           ref={proformaRef} 
           className="bg-white text-gray-900 shadow-xl shrink-0 mx-auto print-exact"
-          style={{ width: '210mm', position: 'relative', minHeight: 'auto', paddingBottom: '20mm' }}
+          style={{ width: '190mm', position: 'relative', minHeight: 'auto', paddingBottom: '20mm' }}
         >
           {/* Sağ ve sol boşlukları daralttık (px-6 yerine px-8 falan) */}
           <div className="px-6 py-8">
@@ -228,9 +229,12 @@ export default function ProformaTab({ project, salesItems, collections, categori
                   {project?.company_name && (
                     <p><span className="font-semibold text-gray-500">Firma Adı:</span> <span className="text-gray-800">{project.company_name}</span></p>
                   )}
-                  {project?.hotels_data && project.hotels_data.length > 0 && (
-                    <p><span className="font-semibold text-gray-500">Otel Adı:</span> <span className="text-gray-800">{project.hotels_data.map((h: any) => h.hotel_name || h.name).join(", ")}</span></p>
-                  )}
+                  {(() => {
+                    const hotelName = project?.hotel_id ? hotels?.find(h => h.id === project.hotel_id)?.name : null;
+                    return hotelName ? (
+                      <p><span className="font-semibold text-gray-500">Otel Adı:</span> <span className="text-gray-800">{hotelName}</span></p>
+                    ) : null;
+                  })()}
                 </div>
   
               </div>
@@ -267,9 +271,9 @@ export default function ProformaTab({ project, salesItems, collections, categori
                               </td>
                               <td className="py-1.5 px-1 text-center text-gray-800 align-top">{Number(item.calcQ)}</td>
                               <td className="py-1.5 px-1 text-center text-gray-800 align-top">{Number(item.calcS)}</td>
-                              <td className="py-1.5 px-2 text-right text-gray-800 font-mono align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
+                              <td className="py-1.5 px-2 text-right text-gray-800  align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
                               <td className="py-1.5 px-1 text-center text-gray-600 align-top">%{item.kdvRate}</td>
-                              <td className="py-1.5 px-2 text-right font-bold text-gray-900 font-mono align-top">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
+                              <td className="py-1.5 px-2 text-right font-bold text-gray-900  align-top">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -285,7 +289,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
               <div className="flex gap-6 items-start justify-between">
                 
                 {/* PAYMENTS */}
-                <div className="flex-1 max-w-[50%]">
+                <div className="flex-1 max-w-[60%] w-full">
                   {collections.length > 0 && (
                     <div className="bg-white border border-gray-300 rounded p-3">
                       <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">TAHSİLAT DÖKÜMÜ</h3>
@@ -295,7 +299,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                             <tr key={idx}>
                               <td className="py-1 text-gray-800 w-20">{new Date(col.payment_date || col.created_at).toLocaleDateString('tr-TR')}</td>
                               <td className="py-1 text-gray-800 font-medium">{col.description || "Tahsilat"}</td>
-                              <td className="py-1 text-right font-bold text-emerald-700 font-mono">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
+                              <td className="py-1 text-right font-bold text-emerald-700 ">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -317,21 +321,21 @@ export default function ProformaTab({ project, salesItems, collections, categori
                           <div key={cur} className="border-b border-gray-200 pb-2 last:border-0 last:pb-0">
                             <div className="flex justify-between items-center text-[10px] text-gray-700 py-0.5">
                               <span>Ara Toplam (Matrah)</span>
-                              <span className="font-mono">{formatMoney(currencyTotals[cur].matrah, cur)}</span>
+                              <span className="">{formatMoney(currencyTotals[cur].matrah, cur)}</span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] text-gray-700 py-0.5">
                               <span>KDV Toplamı</span>
-                              <span className="font-mono">{formatMoney(currencyTotals[cur].kdv, cur)}</span>
+                              <span className="">{formatMoney(currencyTotals[cur].kdv, cur)}</span>
                             </div>
                             <div className="flex justify-between items-center text-[12px] font-bold text-gray-900 pt-1.5 mt-1 border-t border-gray-300">
                               <span>Genel Toplam</span>
-                              <span className="font-mono">{formatMoney(currencyTotals[cur].genelToplam, cur)}</span>
+                              <span className="">{formatMoney(currencyTotals[cur].genelToplam, cur)}</span>
                             </div>
                             
                             {currencyTotals[cur].tahsilat > 0 && (
                               <div className="flex justify-between items-center py-1 mt-1 text-[11px] font-bold border-t border-gray-300 border-dashed">
                                 <span className="uppercase text-[9px] text-gray-500 tracking-widest">KALAN BAKİYE</span>
-                                <span className={`font-mono ${balance <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                <span className={` ${balance <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                   {formatMoney(balance, cur)}
                                 </span>
                               </div>
@@ -350,13 +354,13 @@ export default function ProformaTab({ project, salesItems, collections, categori
                   <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">BANKA HESAP BİLGİLERİ</h3>
                   <div className="flex flex-col gap-1">
                     {settings.bankAccounts.map((acc: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-[9px] py-1 border-b border-gray-100 last:border-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-gray-900 w-32">{acc.bankName}</span>
-                          <span className="text-gray-600 w-48 truncate">{acc.companyTitle}</span>
+                      <div key={idx} className="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-100 last:border-0">
+                        <div className="flex items-center gap-4">
+                          <span className="font-bold text-gray-900 whitespace-nowrap">{acc.bankName}</span>
+                          <span className="text-gray-600 truncate">{acc.companyTitle}</span>
                         </div>
                         <div className="flex items-center gap-4 text-right">
-                          <span className="font-mono font-bold text-gray-900">{acc.iban}</span>
+                          <span className=" font-bold text-gray-900">{acc.iban}</span>
                           {acc.swiftCode ? <span className="text-gray-500 w-24">SWIFT: {acc.swiftCode}</span> : <span className="w-24"></span>}
                           <span className="font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">{acc.currency}</span>
                         </div>

@@ -24740,6 +24740,7 @@ export default function ProjectDetailPage() {
                 <ProformaTab
                   categories={categories}
                   agencies={agencies}
+                  hotels={hotels}
                   
                   
                   
