@@ -1009,7 +1009,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
       // Kategori seçili olmayan kalemleri engelle
       const invalidItems = serviceItems.filter(item => !item.main_category || item.main_category === "" || !item.sub_category || item.sub_category === "" || item.sub_category === "-");
       if (invalidItems.length > 0) {
-        setActiveMainTab('budget');
+        setActiveMainTab('details');
         setNotification({
           message: "Lütfen bütçe tablosunda Kategori seçilmemiş olan hizmet satırlarını doldurunuz veya siliniz.",
           type: "error",
