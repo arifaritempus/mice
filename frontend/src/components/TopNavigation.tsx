@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import {
   Bell,
   Search,
@@ -83,6 +84,7 @@ const SYSTEM_PAGES = [
 
 export default function TopNavigation() {
   const { canCreate, canView } = usePermissions();
+  const { isOperationMode, toggleMode } = useOperationMode();
   const router = useRouter();
 
   const pathname = usePathname();
@@ -943,6 +945,17 @@ export default function TopNavigation() {
                   </div>
                 </div>
                 <div className="p-2">
+                  <div className="px-3 py-2 mb-1 bg-v3-bg rounded-xl flex items-center justify-between cursor-pointer hover:bg-v3-border transition-colors"
+                       onClick={(e) => {
+                         e.preventDefault();
+                         e.stopPropagation();
+                         toggleMode(!isOperationMode);
+                       }}>
+                    <span className="text-xs font-bold text-v3-text">{isOperationMode ? "Operasyon Modu" : "Ofis Modu"}</span>
+                    <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isOperationMode ? "bg-blue-600" : "bg-gray-300"}`}>
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${isOperationMode ? "translate-x-4" : "translate-x-1"}`} />
+                    </div>
+                  </div>
                   <Link
                     href="/profile"
                     className="flex items-center gap-2 px-3 py-2 text-sm text-v3-text hover:text-v3-text hover:bg-v3-border rounded-xl transition-colors"

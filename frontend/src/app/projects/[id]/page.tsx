@@ -75,6 +75,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import * as projectUtils from "./projectUtils";
 import { useProjectState } from "./hooks/useProjectState";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import { useAccommodationState } from "./hooks/useAccommodationState";
 import {
   useFlightTicketState,
@@ -428,6 +429,14 @@ export default function ProjectDetailPage() {
       setActiveHotelMenuPos({ top: rect.bottom, left: rect.right });
     }
   };
+
+  const { isOperationMode } = useOperationMode();
+  
+  useEffect(() => {
+    if (isOperationMode && (activeTab === 'alis' || activeTab === 'odeme' || activeTab === 'kar-zarar')) {
+      setActiveTab('satis');
+    }
+  }, [isOperationMode, activeTab]);
 
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
@@ -15530,7 +15539,10 @@ export default function ProjectDetailPage() {
                 { key: "kar-zarar", label: "KAR/ZARAR" }
               ] 
             : TABS
-          ).map((t) => (
+          ).filter(t => {
+            if (isOperationMode && (t.key === 'alis' || t.key === 'odeme' || t.key === 'kar-zarar')) return false;
+            return true;
+          }).map((t) => (
             <button
               key={t.key}
               onClick={() => handleTabChange(t.key)}
