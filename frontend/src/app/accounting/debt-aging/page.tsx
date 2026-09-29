@@ -171,7 +171,7 @@ export default function DebtAgingPage() {
     XLSX.writeFile(wb, `Borç_Yaslandirma_${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
-  if (!canView(Module.DEBT_AGING)) {
+  if (!canView(Module.ACCOUNTING)) {
     return <div className="p-8 text-center text-v3-muted">Bu sayfayı görüntüleme yetkiniz yok.</div>;
   }
 
