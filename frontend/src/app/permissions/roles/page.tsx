@@ -503,7 +503,20 @@ export default function RolePermissionsPage() {
 
       for (const item of stagedPermissions) {
         if (!initialStaged.has(item)) {
-          const permId = permissionRecordMap.get(item);
+          let permId = permissionRecordMap.get(item);
+          if (!permId) {
+            // Self-heal: create missing permission in the database on the fly
+            const [mod, act] = item.split(':');
+            try {
+              const newPerm = await permissionsService.create({ module: mod, action: act, is_active: true });
+              permId = newPerm?.id;
+              if (permId) {
+                permissionRecordMap.set(item, permId);
+              }
+            } catch (e) {
+              console.error("Failed to auto-create permission", item, e);
+            }
+          }
           if (permId) toAdd.push(permId);
         }
       }
