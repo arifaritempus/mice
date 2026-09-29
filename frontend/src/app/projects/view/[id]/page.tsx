@@ -925,13 +925,18 @@ export default function ProjectViewPublicPage() {
     }
   };
 
-  const filteredItems = itemsSales.filter(
-    (item) =>
-      activeViewHotelId === "all" ||
-      item.hotel_id === activeViewHotelId ||
-      (activeViewHotelId === "general" &&
-        (!item.hotel_id || item.hotel_id === "general")),
-  );
+  const filteredItems = itemsSales.filter((item) => {
+    if (activeViewHotelId === "all") return true;
+    if (activeViewHotelId === "general") return !item.hotel_id || item.hotel_id === "general";
+    
+    // activeViewHotelId is the tab UUID (h.id)
+    const activeTab = project?.hotels_data?.find((h: any) => h.id === activeViewHotelId);
+    
+    return (
+      item.hotel_id === activeViewHotelId || 
+      (activeTab && activeTab.hotel_id && item.hotel_id === activeTab.hotel_id)
+    );
+  });
 
   const hotelsData = project?.hotels_data || [];
 
