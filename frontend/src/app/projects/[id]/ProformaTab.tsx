@@ -223,17 +223,16 @@ export default function ProformaTab({ project, salesItems, collections, categori
           {/* Sağ ve sol boşlukları daralttık (px-6 yerine px-8 falan) */}
           <div className="px-6 py-8">
             
-            {/* HEADER - Logos side by side */}
+            {/* HEADER - Menu Logo */}
             <div className="flex justify-between items-start mb-4">
               <div className="flex flex-col gap-2 max-w-[65%]">
-                {settings?.lightIconLogo || settings?.lightWordmarkLogo ? (
-                  <div className="flex flex-row items-center gap-6 mb-2">
-                    {settings?.lightIconLogo && (
-                      <img src={settings.lightIconLogo} alt="Icon Logo" className="h-[90px] w-auto object-contain" />
-                    )}
-                    {settings?.lightWordmarkLogo && (
-                      <img src={settings.lightWordmarkLogo} alt="Wordmark Logo" className="h-[100px] w-auto object-contain" />
-                    )}
+                {settings?.lightMenuLogo || settings?.light_menu_logo || settings?.darkMenuLogo || settings?.menuLogo || settings?.lightIconLogo ? (
+                  <div className="mb-2">
+                    <img 
+                      src={settings?.lightMenuLogo || settings?.light_menu_logo || settings?.darkMenuLogo || settings?.menuLogo || settings?.lightIconLogo} 
+                      alt="Logo" 
+                      className="h-[65px] max-h-[75px] max-w-[280px] w-auto object-contain" 
+                    />
                   </div>
                 ) : (
                   <h1 className="text-3xl font-black text-[#1e293b] tracking-tight mb-2">
@@ -312,9 +311,8 @@ export default function ProformaTab({ project, salesItems, collections, categori
                       <table className="w-full text-[10px]">
                         <thead>
                           <tr className="bg-gray-100 text-gray-700 border-b border-gray-300">
-                            <th className="py-1 px-2 text-left font-semibold w-[45%]">Açıklama</th>
-                            <th className="py-1 px-1 text-center font-semibold">Birim/Adet</th>
-                            <th className="py-1 px-1 text-center font-semibold">Sefer/Tekrar</th>
+                            <th className="py-1 px-2 text-left font-semibold w-[48%]">Açıklama</th>
+                            <th className="py-1 px-2 text-center font-semibold">Miktar</th>
                             <th className="py-1 px-2 text-right font-semibold">B. Fiyat</th>
                             <th className="py-1 px-1 text-center font-semibold">KDV</th>
                             <th className="py-1 px-2 text-right font-semibold">Toplam</th>
@@ -327,11 +325,12 @@ export default function ProformaTab({ project, salesItems, collections, categori
                                 <div className="font-bold">{item.subCatName || item.mainCatName || "Hizmet"}</div>
                                 {item.description && <div className="text-[9px] text-gray-600 mt-0.5">{item.description}</div>}
                               </td>
-                              <td className="py-1.5 px-1 text-center text-gray-800 align-top">{Number(item.calcQ)}</td>
-                              <td className="py-1.5 px-1 text-center text-gray-800 align-top">{Number(item.calcS)}</td>
-                              <td className="py-1.5 px-2 text-right text-gray-800  align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
+                              <td className="py-1.5 px-2 text-center text-gray-800 align-top whitespace-nowrap font-medium">
+                                {Number(item.calcQ) || 0} x {Number(item.calcS) || 1}
+                              </td>
+                              <td className="py-1.5 px-2 text-right text-gray-800 align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
                               <td className="py-1.5 px-1 text-center text-gray-600 align-top">%{item.kdvRate}</td>
-                              <td className="py-1.5 px-2 text-right font-bold text-gray-900  align-top">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
+                              <td className="py-1.5 px-2 text-right font-bold text-gray-900 align-top">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
                             </tr>
                           ))}
                         </tbody>

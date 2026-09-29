@@ -435,7 +435,7 @@ export default function ProjectDetailPage() {
   const { isOperationMode } = useOperationMode();
   
   useEffect(() => {
-    if (isOperationMode && (activeTab === 'alis' || activeTab === 'odeme' || activeTab === 'kar-zarar' || activeTab === 'proforma')) {
+    if (isOperationMode && (activeTab === 'alis' || activeTab === 'odeme' || activeTab === 'kar-zarar')) {
       setActiveTab('satis');
     }
   }, [isOperationMode, activeTab]);
@@ -15567,7 +15567,7 @@ export default function ProjectDetailPage() {
               ] 
             : TABS
           ).filter(t => {
-            if (isOperationMode && (t.key === 'alis' || t.key === 'odeme' || t.key === 'kar-zarar' || t.key === 'proforma')) return false;
+            if (isOperationMode && (t.key === 'alis' || t.key === 'odeme' || t.key === 'kar-zarar')) return false;
             return true;
           }).map((t) => (
             <button
