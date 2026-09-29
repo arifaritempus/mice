@@ -325,40 +325,60 @@ export default function ProformaTab({ project, salesItems, collections, categori
                 <div className="py-4 text-center text-gray-400 italic text-[11px] border border-gray-100 rounded">Hizmet kalemi bulunmuyor.</div>
               ) : (
                 <div className="flex flex-col gap-4">
-                  {Object.entries(groupedItems).map(([categoryName, items], catIdx) => (
-                    <div key={catIdx} className="avoid-page-break">
-                      <div className="bg-[#1e293b] text-white px-2 py-1 mb-0.5 rounded-t">
-                        <h3 className="text-[10px] font-bold uppercase tracking-widest">{categoryName}</h3>
-                      </div>
-                      <table className="w-full text-[10px]">
-                        <thead>
-                          <tr className="bg-gray-100 text-gray-700 border-b border-gray-300">
-                            <th className="py-1 px-2 text-left font-semibold w-[48%]">Açıklama</th>
-                            <th className="py-1 px-2 text-center font-semibold">Miktar</th>
-                            <th className="py-1 px-2 text-right font-semibold">B. Fiyat</th>
-                            <th className="py-1 px-1 text-center font-semibold">KDV</th>
-                            <th className="py-1 px-2 text-right font-semibold">Toplam</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 border-b border-gray-300">
-                          {items.map((item, idx) => (
-                            <tr key={idx} className="group">
-                              <td className="py-1.5 px-2 text-gray-900 align-top">
-                                <div className="font-bold">{item.subCatName || item.mainCatName || "Hizmet"}</div>
-                                {item.description && <div className="text-[9px] text-gray-600 mt-0.5">{item.description}</div>}
-                              </td>
-                              <td className="py-1.5 px-2 text-center text-gray-800 align-top whitespace-nowrap font-medium">
-                                {item.calcQ ?? 0} x {item.calcS ?? 0}
-                              </td>
-                              <td className="py-1.5 px-2 text-right text-gray-800 align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
-                              <td className="py-1.5 px-1 text-center text-gray-600 align-top">%{item.kdvRate}</td>
-                              <td className="py-1.5 px-2 text-right font-bold text-gray-900 align-top">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
+                  {Object.entries(groupedItems).map(([categoryName, items], catIdx) => {
+                    const catTotalsByCur: Record<string, number> = {};
+                    items.forEach(it => {
+                      const cur = it.currency || 'EUR';
+                      catTotalsByCur[cur] = (catTotalsByCur[cur] || 0) + (it.genelToplam || 0);
+                    });
+
+                    return (
+                      <div key={catIdx} className="avoid-page-break">
+                        <div className="bg-[#1e293b] text-white px-2 py-1 mb-0.5 rounded-t">
+                          <h3 className="text-[10px] font-bold uppercase tracking-widest">{categoryName}</h3>
+                        </div>
+                        <table className="w-full text-[10px]">
+                          <thead>
+                            <tr className="bg-gray-100 text-gray-700 border-b border-gray-300">
+                              <th className="py-1 px-2 text-left font-semibold w-[48%]">Açıklama</th>
+                              <th className="py-1 px-2 text-center font-semibold">Miktar</th>
+                              <th className="py-1 px-2 text-right font-semibold">B. Fiyat</th>
+                              <th className="py-1 px-1 text-center font-semibold">KDV</th>
+                              <th className="py-1 px-2 text-right font-semibold">Toplam</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ))}
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 border-b border-gray-300">
+                            {items.map((item, idx) => (
+                              <tr key={idx} className="group">
+                                <td className="py-1.5 px-2 text-gray-900 align-top">
+                                  <div className="font-bold">{item.subCatName || item.mainCatName || "Hizmet"}</div>
+                                  {item.description && <div className="text-[9px] text-gray-600 mt-0.5">{item.description}</div>}
+                                </td>
+                                <td className="py-1.5 px-2 text-center text-gray-800 align-top whitespace-nowrap font-medium">
+                                  {item.calcQ ?? 0} x {item.calcS ?? 0}
+                                </td>
+                                <td className="py-1.5 px-2 text-right text-gray-800 align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
+                                <td className="py-1.5 px-1 text-center text-gray-600 align-top">%{item.kdvRate}</td>
+                                <td className="py-1.5 px-2 text-right font-bold text-gray-900 align-top">{formatMoney(item.genelToplam, item.currency || 'EUR')}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot className="border-t border-gray-300 bg-gray-50/80">
+                            {Object.entries(catTotalsByCur).map(([cur, totalAmount], tIdx) => (
+                              <tr key={tIdx} className="font-bold text-gray-900">
+                                <td colSpan={4} className="py-1 px-2 text-right text-[9px] uppercase tracking-wider text-gray-600">
+                                  {categoryName} Ara Toplam
+                                </td>
+                                <td className="py-1 px-2 text-right text-[10px] font-black text-gray-900">
+                                  {formatMoney(totalAmount, cur)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tfoot>
+                        </table>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
