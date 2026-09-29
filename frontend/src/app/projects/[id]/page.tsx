@@ -69,6 +69,7 @@ import UcakBiletiTab from "./UcakBiletiTab";
 import TransferTurTab from "./TransferTurTab";
 import DigerTab from "./DigerTab";
 import TahsilatTab from "./TahsilatTab";
+import ProformaTab from "./ProformaTab";
 import OdemeTab from "./OdemeTab";
 import { usePermissions, Module, Role } from "@/lib/permissions";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -104,6 +105,7 @@ const TABS: TabDef[] = [
   { key: "diger", label: "DİĞER" },
   { key: "tahsilat", label: "TAHSİLAT" },
   { key: "odeme", label: "ÖDEME" },
+  { key: "proforma", label: "PROFORMA" },
   { key: "kar-zarar", label: "KAR/ZARAR" },
 ];
 
@@ -433,7 +435,7 @@ export default function ProjectDetailPage() {
   const { isOperationMode } = useOperationMode();
   
   useEffect(() => {
-    if (isOperationMode && (activeTab === 'alis' || activeTab === 'odeme' || activeTab === 'kar-zarar')) {
+    if (isOperationMode && (activeTab === 'alis' || activeTab === 'odeme' || activeTab === 'kar-zarar' || activeTab === 'proforma')) {
       setActiveTab('satis');
     }
   }, [isOperationMode, activeTab]);
@@ -15551,7 +15553,7 @@ export default function ProjectDetailPage() {
               ] 
             : TABS
           ).filter(t => {
-            if (isOperationMode && (t.key === 'alis' || t.key === 'odeme' || t.key === 'kar-zarar')) return false;
+            if (isOperationMode && (t.key === 'alis' || t.key === 'odeme' || t.key === 'kar-zarar' || t.key === 'proforma')) return false;
             return true;
           }).map((t) => (
             <button
@@ -24721,6 +24723,13 @@ export default function ProjectDetailPage() {
                     isLocked={project?.locked && !isSuperAdmin}
                   />
                 </div>
+              )}
+              {activeTab === "proforma" && (
+                <ProformaTab 
+                  project={project}
+                  salesItems={itemsSales}
+                  collections={collections}
+                />
               )}
               {activeTab === "kar-zarar" && (
                 <KarZararTab
