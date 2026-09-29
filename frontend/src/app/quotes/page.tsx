@@ -355,7 +355,8 @@ export default function QuotesPage() {
       case "GBP":
         return "GBP";
       case "TL":
-        return "TL";
+      case "TRY":
+        return "TRY";
       default:
         return currency;
     }

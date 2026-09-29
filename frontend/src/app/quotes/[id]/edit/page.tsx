@@ -1767,7 +1767,7 @@ export default function QuoteEditPage() {
                                 handleAddBelowWithHotel(itemId, h.id)
                               }
                               categories={categories}
-                              currencies={["EUR", "USD", "TL", "GBP"]}
+                              currencies={["EUR", "USD", "TRY", "GBP"]}
                               showAddRow={showAddServiceRow}
                               setShowAddRow={setShowAddServiceRow}
                               newItem={newServiceItem}
@@ -1824,7 +1824,7 @@ export default function QuoteEditPage() {
                         handleAddBelowWithHotel(itemId, "general")
                       }
                       categories={categories}
-                      currencies={["EUR", "USD", "TL", "GBP"]}
+                      currencies={["EUR", "USD", "TRY", "GBP"]}
                       showAddRow={showAddServiceRow}
                       setShowAddRow={setShowAddServiceRow}
                       newItem={newServiceItem}

@@ -47,7 +47,7 @@ export default function CongressMasterBudget({ formData, setFormData, disabled }
               >
                 <option value="EUR">EUR (€)</option>
                 <option value="USD">USD ($)</option>
-                <option value="TL">TL (₺)</option>
+                <option value="TRY">TRY (₺)</option>
                 <option value="GBP">GBP (£)</option>
               </select>
             </div>

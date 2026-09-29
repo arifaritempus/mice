@@ -1780,7 +1780,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                                 handleAddBelowWithHotel(itemId, h.id)
                               }
                               categories={categories}
-                              currencies={["EUR", "USD", "TL", "GBP"]}
+                              currencies={["EUR", "USD", "TRY", "GBP"]}
                               showAddRow={showAddServiceRow}
                               setShowAddRow={setShowAddServiceRow}
                               newItem={newServiceItem}
@@ -1827,7 +1827,7 @@ OTELE GİRİŞ GÜNÜ SABAH KAHVALTISI, OTELDEN ÇIKIŞ GÜNÜ ÖĞLE YEMEĞİ E
                         handleAddBelowWithHotel(itemId, "general")
                       }
                       categories={categories}
-                      currencies={["EUR", "USD", "TL", "GBP"]}
+                      currencies={["EUR", "USD", "TRY", "GBP"]}
                       showAddRow={showAddServiceRow}
                       setShowAddRow={setShowAddServiceRow}
                       newItem={newServiceItem}

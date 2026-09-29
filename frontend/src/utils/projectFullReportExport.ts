@@ -578,7 +578,7 @@ export const generateProjectFullReport = async ({
       row.getCell(19).value = Number(it.satisPax || 0);
       row.getCell(20).value = Number(it.ppSatis || 0); row.getCell(20).numFmt = "#,##0.00";
       row.getCell(21).value = Number(it.toplamSatis || 0); row.getCell(21).numFmt = "#,##0.00";
-      row.getCell(22).value = it.satisDoviz || "TL";
+      row.getCell(22).value = it.satisDoviz || "TRY";
       row.getCell(23).value = Number(it.satisKur || 0); row.getCell(23).numFmt = "#,##0.00";
       row.getCell(24).value = Number(it.toplamSatisTl || 0); row.getCell(24).numFmt = "₺#,##0.00";
       row.getCell(25).value = it.misafirler || "";

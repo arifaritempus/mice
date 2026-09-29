@@ -64,7 +64,7 @@ export default function QuoteServiceEditor({
   onSave,
   onAddBelow,
   categories,
-  currencies = ["EUR", "USD", "TL", "GBP"],
+  currencies = ["EUR", "USD", "TRY", "GBP"],
   showAddRow,
   setShowAddRow,
   newItem,
