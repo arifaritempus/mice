@@ -14,7 +14,7 @@ export interface StatementItem {
 
 export const agingServiceExt = {
   
-  async getDebtStatement(entityName: string): Promise<StatementItem[]> {
+    async getDebtStatement(entityName: string): Promise<StatementItem[]> {
     const items: StatementItem[] = [];
     
     // 1. Resolve Supplier / Hotel ID
@@ -32,34 +32,43 @@ export const agingServiceExt = {
     const { data: pPurchases } = await supabase.from('project_purchase_items').select('project_id, total_price, currency, created_at, supplier_id, hotel_id');
     const { data: pPayments } = await supabase.from('project_payments').select('id, project_id, amount, currency, date, created_at, description, payment_type, payee, supplier_id, hotel_id');
     
-    // We need project details to get names and dates
     const { data: projects } = await supabase.from('projects').select('id, title, end_date');
-    const projectMap = (projects || []).reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
+    const projectMap = (projects || []).reduce((acc: any, p: any) => { acc[p.id] = p; return acc; }, {});
 
-    // Filter project items for our supplier
-    const pPurchasesFiltered = (pPurchases || []).filter(p => supplierIds.includes(p.supplier_id) || supplierIds.includes(p.hotel_id));
-    const pPaymentsFiltered = (pPayments || []).filter(p => supplierIds.includes(p.supplier_id) || supplierIds.includes(p.hotel_id));
+    const pPurchasesFiltered = (pPurchases || []).filter((p: any) => supplierIds.includes(p.supplier_id) || supplierIds.includes(p.hotel_id));
+    const pPaymentsFiltered = (pPayments || []).filter((p: any) => supplierIds.includes(p.supplier_id) || supplierIds.includes(p.hotel_id));
 
-    pPurchasesFiltered.forEach(p => {
-      const amount = Number(p.total_price || 0);
+    // Group Project Purchases by project_id and currency
+    const groupedPPurchases: Record<string, any> = {};
+    pPurchasesFiltered.forEach((p: any) => {
+      const cur = (p.currency === 'TL' ? 'TRY' : p.currency) || 'TRY';
+      const key = p.project_id + "_" + cur;
+      if (!groupedPPurchases[key]) {
+        groupedPPurchases[key] = { project_id: p.project_id, currency: cur, total_price: 0, created_at: p.created_at };
+      }
+      groupedPPurchases[key].total_price += Number(p.total_price || 0);
+    });
+
+    Object.values(groupedPPurchases).forEach((p: any) => {
+      const amount = p.total_price;
       if (amount > 0) {
         const proj = projectMap[p.project_id];
         const date = proj?.end_date || p.created_at;
         items.push({
           id: `p_purch_${Math.random().toString(36).substring(7)}`,
           date: date,
-          type: 'SALE', // We map purchases as 'SALE' in the statement context to show debt
+          type: 'SALE',
           module: 'PROJECT',
           referenceId: p.project_id,
-          description: `[MICE] ${proj?.title || 'Proje'} - Alış Tutarı`,
+          description: `[MICE] ${proj?.title || 'Proje'} - Alış Toplamı`,
           amount: amount,
-          currency: (p.currency === 'TL' ? 'TRY' : p.currency) || 'TRY',
+          currency: p.currency,
           createdAt: p.created_at
         });
       }
     });
 
-    pPaymentsFiltered.forEach(p => {
+    pPaymentsFiltered.forEach((p: any) => {
       const amount = Number(p.amount || 0);
       if (amount > 0) {
         const proj = projectMap[p.project_id];
@@ -83,11 +92,11 @@ export const agingServiceExt = {
 
     // SEJOUR PURCHASES & PAYMENTS
     const { data: sejours } = await supabase.from('sejours').select('id, voucher_number, customer_name, check_out_date');
-    const sejourMap = (sejours || []).reduce((acc, s) => { acc[s.id] = s; return acc; }, {});
+    const sejourMap = (sejours || []).reduce((acc: any, s: any) => { acc[s.id] = s; return acc; }, {});
 
-    const fetchSejourItems = async (table, costField) => {
+    const fetchSejourItems = async (table: string, costField: string) => {
       const { data } = await supabase.from(table).select(`sejour_id, ${costField}, costCurrency, supplierId, created_at, hotelId`);
-      return (data || []).filter(d => supplierIds.includes(d.supplierId) || (d.hotelId && supplierIds.includes(d.hotelId)));
+      return (data || []).filter((d: any) => supplierIds.includes(d.supplierId) || (d.hotelId && supplierIds.includes(d.hotelId)));
     };
 
     const sRooms = await fetchSejourItems('sejour_rooms', 'costPrice');
@@ -97,29 +106,40 @@ export const agingServiceExt = {
     
     const allSejourPurchases = [...sRooms, ...sFlights, ...sTransfers, ...sExtras];
     
-    allSejourPurchases.forEach(s => {
-      const amount = Number(s.costPrice || 0);
+    // Group Sejour Purchases by sejour_id and currency
+    const groupedSPurchases: Record<string, any> = {};
+    allSejourPurchases.forEach((s: any) => {
+      const cur = (s.costCurrency === 'TL' ? 'TRY' : s.costCurrency) || 'TRY';
+      const key = s.sejour_id + "_" + cur;
+      if (!groupedSPurchases[key]) {
+        groupedSPurchases[key] = { sejour_id: s.sejour_id, currency: cur, total_price: 0, created_at: s.created_at };
+      }
+      groupedSPurchases[key].total_price += Number(s.costPrice || 0);
+    });
+
+    Object.values(groupedSPurchases).forEach((s: any) => {
+      const amount = s.total_price;
       if (amount > 0) {
         const sej = sejourMap[s.sejour_id];
         const date = sej?.check_out_date || s.created_at;
         items.push({
           id: `s_purch_${Math.random().toString(36).substring(7)}`,
           date: date,
-          type: 'SALE', // Treat as invoice/debt generated
+          type: 'SALE',
           module: 'SEJOUR',
           referenceId: s.sejour_id,
-          description: `[SEJOUR] ${sej?.voucher_number || sej?.customer_name || 'Rezervasyon'} - Alış Tutarı`,
+          description: `[SEJOUR] ${sej?.voucher_number || sej?.customer_name || 'Rezervasyon'} - Alış Toplamı`,
           amount: amount,
-          currency: (s.costCurrency === 'TL' ? 'TRY' : s.costCurrency) || 'TRY',
+          currency: s.currency,
           createdAt: s.created_at
         });
       }
     });
 
     const { data: sPaymentsData } = await supabase.from('sejour_payments').select('id, sejour_id, amount, currency, date, created_at, description, payment_type, supplierId');
-    const sPaymentsFiltered = (sPaymentsData || []).filter(p => supplierIds.includes(p.supplierId));
+    const sPaymentsFiltered = (sPaymentsData || []).filter((p: any) => supplierIds.includes(p.supplierId));
 
-    sPaymentsFiltered.forEach(p => {
+    sPaymentsFiltered.forEach((p: any) => {
       const amount = Number(p.amount || 0);
       if (amount > 0) {
         const sej = sejourMap[p.sejour_id];
@@ -141,7 +161,6 @@ export const agingServiceExt = {
       }
     });
 
-    // Sort items by date ascending (oldest first)
     items.sort((a, b) => {
       const dA = new Date(a.date || a.createdAt).getTime();
       const dB = new Date(b.date || b.createdAt).getTime();

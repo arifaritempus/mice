@@ -119,7 +119,7 @@ function StatementContent() {
   const exportToExcel = () => {
     const exportData = processedData.map(item => ({
       "Tarih": formatDate(item.date || item.createdAt),
-      "İşlem Tipi": item.type === 'SALE' ? 'Satış / Fatura' : 'Tahsilat / Ödeme',
+      "İşlem Tipi": item.type === 'SALE' ? (mode === 'payable' ? 'Alış / Fatura' : 'Satış / Fatura') : (mode === 'payable' ? 'Ödeme' : 'Tahsilat / Ödeme'),
       "Açıklama": item.description,
       "Borç": item.debit,
       "Alacak": item.credit,
@@ -259,7 +259,7 @@ function StatementContent() {
                           ? 'bg-orange-500/10 text-orange-600 print-border print-text-black' 
                           : 'bg-green-500/10 text-green-600 print-border print-text-black'
                       }`}>
-                        {row.type === 'SALE' ? 'SATIŞ' : 'TAHSİLAT'}
+                        {row.type === 'SALE' ? (mode === 'payable' ? 'ALIŞ' : 'SATIŞ') : (mode === 'payable' ? 'ÖDEME' : 'TAHSİLAT')}
                       </span>
                     </td>
                     <td className="px-4 py-2 text-v3-muted group-hover:text-v3-text transition-colors print-text-black text-xs">
