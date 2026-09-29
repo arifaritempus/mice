@@ -160,11 +160,20 @@ export default function ProformaTab({ project, salesItems, collections, categori
     }
     
     // Fiyatlar KDV DAHİL kabul ediliyor
-    const q = Number(item.unit_quantity || 1);
-    const s = Number(item.sefer || 1);
+    // 0 değerlerinin 1'e dönüşmesini engellemek için nullish kontrolü yapıyoruz
+    const rawQ = item.unit_quantity !== undefined && item.unit_quantity !== null && item.unit_quantity !== "" 
+      ? item.unit_quantity 
+      : (item.qty !== undefined && item.qty !== null && item.qty !== "" ? item.qty : 0);
+    const q = Number(rawQ);
+
+    const rawS = item.sefer !== undefined && item.sefer !== null && item.sefer !== "" 
+      ? item.sefer 
+      : (item.repeat !== undefined && item.repeat !== null && item.repeat !== "" ? item.repeat : 0);
+    const s = Number(rawS);
+
     const up = Number(item.unit_price || 0);
 
-    const genelToplam = item.total_price !== undefined && item.total_price !== null 
+    const genelToplam = item.total_price !== undefined && item.total_price !== null && item.total_price !== ""
       ? Number(item.total_price) 
       : (up * q * s);
       
@@ -326,7 +335,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                                 {item.description && <div className="text-[9px] text-gray-600 mt-0.5">{item.description}</div>}
                               </td>
                               <td className="py-1.5 px-2 text-center text-gray-800 align-top whitespace-nowrap font-medium">
-                                {Number(item.calcQ) || 0} x {Number(item.calcS) || 1}
+                                {item.calcQ ?? 0} x {item.calcS ?? 0}
                               </td>
                               <td className="py-1.5 px-2 text-right text-gray-800 align-top">{formatMoney(Number(item.calcUp), item.currency || 'EUR')}</td>
                               <td className="py-1.5 px-1 text-center text-gray-600 align-top">%{item.kdvRate}</td>
