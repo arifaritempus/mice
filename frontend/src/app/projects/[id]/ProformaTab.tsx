@@ -248,8 +248,8 @@ export default function ProformaTab({ project, salesItems, collections, categori
                 <div className="flex flex-col gap-4">
                   {Object.entries(groupedItems).map(([categoryName, items], catIdx) => (
                     <div key={catIdx} className="avoid-page-break">
-                      <div className="bg-[#1e293b] text-white px-2 py-1.5 mb-0.5 rounded-t flex items-center">
-                        <h3 className="text-[10px] font-bold uppercase tracking-widest">{categoryName}</h3>
+                      <div className="bg-[#1e293b] text-white px-2 mb-0.5 rounded-t" style={{ paddingTop: "5px", paddingBottom: "4px" }}>
+                        <h3 className="text-[10px] font-bold uppercase tracking-widest leading-none" style={{ marginTop: 0, marginBottom: 0 }}>{categoryName}</h3>
                       </div>
                       <table className="w-full text-[10px]">
                         <thead>
