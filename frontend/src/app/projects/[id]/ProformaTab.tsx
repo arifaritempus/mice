@@ -50,15 +50,22 @@ export default function ProformaTab({ project, salesItems, collections, categori
   const handleExportPDF = async () => {
     if (!proformaRef.current) return;
     setIsExporting(true);
-    const toastId = toast.loading("Proforma PDF hazırlanıyor...");
+    const toastId = toast.loading("Proforma PDF indiriliyor...");
     try {
       const opt = {
-        margin:       [10, 5, 10, 5], 
+        margin:       0, 
         filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
         image:        { type: 'jpeg' as const, quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          allowTaint: true,
+          logging: false,
+          scrollX: 0,
+          scrollY: 0
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { mode: ['css', 'legacy'] }
       };
       await html2pdf().from(proformaRef.current).set(opt as any).save();
       toast.success("PDF başarıyla indirildi!", { id: toastId });
@@ -70,61 +77,8 @@ export default function ProformaTab({ project, salesItems, collections, categori
     }
   };
 
-  const handlePrint = async () => {
-    if (!proformaRef.current) return;
-    setIsExporting(true);
-    const toastId = toast.loading("Yazdırma belgesi hazırlanıyor...");
-    
-    // Açılır pencereyi hemen açarak popup blocker engeline takılmasını önle
-    let printWindow: Window | null = null;
-    try {
-      printWindow = window.open("", "_blank");
-      if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head><title>Proforma Yazdır - ${project?.name || 'Proje'}</title></head>
-            <body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui,sans-serif;background:#f8fafc;color:#334155;">
-              <div style="text-align:center;">
-                <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Proforma Hazırlanıyor...</div>
-                <div style="font-size:13px;color:#64748b;">Lütfen bekleyin, yazdırma görünümü yükleniyor.</div>
-              </div>
-            </body>
-          </html>
-        `);
-      }
-    } catch (e) {
-      console.warn("Popup penceresi açılamadı:", e);
-    }
-
-    try {
-      const opt = {
-        margin:       [10, 5, 10, 5], 
-        filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-      const worker = html2pdf().from(proformaRef.current).set(opt as any);
-      const blobUrl = await worker.outputPdf('bloburl');
-      
-      if (printWindow && !printWindow.closed) {
-        printWindow.location.href = blobUrl;
-      } else {
-        window.open(blobUrl, "_blank");
-      }
-      toast.success("Yazdırma belgesi açıldı.", { id: toastId });
-    } catch (error) {
-      console.error("Yazdırma hatası:", error);
-      toast.error("PDF oluşturulamadı, sistem yazdırma penceresi açılıyor...", { id: toastId });
-      if (printWindow && !printWindow.closed) {
-        printWindow.close();
-      }
-      window.print();
-    } finally {
-      setIsExporting(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   useEffect(() => {
@@ -237,11 +191,11 @@ export default function ProformaTab({ project, salesItems, collections, categori
       <div className="flex justify-center overflow-x-auto pb-10 bg-gray-100/50 rounded-xl p-4 md:p-8">
         <div 
           ref={proformaRef} 
+          id="proforma-sheet"
           className="bg-white text-gray-900 shadow-xl shrink-0 mx-auto print-exact"
-          style={{ width: '190mm', position: 'relative', minHeight: 'auto', paddingBottom: '20mm' }}
+          style={{ width: '210mm', position: 'relative', minHeight: 'auto' }}
         >
-          {/* Sağ ve sol boşlukları daralttık (px-6 yerine px-8 falan) */}
-          <div className="px-6 py-8">
+          <div className="px-8 py-8">
             
             {/* HEADER - Menu Logo */}
             <div className="flex justify-between items-start mb-4">
@@ -251,6 +205,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                     <img 
                       src={settings?.lightMenuLogo || settings?.light_menu_logo || settings?.darkMenuLogo || settings?.menuLogo || settings?.lightIconLogo} 
                       alt="Logo" 
+                      crossOrigin="anonymous"
                       className="h-[65px] max-h-[75px] max-w-[280px] w-auto object-contain" 
                     />
                   </div>
@@ -470,8 +425,8 @@ export default function ProformaTab({ project, salesItems, collections, categori
               )}
             </div>
             
-            {/* FOOTER */}
-            <div className="absolute bottom-4 left-0 right-0 text-center text-[8px] text-gray-400 uppercase tracking-widest border-t border-gray-200 pt-2 mx-6">
+            {/* FOOTER NOTICE */}
+            <div className="mt-8 text-center text-[8px] text-gray-400 uppercase tracking-widest border-t border-gray-200 pt-2">
               BU BELGE PROFORMA NİTELİĞİNDEDİR, RESMİ FATURA YERİNE GEÇMEZ.
             </div>
 
@@ -484,7 +439,32 @@ export default function ProformaTab({ project, salesItems, collections, categori
           page-break-inside: avoid;
         }
         @media print {
-          .print-exact {
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+          html, body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          #proforma-sheet, #proforma-sheet * {
+            visibility: visible !important;
+          }
+          #proforma-sheet {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 10mm 15mm !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: white !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
