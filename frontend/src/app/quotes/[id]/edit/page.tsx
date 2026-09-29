@@ -750,6 +750,7 @@ export default function QuoteEditPage() {
       confirmed_at:
         q.confirmed_at || q.updated_at || q.created_at || start_date,
       hotels_data: normalizedHotels as any,
+      exchange_rate_strategy: "tcmb_banknote_selling"
     } as any);
 
     console.log("✅ Proje oluşturuldu, ID:", created.id);
@@ -819,8 +820,8 @@ export default function QuoteEditPage() {
           : item.description || "",
         unit_quantity: Number(item.unit_quantity ?? 1),
         sefer: Number(item.sefer ?? 1),
-        unit_price: 0,
-        total_price: 0,
+        unit_price: Number(item.unit_price ?? 0),
+        total_price: Number(item.total ?? 0),
         currency: item.currency || "EUR",
         vat: Number(item.vat ?? 0),
         fx: Number(item.fx ?? 1),
@@ -830,6 +831,14 @@ export default function QuoteEditPage() {
       await projectPurchaseItemsService.create(payload);
     }
     console.log("✨ Aktarım tamamlandı.");
+
+    try {
+      await fetch(`/api/projects/${created.id}/update-rates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strategy: "tcmb_banknote_selling" })
+      });
+    } catch (e) { console.error("Kurlar güncellenirken hata:", e); }
 
     return created;
   };

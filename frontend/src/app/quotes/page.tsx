@@ -741,6 +741,7 @@ export default function QuotesPage() {
                 },
               ]
             : [],
+      exchange_rate_strategy: "tcmb_banknote_selling",
     } as any);
 
     if (q.operation_managers && q.operation_managers.length > 0) {
@@ -786,6 +787,14 @@ export default function QuotesPage() {
       });
     }
 
+    try {
+      await fetch(`/api/projects/${created.id}/update-rates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strategy: "tcmb_banknote_selling" })
+      });
+    } catch (e) { console.error("Kurlar güncellenirken hata:", e); }
+
     // Alış kalemleri (satış kalemlerinden fiyatsız kopya)
     for (const item of relevantItems) {
       const originalIndex = confirmedHotels.findIndex(
@@ -805,14 +814,22 @@ export default function QuotesPage() {
         description: withTabTag(item.description || "", tabUUID),
         unit_quantity: item.unit_quantity ?? 1,
         sefer: item.sefer ?? 1,
-        unit_price: 0,
-        total_price: 0,
+        unit_price: item.unit_price ?? 0,
+        total_price: item.total ?? 0,
         currency: item.currency || "EUR",
         vat: item.vat ?? 0,
         fx: item.fx ?? 1,
         hotel_id: realHotelId,
       });
     }
+
+    try {
+      await fetch(`/api/projects/${created.id}/update-rates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strategy: "tcmb_banknote_selling" })
+      });
+    } catch (e) { console.error("Kurlar güncellenirken hata:", e); }
   };
 
   // Excel Export Fonksiyonu - Tüm filtreleri uygular

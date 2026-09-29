@@ -363,7 +363,8 @@ export const quotesService = {
       room_count: firstH?.room_count || quote.room_count || 0,
       pax_count: firstH?.pax_count || quote.pax_count || 0,
       room_pax: `${firstH?.room_count || 0} | ${firstH?.pax_count || 0}`,
-      hotels_data: normalizedHotels
+      hotels_data: normalizedHotels,
+      exchange_rate_strategy: "tcmb_banknote_selling"
     }]).select().single();
 
     if (pErr) throw pErr;
@@ -405,8 +406,8 @@ export const quotesService = {
         description: withTabTag(item.description || '', tabUUID),
         unit_quantity: (item.unit_quantity !== undefined && item.unit_quantity !== null && item.unit_quantity !== "" ? Number(item.unit_quantity) : 1),
         sefer: (item.sefer !== undefined && item.sefer !== null && item.sefer !== "" ? Number(item.sefer) : 1),
-        unit_price: 0,
-        total_price: 0,
+        unit_price: item.unit_price || 0,
+        total_price: item.total || 0,
         currency: item.currency || 'EUR',
         vat: item.vat || 0,
         fx: item.fx || 1,
