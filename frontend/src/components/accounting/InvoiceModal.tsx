@@ -172,7 +172,7 @@ export default function InvoiceModal({
           initialAmounts[item.id] = Number(item.amount || item.balance || 0);
           initialVats[item.id] = Number(item.vat_rate || 0);
           initialDescriptions[item.id] = item.description || "";
-          initialCurrencies[item.id] = (item.currency === "TL" ? "TRY" : item.currency) || "TRY";
+          initialCurrencies[item.id] = item.currency || "TRY";
           initialRates[item.id] = Number(item.exchange_rate || 1);
         });
       } else {
@@ -253,7 +253,7 @@ export default function InvoiceModal({
           initialAmounts[item.id] = Number(item.balance);
           initialVats[item.id] = Number(item.vat_rate || 0);
           initialDescriptions[item.id] = item.description || "";
-          initialCurrencies[item.id] = (item.currency === "TL" ? "TRY" : item.currency) || "TRY";
+          initialCurrencies[item.id] = item.currency || "TRY";
           initialRates[item.id] = Number(item.fx || 1);
         });
 
@@ -340,8 +340,7 @@ export default function InvoiceModal({
       const grossAmount = itemAmounts[item.id] || 0;
       const vatRate = itemVats[item.id] || 0;
       const er = itemExchangeRates[item.id] || 1;
-      let currency = itemCurrencies[item.id] || "TRY";
-      if (currency === "TL") currency = "TRY";
+      const currency = itemCurrencies[item.id] || "TRY";
 
       const rowMatrahOriginal = grossAmount / (1 + vatRate / 100);
       const rowKdvOriginal = grossAmount - rowMatrahOriginal;
@@ -435,28 +434,15 @@ export default function InvoiceModal({
 
     try {
       setLoading(true);
-            let mainCurrency = "TRY";
-      let maxTotal = -1;
-      let totalAmountInMainCurrency = 0;
-      Object.entries(totals.totalsByCurrency).forEach(([cur, data]) => {
-        if (data.total > maxTotal) {
-          maxTotal = data.total;
-          mainCurrency = cur;
-          totalAmountInMainCurrency = data.total;
-        }
-      });
-
-      const avgFx = totalAmountInMainCurrency > 0 ? totals.genelToplamTRY / totalAmountInMainCurrency : 1;
-
       const invoiceData = {
         type,
         invoice_no: invoiceNo,
         date: invoiceDate,
         contact_id: selectedAccountId,
         contact_type: selectedAccountType,
-        total_amount: totalAmountInMainCurrency,
-        currency: mainCurrency,
-        exchange_rate: avgFx,
+        total_amount: totals.genelToplamTRY,
+        currency: "TRY",
+        exchange_rate: 1,
         total_try: totals.genelToplamTRY,
         notes,
         status: "confirmed",

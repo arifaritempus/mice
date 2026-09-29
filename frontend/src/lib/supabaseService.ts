@@ -384,7 +384,7 @@ export const quotesService = {
         sefer: (item.sefer !== undefined && item.sefer !== null && item.sefer !== "" ? Number(item.sefer) : 1),
         unit_price: item.unit_price || 0,
         total_price: item.total || 0,
-        currency: (item.currency === 'TL' ? 'TRY' : item.currency) || 'EUR',
+        currency: item.currency || 'EUR',
         vat: item.vat || 0,
         fx: item.fx || 1,
         hotel_id: realHotelId
@@ -407,7 +407,7 @@ export const quotesService = {
         sefer: (item.sefer !== undefined && item.sefer !== null && item.sefer !== "" ? Number(item.sefer) : 1),
         unit_price: 0,
         total_price: 0,
-        currency: (item.currency === 'TL' ? 'TRY' : item.currency) || 'EUR',
+        currency: item.currency || 'EUR',
         vat: item.vat || 0,
         fx: item.fx || 1,
         hotel_id: realHotelId
@@ -5142,7 +5142,7 @@ export const invoicesService = {
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Konaklama / Otel Maliyeti',
         description: r.accommodation_type || r.room_type || '',
-        total_price: price, currency: (r.cost_currency === 'TL' ? 'TRY' : r.cost_currency) || 'TRY',
+        total_price: price, currency: r.cost_currency || 'TRY',
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 8),
         project: proj
           ? {
@@ -5173,7 +5173,7 @@ export const invoicesService = {
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Uçak Bileti Maliyeti',
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → '),
-        total_price: price, currency: (r.cost_currency === 'TL' ? 'TRY' : r.cost_currency) || 'TRY',
+        total_price: price, currency: r.cost_currency || 'TRY',
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 0),
         project: proj
           ? {
@@ -5199,7 +5199,7 @@ export const invoicesService = {
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Transfer Maliyeti',
         description: r.direction || '',
-        total_price: price, currency: (r.cost_currency === 'TL' ? 'TRY' : r.cost_currency) || 'TRY',
+        total_price: price, currency: r.cost_currency || 'TRY',
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Transfer Tedarikçisi Seçilmedi' } : null,
         supplier_name: supplierName || 'Transfer Tedarikçisi Seçilmedi',
@@ -5219,7 +5219,7 @@ export const invoicesService = {
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Ekstra Servis Maliyeti',
         description: r.service_description || r.description || '',
-        total_price: price, currency: (r.cost_currency === 'TL' ? 'TRY' : r.cost_currency) || 'TRY',
+        total_price: price, currency: r.cost_currency || 'TRY',
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Tedarikçi Seçilmedi' } : null,
         supplier_name: supplierName || 'Tedarikçi Seçilmedi',
