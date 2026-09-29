@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "./providers/ThemeProvider";
 import { useLanguage } from "./providers/LanguageProvider";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import { supabase } from "../lib/supabase";
 import { authService } from "../lib/auth";
 import { usePermissions, Module, getModuleFromHref } from "../lib/permissions";
@@ -25,6 +26,7 @@ interface MenuItem {
 }
 
 export default function Sidebar() {
+  const { isOperationMode } = useOperationMode();
   const pathname = usePathname();
   const { theme } = useTheme();
   const { canView, loading: permissionsLoading } = usePermissions();
