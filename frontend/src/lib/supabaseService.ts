@@ -5534,6 +5534,151 @@ export const projectOthersService = {
 
 // ALACAK YAŞLANDIRMA (AGING) SERVICE
 export const agingService = {
+  
+
+  async getAccountsPayable(): Promise<any[]> {
+    const results: any[] = [];
+    
+    // Tedarikçileri alalım
+    const { data: suppliers } = await supabase.from('suppliers').select('id, name');
+    const { data: hotels } = await supabase.from('hotels').select('id, name');
+    
+    const supplierMap = [...(suppliers || []), ...(hotels || [])].reduce((acc: any, s: any) => {
+      acc[s.id] = s.name;
+      return acc;
+    }, {});
+
+    // 1. Projeleri Getir
+    const { data: projects, error: pErr } = await supabase
+      .from('projects')
+      .select('id, end_date, status, company_name')
+      .in('status', ['active', 'approved', 'completed']);
+      
+    if (pErr) throw pErr;
+    
+    const projectIds = (projects || []).map((p: any) => p.id);
+    
+    // Proje alış kalemleri (project_purchase_items)
+    const { data: pPurchases } = await supabase
+      .from('project_purchase_items')
+      .select('project_id, total_price, currency, supplier_id, hotel_id')
+      .in('project_id', projectIds);
+      
+    // Proje ödemeleri (project_payments)
+    const { data: pPayments } = await supabase
+      .from('project_payments')
+      .select('project_id, amount, currency, supplier_id, hotel_id')
+      .in('project_id', projectIds);
+
+    // 2. Sejourları Getir
+    const { data: sejours, error: sErr } = await supabase
+      .from('sejours')
+      .select('id, check_out_date, status, customer_name')
+      .in('status', ['active', 'completed']); // Assuming these are valid statuses
+      
+    if (sErr) throw sErr;
+    
+    const sejourIds = (sejours || []).map((s: any) => s.id);
+    
+    const [sRooms, sFlights, sTransfers, sExtras, sPayments] = await Promise.all([
+      supabase.from('sejour_rooms').select('sejour_id, costPrice, costCurrency, supplierId, hotelId').in('sejour_id', sejourIds),
+      supabase.from('sejour_flights').select('sejour_id, costPrice, costCurrency, supplierId').in('sejour_id', sejourIds),
+      supabase.from('sejour_transfers').select('sejour_id, costPrice, costCurrency, supplierId').in('sejour_id', sejourIds),
+      supabase.from('sejour_extra_services').select('sejour_id, costPrice, costCurrency, supplierId').in('sejour_id', sejourIds),
+      supabase.from('sejour_payments').select('sejour_id, amount, currency, supplierId').in('sejour_id', sejourIds)
+    ]);
+      
+    // Struct: pData[supplierId][currency] = { purchases, payments, entities: Set }
+    const sData: Record<string, Record<string, { purchases: number, payments: number, cOutDates: string[] }>> = {};
+    
+    const processPurchase = (supplierId: string | null, hotelId: string | null, amount: number, currency: string, cOutDate: string | null) => {
+      const id = supplierId || hotelId;
+      if (!id) return;
+      const c = (currency === 'TL' ? 'TRY' : currency) || 'TRY';
+      if (!sData[id]) sData[id] = {};
+      if (!sData[id][c]) sData[id][c] = { purchases: 0, payments: 0, cOutDates: [] };
+      sData[id][c].purchases += Number(amount || 0);
+      if (cOutDate) sData[id][c].cOutDates.push(cOutDate);
+    };
+
+    const processPayment = (supplierId: string | null, hotelId: string | null, amount: number, currency: string) => {
+      const id = supplierId || hotelId;
+      if (!id) return;
+      const c = (currency === 'TL' ? 'TRY' : currency) || 'TRY';
+      if (!sData[id]) sData[id] = {};
+      if (!sData[id][c]) sData[id][c] = { purchases: 0, payments: 0, cOutDates: [] };
+      sData[id][c].payments += Number(amount || 0);
+    };
+
+    // Process Projects
+    const projectMap = (projects || []).reduce((acc: any, p: any) => {
+      acc[p.id] = p;
+      return acc;
+    }, {});
+
+    (pPurchases || []).forEach((p: any) => {
+      processPurchase(p.supplier_id, p.hotel_id, p.total_price, p.currency, projectMap[p.project_id]?.end_date);
+    });
+
+    (pPayments || []).forEach((p: any) => {
+      processPayment(p.supplier_id, p.hotel_id, p.amount, p.currency);
+    });
+
+    // Process Sejours
+    const sejourMap = (sejours || []).reduce((acc: any, s: any) => {
+      acc[s.id] = s;
+      return acc;
+    }, {});
+
+    const processSejourPurchases = (items: any[]) => {
+      (items || []).forEach((i: any) => {
+        processPurchase(i.supplierId, i.hotelId, i.costPrice, i.costCurrency, sejourMap[i.sejour_id]?.check_out_date);
+      });
+    };
+
+    processSejourPurchases(sRooms.data || []);
+    processSejourPurchases(sFlights.data || []);
+    processSejourPurchases(sTransfers.data || []);
+    processSejourPurchases(sExtras.data || []);
+
+    (sPayments.data || []).forEach((p: any) => {
+      processPayment(p.supplierId, null, p.amount, p.currency);
+    });
+
+    // Format results
+    Object.keys(sData).forEach(supplierId => {
+      const entityName = supplierMap[supplierId] || 'Bilinmiyor';
+      const curs = sData[supplierId];
+      
+      Object.keys(curs).forEach(currency => {
+        const { purchases, payments, cOutDates } = curs[currency];
+        const balance = purchases - payments;
+        
+        // Find latest check out date
+        let latestCOutDate = null;
+        if (cOutDates.length > 0) {
+          latestCOutDate = cOutDates.sort().reverse()[0];
+        }
+
+        if (purchases > 0 || payments > 0) {
+          results.push({
+            id: supplierId + "_" + currency, // composite id just for listing
+            type: 'SUPPLIER',
+            entityId: supplierId,
+            entityName,
+            currency,
+            totalPurchases: purchases,
+            totalPayments: payments,
+            balance,
+            cOutDate: latestCOutDate
+          });
+        }
+      });
+    });
+    
+    return results;
+  },
+
   async getAccountsReceivable(): Promise<any[]> {
     const results: any[] = [];
     

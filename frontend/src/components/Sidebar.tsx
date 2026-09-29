@@ -230,6 +230,13 @@ export default function Sidebar() {
           module: Module.ACCOUNTING,
         },
         {
+          id: "debt_aging",
+          label: "Borç Yaşlandırma",
+          icon: "📉",
+          href: "/accounting/debt-aging",
+          module: Module.ACCOUNTING,
+        },
+        {
           id: "income-invoices",
           label: t('menu.incomeInvoices') || "Gelir Faturaları",
           icon: "📄",

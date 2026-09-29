@@ -57,7 +57,8 @@ export enum Module {
   TICKETS_OPTIONS = 'tickets_options',
   TICKETS_PAYMENTS = 'tickets_payments',
   TICKETS_CALENDAR = 'tickets_calendar',
-  AGING = 'aging'
+  AGING = 'aging',
+  DEBT_AGING = 'debt_aging'
 }
 
 export enum Role {
@@ -417,7 +418,8 @@ export const permissionService = {
       [Module.TICKETS_OPTIONS]: 'Bilet Opsiyon Takip',
       [Module.TICKETS_PAYMENTS]: 'Bilet Ödeme Takip',
       [Module.TICKETS_CALENDAR]: 'Bilet Takvim Takip',
-      [Module.AGING]: 'Alacak Yaşlandırma'
+      [Module.AGING]: 'Alacak Yaşlandırma',
+      [Module.DEBT_AGING]: 'Borç Yaşlandırma'
     };
     return map[module];
   },
