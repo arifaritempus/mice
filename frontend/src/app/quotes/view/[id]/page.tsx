@@ -1102,11 +1102,11 @@ export default function QuoteViewPublicPage() {
               </svg>
               {exporting ? "İşleniyor..." : "EXCEL İNDİR"}
             </button>
-            <div className="text-white text-right border-l border-slate-200 pl-4">
-              <p className="text-[10px] text-gray-100 font-bold uppercase tracking-wider">
+            <div className="text-right border-l border-slate-200 dark:border-slate-700 pl-4">
+              <p className="text-[10px] text-blue-400 dark:text-blue-300 font-bold uppercase tracking-wider">
                 TEKLİF REFERANS
               </p>
-              <p className="text-lg font-bold">{quote?.reference || "-"}</p>
+              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{quote?.reference || "-"}</p>
             </div>
           </div>
         </div>

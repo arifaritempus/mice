@@ -13559,7 +13559,7 @@ export default function ProjectDetailPage() {
 
       // Link oluştur
       const baseUrl = window.location.origin;
-      const link = `${baseUrl}/projects/view/${projectId}?token=${token}&tab=satis`;
+      const link = `${baseUrl}/projects/view/${projectId}?token=${token}`;
       setGeneratedLink(link);
 
       // Supabase'e kaydet
@@ -13671,7 +13671,7 @@ export default function ProjectDetailPage() {
       e.stopPropagation();
     }
     const baseUrl = window.location.origin;
-    const fullLink = `${baseUrl}/projects/view/${link.project_id}?token=${link.token}&tab=satis`;
+    const fullLink = `${baseUrl}/projects/view/${link.project_id}?token=${link.token}`;
 
     navigator.clipboard
       .writeText(fullLink)
@@ -27002,7 +27002,7 @@ export default function ProjectDetailPage() {
                 </h3>
                 <div className="space-y-4 pr-2">
                   {projectLinks.map((link: any, idx: number) => {
-                    const fullLink = `${window.location.origin}/projects/view/${link.project_id || projectId}?token=${link.token}&tab=satis`;
+                    const fullLink = `${window.location.origin}/projects/view/${link.project_id || projectId}?token=${link.token}`;
                     const isExpired = link.expiry_date
                       ? new Date(link.expiry_date) < new Date()
                       : false;
