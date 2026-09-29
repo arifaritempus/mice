@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import html2pdf from "html2pdf.js";
 import { toast } from "react-hot-toast";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { formatDateForDisplay } from "./projectUtils";
 
 interface ProformaTabProps {
   project: any;
@@ -258,7 +259,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                 
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2 text-[10px]">
                   {project?.start_date && (
-                    <p><span className="font-semibold text-gray-500">Proje Tarihi:</span> <span className="text-gray-800">{new Date(project.start_date).toLocaleDateString('tr-TR')} - {new Date(project.end_date).toLocaleDateString('tr-TR')}</span></p>
+                    <p><span className="font-semibold text-gray-500">Proje Tarihi:</span> <span className="text-gray-800">{formatDateForDisplay(project.start_date)} - {formatDateForDisplay(project.end_date)}</span></p>
                   )}
                   {project?.company_name && (
                     <p><span className="font-semibold text-gray-500">Firma Adı:</span> <span className="text-gray-800">{project.company_name}</span></p>
@@ -351,7 +352,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                         <tbody className="divide-y divide-gray-200">
                           {collections.map((col, idx) => (
                             <tr key={idx}>
-                              <td className="py-1 text-gray-800 w-20">{new Date(col.payment_date || col.created_at).toLocaleDateString('tr-TR')}</td>
+                              <td className="py-1 text-gray-800 w-20">{formatDateForDisplay(col.date || col.payment_date || col.created_at)}</td>
                               <td className="py-1 text-gray-800 font-medium">{col.description || "Tahsilat"}</td>
                               <td className="py-1 text-right font-bold text-emerald-700 ">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
                             </tr>
