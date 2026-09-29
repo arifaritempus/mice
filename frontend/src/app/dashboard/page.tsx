@@ -46,6 +46,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import ResponsiveDateRangeField from "@/components/ResponsiveDateRangeField";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import {
   AreaChart,
   Area,
@@ -360,6 +361,23 @@ const KPICard = ({
 
 export default function UltimateDashboard() {
   const { t, language } = useLanguage();
+  const { isOperationMode } = useOperationMode();
+
+  if (isOperationMode) {
+    return (
+      <div className="min-h-screen p-8 flex items-center justify-center">
+        <div className="bg-white dark:bg-v3-surface rounded-2xl p-8 border border-v3-border shadow-2xl text-center max-w-md w-full">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-v3-text mb-2">Erişim Engellendi</h2>
+          <p className="text-v3-muted">Operasyon modunda Dashboard sayfasına erişilemez. Lütfen yukarıdaki menüden Ofis Modu'na geçiş yapın.</p>
+        </div>
+      </div>
+    );
+  }
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodFilter>("year");
   const [customDate, setCustomDate] = useState({ start: "", end: "" });

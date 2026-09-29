@@ -29,6 +29,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePermissions, Module, getModuleFromHref } from "@/lib/permissions";
+import { useOperationMode } from "@/hooks/useOperationMode";
 
 interface CommandCenterProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
   }, [isOpen, initialQuery]);
 
   const { canView } = usePermissions();
+  const { isOperationMode } = useOperationMode();
 
   const isHrefVisible = (href: string) => {
     const mod = getModuleFromHref(href);
@@ -81,7 +83,7 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
       icon: <LayoutDashboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
       color: "blue",
       items: [
-        { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={16} /> },
+        ...(isOperationMode ? [] : [{ label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={16} /> }]),
         {
           label: "Pazarlama & CRM",
           href: "/marketing",

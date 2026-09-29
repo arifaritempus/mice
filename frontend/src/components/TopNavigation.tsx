@@ -424,13 +424,13 @@ export default function TopNavigation() {
 
   const navItems = [
     { id: "home", label: "Ana Sayfa", href: "/", icon: LayoutDashboard, module: Module.HOME },
-    {
+    ...(isOperationMode ? [] : [{
       id: "dashboard",
       label: t("nav.dashboard") || "Dashboard",
       href: "/dashboard",
       icon: BarChart3,
       module: Module.DASHBOARD
-    },
+    }]),
     {
       id: "reports",
       label: t("nav.reports") || "Raporlar",

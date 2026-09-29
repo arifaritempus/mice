@@ -79,13 +79,13 @@ export default function Sidebar() {
 
   const navigation: MenuItem[] = [
     { id: "home", label: t('menu.home') || "Ana Sayfa", icon: "🏠", href: "/" },
-    {
+    ...(isOperationMode ? [] : [{
       id: "dashboard",
       label: t('menu.dashboard') || "Dashboard",
       icon: "📊",
       href: "/dashboard",
       module: Module.DASHBOARD,
-    },
+    }]),
     {
       id: "mice",
       label: t('menu.mice') || "MICE",
