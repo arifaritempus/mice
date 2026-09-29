@@ -485,7 +485,7 @@ export default function ProjectViewPublicPage() {
     }
 
     const grouped = itemsSales.reduce((acc: any, item: any) => {
-      const mainCat = getCategoryName(item.main_category) || "Diğer";
+      const mainCat = getCategoryName((item.category || item.main_category)) || "Diğer";
       if (!acc[mainCat]) {
         acc[mainCat] = [];
       }
@@ -496,7 +496,7 @@ export default function ProjectViewPublicPage() {
     const bolumler = Object.entries(grouped).map(
       ([mainCategory, categoryItems]: [string, any]) => {
         const categoryTotal = categoryItems.reduce(
-          (sum: number, item: any) => sum + (item.total || 0),
+          (sum: number, item: any) => sum + ((item.total_price ?? item.total) || 0),
           0,
         );
         const categoryTotalTRY = categoryItems.reduce(
@@ -508,12 +508,12 @@ export default function ProjectViewPublicPage() {
           baslik: mainCategory,
           hizmetler: categoryItems.map((item: any) => ({
             hizmet: getCategoryName(item.sub_category) || "",
-            birim: item.qty || 0,
-            tekrar: item.repeat || 0,
+            birim: (item.unit_quantity ?? item.qty) || 0,
+            tekrar: (item.sefer ?? item.repeat) || 0,
             birimFiyat: formatEUR(item.unit_price || 0),
             birimFiyatNum: Number(item.unit_price || 0),
-            toplamEur: formatEUR(item.total || 0),
-            toplamEurNum: Number(item.total || 0),
+            toplamEur: formatEUR((item.total_price ?? item.total) || 0),
+            toplamEurNum: Number((item.total_price ?? item.total) || 0),
             kur: formatTRY(item.fx || 0),
             kurNum: Number(item.fx || 0),
             toplamTl: formatTRY(item.total_try || 0),
@@ -529,7 +529,7 @@ export default function ProjectViewPublicPage() {
     );
 
     const totalSales = itemsSales.reduce(
-      (sum: number, item: any) => sum + (item.total || 0),
+      (sum: number, item: any) => sum + ((item.total_price ?? item.total) || 0),
       0,
     );
     const totalSalesTRY = itemsSales.reduce(
@@ -735,7 +735,7 @@ export default function ProjectViewPublicPage() {
         // Group items
         const grouped: Record<string, any[]> = {};
         items.forEach((item) => {
-          const key = item.main_category || "other";
+          const key = (item.category || item.main_category) || "other";
           if (!grouped[key]) grouped[key] = [];
           grouped[key].push(item);
         });
@@ -793,8 +793,8 @@ export default function ProjectViewPublicPage() {
           catItems.forEach((item) => {
             const sRow = sheet.addRow([
               getCategoryName(item.sub_category || ""),
-              item.qty || 0,
-              item.repeat || 0,
+              (item.unit_quantity ?? item.qty) || 0,
+              (item.sefer ?? item.repeat) || 0,
               item.unit_price || 0,
               0,
               item.description || "",
@@ -808,7 +808,7 @@ export default function ProjectViewPublicPage() {
             sRow.getCell(5).numFmt = formatStr;
             sRow.getCell(5).value = {
               formula: `B${r}*C${r}*D${r}`,
-              result: item.total ?? 0,
+              result: (item.total_price ?? item.total) ?? 0,
             } as any;
             sRow.getCell(6).alignment = { wrapText: true, vertical: "top" };
             sRow.height = 18;
@@ -827,7 +827,7 @@ export default function ProjectViewPublicPage() {
           if (firstItemRow) {
             araRow.getCell(5).value = {
               formula: `SUM(E${firstItemRow}:E${lastItemRow})`,
-              result: catItems.reduce((s, i) => s + (i.total || 0), 0),
+              result: catItems.reduce((s, i) => s + ((i.total_price ?? i.total) || 0), 0),
             } as any;
           }
           const catCur = ((project as any)?.currency || "EUR");
@@ -860,7 +860,7 @@ export default function ProjectViewPublicPage() {
         if (subtotalRowsE.length > 0) {
           totalRow.getCell(5).value = {
             formula: `SUM(${subtotalRowsE.map((r) => `E${r}`).join(",")})`,
-            result: items.reduce((s, i) => s + (i.total || 0), 0),
+            result: items.reduce((s, i) => s + ((i.total_price ?? i.total) || 0), 0),
           } as any;
         }
         const firstItemCur = ((project as any)?.currency || "EUR");
@@ -1336,7 +1336,7 @@ export default function ProjectViewPublicPage() {
                   (() => {
                     const grouped = filteredItems.reduce(
                       (acc: Record<string, any[]>, item: any) => {
-                        const catId = item.main_category || "other";
+                        const catId = (item.category || item.main_category) || "other";
                         if (!acc[catId]) acc[catId] = [];
                         acc[catId].push(item);
                         return acc;
@@ -1359,7 +1359,7 @@ export default function ProjectViewPublicPage() {
                     return sortedCatIds.map((catId) => {
                       const items = grouped[catId];
                       const catTotalEur = items.reduce(
-                        (s, i) => s + (i.total || 0),
+                        (s, i) => s + ((i.total_price ?? i.total) || 0),
                         0,
                       );
                       const catTotalTry = items.reduce(
@@ -1395,9 +1395,13 @@ export default function ProjectViewPublicPage() {
                                   )
                                 : null;
                               if (aSub || bSub) {
-                                return compareByCategoryId(aSub, bSub);
+                                const cmp = compareByCategoryId(aSub, bSub);
+                                if (cmp !== 0) return cmp;
                               }
-                              return a.id.localeCompare(b.id);
+                              const timeA = new Date(a.created_at || 0).getTime();
+                              const timeB = new Date(b.created_at || 0).getTime();
+                              if (timeA !== timeB) return timeA - timeB;
+                              return (a.id || "").localeCompare(b.id || "");
                             })
                             .map((item) => (
                               <tr
@@ -1411,7 +1415,7 @@ export default function ProjectViewPublicPage() {
                                         item.sub_category || "",
                                       ) ||
                                         getCategoryName(
-                                          item.main_category || "",
+                                          (item.category || item.main_category) || "",
                                         ),
                                     )}
                                   </p>
@@ -1422,7 +1426,7 @@ export default function ProjectViewPublicPage() {
                                   )}
                                 </td>
                                 <td className="py-4 text-xs font-medium text-right text-slate-800 whitespace-nowrap">
-                                  {item.qty} x {item.repeat}
+                                  {item.unit_quantity ?? (item.unit_quantity ?? item.qty)} x {item.sefer ?? (item.sefer ?? item.repeat)}
                                 </td>
                                 <td className="py-4 text-xs font-medium text-right text-slate-800 whitespace-nowrap">
                                   {formatTr(item.unit_price)}{" "}
@@ -1433,7 +1437,7 @@ export default function ProjectViewPublicPage() {
                                       : item.currency}
                                 </td>
                                 <td className="py-4 px-4 text-sm font-black text-right text-slate-800 whitespace-nowrap">
-                                  {formatCurrency(item.total, item.currency || (project as any)?.currency || 'EUR')}
+                                  {formatCurrency((item.total_price ?? item.total), item.currency || (project as any)?.currency || 'EUR')}
                                 </td>
                               </tr>
                             ))}
@@ -1482,7 +1486,7 @@ export default function ProjectViewPublicPage() {
                 </h3>
                 <div className="space-y-1">
                   <p className="text-3xl font-black text-slate-800">
-                    {formatCurrency(filteredItems.reduce((s, i) => s + i.total, 0), (project as any)?.currency || 'EUR')}
+                    {formatCurrency(filteredItems.reduce((s, i) => s + (i.total_price ?? i.total), 0), (project as any)?.currency || 'EUR')}
                   </p>
                 </div>
               </div>
