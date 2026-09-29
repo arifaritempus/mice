@@ -16,7 +16,15 @@ interface ProformaTabProps {
 export default function ProformaTab({ project, salesItems, collections, categories = [], agencies = [], hotels = [] }: ProformaTabProps) {
   const { t } = useLanguage();
   const proformaRef = useRef<HTMLDivElement>(null);
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("tempus_general_settings");
+        if (cached) return JSON.parse(cached);
+      } catch (e) {}
+    }
+    return null;
+  });
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
@@ -27,6 +35,9 @@ export default function ProformaTab({ project, salesItems, collections, categori
           const data = await res.json();
           if (data.general_settings) {
             setSettings(data.general_settings);
+            try {
+              localStorage.setItem("tempus_general_settings", JSON.stringify(data.general_settings));
+            } catch (e) {}
           }
         }
       } catch (err) {
@@ -243,11 +254,13 @@ export default function ProformaTab({ project, salesItems, collections, categori
                       className="h-[65px] max-h-[75px] max-w-[280px] w-auto object-contain" 
                     />
                   </div>
-                ) : (
+                ) : !settings ? (
+                  <div className="h-[65px] mb-2" />
+                ) : settings?.companyName ? (
                   <h1 className="text-3xl font-black text-[#1e293b] tracking-tight mb-2">
-                    {settings?.companyName || "ŞİRKET ADI"}
+                    {settings.companyName}
                   </h1>
-                )}
+                ) : null}
                 
                 <div className="text-[10px] text-gray-600 leading-snug">
                   {settings?.companyAddress && <p>{settings.companyAddress}</p>}
