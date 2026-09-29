@@ -15580,19 +15580,24 @@ export default function ProjectDetailPage() {
           ) : (
             <>
               {activeTab === "kongre-katilimcilar" && (
-                <CongressParticipantsTab projectId={projectId} project={project} reloadProject={loadProjectData} />
+                <CongressParticipantsTab projectId={projectId} 
+                  project={project} reloadProject={loadProjectData} />
               )}
               {activeTab === "kongre-finans" && (
-                <CongressFinanceTab projectId={projectId} project={project} />
+                <CongressFinanceTab projectId={projectId} 
+                  project={project} />
               )}
               {activeTab === "kongre-odalama" && (
-                <CongressRoomingTab projectId={projectId} project={project} />
+                <CongressRoomingTab projectId={projectId} 
+                  project={project} />
               )}
               {activeTab === "kongre-sponsorlar" && (
-                <CongressSponsorsTab projectId={projectId} project={project} />
+                <CongressSponsorsTab projectId={projectId} 
+                  project={project} />
               )}
               {activeTab === "kongre-lojistik" && (
-                <CongressLogisticsTab projectId={projectId} project={project} />
+                <CongressLogisticsTab projectId={projectId} 
+                  project={project} />
               )}
               {activeTab === "satis" && (
                 <SalesTab
@@ -15610,6 +15615,8 @@ export default function ProjectDetailPage() {
                   newItem={newItem}
                   setNewItem={setNewItem}
                   categories={categories}
+                  
+                  
                   mainCategories={mainCategories}
                   subCategoriesByMain={subCategoriesByMain}
                   groupedSalesItems={groupedSalesItems}
@@ -15660,6 +15667,8 @@ export default function ProjectDetailPage() {
                   newItem={newItem}
                   setNewItem={setNewItem}
                   categories={categories}
+                  
+                  
                   mainCategories={mainCategories}
                   subCategoriesByMain={subCategoriesByMain}
                   groupedPurchaseItems={groupedPurchaseItems}
@@ -18654,6 +18663,7 @@ export default function ProjectDetailPage() {
                   showAddTransferMenu={showAddTransferMenu}
                   setShowAddTransferMenu={setShowAddTransferMenu}
                   addManualTransfer={addManualTransfer}
+                  
                   project={project}
                   stats={stats}
                   suppliers={suppliers}
@@ -24716,6 +24726,8 @@ export default function ProjectDetailPage() {
                   <DigerTab
                     others={projectOthers}
                     categories={categories}
+                  
+                  
                     suppliers={suppliers}
                     hotels={hotels}
                     projectId={projectId}
@@ -24727,6 +24739,10 @@ export default function ProjectDetailPage() {
               {activeTab === "proforma" && (
                 <ProformaTab
                   categories={categories}
+                  agencies={agencies}
+                  
+                  
+                  
                   project={project}
                   salesItems={itemsSales}
                   collections={collections}
@@ -27931,7 +27947,8 @@ export default function ProjectDetailPage() {
         {contractData && (
           <ContractTemplate 
             ref={contractRef}
-            project={project}
+            
+                  project={project}
             agency={agencies.find((a: any) => a.id === project?.agency_id) || {}}
             settings={contractData.settings}
             hotelName={contractData.hotelName}
@@ -27956,6 +27973,8 @@ export default function ProjectDetailPage() {
             loadProjectInvoices();
           }}
           categories={categories}
+                  
+                  
           lockEntitySelection={true}
         />
       )}
