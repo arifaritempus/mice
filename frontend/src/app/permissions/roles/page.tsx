@@ -54,6 +54,7 @@ const MODULE_META: Record<string, ModuleMeta> = {
   projects: { id: "projects", name: "Proje", icon: "📁" },
   accounting: { id: "accounting", name: "Muhasebe (Grup)", icon: "💰" },
   cash_flow: { id: "cash_flow", name: "Nakit Akış", icon: "💵" },
+  debt_aging: { id: "debt_aging", name: "Borç Yaşlandırma", icon: "📉" },
   invoices: { id: "invoices", name: "Faturalar (Gelir/Gider)", icon: "📄" },
   exchange_rates: { id: "exchange_rates", name: "Döviz Kurları", icon: "💱" },
   sejour: { id: "sejour", name: "Sejour", icon: "🏖️" },

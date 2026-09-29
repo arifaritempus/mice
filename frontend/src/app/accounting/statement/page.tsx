@@ -14,6 +14,7 @@ function StatementContent() {
   const router = useRouter();
   
   const entityName = searchParams.get("entity") || "";
+  const mode = searchParams.get("mode") || "receivable";
   const defaultCurrency = searchParams.get("currency") || "all";
   
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,7 @@ function StatementContent() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const records = await agingServiceExt.getStatement(entityName);
+      const records = mode === "payable" ? await agingServiceExt.getDebtStatement(entityName) : await agingServiceExt.getStatement(entityName);
       setRawRecords(records);
       
       if (defaultCurrency === "all" && records.length > 0) {
@@ -157,7 +158,7 @@ function StatementContent() {
             <FileText size={18} />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-v3-text">Cari Ekstre</h1>
+            <h1 className="text-sm font-bold text-v3-text">{mode === "payable" ? "Tedarikçi Ekstresi" : "Cari Ekstre"}</h1>
             <p className="text-[10px] text-v3-muted">{entityName}</p>
           </div>
         </div>

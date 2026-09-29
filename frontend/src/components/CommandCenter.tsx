@@ -179,6 +179,11 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
           icon: <Wallet size={16} />,
         },
         {
+          label: "Borç Yaşlandırma",
+          href: "/accounting/debt-aging",
+          icon: <Wallet size={16} />,
+        },
+        {
           label: "Yapay Zeka Faturaları",
           href: "/accounting/invoices/ai",
           icon: <Camera size={16} />,

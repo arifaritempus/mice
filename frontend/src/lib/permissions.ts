@@ -578,6 +578,8 @@ export const getModuleFromHref = (href: string): Module | null => {
   if (href.startsWith('/operations')) return Module.OPERATIONS;
   
   if (href.startsWith('/accounting/cash-flow')) return Module.CASH_FLOW;
+  if (href.startsWith('/accounting/aging')) return Module.AGING;
+  if (href.startsWith('/accounting/debt-aging')) return Module.DEBT_AGING;
   if (href.startsWith('/accounting/invoices/income')) return Module.INVOICES_INCOME;
   if (href.startsWith('/accounting/invoices/expense')) return Module.INVOICES_EXPENSE;
   if (href.startsWith('/accounting/invoices')) return Module.INVOICES;

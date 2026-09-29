@@ -227,14 +227,14 @@ export default function Sidebar() {
           label: "Alacak Yaşlandırma",
           icon: "🕰️",
           href: "/accounting/aging",
-          module: Module.ACCOUNTING,
+          module: Module.AGING,
         },
         {
           id: "debt_aging",
           label: "Borç Yaşlandırma",
           icon: "📉",
           href: "/accounting/debt-aging",
-          module: Module.ACCOUNTING,
+          module: Module.DEBT_AGING,
         },
         {
           id: "income-invoices",

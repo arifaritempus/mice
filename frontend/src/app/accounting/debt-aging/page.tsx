@@ -171,7 +171,7 @@ export default function DebtAgingPage() {
     XLSX.writeFile(wb, `Borç_Yaslandirma_${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
-  if (!canView(Module.ACCOUNTING)) {
+  if (!canView(Module.DEBT_AGING)) {
     return <div className="p-8 text-center text-v3-muted">Bu sayfayı görüntüleme yetkiniz yok.</div>;
   }
 
@@ -313,7 +313,7 @@ export default function DebtAgingPage() {
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-center">
                         <Link
-                          href={`/accounting/statement?entity=${encodeURIComponent(row.entityName)}&currency=${row.currency}`}
+                          href={`/accounting/statement?entity=${encodeURIComponent(row.entityName)}&currency=${row.currency}&mode=payable`}
                           className="inline-flex items-center justify-center p-1.5 text-blue-500 hover:text-white bg-blue-500/10 hover:bg-blue-500 rounded-lg transition-colors"
                           title="Ekstre (Hesap Dökümü)"
                         >
