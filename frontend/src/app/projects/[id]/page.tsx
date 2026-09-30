@@ -14421,8 +14421,23 @@ export default function ProjectDetailPage() {
 
       const updatedHotels = [...currentHotels, newHotelEntry];
 
+      // Otellerin tarihlerini projenin ana start_date ve end_date alanlarıyla da senkronize et
+      const validCheckIns = updatedHotels
+        .map((h: any) => h.check_in_date || h.start_date)
+        .filter(Boolean)
+        .sort();
+      const validCheckOuts = updatedHotels
+        .map((h: any) => h.check_out_date || h.end_date)
+        .filter(Boolean)
+        .sort();
+
+      const updatePayload: any = { hotels_data: updatedHotels };
+      if (validCheckIns.length > 0) updatePayload.start_date = validCheckIns[0].substring(0, 10);
+      if (validCheckOuts.length > 0) updatePayload.end_date = validCheckOuts[validCheckOuts.length - 1].substring(0, 10);
+      if (updatedHotels.length > 0 && updatedHotels[0].hotel_id) updatePayload.hotel_id = updatedHotels[0].hotel_id;
+
       // 2. Veritabanını güncelle
-      await projectsService.update(projectId, { hotels_data: updatedHotels });
+      await projectsService.update(projectId, updatePayload);
 
       // 3. TÜM VERİLERİ YENİDEN YÜKLE (Garantili senkronizasyon)
       await loadProjectData();
@@ -14452,8 +14467,23 @@ export default function ProjectDetailPage() {
         h.id === updatedData.id ? { ...h, ...updatedData } : h,
       );
 
+      // Otellerin tarihlerini projenin ana start_date ve end_date alanlarıyla da senkronize et
+      const validCheckIns = updatedHotels
+        .map((h: any) => h.check_in_date || h.start_date)
+        .filter(Boolean)
+        .sort();
+      const validCheckOuts = updatedHotels
+        .map((h: any) => h.check_out_date || h.end_date)
+        .filter(Boolean)
+        .sort();
+
+      const updatePayload: any = { hotels_data: updatedHotels };
+      if (validCheckIns.length > 0) updatePayload.start_date = validCheckIns[0].substring(0, 10);
+      if (validCheckOuts.length > 0) updatePayload.end_date = validCheckOuts[validCheckOuts.length - 1].substring(0, 10);
+      if (updatedHotels.length > 0 && updatedHotels[0].hotel_id) updatePayload.hotel_id = updatedHotels[0].hotel_id;
+
       // 3. Veritabanını güncelle
-      await projectsService.update(projectId, { hotels_data: updatedHotels });
+      await projectsService.update(projectId, updatePayload);
 
       // 4. Verileri yenile
       await loadProjectData();
@@ -14488,9 +14518,22 @@ export default function ProjectDetailPage() {
           const updatedHotels = currentHotels.filter(
             (h: any) => (h.id || h.hotel_id) !== tabId,
           );
-          await projectsService.update(projectId, {
-            hotels_data: updatedHotels,
-          });
+
+          const validCheckIns = updatedHotels
+            .map((h: any) => h.check_in_date || h.start_date)
+            .filter(Boolean)
+            .sort();
+          const validCheckOuts = updatedHotels
+            .map((h: any) => h.check_out_date || h.end_date)
+            .filter(Boolean)
+            .sort();
+
+          const updatePayload: any = { hotels_data: updatedHotels };
+          if (validCheckIns.length > 0) updatePayload.start_date = validCheckIns[0].substring(0, 10);
+          if (validCheckOuts.length > 0) updatePayload.end_date = validCheckOuts[validCheckOuts.length - 1].substring(0, 10);
+          if (updatedHotels.length > 0 && updatedHotels[0].hotel_id) updatePayload.hotel_id = updatedHotels[0].hotel_id;
+
+          await projectsService.update(projectId, updatePayload);
 
           // 3. Bağlı kalemleri temizle (CASCADING DELETE)
           const servicesToCleanup = [

@@ -4080,6 +4080,25 @@ export const ticketPaymentRecordsService = {
   }
 };
 
+// --- Safe chunking helpers to prevent Supabase / PostgREST URL length limit (HTTP 400 Bad Request) ---
+const isUuidSafe = (str: any): boolean => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+const chunkArraySafe = <T>(arr: T[], size: number = 30): T[][] => {
+  const res: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
+  return res;
+};
+
+const fetchChunkedTable = async (table: string, columns: string, ids: string[]): Promise<any[]> => {
+  const validIds = ids.filter(isUuidSafe);
+  if (!validIds.length) return [];
+  const chunks = chunkArraySafe(validIds, 30);
+  const results = await Promise.all(
+    chunks.map(chunk => supabase.from(table).select(columns).in('id', chunk))
+  );
+  return results.flatMap(r => r.data || []);
+};
+
 // --- Fatura Servisleri ---
 export const invoicesService = {
   async getInvoicesPage(params: {
@@ -4723,29 +4742,55 @@ export const invoicesService = {
     (sejourExtraRes.data || []).forEach(e => sejourIds.add(e.sejour_id));
     const sIdArray = Array.from(sejourIds);
 
-    // Fetch projects and sejours
-    const [projectsRes, sejoursRes, categoriesRes] = await Promise.all([
-      projectIds.length ? supabase.from('projects').select('id, title, company_name, description, quote_type, agency_id, hotel_id, start_date, end_date, status').in('id', projectIds).eq('status', 'completed') : Promise.resolve({ data: [] }),
-      sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).not('status', 'in', '("IPTAL","İPTAL","CANCELLED")') : Promise.resolve({ data: [] }),
+    const validProjectIds = projectIds.filter(isUuidSafe);
+    const validSejourIds = sIdArray.filter(isUuidSafe);
+
+    const projectChunks = chunkArraySafe(validProjectIds, 30);
+    const sejourChunks = chunkArraySafe(validSejourIds, 30);
+
+    // Fetch projects and sejours chunked
+    const [projectsData, sejoursData, categoriesRes] = await Promise.all([
+      projectChunks.length
+        ? Promise.all(
+            projectChunks.map(chunk =>
+              supabase
+                .from('projects')
+                .select('id, title, company_name, description, quote_type, agency_id, hotel_id, start_date, end_date, status')
+                .in('id', chunk)
+                .eq('status', 'completed')
+            )
+          ).then(results => results.flatMap(r => r.data || []))
+        : Promise.resolve([]),
+      sejourChunks.length
+        ? Promise.all(
+            sejourChunks.map(chunk =>
+              supabase
+                .from('sejours')
+                .select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status')
+                .in('id', chunk)
+                .not('status', 'in', '("IPTAL","İPTAL","CANCELLED")')
+            )
+          ).then(results => results.flatMap(r => r.data || []))
+        : Promise.resolve([]),
       supabase.from('categories').select('*')
     ]);
 
     // Collect contact IDs from projects and sejours
     const contactIds = new Set<string>();
-    (projectsRes.data || []).forEach((p: any) => {
+    projectsData.forEach((p: any) => {
       if (p.agency_id) contactIds.add(p.agency_id);
       if (p.hotel_id) contactIds.add(p.hotel_id);
     });
-    (sejoursRes.data || []).forEach((s: any) => {
+    sejoursData.forEach((s: any) => {
       if (s.agency_id) contactIds.add(s.agency_id);
       if (s.hotel_id) contactIds.add(s.hotel_id);
     });
-    const cIdArray = Array.from(contactIds);
+    const cIdArray = Array.from(contactIds).filter(isUuidSafe);
 
-    // Fetch contacts
-    const [agenciesRes, hotelsRes] = await Promise.all([
-      cIdArray.length ? supabase.from('agencies').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
-      cIdArray.length ? supabase.from('hotels').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] })
+    // Fetch contacts chunked
+    const [agenciesData, hotelsData] = await Promise.all([
+      fetchChunkedTable('agencies', 'id, name', cIdArray),
+      fetchChunkedTable('hotels', 'id, name', cIdArray)
     ]);
 
     // Faturası kesilen miktarları topla
@@ -4755,18 +4800,18 @@ export const invoicesService = {
     }, {});
 
     // Acenteleri map'le
-    const agenciesMap = (agenciesRes.data || []).reduce((acc: any, a: any) => {
+    const agenciesMap = agenciesData.reduce((acc: any, a: any) => {
       acc[a.id] = a;
       return acc;
     }, {});
 
-    const hotelsMap = (hotelsRes.data || []).reduce((acc: any, h: any) => {
+    const hotelsMap = hotelsData.reduce((acc: any, h: any) => {
       acc[h.id] = h;
       return acc;
     }, {});
 
     // Projeleri map'le
-    const projectsMap = (projectsRes.data || []).reduce((acc: any, p: any) => {
+    const projectsMap = projectsData.reduce((acc: any, p: any) => {
       const agencyName = p.agency_id ? agenciesMap[p.agency_id]?.name : null;
       const projectDesc = p.description ? p.description.replace(/^Konfirme edilen teklif:\s*/i, '').trim() : '';
       const cleanTitle = p.title ? p.title.replace(/\s*-\s*(Çoklu Konaklama|Multi Hotel).*$/i, '').trim() : p.title;
@@ -4794,7 +4839,7 @@ export const invoicesService = {
     const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
     // Sejour'ları map'le
-    const sejoursMap = (sejoursRes.data || []).reduce((acc: any, s: any) => {
+    const sejoursMap = sejoursData.reduce((acc: any, s: any) => {
       const agencyName = s.agency_id ? agenciesMap[s.agency_id]?.name : null;
       const displayCompany = agencyName || s.customer_name || 'Bilinmiyor';
       acc[s.id] = {
@@ -4980,20 +5025,46 @@ export const invoicesService = {
     (sejourExtraRes.data || []).forEach(e => sejourIds.add(e.sejour_id));
     const sIdArray = Array.from(sejourIds);
 
-    // Fetch metadata
-    const [projectsRes, sejoursRes, categoriesRes] = await Promise.all([
-      projectIds.length ? supabase.from('projects').select('id, title, company_name, description, quote_type, hotel_id, agency_id, start_date, end_date, status').in('id', projectIds).neq('status', 'cancelled') : Promise.resolve({ data: [] }),
-      sIdArray.length ? supabase.from('sejours').select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status').in('id', sIdArray).not('status', 'in', '("IPTAL","İPTAL","CANCELLED")') : Promise.resolve({ data: [] }),
+    const validProjectIds = projectIds.filter(isUuidSafe);
+    const validSejourIds = sIdArray.filter(isUuidSafe);
+
+    const projectChunks = chunkArraySafe(validProjectIds, 30);
+    const sejourChunks = chunkArraySafe(validSejourIds, 30);
+
+    // Fetch metadata chunked to prevent URL overflow
+    const [projectsData, sejoursData, categoriesRes] = await Promise.all([
+      projectChunks.length
+        ? Promise.all(
+            projectChunks.map(chunk =>
+              supabase
+                .from('projects')
+                .select('id, title, company_name, description, quote_type, hotel_id, agency_id, start_date, end_date, status')
+                .in('id', chunk)
+                .neq('status', 'cancelled')
+            )
+          ).then(results => results.flatMap(r => r.data || []))
+        : Promise.resolve([]),
+      sejourChunks.length
+        ? Promise.all(
+            sejourChunks.map(chunk =>
+              supabase
+                .from('sejours')
+                .select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status')
+                .in('id', chunk)
+                .not('status', 'in', '("IPTAL","İPTAL","CANCELLED")')
+            )
+          ).then(results => results.flatMap(r => r.data || []))
+        : Promise.resolve([]),
       supabase.from('categories').select('*')
     ]);
 
     // Collect contact IDs
     const contactIds = new Set<string>();
-    (projectsRes.data || []).forEach((p: any) => {
+    projectsData.forEach((p: any) => {
       if (p.agency_id) contactIds.add(p.agency_id);
       if (p.hotel_id) contactIds.add(p.hotel_id);
     });
-    (sejoursRes.data || []).forEach((s: any) => {
+    sejoursData.forEach((s: any) => {
       if (s.agency_id) contactIds.add(s.agency_id);
       if (s.hotel_id) contactIds.add(s.hotel_id);
     });
@@ -5016,7 +5087,6 @@ export const invoicesService = {
     (sejourExtraRes.data || []).forEach((e: any) => {
       if (e.supplier_id) contactIds.add(e.supplier_id);
     });
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     
     const purchaseVendorIdFromDescription = (desc: string): string | null => {
       const m = (desc || '').match(/ \[S:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/i);
@@ -5028,13 +5098,14 @@ export const invoicesService = {
       if (vendorId) contactIds.add(vendorId);
     });
 
-    const cIdArray = Array.from(contactIds);
+    const cIdArray = Array.from(contactIds).filter(isUuidSafe);
 
-    const [agenciesRes, hotelsRes, suppliersRes, usersRes] = await Promise.all([
-      cIdArray.length ? supabase.from('agencies').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
-      cIdArray.length ? supabase.from('hotels').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
-      cIdArray.length ? supabase.from('suppliers').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
-      cIdArray.length ? supabase.from('users').select('id, name, first_name, last_name, email').in('id', cIdArray) : Promise.resolve({ data: [] })
+    const [agenciesData, hotelsData, suppliersData, allUsersData] = await Promise.all([
+      fetchChunkedTable('agencies', 'id, name', cIdArray),
+      fetchChunkedTable('hotels', 'id, name', cIdArray),
+      fetchChunkedTable('suppliers', 'id, name', cIdArray),
+      // Kullanıcı tablosu genelde ufak bir listedir, doğrudan tüm kullanıcıları çekerek hem URL 400 hatasını önlüyoruz hem de eksiksiz eşleştiriyoruz
+      supabase.from('users').select('id, name, first_name, last_name, email').then(r => r.data || [])
     ]);
 
     const invoicedMap = (invoiceItems || []).reduce((acc: any, ii: any) => {
@@ -5042,16 +5113,16 @@ export const invoicesService = {
       return acc;
     }, {});
 
-    const agenciesMap = (agenciesRes.data || []).reduce((acc: any, a: any) => { acc[a.id] = a; return acc; }, {});
-    const hotelsMap = (hotelsRes.data || []).reduce((acc: any, h: any) => { acc[h.id] = h; return acc; }, {});
-    const suppliersMap = (suppliersRes.data || []).reduce((acc: any, s: any) => { acc[s.id] = s; return acc; }, {});
-    const usersMap = (usersRes.data || []).reduce((acc: any, u: any) => {
+    const agenciesMap = agenciesData.reduce((acc: any, a: any) => { acc[a.id] = a; return acc; }, {});
+    const hotelsMap = hotelsData.reduce((acc: any, h: any) => { acc[h.id] = h; return acc; }, {});
+    const suppliersMap = suppliersData.reduce((acc: any, s: any) => { acc[s.id] = s; return acc; }, {});
+    const usersMap = allUsersData.reduce((acc: any, u: any) => {
       const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.email || 'Personel';
       acc[u.id] = { id: u.id, name: fullName };
       return acc;
     }, {});
 
-    const projectsMap = (projectsRes.data || []).reduce((acc: any, p: any) => {
+    const projectsMap = projectsData.reduce((acc: any, p: any) => {
       const agencyName = p.agency_id ? agenciesMap[p.agency_id]?.name : null;
       const hotelName = p.hotel_id ? hotelsMap[p.hotel_id]?.name : null;
       const projectDesc = p.description ? p.description.replace(/^Konfirme edilen teklif:\s*/i, '').trim() : '';
@@ -5073,7 +5144,7 @@ export const invoicesService = {
       return acc;
     }, {});
 
-    const sejoursMap = (sejoursRes.data || []).reduce((acc: any, s: any) => {
+    const sejoursMap = sejoursData.reduce((acc: any, s: any) => {
       const hotelName = s.hotel_id ? hotelsMap[s.hotel_id]?.name : null;
       const agencyName = s.agency_id ? agenciesMap[s.agency_id]?.name : null;
       const displayCompany = hotelName || agencyName || s.customer_name || 'Bilinmiyor';
@@ -5100,8 +5171,8 @@ export const invoicesService = {
       const subCat = categoriesMap[item.sub_category] || {};
       const proj = projectsMap[item.project_id] || null;
       
-      const categoryName = cat.name || (isUUID(item.category) ? 'Bilinmiyor' : item.category);
-      const subCategoryName = subCat.name || (isUUID(item.sub_category) ? null : item.sub_category);
+      const categoryName = cat.name || (isUuidSafe(item.category) ? 'Bilinmiyor' : item.category);
+      const subCategoryName = subCat.name || (isUuidSafe(item.sub_category) ? null : item.sub_category);
 
       const taggedVendorId = purchaseVendorIdFromDescription(item.description || '');
       let outSupplierId: string | null = item.supplier_id ?? null;

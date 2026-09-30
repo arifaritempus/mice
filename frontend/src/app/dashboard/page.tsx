@@ -1050,12 +1050,17 @@ export default function UltimateDashboard() {
       let sd = p.start_date;
       let ed = p.end_date;
 
-      if (p.hotels_data && Array.isArray(p.hotels_data) && p.hotels_data.length > 0) {
-        const validCheckIns = p.hotels_data
+      let hotelsList = p.hotels_data;
+      if (typeof hotelsList === 'string') {
+        try { hotelsList = JSON.parse(hotelsList); } catch (e) {}
+      }
+
+      if (hotelsList && Array.isArray(hotelsList) && hotelsList.length > 0) {
+        const validCheckIns = hotelsList
           .map((h: any) => h.check_in_date || h.start_date)
           .filter(Boolean)
           .sort();
-        const validCheckOuts = p.hotels_data
+        const validCheckOuts = hotelsList
           .map((h: any) => h.check_out_date || h.end_date)
           .filter(Boolean)
           .sort();
