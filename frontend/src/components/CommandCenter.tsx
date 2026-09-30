@@ -52,7 +52,22 @@ export default function CommandCenter({ isOpen, onClose, initialQuery = "" }: Co
   const { canView } = usePermissions();
   const { isOperationMode } = useOperationMode();
 
+  const isOperationRestricted = (href: string) => {
+    if (!isOperationMode) return false;
+    const restricted = [
+      "/dashboard",
+      "/reports",
+      "/quotes",
+      "/requests",
+      "/tickets/options",
+      "/tickets/payments",
+      "/tickets/calendar",
+    ];
+    return restricted.some(p => href === p || href.startsWith(p + "/"));
+  };
+
   const isHrefVisible = (href: string) => {
+    if (isOperationRestricted(href)) return false;
     const mod = getModuleFromHref(href);
     if (!mod) return true;
     return canView(mod);

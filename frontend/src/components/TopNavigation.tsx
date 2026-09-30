@@ -303,8 +303,22 @@ export default function TopNavigation() {
       setIsSearchLoading(true);
       try {
         const queryLower = headerSearchQuery.toLowerCase();
+        const restrictedPaths = [
+          "/dashboard",
+          "/reports",
+          "/requests",
+          "/quotes",
+          "/tickets/options",
+          "/tickets/payments",
+          "/tickets/calendar",
+        ];
         const matchedPages = SYSTEM_PAGES
-          .filter(p => p.title.toLowerCase().includes(queryLower) || p.keywords.includes(queryLower))
+          .filter(p => {
+            if (isOperationMode && restrictedPaths.some(rp => p.href === rp || p.href.startsWith(rp + "/"))) {
+              return false;
+            }
+            return p.title.toLowerCase().includes(queryLower) || p.keywords.includes(queryLower);
+          })
           .map(p => ({
             type: "page",
             id: p.href,
@@ -326,7 +340,7 @@ export default function TopNavigation() {
     }, 400);
     
     return () => clearTimeout(timeoutId);
-  }, [headerSearchQuery]);
+  }, [headerSearchQuery, isOperationMode]);
 
   useEffect(() => {
     if (isSearchExpanded && searchInputRef.current) {
@@ -366,12 +380,12 @@ export default function TopNavigation() {
       }
       
       // F-Keys için kısayollar
-      if (e.key === "F1") {
+      if (e.key === "F1" && !isOperationMode) {
         e.preventDefault();
         router.push("/requests/create");
         return;
       }
-      if (e.key === "F2") {
+      if (e.key === "F2" && !isOperationMode) {
         e.preventDefault();
         router.push("/quotes/create");
         return;
@@ -389,11 +403,11 @@ export default function TopNavigation() {
         // Farklı klavye dillerinde sorun yaşamamak için e.key yerine e.code kullanıyoruz.
         switch (e.code) {
           case "KeyH": targetPath = "/"; break;
-          case "KeyD": targetPath = "/dashboard"; break;
-          case "KeyQ": targetPath = "/quotes"; break;
+          case "KeyD": if (!isOperationMode) targetPath = "/dashboard"; break;
+          case "KeyQ": if (!isOperationMode) targetPath = "/quotes"; break;
           case "KeyP": targetPath = "/projects"; break;
           case "KeyS": targetPath = "/sejour"; break;
-          case "KeyR": targetPath = "/reports"; break;
+          case "KeyR": if (!isOperationMode) targetPath = "/reports"; break;
           case "KeyM": targetPath = "/marketing"; break;
         }
 
@@ -406,7 +420,7 @@ export default function TopNavigation() {
     
     document.addEventListener("keydown", handleGlobalKeyDown);
     return () => document.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [router]);
+  }, [router, isOperationMode]);
 
   const toggleFullscreen = async () => {
     try {
@@ -424,20 +438,22 @@ export default function TopNavigation() {
 
   const navItems = [
     { id: "home", label: "Ana Sayfa", href: "/", icon: LayoutDashboard, module: Module.HOME },
-    ...(isOperationMode ? [] : [{
-      id: "dashboard",
-      label: t("nav.dashboard") || "Dashboard",
-      href: "/dashboard",
-      icon: BarChart3,
-      module: Module.DASHBOARD
-    }]),
-    {
-      id: "reports",
-      label: t("nav.reports") || "Raporlar",
-      href: "/reports",
-      icon: FileText,
-      module: Module.REPORTS
-    },
+    ...(isOperationMode ? [] : [
+      {
+        id: "dashboard",
+        label: t("nav.dashboard") || "Dashboard",
+        href: "/dashboard",
+        icon: BarChart3,
+        module: Module.DASHBOARD
+      },
+      {
+        id: "reports",
+        label: t("nav.reports") || "Raporlar",
+        href: "/reports",
+        icon: FileText,
+        module: Module.REPORTS
+      },
+    ]),
   ].filter(item => !item.module || canView(item.module));
 
   const handleLogout = async () => {
@@ -547,13 +563,13 @@ export default function TopNavigation() {
             </div>
 
             {/* Yeni Oluştur Genişleyen Buton */}
-            {(canCreate(Module.QUOTES) || canCreate(Module.SEJOUR) || canCreate(Module.REQUESTS)) && (
+            {((!isOperationMode && (canCreate(Module.QUOTES) || canCreate(Module.REQUESTS))) || canCreate(Module.SEJOUR)) && (
             <div className="flex items-center group ml-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
               <div className="w-8 h-8 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:rotate-90 transition-transform duration-500 relative z-10">
                 <Plus size={18} className="font-black" />
               </div>
               <div className="flex items-center nav-expand-container gap-2">
-                {canCreate(Module.REQUESTS) && (
+                {!isOperationMode && canCreate(Module.REQUESTS) && (
                 <Link
                   href="/requests/create"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
@@ -562,7 +578,7 @@ export default function TopNavigation() {
                   <span className="text-xs font-bold">Yeni Talep</span>
                 </Link>
                 )}
-                {canCreate(Module.QUOTES) && (
+                {!isOperationMode && canCreate(Module.QUOTES) && (
                 <Link
                   href="/quotes/create"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-emerald-600 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors"
@@ -585,13 +601,13 @@ export default function TopNavigation() {
             )}
 
             {/* Düzenleme/Listeleme Genişleyen Buton */}
-            {(canView(Module.QUOTES) || canView(Module.PROJECTS) || canView(Module.SEJOUR) || canView(Module.REQUESTS)) && (
+            {((!isOperationMode && (canView(Module.QUOTES) || canView(Module.REQUESTS))) || canView(Module.PROJECTS) || canView(Module.SEJOUR)) && (
             <div className="flex items-center group ml-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-full p-1 transition-all duration-300 cursor-pointer">
               <div className="w-8 h-8 shrink-0 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-500 relative z-10">
                 <Edit size={16} />
               </div>
               <div className="flex items-center nav-expand-container gap-2">
-                {canView(Module.REQUESTS) && (
+                {!isOperationMode && canView(Module.REQUESTS) && (
                 <Link
                   href="/requests"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"
@@ -600,7 +616,7 @@ export default function TopNavigation() {
                   <span className="text-xs font-bold">Talep</span>
                 </Link>
                 )}
-                {canView(Module.QUOTES) && (
+                {!isOperationMode && canView(Module.QUOTES) && (
                 <Link
                   href="/quotes"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-full text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-200 transition-colors"

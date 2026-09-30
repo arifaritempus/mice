@@ -7,6 +7,7 @@ import { Module, Permission, Role, checkPermission } from "@/lib/permissions";
 import TopNavigation from "@/components/TopNavigation";
 import BottomNavigation from "@/components/BottomNavigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useOperationMode } from "@/hooks/useOperationMode";
 
 export default function AuthWrapper({
   children,
@@ -16,6 +17,7 @@ export default function AuthWrapper({
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState<boolean>(true);
   const [debugInfo, setDebugInfo] = useState({ role: "", module: "" });
+  const { isOperationMode } = useOperationMode();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -305,13 +307,45 @@ export default function AuthWrapper({
     return <>{children}</>;
   }
 
+  const getRestrictedPageName = (path: string): string | null => {
+    if (!path) return null;
+    if (path.startsWith("/quotes/view/")) return null;
+    if (path.startsWith("/projects/view/")) return null;
+    if (path.startsWith("/dashboard")) return "Dashboard";
+    if (path.startsWith("/reports")) return "Raporlar";
+    if (path.startsWith("/requests")) return "Talepler";
+    if (path.startsWith("/quotes")) return "Teklifler";
+    if (path.startsWith("/tickets/options")) return "Bilet Opsiyonları";
+    if (path.startsWith("/tickets/payments")) return "Bilet Ödemeleri";
+    if (path.startsWith("/tickets/calendar")) return "Bilet Takvimi";
+    return null;
+  };
+
+  const restrictedPageName = isOperationMode ? getRestrictedPageName(pathname) : null;
+
   return (
     <div className="flex items-center justify-center h-screen w-full overflow-hidden transition-colors duration-200 mobile-auth-wrapper bg-transparent relative">
       {/* Main Glass Window (Now Edge to Edge) */}
       <div className="w-full h-full glass-panel shadow-2xl flex flex-col overflow-hidden relative z-10 backdrop-blur-2xl bg-[#0a0f1c]/60">
         <TopNavigation />
         <main className="flex-1 min-h-0 flex flex-col overflow-hidden transition-colors duration-200 bg-transparent relative pb-[84px] md:pb-0 md:pt-[76px]">
-          {children}
+          {restrictedPageName ? (
+            <div className="h-full w-full flex items-center justify-center p-8">
+              <div className="bg-white dark:bg-v3-surface rounded-2xl p-8 border border-v3-border shadow-2xl text-center max-w-md w-full">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-v3-text mb-2">Erişim Engellendi</h2>
+                <p className="text-v3-muted">
+                  Operasyon modunda {restrictedPageName} sayfasına erişilemez. Lütfen yukarıdaki menüden Ofis Modu&apos;na geçiş yapın.
+                </p>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
         <BottomNavigation />
       </div>

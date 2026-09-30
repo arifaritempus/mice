@@ -47,7 +47,22 @@ export default function BottomNavigation() {
   const { canView } = usePermissions();
   const { isOperationMode } = useOperationMode();
 
+  const isOperationRestricted = (href: string) => {
+    if (!isOperationMode) return false;
+    const restricted = [
+      "/dashboard",
+      "/reports",
+      "/quotes",
+      "/requests",
+      "/tickets/options",
+      "/tickets/payments",
+      "/tickets/calendar",
+    ];
+    return restricted.some(p => href === p || href.startsWith(p + "/"));
+  };
+
   const isHrefVisible = (href: string) => {
+    if (isOperationRestricted(href)) return false;
     const mod = getModuleFromHref(href);
     if (!mod) return true;
     return canView(mod);
@@ -59,7 +74,7 @@ export default function BottomNavigation() {
   ];
 
   const navItemsRight = [
-    { id: "quotes", label: "Teklifler", href: "/quotes", icon: FileText },
+    ...(isOperationMode ? [] : [{ id: "quotes", label: "Teklifler", href: "/quotes", icon: FileText }]),
     { id: "projects", label: "Projeler", href: "/projects", icon: Briefcase },
   ];
 

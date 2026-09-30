@@ -94,20 +94,22 @@ export default function Sidebar() {
       icon: "🎯",
       module: Module.QUOTES,
       children: [
-        {
-          id: "requests",
-          label: "Talepler",
-          icon: "📨",
-          href: "/requests",
-          module: Module.QUOTES,
-        },
-        {
-          id: "quotes",
-          label: t('menu.quotes') || "Teklif",
-          icon: "📋",
-          href: "/quotes",
-          module: Module.QUOTES,
-        },
+        ...(isOperationMode ? [] : [
+          {
+            id: "requests",
+            label: "Talepler",
+            icon: "📨",
+            href: "/requests",
+            module: Module.QUOTES,
+          },
+          {
+            id: "quotes",
+            label: t('menu.quotes') || "Teklif",
+            icon: "📋",
+            href: "/quotes",
+            module: Module.QUOTES,
+          },
+        ]),
         {
           id: "projects",
           label: t('menu.projects') || "Proje",
@@ -175,7 +177,7 @@ export default function Sidebar() {
         },
       ],
     },
-    {
+    ...(isOperationMode ? [] : [{
       id: "tickets-group",
       label: t('menu.ticketsGroup') || "Bilet",
       icon: "✈️",
@@ -203,7 +205,7 @@ export default function Sidebar() {
           module: Module.TICKETS_CALENDAR,
         },
       ],
-    },
+    }]),
     {
       id: "marketing",
       label: t('menu.marketing') || "Pazarlama",
@@ -289,13 +291,13 @@ export default function Sidebar() {
         },
       ],
     },
-    {
+    ...(isOperationMode ? [] : [{
       id: "reports",
       label: t('menu.reports') || "Raporlar",
       icon: "📈",
       href: "/reports",
       module: Module.REPORTS,
-    },
+    }]),
     {
       id: "definitions",
       label: t('menu.definitions') || "Tanımlamalar",
