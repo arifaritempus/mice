@@ -1046,8 +1046,26 @@ export default function UltimateDashboard() {
       const firma = p.company_name || "-";
       const acenteObj = data.agencies?.find((a:any) => a.id === p.agency_id);
       const acente = acenteObj?.name || p.agency_name || "-";
-      const sd = p.start_date || p.created_at;
-      const ed = p.end_date || sd;
+      
+      let sd = p.start_date;
+      let ed = p.end_date;
+
+      if (p.hotels_data && Array.isArray(p.hotels_data) && p.hotels_data.length > 0) {
+        const validCheckIns = p.hotels_data
+          .map((h: any) => h.check_in_date || h.start_date)
+          .filter(Boolean)
+          .sort();
+        const validCheckOuts = p.hotels_data
+          .map((h: any) => h.check_out_date || h.end_date)
+          .filter(Boolean)
+          .sort();
+        if (validCheckIns.length > 0) sd = validCheckIns[0];
+        if (validCheckOuts.length > 0) ed = validCheckOuts[validCheckOuts.length - 1];
+      }
+
+      sd = sd || p.created_at;
+      ed = ed || sd;
+
       const cIn = new Date(sd).toLocaleDateString(loc);
       const cOut = new Date(ed).toLocaleDateString(loc);
       
