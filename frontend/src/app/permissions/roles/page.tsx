@@ -106,6 +106,7 @@ const MODULE_ORDER = [
   "invoices_expense",
   "exchange_rates",
   "aging",
+  "debt_aging",
   "marketing",
   "reports",
   "hotels",
@@ -148,7 +149,12 @@ const MODULE_ALIASES: Record<string, string> = {
   "exchange-rates": "exchange_rates",
   aging: "aging",
   "alacak-yaslandirma": "aging",
+  "alacak_yaslandirma": "aging",
   yaslandirma: "aging",
+  debt_aging: "debt_aging",
+  "debt-aging": "debt_aging",
+  "borc-yaslandirma": "debt_aging",
+  "borc_yaslandirma": "debt_aging",
 };
 
 const normalizeModuleId = (moduleId: string) => {
@@ -235,7 +241,47 @@ export default function RolePermissionsPage() {
 
       // Load permissions from Supabase
       const permissionsData = await permissionsService.getAll();
-      setPermissions(permissionsData);
+      const existingKeySet = new Set(
+        permissionsData.map(
+          (p: Permission) => `${normalizeModuleId(p.module)}:${p.action}`,
+        ),
+      );
+      const supplementedPermissions = [...permissionsData];
+      MODULE_ORDER.forEach((modId) => {
+        PERMISSIONS.forEach((perm) => {
+          const key = `${modId}:${perm.id}`;
+          if (!existingKeySet.has(key)) {
+            supplementedPermissions.push({
+              id: `virtual:${modId}:${perm.id}`,
+              module: modId,
+              action: perm.id,
+              description: `${modId} ${perm.name}`,
+              is_active: true,
+            });
+          }
+        });
+      });
+      setPermissions(supplementedPermissions);
+
+      // Auto-seed missing permissions to Supabase in background
+      (async () => {
+        for (const modId of ["aging", "debt_aging"]) {
+          for (const perm of PERMISSIONS) {
+            const key = `${modId}:${perm.id}`;
+            if (!existingKeySet.has(key)) {
+              try {
+                await permissionsService.create({
+                  module: modId,
+                  action: perm.id,
+                  is_active: true,
+                });
+              } catch {
+                // Silently continue if already exists or fails
+              }
+            }
+          }
+        }
+      })().catch(() => {});
 
       // Load role permissions from Supabase
       const rolePermissionsData = await rolePermissionsService.getAll();
@@ -293,7 +339,8 @@ export default function RolePermissionsPage() {
         }
       );
     });
-    const merged = [...fromEnum, ...dynamicModules].reduce<
+    const fromMeta = Object.values(MODULE_META);
+    const merged = [...fromEnum, ...dynamicModules, ...fromMeta].reduce<
       Record<string, ModuleMeta>
     >((acc, item) => {
       acc[item.id] = item;
@@ -421,10 +468,11 @@ export default function RolePermissionsPage() {
       const next = new Set(prev);
       filteredModules.forEach((mod) => {
         const key = `${mod.id}:${permissionId}`;
-        const hasPermissionRecord = permissions.some(
-          (p) =>
-            normalizeModuleId(p.module) === mod.id && p.action === permissionId,
-        );
+        const hasPermissionRecord =
+          permissions.some(
+            (p) =>
+              normalizeModuleId(p.module) === mod.id && p.action === permissionId,
+          ) || Boolean(MODULE_META[mod.id]);
         if (hasPermissionRecord) {
           if (value) next.add(key);
           else next.delete(key);
@@ -439,10 +487,11 @@ export default function RolePermissionsPage() {
       const next = new Set(prev);
       PERMISSIONS.forEach((perm) => {
         const key = `${moduleId}:${perm.id}`;
-        const hasPermissionRecord = permissions.some(
-          (p) =>
-            normalizeModuleId(p.module) === moduleId && p.action === perm.id,
-        );
+        const hasPermissionRecord =
+          permissions.some(
+            (p) =>
+              normalizeModuleId(p.module) === moduleId && p.action === perm.id,
+          ) || Boolean(MODULE_META[moduleId]);
         if (hasPermissionRecord) {
           if (value) next.add(key);
           else next.delete(key);
@@ -458,10 +507,11 @@ export default function RolePermissionsPage() {
       filteredModules.forEach((mod) => {
         PERMISSIONS.forEach((perm) => {
           const key = `${mod.id}:${perm.id}`;
-          const hasPermissionRecord = permissions.some(
-            (p) =>
-              normalizeModuleId(p.module) === mod.id && p.action === perm.id,
-          );
+          const hasPermissionRecord =
+            permissions.some(
+              (p) =>
+                normalizeModuleId(p.module) === mod.id && p.action === perm.id,
+            ) || Boolean(MODULE_META[mod.id]);
           if (hasPermissionRecord) {
             if (value) next.add(key);
             else next.delete(key);
@@ -504,7 +554,7 @@ export default function RolePermissionsPage() {
       for (const item of stagedPermissions) {
         if (!initialStaged.has(item)) {
           let permId = permissionRecordMap.get(item);
-          if (!permId) {
+          if (!permId || permId.startsWith("virtual:")) {
             // Self-heal: create missing permission in the database on the fly
             const [mod, act] = item.split(':');
             try {
@@ -517,14 +567,14 @@ export default function RolePermissionsPage() {
               console.error("Failed to auto-create permission", item, e);
             }
           }
-          if (permId) toAdd.push(permId);
+          if (permId && !permId.startsWith("virtual:")) toAdd.push(permId);
         }
       }
 
       for (const item of initialStaged) {
         if (!stagedPermissions.has(item)) {
           const permId = permissionRecordMap.get(item);
-          if (permId) toRemove.push(permId);
+          if (permId && !permId.startsWith("virtual:")) toRemove.push(permId);
         }
       }
 
@@ -794,7 +844,7 @@ export default function RolePermissionsPage() {
                             (p) =>
                               normalizeModuleId(p.module) === mod.id &&
                               p.action === perm.id,
-                          )
+                          ) || Boolean(MODULE_META[mod.id])
                         ) {
                           totalAvailable++;
                           if (getRolePermission(mod.id, perm.id))
@@ -821,7 +871,7 @@ export default function RolePermissionsPage() {
                               onChange={(e) =>
                                 handleToggleColumn(perm.id, e.target.checked)
                               }
-                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
                               title="Tümünü Seç"
                             />
                           </div>
@@ -843,7 +893,7 @@ export default function RolePermissionsPage() {
                                     (p) =>
                                       normalizeModuleId(p.module) === mod.id &&
                                       p.action === perm.id,
-                                  )
+                                  ) || Boolean(MODULE_META[mod.id])
                                 ) {
                                   totalAvailable++;
                                   if (getRolePermission(mod.id, perm.id))
@@ -860,7 +910,7 @@ export default function RolePermissionsPage() {
                             !canEdit(Module.USERS) || !selectedRoleEffectiveId
                           }
                           onChange={(e) => handleToggleAll(e.target.checked)}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
                           title="Sayfadaki Tüm Yetkileri Seç"
                         />
                       </div>
@@ -878,7 +928,7 @@ export default function RolePermissionsPage() {
                           (p) =>
                             normalizeModuleId(p.module) === module.id &&
                             p.action === perm.id,
-                        )
+                        ) || Boolean(MODULE_META[module.id])
                       ) {
                         rowTotalAvailable++;
                         if (getRolePermission(module.id, perm.id))
@@ -917,8 +967,11 @@ export default function RolePermissionsPage() {
                             module.id,
                             permission.id,
                           );
+                          const isAvailable = Boolean(
+                            permissionRecord || MODULE_META[module.id],
+                          );
                           const isDisabled =
-                            !permissionRecord ||
+                            !isAvailable ||
                             !canEdit(Module.USERS) ||
                             !selectedRoleEffectiveId;
 
@@ -927,7 +980,7 @@ export default function RolePermissionsPage() {
                               key={permission.id}
                               className="py-3 px-4 text-center"
                             >
-                              {permissionRecord ? (
+                              {isAvailable ? (
                                 <input
                                   type="checkbox"
                                   checked={isChecked}

@@ -158,7 +158,12 @@ const MODULE_ALIASES: Record<string, Module> = {
   'tickets-calendar': Module.TICKETS_CALENDAR,
   aging: Module.AGING,
   'alacak-yaslandirma': Module.AGING,
-  yaslandirma: Module.AGING
+  'alacak_yaslandirma': Module.AGING,
+  yaslandirma: Module.AGING,
+  debt_aging: Module.DEBT_AGING,
+  'debt-aging': Module.DEBT_AGING,
+  'borc-yaslandirma': Module.DEBT_AGING,
+  'borc_yaslandirma': Module.DEBT_AGING,
 };
 
 const ACTION_ALIASES: Record<string, Permission> = {
