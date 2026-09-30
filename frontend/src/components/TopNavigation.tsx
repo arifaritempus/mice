@@ -1028,19 +1028,20 @@ export default function TopNavigation() {
               try {
                 const { data: { user } } = await supabase.auth.getUser();
                 const userEmail = user?.email || userProfile?.email || "";
-                
-                if (!userEmail) {
-                  toast.error("Kullanıcı oturumu bulunamadı. Lütfen sayfayı yenileyin.");
-                  return;
-                }
 
-                const { error } = await supabase.auth.signInWithPassword({
-                  email: userEmail,
-                  password: opModePassword
+                const res = await fetch("/api/auth/verify-opmode", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    password: opModePassword,
+                    currentEmail: userEmail,
+                  }),
                 });
-                if (error) {
-                  console.warn("Ofis Modu şifre doğrulama hatası:", error.message);
-                  toast.error("Hatalı şifre! Lütfen kullanıcı hesabınızın giriş şifresini girin.");
+
+                const resData = await res.json();
+
+                if (!res.ok || !resData.success) {
+                  toast.error(resData.error || "Hatalı şifre!");
                 } else {
                   toggleMode(false);
                   setShowOpModePassword(false);
@@ -1048,6 +1049,7 @@ export default function TopNavigation() {
                   toast.success("Ofis moduna geçildi.");
                 }
               } catch (err) {
+                console.error("Şifre doğrulama hatası:", err);
                 toast.error("Şifre doğrulanamadı.");
               } finally {
                 setIsVerifyingOpMode(false);
