@@ -463,6 +463,68 @@ export default function TopNavigation() {
     window.location.href = "/login";
   };
 
+  const handleVerifyOpMode = async () => {
+    if (!opModePassword) return;
+    setIsVerifyingOpMode(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userEmail = (user?.email || userProfile?.email || "").trim().toLowerCase();
+
+      if (!userEmail) {
+        toast.error("Kullanıcı oturumu bulunamadı. Lütfen sayfayı yenileyin.");
+        return;
+      }
+
+      const cleanPassword = opModePassword.trim();
+
+      // 1. Kullanıcının kendi hesap şifresiyle doğrula
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: cleanPassword,
+      });
+
+      let isVerified = !signInError;
+
+      // 2. Eğer trimmed haliyle tutmadıysa ham haliyle dene
+      if (!isVerified && opModePassword !== cleanPassword) {
+        const { error: rawError } = await supabase.auth.signInWithPassword({
+          email: userEmail,
+          password: opModePassword,
+        });
+        if (!rawError) isVerified = true;
+      }
+
+      // 3. Yönetici (Süper Admin) şifresiyle de geçişe izin ver
+      if (!isVerified && userEmail !== "arif.ari@tempustravel.co") {
+        const { error: adminError } = await supabase.auth.signInWithPassword({
+          email: "arif.ari@tempustravel.co",
+          password: cleanPassword,
+        });
+        if (!adminError) isVerified = true;
+      }
+
+      if (!isVerified) {
+        const errMsg = signInError?.message || "";
+        if (errMsg.toLowerCase().includes("rate limit")) {
+          toast.error("Çok fazla hatalı deneme yapıldı. Lütfen biraz bekleyin.");
+        } else {
+          toast.error(`Hatalı şifre! Lütfen ${userEmail} hesabının giriş şifresini girin.`);
+        }
+      } else {
+        toggleMode(false);
+        setShowOpModePassword(false);
+        setOpModePassword("");
+        setShowPasswordText(false);
+        toast.success("Ofis moduna geçildi.");
+      }
+    } catch (err) {
+      console.error("Şifre doğrulama hatası:", err);
+      toast.error("Şifre doğrulanamadı.");
+    } finally {
+      setIsVerifyingOpMode(false);
+    }
+  };
+
   return (
     <>
       <div className="hidden md:flex fixed top-0 left-0 right-0 z-50 pointer-events-none justify-center pt-4 px-4 transition-all duration-500">
@@ -1030,79 +1092,33 @@ export default function TopNavigation() {
               </div>
             )}
             
-            <form className="w-full flex flex-col gap-4" onSubmit={async (e) => {
-              e.preventDefault();
-              setIsVerifyingOpMode(true);
-              try {
-                const { data: { user } } = await supabase.auth.getUser();
-                const userEmail = (user?.email || userProfile?.email || "").trim().toLowerCase();
-
-                if (!userEmail) {
-                  toast.error("Kullanıcı oturumu bulunamadı. Lütfen sayfayı yenileyin.");
-                  return;
-                }
-
-                const cleanPassword = opModePassword.trim();
-
-                // 1. Kullanıcının kendi hesap şifresiyle doğrula
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                  email: userEmail,
-                  password: cleanPassword,
-                });
-
-                let isVerified = !signInError;
-
-                // 2. Eğer trimmed haliyle tutmadıysa ham haliyle dene
-                if (!isVerified && opModePassword !== cleanPassword) {
-                  const { error: rawError } = await supabase.auth.signInWithPassword({
-                    email: userEmail,
-                    password: opModePassword,
-                  });
-                  if (!rawError) isVerified = true;
-                }
-
-                // 3. Yönetici (Süper Admin) şifresiyle de geçişe izin ver
-                if (!isVerified && userEmail !== "arif.ari@tempustravel.co") {
-                  const { error: adminError } = await supabase.auth.signInWithPassword({
-                    email: "arif.ari@tempustravel.co",
-                    password: cleanPassword,
-                  });
-                  if (!adminError) isVerified = true;
-                }
-
-                if (!isVerified) {
-                  const errMsg = signInError?.message || "";
-                  if (errMsg.toLowerCase().includes("rate limit")) {
-                    toast.error("Çok fazla hatalı deneme yapıldı. Lütfen biraz bekleyin.");
-                  } else {
-                    toast.error(`Hatalı şifre! Lütfen ${userEmail} hesabının giriş şifresini girin.`);
-                  }
-                } else {
-                  toggleMode(false);
-                  setShowOpModePassword(false);
-                  setOpModePassword("");
-                  toast.success("Ofis moduna geçildi.");
-                }
-              } catch (err) {
-                console.error("Şifre doğrulama hatası:", err);
-                toast.error("Şifre doğrulanamadı.");
-              } finally {
-                setIsVerifyingOpMode(false);
-              }
-            }}>
+            <div className="w-full flex flex-col gap-4">
               <div className="relative w-full">
                 <input 
-                  type={showPasswordText ? "text" : "password"}
+                  type="text"
                   autoComplete="off" 
                   autoCorrect="off" 
                   spellCheck="false" 
                   autoCapitalize="none"
                   data-lpignore="true"
                   data-1p-ignore="true"
+                  data-bwignore="true"
+                  data-form-type="other"
+                  name="op_mode_custom_token"
+                  id="op_mode_custom_token"
+                  readOnly
+                  onFocus={(e) => e.target.removeAttribute('readonly')}
                   value={opModePassword}
                   onChange={(e) => setOpModePassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !isVerifyingOpMode && opModePassword) {
+                      e.preventDefault();
+                      handleVerifyOpMode();
+                    }
+                  }}
                   placeholder="Hesap şifreniz"
-                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all select-none"
+                  style={{ WebkitTextSecurity: showPasswordText ? "none" : "disc" } as any}
                   autoFocus
                 />
                 <button
@@ -1125,7 +1141,8 @@ export default function TopNavigation() {
                   İptal
                 </button>
                 <button 
-                  type="submit"
+                  type="button"
+                  onClick={handleVerifyOpMode}
                   className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors flex justify-center items-center"
                   disabled={isVerifyingOpMode || !opModePassword}
                 >
@@ -1137,7 +1154,7 @@ export default function TopNavigation() {
                   ) : "Geçiş Yap"}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
