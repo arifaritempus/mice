@@ -1177,18 +1177,44 @@ export default function ProjectsPage() {
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text">
                       <div className="leading-tight flex flex-col gap-0.5">
-                        <div className="flex items-center">
-                          <span>{formatDate(project.start_date)}</span>
-                          <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
-                            , {getDayNameShort(project.start_date, language === 'en' ? 'en-US' : 'tr-TR')}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <span>{formatDate(project.end_date)}</span>
-                          <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
-                            , {getDayNameShort(project.end_date, language === 'en' ? 'en-US' : 'tr-TR')}
-                          </span>
-                        </div>
+                        {(() => {
+                          let displayStartDate = project.start_date;
+                          let displayEndDate = project.end_date;
+
+                          if ((project as any).hotels_data && Array.isArray((project as any).hotels_data) && (project as any).hotels_data.length > 0) {
+                            const validCheckIns = (project as any).hotels_data
+                              .map((h: any) => h.check_in_date || h.start_date)
+                              .filter(Boolean)
+                              .sort();
+                            const validCheckOuts = (project as any).hotels_data
+                              .map((h: any) => h.check_out_date || h.end_date)
+                              .filter(Boolean)
+                              .sort();
+                            if (validCheckIns.length > 0) displayStartDate = validCheckIns[0];
+                            if (validCheckOuts.length > 0) displayEndDate = validCheckOuts[validCheckOuts.length - 1];
+                          }
+
+                          return (
+                            <>
+                              <div className="flex items-center">
+                                <span>{formatDate(displayStartDate)}</span>
+                                {displayStartDate && (
+                                  <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
+                                    , {getDayNameShort(displayStartDate, language === 'en' ? 'en-US' : 'tr-TR')}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center">
+                                <span>{formatDate(displayEndDate)}</span>
+                                {displayEndDate && (
+                                  <span className="text-v3-muted ml-1 text-[10px] uppercase font-medium tracking-wider">
+                                    , {getDayNameShort(displayEndDate, language === 'en' ? 'en-US' : 'tr-TR')}
+                                  </span>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </td>
                     <td className="px-2.5 py-2.5 whitespace-nowrap text-xs text-v3-text max-w-[180px]">

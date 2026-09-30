@@ -1190,6 +1190,27 @@ export default function ProjectDetailPage() {
           id: h.id || crypto.randomUUID(),
           hotel_status: h.hotel_status || "BEKLEMEDE"
         }));
+
+        // Otellerin konaklama tarihlerini (C-IN ve C-OUT) projenin ana start_date ve end_date alanlarına senkronize et
+        const validCheckIns = finalData.hotels_data
+          .map((h: any) => h.check_in_date || h.start_date)
+          .filter(Boolean)
+          .sort();
+        const validCheckOuts = finalData.hotels_data
+          .map((h: any) => h.check_out_date || h.end_date)
+          .filter(Boolean)
+          .sort();
+
+        if (validCheckIns.length > 0) {
+          finalData.start_date = validCheckIns[0].substring(0, 10);
+        }
+        if (validCheckOuts.length > 0) {
+          finalData.end_date = validCheckOuts[validCheckOuts.length - 1].substring(0, 10);
+        }
+
+        if (finalData.hotels_data.length > 0 && finalData.hotels_data[0].hotel_id) {
+          finalData.hotel_id = finalData.hotels_data[0].hotel_id;
+        }
       }
 
       // Boş stringleri null'a çevir (Postgres UUID ve Date hatalarını önlemek için)
