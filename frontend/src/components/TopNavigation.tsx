@@ -1027,21 +1027,43 @@ export default function TopNavigation() {
               setIsVerifyingOpMode(true);
               try {
                 const { data: { user } } = await supabase.auth.getUser();
-                const userEmail = user?.email || userProfile?.email || "";
+                const userEmail = (user?.email || userProfile?.email || "").trim().toLowerCase();
 
-                const res = await fetch("/api/auth/verify-opmode", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    password: opModePassword,
-                    currentEmail: userEmail,
-                  }),
+                if (!userEmail) {
+                  toast.error("Kullanıcı oturumu bulunamadı. Lütfen sayfayı yenileyin.");
+                  return;
+                }
+
+                const cleanPassword = opModePassword.trim();
+
+                // 1. Kullanıcının kendi hesap şifresiyle doğrula
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                  email: userEmail,
+                  password: cleanPassword,
                 });
 
-                const resData = await res.json();
+                let isVerified = !signInError;
 
-                if (!res.ok || !resData.success) {
-                  toast.error(resData.error || "Hatalı şifre!");
+                // 2. Eğer trimmed haliyle tutmadıysa ham haliyle dene
+                if (!isVerified && opModePassword !== cleanPassword) {
+                  const { error: rawError } = await supabase.auth.signInWithPassword({
+                    email: userEmail,
+                    password: opModePassword,
+                  });
+                  if (!rawError) isVerified = true;
+                }
+
+                // 3. Yönetici (Süper Admin) şifresiyle de geçişe izin ver
+                if (!isVerified && userEmail !== "arif.ari@tempustravel.co") {
+                  const { error: adminError } = await supabase.auth.signInWithPassword({
+                    email: "arif.ari@tempustravel.co",
+                    password: cleanPassword,
+                  });
+                  if (!adminError) isVerified = true;
+                }
+
+                if (!isVerified) {
+                  toast.error("Hatalı şifre! Lütfen kullanıcı şifrenizi girin.");
                 } else {
                   toggleMode(false);
                   setShowOpModePassword(false);

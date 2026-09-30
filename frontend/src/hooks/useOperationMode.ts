@@ -1,18 +1,34 @@
 import { useState, useEffect } from "react";
 
 export function useOperationMode() {
-  const [isOperationMode, setIsOperationMode] = useState(false);
+  const [isOperationMode, setIsOperationMode] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("operationMode");
+      if (stored !== null) {
+        return stored === "true";
+      }
+      // Check cookie as fallback
+      const match = document.cookie.match(/(?:^|; )operationMode=([^;]*)/);
+      if (match) {
+        return match[1] === "true";
+      }
+    }
+    return false;
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("operationMode");
-    if (stored === "true") {
-      setIsOperationMode(true);
-    }
+    const syncState = () => {
+      const stored = localStorage.getItem("operationMode");
+      if (stored !== null) {
+        setIsOperationMode(stored === "true");
+      }
+    };
+
+    syncState();
 
     const handleStorageChange = (e: any) => {
       if (e.key === "operationMode" || e.type === "operationModeChanged") {
-        const newVal = localStorage.getItem("operationMode") === "true";
-        setIsOperationMode(newVal);
+        syncState();
       }
     };
 
@@ -27,8 +43,11 @@ export function useOperationMode() {
 
   const toggleMode = (val: boolean) => {
     setIsOperationMode(val);
-    localStorage.setItem("operationMode", val ? "true" : "false");
-    window.dispatchEvent(new Event("operationModeChanged"));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("operationMode", val ? "true" : "false");
+      document.cookie = `operationMode=${val ? "true" : "false"}; path=/; max-age=31536000; samesite=lax`;
+      window.dispatchEvent(new Event("operationModeChanged"));
+    }
   };
 
   return { isOperationMode, toggleMode };
