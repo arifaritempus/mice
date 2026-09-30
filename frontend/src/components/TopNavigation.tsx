@@ -21,6 +21,7 @@ import {
   FilePlus,
   Hotel,
   Eye,
+  EyeOff,
   Edit,
   Briefcase,
   Menu,
@@ -112,6 +113,7 @@ export default function TopNavigation() {
   const [showOpModePassword, setShowOpModePassword] = useState(false);
   const [opModePassword, setOpModePassword] = useState("");
   const [isVerifyingOpMode, setIsVerifyingOpMode] = useState(false);
+  const [showPasswordText, setShowPasswordText] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     name: string;
     email: string;
@@ -973,6 +975,7 @@ export default function TopNavigation() {
                          if (isOperationMode) {
                            setShowOpModePassword(true);
                            setOpModePassword("");
+                           setShowPasswordText(false);
                          } else {
                            toggleMode(true);
                          }
@@ -1019,8 +1022,13 @@ export default function TopNavigation() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-v3-text mb-2 text-center">Ofis Moduna Geçiş</h3>
-            <p className="text-sm text-v3-muted text-center mb-6">Ofis moduna dönmek için lütfen şifrenizi girin.</p>
+            <h3 className="text-lg font-bold text-v3-text mb-1 text-center">Ofis Moduna Geçiş</h3>
+            <p className="text-xs text-v3-muted text-center mb-2">Ofis moduna dönmek için lütfen hesap şifrenizi girin.</p>
+            {userProfile?.email && (
+              <div className="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-full mb-3">
+                {userProfile.email}
+              </div>
+            )}
             
             <form className="w-full flex flex-col gap-4" onSubmit={async (e) => {
               e.preventDefault();
@@ -1063,7 +1071,12 @@ export default function TopNavigation() {
                 }
 
                 if (!isVerified) {
-                  toast.error("Hatalı şifre! Lütfen kullanıcı şifrenizi girin.");
+                  const errMsg = signInError?.message || "";
+                  if (errMsg.toLowerCase().includes("rate limit")) {
+                    toast.error("Çok fazla hatalı deneme yapıldı. Lütfen biraz bekleyin.");
+                  } else {
+                    toast.error(`Hatalı şifre! Lütfen ${userEmail} hesabının giriş şifresini girin.`);
+                  }
                 } else {
                   toggleMode(false);
                   setShowOpModePassword(false);
@@ -1077,21 +1090,30 @@ export default function TopNavigation() {
                 setIsVerifyingOpMode(false);
               }
             }}>
-              <input 
-                type="text" 
-                autoComplete="off" 
-                autoCorrect="off" 
-                spellCheck="false" 
-                autoCapitalize="none"
-                data-lpignore="true"
-                data-1p-ignore="true"
-                value={opModePassword}
-                onChange={(e) => setOpModePassword(e.target.value)}
-                placeholder="Şifreniz"
-                className="w-full px-4 py-3 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                style={{ WebkitTextSecurity: "disc" } as any}
-                autoFocus
-              />
+              <div className="relative w-full">
+                <input 
+                  type={showPasswordText ? "text" : "password"}
+                  autoComplete="off" 
+                  autoCorrect="off" 
+                  spellCheck="false" 
+                  autoCapitalize="none"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  value={opModePassword}
+                  onChange={(e) => setOpModePassword(e.target.value)}
+                  placeholder="Hesap şifreniz"
+                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordText(!showPasswordText)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
+                  tabIndex={-1}
+                >
+                  {showPasswordText ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               
               <div className="flex gap-3 w-full mt-2">
                 <button 
