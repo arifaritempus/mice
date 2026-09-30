@@ -521,13 +521,17 @@ export default function ProformaTab({ project, salesItems, collections, categori
                             </div>
                             
                             {currencyTotals[cur].tahsilat > 0 && (
-                              <div className="flex justify-between items-center py-1 mt-1 text-[11px] font-bold border-t border-gray-300 border-dashed">
-                                <span className="uppercase text-[9px] text-gray-500 tracking-widest">KALAN BAKİYE</span>
-                                <span className={`font-black ${balance <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                  {formatMoney(balance, cur)}
-                                </span>
+                              <div className="flex justify-between items-center text-[10px] text-gray-700 py-0.5">
+                                <span>Tahsilat Toplamı</span>
+                                <span className="font-medium text-emerald-700">{formatMoney(currencyTotals[cur].tahsilat, cur)}</span>
                               </div>
                             )}
+                            <div className="flex justify-between items-center py-1 mt-1 text-[11px] font-bold border-t border-gray-300 border-dashed">
+                              <span className="uppercase text-[9px] text-gray-500 tracking-widest">KALAN BAKİYE</span>
+                              <span className={`font-black ${balance <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {formatMoney(balance, cur)}
+                              </span>
+                            </div>
                           </div>
                         );
                       })}
