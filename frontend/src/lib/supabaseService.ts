@@ -5016,6 +5016,13 @@ export const invoicesService = {
     (sejourExtraRes.data || []).forEach((e: any) => {
       if (e.supplier_id) contactIds.add(e.supplier_id);
     });
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    
+    const purchaseVendorIdFromDescription = (desc: string): string | null => {
+      const m = (desc || '').match(/ \[S:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/i);
+      return m ? m[1] : null;
+    };
+
     (items || []).forEach((i: any) => {
       const vendorId = purchaseVendorIdFromDescription(i.description || '');
       if (vendorId) contactIds.add(vendorId);
@@ -5043,12 +5050,6 @@ export const invoicesService = {
       acc[u.id] = { id: u.id, name: fullName };
       return acc;
     }, {});
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-    
-    const purchaseVendorIdFromDescription = (desc: string): string | null => {
-      const m = (desc || '').match(/ \[S:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/i);
-      return m ? m[1] : null;
-    };
 
     const projectsMap = (projectsRes.data || []).reduce((acc: any, p: any) => {
       const agencyName = p.agency_id ? agenciesMap[p.agency_id]?.name : null;
