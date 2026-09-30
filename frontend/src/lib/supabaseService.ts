@@ -5016,12 +5016,18 @@ export const invoicesService = {
     (sejourExtraRes.data || []).forEach((e: any) => {
       if (e.supplier_id) contactIds.add(e.supplier_id);
     });
+    (items || []).forEach((i: any) => {
+      const vendorId = purchaseVendorIdFromDescription(i.description || '');
+      if (vendorId) contactIds.add(vendorId);
+    });
+
     const cIdArray = Array.from(contactIds);
 
-    const [agenciesRes, hotelsRes, suppliersRes] = await Promise.all([
+    const [agenciesRes, hotelsRes, suppliersRes, usersRes] = await Promise.all([
       cIdArray.length ? supabase.from('agencies').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
       cIdArray.length ? supabase.from('hotels').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
-      cIdArray.length ? supabase.from('suppliers').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] })
+      cIdArray.length ? supabase.from('suppliers').select('id, name').in('id', cIdArray) : Promise.resolve({ data: [] }),
+      cIdArray.length ? supabase.from('users').select('id, name, first_name, last_name, email').in('id', cIdArray) : Promise.resolve({ data: [] })
     ]);
 
     const invoicedMap = (invoiceItems || []).reduce((acc: any, ii: any) => {
@@ -5032,6 +5038,11 @@ export const invoicesService = {
     const agenciesMap = (agenciesRes.data || []).reduce((acc: any, a: any) => { acc[a.id] = a; return acc; }, {});
     const hotelsMap = (hotelsRes.data || []).reduce((acc: any, h: any) => { acc[h.id] = h; return acc; }, {});
     const suppliersMap = (suppliersRes.data || []).reduce((acc: any, s: any) => { acc[s.id] = s; return acc; }, {});
+    const usersMap = (usersRes.data || []).reduce((acc: any, u: any) => {
+      const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.email || 'Personel';
+      acc[u.id] = { id: u.id, name: fullName };
+      return acc;
+    }, {});
     const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     
     const purchaseVendorIdFromDescription = (desc: string): string | null => {
@@ -5102,10 +5113,18 @@ export const invoicesService = {
         } else if (hotelsMap[taggedVendorId]) {
           outHotelId = taggedVendorId;
           outSupplierId = null;
+        } else if (usersMap[taggedVendorId]) {
+          outSupplierId = taggedVendorId;
+          outHotelId = null;
+        } else if (agenciesMap[taggedVendorId]) {
+          outSupplierId = taggedVendorId;
+          outHotelId = null;
         }
       }
 
-      const outSupplierName = outSupplierId ? (suppliersMap[outSupplierId]?.name || 'Tedarikçi') : null;
+      const outSupplierName = outSupplierId 
+        ? (suppliersMap[outSupplierId]?.name || usersMap[outSupplierId]?.name || agenciesMap[outSupplierId]?.name || 'Tedarikçi') 
+        : null;
       const outHotelName = outHotelId ? (hotelsMap[outHotelId]?.name || 'Otel') : null;
 
       return {

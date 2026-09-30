@@ -70,6 +70,7 @@ export default function ExpensePendingPage() {
     return items.filter((item) => {
       const isSejour = item.project?.quote_type === "SEJOUR";
       const category = (item.category_name || "").toLowerCase();
+      const subCategory = (item.sub_category_name || "").toLowerCase();
       const hotelSearchTarget = [
         item.project?.hotel_name || "",
         item.hotel_name || "",
@@ -78,6 +79,8 @@ export default function ExpensePendingPage() {
         !isSejour ? item.project?.title || "" : "",
         item.project?.description || "",
         item.description || "",
+        item.raw_description || "",
+        item.notes || "",
       ]
         .join(" ")
         .toLowerCase();
@@ -101,6 +104,7 @@ export default function ExpensePendingPage() {
 
       const combinedHaystack = [
         category,
+        subCategory,
         hotelSearchTarget,
         firmaBarHaystack,
         acenteBarHaystack,
