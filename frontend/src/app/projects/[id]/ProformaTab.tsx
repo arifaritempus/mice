@@ -56,7 +56,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
       const element = proformaRef.current;
 
       const opt = {
-        margin:       [8, 6, 8, 6], // 8mm top/bottom, 6mm left/right
+        margin:       [6, 0, 6, 0], // 6mm top/bottom, 0mm left/right -> Fits 210mm A4 width with zero right-side clipping
         filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
         image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { 
@@ -69,8 +69,8 @@ export default function ProformaTab({ project, salesItems, collections, categori
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
         pagebreak:    { 
-          mode: ['avoid-all', 'css', 'legacy'],
-          avoid: ['tr', '.avoid-page-break', 'thead', 'tfoot', '.cat-header']
+          mode: ['css', 'legacy'], // 'css' and 'legacy' allow clean row flow without massive blank spaces
+          avoid: ['tr', '.avoid-page-break']
         }
       };
 
@@ -474,11 +474,11 @@ export default function ProformaTab({ project, salesItems, collections, categori
 
             {/* FOOTER AREA (Totals & Payments) */}
             <div className="avoid-page-break mb-4 px-1" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-              <div className="flex gap-4 items-start justify-between">
+              <div className={`flex items-start ${collections.length > 0 ? 'justify-between gap-4' : 'justify-end'}`}>
                 
                 {/* PAYMENTS */}
-                <div className="flex-1 w-[58%]">
-                  {collections.length > 0 && (
+                {collections.length > 0 && (
+                  <div className="flex-1 w-[58%]">
                     <div className="bg-white border border-gray-300 rounded p-3">
                       <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">TAHSİLAT DÖKÜMÜ</h3>
                       <table className="w-full text-[9px] border-collapse">
@@ -493,11 +493,11 @@ export default function ProformaTab({ project, salesItems, collections, categori
                         </tbody>
                       </table>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* FINANCIAL SUMMARY */}
-                <div className="w-[38%] bg-white border border-gray-300 rounded p-3 shadow-sm">
+                <div className={`${collections.length > 0 ? 'w-[38%]' : 'w-[300px]'} bg-white border border-gray-300 rounded p-3 shadow-sm`}>
                   <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 text-right">FİNANSAL ÖZET</h3>
                   {curCodes.length === 0 ? (
                     <div className="text-center text-[10px] text-gray-400">Tutar yok.</div>
