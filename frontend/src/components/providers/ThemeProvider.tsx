@@ -173,7 +173,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         isTextArea ||
         (isInput && allowedInputTypes.includes((target as HTMLInputElement).type?.toLowerCase() || ""))
       ) {
-        if (target.classList.contains("no-uppercase")) return;
+        if (
+          target.classList.contains("no-uppercase") ||
+          target.getAttribute("data-no-uppercase") === "true" ||
+          target.name === "op_mode_custom_token" ||
+          target.id === "op_mode_custom_token" ||
+          (target.style as any).WebkitTextSecurity
+        ) return;
         
         // Email ve password gibi tipler zaten allowedInputTypes'ta yok, ancak ekstra koruma
         if ((target as HTMLInputElement).type === "email" || (target as HTMLInputElement).type === "password") return;
