@@ -1,6 +1,7 @@
 "use client";
 import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { projectTransfersService } from "@/lib/supabaseService";
@@ -115,6 +116,7 @@ interface TransferTurTabProps {
   [key: string]: any;
 }
 export default function TransferTurTab(props: TransferTurTabProps) {
+  const { isOperationMode } = useOperationMode();
   const {
     canEdit,
     isSuperAdmin
@@ -628,8 +630,12 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                 {renderSortableHeader("Transfer Türü", "transferType")}
                 {renderSortableHeader("Araç Tipi", "vehicleType")}
                 {renderSortableHeader("Tedarikçi", "supplierName")}
-                {renderSortableHeader("Maliyet Tutarı", "costAmount")}
-                {renderSortableHeader("Döviz", "currency")}
+                {!isOperationMode && (
+                  <>
+                    {renderSortableHeader("Maliyet Tutarı", "costAmount")}
+                    {renderSortableHeader("Döviz", "currency")}
+                  </>
+                )}
                 <th className="px-2.5 py-2.5 text-left font-semibold text-v3-text">
                   <div className="flex items-center justify-between relative">
                     <span>İşlemler</span>
@@ -846,55 +852,59 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                             </div>, document.body)}
                       </div>
                     </td>
-                    <td className="px-2.5 py-2.5">
-                      <input type="text" inputMode="decimal" value={transferCostInput[transfer.id] ?? (transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : "")} onChange={e => {
-                    let v = e.target.value.replace(/[^0-9.,]/g, "");
-                    v = v.replace(/\./g, ",");
-                    const parts = v.split(",");
-                    if (parts.length > 2) {
-                      v = parts[0] + "," + parts.slice(1).join("").replace(/,/g, "");
-                    }
-                    setTransferCostInput(prev => ({
-                      ...prev,
-                      [transfer.id]: v
-                    }));
-                  }} onFocus={e => {
-                    e.currentTarget.select();
-                  }} onBlur={e => {
-                    const parsed = cleanInputValue(e.target.value);
-                    const safe = isNaN(parsed) ? 0 : parsed;
-                    updateTransfer(transfer.id, "costAmount", safe);
-                    setTransferCostInput(prev => ({
-                      ...prev,
-                      [transfer.id]: formatNumberForDisplay(safe)
-                    }));
-                  }} onKeyDown={e => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      const parsed = cleanInputValue((e.target as HTMLInputElement).value);
-                      const safe = isNaN(parsed) ? 0 : parsed;
-                      updateTransfer(transfer.id, "costAmount", safe);
-                      setTransferCostInput(prev => ({
-                        ...prev,
-                        [transfer.id]: formatNumberForDisplay(safe)
-                      }));
-                    } else if (e.key === "Escape") {
-                      e.preventDefault();
-                      setTransferCostInput(prev => ({
-                        ...prev,
-                        [transfer.id]: transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : ""
-                      }));
-                    }
-                  }} placeholder="0,00" className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
-                    <td className="px-2.5 py-2.5">
-                      <select value={transfer.currency || "TRY"} onChange={e => updateTransfer(transfer.id, "currency", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="TRY">TRY</option>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
-                      </select>
-                    </td>
+                    {!isOperationMode && (
+                      <>
+                        <td className="px-2.5 py-2.5">
+                          <input type="text" inputMode="decimal" value={transferCostInput[transfer.id] ?? (transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : "")} onChange={e => {
+                            let v = e.target.value.replace(/[^0-9.,]/g, "");
+                            v = v.replace(/\./g, ",");
+                            const parts = v.split(",");
+                            if (parts.length > 2) {
+                              v = parts[0] + "," + parts.slice(1).join("").replace(/,/g, "");
+                            }
+                            setTransferCostInput(prev => ({
+                              ...prev,
+                              [transfer.id]: v
+                            }));
+                          }} onFocus={e => {
+                            e.currentTarget.select();
+                          }} onBlur={e => {
+                            const parsed = cleanInputValue(e.target.value);
+                            const safe = isNaN(parsed) ? 0 : parsed;
+                            updateTransfer(transfer.id, "costAmount", safe);
+                            setTransferCostInput(prev => ({
+                              ...prev,
+                              [transfer.id]: formatNumberForDisplay(safe)
+                            }));
+                          }} onKeyDown={e => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              const parsed = cleanInputValue((e.target as HTMLInputElement).value);
+                              const safe = isNaN(parsed) ? 0 : parsed;
+                              updateTransfer(transfer.id, "costAmount", safe);
+                              setTransferCostInput(prev => ({
+                                ...prev,
+                                [transfer.id]: formatNumberForDisplay(safe)
+                              }));
+                            } else if (e.key === "Escape") {
+                              e.preventDefault();
+                              setTransferCostInput(prev => ({
+                                ...prev,
+                                [transfer.id]: transfer.costAmount ? formatNumberForDisplay(transfer.costAmount) : ""
+                              }));
+                            }
+                          }} placeholder="0,00" className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700 text-right" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
+                        <td className="px-2.5 py-2.5">
+                          <select value={transfer.currency || "TRY"} onChange={e => updateTransfer(transfer.id, "currency", e.target.value)} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-v3-text bg-white dark:bg-gray-700" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                            <option value="TRY">TRY</option>
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                          </select>
+                        </td>
+                      </>
+                    )}
                     
                     <td className="px-2.5 py-2.5">
                       <div className="flex gap-1">
@@ -963,7 +973,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                   </tr>];
               if (transfer.isGroup && expandedGroups.has(transfer.id)) {
                 elements.push(<tr key={`${transfer.id}-details`} className="bg-gray-50 dark:bg-gray-800/50">
-                      <td colSpan={12} className="px-2.5 py-2.5">
+                      <td colSpan={isOperationMode ? 10 : 12} className="px-2.5 py-2.5">
                         <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                           <h4 className="text-sm font-semibold text-v3-text mb-3">
                             Grup Detayları (
@@ -1025,12 +1035,16 @@ export default function TransferTurTab(props: TransferTurTabProps) {
                         {formatIntegerForDisplay(transferTotals[doviz].kisiSayisi)}
                       </td>
                       <td className="px-2.5 py-2.5" colSpan={3}></td>
-                      <td className="px-2.5 py-2.5 text-v3-text text-left">
-                        {formatNumberForDisplay(transferTotals[doviz].toplamMaliyet)}
-                      </td>
-                      <td className="px-2.5 py-2.5 text-v3-text text-left font-bold">
-                        {doviz}
-                      </td>
+                      {!isOperationMode && (
+                        <>
+                          <td className="px-2.5 py-2.5 text-v3-text text-left">
+                            {formatNumberForDisplay(transferTotals[doviz].toplamMaliyet)}
+                          </td>
+                          <td className="px-2.5 py-2.5 text-v3-text text-left font-bold">
+                            {doviz}
+                          </td>
+                        </>
+                      )}
                       <td className="px-2.5 py-2.5 text-v3-text"></td>
                     </tr>)}
             </tbody>
@@ -1038,7 +1052,7 @@ export default function TransferTurTab(props: TransferTurTabProps) {
         </div>
       </div>
       {/* Modern İstatistik Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${isOperationMode ? "lg:grid-cols-3" : "lg:grid-cols-4"} gap-4`}>
         {/* Giriş */}
         <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
           <div className="absolute top-0 right-0 w-20 h-20 bg-green-200 dark:bg-green-800/30 rounded-full -translate-y-10 translate-x-10"></div>
@@ -1141,38 +1155,40 @@ export default function TransferTurTab(props: TransferTurTabProps) {
 
         
         {/* Tedarikçi Toplam Tutarları */}
-        <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200 dark:bg-purple-800/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-purple-800 dark:text-purple-200">
-                  Tedarikçi Toplam Tutarları
-                </h3>
+        {!isOperationMode && (
+          <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200 dark:bg-purple-800/30 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <h3 className="text-sm font-semibold text-purple-800 dark:text-purple-200">
+                    Tedarikçi Toplam Tutarları
+                  </h3>
+                </div>
+                <div className="bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {Object.keys(supplierTotalsCalc).length}
+                </div>
               </div>
-              <div className="bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                {Object.keys(supplierTotalsCalc).length}
+              
+              <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto pr-1">
+                {Object.keys(supplierTotalsCalc).length > 0 ? Object.entries(supplierTotalsCalc).sort(([a], [b]) => a.localeCompare(b)).map(([supplierName, currencies]) => <div key={supplierName} className="flex flex-col text-xs bg-v3-border0 dark:bg-purple-900/20 rounded-lg px-2 py-1.5">
+                        <span className="text-purple-800 dark:text-purple-200 font-semibold mb-1">
+                          {supplierName}
+                        </span>
+                        {Object.entries(currencies).map(([curr, amount]) => <div key={curr} className="flex justify-between items-center ml-2 border-t border-purple-200/30 dark:border-purple-700/30 pt-0.5 mt-0.5 first:border-0 first:pt-0 first:mt-0">
+                            <span className="text-purple-600 dark:text-purple-400 font-medium">{curr}</span>
+                            <span className="text-purple-900 dark:text-purple-100 font-bold">
+                              {formatNumberForDisplay(amount)}
+                            </span>
+                          </div>)}
+                      </div>) : <div className="text-xs text-purple-600 dark:text-purple-400 text-center py-2">
+                    Kayıtlı tedarikçi maliyeti yok
+                  </div>}
               </div>
-            </div>
-            
-            <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto pr-1">
-              {Object.keys(supplierTotalsCalc).length > 0 ? Object.entries(supplierTotalsCalc).sort(([a], [b]) => a.localeCompare(b)).map(([supplierName, currencies]) => <div key={supplierName} className="flex flex-col text-xs bg-v3-border0 dark:bg-purple-900/20 rounded-lg px-2 py-1.5">
-                      <span className="text-purple-800 dark:text-purple-200 font-semibold mb-1">
-                        {supplierName}
-                      </span>
-                      {Object.entries(currencies).map(([curr, amount]) => <div key={curr} className="flex justify-between items-center ml-2 border-t border-purple-200/30 dark:border-purple-700/30 pt-0.5 mt-0.5 first:border-0 first:pt-0 first:mt-0">
-                          <span className="text-purple-600 dark:text-purple-400 font-medium">{curr}</span>
-                          <span className="text-purple-900 dark:text-purple-100 font-bold">
-                            {formatNumberForDisplay(amount)}
-                          </span>
-                        </div>)}
-                    </div>) : <div className="text-xs text-purple-600 dark:text-purple-400 text-center py-2">
-                  Kayıtlı tedarikçi maliyeti yok
-                </div>}
             </div>
           </div>
-        </div>
+        )}
 
       </div>
 

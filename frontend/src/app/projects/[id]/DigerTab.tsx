@@ -1,6 +1,7 @@
 "use client";
 import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { projectOthersService } from "@/lib/supabaseService";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -107,6 +108,7 @@ function AutocompleteInput({
     </div>;
 }
 export default function DigerTab(props: DigerTabProps) {
+  const { isOperationMode } = useOperationMode();
   const {
     canEdit,
     isSuperAdmin
@@ -380,23 +382,27 @@ export default function DigerTab(props: DigerTabProps) {
         header: 'Açıklama',
         key: 'desc',
         width: 30
-      }, {
-        header: 'Maliyet',
-        key: 'cost_amount',
-        width: 15
-      }, {
-        header: 'Döviz',
-        key: 'cost_cur',
-        width: 10
-      }, {
-        header: 'Kur',
-        key: 'cost_rate',
-        width: 10
-      }, {
-        header: 'Top. Mlyt(TL)',
-        key: 'cost_try',
-        width: 15
-      }, {
+      },
+      ...(!isOperationMode ? [
+        {
+          header: 'Maliyet',
+          key: 'cost_amount',
+          width: 15
+        }, {
+          header: 'Döviz',
+          key: 'cost_cur',
+          width: 10
+        }, {
+          header: 'Kur',
+          key: 'cost_rate',
+          width: 10
+        }, {
+          header: 'Top. Mlyt(TL)',
+          key: 'cost_try',
+          width: 15
+        }
+      ] : []),
+      {
         header: 'Satış',
         key: 'sale_amount',
         width: 15
@@ -441,17 +447,19 @@ export default function DigerTab(props: DigerTabProps) {
           main_cat: item.category_name || '',
           sub_cat: item.sub_category_name || '',
           desc: item.description || '',
-          cost_amount: Number(item.cost_amount || 0),
-          cost_cur: item.cost_currency || '',
-          cost_rate: Number(item.cost_exchange_rate || 0),
-          cost_try: Number(item.cost_amount_try || 0),
+          ...(!isOperationMode ? {
+            cost_amount: Number(item.cost_amount || 0),
+            cost_cur: item.cost_currency || '',
+            cost_rate: Number(item.cost_exchange_rate || 0),
+            cost_try: Number(item.cost_amount_try || 0)
+          } : {}),
           sale_amount: Number(item.sale_amount || 0),
           sale_cur: item.sale_currency || '',
           sale_rate: Number(item.sale_exchange_rate || 0),
           sale_try: Number(item.sale_amount_try || 0)
         });
       }
-      ['cost_amount', 'cost_rate', 'cost_try', 'sale_amount', 'sale_rate', 'sale_try'].forEach(key => {
+      (!isOperationMode ? ['cost_amount', 'cost_rate', 'cost_try', 'sale_amount', 'sale_rate', 'sale_try'] : ['sale_amount', 'sale_rate', 'sale_try']).forEach(key => {
         sheet.getColumn(key).numFmt = '#,##0.00';
       });
       const buffer = await workbook.xlsx.writeBuffer();
@@ -585,19 +593,23 @@ export default function DigerTab(props: DigerTabProps) {
                 <th className={`min-w-[120px] ${thClass}`} onClick={() => handleSort('description')}>
                   <div className="flex items-center">Açıklama <SortIcon column="description" /></div>
                 </th>
-                <th className={`w-24 text-right ${thClass}`} onClick={() => handleSort('cost_amount')}>
-                  <div className="flex items-center justify-end">Maliyet <SortIcon column="cost_amount" /></div>
-                </th>
-                <th className={`w-16 ${thClass}`} onClick={() => handleSort('cost_currency')}>
-                  <div className="flex items-center">Döviz <SortIcon column="cost_currency" /></div>
-                </th>
-                <th className={`w-16 text-right ${thClass}`} onClick={() => handleSort('cost_exchange_rate')}>
-                  <div className="flex items-center justify-end">Kur <SortIcon column="cost_exchange_rate" /></div>
-                </th>
-                <th className={`w-24 text-right ${thClass}`} onClick={() => handleSort('cost_amount_try')}>
-                  <div className="flex items-center justify-end">Top. Mlyt(TL) <SortIcon column="cost_amount_try" /></div>
-                </th>
-                <th className={`w-24 text-right border-l border-gray-200 dark:border-v3-border ${thClass}`} onClick={() => handleSort('sale_amount')}>
+                {!isOperationMode && (
+                  <>
+                    <th className={`w-24 text-right ${thClass}`} onClick={() => handleSort('cost_amount')}>
+                      <div className="flex items-center justify-end">Maliyet <SortIcon column="cost_amount" /></div>
+                    </th>
+                    <th className={`w-16 ${thClass}`} onClick={() => handleSort('cost_currency')}>
+                      <div className="flex items-center">Döviz <SortIcon column="cost_currency" /></div>
+                    </th>
+                    <th className={`w-16 text-right ${thClass}`} onClick={() => handleSort('cost_exchange_rate')}>
+                      <div className="flex items-center justify-end">Kur <SortIcon column="cost_exchange_rate" /></div>
+                    </th>
+                    <th className={`w-24 text-right ${thClass}`} onClick={() => handleSort('cost_amount_try')}>
+                      <div className="flex items-center justify-end">Top. Mlyt(TL) <SortIcon column="cost_amount_try" /></div>
+                    </th>
+                  </>
+                )}
+                <th className={`w-24 text-right ${!isOperationMode ? 'border-l border-gray-200 dark:border-v3-border' : ''} ${thClass}`} onClick={() => handleSort('sale_amount')}>
                   <div className="flex items-center justify-end">Satış <SortIcon column="sale_amount" /></div>
                 </th>
                 <th className={`w-16 ${thClass}`} onClick={() => handleSort('sale_currency')}>
@@ -614,7 +626,7 @@ export default function DigerTab(props: DigerTabProps) {
             </thead>
             <tbody className="text-xs divide-y divide-gray-100 dark:divide-gray-800/50">
               {filteredOthers.length === 0 ? <tr>
-                  <td colSpan={14} className="px-4 py-8 text-center text-v3-muted">
+                  <td colSpan={isOperationMode ? 10 : 14} className="px-4 py-8 text-center text-v3-muted">
                     Arama kriterlerine uygun kayıt bulunamadı.
                   </td>
                 </tr> : filteredOthers.map(item => {
@@ -673,45 +685,50 @@ export default function DigerTab(props: DigerTabProps) {
                           </span>}
                       </td>
 
-                      {/* Maliyet Tutarı */}
-                      <td className="px-2 py-1.5 align-middle text-right">
-                        {isEditing ? <input type="text" value={currentItem.cost_amount ?? ""} onChange={e => setDraftItem({
-                    ...draftItem,
-                    cost_amount: cleanInputValue(e.target.value)
-                  })} onKeyDown={handleGlobalKeyDown} className="w-16 text-right px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="font-semibold text-red-600 dark:text-red-400">
-                            {formatNumberForDisplay(currentItem.cost_amount)}
-                          </span>}
-                      </td>
+                      {/* Maliyet Alanları */}
+                      {!isOperationMode && (
+                        <>
+                          {/* Maliyet Tutarı */}
+                          <td className="px-2 py-1.5 align-middle text-right">
+                            {isEditing ? <input type="text" value={currentItem.cost_amount ?? ""} onChange={e => setDraftItem({
+                        ...draftItem,
+                        cost_amount: cleanInputValue(e.target.value)
+                      })} onKeyDown={handleGlobalKeyDown} className="w-16 text-right px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="font-semibold text-red-600 dark:text-red-400">
+                                {formatNumberForDisplay(currentItem.cost_amount)}
+                              </span>}
+                          </td>
 
-                      {/* Maliyet Döviz */}
-                      <td className="px-2 py-1.5 align-middle">
-                        {isEditing ? <select value={currentItem.cost_currency || "EUR"} onChange={e => setDraftItem({
-                    ...draftItem,
-                    cost_currency: e.target.value
-                  })} onKeyDown={handleGlobalKeyDown} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                            {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                          </select> : <span className="text-v3-text font-medium">{currentItem.cost_currency || "EUR"}</span>}
-                      </td>
+                          {/* Maliyet Döviz */}
+                          <td className="px-2 py-1.5 align-middle">
+                            {isEditing ? <select value={currentItem.cost_currency || "EUR"} onChange={e => setDraftItem({
+                        ...draftItem,
+                        cost_currency: e.target.value
+                      })} onKeyDown={handleGlobalKeyDown} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                              </select> : <span className="text-v3-text font-medium">{currentItem.cost_currency || "EUR"}</span>}
+                          </td>
 
-                      {/* Maliyet Kur */}
-                      <td className="px-2 py-1.5 align-middle text-right">
-                        {isEditing ? <input type="text" value={currentItem.cost_exchange_rate ?? "1"} onChange={e => setDraftItem({
-                    ...draftItem,
-                    cost_exchange_rate: cleanInputValue(e.target.value)
-                  })} onKeyDown={handleGlobalKeyDown} className="w-12 text-right px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-muted text-xs">
-                            {formatNumberForDisplay(currentItem.cost_exchange_rate)}
-                          </span>}
-                      </td>
+                          {/* Maliyet Kur */}
+                          <td className="px-2 py-1.5 align-middle text-right">
+                            {isEditing ? <input type="text" value={currentItem.cost_exchange_rate ?? "1"} onChange={e => setDraftItem({
+                        ...draftItem,
+                        cost_exchange_rate: cleanInputValue(e.target.value)
+                      })} onKeyDown={handleGlobalKeyDown} className="w-12 text-right px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin} /> : <span className="text-v3-muted text-xs">
+                                {formatNumberForDisplay(currentItem.cost_exchange_rate)}
+                              </span>}
+                          </td>
 
-                      {/* Toplam Maliyet TL */}
-                      <td className="px-2 py-1.5 align-middle text-right">
-                        <span className="font-bold text-gray-900 dark:text-gray-100">
-                          {formatNumberForDisplay(isEditing ? (Number(currentItem.cost_amount) || 0) * (Number(currentItem.cost_exchange_rate) || 1) : currentItem.cost_amount_try)}
-                        </span>
-                      </td>
+                          {/* Toplam Maliyet TL */}
+                          <td className="px-2 py-1.5 align-middle text-right">
+                            <span className="font-bold text-gray-900 dark:text-gray-100">
+                              {formatNumberForDisplay(isEditing ? (Number(currentItem.cost_amount) || 0) * (Number(currentItem.cost_exchange_rate) || 1) : currentItem.cost_amount_try)}
+                            </span>
+                          </td>
+                        </>
+                      )}
 
                       {/* Satış Tutarı */}
-                      <td className="px-2 py-1.5 align-middle text-right border-l border-gray-200 dark:border-v3-border">
+                      <td className={`px-2 py-1.5 align-middle text-right ${!isOperationMode ? 'border-l border-gray-200 dark:border-v3-border' : ''}`}>
                         {isEditing ? <input type="text" value={currentItem.sale_amount ?? ""} onChange={e => setDraftItem({
                     ...draftItem,
                     sale_amount: cleanInputValue(e.target.value)
@@ -784,17 +801,19 @@ export default function DigerTab(props: DigerTabProps) {
                 </div>
                 
                 {/* Costs */}
-                <div className="mb-2">
-                  <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1 border-b border-gray-200 dark:border-v3-border pb-0.5">Maliyetler</div>
-                  {Object.entries(data.costs).map(([cur, amount]) => amount ? <div key={cur} className="flex justify-between text-xs mb-0.5">
-                      <span className="text-v3-muted">{cur}</span>
-                      <span className="font-medium text-red-600 dark:text-red-400">{formatNumberForDisplay(amount)}</span>
-                    </div> : null)}
-                  <div className="flex justify-between text-xs mt-1 pt-1 border-t border-gray-200 dark:border-v3-border">
-                    <span className="text-v3-text font-medium">Toplam TL</span>
-                    <span className="font-bold text-gray-900 dark:text-gray-100">{formatNumberForDisplay(data.totalCostTry)} ₺</span>
+                {!isOperationMode && (
+                  <div className="mb-2">
+                    <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1 border-b border-gray-200 dark:border-v3-border pb-0.5">Maliyetler</div>
+                    {Object.entries(data.costs).map(([cur, amount]) => amount ? <div key={cur} className="flex justify-between text-xs mb-0.5">
+                        <span className="text-v3-muted">{cur}</span>
+                        <span className="font-medium text-red-600 dark:text-red-400">{formatNumberForDisplay(amount)}</span>
+                      </div> : null)}
+                    <div className="flex justify-between text-xs mt-1 pt-1 border-t border-gray-200 dark:border-v3-border">
+                      <span className="text-v3-text font-medium">Toplam TL</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100">{formatNumberForDisplay(data.totalCostTry)} ₺</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Sales */}
                 <div>

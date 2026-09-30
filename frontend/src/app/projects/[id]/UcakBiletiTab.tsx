@@ -1,6 +1,7 @@
 "use client";
 import { Search, X } from "lucide-react";
 import { usePermissions, Module } from "@/lib/permissions";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import React from "react";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
@@ -234,6 +235,7 @@ export default function UcakBiletiTab({
   selectFlightSupplier,
   handleSupplierKeyDown
 }: UcakBiletiTabProps) {
+  const { isOperationMode } = useOperationMode();
   const {
     canEdit,
     isSuperAdmin
@@ -434,51 +436,55 @@ export default function UcakBiletiTab({
                 <th className="px-2 py-2 text-left font-semibold text-v3-text min-w-[180px] whitespace-nowrap">
                   GÜZERGAH
                 </th>
-                <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("kisiSayisi")}>
-                  <div className="flex items-center justify-center">
-                    <div className="leading-tight">Maliyet<br />Pax</div>
-                    {flightSortField === "kisiSayisi" && <span className="ml-1">
-                        {flightSortDirection === "asc" ? "↑" : "↓"}
-                      </span>}
-                  </div>
-                </th>
-                <th style={{
-                minWidth: "70px",
-                width: "70px"
-              }} className="px-1 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("ppMaliyet")}>
-                  <div className="flex items-center justify-end">
-                    <div className="leading-tight">PP<br />Maliyet</div>
-                    {flightSortField === "ppMaliyet" && <span className="ml-1">
-                        {flightSortDirection === "asc" ? "↑" : "↓"}
-                      </span>}
-                  </div>
-                </th>
-                <th className="px-1 py-2 text-right font-semibold text-v3-text min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("toplamMaliyet")}>
-                  <div className="flex items-center justify-end">
-                    <div className="leading-tight">Toplam<br />Maliyet</div>
-                    {flightSortField === "toplamMaliyet" && <span className="ml-1">
-                        {flightSortDirection === "asc" ? "↑" : "↓"}
-                      </span>}
-                  </div>
-                </th>
-                <th style={{
-                minWidth: "70px",
-                width: "70px"
-              }} className="px-1 py-2 text-center font-semibold text-v3-text whitespace-nowrap">
-                  Döviz
-                </th>
-                <th style={{
-                minWidth: "70px",
-                width: "70px"
-              }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
-                  KUR
-                </th>
-                <th style={{
-                minWidth: "90px"
-              }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
-                  <div className="leading-tight">Toplam<br />Maliyet TL</div>
-                </th>
-                <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap border-l border-gray-200 dark:border-v3-border" onClick={() => handleFlightSort("satisPax")}>
+                {!isOperationMode && (
+                  <>
+                    <th className="px-2 py-2 text-center font-semibold text-v3-text min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("kisiSayisi")}>
+                      <div className="flex items-center justify-center">
+                        <div className="leading-tight">Maliyet<br />Pax</div>
+                        {flightSortField === "kisiSayisi" && <span className="ml-1">
+                            {flightSortDirection === "asc" ? "↑" : "↓"}
+                          </span>}
+                      </div>
+                    </th>
+                    <th style={{
+                    minWidth: "70px",
+                    width: "70px"
+                  }} className="px-1 py-2 text-right font-semibold text-v3-text cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("ppMaliyet")}>
+                      <div className="flex items-center justify-end">
+                        <div className="leading-tight">PP<br />Maliyet</div>
+                        {flightSortField === "ppMaliyet" && <span className="ml-1">
+                            {flightSortDirection === "asc" ? "↑" : "↓"}
+                          </span>}
+                      </div>
+                    </th>
+                    <th className="px-1 py-2 text-right font-semibold text-v3-text min-w-[100px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap" onClick={() => handleFlightSort("toplamMaliyet")}>
+                      <div className="flex items-center justify-end">
+                        <div className="leading-tight">Toplam<br />Maliyet</div>
+                        {flightSortField === "toplamMaliyet" && <span className="ml-1">
+                            {flightSortDirection === "asc" ? "↑" : "↓"}
+                          </span>}
+                      </div>
+                    </th>
+                    <th style={{
+                    minWidth: "70px",
+                    width: "70px"
+                  }} className="px-1 py-2 text-center font-semibold text-v3-text whitespace-nowrap">
+                      Döviz
+                    </th>
+                    <th style={{
+                    minWidth: "70px",
+                    width: "70px"
+                  }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
+                      KUR
+                    </th>
+                    <th style={{
+                    minWidth: "90px"
+                  }} className="px-1 py-2 text-right font-semibold text-v3-text whitespace-nowrap">
+                      <div className="leading-tight">Toplam<br />Maliyet TL</div>
+                    </th>
+                  </>
+                )}
+                <th className={`px-2 py-2 text-center font-semibold text-v3-text min-w-[4rem] w-16 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none whitespace-nowrap ${!isOperationMode ? 'border-l border-gray-200 dark:border-v3-border' : ''}`} onClick={() => handleFlightSort("satisPax")}>
                   <div className="flex items-center justify-center">
                     <div className="leading-tight">Satış<br />Pax</div>
                     {flightSortField === "satisPax" && <span className="ml-1">
@@ -533,7 +539,7 @@ export default function UcakBiletiTab({
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {sortedFlightTickets.length === 0 && !(editingFlightIndex === flightTickets.length && tempFlightItem && isNewFlightItem) ? <tr>
-                  <td colSpan={27} className="px-4 py-8 text-center text-v3-muted">
+                  <td colSpan={isOperationMode ? 21 : 27} className="px-4 py-8 text-center text-v3-muted">
                     Uçak bileti bulunamadı
                   </td>
                 </tr> : sortedFlightTickets.map((ticket, index) => <tr key={ticket.id} className="hover:bg-blue-500/10 transition-colors group cursor-pointer border-b border-gray-100 dark:border-v3-border last:border-0" onDoubleClick={() => {
@@ -627,103 +633,107 @@ export default function UcakBiletiTab({
                     guzergah: e.target.value
                   })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                         </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <input type="number" value={tempFlightItem?.kisiSayisi || 0} onChange={e => {
-                    const kisiSayisi = Number(e.target.value);
-                    const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
-                    const toplamMaliyet = kisiSayisi * ppMaliyet;
-                    const kur = tempFlightItem?.kur || 1;
-                    const doviz = tempFlightItem?.doviz || "TRY";
-                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                    setTempFlightItem({
-                      ...tempFlightItem!,
-                      kisiSayisi,
-                      toplamMaliyet,
-                      toplamTl
-                    });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <input type="number" step="0.01" value={tempFlightItem?.ppMaliyet || 0} onChange={e => {
-                    const ppMaliyet = Number(e.target.value);
-                    const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
-                    const toplamMaliyet = kisiSayisi * ppMaliyet;
-                    const kur = tempFlightItem?.kur || 1;
-                    const doviz = tempFlightItem?.doviz || "TRY";
-                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                    setTempFlightItem({
-                      ...tempFlightItem!,
-                      ppMaliyet,
-                      toplamMaliyet,
-                      toplamTl
-                    });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <input type="number" step="0.01" value={tempFlightItem?.toplamMaliyet || 0} onChange={e => {
-                    const toplamMaliyet = Number(e.target.value);
-                    const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
-                    const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
-                    const kur = tempFlightItem?.kur || 1;
-                    const doviz = tempFlightItem?.doviz || "TRY";
-                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                    setTempFlightItem({
-                      ...tempFlightItem!,
-                      toplamMaliyet,
-                      ppMaliyet,
-                      toplamTl
-                    });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                        </td>
-                        <td className="px-2 py-2">
-                          <select style={{
-                    minWidth: "100%"
-                  }} value={tempFlightItem?.doviz || ""} onChange={e => {
-                    const doviz = e.target.value;
-                    const kur = tempFlightItem?.kur || 1;
-                    const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                    setTempFlightItem({
-                      ...tempFlightItem!,
-                      doviz,
-                      toplamTl
-                    });
-                  }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                            <option value="EUR">EUR</option>
-                            <option value="USD">USD</option>
-                            <option value="TRY">TRY</option>
-                          </select>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <input style={{
-                    minWidth: "100%"
-                  }} type="number" step="0.0001" value={tempFlightItem?.kur || 1} onChange={e => {
-                    const kur = Number(e.target.value);
-                    const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                    const doviz = tempFlightItem?.doviz || "TRY";
-                    const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                    setTempFlightItem({
-                      ...tempFlightItem!,
-                      kur,
-                      toplamTl
-                    });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <input style={{
-                    minWidth: "90px"
-                  }} type="number" step="0.01" value={tempFlightItem?.toplamTl || 0} onChange={e => {
-                    const toplamTl = Number(e.target.value);
-                    const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                    const doviz = tempFlightItem?.doviz || "TRY";
-                    const kur = doviz === "TRY" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
-                    setTempFlightItem({
-                      ...tempFlightItem!,
-                      toplamTl,
-                      kur
-                    });
-                  }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                        </td>
+                        {!isOperationMode && (
+                          <>
+                            <td className="px-2 py-2 whitespace-nowrap">
+                              <input type="number" value={tempFlightItem?.kisiSayisi || 0} onChange={e => {
+                                const kisiSayisi = Number(e.target.value);
+                                const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
+                                const toplamMaliyet = kisiSayisi * ppMaliyet;
+                                const kur = tempFlightItem?.kur || 1;
+                                const doviz = tempFlightItem?.doviz || "TRY";
+                                const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                                setTempFlightItem({
+                                  ...tempFlightItem!,
+                                  kisiSayisi,
+                                  toplamMaliyet,
+                                  toplamTl
+                                });
+                              }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                            </td>
+                            <td className="px-2 py-2 whitespace-nowrap">
+                              <input type="number" step="0.01" value={tempFlightItem?.ppMaliyet || 0} onChange={e => {
+                                const ppMaliyet = Number(e.target.value);
+                                const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
+                                const toplamMaliyet = kisiSayisi * ppMaliyet;
+                                const kur = tempFlightItem?.kur || 1;
+                                const doviz = tempFlightItem?.doviz || "TRY";
+                                const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                                setTempFlightItem({
+                                  ...tempFlightItem!,
+                                  ppMaliyet,
+                                  toplamMaliyet,
+                                  toplamTl
+                                });
+                              }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                            </td>
+                            <td className="px-2 py-2 whitespace-nowrap">
+                              <input type="number" step="0.01" value={tempFlightItem?.toplamMaliyet || 0} onChange={e => {
+                                const toplamMaliyet = Number(e.target.value);
+                                const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
+                                const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
+                                const kur = tempFlightItem?.kur || 1;
+                                const doviz = tempFlightItem?.doviz || "TRY";
+                                const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                                setTempFlightItem({
+                                  ...tempFlightItem!,
+                                  toplamMaliyet,
+                                  ppMaliyet,
+                                  toplamTl
+                                });
+                              }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                            </td>
+                            <td className="px-2 py-2">
+                              <select style={{
+                                minWidth: "100%"
+                              }} value={tempFlightItem?.doviz || ""} onChange={e => {
+                                const doviz = e.target.value;
+                                const kur = tempFlightItem?.kur || 1;
+                                const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                                const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                                setTempFlightItem({
+                                  ...tempFlightItem!,
+                                  doviz,
+                                  toplamTl
+                                });
+                              }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                                <option value="EUR">EUR</option>
+                                <option value="USD">USD</option>
+                                <option value="TRY">TRY</option>
+                              </select>
+                            </td>
+                            <td className="px-2 py-2 whitespace-nowrap">
+                              <input style={{
+                                minWidth: "100%"
+                              }} type="number" step="0.0001" value={tempFlightItem?.kur || 1} onChange={e => {
+                                const kur = Number(e.target.value);
+                                const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                                const doviz = tempFlightItem?.doviz || "TRY";
+                                const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                                setTempFlightItem({
+                                  ...tempFlightItem!,
+                                  kur,
+                                  toplamTl
+                                });
+                              }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                            </td>
+                            <td className="px-2 py-2 whitespace-nowrap">
+                              <input style={{
+                                minWidth: "90px"
+                              }} type="number" step="0.01" value={tempFlightItem?.toplamTl || 0} onChange={e => {
+                                const toplamTl = Number(e.target.value);
+                                const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                                const doviz = tempFlightItem?.doviz || "TRY";
+                                const kur = doviz === "TRY" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
+                                setTempFlightItem({
+                                  ...tempFlightItem!,
+                                  toplamTl,
+                                  kur
+                                });
+                              }} className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                            </td>
+                          </>
+                        )}
                         <td className="px-2 py-2 whitespace-nowrap">
                           <input type="number" value={tempFlightItem?.satisPax || 0} onChange={e => {
                     const satisPax = Number(e.target.value);
@@ -905,24 +915,28 @@ export default function UcakBiletiTab({
                         <td className="px-2 py-2 text-v3-text whitespace-nowrap">
                           {ticket.guzergah || "-"}
                         </td>
-                        <td className="px-2 py-2 text-v3-text text-center whitespace-nowrap">
-                          {ticket.kisiSayisi || 0}
-                        </td>
-                        <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
-                          {formatNumberForDisplay(ticket.ppMaliyet)}
-                        </td>
-                        <td className="px-2 py-2 text-red-600 dark:text-red-400 text-right font-semibold whitespace-nowrap">
-                          {formatNumberForDisplay(ticket.toplamMaliyet)}
-                        </td>
-                        <td className="px-2 py-2 text-v3-text text-center">
-                          {ticket.doviz || "-"}
-                        </td>
-                        <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
-                          {formatNumberForDisplay(ticket.kur)}
-                        </td>
-                        <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
-                          {formatNumberForDisplay(ticket.toplamTl)}
-                        </td>
+                        {!isOperationMode && (
+                          <>
+                            <td className="px-2 py-2 text-v3-text text-center whitespace-nowrap">
+                              {ticket.kisiSayisi || 0}
+                            </td>
+                            <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
+                              {formatNumberForDisplay(ticket.ppMaliyet)}
+                            </td>
+                            <td className="px-2 py-2 text-red-600 dark:text-red-400 text-right font-semibold whitespace-nowrap">
+                              {formatNumberForDisplay(ticket.toplamMaliyet)}
+                            </td>
+                            <td className="px-2 py-2 text-v3-text text-center">
+                              {ticket.doviz || "-"}
+                            </td>
+                            <td className="px-2 py-2 text-v3-text text-right whitespace-nowrap">
+                              {formatNumberForDisplay(ticket.kur)}
+                            </td>
+                            <td className="px-2 py-2 text-gray-900 dark:text-gray-100 text-right font-bold whitespace-nowrap">
+                              {formatNumberForDisplay(ticket.toplamTl)}
+                            </td>
+                          </>
+                        )}
                         <td className="px-2 py-2 text-v3-text text-center whitespace-nowrap">
                           {ticket.satisPax || 0}
                         </td>
@@ -1051,103 +1065,107 @@ export default function UcakBiletiTab({
                   guzergah: e.target.value
                 })} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <input type="number" value={tempFlightItem?.kisiSayisi || 0} onChange={e => {
-                  const kisiSayisi = Number(e.target.value);
-                  const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
-                  const toplamMaliyet = kisiSayisi * ppMaliyet;
-                  const kur = tempFlightItem?.kur || 1;
-                  const doviz = tempFlightItem?.doviz || "TRY";
-                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                  setTempFlightItem({
-                    ...tempFlightItem!,
-                    kisiSayisi,
-                    toplamMaliyet,
-                    toplamTl
-                  });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <input type="number" step="0.01" value={tempFlightItem?.ppMaliyet || 0} onChange={e => {
-                  const ppMaliyet = Number(e.target.value);
-                  const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
-                  const toplamMaliyet = kisiSayisi * ppMaliyet;
-                  const kur = tempFlightItem?.kur || 1;
-                  const doviz = tempFlightItem?.doviz || "TRY";
-                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                  setTempFlightItem({
-                    ...tempFlightItem!,
-                    ppMaliyet,
-                    toplamMaliyet,
-                    toplamTl
-                  });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <input type="number" step="0.01" value={tempFlightItem?.toplamMaliyet || 0} onChange={e => {
-                  const toplamMaliyet = Number(e.target.value);
-                  const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
-                  const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
-                  const kur = tempFlightItem?.kur || 1;
-                  const doviz = tempFlightItem?.doviz || "TRY";
-                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                  setTempFlightItem({
-                    ...tempFlightItem!,
-                    toplamMaliyet,
-                    ppMaliyet,
-                    toplamTl
-                  });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
-                    <td className="px-2 py-2">
-                      <select style={{
-                  minWidth: "100%"
-                }} value={tempFlightItem?.doviz || ""} onChange={e => {
-                  const doviz = e.target.value;
-                  const kur = tempFlightItem?.kur || 1;
-                  const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                  setTempFlightItem({
-                    ...tempFlightItem!,
-                    doviz,
-                    toplamTl
-                  });
-                }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                        <option value="TRY">TRY</option>
-                      </select>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <input style={{
-                  minWidth: "100%"
-                }} type="number" step="0.0001" value={tempFlightItem?.kur || 1} onChange={e => {
-                  const kur = Number(e.target.value);
-                  const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                  const doviz = tempFlightItem?.doviz || "TRY";
-                  const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
-                  setTempFlightItem({
-                    ...tempFlightItem!,
-                    kur,
-                    toplamTl
-                  });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <input style={{
-                  minWidth: "90px"
-                }} type="number" step="0.01" value={tempFlightItem?.toplamTl || 0} onChange={e => {
-                  const toplamTl = Number(e.target.value);
-                  const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
-                  const doviz = tempFlightItem?.doviz || "TRY";
-                  const kur = doviz === "TRY" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
-                  setTempFlightItem({
-                    ...tempFlightItem!,
-                    toplamTl,
-                    kur
-                  });
-                }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
-                    </td>
+                    {!isOperationMode && (
+                      <>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input type="number" value={tempFlightItem?.kisiSayisi || 0} onChange={e => {
+                            const kisiSayisi = Number(e.target.value);
+                            const ppMaliyet = tempFlightItem?.ppMaliyet || 0;
+                            const toplamMaliyet = kisiSayisi * ppMaliyet;
+                            const kur = tempFlightItem?.kur || 1;
+                            const doviz = tempFlightItem?.doviz || "TRY";
+                            const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                            setTempFlightItem({
+                              ...tempFlightItem!,
+                              kisiSayisi,
+                              toplamMaliyet,
+                              toplamTl
+                            });
+                          }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-center resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input type="number" step="0.01" value={tempFlightItem?.ppMaliyet || 0} onChange={e => {
+                            const ppMaliyet = Number(e.target.value);
+                            const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
+                            const toplamMaliyet = kisiSayisi * ppMaliyet;
+                            const kur = tempFlightItem?.kur || 1;
+                            const doviz = tempFlightItem?.doviz || "TRY";
+                            const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                            setTempFlightItem({
+                              ...tempFlightItem!,
+                              ppMaliyet,
+                              toplamMaliyet,
+                              toplamTl
+                            });
+                          }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input type="number" step="0.01" value={tempFlightItem?.toplamMaliyet || 0} onChange={e => {
+                            const toplamMaliyet = Number(e.target.value);
+                            const kisiSayisi = tempFlightItem?.kisiSayisi || 0;
+                            const ppMaliyet = kisiSayisi > 0 ? toplamMaliyet / kisiSayisi : 0;
+                            const kur = tempFlightItem?.kur || 1;
+                            const doviz = tempFlightItem?.doviz || "TRY";
+                            const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                            setTempFlightItem({
+                              ...tempFlightItem!,
+                              toplamMaliyet,
+                              ppMaliyet,
+                              toplamTl
+                            });
+                          }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
+                        <td className="px-2 py-2">
+                          <select style={{
+                            minWidth: "100%"
+                          }} value={tempFlightItem?.doviz || ""} onChange={e => {
+                            const doviz = e.target.value;
+                            const kur = tempFlightItem?.kur || 1;
+                            const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                            const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                            setTempFlightItem({
+                              ...tempFlightItem!,
+                              doviz,
+                              toplamTl
+                            });
+                          }} className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-v3-text focus:ring-1 focus:ring-indigo-500" disabled={!permEdit || compIsLocked && !isSuperAdmin}>
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="TRY">TRY</option>
+                          </select>
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input style={{
+                            minWidth: "100%"
+                          }} type="number" step="0.0001" value={tempFlightItem?.kur || 1} onChange={e => {
+                            const kur = Number(e.target.value);
+                            const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                            const doviz = tempFlightItem?.doviz || "TRY";
+                            const toplamTl = doviz === "TRY" ? toplamMaliyet : toplamMaliyet * kur;
+                            setTempFlightItem({
+                              ...tempFlightItem!,
+                              kur,
+                              toplamTl
+                            });
+                          }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <input style={{
+                            minWidth: "90px"
+                          }} type="number" step="0.01" value={tempFlightItem?.toplamTl || 0} onChange={e => {
+                            const toplamTl = Number(e.target.value);
+                            const toplamMaliyet = tempFlightItem?.toplamMaliyet || 0;
+                            const doviz = tempFlightItem?.doviz || "TRY";
+                            const kur = doviz === "TRY" ? 1 : toplamMaliyet > 0 ? toplamTl / toplamMaliyet : 1;
+                            setTempFlightItem({
+                              ...tempFlightItem!,
+                              toplamTl,
+                              kur
+                            });
+                          }} className="w-full px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-v3-text text-right resize-none" disabled={!permEdit || compIsLocked && !isSuperAdmin} />
+                        </td>
+                      </>
+                    )}
                     <td className="px-2 py-2 whitespace-nowrap">
                       <input type="number" value={tempFlightItem?.satisPax || 0} onChange={e => {
                   const satisPax = Number(e.target.value);
@@ -1279,14 +1297,14 @@ export default function UcakBiletiTab({
         {/* --- YENİ EKLENEN ÖZET KARTLARI (DİĞER TABIYLA UYUMLU) --- */}
         <div className="mt-6">
           <h3 className="text-sm font-semibold text-v3-text mb-3">
-            Uçak Bileti Maliyet & Satış Özeti
+            {isOperationMode ? "Uçak Bileti Satış Özeti" : "Uçak Bileti Maliyet & Satış Özeti"}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from(new Set(flightTickets.flatMap(t => [t.doviz || "EUR", t.satisDoviz || "TRY", t.satisDoviz === "TRY" ? "TRY" : (t.satisDoviz || "TRY")].map(d => d === "TRY" ? "TRY" : d)))).map(doviz => {
             const isTL = (d: string) => d === "TRY" || d === "TRY";
             const mToplam = flightTickets.filter(t => isTL(doviz) ? isTL(t.doviz || "EUR") : (t.doviz || "EUR") === doviz).reduce((s, t) => s + (t.toplamMaliyet || 0), 0);
             const sToplam = flightTickets.filter(t => isTL(doviz) ? isTL(t.satisDoviz || "TRY") : (t.satisDoviz || "TRY") === doviz).reduce((s, t) => s + (t.toplamSatis || 0), 0);
-            if (mToplam === 0 && sToplam === 0) return null;
+            if (isOperationMode ? sToplam === 0 : (mToplam === 0 && sToplam === 0)) return null;
             return <div key={doviz} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-v3-border shadow-sm p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium text-v3-muted uppercase tracking-wider">
@@ -1298,12 +1316,14 @@ export default function UcakBiletiTab({
                   </div>
                   
                   <div className="space-y-3 mt-4">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
-                      <span className="text-sm text-v3-muted">Toplam Maliyet:</span>
-                      <span className="text-sm font-semibold text-v3-text">
-                        {formatNumberForDisplay(mToplam)} {doviz}
-                      </span>
-                    </div>
+                    {!isOperationMode && (
+                      <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
+                        <span className="text-sm text-v3-muted">Toplam Maliyet:</span>
+                        <span className="text-sm font-semibold text-v3-text">
+                          {formatNumberForDisplay(mToplam)} {doviz}
+                        </span>
+                      </div>
+                    )}
                     
                     <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-750">
                       <span className="text-sm text-v3-muted">Toplam Satış:</span>
@@ -1312,12 +1332,14 @@ export default function UcakBiletiTab({
                       </span>
                     </div>
                     
-                    <div className="flex justify-between items-center pt-1">
-                      <span className="text-sm font-medium text-v3-text">Tahmini Kâr:</span>
-                      <span className={`text-sm font-bold ${sToplam - mToplam >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                        {formatNumberForDisplay(sToplam - mToplam)} {doviz}
-                      </span>
-                    </div>
+                    {!isOperationMode && (
+                      <div className="flex justify-between items-center pt-1">
+                        <span className="text-sm font-medium text-v3-text">Tahmini Kâr:</span>
+                        <span className={`text-sm font-bold ${sToplam - mToplam >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                          {formatNumberForDisplay(sToplam - mToplam)} {doviz}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>;
           })}
@@ -1334,12 +1356,14 @@ export default function UcakBiletiTab({
               </div>
               
               <div className="space-y-3 mt-4">
-                <div className="flex justify-between items-center pb-2 border-b border-indigo-100 dark:border-indigo-800/50">
-                  <span className="text-sm text-indigo-900/70 dark:text-indigo-200/70">Maliyet TL Karşılığı:</span>
-                  <span className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
-                    {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamTl || 0), 0))} ₺
-                  </span>
-                </div>
+                {!isOperationMode && (
+                  <div className="flex justify-between items-center pb-2 border-b border-indigo-100 dark:border-indigo-800/50">
+                    <span className="text-sm text-indigo-900/70 dark:text-indigo-200/70">Maliyet TL Karşılığı:</span>
+                    <span className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
+                      {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamTl || 0), 0))} ₺
+                    </span>
+                  </div>
+                )}
                 
                 <div className="flex justify-between items-center pb-2 border-b border-indigo-100 dark:border-indigo-800/50">
                   <span className="text-sm text-indigo-900/70 dark:text-indigo-200/70">Satış TL Karşılığı:</span>
@@ -1348,12 +1372,14 @@ export default function UcakBiletiTab({
                   </span>
                 </div>
                 
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-sm font-medium text-indigo-900 dark:text-indigo-100">Net Kâr (TL):</span>
-                  <span className="text-lg font-black text-indigo-700 dark:text-indigo-400">
-                    {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamSatisTl || 0), 0) - flightTickets.reduce((acc, curr) => acc + (curr.toplamTl || 0), 0))} ₺
-                  </span>
-                </div>
+                {!isOperationMode && (
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-sm font-medium text-indigo-900 dark:text-indigo-100">Net Kâr (TL):</span>
+                    <span className="text-lg font-black text-indigo-700 dark:text-indigo-400">
+                      {formatNumberForDisplay(flightTickets.reduce((acc, curr) => acc + (curr.toplamSatisTl || 0), 0) - flightTickets.reduce((acc, curr) => acc + (curr.toplamTl || 0), 0))} ₺
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
