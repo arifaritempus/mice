@@ -53,22 +53,43 @@ export default function ProformaTab({ project, salesItems, collections, categori
     setIsExporting(true);
     const toastId = toast.loading("Proforma PDF indiriliyor...");
     try {
+      const source = proformaRef.current;
+
+      // Clone element into an isolated off-screen container with exact A4 inner width (190mm = 210mm - 2*10mm margins)
+      const exportContainer = document.createElement("div");
+      exportContainer.style.position = "fixed";
+      exportContainer.style.left = "-9999px";
+      exportContainer.style.top = "0";
+      exportContainer.style.width = "190mm";
+      exportContainer.style.backgroundColor = "#ffffff";
+      exportContainer.style.color = "#111827";
+      exportContainer.style.padding = "0";
+      exportContainer.style.margin = "0";
+      exportContainer.innerHTML = source.innerHTML;
+      document.body.appendChild(exportContainer);
+
       const opt = {
-        margin:       0, 
+        margin:       [10, 10, 10, 10], // 10mm margins on every page
         filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 1.0 },
+        image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { 
           scale: 2, 
           useCORS: true, 
           allowTaint: true,
           logging: false,
           scrollX: 0,
-          scrollY: 0
+          scrollY: 0,
+          windowWidth: 1024
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
-        pagebreak:    { mode: ['css', 'legacy'] }
+        pagebreak:    { 
+          mode: ['avoid-all', 'css', 'legacy'],
+          avoid: ['tr', '.avoid-page-break', 'thead', 'tfoot', '.cat-header']
+        }
       };
-      await html2pdf().from(proformaRef.current).set(opt as any).save();
+
+      await html2pdf().from(exportContainer).set(opt as any).save();
+      document.body.removeChild(exportContainer);
       toast.success("PDF başarıyla indirildi!", { id: toastId });
     } catch (error) {
       console.error("PDF oluşturma hatası:", error);
@@ -79,7 +100,114 @@ export default function ProformaTab({ project, salesItems, collections, categori
   };
 
   const handlePrint = () => {
-    window.print();
+    const sheet = proformaRef.current;
+    if (!sheet) return;
+
+    // Remove any previous print frame
+    const prevFrame = document.getElementById("proforma-print-iframe");
+    if (prevFrame) prevFrame.remove();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "proforma-print-iframe";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.visibility = "hidden";
+    document.body.appendChild(iframe);
+
+    const frameDoc = iframe.contentWindow?.document;
+    if (!frameDoc) return;
+
+    let stylesHtml = "";
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+      stylesHtml += node.outerHTML;
+    });
+
+    frameDoc.open();
+    frameDoc.write(`
+      <!DOCTYPE html>
+      <html lang="tr">
+        <head>
+          <meta charset="utf-8" />
+          <title>Proforma_${project?.reference || "Fatura"}</title>
+          ${stylesHtml}
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 10mm 12mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              box-sizing: border-box !important;
+            }
+            html, body {
+              background: #ffffff !important;
+              color: #111827 !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 100% !important;
+              height: auto !important;
+              min-height: auto !important;
+              overflow: visible !important;
+            }
+            #proforma-sheet {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+              border: none !important;
+              background: #ffffff !important;
+              display: block !important;
+              position: static !important;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              page-break-inside: auto !important;
+            }
+            thead {
+              display: table-header-group !important;
+            }
+            tfoot {
+              display: table-footer-group !important;
+            }
+            tr {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+            .avoid-page-break {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+            .cat-header {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              page-break-after: avoid !important;
+              break-after: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="proforma-sheet">
+            ${sheet.innerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    frameDoc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        iframe.remove();
+      }, 2000);
+    }, 450);
   };
 
   useEffect(() => {
@@ -289,13 +417,16 @@ export default function ProformaTab({ project, salesItems, collections, categori
                     });
 
                     return (
-                      <div key={catIdx} className="avoid-page-break">
-                        <div className="bg-[#1e293b] text-white px-2 py-1 mb-0.5 rounded-t">
+                      <div key={catIdx} className="mb-4">
+                        <div 
+                          className="cat-header bg-[#1e293b] text-white px-2 py-1 mb-0.5 rounded-t"
+                          style={{ pageBreakInside: 'avoid', breakInside: 'avoid', pageBreakAfter: 'avoid', breakAfter: 'avoid' }}
+                        >
                           <h3 className="text-[10px] font-bold uppercase tracking-widest">{categoryName}</h3>
                         </div>
-                        <table className="w-full text-[10px]">
+                        <table className="w-full text-[10px] border-collapse" style={{ pageBreakInside: 'auto' }}>
                           <thead>
-                            <tr className="bg-gray-100 text-gray-700 border-b border-gray-300">
+                            <tr className="bg-gray-100 text-gray-700 border-b border-gray-300" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                               <th className="py-1 px-2 text-left font-semibold w-[48%]">Açıklama</th>
                               <th className="py-1 px-2 text-center font-semibold">Miktar</th>
                               <th className="py-1 px-2 text-right font-semibold">B. Fiyat</th>
@@ -305,7 +436,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
                           </thead>
                           <tbody className="divide-y divide-gray-200 border-b border-gray-300">
                             {items.map((item, idx) => (
-                              <tr key={idx} className="group">
+                              <tr key={idx} className="group" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                                 <td className="py-1.5 px-2 text-gray-900 align-top">
                                   <div className="font-bold">{item.subCatName || item.mainCatName || "Hizmet"}</div>
                                   {item.description && <div className="text-[9px] text-gray-600 mt-0.5">{item.description}</div>}
@@ -319,9 +450,9 @@ export default function ProformaTab({ project, salesItems, collections, categori
                               </tr>
                             ))}
                           </tbody>
-                          <tfoot className="border-t border-gray-300 bg-gray-50/80">
+                          <tfoot className="border-t border-gray-300 bg-gray-50/80" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                             {Object.entries(catTotalsByCur).map(([cur, totalAmount], tIdx) => (
-                              <tr key={tIdx} className="font-bold text-gray-900">
+                              <tr key={tIdx} className="font-bold text-gray-900" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                                 <td colSpan={4} className="py-1 px-2 text-right text-[9px] uppercase tracking-wider text-gray-600">
                                   {categoryName} Ara Toplam
                                 </td>
@@ -339,22 +470,22 @@ export default function ProformaTab({ project, salesItems, collections, categori
               )}
             </div>
 
-            {/* FOOTER AREA (Totals & Payments & Bank) */}
-            <div className="flex flex-col gap-4 avoid-page-break px-1">
-              <div className="flex gap-6 items-start justify-between">
+            {/* FOOTER AREA (Totals & Payments) */}
+            <div className="avoid-page-break mb-4 px-1" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+              <div className="flex gap-4 items-start justify-between">
                 
                 {/* PAYMENTS */}
-                <div className="flex-1 max-w-[60%] w-full">
+                <div className="flex-1 w-[58%]">
                   {collections.length > 0 && (
                     <div className="bg-white border border-gray-300 rounded p-3">
                       <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">TAHSİLAT DÖKÜMÜ</h3>
-                      <table className="w-full text-[9px]">
+                      <table className="w-full text-[9px] border-collapse">
                         <tbody className="divide-y divide-gray-200">
                           {collections.map((col, idx) => (
-                            <tr key={idx}>
+                            <tr key={idx} style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                               <td className="py-1 text-gray-800 w-20">{formatDateForDisplay(col.date || col.payment_date || col.created_at)}</td>
                               <td className="py-1 text-gray-800 font-medium">{col.description || "Tahsilat"}</td>
-                              <td className="py-1 text-right font-bold text-emerald-700 ">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
+                              <td className="py-1 text-right font-bold text-emerald-700 whitespace-nowrap">{formatMoney(Number(col.amount || 0), col.currency || 'EUR')}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -364,33 +495,33 @@ export default function ProformaTab({ project, salesItems, collections, categori
                 </div>
 
                 {/* FINANCIAL SUMMARY */}
-                <div className="w-[280px] bg-white border border-gray-300 rounded p-4 shadow-sm">
+                <div className="w-[38%] bg-white border border-gray-300 rounded p-3 shadow-sm">
                   <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 text-right">FİNANSAL ÖZET</h3>
                   {curCodes.length === 0 ? (
                     <div className="text-center text-[10px] text-gray-400">Tutar yok.</div>
                   ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2.5">
                       {curCodes.map(cur => {
                         const balance = currencyTotals[cur].genelToplam - currencyTotals[cur].tahsilat;
                         return (
                           <div key={cur} className="border-b border-gray-200 pb-2 last:border-0 last:pb-0">
                             <div className="flex justify-between items-center text-[10px] text-gray-700 py-0.5">
                               <span>Ara Toplam (Matrah)</span>
-                              <span className="">{formatMoney(currencyTotals[cur].matrah, cur)}</span>
+                              <span className="font-medium">{formatMoney(currencyTotals[cur].matrah, cur)}</span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] text-gray-700 py-0.5">
                               <span>KDV Toplamı</span>
-                              <span className="">{formatMoney(currencyTotals[cur].kdv, cur)}</span>
+                              <span className="font-medium">{formatMoney(currencyTotals[cur].kdv, cur)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-[12px] font-bold text-gray-900 pt-1.5 mt-1 border-t border-gray-300">
+                            <div className="flex justify-between items-center text-[11px] font-bold text-gray-900 pt-1 mt-1 border-t border-gray-300">
                               <span>Genel Toplam</span>
-                              <span className="">{formatMoney(currencyTotals[cur].genelToplam, cur)}</span>
+                              <span className="font-black">{formatMoney(currencyTotals[cur].genelToplam, cur)}</span>
                             </div>
                             
                             {currencyTotals[cur].tahsilat > 0 && (
                               <div className="flex justify-between items-center py-1 mt-1 text-[11px] font-bold border-t border-gray-300 border-dashed">
                                 <span className="uppercase text-[9px] text-gray-500 tracking-widest">KALAN BAKİYE</span>
-                                <span className={` ${balance <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                <span className={`font-black ${balance <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                   {formatMoney(balance, cur)}
                                 </span>
                               </div>
@@ -402,32 +533,42 @@ export default function ProformaTab({ project, salesItems, collections, categori
                   )}
                 </div>
               </div>
-
-              {/* BANK ACCOUNTS (One per line) */}
-              {settings?.bankAccounts && settings.bankAccounts.length > 0 && (
-                <div className="border border-gray-300 rounded p-3 bg-white mt-2">
-                  <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">BANKA HESAP BİLGİLERİ</h3>
-                  <div className="flex flex-col gap-1">
-                    {settings.bankAccounts.map((acc: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-100 last:border-0">
-                        <div className="flex items-center gap-4">
-                          <span className="font-bold text-gray-900 whitespace-nowrap">{acc.bankName}</span>
-                          <span className="text-gray-600 truncate">{acc.companyTitle}</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-right">
-                          <span className=" font-bold text-gray-900">{acc.iban}</span>
-                          {acc.swiftCode ? <span className="text-gray-500 w-24">SWIFT: {acc.swiftCode}</span> : <span className="w-24"></span>}
-                          <span className="font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">{acc.currency}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+
+            {/* BANK ACCOUNTS */}
+            {settings?.bankAccounts && settings.bankAccounts.length > 0 && (
+              <div className="avoid-page-break border border-gray-300 rounded p-3 bg-white mt-2 px-3" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">BANKA HESAP BİLGİLERİ</h3>
+                <table className="w-full text-[10px] border-collapse">
+                  <tbody>
+                    {settings.bankAccounts.map((acc: any, idx: number) => (
+                      <tr key={idx} className="border-b border-gray-100 last:border-0" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                        <td className="py-1.5 font-bold text-gray-900 whitespace-nowrap align-middle">
+                          {acc.bankName}
+                        </td>
+                        <td className="py-1.5 px-3 text-gray-600 align-middle">
+                          {acc.companyTitle}
+                        </td>
+                        <td className="py-1.5 px-3 font-mono font-bold text-gray-900 text-right whitespace-nowrap align-middle">
+                          {acc.iban}
+                        </td>
+                        <td className="py-1.5 px-2 text-gray-500 text-right whitespace-nowrap align-middle">
+                          {acc.swiftCode ? `SWIFT: ${acc.swiftCode}` : ""}
+                        </td>
+                        <td className="py-1.5 pl-3 text-right whitespace-nowrap align-middle">
+                          <span className="font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[9px]">
+                            {acc.currency}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             
             {/* FOOTER NOTICE */}
-            <div className="mt-8 text-center text-[8px] text-gray-400 uppercase tracking-widest border-t border-gray-200 pt-2">
+            <div className="mt-6 text-center text-[8px] text-gray-400 uppercase tracking-widest border-t border-gray-200 pt-2" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
               BU BELGE PROFORMA NİTELİĞİNDEDİR, RESMİ FATURA YERİNE GEÇMEZ.
             </div>
 
@@ -437,17 +578,26 @@ export default function ProformaTab({ project, salesItems, collections, categori
       
       <style dangerouslySetInnerHTML={{__html: `
         .avoid-page-break {
-          page-break-inside: avoid;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        .cat-header {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          page-break-after: avoid !important;
+          break-after: avoid !important;
         }
         @media print {
           @page {
             size: A4 portrait;
-            margin: 0;
+            margin: 10mm 12mm;
           }
-          html, body {
+          html, body, #__next, .mobile-auth-wrapper, .glass-panel, main, .compact {
             background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
+            position: static !important;
           }
           body * {
             visibility: hidden !important;
@@ -456,18 +606,34 @@ export default function ProformaTab({ project, salesItems, collections, categori
             visibility: visible !important;
           }
           #proforma-sheet {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            position: static !important;
+            left: auto !important;
+            top: auto !important;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 10mm 15mm !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
             background: white !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            display: block !important;
+          }
+          table {
+            page-break-inside: auto !important;
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          thead {
+            display: table-header-group !important;
+          }
+          tfoot {
+            display: table-footer-group !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
         }
       `}} />
