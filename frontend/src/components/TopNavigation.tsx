@@ -114,6 +114,7 @@ export default function TopNavigation() {
   const [opModePassword, setOpModePassword] = useState("");
   const [isVerifyingOpMode, setIsVerifyingOpMode] = useState(false);
   const [showPasswordText, setShowPasswordText] = useState(false);
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     name: string;
     email: string;
@@ -515,6 +516,7 @@ export default function TopNavigation() {
         setShowOpModePassword(false);
         setOpModePassword("");
         setShowPasswordText(false);
+        setIsCapsLockOn(false);
         toast.success("Ofis moduna geçildi.");
       }
     } catch (err) {
@@ -1038,6 +1040,7 @@ export default function TopNavigation() {
                            setShowOpModePassword(true);
                            setOpModePassword("");
                            setShowPasswordText(false);
+                           setIsCapsLockOn(false);
                          } else {
                            toggleMode(true);
                          }
@@ -1098,26 +1101,32 @@ export default function TopNavigation() {
                   type="text"
                   autoComplete="off" 
                   autoCorrect="off" 
-                  spellCheck="false" 
-                  autoCapitalize="none"
+                  spellCheck={false}
+                  autoCapitalize="off"
                   data-lpignore="true"
                   data-1p-ignore="true"
                   data-bwignore="true"
                   data-form-type="other"
                   name="op_mode_custom_token"
                   id="op_mode_custom_token"
-                  readOnly
-                  onFocus={(e) => e.target.removeAttribute('readonly')}
                   value={opModePassword}
                   onChange={(e) => setOpModePassword(e.target.value)}
                   onKeyDown={(e) => {
+                    if (e.getModifierState) {
+                      setIsCapsLockOn(e.getModifierState("CapsLock"));
+                    }
                     if (e.key === "Enter" && !isVerifyingOpMode && opModePassword) {
                       e.preventDefault();
                       handleVerifyOpMode();
                     }
                   }}
+                  onKeyUp={(e) => {
+                    if (e.getModifierState) {
+                      setIsCapsLockOn(e.getModifierState("CapsLock"));
+                    }
+                  }}
                   placeholder="Hesap şifreniz"
-                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all select-none"
+                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   style={{ WebkitTextSecurity: showPasswordText ? "none" : "disc" } as any}
                   autoFocus
                 />
@@ -1130,6 +1139,13 @@ export default function TopNavigation() {
                   {showPasswordText ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+
+              {isCapsLockOn && (
+                <div className="flex items-center justify-center gap-1.5 text-amber-500 text-xs font-semibold -mt-2">
+                  <span>⚠️</span>
+                  <span>Caps Lock (Büyük Harf Kilidi) Açık!</span>
+                </div>
+              )}
               
               <div className="flex gap-3 w-full mt-2">
                 <button 
