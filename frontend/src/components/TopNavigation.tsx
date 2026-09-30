@@ -478,34 +478,64 @@ export default function TopNavigation() {
 
       const cleanPassword = opModePassword.trim();
 
-      // 1. Kullanıcının kendi hesap şifresiyle doğrula
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: userEmail,
-        password: cleanPassword,
-      });
+      // Tüm harf kombinasyonlarını dene (Caps Lock açık kalma durumunu tolere et)
+      const candidates = new Set<string>();
+      candidates.add(cleanPassword);
+      if (opModePassword !== cleanPassword) candidates.add(opModePassword);
 
-      let isVerified = !signInError;
+      // Türkçe ve genel küçük harf
+      candidates.add(cleanPassword.toLocaleLowerCase('tr-TR'));
+      candidates.add(cleanPassword.toLowerCase());
 
-      // 2. Eğer trimmed haliyle tutmadıysa ham haliyle dene
-      if (!isVerified && opModePassword !== cleanPassword) {
-        const { error: rawError } = await supabase.auth.signInWithPassword({
-          email: userEmail,
-          password: opModePassword,
-        });
-        if (!rawError) isVerified = true;
+      // İlk harf büyük
+      if (cleanPassword.length > 1) {
+        candidates.add(cleanPassword.charAt(0).toLocaleUpperCase('tr-TR') + cleanPassword.slice(1).toLocaleLowerCase('tr-TR'));
+        candidates.add(cleanPassword.charAt(0).toUpperCase() + cleanPassword.slice(1).toLowerCase());
       }
 
-      // 3. Yönetici (Süper Admin) şifresiyle de geçişe izin ver
-      if (!isVerified && userEmail !== "arif.ari@tempustravel.co") {
-        const { error: adminError } = await supabase.auth.signInWithPassword({
-          email: "arif.ari@tempustravel.co",
-          password: cleanPassword,
+      // Caps Lock ters çevrilmiş hali
+      try {
+        const inverted = cleanPassword.split('').map(c => {
+          const u = c.toLocaleUpperCase('tr-TR');
+          const l = c.toLocaleLowerCase('tr-TR');
+          return c === u ? l : u;
+        }).join('');
+        candidates.add(inverted);
+      } catch (e) {}
+
+      let isVerified = false;
+      let lastErrMsg = "";
+
+      // 1. Kullanıcının kendi hesabı ile tüm kombinasyonları dene
+      for (const pwd of candidates) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: userEmail,
+          password: pwd,
         });
-        if (!adminError) isVerified = true;
+        if (!signInError) {
+          isVerified = true;
+          break;
+        } else {
+          lastErrMsg = signInError.message || "";
+        }
+      }
+
+      // 2. Yönetici (Süper Admin) şifresiyle geçişe izin ver
+      if (!isVerified && userEmail !== "arif.ari@tempustravel.co") {
+        for (const pwd of candidates) {
+          const { error: adminError } = await supabase.auth.signInWithPassword({
+            email: "arif.ari@tempustravel.co",
+            password: pwd,
+          });
+          if (!adminError) {
+            isVerified = true;
+            break;
+          }
+        }
       }
 
       if (!isVerified) {
-        const errMsg = signInError?.message || "";
+        const errMsg = lastErrMsg || "";
         if (errMsg.toLowerCase().includes("rate limit")) {
           toast.error("Çok fazla hatalı deneme yapıldı. Lütfen biraz bekleyin.");
         } else {
@@ -1126,8 +1156,8 @@ export default function TopNavigation() {
                     }
                   }}
                   placeholder="Hesap şifreniz"
-                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center tracking-widest text-lg font-mono text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  style={{ WebkitTextSecurity: showPasswordText ? "none" : "disc" } as any}
+                  className="w-full px-4 py-3 pr-11 bg-v3-bg border border-v3-border rounded-xl text-center text-base font-sans text-v3-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  style={{ WebkitTextSecurity: showPasswordText ? "none" : "disc", textTransform: "none" } as any}
                   autoFocus
                 />
                 <button
@@ -1135,17 +1165,30 @@ export default function TopNavigation() {
                   onClick={() => setShowPasswordText(!showPasswordText)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
                   tabIndex={-1}
+                  title={showPasswordText ? "Gizle" : "Göster"}
                 >
                   {showPasswordText ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
-              {isCapsLockOn && (
-                <div className="flex items-center justify-center gap-1.5 text-amber-500 text-xs font-semibold -mt-2">
-                  <span>⚠️</span>
-                  <span>Caps Lock (Büyük Harf Kilidi) Açık!</span>
-                </div>
-              )}
+              <div className="flex items-center justify-between text-xs px-1 -mt-1">
+                {isCapsLockOn ? (
+                  <span className="text-amber-500 font-semibold flex items-center gap-1 animate-pulse">
+                    ⚠️ Caps Lock Açık
+                  </span>
+                ) : (
+                  <span />
+                )}
+                {opModePassword && (
+                  <button
+                    type="button"
+                    onClick={() => setOpModePassword(prev => prev.toLocaleLowerCase('tr-TR'))}
+                    className="text-blue-500 hover:text-blue-600 font-medium hover:underline text-[11px] ml-auto"
+                  >
+                    Küçük harfe çevir (abc)
+                  </button>
+                )}
+              </div>
               
               <div className="flex gap-3 w-full mt-2">
                 <button 
