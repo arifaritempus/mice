@@ -115,6 +115,7 @@ export default function TopNavigation() {
   const [isVerifyingOpMode, setIsVerifyingOpMode] = useState(false);
   const [showPasswordText, setShowPasswordText] = useState(false);
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
+  const [inputCaseMode, setInputCaseMode] = useState<"natural" | "title" | "lower">("natural");
   const [userProfile, setUserProfile] = useState<{
     name: string;
     email: string;
@@ -480,28 +481,28 @@ export default function TopNavigation() {
 
       // Tüm harf kombinasyonlarını dene (Caps Lock açık kalma durumunu tolere et)
       const candidates = new Set<string>();
-      candidates.add(cleanPassword);
-      if (opModePassword !== cleanPassword) candidates.add(opModePassword);
 
-      // Türkçe ve genel küçük harf
-      candidates.add(cleanPassword.toLocaleLowerCase('tr-TR'));
-      candidates.add(cleanPassword.toLowerCase());
-
-      // İlk harf büyük
-      if (cleanPassword.length > 1) {
-        candidates.add(cleanPassword.charAt(0).toLocaleUpperCase('tr-TR') + cleanPassword.slice(1).toLocaleLowerCase('tr-TR'));
-        candidates.add(cleanPassword.charAt(0).toUpperCase() + cleanPassword.slice(1).toLowerCase());
-      }
-
-      // Türkçe İ ve I harflerinin standart ASCII dönüşümleri
+      // 1. Türkçe İ/I düzeltilmiş Title Case hali (Örn: Selim123) - İLK SIRADA DENENİR
       const asciiClean = cleanPassword.replace(/İ/g, 'i').replace(/I/g, 'ı');
-      candidates.add(asciiClean);
-      candidates.add(asciiClean.toLowerCase());
       if (asciiClean.length > 1) {
         candidates.add(asciiClean.charAt(0).toUpperCase() + asciiClean.slice(1).toLowerCase());
       }
 
-      // Caps Lock ters çevrilmiş hali
+      // 2. Orijinal yazılan hali
+      candidates.add(cleanPassword);
+      if (opModePassword !== cleanPassword) candidates.add(opModePassword);
+
+      // 3. Tümü küçük hali
+      candidates.add(asciiClean.toLowerCase());
+      candidates.add(cleanPassword.toLocaleLowerCase('tr-TR'));
+      candidates.add(cleanPassword.toLowerCase());
+
+      // 4. İlk harf büyük Türkçe hali
+      if (cleanPassword.length > 1) {
+        candidates.add(cleanPassword.charAt(0).toLocaleUpperCase('tr-TR') + cleanPassword.slice(1).toLocaleLowerCase('tr-TR'));
+      }
+
+      // 5. Caps Lock ters çevrilmiş hali
       try {
         const inverted = cleanPassword.split('').map(c => {
           const u = c.toLocaleUpperCase('tr-TR');
@@ -555,6 +556,7 @@ export default function TopNavigation() {
         setOpModePassword("");
         setShowPasswordText(false);
         setIsCapsLockOn(false);
+        setInputCaseMode("natural");
         toast.success("Ofis moduna geçildi.");
       }
     } catch (err) {
@@ -1079,6 +1081,7 @@ export default function TopNavigation() {
                            setOpModePassword("");
                            setShowPasswordText(false);
                            setIsCapsLockOn(false);
+                           setInputCaseMode("natural");
                          } else {
                            toggleMode(true);
                          }
@@ -1133,7 +1136,44 @@ export default function TopNavigation() {
               </div>
             )}
             
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-full flex flex-col gap-3">
+              {/* Harf Düzeni Modu */}
+              <div className="flex items-center justify-center p-1 bg-v3-border/40 rounded-xl gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputCaseMode("title");
+                    if (opModePassword) {
+                      const c = opModePassword.replace(/İ/g, 'i');
+                      setOpModePassword(c.length > 0 ? (c.charAt(0).toUpperCase() + c.slice(1).toLowerCase()) : "");
+                    }
+                  }}
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all ${inputCaseMode === "title" ? "bg-blue-600 text-white shadow-sm" : "text-v3-muted hover:text-v3-text"}`}
+                >
+                  Abc (İlk Harf Büyük)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputCaseMode("lower");
+                    if (opModePassword) {
+                      const c = opModePassword.replace(/İ/g, 'i');
+                      setOpModePassword(c.toLowerCase());
+                    }
+                  }}
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all ${inputCaseMode === "lower" ? "bg-blue-600 text-white shadow-sm" : "text-v3-muted hover:text-v3-text"}`}
+                >
+                  abc (Küçük Harf)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputCaseMode("natural")}
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition-all ${inputCaseMode === "natural" ? "bg-blue-600 text-white shadow-sm" : "text-v3-muted hover:text-v3-text"}`}
+                >
+                  Doğal Klavye
+                </button>
+              </div>
+
               <div className="relative w-full">
                 <input 
                   type="text"
@@ -1148,7 +1188,16 @@ export default function TopNavigation() {
                   name="op_mode_custom_token"
                   id="op_mode_custom_token"
                   value={opModePassword}
-                  onChange={(e) => setOpModePassword(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (inputCaseMode === "lower") {
+                      val = val.replace(/İ/g, 'i').toLowerCase();
+                    } else if (inputCaseMode === "title") {
+                      const c = val.replace(/İ/g, 'i');
+                      val = c.length > 0 ? (c.charAt(0).toUpperCase() + c.slice(1).toLowerCase()) : "";
+                    }
+                    setOpModePassword(val);
+                  }}
                   onKeyDown={(e) => {
                     if (e.getModifierState) {
                       setIsCapsLockOn(e.getModifierState("CapsLock"));
@@ -1185,34 +1234,9 @@ export default function TopNavigation() {
                   <div className="flex-1">
                     <p className="font-semibold">Klavyenizde Caps Lock (Büyük Harf) Açık!</p>
                     <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
-                      Klavyenizdeki <strong>Caps Lock (⇪)</strong> tuşuna basarak kapatabilir veya doğrudan <strong>Geçiş Yap</strong> butonuna basabilirsiniz.
+                      Klavyenizdeki <strong>Caps Lock (⇪)</strong> tuşunu basılı tutup kapatabilir veya yukarıdaki <strong>Abc</strong> modunu seçebilirsiniz.
                     </p>
                   </div>
-                </div>
-              )}
-
-              {opModePassword && (
-                <div className="flex items-center justify-end gap-3 text-xs -mt-1 px-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const c = opModePassword.replace(/İ/g, 'i');
-                      setOpModePassword(c.charAt(0).toUpperCase() + c.slice(1).toLowerCase());
-                    }}
-                    className="text-blue-500 hover:text-blue-600 font-medium hover:underline text-[11px]"
-                  >
-                    İlk Harf Büyük Yap (Abc)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const c = opModePassword.replace(/İ/g, 'i');
-                      setOpModePassword(c.toLowerCase());
-                    }}
-                    className="text-blue-500 hover:text-blue-600 font-medium hover:underline text-[11px]"
-                  >
-                    Tümü Küçük (abc)
-                  </button>
                 </div>
               )}
               
