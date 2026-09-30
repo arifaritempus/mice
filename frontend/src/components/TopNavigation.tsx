@@ -493,6 +493,14 @@ export default function TopNavigation() {
         candidates.add(cleanPassword.charAt(0).toUpperCase() + cleanPassword.slice(1).toLowerCase());
       }
 
+      // Türkçe İ ve I harflerinin standart ASCII dönüşümleri
+      const asciiClean = cleanPassword.replace(/İ/g, 'i').replace(/I/g, 'ı');
+      candidates.add(asciiClean);
+      candidates.add(asciiClean.toLowerCase());
+      if (asciiClean.length > 1) {
+        candidates.add(asciiClean.charAt(0).toUpperCase() + asciiClean.slice(1).toLowerCase());
+      }
+
       // Caps Lock ters çevrilmiş hali
       try {
         const inverted = cleanPassword.split('').map(c => {
@@ -1171,24 +1179,42 @@ export default function TopNavigation() {
                 </button>
               </div>
 
-              <div className="flex items-center justify-between text-xs px-1 -mt-1">
-                {isCapsLockOn ? (
-                  <span className="text-amber-500 font-semibold flex items-center gap-1 animate-pulse">
-                    ⚠️ Caps Lock Açık
-                  </span>
-                ) : (
-                  <span />
-                )}
-                {opModePassword && (
+              {isCapsLockOn && (
+                <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300 -mt-1">
+                  <span className="text-base leading-none">⚠️</span>
+                  <div className="flex-1">
+                    <p className="font-semibold">Klavyenizde Caps Lock (Büyük Harf) Açık!</p>
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+                      Klavyenizdeki <strong>Caps Lock (⇪)</strong> tuşuna basarak kapatabilir veya doğrudan <strong>Geçiş Yap</strong> butonuna basabilirsiniz.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {opModePassword && (
+                <div className="flex items-center justify-end gap-3 text-xs -mt-1 px-1">
                   <button
                     type="button"
-                    onClick={() => setOpModePassword(prev => prev.toLocaleLowerCase('tr-TR'))}
-                    className="text-blue-500 hover:text-blue-600 font-medium hover:underline text-[11px] ml-auto"
+                    onClick={() => {
+                      const c = opModePassword.replace(/İ/g, 'i');
+                      setOpModePassword(c.charAt(0).toUpperCase() + c.slice(1).toLowerCase());
+                    }}
+                    className="text-blue-500 hover:text-blue-600 font-medium hover:underline text-[11px]"
                   >
-                    Küçük harfe çevir (abc)
+                    İlk Harf Büyük Yap (Abc)
                   </button>
-                )}
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const c = opModePassword.replace(/İ/g, 'i');
+                      setOpModePassword(c.toLowerCase());
+                    }}
+                    className="text-blue-500 hover:text-blue-600 font-medium hover:underline text-[11px]"
+                  >
+                    Tümü Küçük (abc)
+                  </button>
+                </div>
+              )}
               
               <div className="flex gap-3 w-full mt-2">
                 <button 
