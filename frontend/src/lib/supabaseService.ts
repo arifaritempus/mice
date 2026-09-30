@@ -5100,12 +5100,23 @@ export const invoicesService = {
 
     const cIdArray = Array.from(contactIds).filter(isUuidSafe);
 
+    const fetchUsersSafe = async (): Promise<any[]> => {
+      try {
+        const adminUsers = await usersService.getAll();
+        if (Array.isArray(adminUsers) && adminUsers.length > 0) return adminUsers;
+      } catch (e) {}
+      try {
+        const { data, error } = await supabase.from('users').select('id, full_name, email');
+        if (!error && Array.isArray(data) && data.length > 0) return data;
+      } catch (e) {}
+      return [];
+    };
+
     const [agenciesData, hotelsData, suppliersData, allUsersData] = await Promise.all([
       fetchChunkedTable('agencies', 'id, name', cIdArray),
       fetchChunkedTable('hotels', 'id, name', cIdArray),
       fetchChunkedTable('suppliers', 'id, name', cIdArray),
-      // Kullanıcı tablosu genelde ufak bir listedir, doğrudan tüm kullanıcıları çekerek hem URL 400 hatasını önlüyoruz hem de eksiksiz eşleştiriyoruz
-      supabase.from('users').select('id, name, first_name, last_name, email').then(r => r.data || [])
+      fetchUsersSafe()
     ]);
 
     const invoicedMap = (invoiceItems || []).reduce((acc: any, ii: any) => {
@@ -5116,8 +5127,8 @@ export const invoicesService = {
     const agenciesMap = agenciesData.reduce((acc: any, a: any) => { acc[a.id] = a; return acc; }, {});
     const hotelsMap = hotelsData.reduce((acc: any, h: any) => { acc[h.id] = h; return acc; }, {});
     const suppliersMap = suppliersData.reduce((acc: any, s: any) => { acc[s.id] = s; return acc; }, {});
-    const usersMap = allUsersData.reduce((acc: any, u: any) => {
-      const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.email || 'Personel';
+    const usersMap = (allUsersData || []).reduce((acc: any, u: any) => {
+      const fullName = u.full_name || [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.email || 'Personel';
       acc[u.id] = { id: u.id, name: fullName };
       return acc;
     }, {});
@@ -5195,9 +5206,9 @@ export const invoicesService = {
       }
 
       const outSupplierName = outSupplierId 
-        ? (suppliersMap[outSupplierId]?.name || usersMap[outSupplierId]?.name || agenciesMap[outSupplierId]?.name || 'Tedarikçi') 
-        : null;
-      const outHotelName = outHotelId ? (hotelsMap[outHotelId]?.name || 'Otel') : null;
+        ? (suppliersMap[outSupplierId]?.name || usersMap[outSupplierId]?.name || agenciesMap[outSupplierId]?.name || item.supplier_name || 'Tedarikçi') 
+        : (item.supplier_name || null);
+      const outHotelName = outHotelId ? (hotelsMap[outHotelId]?.name || item.hotel_name || 'Otel') : (item.hotel_name || null);
 
       return {
         ...item,
