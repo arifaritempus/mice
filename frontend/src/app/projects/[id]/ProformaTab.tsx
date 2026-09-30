@@ -53,23 +53,10 @@ export default function ProformaTab({ project, salesItems, collections, categori
     setIsExporting(true);
     const toastId = toast.loading("Proforma PDF indiriliyor...");
     try {
-      const source = proformaRef.current;
-
-      // Clone element into an isolated off-screen container with exact A4 inner width (190mm = 210mm - 2*10mm margins)
-      const exportContainer = document.createElement("div");
-      exportContainer.style.position = "fixed";
-      exportContainer.style.left = "-9999px";
-      exportContainer.style.top = "0";
-      exportContainer.style.width = "190mm";
-      exportContainer.style.backgroundColor = "#ffffff";
-      exportContainer.style.color = "#111827";
-      exportContainer.style.padding = "0";
-      exportContainer.style.margin = "0";
-      exportContainer.innerHTML = source.innerHTML;
-      document.body.appendChild(exportContainer);
+      const element = proformaRef.current;
 
       const opt = {
-        margin:       [10, 10, 10, 10], // 10mm margins on every page
+        margin:       [8, 6, 8, 6], // 8mm top/bottom, 6mm left/right
         filename:     `Proforma_${project?.reference || 'Fatura'}.pdf`,
         image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { 
@@ -78,8 +65,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
           allowTaint: true,
           logging: false,
           scrollX: 0,
-          scrollY: 0,
-          windowWidth: 1024
+          scrollY: 0
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
         pagebreak:    { 
@@ -88,8 +74,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
         }
       };
 
-      await html2pdf().from(exportContainer).set(opt as any).save();
-      document.body.removeChild(exportContainer);
+      await html2pdf().set(opt as any).from(element).save();
       toast.success("PDF başarıyla indirildi!", { id: toastId });
     } catch (error) {
       console.error("PDF oluşturma hatası:", error);
@@ -126,13 +111,19 @@ export default function ProformaTab({ project, salesItems, collections, categori
       stylesHtml += node.outerHTML;
     });
 
+    const htmlClasses = typeof document !== 'undefined' ? document.documentElement.className : "";
+    const bodyClasses = typeof document !== 'undefined' ? document.body.className : "";
+
     frameDoc.open();
     frameDoc.write(`
       <!DOCTYPE html>
-      <html lang="tr">
+      <html lang="tr" class="${htmlClasses}">
         <head>
           <meta charset="utf-8" />
           <title>Proforma_${project?.reference || "Fatura"}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
           ${stylesHtml}
           <style>
             @page {
@@ -140,6 +131,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
               margin: 10mm 12mm;
             }
             * {
+              font-family: 'Outfit', var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
               box-sizing: border-box !important;
@@ -147,6 +139,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
             html, body {
               background: #ffffff !important;
               color: #111827 !important;
+              font-family: 'Outfit', var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               margin: 0 !important;
               padding: 0 !important;
               width: 100% !important;
@@ -164,6 +157,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
               background: #ffffff !important;
               display: block !important;
               position: static !important;
+              font-family: 'Outfit', var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
             }
             table {
               width: 100% !important;
@@ -192,7 +186,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
             }
           </style>
         </head>
-        <body>
+        <body class="${bodyClasses}">
           <div id="proforma-sheet">
             ${sheet.innerHTML}
           </div>
@@ -201,13 +195,21 @@ export default function ProformaTab({ project, salesItems, collections, categori
     `);
     frameDoc.close();
 
-    setTimeout(() => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
+    const triggerPrint = () => {
       setTimeout(() => {
-        iframe.remove();
-      }, 2000);
-    }, 450);
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        setTimeout(() => {
+          iframe.remove();
+        }, 2000);
+      }, 250);
+    };
+
+    if ((frameDoc as any).fonts) {
+      (frameDoc as any).fonts.ready.then(triggerPrint).catch(triggerPrint);
+    } else {
+      setTimeout(triggerPrint, 500);
+    }
   };
 
   useEffect(() => {
@@ -322,7 +324,7 @@ export default function ProformaTab({ project, salesItems, collections, categori
           ref={proformaRef} 
           id="proforma-sheet"
           className="bg-white text-gray-900 shadow-xl shrink-0 mx-auto print-exact"
-          style={{ width: '210mm', position: 'relative', minHeight: 'auto' }}
+          style={{ width: '210mm', position: 'relative', minHeight: 'auto', fontFamily: 'var(--font-outfit), "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
         >
           <div className="px-8 py-8">
             
