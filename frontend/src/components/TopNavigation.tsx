@@ -1026,15 +1026,25 @@ export default function TopNavigation() {
               e.preventDefault();
               setIsVerifyingOpMode(true);
               try {
+                const { data: { user } } = await supabase.auth.getUser();
+                const userEmail = user?.email || userProfile?.email || "";
+                
+                if (!userEmail) {
+                  toast.error("Kullanıcı oturumu bulunamadı. Lütfen sayfayı yenileyin.");
+                  return;
+                }
+
                 const { error } = await supabase.auth.signInWithPassword({
-                  email: userProfile?.email || "",
+                  email: userEmail,
                   password: opModePassword
                 });
                 if (error) {
-                  toast.error("Hatalı şifre!");
+                  console.warn("Ofis Modu şifre doğrulama hatası:", error.message);
+                  toast.error("Hatalı şifre! Lütfen kullanıcı hesabınızın giriş şifresini girin.");
                 } else {
                   toggleMode(false);
                   setShowOpModePassword(false);
+                  setOpModePassword("");
                   toast.success("Ofis moduna geçildi.");
                 }
               } catch (err) {
