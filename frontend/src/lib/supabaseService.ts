@@ -4099,6 +4099,35 @@ const fetchChunkedTable = async (table: string, columns: string, ids: string[]):
   return results.flatMap(r => r.data || []);
 };
 
+// Supabase varsayılan 1000 satır limitini aşarak tablodaki tüm kayıtları çeken güvenli fonksiyon
+const fetchAllRows = async <T = any>(
+  tableName: string,
+  columns: string = '*',
+  orderColumn: string = 'created_at',
+  applyFilters?: (query: any) => any
+): Promise<T[]> => {
+  let allRows: T[] = [];
+  let from = 0;
+  const batchSize = 1000;
+  while (true) {
+    let q = supabase
+      .from(tableName)
+      .select(columns)
+      .order(orderColumn, { ascending: false })
+      .range(from, from + batchSize - 1);
+    if (applyFilters) {
+      q = applyFilters(q);
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allRows = allRows.concat(data as T[]);
+    if (data.length < batchSize) break;
+    from += batchSize;
+  }
+  return allRows;
+};
+
 // --- Fatura Servisleri ---
 export const invoicesService = {
   async getInvoicesPage(params: {
@@ -4718,10 +4747,10 @@ export const invoicesService = {
 
   // Bekleyen Satış Kalemlerini Getir (Faturası kesilmemiş veya eksik kesilmiş)
   async getPendingSalesItems(): Promise<any[]> {
-    const { data: items, error: itemsError } = await supabase.from('project_sales_items').select('*').order('created_at', { ascending: false });
-    if (itemsError) throw itemsError;
-
-    const { data: invoiceItems } = await supabase.from('invoice_items').select('*').eq('item_type', 'sales');
+    const [items, invoiceItems] = await Promise.all([
+      fetchAllRows('project_sales_items'),
+      fetchAllRows('invoice_items', '*', 'created_at', q => q.eq('item_type', 'sales'))
+    ]);
     
     // Collect IDs
     const itemIds = (items || []).map(i => i.id);
@@ -5002,10 +5031,10 @@ export const invoicesService = {
 
   // Bekleyen Alış Kalemlerini Getir
   async getPendingPurchaseItems(): Promise<any[]> {
-    const { data: items, error: itemsError } = await supabase.from('project_purchase_items').select('*').order('created_at', { ascending: false });
-    if (itemsError) throw itemsError;
-
-    const { data: invoiceItems } = await supabase.from('invoice_items').select('*').eq('item_type', 'purchase');
+    const [items, invoiceItems] = await Promise.all([
+      fetchAllRows('project_purchase_items'),
+      fetchAllRows('invoice_items', '*', 'created_at', q => q.eq('item_type', 'purchase'))
+    ]);
 
     // Collect IDs
     const projectIds = Array.from(new Set((items || []).map(i => i.project_id).filter(Boolean)));
