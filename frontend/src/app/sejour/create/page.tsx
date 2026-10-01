@@ -416,17 +416,39 @@ export default function CreateSejourPage() {
     return 1;
   };
 
-  const fetchRatesForDate = async (dateStr?: string, strategy: string = salesData.exchangeRateStrategy || "tcmb_banknote_selling") => {
+  const hasForeignCurrency = () => {
+    const isForeign = (c?: string) => Boolean(c && c.toUpperCase() !== "TRY");
+    return (
+      rooms.some(r => isForeign(r.currency) || isForeign(r.costCurrency)) ||
+      flights.some(f => isForeign(f.currency) || isForeign(f.costCurrency)) ||
+      transfers.some(t => isForeign(t.currency) || isForeign(t.costCurrency)) ||
+      extraServices.some(s => isForeign(s.currency) || isForeign(s.costCurrency))
+    );
+  };
+
+  const fetchRatesForDate = async (
+    dateStr?: string,
+    strategy: string = salesData.exchangeRateStrategy || "tcmb_banknote_selling",
+    isManualClick: boolean = false
+  ) => {
     try {
       setRatesLoading(true);
-      const { getTcmbRatesForDate } = await import("@/lib/sejourRatesService");
-      const rates = await getTcmbRatesForDate(dateStr || salesData.checkInDate, strategy);
+      const targetDate = dateStr || salesData.checkInDate || new Date().toISOString().split("T")[0];
+      const res = await fetch(`/api/sejour/rates?date=${encodeURIComponent(targetDate)}&strategy=${encodeURIComponent(strategy)}`);
+      if (!res.ok) {
+        throw new Error(`Kurlar alınamadı (HTTP ${res.status})`);
+      }
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || "Kurlar alınamadı");
+      }
+      const rates = data.rates || data;
       setSalesData(prev => ({
         ...prev,
         exchangeRateStrategy: strategy,
-        usdRate: rates.usd_rate,
-        eurRate: rates.eur_rate,
-        gbpRate: rates.gbp_rate
+        usdRate: Number(rates.usd_rate) || 1,
+        eurRate: Number(rates.eur_rate) || 1,
+        gbpRate: Number(rates.gbp_rate) || 1
       }));
 
       // Kurlar değiştiğinde satırların varsayılan kurlarını güncelle
@@ -482,9 +504,15 @@ export default function CreateSejourPage() {
         };
       }));
 
+      if (isManualClick) {
+        toast.success(`TCMB kurları başarıyla güncellendi (USD: ${rates.usd_rate} ₺, EUR: ${rates.eur_rate} ₺)`);
+      }
       return rates;
-    } catch (e) {
+    } catch (e: any) {
       console.warn("Could not fetch TCMB rates:", e);
+      if (isManualClick) {
+        toast.error(`Kurlar alınamadı: ${e?.message || 'Bilinmeyen hata'}`);
+      }
     } finally {
       setRatesLoading(false);
     }
@@ -618,6 +646,7 @@ export default function CreateSejourPage() {
     loadData();
     loadLogos();
     loadCompanyInfo();
+    fetchRatesForDate(salesData.checkInDate, salesData.exchangeRateStrategy);
   }, []);
 
   const loadLogos = async () => {
@@ -1721,118 +1750,120 @@ export default function CreateSejourPage() {
               </div>
 
               {/* DÖVİZ KURU YÖNETİMİ BAR */}
-              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-blue-100 dark:border-blue-900/40 p-4 mb-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-black text-lg">
-                      ₺
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">Döviz Kuru Yönetimi</h3>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                          {salesData.checkInDate ? `Giriş: ${new Date(salesData.checkInDate).toLocaleDateString("tr-TR")}` : "Bugün"}
-                        </span>
-                        {ratesLoading && (
-                          <span className="text-[10px] text-blue-500 flex items-center gap-1 font-medium animate-pulse">
-                            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="4" className="opacity-25"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                            Kurlar alınıyor...
+              {hasForeignCurrency() && (
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-blue-100 dark:border-blue-900/40 p-4 mb-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-black text-lg">
+                        ₺
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-gray-900 dark:text-white">Döviz Kuru Yönetimi</h3>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                            {salesData.checkInDate ? `Giriş: ${new Date(salesData.checkInDate).toLocaleDateString("tr-TR")}` : "Bugün"}
                           </span>
-                        )}
+                          {ratesLoading && (
+                            <span className="text-[10px] text-blue-500 flex items-center gap-1 font-medium animate-pulse">
+                              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="4" className="opacity-25"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                              Kurlar alınıyor...
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-gray-500">Dövizli satış ve maliyetler TCMB kurlarıyla otomatik hesaplanır, dilediğinizde değiştirebilirsiniz.</p>
                       </div>
-                      <p className="text-[11px] text-gray-500">Dövizli satış ve maliyetler TCMB kurlarıyla otomatik hesaplanır, dilediğinizde değiştirebilirsiniz.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="w-48">
-                      <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Kur Stratejisi</label>
-                      <select
-                        value={salesData.exchangeRateStrategy || "tcmb_banknote_selling"}
-                        onChange={(e) => {
-                          const strategy = e.target.value;
-                          setSalesData(prev => ({ ...prev, exchangeRateStrategy: strategy }));
-                          if (strategy !== "manuel") {
-                            fetchRatesForDate(salesData.checkInDate, strategy);
-                          }
-                        }}
-                        className="w-full h-[34px] px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500"
-                      >
-                        <option value="tcmb_banknote_selling">TCMB Efektif Satış (Varsayılan)</option>
-                        <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
-                        <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
-                        <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
-                        <option value="manuel">Manuel</option>
-                      </select>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">USD (Dolar)</label>
-                        <input
-                          type="number"
-                          step="0.0001"
-                          value={salesData.usdRate || ""}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="w-48">
+                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Kur Stratejisi</label>
+                        <select
+                          value={salesData.exchangeRateStrategy || "tcmb_banknote_selling"}
                           onChange={(e) => {
-                            const val = parseFloat(e.target.value) || 1;
-                            setSalesData(prev => ({ ...prev, usdRate: val }));
+                            const strategy = e.target.value;
+                            setSalesData(prev => ({ ...prev, exchangeRateStrategy: strategy }));
+                            if (strategy !== "manuel") {
+                              fetchRatesForDate(salesData.checkInDate, strategy);
+                            }
                           }}
-                          className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">EUR (Euro)</label>
-                        <input
-                          type="number"
-                          step="0.0001"
-                          value={salesData.eurRate || ""}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value) || 1;
-                            setSalesData(prev => ({ ...prev, eurRate: val }));
-                          }}
-                          className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">GBP (Sterlin)</label>
-                        <input
-                          type="number"
-                          step="0.0001"
-                          value={salesData.gbpRate || ""}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value) || 1;
-                            setSalesData(prev => ({ ...prev, gbpRate: val }));
-                          }}
-                          className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
-                        />
-                      </div>
-
-                      <div className="flex items-end gap-1.5 pt-3">
-                        <button
-                          type="button"
-                          onClick={() => fetchRatesForDate(salesData.checkInDate, salesData.exchangeRateStrategy)}
-                          disabled={ratesLoading}
-                          className="h-[34px] px-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
-                          title="TCMB'den güncel kuru yeniden çek"
+                          className="w-full h-[34px] px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500"
                         >
-                          <svg className={`w-3.5 h-3.5 ${ratesLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                          TCMB Çek
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applyHeaderRatesToRows()}
-                          className="h-[34px] px-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 rounded-lg text-xs font-bold transition-all"
-                          title="Bu kurları eklenmiş tüm satırlara uygula"
-                        >
-                          Satırlara Uygula
-                        </button>
+                          <option value="tcmb_banknote_selling">TCMB Efektif Satış (Varsayılan)</option>
+                          <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
+                          <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
+                          <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
+                          <option value="manuel">Manuel</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">USD (Dolar)</label>
+                          <input
+                            type="number"
+                            step="0.0001"
+                            value={salesData.usdRate || ""}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 1;
+                              setSalesData(prev => ({ ...prev, usdRate: val }));
+                            }}
+                            className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">EUR (Euro)</label>
+                          <input
+                            type="number"
+                            step="0.0001"
+                            value={salesData.eurRate || ""}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 1;
+                              setSalesData(prev => ({ ...prev, eurRate: val }));
+                            }}
+                            className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">GBP (Sterlin)</label>
+                          <input
+                            type="number"
+                            step="0.0001"
+                            value={salesData.gbpRate || ""}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 1;
+                              setSalesData(prev => ({ ...prev, gbpRate: val }));
+                            }}
+                            className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
+                          />
+                        </div>
+
+                        <div className="flex items-end gap-1.5 pt-3">
+                          <button
+                            type="button"
+                            onClick={() => fetchRatesForDate(salesData.checkInDate, salesData.exchangeRateStrategy, true)}
+                            disabled={ratesLoading}
+                            className="h-[34px] px-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
+                            title="TCMB'den güncel kuru yeniden çek"
+                          >
+                            <svg className={`w-3.5 h-3.5 ${ratesLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            TCMB Çek
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applyHeaderRatesToRows()}
+                            className="h-[34px] px-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 rounded-lg text-xs font-bold transition-all"
+                            title="Bu kurları eklenmiş tüm satırlara uygula"
+                          >
+                            Satırlara Uygula
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* HİZMETLER BÖLÜMÜ BAŞLIĞI */}
               <div className="flex items-center justify-between mb-4">
@@ -2853,7 +2884,7 @@ export default function CreateSejourPage() {
               <div className="flex-1"></div>
               <div className="flex items-center justify-center gap-6 overflow-x-auto pb-1 absolute left-1/2 -translate-x-1/2 w-max max-w-[70vw]">
                 {/* KONSOLİDE TRY ÖZET KARTI */}
-                {(calculateTotalSalesTRY() > 0 || calculateTotalCostTRY() > 0) && (
+                {hasForeignCurrency() && (calculateTotalSalesTRY() > 0 || calculateTotalCostTRY() > 0) && (
                   <div className="flex items-center gap-4 min-w-max border-r-2 border-blue-500/40 pr-6 bg-blue-50/50 dark:bg-blue-950/20 px-3 py-1 rounded-xl border border-blue-100 dark:border-blue-900/30">
                     <div className="flex flex-col">
                       <div className="flex items-center gap-1.5 mb-1">

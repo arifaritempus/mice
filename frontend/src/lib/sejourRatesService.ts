@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { XMLParser } from 'fast-xml-parser';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY! || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -11,9 +12,88 @@ export interface ExchangeRatesResult {
   rateDate?: string;
 }
 
+function parseTcmbXml(xml: string) {
+  try {
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_",
+      parseTagValue: false,
+    });
+    const json = parser.parse(xml);
+    const tarihDate = json.Tarih_Date;
+    if (!tarihDate) return null;
+
+    const currencies = Array.isArray(tarihDate.Currency)
+      ? tarihDate.Currency
+      : [tarihDate.Currency];
+
+    const bultenNo = tarihDate["@_Bulten_No"] || "";
+    const targetCodes = ["USD", "EUR", "GBP"];
+
+    return currencies
+      .filter((c: any) => targetCodes.includes(c["@_Kod"]))
+      .map((c: any) => ({
+        bulten_no: bultenNo,
+        kod: c["@_Kod"],
+        currency_code: c["@_CurrencyCode"],
+        birim: Number(c.Unit) || 1,
+        isim: c.Isim,
+        currency_name: c.CurrencyName,
+        forex_buying: parseFloat(c.ForexBuying?.replace(",", ".")) || 1,
+        forex_selling: parseFloat(c.ForexSelling?.replace(",", ".")) || 1,
+        banknote_buying: c.BanknoteBuying ? (parseFloat(c.BanknoteBuying.replace(",", ".")) || 1) : (parseFloat(c.ForexBuying?.replace(",", ".")) || 1),
+        banknote_selling: c.BanknoteSelling ? (parseFloat(c.BanknoteSelling.replace(",", ".")) || 1) : (parseFloat(c.ForexSelling?.replace(",", ".")) || 1),
+      }));
+  } catch (e) {
+    console.error("[TCMB Parse Error]:", e);
+    return null;
+  }
+}
+
+async function fetchFromTcmbDirect(dateStr?: string) {
+  const now = new Date();
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(now);
+  const target = dateStr && dateStr <= todayStr ? dateStr : todayStr;
+
+  let url = "https://www.tcmb.gov.tr/kurlar/today.xml";
+  if (target !== todayStr) {
+    const [year, month, day] = target.split("-");
+    url = `https://www.tcmb.gov.tr/kurlar/${year}${month}/${day}${month}${year}.xml`;
+  }
+
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/xml" },
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const xml = await res.text();
+      const parsed = parseTcmbXml(xml);
+      if (parsed && parsed.length > 0) return { records: parsed, date: target };
+    }
+
+    // Tarih hafta sonu / tatil ise today.xml dene
+    if (url !== "https://www.tcmb.gov.tr/kurlar/today.xml") {
+      const todayRes = await fetch("https://www.tcmb.gov.tr/kurlar/today.xml", {
+        headers: { Accept: "application/xml" },
+        cache: "no-store",
+      });
+      if (todayRes.ok) {
+        const xml = await todayRes.text();
+        const parsed = parseTcmbXml(xml);
+        if (parsed && parsed.length > 0) return { records: parsed, date: todayStr };
+      }
+    }
+  } catch (err) {
+    console.error("[TCMB Direct Fetch Error]:", err);
+  }
+  return null;
+}
+
 /**
  * Belirli bir tarih ve strateji için TCMB kurlarını çeker.
- * Eğer verilen tarih tatil/hafta sonu ise en yakın önceki iş gününün kurunu alır.
+ * DB'de yoksa veya cron henüz çalışmamışsa doğrudan TCMB servisinden çekip DB'ye kaydeder.
  */
 export async function getTcmbRatesForDate(
   targetDateStr?: string,
@@ -27,6 +107,9 @@ export async function getTcmbRatesForDate(
     return { usd_rate: 1, eur_rate: 1, gbp_rate: 1, rateDate: dateToUse };
   }
 
+  const fieldName = strategy.replace('tcmb_', ''); // banknote_selling, forex_buying, vb.
+
+  // 1. Önce veritabanında tarih veya öncesi var mı kontrol et
   const { data: latestDateObj } = await supabase
     .from('tcmb_kurlari')
     .select('tarih')
@@ -35,33 +118,76 @@ export async function getTcmbRatesForDate(
     .limit(1)
     .maybeSingle();
 
-  let usd_rate = 1;
-  let eur_rate = 1;
-  let gbp_rate = 1;
-  let rateDate = dateToUse;
-
   if (latestDateObj?.tarih) {
-    rateDate = latestDateObj.tarih;
     const { data: rates } = await supabase
       .from('tcmb_kurlari')
       .select('*')
       .eq('tarih', latestDateObj.tarih);
 
     if (rates && rates.length > 0) {
-      const fieldName = strategy.replace('tcmb_', ''); // banknote_selling, forex_buying, vb.
-
       const getRate = (code: string) => {
         const r = rates.find((x: any) => x.kod === code);
         return r && r[fieldName] ? Number(r[fieldName]) : 1;
       };
 
-      usd_rate = getRate('USD');
-      eur_rate = getRate('EUR');
-      gbp_rate = getRate('GBP');
+      const usd = getRate('USD');
+      const eur = getRate('EUR');
+      const gbp = getRate('GBP');
+
+      // Eğer kurlar 1'den büyük ve geçerliyse dön
+      if (usd > 1 && eur > 1) {
+        return { usd_rate: usd, eur_rate: eur, gbp_rate: gbp, rateDate: latestDateObj.tarih };
+      }
     }
   }
 
-  return { usd_rate, eur_rate, gbp_rate, rateDate };
+  // 2. DB'de yoksa veya kurlar eksikse doğrudan TCMB'den çek
+  const directResult = await fetchFromTcmbDirect(dateToUse);
+  if (directResult && directResult.records.length > 0) {
+    const getRate = (code: string) => {
+      const r = directResult.records.find((x: any) => x.kod === code);
+      return r && (r as any)[fieldName] ? Number((r as any)[fieldName]) : 1;
+    };
+
+    const usd_rate = getRate('USD');
+    const eur_rate = getRate('EUR');
+    const gbp_rate = getRate('GBP');
+
+    // DB'ye arka planda kaydetmeyi dene (upsert)
+    try {
+      const toUpsert = directResult.records.map((r: any) => ({
+        ...r,
+        tarih: directResult.date,
+      }));
+      await supabase.from('tcmb_kurlari').upsert(toUpsert, { onConflict: 'tarih, kod' });
+    } catch (saveErr) {
+      console.warn('[TCMB Upsert Warning]:', saveErr);
+    }
+
+    return { usd_rate, eur_rate, gbp_rate, rateDate: directResult.date };
+  }
+
+  // 3. Doğrudan çekme de başarısız olduysa DB'deki en son kaydı al (tarih filtresiz)
+  const { data: fallbackRates } = await supabase
+    .from('tcmb_kurlari')
+    .select('*')
+    .order('tarih', { ascending: false })
+    .limit(10);
+
+  if (fallbackRates && fallbackRates.length > 0) {
+    const getRate = (code: string) => {
+      const r = fallbackRates.find((x: any) => x.kod === code);
+      return r && r[fieldName] ? Number(r[fieldName]) : 1;
+    };
+    const usd = getRate('USD');
+    const eur = getRate('EUR');
+    const gbp = getRate('GBP');
+    if (usd > 1 && eur > 1) {
+      return { usd_rate: usd, eur_rate: eur, gbp_rate: gbp, rateDate: fallbackRates[0].tarih };
+    }
+  }
+
+  return { usd_rate: 1, eur_rate: 1, gbp_rate: 1, rateDate: dateToUse };
 }
 
 /**
