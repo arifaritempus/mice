@@ -25,6 +25,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { DEFAULT_PAGE_SIZE } from "@/types/pagination";
 import { usePermissions, Module } from "@/lib/permissions";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useOperationMode } from "@/hooks/useOperationMode";
 
 interface PartTimeService {
   id: string;
@@ -64,6 +65,7 @@ interface DateRangeFieldProps {
 
 export default function PartTimePage() {
   const { t, language } = useLanguage();
+  const { isOperationMode } = useOperationMode();
   const { canView, loading: permissionsLoading } = usePermissions();
   const [partTimeServices, setPartTimeServices] = useState<PartTimeService[]>(
     [],
@@ -374,22 +376,28 @@ export default function PartTimePage() {
         { header: t('parttime.colServiceType') || "Hizmet Türü", key: "service_type", width: 18 },
         { header: t('parttime.colSupplier') || "Tedarikçi", key: "supplier", width: 18 },
         { header: t('parttime.colEmployee') || "Çalışan Adı", key: "employee_name", width: 18 },
-        { header: t('parttime.colCost') || "Maliyet", key: "cost_price", width: 12 },
-        { header: t('parttime.colCurrency') || "Döviz", key: "currency", width: 8 },
-        { header: t('parttime.colFx') || "Kur", key: "fx", width: 10 },
-        { header: t('parttime.colTotalTRY') || "Toplam TL", key: "totalTRY", width: 12 },
+        ...(!isOperationMode
+          ? [
+              { header: t('parttime.colCost') || "Maliyet", key: "cost_price", width: 12 },
+              { header: t('parttime.colCurrency') || "Döviz", key: "currency", width: 8 },
+              { header: t('parttime.colFx') || "Kur", key: "fx", width: 10 },
+              { header: t('parttime.colTotalTRY') || "Toplam TL", key: "totalTRY", width: 12 },
+            ]
+          : []),
       ];
 
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
       sheet.getRow(headerRow.number).height = 18;
 
       // Sayısal sütun biçimi
-      sheet.getColumn("cost_price").numFmt = "#,##0.00";
-      sheet.getColumn("cost_price").alignment = { horizontal: "right" } as any;
-      sheet.getColumn("fx").numFmt = "#,##0.00";
-      sheet.getColumn("fx").alignment = { horizontal: "right" } as any;
-      sheet.getColumn("totalTRY").numFmt = "#,##0.00";
-      sheet.getColumn("totalTRY").alignment = { horizontal: "right" } as any;
+      if (!isOperationMode) {
+        sheet.getColumn("cost_price").numFmt = "#,##0.00";
+        sheet.getColumn("cost_price").alignment = { horizontal: "right" } as any;
+        sheet.getColumn("fx").numFmt = "#,##0.00";
+        sheet.getColumn("fx").alignment = { horizontal: "right" } as any;
+        sheet.getColumn("totalTRY").numFmt = "#,##0.00";
+        sheet.getColumn("totalTRY").alignment = { horizontal: "right" } as any;
+      }
 
       headerRow.eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -438,10 +446,14 @@ export default function PartTimePage() {
           service_type: service.service_type || "",
           supplier: service.supplier || "",
           employee_name: service.employee_name || "",
-          cost_price: costPrice,
-          currency: service.cost_currency || service.currency || "TRY",
-          fx,
-          totalTRY,
+          ...(!isOperationMode
+            ? {
+                cost_price: costPrice,
+                currency: service.cost_currency || service.currency || "TRY",
+                fx,
+                totalTRY,
+              }
+            : {}),
         });
       });
 
@@ -809,50 +821,54 @@ export default function PartTimePage() {
                       </span>
                     )}
                   </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("cost_price")}
-                  >
-                    {t('parttime.colCost') || "MALİYET"}
-                    {sortField === "cost_price" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("cost_currency")}
-                  >
-                    {t('parttime.colCurrency') || "DÖVİZ"}
-                    {sortField === "cost_currency" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("fx")}
-                  >
-                    {t('parttime.colFx') || "KUR"}
-                    {sortField === "fx" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("totalTRY")}
-                  >
-                    {t('parttime.colTotalTRY') || "TOPLAM TL"}
-                    {sortField === "totalTRY" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
+                  {!isOperationMode && (
+                    <>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("cost_price")}
+                      >
+                        {t('parttime.colCost') || "MALİYET"}
+                        {sortField === "cost_price" && (
+                          <span className="ml-1">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("cost_currency")}
+                      >
+                        {t('parttime.colCurrency') || "DÖVİZ"}
+                        {sortField === "cost_currency" && (
+                          <span className="ml-1">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("fx")}
+                      >
+                        {t('parttime.colFx') || "KUR"}
+                        {sortField === "fx" && (
+                          <span className="ml-1">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("totalTRY")}
+                      >
+                        {t('parttime.colTotalTRY') || "TOPLAM TL"}
+                        {sortField === "totalTRY" && (
+                          <span className="ml-1">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -930,20 +946,24 @@ export default function PartTimePage() {
                     >
                       {service.employee_name}
                     </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber(service.cost_price)}
-                    </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {service.cost_currency}
-                    </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber(service.fx || 1)}
-                    </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber(
-                        (service.cost_price || 0) * (service.fx || 1),
-                      )}
-                    </td>
+                    {!isOperationMode && (
+                      <>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber(service.cost_price)}
+                        </td>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {service.cost_currency}
+                        </td>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber(service.fx || 1)}
+                        </td>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber(
+                            (service.cost_price || 0) * (service.fx || 1),
+                          )}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
 

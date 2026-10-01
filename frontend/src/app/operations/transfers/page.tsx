@@ -25,6 +25,7 @@ import { tr } from "date-fns/locale";
 import { formatNumber, formatDate } from "@/utils/formatters";
 import { usePermissions, Module } from "@/lib/permissions";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100, 200, 1000] as const;
@@ -215,6 +216,7 @@ interface Transfer {
 
 export default function TransfersPage() {
   const { canView, loading: permissionsLoading } = usePermissions();
+  const { isOperationMode } = useOperationMode();
   const { t } = useLanguage();
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1132,18 +1134,24 @@ export default function TransfersPage() {
         { header: t('transfers.colPassengerCount') || "Yolcu", key: "passenger_count", width: 12 },
         { header: t('transfers.colGuest') || "Misafir Adı", key: "notes", width: 24 },
         { header: t('transfers.colFlightCode') || "Uçuş Kodu", key: "flight_number", width: 12 },
-        { header: t('transfers.colCost') || "Maliyet", key: "total_amount", width: 12 },
-        { header: t('transfers.colCurrency') || "Döviz", key: "currency", width: 8 },
+        ...(!isOperationMode
+          ? [
+              { header: t('transfers.colCost') || "Maliyet", key: "total_amount", width: 12 },
+              { header: t('transfers.colCurrency') || "Döviz", key: "currency", width: 8 },
+            ]
+          : []),
       ];
 
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
       sheet.getRow(headerRow.number).height = 18;
 
       // Sayısal sütun biçimi
-      sheet.getColumn("total_amount").numFmt = "#,##0.00";
-      sheet.getColumn("total_amount").alignment = {
-        horizontal: "right",
-      } as any;
+      if (!isOperationMode) {
+        sheet.getColumn("total_amount").numFmt = "#,##0.00";
+        sheet.getColumn("total_amount").alignment = {
+          horizontal: "right",
+        } as any;
+      }
 
       headerRow.eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -1211,8 +1219,12 @@ export default function TransfersPage() {
             ? transfer.notes.replace("Misafirler: ", "")
             : "",
           flight_number: transfer.flight_info?.flight_number || "",
-          total_amount: Number(transfer.total_amount || 0),
-          currency: transfer.currency || "",
+          ...(!isOperationMode
+            ? {
+                total_amount: Number(transfer.total_amount || 0),
+                currency: transfer.currency || "",
+              }
+            : {}),
         });
       });
 
@@ -1282,10 +1294,14 @@ export default function TransfersPage() {
         const headers = [
           "Referans", "Tarih", "Transfer Saati", "Uçuş Kodu", "TÜR", "C-IN / C-OUT", "FİRMA ADI",
           "Otel", "TEDARİKÇİ", "Transfer Güzergahı", "Transfer Tipi", "Araç Tipi",
-          "Yolcu", "Misafir Adı", "Maliyet", "Döviz"
+          "Yolcu", "Misafir Adı",
+          ...(!isOperationMode ? ["Maliyet", "Döviz"] : [])
         ];
         
-        const colWidths = [18, 12, 14, 14, 10, 24, 20, 25, 20, 25, 14, 12, 8, 30, 15, 8];
+        const colWidths = [
+          18, 12, 14, 14, 10, 24, 20, 25, 20, 25, 14, 12, 8, 30,
+          ...(!isOperationMode ? [15, 8] : [])
+        ];
         sheet.columns = colWidths.map(w => ({ width: w }));
 
         let currentRow = 1;
@@ -1296,7 +1312,7 @@ export default function TransfersPage() {
           
           const headerRow = sheet.addRow([`${dateFormatted} - ${supplier}\n${typeTitles[dirKey]}`]);
           headerRow.height = 40;
-          sheet.mergeCells(`A${currentRow}:P${currentRow}`);
+          sheet.mergeCells(`A${currentRow}:${!isOperationMode ? 'P' : 'N'}${currentRow}`);
           headerRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
           headerRow.getCell(1).font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 12 };
           headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF232F38' } };
@@ -1356,20 +1372,26 @@ export default function TransfersPage() {
             const cost = Number(t.total_amount || t.cost_price || 0);
             const curr = t.currency || t.cost_currency || "TRY";
 
-            const row = sheet.addRow([
-              ref, dateStr, timeStr, flightCode, tur, cInOut, comp, htl, ted, route, tType, vType, pax, notes, cost, curr
-            ]);
+            const rowValues = [
+              ref, dateStr, timeStr, flightCode, tur, cInOut, comp, htl, ted, route, tType, vType, pax, notes,
+              ...(!isOperationMode ? [cost, curr] : [])
+            ];
+
+            const row = sheet.addRow(rowValues);
             
             row.eachCell((cell, colNumber) => {
-              cell.alignment = { vertical: 'middle', horizontal: colNumber >= 15 ? 'right' : colNumber === 13 ? 'center' : 'left' };
+              cell.alignment = {
+                vertical: 'middle',
+                horizontal: (!isOperationMode && colNumber >= 15) ? 'right' : colNumber === 13 ? 'center' : 'left'
+              };
               cell.border = {
                  top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
                  left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
                  bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
                  right: { style: 'thin', color: { argb: 'FFD1D5DB' } }
               };
-              if (colNumber === 15 || colNumber === 16) {
-                  if(colNumber === 15) cell.numFmt = '#,##0.00';
+              if (!isOperationMode && (colNumber === 15 || colNumber === 16)) {
+                  if (colNumber === 15) cell.numFmt = '#,##0.00';
               }
             });
             currentRow++;
@@ -2107,52 +2129,56 @@ export default function TransfersPage() {
                       )}
                     </div>
                   </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("total_amount")}
-                  >
-                    <div className="flex items-center">
-                      {t('transfers.colCost') || "Maliyet"}
-                      {sortField === "total_amount" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("currency")}
-                  >
-                    <div className="flex items-center">
-                      {t('transfers.colCurrency') || "Döviz"}
-                      {sortField === "currency" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </th>
+                  {!isOperationMode && (
+                    <>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("total_amount")}
+                      >
+                        <div className="flex items-center">
+                          {t('transfers.colCost') || "Maliyet"}
+                          {sortField === "total_amount" && (
+                            <svg
+                              className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("currency")}
+                      >
+                        <div className="flex items-center">
+                          {t('transfers.colCurrency') || "Döviz"}
+                          {sortField === "currency" && (
+                            <svg
+                              className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -2335,12 +2361,16 @@ export default function TransfersPage() {
                     <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {transfer.flight_info.flight_number || "-"}
                     </td>
-                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber(transfer.total_amount)}
-                    </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {transfer.currency}
-                    </td>
+                    {!isOperationMode && (
+                      <>
+                        <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber(transfer.total_amount)}
+                        </td>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {transfer.currency}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
 

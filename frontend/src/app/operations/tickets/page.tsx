@@ -15,6 +15,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatNumber } from "@/utils/formatters";
 import { getLogosForExcel } from "@/utils/logoUtils";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useOperationMode } from "@/hooks/useOperationMode";
 import {
   DEFAULT_PAGE_SIZE,
   PAGE_SIZE_OPTIONS,
@@ -166,6 +167,7 @@ interface Sejour {
 
 export default function TicketsPage() {
   const { t } = useLanguage();
+  const { isOperationMode } = useOperationMode();
   const { canView, loading: permissionsLoading } = usePermissions();
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<"detail" | "summary">("detail");
@@ -373,14 +375,24 @@ export default function TicketsPage() {
       { header: t("tickets.colRoute") || "GÜZERGAH", key: "route", width: 16 },
       { header: t("tickets.colFlightNo") || "UÇUŞ NO", key: "flight_no", width: 12 },
       { header: t("tickets.colSupplier") || "TEDARİKÇİ", key: "supplier", width: 20 },
-      { header: t("tickets.colCost") || "MALİYET", key: "cost", width: 12 },
-      { header: t("tickets.colCostCur") || "MALİYET DÖVİZİ", key: "cost_cur", width: 14 },
+      ...(!isOperationMode
+        ? [
+            { header: t("tickets.colCost") || "MALİYET", key: "cost", width: 12 },
+            {
+              header: t("tickets.colCostCur") || "MALİYET DÖVİZİ",
+              key: "cost_cur",
+              width: 14,
+            },
+          ]
+        : []),
     ];
     const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
     sheet.getRow(headerRow.number).height = 18;
     // Sayısal sütun biçimi
-    sheet.getColumn("cost").numFmt = "#,##0.00";
-    sheet.getColumn("cost").alignment = { horizontal: "right" } as any;
+    if (!isOperationMode) {
+      sheet.getColumn("cost").numFmt = "#,##0.00";
+      sheet.getColumn("cost").alignment = { horizontal: "right" } as any;
+    }
     headerRow.eachCell((cell) => {
       cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
       cell.fill = {
@@ -429,8 +441,12 @@ export default function TicketsPage() {
         route: t.route || "",
         flight_no: t.flightNo || "",
         supplier: t.ticketingProviderName || t.ticketingProvider || "",
-        cost: Number(t.costPrice || 0),
-        cost_cur: t.costCurrency || "",
+        ...(!isOperationMode
+          ? {
+              cost: Number(t.costPrice || 0),
+              cost_cur: t.costCurrency || "",
+            }
+          : {}),
       });
     });
     const buffer = await workbook.xlsx.writeBuffer();
@@ -522,8 +538,16 @@ export default function TicketsPage() {
       { header: t("tickets.colRoute") || "GÜZERGAH", key: "route", width: 16 },
       { header: t("tickets.colFlightNo") || "UÇUŞ NO", key: "flight_no", width: 12 },
       { header: t("tickets.colSupplier") || "TEDARİKÇİ", key: "supplier", width: 20 },
-      { header: t("tickets.colCost") || "MALİYET", key: "cost", width: 12 },
-      { header: t("tickets.colCostCur") || "MALİYET DÖVİZİ", key: "cost_cur", width: 14 },
+      ...(!isOperationMode
+        ? [
+            { header: t("tickets.colCost") || "MALİYET", key: "cost", width: 12 },
+            {
+              header: t("tickets.colCostCur") || "MALİYET DÖVİZİ",
+              key: "cost_cur",
+              width: 14,
+            },
+          ]
+        : []),
     ];
     const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
     sheet.getRow(headerRow.number).height = 18;
@@ -554,7 +578,9 @@ export default function TicketsPage() {
           : t
         : "";
     // Maliyet sütunu sayı formatı (yalnızca veri hücrelerinde sağa hizalama uygulayacağız)
-    sheet.getColumn("cost").numFmt = "#,##0.00";
+    if (!isOperationMode) {
+      sheet.getColumn("cost").numFmt = "#,##0.00";
+    }
     const typeFromId = (sid?: string) =>
       sid && typeof sid === "string" && sid.startsWith("project:")
         ? "MICE"
@@ -589,28 +615,36 @@ export default function TicketsPage() {
         route: s.route || s.departureRoute || "",
         flight_no: s.flightNo || "",
         supplier: supplierName || s.ticketingProvider || "",
-        cost: Number(s.totalCost || 0),
-        cost_cur: s.costCurrency || "",
+        ...(!isOperationMode
+          ? {
+              cost: Number(s.totalCost || 0),
+              cost_cur: s.costCurrency || "",
+            }
+          : {}),
       });
       // Veri satırı: cost hücresi sağa hizalı
-      dataRow.getCell(15).alignment = {
-        horizontal: "right",
-        vertical: "middle",
-      } as any;
+      if (!isOperationMode) {
+        dataRow.getCell(15).alignment = {
+          horizontal: "right",
+          vertical: "middle",
+        } as any;
+      }
     });
     // En sonda başlık O2 ve P2 ortalaması (kolon stilleri olası override etmesin)
-    headerRow.getCell(15).alignment = {
-      vertical: "middle",
-      horizontal: "center",
-      wrapText: false,
-      indent: 0,
-    } as any;
-    headerRow.getCell(16).alignment = {
-      vertical: "middle",
-      horizontal: "center",
-      wrapText: false,
-      indent: 0,
-    } as any;
+    if (!isOperationMode) {
+      headerRow.getCell(15).alignment = {
+        vertical: "middle",
+        horizontal: "center",
+        wrapText: false,
+        indent: 0,
+      } as any;
+      headerRow.getCell(16).alignment = {
+        vertical: "middle",
+        horizontal: "center",
+        wrapText: false,
+        indent: 0,
+      } as any;
+    }
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1444,32 +1478,36 @@ export default function TicketsPage() {
                         </div>
                       </th>
 
-                      <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                        onClick={() => handleSort("costPrice")}
-                      >
-                        <div className="flex items-center">
-                          {t('tickets.colCost') || "MALİYET"}
-                          {sortField === "costPrice" && (
-                            <span className="ml-1">
-                              {sortDirection === "asc" ? "↑" : "↓"}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                        onClick={() => handleSort("costCurrency")}
-                      >
-                        <div className="flex items-center">
-                          {t('tickets.colCostCur') || "MALİYET DÖVİZİ"}
-                          {sortField === "costCurrency" && (
-                            <span className="ml-1">
-                              {sortDirection === "asc" ? "↑" : "↓"}
-                            </span>
-                          )}
-                        </div>
-                      </th>
+                      {!isOperationMode && (
+                        <>
+                          <th
+                            className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                            onClick={() => handleSort("costPrice")}
+                          >
+                            <div className="flex items-center">
+                              {t('tickets.colCost') || "MALİYET"}
+                              {sortField === "costPrice" && (
+                                <span className="ml-1">
+                                  {sortDirection === "asc" ? "↑" : "↓"}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                          <th
+                            className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                            onClick={() => handleSort("costCurrency")}
+                          >
+                            <div className="flex items-center">
+                              {t('tickets.colCostCur') || "MALİYET DÖVİZİ"}
+                              {sortField === "costCurrency" && (
+                                <span className="ml-1">
+                                  {sortDirection === "asc" ? "↑" : "↓"}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
@@ -1647,32 +1685,36 @@ export default function TicketsPage() {
                         </div>
                       </th>
 
-                      <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                        onClick={() => handleSort("costPrice")}
-                      >
-                        <div className="flex items-center">
-                          {t('tickets.colCost') || "MALİYET"}
-                          {sortField === "costPrice" && (
-                            <span className="ml-1">
-                              {sortDirection === "asc" ? "↑" : "↓"}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                        onClick={() => handleSort("costCurrency")}
-                      >
-                        <div className="flex items-center">
-                          {t('tickets.colCostCur') || "MALİYET DÖVİZİ"}
-                          {sortField === "costCurrency" && (
-                            <span className="ml-1">
-                              {sortDirection === "asc" ? "↑" : "↓"}
-                            </span>
-                          )}
-                        </div>
-                      </th>
+                      {!isOperationMode && (
+                        <>
+                          <th
+                            className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                            onClick={() => handleSort("costPrice")}
+                          >
+                            <div className="flex items-center">
+                              {t('tickets.colCost') || "MALİYET"}
+                              {sortField === "costPrice" && (
+                                <span className="ml-1">
+                                  {sortDirection === "asc" ? "↑" : "↓"}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                          <th
+                            className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                            onClick={() => handleSort("costCurrency")}
+                          >
+                            <div className="flex items-center">
+                              {t('tickets.colCostCur') || "MALİYET DÖVİZİ"}
+                              {sortField === "costCurrency" && (
+                                <span className="ml-1">
+                                  {sortDirection === "asc" ? "↑" : "↓"}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                        </>
+                      )}
                     </>
                   )}
                 </tr>
@@ -1787,12 +1829,16 @@ export default function TicketsPage() {
                             {getSupplierName(ticket.ticketingProvider)}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                          {formatNumber(ticket.costPrice)}
-                        </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                          {ticket.costCurrency}
-                        </td>
+                        {!isOperationMode && (
+                          <>
+                            <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                              {formatNumber(ticket.costPrice)}
+                            </td>
+                            <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                              {ticket.costCurrency}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))
                   : paginatedSummary.items.map((summary: any, idx: number) => (
@@ -1905,14 +1951,18 @@ export default function TicketsPage() {
                           </span>
                         </td>
 
-                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                          {formatNumber(
-                            summary.costPrice || summary.totalCost || 0,
-                          )}
-                        </td>
-                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                          {summary.costCurrency || "-"}
-                        </td>
+                        {!isOperationMode && (
+                          <>
+                            <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                              {formatNumber(
+                                summary.costPrice || summary.totalCost || 0,
+                              )}
+                            </td>
+                            <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                              {summary.costCurrency || "-"}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))}
 

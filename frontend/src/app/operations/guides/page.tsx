@@ -16,6 +16,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { DEFAULT_PAGE_SIZE, paginateItems } from "@/types/pagination";
 import { usePermissions, Module } from "@/lib/permissions";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useOperationMode } from "@/hooks/useOperationMode";
 
 interface Guide {
   id: string;
@@ -46,6 +47,7 @@ interface Guide {
 
 export default function GuidesPage() {
   const { t } = useLanguage();
+  const { isOperationMode } = useOperationMode();
   const { canView, loading: permissionsLoading } = usePermissions();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -662,22 +664,28 @@ export default function GuidesPage() {
         { header: t('guides.colServiceType') || "Hizmet Türü", key: "service_type", width: 18 },
         { header: t('guides.colSupplier') || "Tedarikçi", key: "supplier", width: 20 },
         { header: t('guides.colGuideName') || "Rehber Adı", key: "guide_name", width: 20 },
-        { header: t('guides.colCost') || "Maliyet", key: "cost_price", width: 14 },
-        { header: t('guides.colCurrency') || "Döviz", key: "currency", width: 8 },
-        { header: t('guides.colFx') || "Kur", key: "fx", width: 10 },
-        { header: t('guides.colTotalTRY') || "Toplam TL", key: "totalTRY", width: 14 },
+        ...(!isOperationMode
+          ? [
+              { header: t('guides.colCost') || "Maliyet", key: "cost_price", width: 14 },
+              { header: t('guides.colCurrency') || "Döviz", key: "currency", width: 8 },
+              { header: t('guides.colFx') || "Kur", key: "fx", width: 10 },
+              { header: t('guides.colTotalTRY') || "Toplam TL", key: "totalTRY", width: 14 },
+            ]
+          : []),
       ];
 
       const headerRow = sheet.addRow(sheet.columns.map((c: any) => c.header));
       sheet.getRow(headerRow.number).height = 18;
 
       // Sayısal sütun biçimi
-      sheet.getColumn("cost_price").numFmt = "#,##0.00";
-      sheet.getColumn("cost_price").alignment = { horizontal: "right" } as any;
-      sheet.getColumn("fx").numFmt = "#,##0.00";
-      sheet.getColumn("fx").alignment = { horizontal: "right" } as any;
-      sheet.getColumn("totalTRY").numFmt = "#,##0.00";
-      sheet.getColumn("totalTRY").alignment = { horizontal: "right" } as any;
+      if (!isOperationMode) {
+        sheet.getColumn("cost_price").numFmt = "#,##0.00";
+        sheet.getColumn("cost_price").alignment = { horizontal: "right" } as any;
+        sheet.getColumn("fx").numFmt = "#,##0.00";
+        sheet.getColumn("fx").alignment = { horizontal: "right" } as any;
+        sheet.getColumn("totalTRY").numFmt = "#,##0.00";
+        sheet.getColumn("totalTRY").alignment = { horizontal: "right" } as any;
+      }
 
       headerRow.eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -728,10 +736,14 @@ export default function GuidesPage() {
           service_type: guide.service_type || "",
           supplier: guide.supplier || "",
           guide_name: guide.guide_name || "",
-          cost_price: costPrice,
-          currency: guide.currency || "TRY",
-          fx: fx,
-          totalTRY: totalTRY,
+          ...(!isOperationMode
+            ? {
+                cost_price: costPrice,
+                currency: guide.currency || "TRY",
+                fx: fx,
+                totalTRY: totalTRY,
+              }
+            : {}),
         });
       });
 
@@ -1187,98 +1199,102 @@ export default function GuidesPage() {
                       )}
                     </div>
                   </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("cost_price")}
-                  >
-                    <div className="flex items-center">
-                      {t('guides.colCost') || "Maliyet"}
-                      {sortField === "cost_price" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("currency")}
-                  >
-                    <div className="flex items-center">
-                      {t('guides.colCurrency') || "Döviz"}
-                      {sortField === "currency" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("fx")}
-                  >
-                    <div className="flex items-center">
-                      {t('guides.colFx') || "Kur"}
-                      {sortField === "fx" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
-                    onClick={() => handleSort("totalTRY")}
-                  >
-                    <div className="flex items-center">
-                      {t('guides.colTotalTRY') || "Toplam TL"}
-                      {sortField === "totalTRY" && (
-                        <svg
-                          className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </th>
+                  {!isOperationMode && (
+                    <>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("cost_price")}
+                      >
+                        <div className="flex items-center">
+                          {t('guides.colCost') || "Maliyet"}
+                          {sortField === "cost_price" && (
+                            <svg
+                              className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("currency")}
+                      >
+                        <div className="flex items-center">
+                          {t('guides.colCurrency') || "Döviz"}
+                          {sortField === "currency" && (
+                            <svg
+                              className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("fx")}
+                      >
+                        <div className="flex items-center">
+                          {t('guides.colFx') || "Kur"}
+                          {sortField === "fx" && (
+                            <svg
+                              className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-2.5 py-2.5 text-left text-[11px] font-semibold text-v3-text uppercase tracking-wider cursor-pointer hover:bg-v3-surface transition-colors border-b border-v3-border"
+                        onClick={() => handleSort("totalTRY")}
+                      >
+                        <div className="flex items-center">
+                          {t('guides.colTotalTRY') || "Toplam TL"}
+                          {sortField === "totalTRY" && (
+                            <svg
+                              className={`ml-1 h-3 w-3 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -1342,18 +1358,22 @@ export default function GuidesPage() {
                     <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
                       {guide.guide_name || "-"}
                     </td>
-                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber(guide.cost_price || 0)}
-                    </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {guide.currency}
-                    </td>
-                    <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber(guide.fx || 1)}
-                    </td>
-                    <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
-                      {formatNumber((guide.cost_price || 0) * (guide.fx || 1))}
-                    </td>
+                    {!isOperationMode && (
+                      <>
+                        <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber(guide.cost_price || 0)}
+                        </td>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {guide.currency}
+                        </td>
+                        <td className="px-2.5 py-2.5 text-[11px] text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber(guide.fx || 1)}
+                        </td>
+                        <td className="px-2 py-2 text-xs font-medium text-v3-text transition-colors duration-200 whitespace-nowrap">
+                          {formatNumber((guide.cost_price || 0) * (guide.fx || 1))}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
 
