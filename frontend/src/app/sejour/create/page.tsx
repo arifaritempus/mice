@@ -505,7 +505,8 @@ export default function CreateSejourPage() {
       }));
 
       if (isManualClick) {
-        toast.success(`TCMB kurları başarıyla güncellendi (USD: ${rates.usd_rate} ₺, EUR: ${rates.eur_rate} ₺)`);
+        const dateNote = rates.rateDate ? ` (${new Date(rates.rateDate).toLocaleDateString("tr-TR")})` : "";
+        toast.success(`TCMB kurları başarıyla getirildi${dateNote}: USD: ${rates.usd_rate} ₺, EUR: ${rates.eur_rate} ₺`);
       }
       return rates;
     } catch (e: any) {
@@ -1845,7 +1846,7 @@ export default function CreateSejourPage() {
                             onClick={() => fetchRatesForDate(salesData.checkInDate, salesData.exchangeRateStrategy, true)}
                             disabled={ratesLoading}
                             className="h-[34px] px-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
-                            title="TCMB'den güncel kuru yeniden çek"
+                            title="Sistemdeki güncel TCMB kurunu çek"
                           >
                             <svg className={`w-3.5 h-3.5 ${ratesLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             TCMB Çek
