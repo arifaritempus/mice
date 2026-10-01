@@ -2167,6 +2167,14 @@ export class SejourService {
           data.cost_currency = room.costCurrency || room.currency || 'TRY';
         }
 
+        const rTotalPrice = room.totalPrice || room.price || 0;
+        const roomFx = Number(room.fx) || 1;
+        const roomCostFx = Number(room.costFx || room.cost_fx) || 1;
+        data.fx = roomFx;
+        data.cost_fx = roomCostFx;
+        data.total_try = Number(room.totalTry || room.total_try) || (rTotalPrice * roomFx);
+        data.cost_total_try = Number(room.costTotalTry || room.cost_total_try) || ((Number(room.costPrice) || 0) * roomCostFx);
+
         return data;
       });
 
@@ -2242,6 +2250,14 @@ export class SejourService {
           flightData.cost_currency = flight.costCurrency || flight.currency || 'TRY';
         }
 
+        const fTotalPrice = flight.totalPrice || flight.price || 0;
+        const flightFx = Number(flight.fx) || 1;
+        const flightCostFx = Number(flight.costFx || flight.cost_fx) || 1;
+        flightData.fx = flightFx;
+        flightData.cost_fx = flightCostFx;
+        flightData.total_try = Number(flight.totalTry || flight.total_try) || (fTotalPrice * flightFx);
+        flightData.cost_total_try = Number(flight.costTotalTry || flight.cost_total_try) || ((Number(flight.costPrice) || 0) * flightCostFx);
+
         return flightData;
       });
 
@@ -2313,6 +2329,14 @@ export class SejourService {
           data.vehicle = transfer.vehicle;
         }
 
+        const tPrice = Number(transfer.price) || 0;
+        const transferFx = Number(transfer.fx) || 1;
+        const transferCostFx = Number(transfer.costFx || transfer.cost_fx) || 1;
+        data.fx = transferFx;
+        data.cost_fx = transferCostFx;
+        data.total_try = Number(transfer.totalTry || transfer.total_try) || (tPrice * transferFx);
+        data.cost_total_try = Number(transfer.costTotalTry || transfer.cost_total_try) || ((Number(transfer.costPrice) || 0) * transferCostFx);
+
         return data;
       });
 
@@ -2368,6 +2392,14 @@ export class SejourService {
         if (service.costCurrency || (service.costPrice !== undefined && service.costPrice !== null)) {
           data.cost_currency = service.costCurrency || service.currency || 'TRY';
         }
+
+        const sPrice = Number(service.price) || 0;
+        const serviceFx = Number(service.fx) || 1;
+        const serviceCostFx = Number(service.costFx || service.cost_fx) || 1;
+        data.fx = serviceFx;
+        data.cost_fx = serviceCostFx;
+        data.total_try = Number(service.totalTry || service.total_try) || (sPrice * serviceFx);
+        data.cost_total_try = Number(service.costTotalTry || service.cost_total_try) || ((Number(service.costPrice) || 0) * serviceCostFx);
 
         return data;
       });
@@ -2577,6 +2609,13 @@ export class SejourService {
             data.cost_currency = room.costCurrency || room.currency || 'TRY';
           }
 
+          const roomFx = Number(room.fx) || 1;
+          const roomCostFx = Number(room.costFx || room.cost_fx) || 1;
+          data.fx = roomFx;
+          data.cost_fx = roomCostFx;
+          data.total_try = Number(room.totalTry || room.total_try) || (totalPrice * roomFx);
+          data.cost_total_try = Number(room.costTotalTry || room.cost_total_try) || ((Number(room.costPrice) || 0) * roomCostFx);
+
           return data;
         });
 
@@ -2649,6 +2688,14 @@ export class SejourService {
           if (flight.costCurrency || (flight.costPrice !== undefined && flight.costPrice !== null)) {
             flightData.cost_currency = flight.costCurrency || flight.currency || 'TRY';
           }
+
+          const fTotalPrice = flight.price !== undefined ? flight.price : (flight.totalPrice || 0);
+          const flightFx = Number(flight.fx) || 1;
+          const flightCostFx = Number(flight.costFx || flight.cost_fx) || 1;
+          flightData.fx = flightFx;
+          flightData.cost_fx = flightCostFx;
+          flightData.total_try = Number(flight.totalTry || flight.total_try) || (fTotalPrice * flightFx);
+          flightData.cost_total_try = Number(flight.costTotalTry || flight.cost_total_try) || ((Number(flight.costPrice) || 0) * flightCostFx);
 
           return flightData;
         });
@@ -2726,6 +2773,14 @@ export class SejourService {
             data.vehicle = transfer.vehicle;
           }
 
+          const tPrice = Number(transfer.price) || 0;
+          const transferFx = Number(transfer.fx) || 1;
+          const transferCostFx = Number(transfer.costFx || transfer.cost_fx) || 1;
+          data.fx = transferFx;
+          data.cost_fx = transferCostFx;
+          data.total_try = Number(transfer.totalTry || transfer.total_try) || (tPrice * transferFx);
+          data.cost_total_try = Number(transfer.costTotalTry || transfer.cost_total_try) || ((Number(transfer.costPrice) || 0) * transferCostFx);
+
           return data;
         });
 
@@ -2782,6 +2837,14 @@ export class SejourService {
           if (service.costCurrency || (service.costPrice !== undefined && service.costPrice !== null)) {
             data.cost_currency = service.costCurrency || service.currency || 'TRY';
           }
+
+          const sPrice = Number(service.price) || 0;
+          const serviceFx = Number(service.fx) || 1;
+          const serviceCostFx = Number(service.costFx || service.cost_fx) || 1;
+          data.fx = serviceFx;
+          data.cost_fx = serviceCostFx;
+          data.total_try = Number(service.totalTry || service.total_try) || (sPrice * serviceFx);
+          data.cost_total_try = Number(service.costTotalTry || service.cost_total_try) || ((Number(service.costPrice) || 0) * serviceCostFx);
 
           return data;
         });
@@ -2867,19 +2930,7 @@ export class SejourService {
       }
     }
 
-    try {
-      const { updateSejourRates } = await import('@/lib/sejourRatesService');
-      await updateSejourRates(sejourId, sejourData.exchangeRateStrategy || sejourData.exchange_rate_strategy || 'tcmb_banknote_selling', {
-        usd_rate: sejourData.usdRate || sejourData.usd_rate,
-        eur_rate: sejourData.eurRate || sejourData.eur_rate,
-        gbp_rate: sejourData.gbpRate || sejourData.gbp_rate,
-      });
-    } catch (e) {
-      console.warn('Sejour rates sync on updateSejour non-blocking:', e);
-    }
-
     return { id: sejourId, ...sejourData };
-
   }
 
   static async deleteSejour(sejourId: string) {

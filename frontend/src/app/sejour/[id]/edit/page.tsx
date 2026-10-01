@@ -841,9 +841,21 @@ export default function EditSejourPage() {
 
           if (sejour) {
             const strategy = sejour.exchange_rate_strategy || sejour.exchangeRateStrategy || "tcmb_banknote_selling";
-            const usd = Number(sejour.usd_rate || sejour.usdRate || 1);
-            const eur = Number(sejour.eur_rate || sejour.eurRate || 1);
-            const gbp = Number(sejour.gbp_rate || sejour.gbpRate || 1);
+            let usd = Number(sejour.usd_rate || sejour.usdRate || 0);
+            let eur = Number(sejour.eur_rate || sejour.eurRate || 0);
+            let gbp = Number(sejour.gbp_rate || sejour.gbpRate || 0);
+
+            if ((usd <= 1 || eur <= 1) && strategy !== "manuel") {
+              const fetched = await fetchRatesForDate(sejour.checkInDate, strategy);
+              if (fetched) {
+                if (fetched.usd_rate) usd = Number(fetched.usd_rate);
+                if (fetched.eur_rate) eur = Number(fetched.eur_rate);
+                if (fetched.gbp_rate) gbp = Number(fetched.gbp_rate);
+              }
+            }
+            if (usd <= 0) usd = 1;
+            if (eur <= 0) eur = 1;
+            if (gbp <= 0) gbp = 1;
 
             setSalesData({
               voucherNumber: sejour.voucherNumber || "",
@@ -863,10 +875,6 @@ export default function EditSejourPage() {
               gbpRate: gbp,
             });
 
-            if (usd <= 1 && eur <= 1) {
-              fetchRatesForDate(sejour.checkInDate, strategy);
-            }
-
             const getRate = (c?: string) => {
               if (!c) return 1;
               const u = c.toUpperCase();
@@ -876,56 +884,106 @@ export default function EditSejourPage() {
               return 1;
             };
 
+            const resolveFx = (currency?: string, rowFx?: any) => {
+              const curr = (currency || 'TRY').toUpperCase();
+              const val = Number(rowFx);
+              if (curr !== 'TRY') {
+                return (val && val > 1) ? val : getRate(curr);
+              }
+              return 1;
+            };
+
+            const resolveCostFx = (costCurrency?: string, rowCostFx?: any) => {
+              const curr = (costCurrency || 'TRY').toUpperCase();
+              const val = Number(rowCostFx);
+              if (curr !== 'TRY') {
+                return (val && val > 1) ? val : getRate(curr);
+              }
+              return 1;
+            };
+
             if (sejour.rooms) {
-              setRooms(sejour.rooms.map((x: any) => ({
-                ...x,
-                costCurrency: x.costCurrency || 'TRY',
-                currency: x.currency || 'TRY',
-                fx: x.fx || getRate(x.currency),
-                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
-                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
-              })));
+              setRooms(sejour.rooms.map((x: any) => {
+                const rCurr = x.currency || 'TRY';
+                const rCostCurr = x.costCurrency || 'TRY';
+                const rFx = resolveFx(rCurr, x.fx);
+                const rCostFx = resolveCostFx(rCostCurr, x.costFx || x.cost_fx);
+                const rPrice = Number(x.price || x.totalPrice || 0);
+                const rCostPrice = Number(x.costPrice || 0);
+                return {
+                  ...x,
+                  costCurrency: rCostCurr,
+                  currency: rCurr,
+                  fx: rFx,
+                  costFx: rCostFx,
+                  cost_fx: rCostFx,
+                  totalTry: (x.totalTry && Number(x.totalTry) > 0) ? Number(x.totalTry) : (rPrice * rFx),
+                  costTotalTry: (x.costTotalTry && Number(x.costTotalTry) > 0) ? Number(x.costTotalTry) : (rCostPrice * rCostFx),
+                };
+              }));
               if (sejour.rooms.length > 0) setShowAccommodation(true);
             }
             if (sejour.flights) {
-              setFlights(sejour.flights.map((x: any) => ({
-                ...x,
-                costCurrency: x.costCurrency || 'TRY',
-                currency: x.currency || 'TRY',
-                fx: x.fx || getRate(x.currency),
-                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
-                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
-              })));
+              setFlights(sejour.flights.map((x: any) => {
+                const fCurr = x.currency || 'TRY';
+                const fCostCurr = x.costCurrency || 'TRY';
+                const fFx = resolveFx(fCurr, x.fx);
+                const fCostFx = resolveCostFx(fCostCurr, x.costFx || x.cost_fx);
+                const fPrice = Number(x.price || x.totalPrice || 0);
+                const fCostPrice = Number(x.costPrice || 0);
+                return {
+                  ...x,
+                  costCurrency: fCostCurr,
+                  currency: fCurr,
+                  fx: fFx,
+                  costFx: fCostFx,
+                  cost_fx: fCostFx,
+                  totalTry: (x.totalTry && Number(x.totalTry) > 0) ? Number(x.totalTry) : (fPrice * fFx),
+                  costTotalTry: (x.costTotalTry && Number(x.costTotalTry) > 0) ? Number(x.costTotalTry) : (fCostPrice * fCostFx),
+                };
+              }));
               if (sejour.flights.length > 0) setShowFlight(true);
             }
             if (sejour.transfers) {
-              setTransfers(sejour.transfers.map((x: any) => ({
-                ...x,
-                costCurrency: x.costCurrency || 'TRY',
-                currency: x.currency || 'TRY',
-                fx: x.fx || getRate(x.currency),
-                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
-                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
-              })));
+              setTransfers(sejour.transfers.map((x: any) => {
+                const tCurr = x.currency || 'TRY';
+                const tCostCurr = x.costCurrency || 'TRY';
+                const tFx = resolveFx(tCurr, x.fx);
+                const tCostFx = resolveCostFx(tCostCurr, x.costFx || x.cost_fx);
+                const tPrice = Number(x.price || 0);
+                const tCostPrice = Number(x.costPrice || 0);
+                return {
+                  ...x,
+                  costCurrency: tCostCurr,
+                  currency: tCurr,
+                  fx: tFx,
+                  costFx: tCostFx,
+                  cost_fx: tCostFx,
+                  totalTry: (x.totalTry && Number(x.totalTry) > 0) ? Number(x.totalTry) : (tPrice * tFx),
+                  costTotalTry: (x.costTotalTry && Number(x.costTotalTry) > 0) ? Number(x.costTotalTry) : (tCostPrice * tCostFx),
+                };
+              }));
               if (sejour.transfers.length > 0) setShowTransfer(true);
             }
             if (sejour.extraServices) {
-              setExtraServices(sejour.extraServices.map((x: any) => ({
-                ...x,
-                costCurrency: x.costCurrency || 'TRY',
-                currency: x.currency || 'TRY',
-                fx: x.fx || getRate(x.currency),
-                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
-                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
-                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
-              })));
+              setExtraServices(sejour.extraServices.map((x: any) => {
+                const sCurr = x.currency || 'TRY';
+                const sCostCurr = x.costCurrency || 'TRY';
+                const sFx = resolveFx(sCurr, x.fx);
+                const sCostFx = resolveCostFx(sCostCurr, x.costFx || x.cost_fx);
+                const sPrice = Number(x.price || 0);
+                const sCostPrice = Number(x.costPrice || 0);
+                return {
+                  ...x,
+                  costCurrency: sCostCurr,
+                  currency: sCurr,
+                  fx: sFx,
+                  costFx: sCostFx,
+                  cost_fx: sCostFx,
+                  totalTry: (x.totalTry && Number(x.totalTry) > 0) ? Number(x.totalTry) : (sPrice * sFx),
+                  costTotalTry: (x.costTotalTry && Number(x.costTotalTry) > 0) ? Number(x.costTotalTry) : (sCostPrice * sCostFx),
+                };
+              }));
               if (sejour.extraServices.length > 0) setShowExtraServices(true);
             }
               if (sejour.payments) {
@@ -1505,6 +1563,17 @@ export default function EditSejourPage() {
         return;
       }
 
+      const resolveRowFx = (curr?: string, fxVal?: any) => {
+        if (!curr || curr === "TRY") return 1;
+        const val = Number(fxVal);
+        return (val && val > 1) ? val : getRateForCurrency(curr);
+      };
+      const resolveRowCostFx = (curr?: string, fxVal?: any) => {
+        if (!curr || curr === "TRY") return 1;
+        const val = Number(fxVal);
+        return (val && val > 1) ? val : getRateForCurrency(curr);
+      };
+
       // Update existing sejour object
       const sejourData = {
         id: sejourId,
@@ -1518,38 +1587,62 @@ export default function EditSejourPage() {
         customerName: salesData.customerName,
         checkInDate: salesData.checkInDate,
         checkOutDate: salesData.checkOutDate,
-        rooms: rooms.map(r => ({
-          ...r,
-          fx: r.fx || getRateForCurrency(r.currency),
-          costFx: r.costFx || r.cost_fx || getRateForCurrency(r.costCurrency || r.currency),
-          cost_fx: r.costFx || r.cost_fx || getRateForCurrency(r.costCurrency || r.currency),
-          totalTry: (r.price || 0) * (r.fx || getRateForCurrency(r.currency)),
-          costTotalTry: (r.costPrice || 0) * (r.costFx || r.cost_fx || getRateForCurrency(r.costCurrency || r.currency)),
-        })),
-        flights: flights.map(f => ({
-          ...f,
-          fx: f.fx || getRateForCurrency(f.currency),
-          costFx: f.costFx || f.cost_fx || getRateForCurrency(f.costCurrency || f.currency),
-          cost_fx: f.costFx || f.cost_fx || getRateForCurrency(f.costCurrency || f.currency),
-          totalTry: (f.price || 0) * (f.fx || getRateForCurrency(f.currency)),
-          costTotalTry: (f.costPrice || 0) * (f.costFx || f.cost_fx || getRateForCurrency(f.costCurrency || f.currency)),
-        })),
-        transfers: transfers.map(t => ({
-          ...t,
-          fx: t.fx || getRateForCurrency(t.currency),
-          costFx: t.costFx || t.cost_fx || getRateForCurrency(t.costCurrency || t.currency),
-          cost_fx: t.costFx || t.cost_fx || getRateForCurrency(t.costCurrency || t.currency),
-          totalTry: (t.price || 0) * (t.fx || getRateForCurrency(t.currency)),
-          costTotalTry: (t.costPrice || 0) * (t.costFx || t.cost_fx || getRateForCurrency(t.costCurrency || t.currency)),
-        })),
-        extraServices: extraServices.map(s => ({
-          ...s,
-          fx: s.fx || getRateForCurrency(s.currency),
-          costFx: s.costFx || s.cost_fx || getRateForCurrency(s.costCurrency || s.currency),
-          cost_fx: s.costFx || s.cost_fx || getRateForCurrency(s.costCurrency || s.currency),
-          totalTry: (s.price || 0) * (s.fx || getRateForCurrency(s.currency)),
-          costTotalTry: (s.costPrice || 0) * (s.costFx || s.cost_fx || getRateForCurrency(s.costCurrency || s.currency)),
-        })),
+        rooms: rooms.map(r => {
+          const fx = resolveRowFx(r.currency, r.fx);
+          const costFx = resolveRowCostFx(r.costCurrency || r.currency, r.costFx || r.cost_fx);
+          const price = Number(r.price || 0);
+          const costPrice = Number(r.costPrice || 0);
+          return {
+            ...r,
+            fx,
+            costFx,
+            cost_fx: costFx,
+            totalTry: (r.totalTry && Number(r.totalTry) > 0) ? Number(r.totalTry) : (price * fx),
+            costTotalTry: (r.costTotalTry && Number(r.costTotalTry) > 0) ? Number(r.costTotalTry) : (costPrice * costFx),
+          };
+        }),
+        flights: flights.map(f => {
+          const fx = resolveRowFx(f.currency, f.fx);
+          const costFx = resolveRowCostFx(f.costCurrency || f.currency, f.costFx || f.cost_fx);
+          const price = Number(f.price || 0);
+          const costPrice = Number(f.costPrice || 0);
+          return {
+            ...f,
+            fx,
+            costFx,
+            cost_fx: costFx,
+            totalTry: (f.totalTry && Number(f.totalTry) > 0) ? Number(f.totalTry) : (price * fx),
+            costTotalTry: (f.costTotalTry && Number(f.costTotalTry) > 0) ? Number(f.costTotalTry) : (costPrice * costFx),
+          };
+        }),
+        transfers: transfers.map(t => {
+          const fx = resolveRowFx(t.currency, t.fx);
+          const costFx = resolveRowCostFx(t.costCurrency || t.currency, t.costFx || t.cost_fx);
+          const price = Number(t.price || 0);
+          const costPrice = Number(t.costPrice || 0);
+          return {
+            ...t,
+            fx,
+            costFx,
+            cost_fx: costFx,
+            totalTry: (t.totalTry && Number(t.totalTry) > 0) ? Number(t.totalTry) : (price * fx),
+            costTotalTry: (t.costTotalTry && Number(t.costTotalTry) > 0) ? Number(t.costTotalTry) : (costPrice * costFx),
+          };
+        }),
+        extraServices: extraServices.map(s => {
+          const fx = resolveRowFx(s.currency, s.fx);
+          const costFx = resolveRowCostFx(s.costCurrency || s.currency, s.costFx || s.cost_fx);
+          const price = Number(s.price || 0);
+          const costPrice = Number(s.costPrice || 0);
+          return {
+            ...s,
+            fx,
+            costFx,
+            cost_fx: costFx,
+            totalTry: (s.totalTry && Number(s.totalTry) > 0) ? Number(s.totalTry) : (price * fx),
+            costTotalTry: (s.costTotalTry && Number(s.costTotalTry) > 0) ? Number(s.costTotalTry) : (costPrice * costFx),
+          };
+        }),
         totalAmount:
           calculateTotalAmount()[
             salesData.currency as keyof ReturnType<typeof calculateTotalAmount>
@@ -1570,12 +1663,19 @@ export default function EditSejourPage() {
         collections: collections,
         payments: payments,
         exchange_rate_strategy: salesData.exchangeRateStrategy || "tcmb_banknote_selling",
+        exchangeRateStrategy: salesData.exchangeRateStrategy || "tcmb_banknote_selling",
         usd_rate: salesData.usdRate || 1,
+        usdRate: salesData.usdRate || 1,
         eur_rate: salesData.eurRate || 1,
+        eurRate: salesData.eurRate || 1,
         gbp_rate: salesData.gbpRate || 1,
+        gbpRate: salesData.gbpRate || 1,
         total_sales_try: calculateTotalSalesTRY(),
+        totalSalesTry: calculateTotalSalesTRY(),
         total_cost_try: calculateTotalCostTRY(),
+        totalCostTry: calculateTotalCostTRY(),
         net_profit_try: calculateNetProfitTRY(),
+        netProfitTry: calculateNetProfitTRY(),
         updated_at: new Date().toISOString(),
       };
 
