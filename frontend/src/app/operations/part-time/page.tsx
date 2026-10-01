@@ -203,7 +203,10 @@ export default function PartTimePage() {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
-        searchTerm: voucherTokens.join(" "),
+        searchTerm: (voucherInput.trim()
+          ? [...voucherTokens, voucherInput.trim()]
+          : voucherTokens
+        ).join(" "),
         filter,
         sortField: String(sortField),
         sortDirection,
@@ -486,17 +489,19 @@ export default function PartTimePage() {
     }
   };
 
-  const voucherSuggestions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          partTimeServices
-            .map((s) => (s.voucher_number || "").trim())
-            .filter(Boolean),
-        ),
-      ),
-    [partTimeServices],
-  );
+  const voucherSuggestions = useMemo(() => {
+    const s = new Set<string>();
+    partTimeServices.forEach((item) => {
+      if ((item.voucher_number || "").trim()) s.add(item.voucher_number.trim());
+      if ((item.employee_name || "").trim()) s.add(item.employee_name.trim());
+      if ((item.company_name || "").trim()) s.add(item.company_name.trim());
+      if ((item.customer_name || "").trim()) s.add(item.customer_name.trim());
+      if ((item.hotel_name || "").trim()) s.add(item.hotel_name.trim());
+      if ((item.supplier || "").trim()) s.add(item.supplier.trim());
+      if ((item.service_type || "").trim()) s.add(item.service_type.trim());
+    });
+    return Array.from(s).sort();
+  }, [partTimeServices]);
   const customerSuggestions = useMemo(
     () =>
       Array.from(

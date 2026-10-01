@@ -472,7 +472,10 @@ export default function GuidesPage() {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
-        searchTerm: voucherTokens.join(" "),
+        searchTerm: (voucherInput.trim()
+          ? [...voucherTokens, voucherInput.trim()]
+          : voucherTokens
+        ).join(" "),
         filter,
         sortField: String(sortField),
         sortDirection,
@@ -776,15 +779,19 @@ export default function GuidesPage() {
     }
   };
 
-  const voucherSuggestions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          guides.map((g) => (g.voucher_number || "").trim()).filter(Boolean),
-        ),
-      ),
-    [guides],
-  );
+  const voucherSuggestions = useMemo(() => {
+    const s = new Set<string>();
+    guides.forEach((g) => {
+      if ((g.voucher_number || "").trim()) s.add(g.voucher_number.trim());
+      if ((g.guide_name || "").trim()) s.add(g.guide_name.trim());
+      if ((g.company_name || "").trim()) s.add(g.company_name.trim());
+      if ((g.customer_name || "").trim()) s.add(g.customer_name.trim());
+      if ((g.hotel_name || "").trim()) s.add(g.hotel_name.trim());
+      if ((g.supplier || "").trim()) s.add(g.supplier.trim());
+      if ((g.service_type || "").trim()) s.add(g.service_type.trim());
+    });
+    return Array.from(s).sort();
+  }, [guides]);
   const customerSuggestions = useMemo(
     () =>
       Array.from(

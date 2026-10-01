@@ -314,6 +314,16 @@ export default function TransfersPage() {
       if (t.reference?.trim()) u.add(t.reference.trim());
       if (String(t.project_reference || "").trim())
         u.add(String(t.project_reference).trim());
+      if (t.company_name?.trim()) u.add(t.company_name.trim());
+      if (t.customer_name?.trim()) u.add(t.customer_name.trim());
+      if (t.supplier_name?.trim()) u.add(t.supplier_name.trim());
+      if (t.hotel_name?.trim()) u.add(t.hotel_name.trim());
+      if (t.departure_point?.trim()) u.add(t.departure_point.trim());
+      if (t.arrival_point?.trim()) u.add(t.arrival_point.trim());
+      if (t.flight_info?.flight_number?.trim())
+        u.add(t.flight_info.flight_number.trim());
+      if (t.flight_info?.airline?.trim())
+        u.add(t.flight_info.airline.trim());
     });
     return Array.from(u).sort();
   }, [transfers]);
@@ -417,7 +427,7 @@ export default function TransfersPage() {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
-        searchTerm: referenceTokens.join(" "),
+        searchTerm: referenceTerms.join(" "),
         filter,
         sortField,
         sortDirection,

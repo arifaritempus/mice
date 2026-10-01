@@ -682,7 +682,7 @@ export default function TicketsPage() {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(pageSize),
-        searchTerm: pnrTokens.join(" "),
+        searchTerm: pnrTerms.join(" "),
         filter,
         sortField,
         sortDirection,
@@ -831,13 +831,26 @@ export default function TicketsPage() {
     });
     return Array.from(s);
   }, [tickets]);
-  const pnrSuggestions = useMemo(
-    () =>
-      Array.from(
-        new Set(tickets.map((t) => (t.pnr || "").trim()).filter(Boolean)),
-      ),
-    [tickets],
-  );
+  const pnrSuggestions = useMemo(() => {
+    const s = new Set<string>();
+    tickets.forEach((t) => {
+      if ((t.pnr || "").trim()) s.add(t.pnr.trim());
+      if ((t.voucherNumber || "").trim()) s.add(t.voucherNumber.trim());
+      if ((t.customerName || "").trim()) s.add(t.customerName.trim());
+      if ((t.agencyName || "").trim()) s.add(t.agencyName.trim());
+      if ((t.companyName || "").trim()) s.add(t.companyName.trim());
+      if ((t.airline || "").trim()) s.add(t.airline.trim());
+      if ((t.flightNo || "").trim()) s.add(t.flightNo.trim());
+      if ((t.route || "").trim()) s.add(t.route.trim());
+      if ((t.ticketingProvider || "").trim()) s.add(t.ticketingProvider.trim());
+      if ((t.guestNames || "").trim()) {
+        t.guestNames.split(",").forEach((g) => {
+          if (g.trim()) s.add(g.trim());
+        });
+      }
+    });
+    return Array.from(s).sort();
+  }, [tickets]);
   const airlineSuggestions = useMemo(
     () =>
       Array.from(

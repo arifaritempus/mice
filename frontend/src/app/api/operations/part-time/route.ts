@@ -41,19 +41,31 @@ const isPartTime = (...values: any[]) => {
   });
 };
 
+const normalizeText = (val: any) =>
+  String(val || "")
+    .toLowerCase()
+    .replace(/i̇/g, "i")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .trim();
+
 const parseFilterTokens = (value: any): string[] => {
   if (!value) return [];
   try {
     const parsed = typeof value === "string" ? JSON.parse(value) : value;
     if (Array.isArray(parsed)) {
       return parsed
-        .map((item) => String(item || "").trim().toLowerCase())
+        .map((item) => normalizeText(item))
         .filter(Boolean);
     }
   } catch {
     // ignore
   }
-  return [String(value).trim().toLowerCase()].filter(Boolean);
+  return [normalizeText(value)].filter(Boolean);
 };
 
 async function fetchFromSupabase(request: NextRequest) {
@@ -65,9 +77,7 @@ async function fetchFromSupabase(request: NextRequest) {
     1,
     parseInt(url.searchParams.get("pageSize") || "20", 10),
   );
-  const searchRaw = String(url.searchParams.get("searchTerm") || "")
-    .trim()
-    .toLowerCase();
+  const searchRaw = normalizeText(url.searchParams.get("searchTerm") || "");
   const searchParts = searchRaw.split(/\s+/).filter(Boolean);
   const voucherTerms = parseFilterTokens(url.searchParams.get("voucherTerms"));
   const customerTerms = parseFilterTokens(
@@ -304,27 +314,47 @@ async function fetchFromSupabase(request: NextRequest) {
       (!startDate || d >= startDate) && (!endDate || d <= endDate);
     if (!rangePass) return false;
 
+    const allGeneralTerms = Array.from(new Set([...searchParts, ...voucherTerms]));
+    if (allGeneralTerms.length > 0) {
+      const haystack = normalizeText(
+        [
+          row.employee_name,
+          row.voucher_number,
+          row.sejour_id,
+          row.service_type,
+          row.customer_type,
+          row.customer_name,
+          row.company_name,
+          row.supplier,
+          row.hotel_name,
+          row.description,
+          row.check_in_date,
+          row.check_out_date,
+          row.notes,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+      const matchesGeneral = allGeneralTerms.every((term) =>
+        haystack.includes(term)
+      );
+      if (!matchesGeneral) return false;
+    }
+
     const matchesFieldTerms = (terms: string[], values: any[]) => {
       if (!Array.isArray(terms) || terms.length === 0) return true;
-      const target = values
-        .map((v) => String(v || "").toLowerCase())
-        .join(" ");
+      const target = normalizeText(values.filter(Boolean).join(" "));
       return terms.some((term) => target.includes(term));
     };
 
-    const hasScopedTerms =
-      voucherTerms.length ||
+    const hasSpecificScopedTerms =
       customerTerms.length ||
       hotelTerms.length ||
       supplierTerms.length ||
       employeeTerms.length;
 
-    if (hasScopedTerms) {
+    if (hasSpecificScopedTerms) {
       return (
-        matchesFieldTerms(voucherTerms, [
-          row.voucher_number,
-          row.sejour_id,
-        ]) &&
         matchesFieldTerms(customerTerms, [
           row.customer_name,
           row.company_name,
@@ -339,23 +369,7 @@ async function fetchFromSupabase(request: NextRequest) {
       );
     }
 
-    if (searchParts.length === 0) return true;
-    const haystack = [
-      row.employee_name,
-      row.voucher_number,
-      row.service_type,
-      row.customer_type,
-      row.customer_name,
-      row.company_name,
-      row.supplier,
-      row.hotel_name,
-      row.description,
-      row.check_in_date,
-      row.check_out_date,
-    ]
-      .map((v) => String(v || "").toLowerCase())
-      .join(" ");
-    return searchParts.every((term) => haystack.includes(term));
+    return true;
   });
 
   const typeCounts = {

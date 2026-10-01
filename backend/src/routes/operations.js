@@ -28,6 +28,19 @@ const parseFilterTokens = (value) => {
     .filter(Boolean);
 };
 
+const normalizeText = (value) => {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/i̇/g, 'i')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .trim();
+};
+
 const mapSejourStatusToOperation = (status) => {
   const s = String(status || '').toLowerCase();
   if (s.includes('konf') || s.includes('confirm')) return 'confirmed';
@@ -425,41 +438,37 @@ router.get('/transfers', async (req, res) => {
 
       const matchesFieldTerms = (terms, values) => {
         if (!Array.isArray(terms) || terms.length === 0) return true;
-        const target = values.map((v) => String(v || '').toLowerCase()).join(' ');
-        // Aynı bar içinde birden fazla değer OR çalışır (barlar arası AND korunur)
-        return terms.some((term) => target.includes(term));
+        const target = normalizeText(values.map((v) => String(v || '')).join(' '));
+        return terms.some((term) => target.includes(normalizeText(term)));
       };
 
-      const notesText = String(row.notes || '').replace(/^Misafirler:\s*/i, '');
-      const hasScopedTerms =
-        referenceTerms.length ||
-        companyTerms.length ||
-        customerTerms.length ||
-        supplierTerms.length ||
-        hotelTerms.length ||
-        guestTerms.length ||
-        flightTerms.length;
+      // Genel arama: searchTerm ve referenceTerms içindeki tüm terimler buildHaystack üzerinde aranır
+      const allGeneralTerms = Array.from(new Set([
+        ...searchParts,
+        ...referenceTerms
+      ].map((t) => normalizeText(t)).filter(Boolean)));
 
-      if (hasScopedTerms) {
-        return (
-          matchesFieldTerms(referenceTerms, [row.reference, row.project_reference]) &&
-          matchesFieldTerms(companyTerms, [row.company_name]) &&
-          matchesFieldTerms(customerTerms, [row.customer_name]) &&
-          matchesFieldTerms(supplierTerms, [row.supplier_name]) &&
-          matchesFieldTerms(hotelTerms, [row.hotel_name]) &&
-          matchesFieldTerms(guestTerms, [notesText]) &&
-          matchesFieldTerms(flightTerms, [
-            row.flight_info?.flight_number,
-            row.flight_info?.airline,
-            row.flight_info?.departure_airport,
-            row.flight_info?.arrival_airport
-          ])
-        );
+      if (allGeneralTerms.length > 0) {
+        const haystack = normalizeText(buildHaystack(row));
+        const matchesAll = allGeneralTerms.every((term) => haystack.includes(term));
+        if (!matchesAll) return false;
       }
 
-      if (searchParts.length === 0) return true;
-      const haystack = buildHaystack(row);
-      return searchParts.every((term) => haystack.includes(term));
+      // Varsa spesifik alan filtreleri
+      const notesText = String(row.notes || '').replace(/^Misafirler:\s*/i, '');
+      if (companyTerms.length && !matchesFieldTerms(companyTerms, [row.company_name])) return false;
+      if (customerTerms.length && !matchesFieldTerms(customerTerms, [row.customer_name])) return false;
+      if (supplierTerms.length && !matchesFieldTerms(supplierTerms, [row.supplier_name])) return false;
+      if (hotelTerms.length && !matchesFieldTerms(hotelTerms, [row.hotel_name])) return false;
+      if (guestTerms.length && !matchesFieldTerms(guestTerms, [notesText])) return false;
+      if (flightTerms.length && !matchesFieldTerms(flightTerms, [
+        row.flight_info?.flight_number,
+        row.flight_info?.airline,
+        row.flight_info?.departure_airport,
+        row.flight_info?.arrival_airport
+      ])) return false;
+
+      return true;
     };
 
     const matchesTypeFilter = (row) =>
@@ -721,35 +730,37 @@ router.get('/tickets', async (req, res) => {
 
       const matchesFieldTerms = (terms, values) => {
         if (!Array.isArray(terms) || terms.length === 0) return true;
-        const target = values.map((v) => String(v || '').toLowerCase()).join(' ');
-        return terms.some((term) => target.includes(term));
+        const target = normalizeText(values.map((v) => String(v || '')).join(' '));
+        return terms.some((term) => target.includes(normalizeText(term)));
       };
 
-      const hasScopedTerms =
-        voucherTerms.length ||
-        customerTerms.length ||
-        pnrTerms.length ||
-        airlineTerms.length ||
-        supplierTerms.length ||
-        guestTerms.length;
+      // Genel arama: searchTerm ve pnrTerms içindeki tüm kelimeler haystack içinde aranır
+      const allGeneralTerms = Array.from(new Set([
+        ...searchParts,
+        ...pnrTerms
+      ].map((t) => normalizeText(t)).filter(Boolean)));
 
-      if (hasScopedTerms) {
-        return (
-          matchesFieldTerms(voucherTerms, [row.voucherNumber, row.sejourId]) &&
-          matchesFieldTerms(customerTerms, [row.customerName, row.agencyName, row.companyName]) &&
-          matchesFieldTerms(pnrTerms, [row.pnr]) &&
-          matchesFieldTerms(airlineTerms, [row.airline, row.flightNo, row.route]) &&
-          matchesFieldTerms(supplierTerms, [row.ticketingProvider]) &&
-          matchesFieldTerms(guestTerms, [row.guestNames])
-        );
+      if (allGeneralTerms.length > 0) {
+        const haystack = normalizeText([
+          row.pnr, row.voucherNumber, row.sejourId, row.projectId, row.customerName, row.agencyName,
+          row.companyName, row.airline, row.airlineCode, row.flightNo, row.ticketingProvider,
+          row.route, row.departureAirport, row.arrivalAirport, row.ticketNumber, row.ticketClass,
+          row.guestNames, row.notes, row.departureDate, row.returnDate, row.ticketingDate,
+          row.departureTime, row.arrivalTime, row.price, row.costPrice, row.currency, row.costCurrency
+        ].map((v) => String(v || '')).join(' '));
+
+        const matchesAll = allGeneralTerms.every((term) => haystack.includes(term));
+        if (!matchesAll) return false;
       }
 
-      if (searchParts.length === 0) return true;
-      const haystack = [
-        row.voucherNumber, row.customerName, row.agencyName, row.airline, row.flightNo, row.pnr,
-        row.ticketingProvider, row.route, row.departureTime, row.arrivalTime, row.guestNames
-      ].map((v) => String(v || '').toLowerCase()).join(' ');
-      return searchParts.every((term) => haystack.includes(term));
+      // Varsa spesifik alan filtreleri
+      if (voucherTerms.length && !matchesFieldTerms(voucherTerms, [row.voucherNumber, row.sejourId])) return false;
+      if (customerTerms.length && !matchesFieldTerms(customerTerms, [row.customerName, row.agencyName, row.companyName])) return false;
+      if (airlineTerms.length && !matchesFieldTerms(airlineTerms, [row.airline, row.flightNo, row.route])) return false;
+      if (supplierTerms.length && !matchesFieldTerms(supplierTerms, [row.ticketingProvider])) return false;
+      if (guestTerms.length && !matchesFieldTerms(guestTerms, [row.guestNames])) return false;
+
+      return true;
     });
 
     const typeCounts = {
@@ -1016,33 +1027,35 @@ router.get('/guides', async (req, res) => {
 
       const matchesFieldTerms = (terms, values) => {
         if (!Array.isArray(terms) || terms.length === 0) return true;
-        const target = values.map((v) => String(v || '').toLowerCase()).join(' ');
-        return terms.some((term) => target.includes(term));
+        const target = normalizeText(values.map((v) => String(v || '')).join(' '));
+        return terms.some((term) => target.includes(normalizeText(term)));
       };
 
-      const hasScopedTerms =
-        voucherTerms.length ||
-        customerTerms.length ||
-        hotelTerms.length ||
-        supplierTerms.length ||
-        guideTerms.length;
+      // Genel arama: searchTerm ve voucherTerms içindeki tüm kelimeler haystack içinde aranır
+      const allGeneralTerms = Array.from(new Set([
+        ...searchParts,
+        ...voucherTerms
+      ].map((t) => normalizeText(t)).filter(Boolean)));
 
-      if (hasScopedTerms) {
-        return (
-          matchesFieldTerms(voucherTerms, [row.voucher_number, row.sejour_id]) &&
-          matchesFieldTerms(customerTerms, [row.customer_name, row.company_name]) &&
-          matchesFieldTerms(hotelTerms, [row.hotel_name]) &&
-          matchesFieldTerms(supplierTerms, [row.supplier]) &&
-          matchesFieldTerms(guideTerms, [row.guide_name, row.service_type, row.description])
-        );
+      if (allGeneralTerms.length > 0) {
+        const haystack = normalizeText([
+          row.guide_name, row.voucher_number, row.sejour_id, row.project_id, row.service_type,
+          row.customer_type, row.customer_name, row.company_name, row.supplier, row.hotel_name,
+          row.description, row.notes, row.check_in_date, row.check_out_date, row.currency,
+          row.price, row.cost_price
+        ].map((v) => String(v || '')).join(' '));
+
+        const matchesAll = allGeneralTerms.every((term) => haystack.includes(term));
+        if (!matchesAll) return false;
       }
 
-      if (searchParts.length === 0) return true;
-      const haystack = [
-        row.guide_name, row.voucher_number, row.service_type, row.customer_type, row.customer_name,
-        row.company_name, row.supplier, row.check_in_date, row.check_out_date
-      ].map((v) => String(v || '').toLowerCase()).join(' ');
-      return searchParts.every((term) => haystack.includes(term));
+      // Varsa spesifik alan filtreleri
+      if (customerTerms.length && !matchesFieldTerms(customerTerms, [row.customer_name, row.company_name])) return false;
+      if (hotelTerms.length && !matchesFieldTerms(hotelTerms, [row.hotel_name])) return false;
+      if (supplierTerms.length && !matchesFieldTerms(supplierTerms, [row.supplier])) return false;
+      if (guideTerms.length && !matchesFieldTerms(guideTerms, [row.guide_name, row.service_type, row.description])) return false;
+
+      return true;
     });
 
     const typeCounts = {
@@ -1312,33 +1325,35 @@ router.get('/part-time', async (req, res) => {
 
       const matchesFieldTerms = (terms, values) => {
         if (!Array.isArray(terms) || terms.length === 0) return true;
-        const target = values.map((v) => String(v || '').toLowerCase()).join(' ');
-        return terms.some((term) => target.includes(term));
+        const target = normalizeText(values.map((v) => String(v || '')).join(' '));
+        return terms.some((term) => target.includes(normalizeText(term)));
       };
 
-      const hasScopedTerms =
-        voucherTerms.length ||
-        customerTerms.length ||
-        hotelTerms.length ||
-        supplierTerms.length ||
-        employeeTerms.length;
+      // Genel arama: searchTerm ve voucherTerms içindeki tüm kelimeler haystack içinde aranır
+      const allGeneralTerms = Array.from(new Set([
+        ...searchParts,
+        ...voucherTerms
+      ].map((t) => normalizeText(t)).filter(Boolean)));
 
-      if (hasScopedTerms) {
-        return (
-          matchesFieldTerms(voucherTerms, [row.voucher_number, row.sejour_id]) &&
-          matchesFieldTerms(customerTerms, [row.customer_name, row.company_name]) &&
-          matchesFieldTerms(hotelTerms, [row.hotel_name]) &&
-          matchesFieldTerms(supplierTerms, [row.supplier]) &&
-          matchesFieldTerms(employeeTerms, [row.employee_name, row.service_type, row.description])
-        );
+      if (allGeneralTerms.length > 0) {
+        const haystack = normalizeText([
+          row.employee_name, row.voucher_number, row.sejour_id, row.project_id, row.service_type,
+          row.customer_type, row.customer_name, row.company_name, row.supplier, row.hotel_name,
+          row.description, row.notes, row.check_in_date, row.check_out_date, row.currency,
+          row.price, row.cost_price
+        ].map((v) => String(v || '')).join(' '));
+
+        const matchesAll = allGeneralTerms.every((term) => haystack.includes(term));
+        if (!matchesAll) return false;
       }
 
-      if (searchParts.length === 0) return true;
-      const haystack = [
-        row.employee_name, row.voucher_number, row.service_type, row.customer_type, row.customer_name,
-        row.company_name, row.supplier, row.hotel_name, row.description, row.check_in_date, row.check_out_date
-      ].map((v) => String(v || '').toLowerCase()).join(' ');
-      return searchParts.every((term) => haystack.includes(term));
+      // Varsa spesifik alan filtreleri
+      if (customerTerms.length && !matchesFieldTerms(customerTerms, [row.customer_name, row.company_name])) return false;
+      if (hotelTerms.length && !matchesFieldTerms(hotelTerms, [row.hotel_name])) return false;
+      if (supplierTerms.length && !matchesFieldTerms(supplierTerms, [row.supplier])) return false;
+      if (employeeTerms.length && !matchesFieldTerms(employeeTerms, [row.employee_name, row.service_type, row.description])) return false;
+
+      return true;
     });
 
     const typeCounts = {
