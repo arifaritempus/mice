@@ -201,22 +201,22 @@ export default function InvoiceItemTable({
                   }}
                 />
               </th>
-              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[15%]">
+              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[14%]">
                 Hizmet / Kategori
               </th>
-              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[10%]">
+              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[9%]">
                 Tarih Aralığı
               </th>
-              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[12%]">
+              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[11%]">
                 Firma Adı
               </th>
-              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[12%]">
+              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[11%]">
                 Tedarikçi Adı
               </th>
-              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[12%]">
+              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[11%]">
                 Otel
               </th>
-              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[10%]">
+              <th className="px-2.5 py-2.5 text-left text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[9%]">
                 Proje / İşlem
               </th>
               <th className="px-2.5 py-2.5 text-right text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[8%]">
@@ -229,6 +229,9 @@ export default function InvoiceItemTable({
                 Bakiye
               </th>
               <th className="px-2.5 py-2.5 text-center text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[5%]">
+                KDV
+              </th>
+              <th className="px-2.5 py-2.5 text-center text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[6%]">
                 DVZ
               </th>
             </tr>
@@ -237,7 +240,7 @@ export default function InvoiceItemTable({
             {displayRows.length === 0 && (
               <tr>
                 <td
-                  colSpan={11}
+                  colSpan={12}
                   className="px-4 py-8 text-center text-v3-muted dark:text-v3-muted"
                 >
                   {enableInternalSearch && searchTerm
@@ -389,6 +392,18 @@ export default function InvoiceItemTable({
                         ≈ {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format((Number(item.balance) || 0) * (Number(item.exchange_rate || item.fx || item.cost_fx || (item.currency === "USD" ? item.project?.usd_rate : item.currency === "EUR" ? item.project?.eur_rate : item.currency === "GBP" ? item.project?.gbp_rate : 1)) || 1))} ₺
                       </div>
                     )}
+                  </td>
+
+                  <td className="px-2.5 py-2.5 text-center whitespace-nowrap">
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-slate-100 dark:bg-gray-800 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-gray-700">
+                      %{(() => {
+                        if (row.isGroup) {
+                          const vats = Array.from(new Set((row.items || []).map((i: any) => i.vat_rate != null ? i.vat_rate : (i.vat != null ? i.vat : 0))));
+                          return vats.length === 1 ? vats[0] : vats.join(', %');
+                        }
+                        return item.vat_rate != null ? item.vat_rate : (item.vat != null ? item.vat : 0);
+                      })()}
+                    </span>
                   </td>
 
                   <td className="px-2.5 py-2.5 text-center">

@@ -170,7 +170,10 @@ export default function InvoiceModal({
         setCurrentItems(mappedItems);
         mappedItems.forEach((item) => {
           initialAmounts[item.id] = Number(item.amount || item.balance || 0);
-          initialVats[item.id] = Number(item.vat_rate || 0);
+          const itemVat = item.vat_rate !== undefined && item.vat_rate !== null
+            ? Number(item.vat_rate)
+            : (item.vat !== undefined && item.vat !== null ? Number(item.vat) : 0);
+          initialVats[item.id] = itemVat;
           initialDescriptions[item.id] = item.description || "";
           const curr = (item.currency || "TRY").toUpperCase();
           initialCurrencies[item.id] = curr;
@@ -258,7 +261,10 @@ export default function InvoiceModal({
         setCurrentItems([...selectedItems]);
         selectedItems.forEach((item) => {
           initialAmounts[item.id] = Number(item.balance);
-          initialVats[item.id] = Number(item.vat_rate || 0);
+          const itemVat = item.vat_rate !== undefined && item.vat_rate !== null
+            ? Number(item.vat_rate)
+            : (item.vat !== undefined && item.vat !== null ? Number(item.vat) : 0);
+          initialVats[item.id] = itemVat;
           initialDescriptions[item.id] = item.description || "";
           const curr = (item.currency || item.cost_currency || "TRY").toUpperCase();
           initialCurrencies[item.id] = curr;
@@ -440,7 +446,7 @@ export default function InvoiceModal({
   }, [sortedLineItems, itemAmounts, itemCurrencies, categories, selectedItems]);
 
   const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
+    setExpandedGroups(prev => ({ ...prev, [group]: prev[group] === false ? true : false }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -648,25 +654,27 @@ export default function InvoiceModal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
-                  {groupedLineItemsArray.map((groupData) => (
-                    <React.Fragment key={groupData.name}>
-                      <tr className="bg-gray-100/50 dark:bg-gray-800/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => toggleGroup(groupData.name)}>
-                        <td colSpan={6} className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-gray-900 dark:text-v3-text uppercase">{groupData.name}</span>
-                              <span className="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">{groupData.items.length} Kalem</span>
+                  {groupedLineItemsArray.map((groupData) => {
+                    const isExpanded = expandedGroups[groupData.name] !== false;
+                    return (
+                      <React.Fragment key={groupData.name}>
+                        <tr className="bg-gray-100/50 dark:bg-gray-800/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => toggleGroup(groupData.name)}>
+                          <td colSpan={6} className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-gray-900 dark:text-v3-text uppercase">{groupData.name}</span>
+                                <span className="text-[10px] bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">{groupData.items.length} Kalem</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <span className="font-bold text-blue-600 dark:text-blue-400">
+                                  {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(groupData.totalAmount)} <span className="text-xs">{groupData.currency}</span>
+                                </span>
+                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                              <span className="font-bold text-blue-600 dark:text-blue-400">
-                                {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2 }).format(groupData.totalAmount)} <span className="text-xs">{groupData.currency}</span>
-                              </span>
-                              <svg className={`w-4 h-4 text-gray-500 transition-transform ${expandedGroups[groupData.name] ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      {expandedGroups[groupData.name] && groupData.items.map((item) => {
+                          </td>
+                        </tr>
+                        {isExpanded && groupData.items.map((item) => {
                     const isSejour = item.project?.quote_type === "SEJOUR";
                     const isMice = !!item.project && !isSejour;
                     const projectTypeBadge = isSejour
@@ -835,7 +843,8 @@ export default function InvoiceModal({
                     );
                   })}
                     </React.Fragment>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
