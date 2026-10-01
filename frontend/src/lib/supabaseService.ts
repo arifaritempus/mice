@@ -1687,6 +1687,20 @@ export class SejourService {
       costs: sejour.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
       totals: sejour.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
       profits: sejour.profits || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+      exchangeRateStrategy: sejour.exchange_rate_strategy || 'tcmb_banknote_selling',
+      exchange_rate_strategy: sejour.exchange_rate_strategy || 'tcmb_banknote_selling',
+      usdRate: Number(sejour.usd_rate) || 1,
+      eurRate: Number(sejour.eur_rate) || 1,
+      gbpRate: Number(sejour.gbp_rate) || 1,
+      usd_rate: Number(sejour.usd_rate) || 1,
+      eur_rate: Number(sejour.eur_rate) || 1,
+      gbp_rate: Number(sejour.gbp_rate) || 1,
+      totalSalesTry: Number(sejour.total_sales_try) || 0,
+      totalCostTry: Number(sejour.total_cost_try) || 0,
+      netProfitTry: Number(sejour.net_profit_try) || 0,
+      total_sales_try: Number(sejour.total_sales_try) || 0,
+      total_cost_try: Number(sejour.total_cost_try) || 0,
+      net_profit_try: Number(sejour.net_profit_try) || 0,
       created_at: sejour.created_at,
       // İlişkili verileri dönüştür
       rooms: (sejour.sejour_rooms || []).map((room: any) => ({
@@ -1710,6 +1724,13 @@ export class SejourService {
         totalPrice: room.total_price || room.totalPrice || 0,
         currency: room.currency || 'TRY',
         vat: room.vat,
+        fx: Number(room.fx) || 1,
+        costFx: Number(room.cost_fx) || 1,
+        cost_fx: Number(room.cost_fx) || 1,
+        totalTry: Number(room.total_try) || ((Number(room.total_price || room.price || 0)) * (Number(room.fx) || 1)),
+        total_try: Number(room.total_try) || ((Number(room.total_price || room.price || 0)) * (Number(room.fx) || 1)),
+        costTotalTry: Number(room.cost_total_try) || ((Number(room.cost_price || room.costPrice || 0)) * (Number(room.cost_fx) || 1)),
+        cost_total_try: Number(room.cost_total_try) || ((Number(room.cost_price || room.costPrice || 0)) * (Number(room.cost_fx) || 1)),
         // Maliyet bilgileri
         costPrice: room.cost_price || room.costPrice || 0,
         costCurrency: room.cost_currency || room.costCurrency || room.currency || 'TRY'
@@ -1726,7 +1747,14 @@ export class SejourService {
         arrivalTime: flight.arrival_time || '',
         price: flight.total_price || flight.price || 0,
         currency: flight.currency || 'TRY',
-          vat: flight.vat,
+        vat: flight.vat,
+        fx: Number(flight.fx) || 1,
+        costFx: Number(flight.cost_fx) || 1,
+        cost_fx: Number(flight.cost_fx) || 1,
+        totalTry: Number(flight.total_try) || ((Number(flight.total_price || flight.price || 0)) * (Number(flight.fx) || 1)),
+        total_try: Number(flight.total_try) || ((Number(flight.total_price || flight.price || 0)) * (Number(flight.fx) || 1)),
+        costTotalTry: Number(flight.cost_total_try) || ((Number(flight.cost_price || flight.costPrice || 0)) * (Number(flight.cost_fx) || 1)),
+        cost_total_try: Number(flight.cost_total_try) || ((Number(flight.cost_price || flight.costPrice || 0)) * (Number(flight.cost_fx) || 1)),
         // Maliyet bilgileri
         costPrice: flight.cost_price || flight.costPrice || 0,
         costCurrency: flight.cost_currency || flight.costCurrency || flight.currency || 'TRY',
@@ -1759,7 +1787,14 @@ export class SejourService {
         routeDescription: transfer.route_description || transfer.routeDescription || '',
         price: transfer.price || 0,
         currency: transfer.currency || 'TRY',
-          vat: transfer.vat,
+        vat: transfer.vat,
+        fx: Number(transfer.fx) || 1,
+        costFx: Number(transfer.cost_fx) || 1,
+        cost_fx: Number(transfer.cost_fx) || 1,
+        totalTry: Number(transfer.total_try) || ((Number(transfer.price || 0)) * (Number(transfer.fx) || 1)),
+        total_try: Number(transfer.total_try) || ((Number(transfer.price || 0)) * (Number(transfer.fx) || 1)),
+        costTotalTry: Number(transfer.cost_total_try) || ((Number(transfer.cost_price || transfer.costPrice || 0)) * (Number(transfer.cost_fx) || 1)),
+        cost_total_try: Number(transfer.cost_total_try) || ((Number(transfer.cost_price || transfer.costPrice || 0)) * (Number(transfer.cost_fx) || 1)),
         // Maliyet bilgileri
         costPrice: transfer.cost_price || transfer.costPrice || 0,
         costCurrency: transfer.cost_currency || transfer.costCurrency || transfer.currency || 'TRY'
@@ -1778,7 +1813,14 @@ export class SejourService {
         date: service.date || null,
         price: service.price || 0,
         currency: service.currency || 'TRY',
-          vat: service.vat,
+        vat: service.vat,
+        fx: Number(service.fx) || 1,
+        costFx: Number(service.cost_fx) || 1,
+        cost_fx: Number(service.cost_fx) || 1,
+        totalTry: Number(service.total_try) || ((Number(service.price || 0)) * (Number(service.fx) || 1)),
+        total_try: Number(service.total_try) || ((Number(service.price || 0)) * (Number(service.fx) || 1)),
+        costTotalTry: Number(service.cost_total_try) || ((Number(service.cost_price || service.costPrice || 0)) * (Number(service.cost_fx) || 1)),
+        cost_total_try: Number(service.cost_total_try) || ((Number(service.cost_price || service.costPrice || 0)) * (Number(service.cost_fx) || 1)),
         // Maliyet bilgileri
         costPrice: service.cost_price || service.costPrice || 0,
         costCurrency: service.cost_currency || service.costCurrency || service.currency || 'TRY'
@@ -1838,6 +1880,20 @@ export class SejourService {
       costs: data.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
       totals: data.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
       profits: data.profits || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+      exchangeRateStrategy: data.exchange_rate_strategy || 'tcmb_banknote_selling',
+      exchange_rate_strategy: data.exchange_rate_strategy || 'tcmb_banknote_selling',
+      usdRate: Number(data.usd_rate) || 1,
+      eurRate: Number(data.eur_rate) || 1,
+      gbpRate: Number(data.gbp_rate) || 1,
+      usd_rate: Number(data.usd_rate) || 1,
+      eur_rate: Number(data.eur_rate) || 1,
+      gbp_rate: Number(data.gbp_rate) || 1,
+      totalSalesTry: Number(data.total_sales_try) || 0,
+      totalCostTry: Number(data.total_cost_try) || 0,
+      netProfitTry: Number(data.net_profit_try) || 0,
+      total_sales_try: Number(data.total_sales_try) || 0,
+      total_cost_try: Number(data.total_cost_try) || 0,
+      net_profit_try: Number(data.net_profit_try) || 0,
       created_at: data.created_at,
       // İlişkili verileri dönüştür
       rooms: (data.sejour_rooms || []).map((room: any) => ({
@@ -1861,6 +1917,13 @@ export class SejourService {
         totalPrice: room.total_price || room.totalPrice || 0,
         currency: room.currency || 'TRY',
         vat: room.vat,
+        fx: Number(room.fx) || 1,
+        costFx: Number(room.cost_fx) || 1,
+        cost_fx: Number(room.cost_fx) || 1,
+        totalTry: Number(room.total_try) || ((Number(room.total_price || room.totalPrice || room.price || 0)) * (Number(room.fx) || 1)),
+        total_try: Number(room.total_try) || ((Number(room.total_price || room.totalPrice || room.price || 0)) * (Number(room.fx) || 1)),
+        costTotalTry: Number(room.cost_total_try) || ((Number(room.cost_price || room.costPrice || 0)) * (Number(room.cost_fx) || 1)),
+        cost_total_try: Number(room.cost_total_try) || ((Number(room.cost_price || room.costPrice || 0)) * (Number(room.cost_fx) || 1)),
         // Maliyet bilgileri
         costPrice:
           room.cost_price !== undefined && room.cost_price !== null
@@ -1886,6 +1949,13 @@ export class SejourService {
           price: flight.total_price || flight.totalPrice || flight.price || 0,
           currency: flight.currency || 'TRY',
           vat: flight.vat,
+          fx: Number(flight.fx) || 1,
+          costFx: Number(flight.cost_fx) || 1,
+          cost_fx: Number(flight.cost_fx) || 1,
+          totalTry: Number(flight.total_try) || ((Number(flight.total_price || flight.totalPrice || flight.price || 0)) * (Number(flight.fx) || 1)),
+          total_try: Number(flight.total_try) || ((Number(flight.total_price || flight.totalPrice || flight.price || 0)) * (Number(flight.fx) || 1)),
+          costTotalTry: Number(flight.cost_total_try) || ((Number(flight.cost_price || flight.costPrice || 0)) * (Number(flight.cost_fx) || 1)),
+          cost_total_try: Number(flight.cost_total_try) || ((Number(flight.cost_price || flight.costPrice || 0)) * (Number(flight.cost_fx) || 1)),
           ticketingProvider: flight.ticketing_provider || '',
           ticketingDate: flight.ticketing_date || '',
           pnr: flight.pnr || '',
@@ -1937,6 +2007,13 @@ export class SejourService {
           price: transfer.price || 0,
           currency: transfer.currency || 'TRY',
           vat: transfer.vat,
+          fx: Number(transfer.fx) || 1,
+          costFx: Number(transfer.cost_fx) || 1,
+          cost_fx: Number(transfer.cost_fx) || 1,
+          totalTry: Number(transfer.total_try) || ((Number(transfer.price || 0)) * (Number(transfer.fx) || 1)),
+          total_try: Number(transfer.total_try) || ((Number(transfer.price || 0)) * (Number(transfer.fx) || 1)),
+          costTotalTry: Number(transfer.cost_total_try) || ((Number(transfer.cost_price || 0)) * (Number(transfer.cost_fx) || 1)),
+          cost_total_try: Number(transfer.cost_total_try) || ((Number(transfer.cost_price || 0)) * (Number(transfer.cost_fx) || 1)),
           // Maliyet bilgileri
           costPrice:
             transfer.cost_price !== undefined && transfer.cost_price !== null
@@ -1961,7 +2038,14 @@ export class SejourService {
         date: service.date || null,
         price: service.price || 0,
         currency: service.currency || 'TRY',
-          vat: service.vat,
+        vat: service.vat,
+        fx: Number(service.fx) || 1,
+        costFx: Number(service.cost_fx) || 1,
+        cost_fx: Number(service.cost_fx) || 1,
+        totalTry: Number(service.total_try) || ((Number(service.price || 0)) * (Number(service.fx) || 1)),
+        total_try: Number(service.total_try) || ((Number(service.price || 0)) * (Number(service.fx) || 1)),
+        costTotalTry: Number(service.cost_total_try) || ((Number(service.cost_price || 0)) * (Number(service.cost_fx) || 1)),
+        cost_total_try: Number(service.cost_total_try) || ((Number(service.cost_price || 0)) * (Number(service.cost_fx) || 1)),
         // Maliyet bilgileri
         costPrice:
           service.cost_price !== undefined && service.cost_price !== null
@@ -1997,27 +2081,48 @@ export class SejourService {
   }
 
   static async createSejour(sejourData: any) {
-    const { data: sejour, error: sejourError } = await supabase
+    const basePayload: any = {
+      voucher_number: sejourData.voucherNumber,
+      customer_type: sejourData.customerType,
+      customer_name: sejourData.customerName,
+      // Şahıs ise acente zorunlu olmadığından, boş string yerine null gönder
+      agency_id: sejourData.customerType === 'agency' && sejourData.agencyId ? sejourData.agencyId : null,
+      check_in_date: sejourData.checkInDate,
+      check_out_date: sejourData.checkOutDate,
+      status: sejourData.status || 'BEKLEMEDE',
+      is_international: sejourData.isInternational || false,
+      notes: sejourData.notes,
+      total_amount: sejourData.totalAmount || 0,
+      currency: sejourData.currency || 'TRY',
+      costs: sejourData.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+      totals: sejourData.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+      profits: sejourData.profits || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+      exchange_rate_strategy: sejourData.exchangeRateStrategy || sejourData.exchange_rate_strategy || 'tcmb_banknote_selling',
+      usd_rate: Number(sejourData.usdRate || sejourData.usd_rate) || 1,
+      eur_rate: Number(sejourData.eurRate || sejourData.eur_rate) || 1,
+      gbp_rate: Number(sejourData.gbpRate || sejourData.gbp_rate) || 1,
+      total_sales_try: Number(sejourData.totalSalesTry || sejourData.total_sales_try) || 0,
+      total_cost_try: Number(sejourData.totalCostTry || sejourData.total_cost_try) || 0,
+      net_profit_try: Number(sejourData.netProfitTry || sejourData.net_profit_try) || 0
+    };
+
+    let { data: sejour, error: sejourError } = await supabase
       .from('sejours')
-      .insert({
-        voucher_number: sejourData.voucherNumber,
-        customer_type: sejourData.customerType,
-        customer_name: sejourData.customerName,
-        // Şahıs ise acente zorunlu olmadığından, boş string yerine null gönder
-        agency_id: sejourData.customerType === 'agency' && sejourData.agencyId ? sejourData.agencyId : null,
-        check_in_date: sejourData.checkInDate,
-        check_out_date: sejourData.checkOutDate,
-        status: sejourData.status || 'BEKLEMEDE',
-        is_international: sejourData.isInternational || false,
-        notes: sejourData.notes,
-        total_amount: sejourData.totalAmount || 0,
-        currency: sejourData.currency || 'TRY',
-        costs: sejourData.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
-        totals: sejourData.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
-        profits: sejourData.profits || { EUR: 0, USD: 0, TRY: 0, GBP: 0 }
-      })
+      .insert(basePayload)
       .select()
       .single();
+
+    if (sejourError && (sejourError.code === '42703' || sejourError.message?.includes('column') || sejourError.message?.includes('does not exist'))) {
+      console.warn('Sejour kur kolonları bulunamadı, sadeleştirilmiş yükleme ile tekrar deneniyor...');
+      const { exchange_rate_strategy, usd_rate, eur_rate, gbp_rate, total_sales_try, total_cost_try, net_profit_try, ...fallbackPayload } = basePayload;
+      const retryResult = await supabase
+        .from('sejours')
+        .insert(fallbackPayload)
+        .select()
+        .single();
+      sejour = retryResult.data;
+      sejourError = retryResult.error;
+    }
 
     if (sejourError) {
       console.error('Sejour create error:', sejourError);
@@ -2344,6 +2449,17 @@ export class SejourService {
       }
     }
 
+    try {
+      const { updateSejourRates } = await import('@/lib/sejourRatesService');
+      await updateSejourRates(sejour.id, sejourData.exchangeRateStrategy || sejourData.exchange_rate_strategy || 'tcmb_banknote_selling', {
+        usd_rate: sejourData.usdRate || sejourData.usd_rate,
+        eur_rate: sejourData.eurRate || sejourData.eur_rate,
+        gbp_rate: sejourData.gbpRate || sejourData.gbp_rate,
+      });
+    } catch (e) {
+      console.warn('Sejour rates sync on createSejour non-blocking:', e);
+    }
+
     return sejour;
 
   }
@@ -2375,11 +2491,49 @@ export class SejourService {
         costs: sejourData.costs,
         totals: sejourData.totals,
         profits: sejourData.profits,
+        exchange_rate_strategy: sejourData.exchangeRateStrategy || sejourData.exchange_rate_strategy || 'tcmb_banknote_selling',
+        usd_rate: Number(sejourData.usdRate || sejourData.usd_rate) || 1,
+        eur_rate: Number(sejourData.eurRate || sejourData.eur_rate) || 1,
+        gbp_rate: Number(sejourData.gbpRate || sejourData.gbp_rate) || 1,
+        total_sales_try: Number(sejourData.totalSalesTry || sejourData.total_sales_try) || 0,
+        total_cost_try: Number(sejourData.totalCostTry || sejourData.total_cost_try) || 0,
+        net_profit_try: Number(sejourData.netProfitTry || sejourData.net_profit_try) || 0,
         updated_at: new Date().toISOString()
       })
       .eq('id', sejourId);
 
-    if (sejourError) throw sejourError;
+    if (sejourError && (sejourError.code === '42703' || sejourError.message?.includes('column') || sejourError.message?.includes('does not exist'))) {
+      console.warn('Sejour kur kolonları bulunamadı, sadeleştirilmiş güncelleme ile tekrar deneniyor...');
+      const { error: retryErr } = await supabase
+        .from('sejours')
+        .update({
+          voucher_number: sejourData.voucherNumber,
+          customer_type: sejourData.customerType,
+          customer_name: sejourData.customerName,
+          agency_id:
+            sejourData.customerType === 'agency'
+              ? (sejourData.agency_id || sejourData.agencyId || null)
+              : null,
+          check_in_date: sejourData.checkInDate,
+          check_out_date: sejourData.checkOutDate,
+          hotel_id: sejourData.hotel_id,
+          hotel_name: sejourData.hotelName,
+          hotel_address: sejourData.hotelAddress,
+          status: sejourData.status || 'confirmed',
+          is_international: sejourData.isInternational || false,
+          notes: sejourData.notes,
+          total_amount: sejourData.totalAmount,
+          currency: sejourData.currency,
+          costs: sejourData.costs,
+          totals: sejourData.totals,
+          profits: sejourData.profits,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', sejourId);
+      if (retryErr) throw retryErr;
+    } else if (sejourError) {
+      throw sejourError;
+    }
 
     // Mevcut odaları sil ve yenilerini ekle
     if (sejourData.rooms) {
@@ -2711,6 +2865,17 @@ export class SejourService {
           throw paymentsError;
         }
       }
+    }
+
+    try {
+      const { updateSejourRates } = await import('@/lib/sejourRatesService');
+      await updateSejourRates(sejourId, sejourData.exchangeRateStrategy || sejourData.exchange_rate_strategy || 'tcmb_banknote_selling', {
+        usd_rate: sejourData.usdRate || sejourData.usd_rate,
+        eur_rate: sejourData.eurRate || sejourData.eur_rate,
+        gbp_rate: sejourData.gbpRate || sejourData.gbp_rate,
+      });
+    } catch (e) {
+      console.warn('Sejour rates sync on updateSejour non-blocking:', e);
     }
 
     return { id: sejourId, ...sejourData };

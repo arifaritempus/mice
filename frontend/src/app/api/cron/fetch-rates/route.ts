@@ -240,9 +240,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // --- SEJOUR'LARIN KURLARINI GÜNCELLEME ---
+    try {
+      const { data: activeSejours, error: sejourErr } = await supabase
+        .from("sejours")
+        .select("id, exchange_rate_strategy, check_in_date, status")
+        .not("exchange_rate_strategy", "eq", "manuel")
+        .not("status", "in", '("IPTAL","İPTAL","CANCELLED")');
+
+      if (!sejourErr && activeSejours && activeSejours.length > 0) {
+        const { updateSejourRates } = await import("@/lib/sejourRatesService");
+        let sejourUpdateCount = 0;
+
+        for (const sej of activeSejours) {
+          const strategy = sej.exchange_rate_strategy || "tcmb_banknote_selling";
+          try {
+            await updateSejourRates(sej.id, strategy);
+            sejourUpdateCount++;
+          } catch (e) {
+            console.error(`Sejour kur güncelleme hatası (${sej.id}):`, e);
+          }
+        }
+        console.log(
+          `[TCMB] ${sejourUpdateCount} sejour'un kurları ve kalemleri başarıyla güncellendi.`,
+        );
+      }
+    } catch (e) {
+      console.error("Sejour cron kur güncelleme genel hatası:", e);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `${allRatesToUpsert.length} kur kaydedildi. Projeler güncellendi.`,
+      message: `${allRatesToUpsert.length} kur kaydedildi. Projeler ve Sejour'lar güncellendi.`,
       dates: datesToFill,
     });
   } catch (error: any) {

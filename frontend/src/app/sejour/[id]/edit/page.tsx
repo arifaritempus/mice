@@ -189,6 +189,13 @@ interface Room {
   costCurrency?: string;
   hotelName?: string;
   vat?: number; // Added for VAT
+  fx?: number;
+  costFx?: number;
+  cost_fx?: number;
+  totalTry?: number;
+  total_try?: number;
+  costTotalTry?: number;
+  cost_total_try?: number;
 }
 
 interface FlightInfo {
@@ -212,6 +219,13 @@ interface FlightInfo {
   costPrice?: number;
   costCurrency?: string;
   vat?: number; // Added for VAT
+  fx?: number;
+  costFx?: number;
+  cost_fx?: number;
+  totalTry?: number;
+  total_try?: number;
+  costTotalTry?: number;
+  cost_total_try?: number;
 }
 
 interface TransferInfo {
@@ -230,6 +244,13 @@ interface TransferInfo {
   costPrice?: number;
   costCurrency?: string;
   vat?: number; // Added for VAT
+  fx?: number;
+  costFx?: number;
+  cost_fx?: number;
+  totalTry?: number;
+  total_try?: number;
+  costTotalTry?: number;
+  cost_total_try?: number;
 }
 
 interface ExtraService {
@@ -247,6 +268,13 @@ interface ExtraService {
   costPrice?: number;
   costCurrency?: string;
   vat?: number; // Added for VAT
+  fx?: number;
+  costFx?: number;
+  cost_fx?: number;
+  totalTry?: number;
+  total_try?: number;
+  costTotalTry?: number;
+  cost_total_try?: number;
 }
 
 interface Collection {
@@ -359,7 +387,143 @@ export default function EditSejourPage() {
     status: "BEKLEMEDE",
     isInternational: false,
     notes: "",
+    exchangeRateStrategy: "tcmb_banknote_selling",
+    usdRate: 1,
+    eurRate: 1,
+    gbpRate: 1,
   });
+
+  const [ratesLoading, setRatesLoading] = useState(false);
+
+  const getRateForCurrency = (cur: string | undefined): number => {
+    if (!cur) return 1;
+    const upper = cur.toUpperCase();
+    if (upper === "USD") return salesData.usdRate || 1;
+    if (upper === "EUR") return salesData.eurRate || 1;
+    if (upper === "GBP") return salesData.gbpRate || 1;
+    return 1;
+  };
+
+  const fetchRatesForDate = async (dateStr?: string, strategy: string = salesData.exchangeRateStrategy || "tcmb_banknote_selling") => {
+    try {
+      setRatesLoading(true);
+      const { getTcmbRatesForDate } = await import("@/lib/sejourRatesService");
+      const rates = await getTcmbRatesForDate(dateStr || salesData.checkInDate, strategy);
+      setSalesData(prev => ({
+        ...prev,
+        exchangeRateStrategy: strategy,
+        usdRate: rates.usd_rate,
+        eurRate: rates.eur_rate,
+        gbpRate: rates.gbp_rate
+      }));
+
+      // Kurlar değiştiğinde satırların varsayılan kurlarını güncelle
+      setRooms(prev => prev.map(r => {
+        const fx = r.currency === "EUR" ? rates.eur_rate : r.currency === "USD" ? rates.usd_rate : r.currency === "GBP" ? rates.gbp_rate : 1;
+        const costFx = (r.costCurrency || r.currency) === "EUR" ? rates.eur_rate : (r.costCurrency || r.currency) === "USD" ? rates.usd_rate : (r.costCurrency || r.currency) === "GBP" ? rates.gbp_rate : 1;
+        return {
+          ...r,
+          fx,
+          costFx,
+          cost_fx: costFx,
+          totalTry: (r.price || 0) * fx,
+          costTotalTry: (r.costPrice || 0) * costFx,
+        };
+      }));
+
+      setFlights(prev => prev.map(f => {
+        const fx = f.currency === "EUR" ? rates.eur_rate : f.currency === "USD" ? rates.usd_rate : f.currency === "GBP" ? rates.gbp_rate : 1;
+        const costFx = (f.costCurrency || f.currency) === "EUR" ? rates.eur_rate : (f.costCurrency || f.currency) === "USD" ? rates.usd_rate : (f.costCurrency || f.currency) === "GBP" ? rates.gbp_rate : 1;
+        return {
+          ...f,
+          fx,
+          costFx,
+          cost_fx: costFx,
+          totalTry: (f.price || 0) * fx,
+          costTotalTry: (f.costPrice || 0) * costFx,
+        };
+      }));
+
+      setTransfers(prev => prev.map(t => {
+        const fx = t.currency === "EUR" ? rates.eur_rate : t.currency === "USD" ? rates.usd_rate : t.currency === "GBP" ? rates.gbp_rate : 1;
+        const costFx = (t.costCurrency || t.currency) === "EUR" ? rates.eur_rate : (t.costCurrency || t.currency) === "USD" ? rates.usd_rate : (t.costCurrency || t.currency) === "GBP" ? rates.gbp_rate : 1;
+        return {
+          ...t,
+          fx,
+          costFx,
+          cost_fx: costFx,
+          totalTry: (t.price || 0) * fx,
+          costTotalTry: (t.costPrice || 0) * costFx,
+        };
+      }));
+
+      setExtraServices(prev => prev.map(e => {
+        const fx = e.currency === "EUR" ? rates.eur_rate : e.currency === "USD" ? rates.usd_rate : e.currency === "GBP" ? rates.gbp_rate : 1;
+        const costFx = (e.costCurrency || e.currency) === "EUR" ? rates.eur_rate : (e.costCurrency || e.currency) === "USD" ? rates.usd_rate : (e.costCurrency || e.currency) === "GBP" ? rates.gbp_rate : 1;
+        return {
+          ...e,
+          fx,
+          costFx,
+          cost_fx: costFx,
+          totalTry: (e.price || 0) * fx,
+          costTotalTry: (e.costPrice || 0) * costFx,
+        };
+      }));
+
+      return rates;
+    } catch (e) {
+      console.warn("Could not fetch TCMB rates:", e);
+    } finally {
+      setRatesLoading(false);
+    }
+  };
+
+  const applyHeaderRatesToRows = (rates?: { usd?: number; eur?: number; gbp?: number }) => {
+    const usd = rates?.usd ?? salesData.usdRate ?? 1;
+    const eur = rates?.eur ?? salesData.eurRate ?? 1;
+    const gbp = rates?.gbp ?? salesData.gbpRate ?? 1;
+    const getRate = (c?: string) => {
+      if (!c) return 1;
+      const u = c.toUpperCase();
+      if (u === "USD") return usd;
+      if (u === "EUR") return eur;
+      if (u === "GBP") return gbp;
+      return 1;
+    };
+    setRooms(prev => prev.map(r => ({
+      ...r,
+      fx: getRate(r.currency),
+      costFx: getRate(r.costCurrency || r.currency),
+      cost_fx: getRate(r.costCurrency || r.currency),
+      totalTry: (r.price || 0) * getRate(r.currency),
+      costTotalTry: (r.costPrice || 0) * getRate(r.costCurrency || r.currency),
+    })));
+    setFlights(prev => prev.map(f => ({
+      ...f,
+      fx: getRate(f.currency),
+      costFx: getRate(f.costCurrency || f.currency),
+      cost_fx: getRate(f.costCurrency || f.currency),
+      totalTry: (f.price || 0) * getRate(f.currency),
+      costTotalTry: (f.costPrice || 0) * getRate(f.costCurrency || f.currency),
+    })));
+    setTransfers(prev => prev.map(t => ({
+      ...t,
+      fx: getRate(t.currency),
+      costFx: getRate(t.costCurrency || t.currency),
+      cost_fx: getRate(t.costCurrency || t.currency),
+      totalTry: (t.price || 0) * getRate(t.currency),
+      costTotalTry: (t.costPrice || 0) * getRate(t.costCurrency || t.currency),
+    })));
+    setExtraServices(prev => prev.map(s => ({
+      ...s,
+      fx: getRate(s.currency),
+      costFx: getRate(s.costCurrency || s.currency),
+      cost_fx: getRate(s.costCurrency || s.currency),
+      totalTry: (s.price || 0) * getRate(s.currency),
+      costTotalTry: (s.costPrice || 0) * getRate(s.costCurrency || s.currency),
+    })));
+    toast.success("Tüm satırların kurları güncellendi.");
+  };
 
   // Rooms
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -647,6 +811,11 @@ export default function EditSejourPage() {
           const sejour = await SejourService.getSejourWithDetails(sejourId);
 
           if (sejour) {
+            const strategy = sejour.exchange_rate_strategy || sejour.exchangeRateStrategy || "tcmb_banknote_selling";
+            const usd = Number(sejour.usd_rate || sejour.usdRate || 1);
+            const eur = Number(sejour.eur_rate || sejour.eurRate || 1);
+            const gbp = Number(sejour.gbp_rate || sejour.gbpRate || 1);
+
             setSalesData({
               voucherNumber: sejour.voucherNumber || "",
               customerType: sejour.customerType || "agency",
@@ -659,22 +828,71 @@ export default function EditSejourPage() {
               status: sejour.status || "BEKLEMEDE",
               isInternational: false,
               notes: sejour.notes || "",
+              exchangeRateStrategy: strategy,
+              usdRate: usd,
+              eurRate: eur,
+              gbpRate: gbp,
             });
 
+            const getRate = (c?: string) => {
+              if (!c) return 1;
+              const u = c.toUpperCase();
+              if (u === "USD") return usd;
+              if (u === "EUR") return eur;
+              if (u === "GBP") return gbp;
+              return 1;
+            };
+
             if (sejour.rooms) {
-              setRooms(sejour.rooms.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
+              setRooms(sejour.rooms.map((x: any) => ({
+                ...x,
+                costCurrency: x.costCurrency || 'TRY',
+                currency: x.currency || 'TRY',
+                fx: x.fx || getRate(x.currency),
+                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
+                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
+              })));
               if (sejour.rooms.length > 0) setShowAccommodation(true);
             }
             if (sejour.flights) {
-              setFlights(sejour.flights.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
+              setFlights(sejour.flights.map((x: any) => ({
+                ...x,
+                costCurrency: x.costCurrency || 'TRY',
+                currency: x.currency || 'TRY',
+                fx: x.fx || getRate(x.currency),
+                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
+                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
+              })));
               if (sejour.flights.length > 0) setShowFlight(true);
             }
             if (sejour.transfers) {
-              setTransfers(sejour.transfers.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
+              setTransfers(sejour.transfers.map((x: any) => ({
+                ...x,
+                costCurrency: x.costCurrency || 'TRY',
+                currency: x.currency || 'TRY',
+                fx: x.fx || getRate(x.currency),
+                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
+                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
+              })));
               if (sejour.transfers.length > 0) setShowTransfer(true);
             }
             if (sejour.extraServices) {
-              setExtraServices(sejour.extraServices.map((x: any) => ({ ...x, costCurrency: x.costCurrency || 'TRY', currency: x.currency || 'TRY' })));
+              setExtraServices(sejour.extraServices.map((x: any) => ({
+                ...x,
+                costCurrency: x.costCurrency || 'TRY',
+                currency: x.currency || 'TRY',
+                fx: x.fx || getRate(x.currency),
+                costFx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                cost_fx: x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency),
+                totalTry: x.totalTry || x.total_try || ((x.price || 0) * (x.fx || getRate(x.currency))),
+                costTotalTry: x.costTotalTry || x.cost_total_try || ((x.costPrice || 0) * (x.costFx || x.cost_fx || getRate(x.costCurrency || x.currency))),
+              })));
               if (sejour.extraServices.length > 0) setShowExtraServices(true);
             }
               if (sejour.payments) {
@@ -734,6 +952,10 @@ export default function EditSejourPage() {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "checkInDate" && value) {
+      fetchRatesForDate(value as string, salesData.exchangeRateStrategy);
+    }
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -757,10 +979,50 @@ export default function EditSejourPage() {
       guestInfo: "",
       price: 0,
       currency: "TRY",
+      costCurrency: "TRY",
       costPrice: 0,
+      fx: 1,
+      costFx: 1,
+      cost_fx: 1,
+      totalTry: 0,
+      costTotalTry: 0,
     };
     setRooms([...rooms, newRoom]);
   };
+
+  const updateRoom = (
+    id: string,
+    field: keyof Room,
+    value: any,
+  ) => {
+    setRooms(prev =>
+      prev.map((room) => {
+        if (room.id !== id) return room;
+        const updated = { ...room, [field]: value };
+        if (field === "currency") {
+          updated.fx = getRateForCurrency(value);
+          updated.totalTry = (updated.price || 0) * (updated.fx || 1);
+        } else if (field === "costCurrency") {
+          updated.costFx = getRateForCurrency(value);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * (updated.costFx || 1);
+        } else if (field === "price") {
+          updated.totalTry = Number(value || 0) * (updated.fx || 1);
+        } else if (field === "costPrice") {
+          updated.costTotalTry = Number(value || 0) * (updated.costFx || 1);
+        } else if (field === "fx") {
+          updated.totalTry = (updated.price || 0) * Number(value || 1);
+        } else if (field === "costFx" || field === "cost_fx") {
+          updated.costFx = Number(value || 1);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * Number(value || 1);
+        }
+        return updated;
+      }),
+    );
+  };
+
+  const removeRoom = (id: string) => setDeleteTarget({ id, type: 'room', title: 'Oda' });
 
   // Flight Management
   const addFlight = (type: "departure" | "return") => {
@@ -777,10 +1039,15 @@ export default function EditSejourPage() {
       currency: "TRY",
       costCurrency: "TRY",
       type: type,
-      ticketingDate: new Date().toISOString().split("T")[0], // Bugünün tarihi
+      ticketingDate: new Date().toISOString().split("T")[0],
       ticketingProvider: "",
       pnr: "",
       costPrice: 0,
+      fx: 1,
+      costFx: 1,
+      cost_fx: 1,
+      totalTry: 0,
+      costTotalTry: 0,
     };
     setFlights([...flights, newFlight]);
   };
@@ -788,12 +1055,32 @@ export default function EditSejourPage() {
   const updateFlight = (
     id: string,
     field: keyof FlightInfo,
-    value: string | number,
+    value: any,
   ) => {
-    setFlights(
-      flights.map((flight) =>
-        flight.id === id ? { ...flight, [field]: value } : flight,
-      ),
+    setFlights(prev =>
+      prev.map((flight) => {
+        if (flight.id !== id) return flight;
+        const updated = { ...flight, [field]: value };
+        if (field === "currency") {
+          updated.fx = getRateForCurrency(value);
+          updated.totalTry = (updated.price || 0) * (updated.fx || 1);
+        } else if (field === "costCurrency") {
+          updated.costFx = getRateForCurrency(value);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * (updated.costFx || 1);
+        } else if (field === "price") {
+          updated.totalTry = Number(value || 0) * (updated.fx || 1);
+        } else if (field === "costPrice") {
+          updated.costTotalTry = Number(value || 0) * (updated.costFx || 1);
+        } else if (field === "fx") {
+          updated.totalTry = (updated.price || 0) * Number(value || 1);
+        } else if (field === "costFx" || field === "cost_fx") {
+          updated.costFx = Number(value || 1);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * Number(value || 1);
+        }
+        return updated;
+      }),
     );
   };
 
@@ -818,6 +1105,11 @@ export default function EditSejourPage() {
       costCurrency: "TRY",
       direction: direction,
       costPrice: 0,
+      fx: 1,
+      costFx: 1,
+      cost_fx: 1,
+      totalTry: 0,
+      costTotalTry: 0,
     };
     setTransfers([...transfers, newTransfer]);
   };
@@ -825,30 +1117,36 @@ export default function EditSejourPage() {
   const updateTransfer = (
     id: string,
     field: keyof TransferInfo,
-    value: string | number,
+    value: any,
   ) => {
-    setTransfers(
-      transfers.map((transfer) =>
-        transfer.id === id ? { ...transfer, [field]: value } : transfer,
-      ),
+    setTransfers(prev =>
+      prev.map((transfer) => {
+        if (transfer.id !== id) return transfer;
+        const updated = { ...transfer, [field]: value };
+        if (field === "currency") {
+          updated.fx = getRateForCurrency(value);
+          updated.totalTry = (updated.price || 0) * (updated.fx || 1);
+        } else if (field === "costCurrency") {
+          updated.costFx = getRateForCurrency(value);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * (updated.costFx || 1);
+        } else if (field === "price") {
+          updated.totalTry = Number(value || 0) * (updated.fx || 1);
+        } else if (field === "costPrice") {
+          updated.costTotalTry = Number(value || 0) * (updated.costFx || 1);
+        } else if (field === "fx") {
+          updated.totalTry = (updated.price || 0) * Number(value || 1);
+        } else if (field === "costFx" || field === "cost_fx") {
+          updated.costFx = Number(value || 1);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * Number(value || 1);
+        }
+        return updated;
+      }),
     );
   };
 
   const removeTransfer = (id: string) => setDeleteTarget({ id, type: 'transfer', title: 'Transfer' });
-
-  const updateRoom = (
-    id: string,
-    field: keyof Room,
-    value: string | number,
-  ) => {
-    setRooms(
-      rooms.map((room) =>
-        room.id === id ? { ...room, [field]: value } : room,
-      ),
-    );
-  };
-
-  const removeRoom = (id: string) => setDeleteTarget({ id, type: 'room', title: 'Oda' });
 
   // Extra Service Management
   const addExtraService = () => {
@@ -860,7 +1158,13 @@ export default function EditSejourPage() {
       description: "",
       price: 0,
       currency: "TRY",
+      costCurrency: "TRY",
       costPrice: 0,
+      fx: 1,
+      costFx: 1,
+      cost_fx: 1,
+      totalTry: 0,
+      costTotalTry: 0,
     };
     setExtraServices([...extraServices, newService]);
   };
@@ -868,12 +1172,32 @@ export default function EditSejourPage() {
   const updateExtraService = (
     id: string,
     field: keyof ExtraService,
-    value: string | number,
+    value: any,
   ) => {
-    setExtraServices(
-      extraServices.map((service) =>
-        service.id === id ? { ...service, [field]: value } : service,
-      ),
+    setExtraServices(prev =>
+      prev.map((service) => {
+        if (service.id !== id) return service;
+        const updated = { ...service, [field]: value };
+        if (field === "currency") {
+          updated.fx = getRateForCurrency(value);
+          updated.totalTry = (updated.price || 0) * (updated.fx || 1);
+        } else if (field === "costCurrency") {
+          updated.costFx = getRateForCurrency(value);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * (updated.costFx || 1);
+        } else if (field === "price") {
+          updated.totalTry = Number(value || 0) * (updated.fx || 1);
+        } else if (field === "costPrice") {
+          updated.costTotalTry = Number(value || 0) * (updated.costFx || 1);
+        } else if (field === "fx") {
+          updated.totalTry = (updated.price || 0) * Number(value || 1);
+        } else if (field === "costFx" || field === "cost_fx") {
+          updated.costFx = Number(value || 1);
+          updated.cost_fx = updated.costFx;
+          updated.costTotalTry = (updated.costPrice || 0) * Number(value || 1);
+        }
+        return updated;
+      }),
     );
   };
 
@@ -987,6 +1311,56 @@ export default function EditSejourPage() {
     const total = getTotalForCurrency(currency);
     const cost = getCostForCurrency(currency);
     return total - cost;
+  };
+
+  const calculateTotalSalesTRY = () => {
+    let sum = 0;
+    rooms.forEach(r => {
+      const fx = r.fx || getRateForCurrency(r.currency);
+      sum += (Number(r.price) || 0) * (Number(fx) || 1);
+    });
+    flights.forEach(f => {
+      const fx = f.fx || getRateForCurrency(f.currency);
+      sum += (Number(f.price) || 0) * (Number(fx) || 1);
+    });
+    transfers.forEach(t => {
+      const fx = t.fx || getRateForCurrency(t.currency);
+      sum += (Number(t.price) || 0) * (Number(fx) || 1);
+    });
+    extraServices.forEach(s => {
+      const fx = s.fx || getRateForCurrency(s.currency);
+      sum += (Number(s.price) || 0) * (Number(fx) || 1);
+    });
+    return sum;
+  };
+
+  const calculateTotalCostTRY = () => {
+    let sum = 0;
+    rooms.forEach(r => {
+      const cCurr = r.costCurrency || r.currency;
+      const cFx = r.costFx || r.cost_fx || getRateForCurrency(cCurr);
+      sum += (Number(r.costPrice) || 0) * (Number(cFx) || 1);
+    });
+    flights.forEach(f => {
+      const cCurr = f.costCurrency || f.currency;
+      const cFx = f.costFx || f.cost_fx || getRateForCurrency(cCurr);
+      sum += (Number(f.costPrice) || 0) * (Number(cFx) || 1);
+    });
+    transfers.forEach(t => {
+      const cCurr = t.costCurrency || t.currency;
+      const cFx = t.costFx || t.cost_fx || getRateForCurrency(cCurr);
+      sum += (Number(t.costPrice) || 0) * (Number(cFx) || 1);
+    });
+    extraServices.forEach(s => {
+      const cCurr = s.costCurrency || s.currency;
+      const cFx = s.costFx || s.cost_fx || getRateForCurrency(cCurr);
+      sum += (Number(s.costPrice) || 0) * (Number(cFx) || 1);
+    });
+    return sum;
+  };
+
+  const calculateNetProfitTRY = () => {
+    return calculateTotalSalesTRY() - calculateTotalCostTRY();
   };
 
   const getCollectionForCurrency = (currency: string) => {
@@ -1111,10 +1485,38 @@ export default function EditSejourPage() {
         customerName: salesData.customerName,
         checkInDate: salesData.checkInDate,
         checkOutDate: salesData.checkOutDate,
-        rooms: rooms,
-        flights: flights,
-        transfers: transfers,
-        extraServices: extraServices,
+        rooms: rooms.map(r => ({
+          ...r,
+          fx: r.fx || getRateForCurrency(r.currency),
+          costFx: r.costFx || r.cost_fx || getRateForCurrency(r.costCurrency || r.currency),
+          cost_fx: r.costFx || r.cost_fx || getRateForCurrency(r.costCurrency || r.currency),
+          totalTry: (r.price || 0) * (r.fx || getRateForCurrency(r.currency)),
+          costTotalTry: (r.costPrice || 0) * (r.costFx || r.cost_fx || getRateForCurrency(r.costCurrency || r.currency)),
+        })),
+        flights: flights.map(f => ({
+          ...f,
+          fx: f.fx || getRateForCurrency(f.currency),
+          costFx: f.costFx || f.cost_fx || getRateForCurrency(f.costCurrency || f.currency),
+          cost_fx: f.costFx || f.cost_fx || getRateForCurrency(f.costCurrency || f.currency),
+          totalTry: (f.price || 0) * (f.fx || getRateForCurrency(f.currency)),
+          costTotalTry: (f.costPrice || 0) * (f.costFx || f.cost_fx || getRateForCurrency(f.costCurrency || f.currency)),
+        })),
+        transfers: transfers.map(t => ({
+          ...t,
+          fx: t.fx || getRateForCurrency(t.currency),
+          costFx: t.costFx || t.cost_fx || getRateForCurrency(t.costCurrency || t.currency),
+          cost_fx: t.costFx || t.cost_fx || getRateForCurrency(t.costCurrency || t.currency),
+          totalTry: (t.price || 0) * (t.fx || getRateForCurrency(t.currency)),
+          costTotalTry: (t.costPrice || 0) * (t.costFx || t.cost_fx || getRateForCurrency(t.costCurrency || t.currency)),
+        })),
+        extraServices: extraServices.map(s => ({
+          ...s,
+          fx: s.fx || getRateForCurrency(s.currency),
+          costFx: s.costFx || s.cost_fx || getRateForCurrency(s.costCurrency || s.currency),
+          cost_fx: s.costFx || s.cost_fx || getRateForCurrency(s.costCurrency || s.currency),
+          totalTry: (s.price || 0) * (s.fx || getRateForCurrency(s.currency)),
+          costTotalTry: (s.costPrice || 0) * (s.costFx || s.cost_fx || getRateForCurrency(s.costCurrency || s.currency)),
+        })),
         totalAmount:
           calculateTotalAmount()[
             salesData.currency as keyof ReturnType<typeof calculateTotalAmount>
@@ -1134,6 +1536,13 @@ export default function EditSejourPage() {
         notes: salesData.notes,
         collections: collections,
         payments: payments,
+        exchange_rate_strategy: salesData.exchangeRateStrategy || "tcmb_banknote_selling",
+        usd_rate: salesData.usdRate || 1,
+        eur_rate: salesData.eurRate || 1,
+        gbp_rate: salesData.gbpRate || 1,
+        total_sales_try: calculateTotalSalesTRY(),
+        total_cost_try: calculateTotalCostTRY(),
+        net_profit_try: calculateNetProfitTRY(),
         updated_at: new Date().toISOString(),
       };
 
@@ -1687,6 +2096,120 @@ export default function EditSejourPage() {
           {/* SATIŞ HİZMETLERİ BÖLÜMÜ */}
           {activeMainTab === 'details' && activeTabV6 === 'sales' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* DÖVİZ KURU YÖNETİMİ BAR */}
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-blue-100 dark:border-blue-900/40 p-4 mb-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-black text-lg">
+                      ₺
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">Döviz Kuru Yönetimi</h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                          {salesData.checkInDate ? `Giriş: ${new Date(salesData.checkInDate).toLocaleDateString("tr-TR")}` : "Bugün"}
+                        </span>
+                        {ratesLoading && (
+                          <span className="text-[10px] text-blue-500 flex items-center gap-1 font-medium animate-pulse">
+                            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="4" className="opacity-25"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            Kurlar alınıyor...
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-gray-500">Dövizli satış ve maliyetler TCMB kurlarıyla otomatik hesaplanır, dilediğinizde değiştirebilirsiniz.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="w-48">
+                      <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Kur Stratejisi</label>
+                      <select
+                        value={salesData.exchangeRateStrategy || "tcmb_banknote_selling"}
+                        onChange={(e) => {
+                          const strategy = e.target.value;
+                          setSalesData(prev => ({ ...prev, exchangeRateStrategy: strategy }));
+                          if (strategy !== "manuel") {
+                            fetchRatesForDate(salesData.checkInDate, strategy);
+                          }
+                        }}
+                        className="w-full h-[34px] px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500"
+                      >
+                        <option value="tcmb_banknote_selling">TCMB Efektif Satış (Varsayılan)</option>
+                        <option value="tcmb_banknote_buying">TCMB Efektif Alış</option>
+                        <option value="tcmb_forex_selling">TCMB Döviz Satış</option>
+                        <option value="tcmb_forex_buying">TCMB Döviz Alış</option>
+                        <option value="manuel">Manuel</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">USD (Dolar)</label>
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={salesData.usdRate || ""}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 1;
+                            setSalesData(prev => ({ ...prev, usdRate: val }));
+                          }}
+                          className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">EUR (Euro)</label>
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={salesData.eurRate || ""}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 1;
+                            setSalesData(prev => ({ ...prev, eurRate: val }));
+                          }}
+                          className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">GBP (Sterlin)</label>
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={salesData.gbpRate || ""}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 1;
+                            setSalesData(prev => ({ ...prev, gbpRate: val }));
+                          }}
+                          className="w-20 h-[34px] px-2 text-right border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 outline-none focus:border-blue-500 bg-white dark:bg-gray-800"
+                        />
+                      </div>
+
+                      <div className="flex items-end gap-1.5 pt-3">
+                        <button
+                          type="button"
+                          onClick={() => fetchRatesForDate(salesData.checkInDate, salesData.exchangeRateStrategy)}
+                          disabled={ratesLoading}
+                          className="h-[34px] px-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
+                          title="TCMB'den güncel kuru yeniden çek"
+                        >
+                          <svg className={`w-3.5 h-3.5 ${ratesLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                          TCMB Çek
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyHeaderRatesToRows()}
+                          className="h-[34px] px-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 rounded-lg text-xs font-bold transition-all"
+                          title="Bu kurları eklenmiş tüm satırlara uygula"
+                        >
+                          Satırlara Uygula
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* HİZMETLER BÖLÜMÜ BAŞLIĞI */}
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -1773,7 +2296,7 @@ export default function EditSejourPage() {
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                               </button>
                             )}
-                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[2] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[1.5] lg:[&>*:nth-child(7)]:flex-[0.6] lg:[&>*:nth-child(8)]:flex-[1.2]">
+                            <div className="flex flex-col lg:flex-row gap-3 items-end w-full lg:[&>*:nth-child(1)]:flex-[1.4] lg:[&>*:nth-child(2)]:flex-[1] lg:[&>*:nth-child(3)]:flex-[1] lg:[&>*:nth-child(4)]:flex-[1] lg:[&>*:nth-child(5)]:flex-[1.5] lg:[&>*:nth-child(6)]:flex-[1.5] lg:[&>*:nth-child(7)]:flex-[0.6] lg:[&>*:nth-child(8)]:flex-[1.2]">
                               <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">OTEL</label>
                                 <SearchableSelect disabled={invoicedSalesItemIds.has(room.id) || invoicedPurchaseItemIds.has(room.id)}  options={hotels.map((h) => ({ id: h.id, name: h.name }))} value={room.hotelId || ""} onChange={(val) => updateRoom(room.id, "hotelId", val)} placeholder="Otel Seçiniz..." />
@@ -1833,6 +2356,27 @@ export default function EditSejourPage() {
                                   </select>
                                 </div>
                               </div>
+                              {room.currency !== "TRY" && (
+                                <div className="w-20 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                                  <input
+                                    type="number"
+                                    step="0.0001"
+                                    disabled={invoicedSalesItemIds.has(room.id)}
+                                    value={room.fx || getRateForCurrency(room.currency)}
+                                    onChange={(e) => updateRoom(room.id, "fx", parseFloat(e.target.value) || 1)}
+                                    className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-blue-500 bg-white disabled:opacity-50"
+                                  />
+                                </div>
+                              )}
+                              {room.currency !== "TRY" && (
+                                <div className="w-28 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY TUTARI</label>
+                                  <div className="h-[36px] flex items-center justify-end px-2 bg-blue-50/50 border border-blue-100 rounded-md text-[11px] font-bold text-blue-700 truncate">
+                                    {((room.price || 0) * (room.fx || getRateForCurrency(room.currency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -1967,6 +2511,27 @@ export default function EditSejourPage() {
                                   </select>
                                 </div>
                               </div>
+                              {flight.currency !== "TRY" && (
+                                <div className="w-20 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                                  <input
+                                    type="number"
+                                    step="0.0001"
+                                    disabled={invoicedSalesItemIds.has(flight.id)}
+                                    value={flight.fx || getRateForCurrency(flight.currency)}
+                                    onChange={(e) => updateFlight(flight.id, "fx", parseFloat(e.target.value) || 1)}
+                                    className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-emerald-500 bg-white disabled:opacity-50"
+                                  />
+                                </div>
+                              )}
+                              {flight.currency !== "TRY" && (
+                                <div className="w-28 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY TUTARI</label>
+                                  <div className="h-[36px] flex items-center justify-end px-2 bg-emerald-50/50 border border-emerald-100 rounded-md text-[11px] font-bold text-emerald-700 truncate">
+                                    {((flight.price || 0) * (flight.fx || getRateForCurrency(flight.currency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -2094,6 +2659,27 @@ export default function EditSejourPage() {
                                   </select>
                                 </div>
                               </div>
+                              {transfer.currency !== "TRY" && (
+                                <div className="w-20 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                                  <input
+                                    type="number"
+                                    step="0.0001"
+                                    disabled={invoicedSalesItemIds.has(transfer.id)}
+                                    value={transfer.fx || getRateForCurrency(transfer.currency)}
+                                    onChange={(e) => updateTransfer(transfer.id, "fx", parseFloat(e.target.value) || 1)}
+                                    className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-purple-500 bg-white disabled:opacity-50"
+                                  />
+                                </div>
+                              )}
+                              {transfer.currency !== "TRY" && (
+                                <div className="w-28 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY TUTARI</label>
+                                  <div className="h-[36px] flex items-center justify-end px-2 bg-purple-50/50 border border-purple-100 rounded-md text-[11px] font-bold text-purple-700 truncate">
+                                    {((transfer.price || 0) * (transfer.fx || getRateForCurrency(transfer.currency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -2206,6 +2792,27 @@ export default function EditSejourPage() {
                                   </select>
                                 </div>
                               </div>
+                              {service.currency !== "TRY" && (
+                                <div className="w-20 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                                  <input
+                                    type="number"
+                                    step="0.0001"
+                                    disabled={invoicedSalesItemIds.has(service.id)}
+                                    value={service.fx || getRateForCurrency(service.currency)}
+                                    onChange={(e) => updateExtraService(service.id, "fx", parseFloat(e.target.value) || 1)}
+                                    className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-amber-500 bg-white disabled:opacity-50"
+                                  />
+                                </div>
+                              )}
+                              {service.currency !== "TRY" && (
+                                <div className="w-28 shrink-0">
+                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY TUTARI</label>
+                                  <div className="h-[36px] flex items-center justify-end px-2 bg-amber-50/50 border border-amber-100 rounded-md text-[11px] font-bold text-amber-700 truncate">
+                                    {((service.price || 0) * (service.fx || getRateForCurrency(service.currency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -2262,6 +2869,27 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                           </div>
+                          {room.costCurrency && room.costCurrency !== "TRY" && (
+                            <div className="w-20 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                disabled={invoicedPurchaseItemIds.has(room.id)}
+                                value={room.costFx || room.cost_fx || getRateForCurrency(room.costCurrency)}
+                                onChange={(e) => updateRoom(room.id, "costFx", parseFloat(e.target.value) || 1)}
+                                className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-red-500 bg-white disabled:opacity-50"
+                              />
+                            </div>
+                          )}
+                          {room.costCurrency && room.costCurrency !== "TRY" && (
+                            <div className="w-28 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY MALİYET</label>
+                              <div className="h-[36px] flex items-center justify-end px-2 bg-red-50/50 border border-red-100 rounded-md text-[11px] font-bold text-red-700 truncate">
+                                {((room.costPrice || 0) * (room.costFx || room.cost_fx || getRateForCurrency(room.costCurrency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                              </div>
+                            </div>
+                          )}
                           <div className="flex-1"></div>
                         </div>
                       </div>
@@ -2305,6 +2933,27 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                           </div>
+                          {flight.costCurrency && flight.costCurrency !== "TRY" && (
+                            <div className="w-20 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                disabled={invoicedPurchaseItemIds.has(flight.id)}
+                                value={flight.costFx || flight.cost_fx || getRateForCurrency(flight.costCurrency)}
+                                onChange={(e) => updateFlight(flight.id, "costFx", parseFloat(e.target.value) || 1)}
+                                className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-red-500 bg-white disabled:opacity-50"
+                              />
+                            </div>
+                          )}
+                          {flight.costCurrency && flight.costCurrency !== "TRY" && (
+                            <div className="w-28 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY MALİYET</label>
+                              <div className="h-[36px] flex items-center justify-end px-2 bg-red-50/50 border border-red-100 rounded-md text-[11px] font-bold text-red-700 truncate">
+                                {((flight.costPrice || 0) * (flight.costFx || flight.cost_fx || getRateForCurrency(flight.costCurrency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -2347,6 +2996,27 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                           </div>
+                          {transfer.costCurrency && transfer.costCurrency !== "TRY" && (
+                            <div className="w-20 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                disabled={invoicedPurchaseItemIds.has(transfer.id)}
+                                value={transfer.costFx || transfer.cost_fx || getRateForCurrency(transfer.costCurrency)}
+                                onChange={(e) => updateTransfer(transfer.id, "costFx", parseFloat(e.target.value) || 1)}
+                                className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-red-500 bg-white disabled:opacity-50"
+                              />
+                            </div>
+                          )}
+                          {transfer.costCurrency && transfer.costCurrency !== "TRY" && (
+                            <div className="w-28 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY MALİYET</label>
+                              <div className="h-[36px] flex items-center justify-end px-2 bg-red-50/50 border border-red-100 rounded-md text-[11px] font-bold text-red-700 truncate">
+                                {((transfer.costPrice || 0) * (transfer.costFx || transfer.cost_fx || getRateForCurrency(transfer.costCurrency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                              </div>
+                            </div>
+                          )}
                           <div className="flex-1"></div>
                         </div>
                       </div>
@@ -2390,6 +3060,27 @@ export default function EditSejourPage() {
                               </select>
                             </div>
                           </div>
+                          {service.costCurrency && service.costCurrency !== "TRY" && (
+                            <div className="w-20 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">KUR (FX)</label>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                disabled={invoicedPurchaseItemIds.has(service.id)}
+                                value={service.costFx || service.cost_fx || getRateForCurrency(service.costCurrency)}
+                                onChange={(e) => updateExtraService(service.id, "costFx", parseFloat(e.target.value) || 1)}
+                                className="w-full h-[36px] px-1 text-center border border-gray-200 rounded-md text-[11px] font-bold outline-none focus:border-red-500 bg-white disabled:opacity-50"
+                              />
+                            </div>
+                          )}
+                          {service.costCurrency && service.costCurrency !== "TRY" && (
+                            <div className="w-28 shrink-0">
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">TRY MALİYET</label>
+                              <div className="h-[36px] flex items-center justify-end px-2 bg-red-50/50 border border-red-100 rounded-md text-[11px] font-bold text-red-700 truncate">
+                                {((service.costPrice || 0) * (service.costFx || service.cost_fx || getRateForCurrency(service.costCurrency))).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                              </div>
+                            </div>
+                          )}
                           <div className="flex-1"></div>
                         </div>
                       </div>
@@ -2693,6 +3384,33 @@ export default function EditSejourPage() {
             <div className="max-w-[1800px] mx-auto flex items-center justify-between relative">
               <div className="flex-1"></div>
               <div className="flex items-center justify-center gap-6 overflow-x-auto pb-1 absolute left-1/2 -translate-x-1/2 w-max max-w-[70vw]">
+                {/* KONSOLİDE TRY ÖZET KARTI */}
+                {(calculateTotalSalesTRY() > 0 || calculateTotalCostTRY() > 0) && (
+                  <div className="flex items-center gap-4 min-w-max border-r-2 border-blue-500/40 pr-6 bg-blue-50/50 dark:bg-blue-950/20 px-3 py-1 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-widest">KONSOLİDE TRY (GENEL NET)</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-medium">Toplam Satış</span>
+                          <span className="text-xs font-black text-blue-700 dark:text-blue-300">{calculateTotalSalesTRY().toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-medium">Toplam Maliyet</span>
+                          <span className="text-xs font-black text-red-600 dark:text-red-400">{calculateTotalCostTRY().toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase font-medium">Net Kâr/Zarar</span>
+                          <span className={`text-xs font-black ${calculateNetProfitTRY() >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {calculateNetProfitTRY().toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {["TRY", "USD", "EUR", "GBP"].filter(c => getTotalForCurrency(c) !== 0 || getCostForCurrency(c) !== 0 || getCollectionForCurrency(c) !== 0).length === 0 ? (
                   <div className="text-sm font-semibold text-gray-400">Veri yok</div>
                 ) : (
