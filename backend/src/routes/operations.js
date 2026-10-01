@@ -851,17 +851,22 @@ router.get('/guides', async (req, res) => {
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
 
-    const projectHrQuery = client
-      .from('project_human_resources')
+    const projectPurchaseQuery = client
+      .from('project_purchase_items')
       .select(`
         id,
         project_id,
-        sub_category_id,
+        category,
+        sub_category,
         supplier_id,
+        hotel_id,
         description,
-        amount,
+        unit_quantity,
+        unit_price,
+        total_price,
         currency,
-        exchange_rate,
+        fx,
+        total_try,
         created_at
       `, { count: 'exact' })
       .order('created_at', { ascending: false, nullsFirst: false })
@@ -869,8 +874,8 @@ router.get('/guides', async (req, res) => {
 
     const [
       { data: sejourExtrasRaw, count: sejourCount, error: sejourError },
-      { data: projectHrRaw, count: projectCount, error: projectError }
-    ] = await Promise.all([sejourExtrasQuery, projectHrQuery]);
+      { data: projectPurchasesRaw, count: projectCount, error: projectError }
+    ] = await Promise.all([sejourExtrasQuery, projectPurchaseQuery]);
     
     let sejourExtras = sejourExtrasRaw;
     if (sejourError) {
@@ -882,22 +887,30 @@ router.get('/guides', async (req, res) => {
       }
     }
     
-    let projectHr = projectHrRaw;
+    let projectPurchases = projectPurchasesRaw;
     if (projectError) {
       if (projectError.code === 'PGRST205' || String(projectError.message).includes('Could not find the table')) {
-        console.warn('⚠️ project_human_resources tablosu bulunamadı, MICE rehber kayıtları boş olarak dönülecek.');
-        projectHr = [];
+        console.warn('⚠️ project_purchase_items tablosu bulunamadı, MICE rehber kayıtları boş olarak dönülecek.');
+        projectPurchases = [];
       } else {
         throw projectError;
       }
     }
 
-    const categoryIds = Array.from(new Set((projectHr || []).map((row) => row.sub_category_id).filter(Boolean)));
+    const categoryIds = Array.from(new Set([
+      ...(projectPurchases || []).map((row) => row.category),
+      ...(projectPurchases || []).map((row) => row.sub_category)
+    ].filter(Boolean)));
     let categoryMap = {};
     if (categoryIds.length > 0) {
       const { data: categories } = await client.from('categories').select('id,name').in('id', categoryIds);
       categoryMap = (categories || []).reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {});
     }
+
+    const cleanGuideDescription = (desc) => {
+      if (!desc) return '';
+      return String(desc).replace(/\s*\[S:[^\]]*\]/g, '').replace(/\s*\[R:[^\]]*\]/g, '').trim();
+    };
 
     const isGuide = (...values) => {
       return values.some(value => {
@@ -907,10 +920,14 @@ router.get('/guides', async (req, res) => {
       });
     };
 
-    const projectLookup = await loadProjectLookup((projectHr || []).map((row) => row.project_id));
+    const projectGuides = (projectPurchases || []).filter((row) =>
+      isGuide(categoryMap[row.category], categoryMap[row.sub_category], cleanGuideDescription(row.description))
+    );
+
+    const projectLookup = await loadProjectLookup(projectGuides.map((row) => row.project_id));
     const supplierLookup = await loadSupplierLookup([
       ...(sejourExtras || []).map((row) => row.supplier_id),
-      ...(projectHr || []).map((row) => row.supplier_id)
+      ...projectGuides.map((row) => row.supplier_id)
     ]);
 
     const merged = [
@@ -946,40 +963,45 @@ router.get('/guides', async (req, res) => {
           notes: '',
           created_at: row.created_at || ''
         })),
-      ...(projectHr || [])
-        .filter((row) => isGuide(categoryMap[row.sub_category_id], row.description))
-        .map((row) => ({
+      ...projectGuides.map((row) => {
+        const proj = projectLookup[row.project_id] || {};
+        const cleaned = cleanGuideDescription(row.description);
+        const subName = categoryMap[row.sub_category] || categoryMap[row.category] || 'Rehber';
+        const guideName = cleaned || subName || 'Kokartlı Rehber';
+        const supplierName = resolveSupplierName({
+          rawValue: row.supplier_id,
+          supplierId: row.supplier_id,
+          supplierLookup,
+          fallback: proj.hotels?.name || 'Tedarikçi'
+        });
+
+        return {
           id: `project:${row.id}`,
           sejour_id: `project:${row.project_id}`,
-          voucher_number: String(projectLookup[row.project_id]?.reference || readableRef(row.project_id, 'PRJ') || ''),
+          voucher_number: String(proj.reference || readableRef(row.project_id, 'PRJ') || ''),
           customer_type: 'mice',
           project_type: 'project',
           project_id: String(row.project_id || ''),
-          check_in_date: projectLookup[row.project_id]?.start_date || '',
-          check_out_date: projectLookup[row.project_id]?.end_date || '',
-          guide_name: row.description || 'Kokartlı Rehber',
-          service_type: categoryMap[row.sub_category_id] || 'Kokartlı Rehber',
-          customer_name: projectLookup[row.project_id]?.agencies?.name || '',
-          company_name: projectLookup[row.project_id]?.company_name || '',
-          hotel_name: projectLookup[row.project_id]?.hotels?.name || '',
-          supplier: resolveSupplierName({
-            rawValue: row.supplier_id,
-            supplierId: row.supplier_id,
-            relationName: row.suppliers?.name,
-            supplierLookup,
-            fallback: ''
-          }),
-          description: row.description || '',
-          price: Number(row.amount || 0),
+          check_in_date: proj.start_date || '',
+          check_out_date: proj.end_date || '',
+          guide_name: guideName,
+          service_type: subName,
+          customer_name: proj.agencies?.name || '',
+          company_name: proj.company_name || '',
+          hotel_name: proj.hotels?.name || '',
+          supplier: supplierName,
+          description: cleaned,
+          price: Number(row.total_price || 0),
           currency: row.currency || 'TRY',
-          cost_price: Number(row.amount || 0),
+          cost_price: Number(row.total_price || 0),
           cost_currency: row.currency || 'TRY',
-          fx: Number(row.exchange_rate || 1),
-          totalTRY: Number(row.total_tl || Number(row.amount || 0) * Number(row.exchange_rate || 1)),
+          fx: Number(row.fx || 1),
+          totalTRY: Number(row.total_try || (Number(row.total_price || 0) * Number(row.fx || 1))),
           status: 'active',
-          notes: row.notes || '',
+          notes: '',
           created_at: row.created_at || ''
-        }))
+        };
+      })
     ];
 
     const matchesTypeFilter = (row) =>
@@ -1113,17 +1135,22 @@ router.get('/part-time', async (req, res) => {
       .order('created_at', { ascending: false, nullsFirst: false })
       .range(0, Math.max(0, requestedRows - 1));
 
-    const projectHrQuery = client
-      .from('project_human_resources')
+    const projectPurchaseQuery = client
+      .from('project_purchase_items')
       .select(`
         id,
         project_id,
-        sub_category_id,
+        category,
+        sub_category,
         supplier_id,
+        hotel_id,
         description,
-        amount,
+        unit_quantity,
+        unit_price,
+        total_price,
         currency,
-        exchange_rate,
+        fx,
+        total_try,
         created_at
       `, { count: 'exact' })
       .order('created_at', { ascending: false, nullsFirst: false })
@@ -1131,8 +1158,8 @@ router.get('/part-time', async (req, res) => {
 
     const [
       { data: sejourExtrasRaw, count: sejourCount, error: sejourError },
-      { data: projectHrRaw, count: projectCount, error: projectError }
-    ] = await Promise.all([sejourExtrasQuery, projectHrQuery]);
+      { data: projectPurchasesRaw, count: projectCount, error: projectError }
+    ] = await Promise.all([sejourExtrasQuery, projectPurchaseQuery]);
     
     let sejourExtras = sejourExtrasRaw;
     if (sejourError) {
@@ -1144,35 +1171,57 @@ router.get('/part-time', async (req, res) => {
       }
     }
     
-    let projectHr = projectHrRaw;
+    let projectPurchases = projectPurchasesRaw;
     if (projectError) {
       if (projectError.code === 'PGRST205' || String(projectError.message).includes('Could not find the table')) {
-        console.warn('⚠️ project_human_resources tablosu bulunamadı, MICE part-time kayıtları boş olarak dönülecek.');
-        projectHr = [];
+        console.warn('⚠️ project_purchase_items tablosu bulunamadı, MICE part-time kayıtları boş olarak dönülecek.');
+        projectPurchases = [];
       } else {
         throw projectError;
       }
     }
 
-    const categoryIds = Array.from(new Set((projectHr || []).map((row) => row.sub_category_id).filter(Boolean)));
+    const categoryIds = Array.from(new Set([
+      ...(projectPurchases || []).map((row) => row.category),
+      ...(projectPurchases || []).map((row) => row.sub_category)
+    ].filter(Boolean)));
     let categoryMap = {};
     if (categoryIds.length > 0) {
       const { data: categories } = await client.from('categories').select('id,name').in('id', categoryIds);
       categoryMap = (categories || []).reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {});
     }
 
+    const cleanDescription = (desc) => {
+      if (!desc) return '';
+      return String(desc).replace(/\s*\[S:[^\]]*\]/g, '').replace(/\s*\[R:[^\]]*\]/g, '').trim();
+    };
+
     const isPartTime = (...values) => {
       return values.some(value => {
         if (!value) return false;
         const text = String(value).toLowerCase().replace(/i̇/g, 'i').replace(/ı/g, 'i');
-        return (text.includes('part') && text.includes('time')) || text.includes('yari zamanli') || text.includes('insan kaynaklari') || text.includes('part-time');
+        return (
+          (text.includes('part') && text.includes('time')) ||
+          text.includes('part-time') ||
+          text.includes('parttime') ||
+          text.includes('yari zamanli') ||
+          text.includes('insan kaynaklari') ||
+          text.includes('host') ||
+          text.includes('supervisor') ||
+          text.includes('supervizor') ||
+          text.includes('personel')
+        );
       });
     };
 
-    const projectLookup = await loadProjectLookup((projectHr || []).map((row) => row.project_id));
+    const projectPartTime = (projectPurchases || []).filter((row) =>
+      isPartTime(categoryMap[row.category], categoryMap[row.sub_category], cleanDescription(row.description))
+    );
+
+    const projectLookup = await loadProjectLookup(projectPartTime.map((row) => row.project_id));
     const supplierLookup = await loadSupplierLookup([
       ...(sejourExtras || []).map((row) => row.supplier_id),
-      ...(projectHr || []).map((row) => row.supplier_id)
+      ...projectPartTime.map((row) => row.supplier_id)
     ]);
 
     const merged = [
@@ -1209,41 +1258,46 @@ router.get('/part-time', async (req, res) => {
           notes: '',
           created_at: row.created_at || ''
         })),
-      ...(projectHr || [])
-        .filter((row) => isPartTime(categoryMap[row.sub_category_id], row.description))
-        .map((row) => ({
+      ...projectPartTime.map((row) => {
+        const proj = projectLookup[row.project_id] || {};
+        const cleaned = cleanDescription(row.description);
+        const subName = categoryMap[row.sub_category] || categoryMap[row.category] || 'Part-Time';
+        const empName = cleaned || subName || 'Part-Time Çalışan';
+        const supplierName = resolveSupplierName({
+          rawValue: row.supplier_id,
+          supplierId: row.supplier_id,
+          supplierLookup,
+          fallback: proj.hotels?.name || 'Tedarikçi'
+        });
+
+        return {
           id: `project:${row.id}`,
           sejour_id: `project:${row.project_id}`,
-          voucher_number: String(projectLookup[row.project_id]?.reference || readableRef(row.project_id, 'PRJ') || ''),
+          voucher_number: String(proj.reference || readableRef(row.project_id, 'PRJ') || ''),
           customer_type: 'mice',
           project_type: 'project',
           project_id: String(row.project_id || ''),
-          check_in_date: projectLookup[row.project_id]?.start_date || '',
-          check_out_date: projectLookup[row.project_id]?.end_date || '',
-          employee_name: row.description || 'Part-Time Çalışan',
-          service_type: categoryMap[row.sub_category_id] || 'Part-Time',
-          customer_name: projectLookup[row.project_id]?.agencies?.name || '',
-          company_name: projectLookup[row.project_id]?.company_name || '',
-          hotel_name: projectLookup[row.project_id]?.hotels?.name || '',
-          supplier: resolveSupplierName({
-            rawValue: row.supplier_id,
-            supplierId: row.supplier_id,
-            relationName: row.suppliers?.name,
-            supplierLookup,
-            fallback: ''
-          }),
-          description: row.description || '',
-          price: Number(row.amount || 0),
+          check_in_date: proj.start_date || '',
+          check_out_date: proj.end_date || '',
+          employee_name: empName,
+          service_type: subName,
+          customer_name: proj.agencies?.name || '',
+          company_name: proj.company_name || '',
+          hotel_name: proj.hotels?.name || '',
+          supplier: supplierName,
+          description: cleaned,
+          price: Number(row.total_price || 0),
           currency: row.currency || 'TRY',
-          cost_price: Number(row.amount || 0),
+          cost_price: Number(row.total_price || 0),
           cost_currency: row.currency || 'TRY',
-          fx: Number(row.exchange_rate || 1),
-          totalTRY: Number(row.total_tl || Number(row.amount || 0) * Number(row.exchange_rate || 1)),
+          fx: Number(row.fx || 1),
+          totalTRY: Number(row.total_try || (Number(row.total_price || 0) * Number(row.fx || 1))),
           hours: '',
           status: 'active',
-          notes: row.notes || '',
+          notes: '',
           created_at: row.created_at || ''
-        }))
+        };
+      })
     ];
 
     const matchesTypeFilter = (row) =>
