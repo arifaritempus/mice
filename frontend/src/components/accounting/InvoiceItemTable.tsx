@@ -56,9 +56,16 @@ export default function InvoiceItemTable({
 
       filteredItems.forEach((item) => {
         const projectId = item.project?.id || item.sejour_id || "no-project";
-        const groupId = `${projectId}`;
+        const itemCurr = item.currency || "TRY";
+        const groupId = `${projectId}_${itemCurr}`;
 
         if (!groups[groupId]) {
+          const rate = Number(
+            item.exchange_rate ||
+            item.fx ||
+            (itemCurr === "USD" ? item.project?.usd_rate : itemCurr === "EUR" ? item.project?.eur_rate : itemCurr === "GBP" ? item.project?.gbp_rate : 1) ||
+            1
+          );
           groups[groupId] = {
             id: groupId,
             isGroup: true,
@@ -71,7 +78,8 @@ export default function InvoiceItemTable({
             total_price: 0,
             invoiced_amount: 0,
             balance: 0,
-            currency: item.currency || "TRY",
+            currency: itemCurr,
+            exchange_rate: rate,
             items: [],
           };
         }
@@ -375,13 +383,23 @@ export default function InvoiceItemTable({
                     {formatCurrency(item.invoiced_amount || 0, item.currency)}
                   </td>
                   <td className="px-2.5 py-2.5 text-right font-bold text-gray-900 dark:text-v3-text whitespace-nowrap text-[11px]">
-                    {formatCurrency(item.balance || 0, item.currency)}
+                    <div>{formatCurrency(item.balance || 0, item.currency)}</div>
+                    {item.currency && item.currency !== "TRY" && (
+                      <div className="text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
+                        ≈ {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format((Number(item.balance) || 0) * (Number(item.exchange_rate || item.fx || item.cost_fx || (item.currency === "USD" ? item.project?.usd_rate : item.currency === "EUR" ? item.project?.eur_rate : item.currency === "GBP" ? item.project?.gbp_rate : 1)) || 1))} ₺
+                      </div>
+                    )}
                   </td>
 
                   <td className="px-2.5 py-2.5 text-center">
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                       {item.currency || "TRY"}
                     </span>
+                    {item.currency && item.currency !== "TRY" && Number(item.exchange_rate || item.fx || item.cost_fx || (item.currency === "USD" ? item.project?.usd_rate : item.currency === "EUR" ? item.project?.eur_rate : item.currency === "GBP" ? item.project?.gbp_rate : 0)) > 0 && (
+                      <div className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5" title="Döviz Kuru">
+                        Kur: {Number(item.exchange_rate || item.fx || item.cost_fx || (item.currency === "USD" ? item.project?.usd_rate : item.currency === "EUR" ? item.project?.eur_rate : item.currency === "GBP" ? item.project?.gbp_rate : 0)).toFixed(4)}
+                      </div>
+                    )}
                   </td>
                 </tr>
               );

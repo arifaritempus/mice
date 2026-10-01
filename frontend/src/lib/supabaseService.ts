@@ -5011,7 +5011,7 @@ export const invoicesService = {
             sejourChunks.map(chunk =>
               supabase
                 .from('sejours')
-                .select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status')
+                .select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status, usd_rate, eur_rate, gbp_rate, exchange_rate_strategy')
                 .in('id', chunk)
                 .not('status', 'in', '("IPTAL","İPTAL","CANCELLED")')
             )
@@ -5099,6 +5099,10 @@ export const invoicesService = {
         quote_type: 'SEJOUR',
         date_start: s.check_in_date || null,
         date_end: s.check_out_date || null,
+        usd_rate: Number(s.usd_rate) || 1,
+        eur_rate: Number(s.eur_rate) || 1,
+        gbp_rate: Number(s.gbp_rate) || 1,
+        exchange_rate_strategy: s.exchange_rate_strategy,
       };
       return acc;
     }, {});
@@ -5115,6 +5119,7 @@ export const invoicesService = {
       // Kategori/Alt Kategori isimlerini çöz
       const categoryName = cat.name || (isUUID(item.category) ? 'Bilinmiyor' : item.category);
       const subCategoryName = subCat.name || (isUUID(item.sub_category) ? null : item.sub_category);
+      const fx = Number(item.exchange_rate || item.fx || 1);
       
       return {
         ...item,
@@ -5124,10 +5129,25 @@ export const invoicesService = {
         // Kategori tanımında KDV varsa onu kullan, yoksa kalemdeki KDV'yi kullan
         vat_rate: item.vat != null ? item.vat : (subCat.revenue_vat_rate ?? cat.revenue_vat_rate ?? 0),
         project: proj,
+        fx,
+        exchange_rate: fx,
+        total_try: Number(item.total_try) || ((Number(item.total_price) || 0) * fx),
         invoiced_amount: invoicedAmount,
         balance: balance
       };
     });
+
+    // Sejour kur çözümleme yardımcısı
+    const getSejourSalesRate = (proj: any, currency?: string, rowFx?: any) => {
+      const curr = (currency || 'TRY').toUpperCase();
+      if (curr === 'TRY') return 1;
+      const rFx = Number(rowFx);
+      if (rFx && rFx > 1) return rFx;
+      if (curr === 'USD') return Number(proj?.usd_rate) || 1;
+      if (curr === 'EUR') return Number(proj?.eur_rate) || 1;
+      if (curr === 'GBP') return Number(proj?.gbp_rate) || 1;
+      return 1;
+    };
 
     // 2. Sejour kalemleri
     const sejourItems: any[] = [];
@@ -5137,12 +5157,17 @@ export const invoicesService = {
       if (price <= 0) return;
       const proj = sejoursMap[r.sejour_id] || null;
       const cat = categoriesMap[r.category] || {};
+      const curr = r.currency || 'TRY';
+      const fx = getSejourSalesRate(proj, curr, r.fx);
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Konaklama / Otel',
         description: r.accommodation_type || r.room_type || '',
         total_price: price,
-        currency: r.currency || 'TRY',
+        currency: curr,
+        fx,
+        exchange_rate: fx,
+        total_try: Number(r.total_try) || (price * fx),
         vat_rate: r.vat != null ? r.vat : (cat.revenue_vat_rate ?? 8),
         project: proj,
         category_id: r.category || null,
@@ -5154,12 +5179,17 @@ export const invoicesService = {
       if (price <= 0) return;
       const proj = sejoursMap[r.sejour_id] || null;
       const cat = categoriesMap[r.category] || {};
+      const curr = r.currency || 'TRY';
+      const fx = getSejourSalesRate(proj, curr, r.fx);
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Uçak Bileti',
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → ') + (r.pnr ? ' | PNR: ' + r.pnr : ''),
         total_price: price,
-        currency: r.currency || 'TRY',
+        currency: curr,
+        fx,
+        exchange_rate: fx,
+        total_try: Number(r.total_try) || (price * fx),
         vat_rate: r.vat != null ? r.vat : (cat.revenue_vat_rate ?? 0),
         project: proj,
         category_id: r.category || null,
@@ -5169,15 +5199,21 @@ export const invoicesService = {
     (sejourTransfersRes.data || []).forEach(r => {
       const price = Number(r.price || 0);
       if (price <= 0) return;
+      const proj = sejoursMap[r.sejour_id] || null;
       const cat = categoriesMap[r.category] || {};
+      const curr = r.currency || 'TRY';
+      const fx = getSejourSalesRate(proj, curr, r.fx);
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Transfer',
         description: r.direction || '',
         total_price: price,
-        currency: r.currency || 'TRY',
+        currency: curr,
+        fx,
+        exchange_rate: fx,
+        total_try: Number(r.total_try) || (price * fx),
         vat_rate: r.vat != null ? r.vat : (cat.revenue_vat_rate ?? 20),
-        project: sejoursMap[r.sejour_id] || null,
+        project: proj,
         category_id: r.category || null,
         sub_category_id: r.sub_category || null
       });
@@ -5185,15 +5221,21 @@ export const invoicesService = {
     (sejourExtraRes.data || []).forEach(r => {
       const price = Number(r.price || 0);
       if (price <= 0) return;
+      const proj = sejoursMap[r.sejour_id] || null;
       const cat = categoriesMap[r.category] || {};
+      const curr = r.currency || 'TRY';
+      const fx = getSejourSalesRate(proj, curr, r.fx);
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Ekstra Servis',
         description: r.service_description || r.description || '',
         total_price: price,
-        currency: r.currency || 'TRY',
+        currency: curr,
+        fx,
+        exchange_rate: fx,
+        total_try: Number(r.total_try) || (price * fx),
         vat_rate: r.vat != null ? r.vat : (cat.revenue_vat_rate ?? 20),
-        project: sejoursMap[r.sejour_id] || null,
+        project: proj,
         category_id: r.category || null,
         sub_category_id: r.sub_category || null
       });
@@ -5294,7 +5336,7 @@ export const invoicesService = {
             sejourChunks.map(chunk =>
               supabase
                 .from('sejours')
-                .select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status')
+                .select('id, voucher_number, customer_name, agency_id, hotel_id, check_in_date, check_out_date, status, usd_rate, eur_rate, gbp_rate, exchange_rate_strategy')
                 .in('id', chunk)
                 .not('status', 'in', '("IPTAL","İPTAL","CANCELLED")')
             )
@@ -5415,6 +5457,10 @@ export const invoicesService = {
         quote_type: 'SEJOUR',
         date_start: s.check_in_date || null,
         date_end: s.check_out_date || null,
+        usd_rate: Number(s.usd_rate) || 1,
+        eur_rate: Number(s.eur_rate) || 1,
+        gbp_rate: Number(s.gbp_rate) || 1,
+        exchange_rate_strategy: s.exchange_rate_strategy,
       };
       return acc;
     }, {});
@@ -5454,6 +5500,7 @@ export const invoicesService = {
         ? (suppliersMap[outSupplierId]?.name || usersMap[outSupplierId]?.name || agenciesMap[outSupplierId]?.name || item.supplier_name || 'Tedarikçi') 
         : (item.supplier_name || null);
       const outHotelName = outHotelId ? (hotelsMap[outHotelId]?.name || item.hotel_name || 'Otel') : (item.hotel_name || null);
+      const fx = Number(item.exchange_rate || item.cost_fx || item.fx || 1);
 
       return {
         ...item,
@@ -5467,10 +5514,26 @@ export const invoicesService = {
         project: proj, // Do not override company_name to keep the actual customer name
         supplier_name: outSupplierName,
         hotel_name: outHotelName,
+        fx,
+        cost_fx: fx,
+        exchange_rate: fx,
+        total_try: Number(item.total_try) || ((Number(item.total_price) || 0) * fx),
         invoiced_amount: invoicedAmount,
         balance
       };
     });
+
+    // Sejour maliyet kuru çözümleme yardımcısı
+    const getSejourCostRate = (proj: any, costCurrency?: string, rowCostFx?: any) => {
+      const curr = (costCurrency || 'TRY').toUpperCase();
+      if (curr === 'TRY') return 1;
+      const rCostFx = Number(rowCostFx);
+      if (rCostFx && rCostFx > 1) return rCostFx;
+      if (curr === 'USD') return Number(proj?.usd_rate) || 1;
+      if (curr === 'EUR') return Number(proj?.eur_rate) || 1;
+      if (curr === 'GBP') return Number(proj?.gbp_rate) || 1;
+      return 1;
+    };
 
     // Sejour Alış Kalemleri
     const sejourItems: any[] = [];
@@ -5486,11 +5549,21 @@ export const invoicesService = {
       const supplierName = r.supplier_id ? suppliersMap[r.supplier_id]?.name : null;
 
       const cat = categoriesMap[r.category] || {};
+      const costCurr = r.cost_currency || 'TRY';
+      const costFx = getSejourCostRate(proj, costCurr, r.cost_fx);
+
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Konaklama / Otel Maliyeti',
         description: r.accommodation_type || r.room_type || '',
-        total_price: price, currency: r.cost_currency || 'TRY',
+        total_price: price,
+        currency: costCurr,
+        cost_currency: costCurr,
+        fx: costFx,
+        cost_fx: costFx,
+        exchange_rate: costFx,
+        cost_total_try: Number(r.cost_total_try) || (price * costFx),
+        total_try: Number(r.cost_total_try) || (price * costFx),
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 8),
         project: proj
           ? {
@@ -5517,11 +5590,21 @@ export const invoicesService = {
         (r.airline ? String(r.airline).trim() : null);
 
       const cat = categoriesMap[r.category] || {};
+      const costCurr = r.cost_currency || 'TRY';
+      const costFx = getSejourCostRate(proj, costCurr, r.cost_fx);
+
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id,
         category_name: cat.name || 'Uçak Bileti Maliyeti',
         description: [r.departure_airport, r.arrival_airport].filter(Boolean).join(' → '),
-        total_price: price, currency: r.cost_currency || 'TRY',
+        total_price: price,
+        currency: costCurr,
+        cost_currency: costCurr,
+        fx: costFx,
+        cost_fx: costFx,
+        exchange_rate: costFx,
+        cost_total_try: Number(r.cost_total_try) || (price * costFx),
+        total_try: Number(r.cost_total_try) || (price * costFx),
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 0),
         project: proj
           ? {
@@ -5544,10 +5627,20 @@ export const invoicesService = {
       const proj = sejoursMap[r.sejour_id] || null;
 
       const cat = categoriesMap[r.category] || {};
+      const costCurr = r.cost_currency || 'TRY';
+      const costFx = getSejourCostRate(proj, costCurr, r.cost_fx);
+
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Transfer Maliyeti',
         description: r.direction || '',
-        total_price: price, currency: r.cost_currency || 'TRY',
+        total_price: price,
+        currency: costCurr,
+        cost_currency: costCurr,
+        fx: costFx,
+        cost_fx: costFx,
+        exchange_rate: costFx,
+        cost_total_try: Number(r.cost_total_try) || (price * costFx),
+        total_try: Number(r.cost_total_try) || (price * costFx),
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Transfer Tedarikçisi Seçilmedi' } : null,
         supplier_name: supplierName || 'Transfer Tedarikçisi Seçilmedi',
@@ -5564,10 +5657,20 @@ export const invoicesService = {
       const proj = sejoursMap[r.sejour_id] || null;
 
       const cat = categoriesMap[r.category] || {};
+      const costCurr = r.cost_currency || 'TRY';
+      const costFx = getSejourCostRate(proj, costCurr, r.cost_fx);
+
       sejourItems.push({
         id: r.id, sejour_id: r.sejour_id, category_name: cat.name || 'Ekstra Servis Maliyeti',
         description: r.service_description || r.description || '',
-        total_price: price, currency: r.cost_currency || 'TRY',
+        total_price: price,
+        currency: costCurr,
+        cost_currency: costCurr,
+        fx: costFx,
+        cost_fx: costFx,
+        exchange_rate: costFx,
+        cost_total_try: Number(r.cost_total_try) || (price * costFx),
+        total_try: Number(r.cost_total_try) || (price * costFx),
         vat_rate: r.vat != null ? r.vat : (cat.expense_vat_rate ?? 20),
         project: proj ? { ...proj, company_name: supplierName || 'Tedarikçi Seçilmedi' } : null,
         supplier_name: supplierName || 'Tedarikçi Seçilmedi',

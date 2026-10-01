@@ -172,8 +172,15 @@ export default function InvoiceModal({
           initialAmounts[item.id] = Number(item.amount || item.balance || 0);
           initialVats[item.id] = Number(item.vat_rate || 0);
           initialDescriptions[item.id] = item.description || "";
-          initialCurrencies[item.id] = item.currency || "TRY";
-          initialRates[item.id] = Number(item.exchange_rate || 1);
+          const curr = (item.currency || "TRY").toUpperCase();
+          initialCurrencies[item.id] = curr;
+          let rate = Number(item.exchange_rate || item.cost_fx || item.fx || 1);
+          if (curr !== "TRY" && rate <= 1) {
+            if (curr === "USD") rate = Number(item.project?.usd_rate || item.usd_rate || 1);
+            else if (curr === "EUR") rate = Number(item.project?.eur_rate || item.eur_rate || 1);
+            else if (curr === "GBP") rate = Number(item.project?.gbp_rate || item.gbp_rate || 1);
+          }
+          initialRates[item.id] = rate;
         });
       } else {
         setInvoiceNo("");
@@ -253,8 +260,25 @@ export default function InvoiceModal({
           initialAmounts[item.id] = Number(item.balance);
           initialVats[item.id] = Number(item.vat_rate || 0);
           initialDescriptions[item.id] = item.description || "";
-          initialCurrencies[item.id] = item.currency || "TRY";
-          initialRates[item.id] = Number(item.fx || 1);
+          const curr = (item.currency || item.cost_currency || "TRY").toUpperCase();
+          initialCurrencies[item.id] = curr;
+
+          let rate = 1;
+          if (curr !== "TRY") {
+            const explicitFx = type === "expense"
+              ? Number(item.cost_fx || item.costFx || item.fx || item.exchange_rate || 0)
+              : Number(item.fx || item.exchange_rate || 0);
+            if (explicitFx > 1) {
+              rate = explicitFx;
+            } else if (curr === "USD") {
+              rate = Number(item.project?.usd_rate || item.usd_rate || 1);
+            } else if (curr === "EUR") {
+              rate = Number(item.project?.eur_rate || item.eur_rate || 1);
+            } else if (curr === "GBP") {
+              rate = Number(item.project?.gbp_rate || item.gbp_rate || 1);
+            }
+          }
+          initialRates[item.id] = rate;
         });
 
         // Auto-select account logic
@@ -693,12 +717,29 @@ export default function InvoiceModal({
                             <select
                               className="w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-v3-text focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                               value={itemCurrencies[item.id] || "TRY"}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const newCurr = e.target.value;
                                 setItemCurrencies((prev) => ({
                                   ...prev,
-                                  [item.id]: e.target.value,
-                                }))
-                              }
+                                  [item.id]: newCurr,
+                                }));
+                                let newRate = 1;
+                                if (newCurr === "TRY") {
+                                  newRate = 1;
+                                } else if (newCurr === "USD") {
+                                  newRate = Number(item.project?.usd_rate || (item.currency === "USD" ? (item.exchange_rate || item.fx || item.cost_fx) : 0) || 1);
+                                } else if (newCurr === "EUR") {
+                                  newRate = Number(item.project?.eur_rate || (item.currency === "EUR" ? (item.exchange_rate || item.fx || item.cost_fx) : 0) || 1);
+                                } else if (newCurr === "GBP") {
+                                  newRate = Number(item.project?.gbp_rate || (item.currency === "GBP" ? (item.exchange_rate || item.fx || item.cost_fx) : 0) || 1);
+                                }
+                                if (newRate > 0) {
+                                  setItemExchangeRates((prev) => ({
+                                    ...prev,
+                                    [item.id]: newRate,
+                                  }));
+                                }
+                              }}
                             >
                               <option value="TRY">TRY</option>
                               <option value="USD">USD</option>
@@ -751,14 +792,21 @@ export default function InvoiceModal({
                                 }))
                               }
                             />
-                            {!editInvoice && (
-                              <span className="text-[10px] text-gray-500 mt-0.5 whitespace-nowrap">
-                                Max:{" "}
-                                {new Intl.NumberFormat("tr-TR").format(
-                                  item.balance,
-                                )}
-                              </span>
-                            )}
+                            <div className="flex items-center justify-between w-full mt-0.5">
+                              {itemCurrencies[item.id] && itemCurrencies[item.id] !== "TRY" && (
+                                <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                  ≈ {new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format((itemAmounts[item.id] || 0) * (itemExchangeRates[item.id] || 1))} ₺
+                                </span>
+                              )}
+                              {!editInvoice && (
+                                <span className="text-[10px] text-gray-500 whitespace-nowrap ml-auto">
+                                  Max:{" "}
+                                  {new Intl.NumberFormat("tr-TR").format(
+                                    item.balance,
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
