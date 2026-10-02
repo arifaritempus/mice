@@ -333,6 +333,61 @@ export default function SejourPage() {
     return costs;
   };
 
+  // Detaylı verilerden toplam satış hesaplama
+  const calculateTotalSalesFromDetails = (sejour: any) => {
+    const totals: any = { EUR: 0, USD: 0, TRY: 0, GBP: 0 };
+
+    // Odalar
+    if (sejour.rooms && Array.isArray(sejour.rooms)) {
+      sejour.rooms.forEach((room: any) => {
+        const roomPrice = room.price !== undefined ? room.price : room.total_price;
+        if (roomPrice !== undefined && roomPrice !== null && room.currency) {
+          totals[room.currency as keyof typeof totals] =
+            (totals[room.currency as keyof typeof totals] || 0) +
+            (roomPrice || 0);
+        }
+      });
+    }
+
+    // Uçuşlar
+    if (sejour.flights && Array.isArray(sejour.flights)) {
+      sejour.flights.forEach((flight: any) => {
+        const flightPrice = flight.price !== undefined ? flight.price : flight.total_price;
+        if (flightPrice !== undefined && flightPrice !== null && flight.currency) {
+          totals[flight.currency as keyof typeof totals] =
+            (totals[flight.currency as keyof typeof totals] || 0) +
+            (flightPrice || 0);
+        }
+      });
+    }
+
+    // Transferler
+    if (sejour.transfers && Array.isArray(sejour.transfers)) {
+      sejour.transfers.forEach((transfer: any) => {
+        const transferPrice = transfer.price !== undefined ? transfer.price : transfer.total_price;
+        if (transferPrice !== undefined && transferPrice !== null && transfer.currency) {
+          totals[transfer.currency as keyof typeof totals] =
+            (totals[transfer.currency as keyof typeof totals] || 0) +
+            (transferPrice || 0);
+        }
+      });
+    }
+
+    // Ek hizmetler
+    if (sejour.extraServices && Array.isArray(sejour.extraServices)) {
+      sejour.extraServices.forEach((service: any) => {
+        const servicePrice = service.price !== undefined ? service.price : service.total_price;
+        if (servicePrice !== undefined && servicePrice !== null && service.currency) {
+          totals[service.currency as keyof typeof totals] =
+            (totals[service.currency as keyof typeof totals] || 0) +
+            (servicePrice || 0);
+        }
+      });
+    }
+
+    return totals;
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -350,15 +405,42 @@ export default function SejourPage() {
       setTotalCount(response.total);
       setTotalPages(response.totalPages);
 
-      // Verileri zenginleştir ve maliyetleri hesapla
+      // Verileri zenginleştir ve maliyetleri/satışları hesapla
       const enrichedData = sejourData.map((sejour: any) => {
         // Maliyetleri detaylı hesapla (rooms, flights, transfers, extraServices'ten)
         const costs = calculateTotalCostFromDetails(sejour);
+        
+        let totals = calculateTotalSalesFromDetails(sejour);
+        const hasCalculated = totals.TRY > 0 || totals.EUR > 0 || totals.USD > 0 || totals.GBP > 0;
+        
+        if (!hasCalculated) {
+          // Fallback to sejour.totals from DB
+          const dbTotals = sejour.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 };
+          const hasDbTotals = dbTotals.TRY > 0 || dbTotals.EUR > 0 || dbTotals.USD > 0 || dbTotals.GBP > 0;
+          
+          if (hasDbTotals) {
+            totals = dbTotals;
+          } else if (sejour.totalAmount > 0) {
+            // Legacy fallback to totalAmount and currency
+            totals[sejour.currency || 'TRY'] = sejour.totalAmount;
+          }
+        }
+
+        // Calculate total collections
+        const totalCollections: any = { EUR: 0, USD: 0, TRY: 0, GBP: 0 };
+        if (sejour.collections && Array.isArray(sejour.collections)) {
+          sejour.collections.forEach((col: any) => {
+             if (col.amount && col.currency) {
+                totalCollections[col.currency] = (totalCollections[col.currency] || 0) + (col.amount || 0);
+             }
+          });
+        }
 
         return {
           ...sejour,
           costs: costs, // Hesaplanan maliyetleri kullan
-          totals: sejour.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+          totals: totals, // Hesaplanan satışları kullan
+          totalCollections: totalCollections,
           collections: sejour.collections || [],
           rooms: sejour.rooms || [],
           flights: sejour.flights || [],
