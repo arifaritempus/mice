@@ -1584,6 +1584,9 @@ export class SejourService {
       costs: sejour.costs || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
       totals: sejour.totals || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
       profits: sejour.profits || { EUR: 0, USD: 0, TRY: 0, GBP: 0 },
+      usdRate: Number(sejour.usd_rate) || 1,
+      eurRate: Number(sejour.eur_rate) || 1,
+      gbpRate: Number(sejour.gbp_rate) || 1,
       created_at: sejour.created_at,
       rooms: (sejour.sejour_rooms || []).map((room: any) => ({
         id: room.id,

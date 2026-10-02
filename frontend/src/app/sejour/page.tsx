@@ -625,6 +625,32 @@ export default function SejourPage() {
   const filteredSejours = sejours;
 
   // Sıralama fonksiyonu
+  const renderCurrencyWithTryEquivalent = (amount: number, currency: string, sejour: any) => {
+    if (!amount) return null;
+    
+    if (currency === 'TRY') {
+      return <div className="mb-0.5">TRY: {formatNumber(amount)}</div>;
+    }
+    
+    let rate = 1;
+    if (currency === 'EUR') rate = sejour.eurRate || 1;
+    if (currency === 'USD') rate = sejour.usdRate || 1;
+    if (currency === 'GBP') rate = sejour.gbpRate || 1;
+    
+    const tryEquivalent = amount * rate;
+    
+    return (
+      <div className="flex flex-col mb-1">
+        <div>{currency}: {formatNumber(amount)}</div>
+        {rate > 1 && (
+          <div className="text-[10px] text-gray-400 font-medium">
+            (~{formatNumber(tryEquivalent)} TL)
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -1469,20 +1495,12 @@ export default function SejourPage() {
                           if (!hasAny)
                             return <div className="text-v3-muted">-</div>;
                           return (
-                            <>
-                              {!!tryAmt && (
-                                <div>TRY: {formatNumber(tryAmt)}</div>
-                              )}
-                              {!!eurAmt && (
-                                <div>EUR: {formatNumber(eurAmt)}</div>
-                              )}
-                              {!!usdAmt && (
-                                <div>USD: {formatNumber(usdAmt)}</div>
-                              )}
-                              {!!gbpAmt && (
-                                <div>GBP: {formatNumber(gbpAmt)}</div>
-                              )}
-                            </>
+                            <div className="flex flex-col gap-0.5">
+                              {renderCurrencyWithTryEquivalent(tryAmt, 'TRY', sejour)}
+                              {renderCurrencyWithTryEquivalent(eurAmt, 'EUR', sejour)}
+                              {renderCurrencyWithTryEquivalent(usdAmt, 'USD', sejour)}
+                              {renderCurrencyWithTryEquivalent(gbpAmt, 'GBP', sejour)}
+                            </div>
                           );
                         })()}
                       </div>
@@ -1498,20 +1516,12 @@ export default function SejourPage() {
                           if (!hasAny)
                             return <div className="text-v3-muted">-</div>;
                           return (
-                            <>
-                              {!!tryAmt && (
-                                <div>TRY: {formatNumber(tryAmt)}</div>
-                              )}
-                              {!!eurAmt && (
-                                <div>EUR: {formatNumber(eurAmt)}</div>
-                              )}
-                              {!!usdAmt && (
-                                <div>USD: {formatNumber(usdAmt)}</div>
-                              )}
-                              {!!gbpAmt && (
-                                <div>GBP: {formatNumber(gbpAmt)}</div>
-                              )}
-                            </>
+                            <div className="flex flex-col gap-0.5">
+                              {renderCurrencyWithTryEquivalent(tryAmt, 'TRY', sejour)}
+                              {renderCurrencyWithTryEquivalent(eurAmt, 'EUR', sejour)}
+                              {renderCurrencyWithTryEquivalent(usdAmt, 'USD', sejour)}
+                              {renderCurrencyWithTryEquivalent(gbpAmt, 'GBP', sejour)}
+                            </div>
                           );
                         })()}
                       </div>
@@ -1547,20 +1557,12 @@ export default function SejourPage() {
                           if (!hasAny)
                             return <div className="text-v3-muted">-</div>;
                           return (
-                            <>
-                              {!!tryAmt && (
-                                <div>TRY: {formatNumber(tryAmt)}</div>
-                              )}
-                              {!!eurAmt && (
-                                <div>EUR: {formatNumber(eurAmt)}</div>
-                              )}
-                              {!!usdAmt && (
-                                <div>USD: {formatNumber(usdAmt)}</div>
-                              )}
-                              {!!gbpAmt && (
-                                <div>GBP: {formatNumber(gbpAmt)}</div>
-                              )}
-                            </>
+                            <div className="flex flex-col gap-0.5">
+                              {renderCurrencyWithTryEquivalent(tryAmt, 'TRY', sejour)}
+                              {renderCurrencyWithTryEquivalent(eurAmt, 'EUR', sejour)}
+                              {renderCurrencyWithTryEquivalent(usdAmt, 'USD', sejour)}
+                              {renderCurrencyWithTryEquivalent(gbpAmt, 'GBP', sejour)}
+                            </div>
                           );
                         })()}
                       </div>
@@ -1600,20 +1602,12 @@ export default function SejourPage() {
                           if (!hasAny)
                             return <div className="text-v3-muted">-</div>;
                           return (
-                            <>
-                              {!!tryAmt && (
-                                <div>TRY: {formatNumber(tryAmt)}</div>
-                              )}
-                              {!!eurAmt && (
-                                <div>EUR: {formatNumber(eurAmt)}</div>
-                              )}
-                              {!!usdAmt && (
-                                <div>USD: {formatNumber(usdAmt)}</div>
-                              )}
-                              {!!gbpAmt && (
-                                <div>GBP: {formatNumber(gbpAmt)}</div>
-                              )}
-                            </>
+                            <div className="flex flex-col gap-0.5">
+                              {renderCurrencyWithTryEquivalent(tryAmt, 'TRY', sejour)}
+                              {renderCurrencyWithTryEquivalent(eurAmt, 'EUR', sejour)}
+                              {renderCurrencyWithTryEquivalent(usdAmt, 'USD', sejour)}
+                              {renderCurrencyWithTryEquivalent(gbpAmt, 'GBP', sejour)}
+                            </div>
                           );
                         })()}
                       </div>
